@@ -113,16 +113,16 @@ test('amqplib callback instrumentation', async function (t) {
       assert.ok(agent.tracer.getSegment(), 'should start in transaction')
       channel.assertExchange(exchange, 'fanout', null, function (err) {
         assert.ok(!err, 'should not error asserting exchange')
-        amqpUtils.verifyTransaction(tx, 'assertExchange')
+        amqpUtils.verifyTransaction(agent, tx, 'assertExchange')
 
         channel.assertQueue('', { exclusive: true }, function (err, result) {
           assert.ok(!err, 'should not error asserting queue')
-          amqpUtils.verifyTransaction(tx, 'assertQueue')
+          amqpUtils.verifyTransaction(agent, tx, 'assertQueue')
           const queueName = result.queue
 
           channel.bindQueue(queueName, exchange, '', null, function (err) {
             assert.ok(!err, 'should not error binding queue')
-            amqpUtils.verifyTransaction(tx, 'bindQueue')
+            amqpUtils.verifyTransaction(agent, tx, 'bindQueue')
             channel.publish(exchange, '', Buffer.from('hello'))
             setImmediate(function () {
               tx.end()
@@ -145,16 +145,16 @@ test('amqplib callback instrumentation', async function (t) {
     helper.runInTransaction(agent, function (tx) {
       channel.assertExchange(exchange, 'direct', null, function (err) {
         assert.ok(!err, 'should not error asserting exchange')
-        amqpUtils.verifyTransaction(tx, 'assertExchange')
+        amqpUtils.verifyTransaction(agent, tx, 'assertExchange')
 
         channel.assertQueue('', { exclusive: true }, function (err, result) {
           assert.ok(!err, 'should not error asserting queue')
-          amqpUtils.verifyTransaction(tx, 'assertQueue')
+          amqpUtils.verifyTransaction(agent, tx, 'assertQueue')
           const queueName = result.queue
 
           channel.bindQueue(queueName, exchange, 'key1', null, function (err) {
             assert.ok(!err, 'should not error binding queue')
-            amqpUtils.verifyTransaction(tx, 'bindQueue')
+            amqpUtils.verifyTransaction(agent, tx, 'bindQueue')
             channel.publish(exchange, 'key1', Buffer.from('hello'))
             setImmediate(function () {
               tx.end()
@@ -178,16 +178,16 @@ test('amqplib callback instrumentation', async function (t) {
     helper.runInTransaction(agent, function (tx) {
       channel.assertExchange(exchange, 'direct', null, function (err) {
         assert.ok(!err, 'should not error asserting exchange')
-        amqpUtils.verifyTransaction(tx, 'assertExchange')
+        amqpUtils.verifyTransaction(agent, tx, 'assertExchange')
 
         channel.assertQueue('', { exclusive: true }, function (err, result) {
           assert.ok(!err, 'should not error asserting queue')
-          amqpUtils.verifyTransaction(tx, 'assertQueue')
+          amqpUtils.verifyTransaction(agent, tx, 'assertQueue')
           queueName = result.queue
 
           channel.bindQueue(queueName, exchange, 'key1', null, function (err) {
             assert.ok(!err, 'should not error binding queue')
-            amqpUtils.verifyTransaction(tx, 'bindQueue')
+            amqpUtils.verifyTransaction(agent, tx, 'bindQueue')
             channel.purgeQueue(queueName, function (err) {
               assert.ok(!err, 'should not error purging queue')
               setImmediate(function () {
@@ -221,7 +221,7 @@ test('amqplib callback instrumentation', async function (t) {
               assert.ok(!err, 'should not cause an error')
               assert.ok(msg, 'should receive a message')
 
-              amqpUtils.verifyTransaction(tx, 'get')
+              amqpUtils.verifyTransaction(agent, tx, 'get')
               const body = msg.content.toString('utf8')
               assert.equal(body, 'hello', 'should receive expected body')
 
@@ -266,7 +266,7 @@ test('amqplib callback instrumentation', async function (t) {
               assert.ok(!err, 'should not cause an error')
               assert.ok(msg, 'should receive a message')
 
-              amqpUtils.verifyTransaction(tx, 'get')
+              amqpUtils.verifyTransaction(agent, tx, 'get')
               const body = msg.content.toString('utf8')
               assert.equal(body, 'hello', 'should receive expected body')
 
@@ -321,7 +321,7 @@ test('amqplib callback instrumentation', async function (t) {
           })
           helper.runInTransaction(agent, function (tx) {
             produceTx = tx
-            amqpUtils.verifyTransaction(tx, 'consume')
+            amqpUtils.verifyTransaction(agent, tx, 'consume')
             channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
           })
         })
@@ -373,7 +373,7 @@ test('amqplib callback instrumentation', async function (t) {
           helper.runInTransaction(agent, function (tx) {
             produceTx = tx
             assert.ok(!err, 'should not error subscribing consumer')
-            amqpUtils.verifyTransaction(tx, 'consume')
+            amqpUtils.verifyTransaction(agent, tx, 'consume')
 
             channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
           })

@@ -66,7 +66,7 @@ test('fromSegment()', async (t) => {
         segment.addSpanAttribute('host', 'my-host')
         segment.addSpanAttribute('port', 22)
 
-        const span = StreamingSpanEvent.fromSegment(segment, 'parent')
+        const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
 
         // Should have all the normal properties.
         assert.ok(span)
@@ -131,7 +131,7 @@ test('fromSegment()', async (t) => {
         res.resume()
         res.on('end', () => {
           const segment = agent.tracer.getTransaction().trace.root.children[0]
-          const span = StreamingSpanEvent.fromSegment(segment, 'parent')
+          const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
 
           // Should have all the normal properties.
           assert.ok(span)
@@ -238,7 +238,7 @@ test('fromSegment()', async (t) => {
       dsConn.myDbOp(longQuery, () => {
         transaction.end()
         const segment = transaction.trace.root.children[0]
-        const span = StreamingSpanEvent.fromSegment(segment, 'parent')
+        const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
 
         // Should have all the normal properties.
         assert.ok(span)
@@ -329,7 +329,7 @@ test('fromSegment()', async (t) => {
         const spanContext = agent.tracer.getSpanContext()
         spanContext.addCustomAttribute('customKey', 'customValue')
 
-        const span = StreamingSpanEvent.fromSegment(segment, 'parent')
+        const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
 
         const serializedSpan = span.toStreamingFormat()
         const {
@@ -366,7 +366,7 @@ test('fromSegment()', async (t) => {
         spanContext.addIntrinsicAttribute('intrinsic.1', 1)
         spanContext.addIntrinsicAttribute('intrinsic.2', 2)
 
-        const span = StreamingSpanEvent.fromSegment(segment, 'parent')
+        const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
 
         const serializedSpan = span.toStreamingFormat()
         const { intrinsics } = serializedSpan
@@ -390,7 +390,7 @@ test('fromSegment()', async (t) => {
           const segment = transaction.trace.root.children[0]
           assert.ok(segment.name.startsWith('Truncated'))
 
-          const span = StreamingSpanEvent.fromSegment(segment)
+          const span = StreamingSpanEvent.fromSegment(segment, transaction)
           assert.ok(span)
           assert.ok(span instanceof StreamingSpanEvent)
 
@@ -407,12 +407,12 @@ test('fromSegment()', async (t) => {
   await t.test('should handle truncated datastore spans', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
-      const segment = transaction.trace.root.add('Datastore/operation/something')
+      const segment = transaction.trace.add('Datastore/operation/something')
       transaction.end() // end before segment to trigger truncate
 
       assert.ok(segment.name.startsWith('Truncated'))
 
-      const span = StreamingSpanEvent.fromSegment(segment)
+      const span = StreamingSpanEvent.fromSegment(segment, transaction)
       assert.ok(span)
       assert.ok(span instanceof StreamingSpanEvent)
 
