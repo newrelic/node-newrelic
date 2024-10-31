@@ -161,8 +161,8 @@ test('cross application tracing full integration', function (t) {
       )
 
       // check the external segment for its properties
-      const externalSegment =
-        trace.root.children[0].children[trace.root.children[0].children.length - 1]
+      const [webSegment] = trace.getChildren(trace.root.id)
+      const [externalSegment] = trace.getChildren(webSegment.id)
       t.equal(
         externalSegment.name.split('/')[0],
         'ExternalTransaction',
@@ -228,8 +228,8 @@ test('cross application tracing full integration', function (t) {
       )
 
       // check the external segment for its properties
-      const externalSegment =
-        trace.root.children[0].children[trace.root.children[0].children.length - 1]
+      const [webSegment] = trace.getChildren(trace.root.id)
+      const [externalSegment] = trace.getChildren(webSegment.id)
       t.equal(
         externalSegment.name.split('/')[0],
         'ExternalTransaction',

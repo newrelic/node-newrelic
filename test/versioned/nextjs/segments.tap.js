@@ -72,7 +72,7 @@ tap.test('Next.js', (t) => {
         children: getChildSegments(URI)
       }
     ]
-    t.assertSegments(tx.trace.root, expectedSegments, { exact: false })
+    t.assertSegments(tx.trace, tx.trace.root, expectedSegments, { exact: false })
   })
 
   t.test('should properly name getServerSideProps segments on dynamic pages', async (t) => {
@@ -91,7 +91,7 @@ tap.test('Next.js', (t) => {
         children: getChildSegments(EXPECTED_URI)
       }
     ]
-    t.assertSegments(tx.trace.root, expectedSegments, { exact: false })
+    t.assertSegments(tx.trace, tx.trace.root, expectedSegments, { exact: false })
   })
 
   t.test(
@@ -121,7 +121,7 @@ tap.test('Next.js', (t) => {
         ]
       }
 
-      t.assertSegments(tx.trace.root, expectedSegments, { exact: false })
+      t.assertSegments(tx.trace, tx.trace.root, expectedSegments, { exact: false })
     }
   )
 })

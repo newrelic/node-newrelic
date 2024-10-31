@@ -6,6 +6,7 @@
 'use strict'
 
 /**
+ * @param {Trace} trace             Transaction trace
  * @param {TraceSegment} parent     Parent segment
  * @param {Array} expected          Array of strings that represent segment names.
  *                                  If an item in the array is another array, it
@@ -22,6 +23,7 @@
  * @param {object} [deps.assert] Assertion library to use.
  */
 module.exports = function assertSegments(
+  trace,
   parent,
   expected,
   options,
@@ -39,7 +41,8 @@ module.exports = function assertSegments(
   }
 
   function getChildren(_parent) {
-    return _parent.children.filter(function (item) {
+    const children = trace.getChildren(_parent.id)
+    return children.filter(function (item) {
       if (exact && options && options.exclude) {
         return options.exclude.indexOf(item.name) === -1
       }
@@ -74,7 +77,7 @@ module.exports = function assertSegments(
           )
         }
       } else if (typeof sequenceItem === 'object') {
-        assertSegments(child, sequenceItem, options, { assert })
+        assertSegments(trace, child, sequenceItem, options, { assert })
       }
     }
 
@@ -86,14 +89,14 @@ module.exports = function assertSegments(
 
       if (typeof sequenceItem === 'string') {
         // find corresponding child in parent
-        for (let j = 0; j < parent.children.length; j++) {
-          if (parent.children[j].name === sequenceItem) {
-            child = parent.children[j]
+        for (let j = 0; j < children.length; j++) {
+          if (children[j].name === sequenceItem) {
+            child = children[j]
           }
         }
         assert.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
         if (typeof expected[i + 1] === 'object') {
-          assertSegments(child, expected[i + 1], { exact }, { assert })
+          assertSegments(trace, child, expected[i + 1], { exact }, { assert })
         }
       }
     }

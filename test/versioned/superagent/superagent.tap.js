@@ -35,11 +35,12 @@ tap.test('SuperAgent instrumentation', (t) => {
       request.get(address, function testCallback() {
         t.ok(tx)
 
-        const mainSegment = tx.trace.root.children[0]
+        const [mainSegment] = tx.trace.getChildren(tx.trace.root.id)
         t.ok(mainSegment)
         t.match(mainSegment.name, EXTERNAL_NAME, 'has segment matching request')
+        const mainChildren = tx.trace.getChildren(mainSegment.id)
         t.equal(
-          mainSegment.children.filter((c) => c.name === 'Callback: testCallback').length,
+          mainChildren.filter((c) => c.name === 'Callback: testCallback').length,
           1,
           'has segment matching callback'
         )
@@ -63,11 +64,12 @@ tap.test('SuperAgent instrumentation', (t) => {
       request.get(address).then(function testThen() {
         t.ok(tx)
 
-        const mainSegment = tx.trace.root.children[0]
+        const [mainSegment] = tx.trace.getChildren(tx.trace.root.id)
         t.ok(mainSegment)
         t.match(mainSegment.name, EXTERNAL_NAME, 'has segment matching request')
+        const mainChildren = tx.trace.getChildren(mainSegment.id)
         t.equal(
-          mainSegment.children.filter((c) => c.name === 'Callback: <anonymous>').length,
+          mainChildren.filter((c) => c.name === 'Callback: <anonymous>').length,
           1,
           'has segment matching callback'
         )

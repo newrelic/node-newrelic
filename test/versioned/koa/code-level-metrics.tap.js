@@ -110,16 +110,18 @@ tap.test('Vanilla koa, no router', (t) => {
       })
 
       agent.on('transactionFinished', (transaction) => {
-        const baseSegment = transaction.trace.root.children[0]
+        const [baseSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+        const [one] = transaction.trace.getChildren(baseSegment.id)
+        const [two] = transaction.trace.getChildren(one.id)
         t.clmAttrs({
           segments: [
             {
-              segment: baseSegment.children[0],
+              segment: one,
               name: 'one',
               filepath: 'code-level-metrics.tap.js'
             },
             {
-              segment: baseSegment.children[0].children[0],
+              segment: two,
               name: 'two',
               filepath: 'code-level-metrics.tap.js'
             }
@@ -166,22 +168,25 @@ tap.test('Using koa-router', { skip: !koaRouterAvailable }, (t) => {
       app.use(router.routes())
 
       agent.on('transactionFinished', (transaction) => {
-        const baseSegment = transaction.trace.root.children[0]
+        const [baseSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+        const [dispatch] = transaction.trace.getChildren(baseSegment.id)
+        const [appLevel] = transaction.trace.getChildren(dispatch.id)
+        const [secondMw] = transaction.trace.getChildren(appLevel.id)
 
         t.clmAttrs({
           segments: [
             {
-              segment: baseSegment.children[0],
+              segment: dispatch,
               name: 'dispatch',
               filepath: 'koa-router/lib/router.js'
             },
             {
-              segment: baseSegment.children[0].children[0],
+              segment: appLevel,
               name: 'appLevelMiddleware',
               filepath: 'code-level-metrics.tap.js'
             },
             {
-              segment: baseSegment.children[0].children[0].children[0],
+              segment: secondMw,
               name: 'secondMiddleware',
               filepath: 'code-level-metrics.tap.js'
             }
@@ -226,22 +231,25 @@ tap.test('Using @koa/router', { skip: !atKoaRouterAvailable }, (t) => {
       app.use(router.routes())
 
       agent.on('transactionFinished', (transaction) => {
-        const baseSegment = transaction.trace.root.children[0]
+        const [baseSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+        const [dispatch] = transaction.trace.getChildren(baseSegment.id)
+        const [appLevel] = transaction.trace.getChildren(dispatch.id)
+        const [secondMw] = transaction.trace.getChildren(appLevel.id)
 
         t.clmAttrs({
           segments: [
             {
-              segment: baseSegment.children[0],
+              segment: dispatch,
               name: 'dispatch',
               filepath: '@koa/router/lib/router.js'
             },
             {
-              segment: baseSegment.children[0].children[0],
+              segment: appLevel,
               name: 'appLevelMiddleware',
               filepath: 'code-level-metrics.tap.js'
             },
             {
-              segment: baseSegment.children[0].children[0].children[0],
+              segment: secondMw,
               name: 'secondMiddleware',
               filepath: 'code-level-metrics.tap.js'
             }

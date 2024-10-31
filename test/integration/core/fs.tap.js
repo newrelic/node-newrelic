@@ -612,7 +612,7 @@ test('readFile', function (t) {
       // io.js changed their implementation of fs.readFile to use process.binding.
       // This caused the file opening not to be added to the trace when using io.js.
       // By checking this value, we can determine whether or not to expect it.
-      if (agent.getTransaction().trace.root.children[0].children.length === 1) {
+      if (agent.tracer.getSegment()) {
         expectFSOpen = false
       }
       verifySegments(
@@ -705,7 +705,8 @@ test('read', function (t) {
       t.equal(len, 12, 'should read correct number of bytes')
       t.equal(data.toString('utf8'), content)
       t.equal(agent.getTransaction(), trans, 'should preserve transaction')
-      t.equal(trans.trace.root.children.length, 0, 'should not create any segments')
+      const children = trans.trace.getChildren(trans.trace.root.id)
+      t.equal(children.length, 0, 'should not create any segments')
       t.end()
     })
   })
@@ -725,7 +726,8 @@ test('write', function (t) {
       t.equal(len, 12, 'should write correct number of bytes')
       t.equal(fs.readFileSync(name, 'utf8'), content)
       t.equal(agent.getTransaction(), trans, 'should preserve transaction')
-      t.equal(trans.trace.root.children.length, 0, 'should not create any segments')
+      const children = trans.trace.getChildren(trans.trace.root.id)
+      t.equal(children.length, 0, 'should not create any segments')
       t.end()
     })
   })
@@ -746,7 +748,8 @@ test('watch (file)', function (t) {
 
         t.equal(file, 'watch-file', 'should have correct file name')
         t.equal(agent.getTransaction(), trans, 'should preserve transaction')
-        t.equal(trans.trace.root.children.length, 1, 'should not create any segments')
+        const children = trans.trace.getChildren(trans.trace.root.id)
+        t.equal(children.length, 1, 'should not create any segments')
         watcher.close()
       })
       fs.writeFile(name, content + 'more', function (err) {
@@ -769,7 +772,8 @@ test('watch (dir)', function (t) {
         t.equal(ev, 'rename')
         t.equal(file, 'watch-dir')
         t.equal(agent.getTransaction(), trans, 'should preserve transaction')
-        t.equal(trans.trace.root.children.length, 1, 'should not create any segments')
+        const children = trans.trace.getChildren(trans.trace.root.id)
+        t.equal(children.length, 1, 'should not create any segments')
         watcher.close()
       })
       fs.writeFile(name, content, function (err) {
@@ -795,9 +799,9 @@ test('watch emitter', function (t) {
         t.equal(file, 'watch', 'should be for correct directory')
 
         const tx = agent.getTransaction()
-        const root = trans.trace.root
         t.equal(tx && tx.id, trans.id, 'should preserve transaction')
-        t.equal(root.children.length, 1, 'should not create any segments')
+        const children = trans.trace.getChildren(trans.trace.root.id)
+        t.equal(children.length, 1, 'should not create any segments')
 
         watcher.close()
       })
@@ -826,7 +830,8 @@ test('watchFile', function (t) {
         t.ok(cur.size > prev.size, 'content modified')
 
         t.equal(agent.getTransaction(), trans, 'should preserve transaction')
-        t.equal(trans.trace.root.children.length, 0, 'should not create any segments')
+        const children = trans.trace.getChildren(trans.trace.root.id)
+        t.equal(children.length, 0, 'should not create any segments')
         fs.unwatchFile(name, onChange)
       }
     })

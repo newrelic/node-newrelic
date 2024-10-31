@@ -78,6 +78,7 @@ function collectionTest(name, run) {
               t.equal(agent.getTransaction().id, transaction.id, 'should not change transactions')
               const segment = agent.tracer.getSegment()
               let current = transaction.trace.root
+              const children = transaction.trace.getChildren(current.id)
 
               // this logic is just for the collection.aggregate.
               // aggregate no longer returns a callback with cursor
@@ -90,10 +91,11 @@ function collectionTest(name, run) {
               // there is an extra segment for the callback of our test which we do not care
               // to assert
               if (childrenLength === 2) {
-                t.equal(current.children.length, childrenLength, 'should have one child')
+                t.equal(children.length, childrenLength, 'should have one child')
 
                 segments.forEach((expectedSegment, i) => {
-                  const child = current.children[i]
+                  const child = children[i]
+                  const childChildren = transaction.trace.getChildren(child.id)
 
                   t.equal(child.name, expectedSegment, `child should be named ${expectedSegment}`)
                   if (common.MONGO_SEGMENT_RE.test(child.name)) {
@@ -102,13 +104,15 @@ function collectionTest(name, run) {
                   }
 
                   if (strict) {
-                    t.equal(child.children.length, 0, 'should have no more children')
+                    t.equal(childChildren.length, 0, 'should have no more children')
                   }
                 })
               } else {
+                let currentChildren
                 for (let i = 0, l = segments.length; i < l; ++i) {
-                  t.equal(current.children.length, childrenLength, 'should have one child')
-                  current = current.children[0]
+                  t.equal(children.length, childrenLength, 'should have one child')
+                  current = children[0]
+                  currentChildren = transaction.trace.getChildren(current.id)
                   t.equal(current.name, segments[i], 'child should be named ' + segments[i])
                   if (common.MONGO_SEGMENT_RE.test(current.name)) {
                     checkSegmentParams(t, current)
@@ -117,7 +121,7 @@ function collectionTest(name, run) {
                 }
 
                 if (strict) {
-                  t.equal(current.children.length, 0, 'should have no more children')
+                  t.equal(currentChildren.length, 0, 'should have no more children')
                 }
               }
 
@@ -157,7 +161,7 @@ function collectionTest(name, run) {
                 t.ok(attributes.database_name, 'should have database name attribute')
                 t.ok(attributes.product, 'should have product attribute')
               }
-              current = current.children[0]
+              ;[current] = tx.trace.getChildren(current.id)
             }
             t.end()
           })
@@ -182,7 +186,7 @@ function collectionTest(name, run) {
                 t.notOk(attributes.database_name, 'should not have database name attribute')
                 t.ok(attributes.product, 'should have product attribute')
               }
-              current = current.children[0]
+              ;[current] = tx.trace.getChildren(current.id)
             }
             t.end()
           })
@@ -229,6 +233,7 @@ function collectionTest(name, run) {
               t.equal(agent.getTransaction().id, transaction.id, 'should not change transactions')
               const segment = agent.tracer.getSegment()
               let current = transaction.trace.root
+              const children = transaction.trace.getChildren(current.id)
 
               // this logic is just for the collection.aggregate.
               // aggregate no longer returns a callback with cursor
@@ -241,10 +246,11 @@ function collectionTest(name, run) {
               // there is an extra segment for the callback of our test which we do not care
               // to assert
               if (childrenLength === 2) {
-                t.equal(current.children.length, childrenLength, 'should have one child')
+                t.equal(children.length, childrenLength, 'should have one child')
 
                 segments.forEach((expectedSegment, i) => {
-                  const child = current.children[i]
+                  const child = children[i]
+                  const childChildren = transaction.trace.getChildren(child.id)
 
                   t.equal(child.name, expectedSegment, `child should be named ${expectedSegment}`)
                   if (common.MONGO_SEGMENT_RE.test(child.name)) {
@@ -253,13 +259,15 @@ function collectionTest(name, run) {
                   }
 
                   if (strict) {
-                    t.equal(child.children.length, 0, 'should have no more children')
+                    t.equal(childChildren.length, 0, 'should have no more children')
                   }
                 })
               } else {
+                let currentChildren
                 for (let i = 0, l = segments.length; i < l; ++i) {
-                  t.equal(current.children.length, childrenLength, 'should have one child')
-                  current = current.children[0]
+                  t.equal(children.length, childrenLength, 'should have one child')
+                  current = children[0]
+                  currentChildren = transaction.trace.getChildren(current.id)
                   t.equal(current.name, segments[i], 'child should be named ' + segments[i])
                   if (common.MONGO_SEGMENT_RE.test(current.name)) {
                     checkSegmentParams(t, current)
@@ -268,7 +276,7 @@ function collectionTest(name, run) {
                 }
 
                 if (strict) {
-                  t.equal(current.children.length, 0, 'should have no more children')
+                  t.equal(currentChildren.length, 0, 'should have no more children')
                 }
               }
 

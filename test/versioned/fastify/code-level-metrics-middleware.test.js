@@ -53,9 +53,12 @@ async function setup(t, config) {
   }
 }
 
-function assertSegments(testContext, baseSegment, isCLMEnabled) {
-  const { agent } = testContext.nr
-  const { children } = helper.isSecurityAgentEnabled(agent) ? baseSegment.children[0] : baseSegment
+function assertSegments({ t, trace, baseSegment, isCLMEnabled }) {
+  const { agent } = t.nr
+  let children = trace.getChildren(baseSegment.id)
+  if (helper.isSecurityAgentEnabled(agent)) {
+    children = trace.getChildren(children[0].id)
+  }
   // TODO: once we drop v2 support, this function can be removed and assert inline in test below
   if (semver.satisfies(pkgVersion, '>=3')) {
     const [middieSegment, handlerSegment] = children
@@ -105,7 +108,13 @@ async function performTest(t) {
 
   agent.on('transactionFinished', (transaction) => {
     calls.test++
-    assertSegments(t, transaction.trace.root.children[0], agent.config.code_level_metrics.enabled)
+    const [baseSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+    assertSegments({
+      t,
+      baseSegment,
+      trace: transaction.trace,
+      isCLMEnabled: agent.config.code_level_metrics.enabled
+    })
   })
 
   await fastify.listen({ port: 0 })

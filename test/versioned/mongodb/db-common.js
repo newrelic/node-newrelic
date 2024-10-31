@@ -80,15 +80,16 @@ function verifyMongoSegments(t, agent, transaction, names, opts) {
   let child
 
   for (let i = 0, l = names.length; i < l; ++i) {
+    let children = transaction.trace.getChildren(current.id)
     if (opts.legacy) {
       // Filter out net.createConnection segments as they could occur during execution, which is fine
       // but breaks out assertion function
-      current.children = current.children.filter((c) => c.name !== 'net.createConnection')
-      t.equal(current.children.length, 1, 'should have one child segment')
-      child = current.children[0]
-      current = current.children[0]
+      children = children.filter((c) => c.name !== 'net.createConnection')
+      t.equal(children.length, 1, 'should have one child segment')
+      child = children[0]
+      current = children[0]
     } else {
-      child = current.children[i]
+      child = children[i]
     }
     t.equal(child.name, names[i], 'segment should be named ' + names[i])
 

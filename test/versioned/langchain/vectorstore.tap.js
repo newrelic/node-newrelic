@@ -101,7 +101,7 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     helper.runInTransaction(agent, async (tx) => {
       const result = await vs.similaritySearch('This is an embedding test.', 1)
       t.ok(result)
-      t.assertSegments(tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
+      t.assertSegments(tx.trace, tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
         exact: false
       })
       tx.end()

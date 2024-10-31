@@ -51,7 +51,7 @@ test('Agent API - startBackgroundTransaction', async (t) => {
       assert.ok(transaction.isActive())
 
       const currentSegment = tracer.getSegment()
-      const nestedSegment = currentSegment.children[0]
+      const [nestedSegment] = transaction.trace.getChildren(currentSegment.id)
       assert.equal(nestedSegment.name, 'Nodejs/nested')
     })
 
@@ -182,6 +182,31 @@ test('Agent API - startBackgroundTransaction', async (t) => {
     })
   })
 
+  await t.test('should record metrics', (t, end) => {
+    const { agent, api } = t.nr
+    let transaction
+    api.startBackgroundTransaction('test', function () {
+      transaction = agent.tracer.getTransaction()
+    })
+
+    transaction.end()
+    const metrics = transaction.metrics.unscoped
+    ;[
+      'OtherTransaction/Nodejs/test',
+      'OtherTransactionTotalTime/Nodejs/test',
+      'OtherTransaction/all',
+      'OtherTransactionTotalTime',
+      'OtherTransactionTotalTime',
+      'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all',
+      'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allOther'
+    ].forEach((metric) => {
+      assert.ok(metrics[metric].total, `${metric} has total`)
+      assert.ok(metrics[metric].totalExclusive, `${metric} has totalExclusive`)
+    })
+
+    end()
+  })
+
   await t.test('should not throw when no handler is supplied', (t, end) => {
     const { api } = t.nr
     assert.doesNotThrow(() => api.startBackgroundTransaction('test'))
@@ -221,7 +246,8 @@ test('Agent API - startBackgroundTransaction', async (t) => {
           api.startBackgroundTransaction('nested-clm-test', function () {
             nested({ api })
             const currentSegment = tracer.getSegment()
-            const nestedSegment = currentSegment.children[0]
+            const transaction = agent.tracer.getTransaction()
+            const [nestedSegment] = transaction.trace.getChildren(currentSegment.id)
             assertCLMAttrs({
               segments: [
                 {

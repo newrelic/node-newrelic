@@ -48,6 +48,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       test.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
       test.assertSegments(
+        tx.trace,
         tx.trace.root,
         [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
         { exact: false }
@@ -128,6 +129,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         test.equal(chunk.choices[0].message.content, res)
 
         test.assertSegments(
+          tx.trace,
           tx.trace.root,
           [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
           { exact: false }
@@ -342,7 +344,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         const events = agent.customEventAggregator.events.toArray()
         test.equal(events.length, 0)
         // we will still record the external segment but not the chat completion
-        test.assertSegments(tx.trace.root, [
+        test.assertSegments(tx.trace, tx.trace.root, [
           'timers.setTimeout',
           `External/${host}:${port}/chat/completions`
         ])

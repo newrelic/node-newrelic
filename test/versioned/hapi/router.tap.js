@@ -232,8 +232,9 @@ tap.test('Hapi router introspection', function (t) {
 
   t.test('404 transaction is named correctly', function (t) {
     agent.on('transactionFinished', function (tx) {
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
       t.equal(
-        tx.trace.root.children[0].name,
+        segment.name,
         'WebTransaction/Nodejs/GET/(not found)',
         '404 segment has standardized name'
       )
@@ -359,7 +360,7 @@ function verifier(t, verb) {
     t.equal(transaction.verb, verb, 'HTTP method is ' + verb)
     t.ok(transaction.trace, 'transaction has trace')
 
-    const web = transaction.trace.root.children[0]
+    const [web] = transaction.trace.getChildren(transaction.trace.root.id)
     t.ok(web, 'trace has web segment')
     t.equal(web.name, transaction.name, 'segment name and transaction name match')
 

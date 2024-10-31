@@ -109,9 +109,10 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
       const trace = transaction.trace
       t.ok(trace, 'trace should exist')
       t.ok(trace.root, 'root element should exist.')
-      t.equal(trace.root.children.length, 1, 'There should be only one child.')
+      const children = trace.getChildren(trace.root.id)
+      t.equal(children.length, 1, 'There should be only one child.')
 
-      const selectSegment = trace.root.children[0]
+      const selectSegment = children[0]
       t.ok(selectSegment, 'trace segment for first SELECT should exist')
       t.equal(
         selectSegment.name,
@@ -119,10 +120,13 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
         'should register as SELECT'
       )
 
-      t.equal(selectSegment.children.length, 1, 'should only have a callback segment')
-      t.equal(selectSegment.children[0].name, 'Callback: <anonymous>')
+      const selectChildren = trace.getChildren(selectSegment.id)
+      t.equal(selectChildren.length, 1, 'should only have a callback segment')
+      const cb = selectChildren[0]
+      t.equal(cb.name, 'Callback: <anonymous>')
+      const cbChildren = trace.getChildren(cb.id)
 
-      selectSegment.children[0].children
+      cbChildren
         .map(function (segment) {
           return segment.name
         })
