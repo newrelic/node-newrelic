@@ -404,7 +404,7 @@ test('streaming enabled', async (t) => {
         // no-op
       }
 
-      assertSegments(tx.trace.root, ['Llm/chain/Langchain/stream'], { exact: false })
+      assertSegments(tx.trace, tx.trace.root, ['Llm/chain/Langchain/stream'], { exact: false })
 
       tx.end()
       end()

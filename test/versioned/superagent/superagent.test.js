@@ -40,11 +40,12 @@ test('should maintain transaction context with callbacks', (t, end) => {
     request.get(address, function testCallback() {
       assert.ok(tx)
 
-      const mainSegment = tx.trace.root.children[0]
+      const [mainSegment] = tx.trace.getChildren(tx.trace.root.id)
       assert.ok(mainSegment)
       match(mainSegment.name, EXTERNAL_NAME, 'has segment matching request')
+      const mainChildren = tx.trace.getChildren(mainSegment.id)
       assert.equal(
-        mainSegment.children.filter((c) => c.name === 'Callback: testCallback').length,
+        mainChildren.filter((c) => c.name === 'Callback: testCallback').length,
         1,
         'has segment matching callback'
       )
@@ -68,11 +69,12 @@ test('should maintain transaction context with promises', (t, end) => {
     request.get(address).then(function testThen() {
       assert.ok(tx)
 
-      const mainSegment = tx.trace.root.children[0]
+      const [mainSegment] = tx.trace.getChildren(tx.trace.root.id)
       assert.ok(mainSegment)
       match(mainSegment.name, EXTERNAL_NAME, 'has segment matching request')
+      const mainChildren = tx.trace.getChildren(mainSegment.id)
       assert.equal(
-        mainSegment.children.filter((c) => c.name === 'Callback: <anonymous>').length,
+        mainChildren.filter((c) => c.name === 'Callback: <anonymous>').length,
         1,
         'has segment matching callback'
       )

@@ -43,7 +43,7 @@ module.exports = async function runTests(t, getExpectedSegments) {
           ]
         }
 
-        assertSegments(transaction.trace.root, expectedSegments)
+        assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
       })
 
       await fastify.listen({ port: 0 })

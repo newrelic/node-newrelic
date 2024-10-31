@@ -35,7 +35,7 @@ test('should name and produce segments for koa-route middleware', (t, end) => {
   })
   app.use(first)
   agent.on('transactionFinished', function (tx) {
-    assertSegments(tx.trace.root, [
+    assertSegments(tx.trace, tx.trace.root, [
       'WebTransaction/WebFrameworkUri/Koa/GET//resource',
       ['Nodejs/Middleware/Koa/firstMiddleware//resource']
     ])
@@ -61,7 +61,7 @@ test('should name the transaction after the last responder', (t, end) => {
   app.use(first)
   app.use(second)
   agent.on('transactionFinished', function (tx) {
-    assertSegments(tx.trace.root, [
+    assertSegments(tx.trace, tx.trace.root, [
       'WebTransaction/WebFrameworkUri/Koa/GET//:second',
       [
         'Nodejs/Middleware/Koa/firstMiddleware//:first',
@@ -91,7 +91,7 @@ test('should name the transaction properly when responding after next', (t, end)
   app.use(first)
   app.use(second)
   agent.on('transactionFinished', function (tx) {
-    assertSegments(tx.trace.root, [
+    assertSegments(tx.trace, tx.trace.root, [
       'WebTransaction/WebFrameworkUri/Koa/GET//:first',
       [
         'Nodejs/Middleware/Koa/firstMiddleware//:first',
@@ -120,7 +120,7 @@ test('should work with early responding', (t, end) => {
   app.use(first)
   app.use(second)
   agent.on('transactionFinished', function (tx) {
-    assertSegments(tx.trace.root, [
+    assertSegments(tx.trace, tx.trace.root, [
       'WebTransaction/WebFrameworkUri/Koa/GET//:first',
       ['Nodejs/Middleware/Koa/firstMiddleware//:first']
     ])
@@ -146,7 +146,7 @@ test('should name the transaction after the source of the error that occurred', 
   app.use(first)
   app.use(second)
   agent.on('transactionFinished', function (tx) {
-    assertSegments(tx.trace.root, [
+    assertSegments(tx.trace, tx.trace.root, [
       'WebTransaction/WebFrameworkUri/Koa/GET//:second',
       [
         'Nodejs/Middleware/Koa/firstMiddleware//:first',
@@ -179,7 +179,7 @@ test('should work properly when used along with non-route middleware', (t, end) 
   app.use(second)
   app.use(third)
   agent.on('transactionFinished', function (tx) {
-    assertSegments(tx.trace.root, [
+    assertSegments(tx.trace, tx.trace.root, [
       'WebTransaction/WebFrameworkUri/Koa/GET//resource',
       [
         'Nodejs/Middleware/Koa/firstMiddleware',

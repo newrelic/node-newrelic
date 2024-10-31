@@ -103,13 +103,14 @@ test('using EJS templates', { timeout: 2000 }, (t, end) => {
   })
 
   function verifyEnded(root, tx) {
-    for (let i = 0, len = root.children.length; i < len; i++) {
-      const segment = root.children[i]
+    const children = tx.trace.getChildren(root.id)
+    for (let i = 0, len = children.length; i < len; i++) {
+      const segment = children[i]
       assert.ok(
         segment.timer.hasEnd(),
         util.format('verify %s (%s) has ended', segment.name, tx.id)
       )
-      if (segment.children) {
+      if (tx.trace.getChildren(segment.id)) {
         verifyEnded(segment, tx)
       }
     }

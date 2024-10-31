@@ -106,6 +106,7 @@ test.afterEach(afterEach)
       assert.equal(response.$metadata.requestId, expected.headers['x-amzn-requestid'])
       assert.deepEqual(body, expected.body)
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['Llm/completion/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }
@@ -297,6 +298,7 @@ test.afterEach(afterEach)
       })
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['Llm/completion/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }
@@ -434,6 +436,7 @@ test(`ai21: should properly create errors on create completion (streamed)`, asyn
     })
 
     assertSegments(
+      tx.trace,
       tx.trace.root,
       [
         'Llm/completion/Bedrock/InvokeModelWithResponseStreamCommand',
@@ -497,6 +500,7 @@ test(`models that do not support streaming should be handled`, async (t) => {
     })
 
     assertSegments(
+      tx.trace,
       tx.trace.root,
       [
         'Llm/embedding/Bedrock/InvokeModelWithResponseStreamCommand',

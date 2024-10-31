@@ -36,10 +36,9 @@ test('setImmediate: segments', async function (t) {
   helper.runInTransaction(agent, function transactionWrapper(tx) {
     timers.setImmediate(function anonymous() {
       plan.equal(agent.getTransaction().id, tx.id, 'should be in expected transaction')
-      plan.ok(
-        !agent.getTransaction().trace.root.children.length,
-        'should not have any segment for setImmediate'
-      )
+      const transaction = agent.getTransaction()
+      const children = transaction.trace.getChildren(transaction.trace.root.id)
+      plan.equal(children.length, 0)
     })
   })
 
@@ -118,15 +117,13 @@ test('setImmediate: should not propagate segments for ended transaction', async 
     helper.runInSegment(agent, 'test-segment', () => {
       const segment = agent.tracer.getSegment()
       plan.notEqual(segment.name, 'test-segment')
-      plan.equal(segment.children.length, 0, 'should not propagate segments when transaction ends')
+      const children = transaction.trace.getChildren(segment.id)
+      plan.equal(children.length, 0, 'should not propagate segments when transaction ends')
       setImmediate(() => {
         const segment = agent.tracer.getSegment()
         plan.notEqual(segment.name, 'test-segment')
-        plan.equal(
-          segment.children.length,
-          0,
-          'should not propagate segments when transaction ends'
-        )
+        const children = transaction.trace.getChildren(segment.id)
+        plan.equal(children.length, 0, 'should not propagate segments when transaction ends')
       })
     })
   })
@@ -158,7 +155,8 @@ test('global setImmediate', function testSetImmediate(t, end) {
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     setImmediate(function anonymous() {
       assert.equal(agent.getTransaction(), transaction)
-      assert.equal(agent.getTransaction().trace.root.children.length, 0)
+      const children = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(children.length, 0)
       end()
     })
   })
@@ -180,7 +178,8 @@ test('nextTick', async function testNextTick(t) {
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(function callback() {
       plan.equal(agent.getTransaction(), transaction)
-      plan.equal(agent.getTransaction().trace.root.children.length, 0)
+      const children = transaction.trace.getChildren(transaction.trace.root.id)
+      plan.equal(children.length, 0)
     })
   })
 
@@ -196,7 +195,8 @@ test('nextTick with extra args', async function testNextTick(t) {
     process.nextTick(
       function callback() {
         plan.equal(agent.getTransaction(), transaction)
-        plan.equal(agent.getTransaction().trace.root.children.length, 0)
+        const children = transaction.trace.getChildren(transaction.trace.root.id)
+        plan.equal(children.length, 0)
         plan.deepEqual([].slice.call(arguments), [1, 2, 3])
         process.nextTick = original
       },
@@ -225,7 +225,8 @@ test('clearImmediate', (t, end) => {
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(function callback() {
       const timer2 = setImmediate(assert.fail)
-      assert.ok(!transaction.trace.root.children[0])
+      const children = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(children.length, 0)
       clearImmediate(timer2)
       setImmediate(end)
     })
@@ -248,7 +249,7 @@ test('clearTimeout should ignore segment created for timer', async (t) => {
     process.nextTick(function callback() {
       const timer = setTimeout(plan.fail)
 
-      const timerSegment = transaction.trace.root.children[0]
+      const [timerSegment] = transaction.trace.getChildren(transaction.trace.root.id)
       plan.equal(timerSegment.name, 'timers.setTimeout')
       plan.equal(timerSegment.ignore, false)
 
@@ -272,7 +273,7 @@ test('clearTimeout should not ignore parent segment when opaque', async (t) => {
         segment.opaque = true
 
         const timer = setTimeout(plan.fail)
-        const parentSegment = transaction.trace.root.children[0]
+        const [parentSegment] = transaction.trace.getChildren(transaction.trace.root.id)
         plan.equal(parentSegment.name, expectedParentName)
         plan.equal(parentSegment.ignore, false)
 
@@ -298,7 +299,7 @@ test('clearTimeout should not ignore parent segment when internal', async (t) =>
 
         const timer = setTimeout(plan.fail)
 
-        const parentSegment = transaction.trace.root.children[0]
+        const [parentSegment] = transaction.trace.getChildren(transaction.trace.root.id)
         plan.equal(parentSegment.name, expectedParentName)
         plan.equal(parentSegment.ignore, false)
 

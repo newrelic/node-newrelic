@@ -77,16 +77,18 @@ test('ioredis instrumentation', async (t) => {
 
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
-      plan.equal(root.children.length, 2, 'root has two children')
+      const children = tx.trace.getChildren(root.id)
+      plan.equal(children.length, 2, 'root has two children')
 
-      const setSegment = root.children[0]
+      const [setSegment, getSegment] = children
+
       plan.equal(setSegment.name, 'Datastore/operation/Redis/set')
 
       // ioredis operations return promise, any 'then' callbacks will be sibling segments
       // of the original redis call
-      const getSegment = root.children[1]
       plan.equal(getSegment.name, 'Datastore/operation/Redis/get')
-      plan.equal(getSegment.children.length, 0, 'should not contain any segments')
+      const getChildren = tx.trace.getChildren(getSegment.id)
+      plan.equal(getChildren.length, 0, 'should not contain any segments')
     })
 
     helper.runInTransaction(agent, async (transaction) => {

@@ -280,9 +280,12 @@ test('getSegment', async function testGetTransaction(t) {
     plan.equal(tracer.getSegment(), root)
 
     setTimeout(function onTimeout() {
-      const segment = root.children[0].children[0]
-      plan.equal(tracer.getSegment(), segment)
-      plan.equal(tracer.getSegment().name, 'Callback: onTimeout')
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      const [setTimeoutCb] = transaction.trace.getChildren(child.id)
+      const segment = tracer.getSegment()
+
+      plan.equal(segment, setTimeoutCb)
+      plan.equal(segment.name, 'Callback: onTimeout')
     }, 0)
   })
 
@@ -371,12 +374,15 @@ test('addSegment', async function addSegmentTest(t) {
 
     plan.equal(segment.name, 'inside')
     root = transaction.trace.root
-    plan.equal(root.children[0], segment)
+    let [child] = transaction.trace.getChildren(root.id)
+    plan.equal(child, segment)
+
 
     const outside = tracer.addSegment('outside', null, root, false, check)
+    ;[, child] = transaction.trace.getChildren(root.id)
 
     plan.equal(outside.name, 'outside')
-    plan.equal(root.children[1], outside)
+    plan.equal(child, outside)
   })
 
   function check(segment) {
@@ -399,7 +405,9 @@ test('addSegment + recorder', async function addSegmentTest(t) {
 
     plan.equal(segment.name, 'inside')
     plan.equal(segment.timer.hrDuration, null)
-    plan.equal(root.children[0], segment)
+    const [child] = transaction.trace.getChildren(root.id)
+    plan.equal(child, segment)
+
     transaction.end()
   })
 
@@ -429,7 +437,9 @@ test('addSegment + full', async function addSegmentTest(t) {
 
     plan.equal(segment.name, 'inside')
     plan.ok(segment.timer.hrDuration)
-    plan.equal(root.children[0], segment)
+    const [child] = transaction.trace.getChildren(root.id)
+    plan.equal(child, segment)
+
     transaction.end()
   })
 
@@ -612,12 +622,14 @@ test('wrapFunction', async function testwrapFunction(t) {
   function makeCallback(val) {
     return function callback(parent, arg) {
       const segment = tracer.getSegment()
+      const transaction = tracer.getTransaction()
       plan.equal(arg, val)
       plan.equal(this, inner)
       if (parent) {
+        const children = transaction.trace.getChildren(parent.id)
         plan.ok(segment.timer.hrstart)
         plan.ok(!segment.timer.hrDuration)
-        plan.notEqual(parent.children.indexOf(segment), -1)
+        plan.notEqual(children.indexOf(segment), -1)
       }
 
       return val
@@ -638,8 +650,10 @@ test('wrapFunction', async function testwrapFunction(t) {
 
     plan.equal(this, outer)
     process.nextTick(function next() {
+      let children
       if (segment) {
-        plan.equal(segment.children.length, 0)
+        children = transaction.trace.getChildren(segment.id)
+        plan.equal(children.length, 0)
       }
 
       plan.equal(a.call(inner, segment, 'a'), 'a')
@@ -647,7 +661,8 @@ test('wrapFunction', async function testwrapFunction(t) {
       plan.equal(c.call(inner, segment, 'c'), 'c')
 
       if (segment) {
-        segment.children.forEach(function (child) {
+        children = transaction.trace.getChildren(segment.id)
+        children.forEach(function (child) {
           plan.ok(child.timer.hrstart)
           plan.ok(child.timer.hrDuration)
         })
@@ -706,13 +721,15 @@ test('wrapFunctionLast', async function testwrapFunctionLast(t) {
 
   function callback(parent, callbackArgs) {
     const segment = tracer.getSegment()
+    const transaction = tracer.getTransaction()
     plan.deepEqual(callbackArgs, [1, 2, 3])
     plan.equal(this, inner)
 
     if (parent) {
       plan.ok(segment.timer.hrstart)
       plan.ok(!segment.timer.hrDuration)
-      plan.equal(parent.children[0], segment)
+      const [child] = transaction.trace.getChildren(parent.id)
+      plan.equal(child, segment)
     }
 
     return innerReturn
@@ -734,16 +751,19 @@ test('wrapFunctionLast', async function testwrapFunctionLast(t) {
 
     plan.equal(this, outer)
     process.nextTick(function next() {
+      let children
       if (segment) {
-        plan.equal(segment.children.length, 0)
+        children = transaction.trace.getChildren(segment.id)
+        plan.equal(children.length, 0)
       }
 
       plan.equal(cb.call(inner, segment, cbArgs), innerReturn)
 
       if (segment) {
-        plan.equal(segment.children.length, 1)
-        plan.ok(segment.children[0].timer.hrstart)
-        plan.ok(segment.children[0].timer.hrDuration)
+        children = transaction.trace.getChildren(segment.id)
+        plan.equal(children.length, 1)
+        plan.ok(children[0].timer.hrstart)
+        plan.ok(children[0].timer.hrDuration)
         plan.ok(segment.timer.hrDuration)
         transaction.end()
       }
@@ -781,13 +801,15 @@ test('wrapFunctionFirst', async function testwrapFunctionFirst(t) {
 
   function callback(parent, args) {
     const segment = tracer.getSegment()
+    const transaction = tracer.getTransaction()
     plan.deepEqual(args, [1, 2, 3])
     plan.equal(this, inner)
 
     if (parent) {
       plan.ok(segment.timer.hrstart)
       plan.ok(!segment.timer.hrDuration)
-      plan.equal(parent.children[0], segment)
+      const [child] = transaction.trace.getChildren(parent.id)
+      plan.equal(child, segment)
     }
 
     return innerReturn
@@ -808,16 +830,19 @@ test('wrapFunctionFirst', async function testwrapFunctionFirst(t) {
 
     plan.equal(this, outer)
     process.nextTick(function next() {
+      let children
       if (segment) {
-        plan.equal(segment.children.length, 0)
+        children = transaction.trace.getChildren(segment.id)
+        plan.equal(children.length, 0)
       }
 
       plan.equal(cb.call(inner, segment, args), innerReturn)
 
       if (segment) {
-        plan.equal(segment.children.length, 1)
-        plan.ok(segment.children[0].timer.hrstart)
-        plan.ok(segment.children[0].timer.hrDuration)
+        children = transaction.trace.getChildren(segment.id)
+        plan.equal(children.length, 1)
+        plan.ok(children[0].timer.hrstart)
+        plan.ok(children[0].timer.hrDuration)
         plan.ok(segment.timer.hrDuration)
         transaction.end()
       }
@@ -843,8 +868,9 @@ test('wrapSyncFunction', async function testwrapSyncFunction(t) {
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     wrapped(transaction, [4], 4)
-    plan.ok(transaction.trace.root.children[0].timer.hrstart)
-    plan.ok(transaction.trace.root.children[0].timer.hrDuration)
+    const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+    plan.ok(child.timer.hrstart)
+    plan.ok(child.timer.hrDuration)
     transaction.end()
   })
 
@@ -859,7 +885,8 @@ test('wrapSyncFunction', async function testwrapSyncFunction(t) {
   }
 
   function record(segment, scope, transaction) {
-    plan.equal(segment, transaction.trace.root.children[0])
+    const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+    plan.equal(segment, child)
     plan.equal(segment.name, 'my segment')
   }
 })

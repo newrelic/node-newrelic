@@ -58,7 +58,7 @@ test('Basic run through prisma functionality', { timeout: 30 * 1000 }, async (t)
       await helper.runInTransaction(agent, async (tx) => {
         const users = await upsertUsers(prisma)
         assert.equal(users.length, 2, 'should get two users')
-        const findManySegment = findSegment(tx.trace.root, findMany)
+        const findManySegment = findSegment(tx.trace, tx.trace.root, findMany)
         const attributes = findManySegment.getAttributes()
         assert.ok(!attributes.host, 'should not have a host set')
         assert.ok(!attributes.port_path_or_id, 'should not have a port set')
@@ -79,7 +79,7 @@ test('Basic run through prisma functionality', { timeout: 30 * 1000 }, async (t)
         const users = await query
         assert.equal(users.length, 2, 'should get two users')
         tx.end()
-        const rawSegment = findSegment(tx.trace.root, raw)
+        const rawSegment = findSegment(tx.trace, tx.trace.root, raw)
         assert.ok(rawSegment, `segment named ${raw} should exist`)
       })
     }
@@ -96,7 +96,7 @@ test('Basic run through prisma functionality', { timeout: 30 * 1000 }, async (t)
         const count = await query
         assert.equal(count, 2, 'should modify two users')
         tx.end()
-        const rawSegment = findSegment(tx.trace.root, rawUpdate)
+        const rawSegment = findSegment(tx.trace, tx.trace.root, rawUpdate)
         assert.ok(rawSegment, `segment named ${rawUpdate} should exist`)
       })
     }

@@ -44,12 +44,7 @@ test('MessageShim', async function (t) {
       withNested: function () {
         const transaction = agent.tracer.getTransaction()
         const segment = agent.tracer.getSegment()
-        segment.add({
-          config: agent.config,
-          name: 'ChildSegment',
-          root: transaction.trace.root
-        })
-
+        transaction.trace.add('ChildSegment', null, segment)
         return segment
       }
     }
@@ -329,12 +324,13 @@ test('MessageShim', async function (t) {
         return new MessageSpec({ destinationName: 'foobar', opaque: false })
       })
 
-      helper.runInTransaction(agent, () => {
+      helper.runInTransaction(agent, (tx) => {
         const segment = wrappable.withNested()
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
 
-        assert.equal(segment.children.length, 1)
-        const [childSegment] = segment.children
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 1)
+        const [childSegment] = children
         assert.equal(childSegment.name, 'ChildSegment')
         end()
       })
@@ -346,11 +342,12 @@ test('MessageShim', async function (t) {
         return new MessageSpec({ destinationName: 'foobar', opaque: true })
       })
 
-      helper.runInTransaction(agent, () => {
+      helper.runInTransaction(agent, (tx) => {
         const segment = wrappable.withNested()
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
 
-        assert.equal(segment.children.length, 0)
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 0)
         end()
       })
     })
@@ -623,12 +620,13 @@ test('MessageShim', async function (t) {
         return new MessageSpec({ destinationName: 'foobar', opaque: false })
       })
 
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const segment = wrappable.withNested()
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
 
-        assert.equal(segment.children.length, 1)
-        const [childSegment] = segment.children
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 1)
+        const [childSegment] = children
         assert.equal(childSegment.name, 'ChildSegment')
         end()
       })
@@ -640,10 +638,11 @@ test('MessageShim', async function (t) {
         return new MessageSpec({ destinationName: 'foobar', opaque: true })
       })
 
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const segment = wrappable.withNested()
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
-        assert.equal(segment.children.length, 0)
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 0)
         end()
       })
     })
@@ -1213,11 +1212,12 @@ test('MessageShim', async function (t) {
 
     await t.test('should bind the subscribe callback', function (t, end) {
       const { agent, shim, wrapped } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
+        const { trace } = tx
         const parent = wrapped('my.queue', null, function subCb() {
           const segment = shim.getSegment()
           assert.equal(segment.name, 'Callback: subCb')
-          compareSegments(parent, [segment])
+          compareSegments({ parent, segments: [segment], trace })
           end()
         })
         assert.ok(parent)
