@@ -35,7 +35,7 @@ test('Express router introspection', async function (t) {
     plan.equal(transaction.verb, 'GET', 'HTTP method is GET')
     plan.ok(transaction.trace, 'transaction has trace')
 
-    const web = transaction.trace.root.children[0]
+    const [web] = transaction.trace.getChildren(transaction.trace.root.id)
     plan.ok(web, 'trace has web segment')
     plan.equal(web.name, transaction.name, 'segment name and transaction name match')
 

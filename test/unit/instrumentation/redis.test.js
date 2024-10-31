@@ -184,7 +184,7 @@ test('createClient saves connection options', async function (t) {
     helper.runInTransaction(agent, async function (tx) {
       await client.queue.addCommand(['test', 'key', 'value'])
       await client2.queue.addCommand(['test2', 'key2', 'value2'])
-      const [redisSegment, redisSegment2] = tx.trace.root.children
+      const [redisSegment, redisSegment2] = tx.trace.getChildren(tx.trace.root.id)
       const attrs = redisSegment.getAttributes()
       assert.deepEqual(
         attrs,

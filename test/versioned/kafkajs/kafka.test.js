@@ -61,27 +61,27 @@ test('send records correctly', async (t) => {
   const expectedName = 'produce-tx'
 
   agent.on('transactionFinished', (tx) => {
-    if (tx.name !== expectedName) {
-      return
+    if (tx.name === expectedName) {
+      const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
+      const segment = tx.agent.tracer.getSegment()
+      const children = tx.trace.getChildren(segment.id)
+
+      const foundSegment = children.find((s) => s.name.endsWith(topic))
+      plan.equal(foundSegment.name, name)
+
+      const metric = tx.metrics.getMetric(name)
+      plan.equal(metric.callCount, 1)
+      const sendMetric = agent.metrics.getMetric(
+        'Supportability/Features/Instrumentation/kafkajs/send'
+      )
+      plan.equal(sendMetric.callCount, 1)
+
+      const produceTrackingMetric = agent.metrics.getMetric(
+        `MessageBroker/Kafka/Nodes/${broker}/Produce/${topic}`
+      )
+      plan.equal(produceTrackingMetric.callCount, 1)
     }
 
-    const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
-    const segment = tx.agent.tracer.getSegment()
-
-    const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
-    plan.equal(foundSegment.name, name)
-
-    const metric = tx.metrics.getMetric(name)
-    plan.equal(metric.callCount, 1)
-    const sendMetric = agent.metrics.getMetric(
-      'Supportability/Features/Instrumentation/kafkajs/send'
-    )
-    plan.equal(sendMetric.callCount, 1)
-
-    const produceTrackingMetric = agent.metrics.getMetric(
-      `MessageBroker/Kafka/Nodes/${broker}/Produce/${topic}`
-    )
-    plan.equal(produceTrackingMetric.callCount, 1)
   })
 
   helper.runInTransaction(agent, async (tx) => {
@@ -192,8 +192,9 @@ test('sendBatch records correctly', async (t) => {
     if (tx.name === expectedName) {
       const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
       const segment = tx.agent.tracer.getSegment()
+      const children = tx.trace.getChildren(segment.id)
 
-      const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
+      const foundSegment = children.find((s) => s.name.endsWith(topic))
       plan.equal(foundSegment.name, name)
 
       const metric = tx.metrics.getMetric(name)
@@ -306,6 +307,7 @@ test('consume inside of a transaction', async (t) => {
       txCount++
       if (tx.name === expectedName) {
         assertSegments(
+          tx.trace,
           tx.trace.root,
           [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`],
           {
@@ -362,6 +364,7 @@ test('consume batch inside of a transaction', async (t) => {
   const txPromise = new Promise((resolve) => {
     agent.on('transactionFinished', (tx) => {
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`],
         { exact: false },

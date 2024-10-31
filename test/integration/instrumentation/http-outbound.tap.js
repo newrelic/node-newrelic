@@ -30,11 +30,11 @@ tap.test('external requests', function (t) {
 
     notVeryReliable.listen(0)
 
-    helper.runInTransaction(agent, function inTransaction() {
+    helper.runInTransaction(agent, function inTransaction(tx) {
       const req = http.get(notVeryReliable.address())
 
       req.on('error', function onError() {
-        const segment = agent.tracer.getTransaction().trace.root.children[0]
+        const [segment] = tx.trace.getChildren(tx.trace.root.id)
 
         t.equal(
           segment.name,
@@ -82,7 +82,7 @@ tap.test('external requests', function (t) {
     })
 
     function check(tx) {
-      const external = tx.trace.root.children[0]
+      const [external] = tx.trace.getChildren(tx.trace.root.id)
       t.equal(
         external.name,
         'External/localhost:' + server.address().port + '/some/path',
@@ -90,21 +90,24 @@ tap.test('external requests', function (t) {
       )
       t.ok(external.timer.start, 'should have started')
       t.ok(external.timer.hasEnd(), 'should have ended')
-      t.ok(external.children.length, 'should have children')
+      const externalChildren = tx.trace.getChildren(external.id)
+      t.ok(externalChildren.length, 'should have children')
 
-      let connect = external.children[0]
+      let connect = externalChildren[0]
       t.equal(connect.name, 'http.Agent#createConnection', 'should be connect segment')
-      t.equal(connect.children.length, 1, 'connect should have 1 child')
+      let connectChildren = tx.trace.getChildren(connect.id)
+      t.equal(connectChildren.length, 1, 'connect should have 1 child')
 
       // There is potentially an extra layer of create/connect segments.
-      if (connect.children[0].name === 'net.Socket.connect') {
-        connect = connect.children[0]
+      if (connectChildren[0].name === 'net.Socket.connect') {
+        connect = connectChildren[0]
       }
+      connectChildren = tx.trace.getChildren(connect.id)
 
-      const dnsLookup = connect.children[0]
+      const dnsLookup = connectChildren[0]
       t.equal(dnsLookup.name, 'dns.lookup', 'should be dns.lookup segment')
 
-      const callback = external.children[external.children.length - 1]
+      const callback = externalChildren[externalChildren.length - 1]
       t.equal(callback.name, 'timers.setTimeout', 'should have timeout segment')
 
       t.end()
@@ -133,7 +136,8 @@ tap.test('external requests', function (t) {
       const req = http.get(opts, function onResponse(res) {
         res.resume()
         res.once('end', function () {
-          const segment = agent.tracer.getTransaction().trace.root.children[0]
+          const { trace } = agent.tracer.getTransaction()
+          const [segment] = trace.getChildren(trace.root.id)
           t.equal(
             segment.name,
             `External/www.google.com/proxy/path`,
@@ -161,15 +165,16 @@ tap.test('external requests', function (t) {
     })
 
     function check() {
-      const root = agent.tracer.getTransaction().trace.root
-      const segment = root.children[0]
+      const tx = agent.getTransaction()
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
 
       t.equal(segment.name, 'External/example.com/', 'should be named')
       t.ok(segment.timer.start, 'should have started')
       t.ok(segment.timer.hasEnd(), 'should have ended')
-      t.equal(segment.children.length, 1, 'should have 1 child')
+      const segmentChildren = tx.trace.getChildren(segment.id)
+      t.equal(segmentChildren.length, 1, 'should have 1 child')
 
-      const notDuped = segment.children[0]
+      const notDuped = segmentChildren[0]
       t.not(
         notDuped.name,
         segment.name,
@@ -206,7 +211,7 @@ tap.test('external requests', function (t) {
       http.get('http://example.com', (res) => {
         res.resume()
         res.on('end', () => {
-          const segment = tx.trace.root.children[0]
+          const [segment] = tx.trace.getChildren(tx.trace.root.id)
           t.equal(segment.name, 'External/example.com/', 'should create external segment')
           t.end()
         })
@@ -220,7 +225,7 @@ tap.test('external requests', function (t) {
       const req = http.get('http://example.com', (res) => {
         res.resume()
         res.on('end', () => {
-          const segment = tx.trace.root.children[0]
+          const [segment] = tx.trace.getChildren(tx.trace.root.id)
           const attrs = segment.getAttributes()
           t.same(attrs, {
             url: 'http://example.com/',

@@ -9,18 +9,21 @@
  * Verifies the expected length of children segments and that every
  * id matches between a segment array and the children
  *
- * @param {Object} parent trace
- * @param {Array} segments list of expected segments
- * @param {object} [deps] Injected dependencies.
- * @param {object} [deps.assert] Assertion library to use.
+ * @param {object} params to function
+ * @param {TraceSegment} params.parent segment
+ * @param {Array} params.segments list of expected segments
+ * @param {Trace} params.trace transaction trace
+ * @param {object} [params.assert] Assertion library to use.
  */
-module.exports = function compareSegments(
+module.exports = function compareSegments({
   parent,
   segments,
-  { assert = require('node:assert') } = {}
-) {
-  assert.ok(parent.children.length, segments.length, 'should be the same amount of children')
+  trace,
+  assert = require('node:assert')
+}) {
+  const parentChildren = trace.getChildren(parent.id)
+  assert.ok(parentChildren.length, segments.length, 'should be the same amount of children')
   segments.forEach((segment, index) => {
-    assert.equal(parent.children[index].id, segment.id, 'should have same ids')
+    assert.equal(parentChildren[index].id, segment.id, 'should have same ids')
   })
 }

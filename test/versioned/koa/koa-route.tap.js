@@ -30,7 +30,7 @@ tap.test('koa-route instrumentation', function (t) {
     })
     app.use(first)
     agent.on('transactionFinished', function (tx) {
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'WebTransaction/WebFrameworkUri/Koa/GET//resource',
         ['Nodejs/Middleware/Koa/firstMiddleware//resource']
       ])
@@ -56,7 +56,7 @@ tap.test('koa-route instrumentation', function (t) {
     app.use(first)
     app.use(second)
     agent.on('transactionFinished', function (tx) {
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'WebTransaction/WebFrameworkUri/Koa/GET//:second',
         [
           'Nodejs/Middleware/Koa/firstMiddleware//:first',
@@ -86,7 +86,7 @@ tap.test('koa-route instrumentation', function (t) {
     app.use(first)
     app.use(second)
     agent.on('transactionFinished', function (tx) {
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'WebTransaction/WebFrameworkUri/Koa/GET//:first',
         [
           'Nodejs/Middleware/Koa/firstMiddleware//:first',
@@ -115,7 +115,7 @@ tap.test('koa-route instrumentation', function (t) {
     app.use(first)
     app.use(second)
     agent.on('transactionFinished', function (tx) {
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'WebTransaction/WebFrameworkUri/Koa/GET//:first',
         ['Nodejs/Middleware/Koa/firstMiddleware//:first']
       ])
@@ -140,7 +140,7 @@ tap.test('koa-route instrumentation', function (t) {
     app.use(first)
     app.use(second)
     agent.on('transactionFinished', function (tx) {
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'WebTransaction/WebFrameworkUri/Koa/GET//:second',
         [
           'Nodejs/Middleware/Koa/firstMiddleware//:first',
@@ -173,7 +173,7 @@ tap.test('koa-route instrumentation', function (t) {
     app.use(second)
     app.use(third)
     agent.on('transactionFinished', function (tx) {
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'WebTransaction/WebFrameworkUri/Koa/GET//resource',
         [
           'Nodejs/Middleware/Koa/firstMiddleware',

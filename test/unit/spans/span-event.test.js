@@ -62,7 +62,8 @@ test('fromSegment()', async (t) => {
       transaction.priority = 42
 
       setTimeout(() => {
-        const segment = agent.tracer.getTransaction().trace.root.children[0]
+        const tx = agent.tracer.getTransaction()
+        const [segment] = tx.trace.getChildren(tx.trace.root.id)
         segment.addSpanAttribute('SpiderSpan', 'web')
         segment.addSpanAttribute('host', 'my-host')
         segment.addSpanAttribute('port', 222)
@@ -135,7 +136,8 @@ test('fromSegment()', async (t) => {
       https.get('https://example.com?foo=bar', (res) => {
         res.resume()
         res.on('end', () => {
-          const segment = agent.tracer.getTransaction().trace.root.children[0]
+          const tx = agent.tracer.getTransaction()
+          const [segment] = tx.trace.getChildren(tx.trace.root.id)
           const span = SpanEvent.fromSegment(segment, transaction, 'parent')
 
           // Should have all the normal properties.
@@ -237,7 +239,7 @@ test('fromSegment()', async (t) => {
 
       dsConn.myDbOp(longQuery, () => {
         transaction.end()
-        const segment = transaction.trace.root.children[0]
+        const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
         const span = SpanEvent.fromSegment(segment, transaction, 'parent')
 
         // Should have all the normal properties.
@@ -357,7 +359,7 @@ test('fromSegment()', async (t) => {
 
         res.resume()
         res.on('end', () => {
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           assert.ok(segment.name.startsWith('Truncated'))
 
           const span = SpanEvent.fromSegment(segment, transaction)

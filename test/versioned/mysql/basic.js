@@ -15,6 +15,7 @@ const urltils = require('../../../lib/util/urltils')
 const params = require('../../lib/params')
 const setup = require('./setup')
 const { getClient } = require('./utils')
+const { findSegment } = require('../../lib/metrics_helper')
 
 module.exports = function ({ lib, factory, poolFactory, constants }) {
   const { USER, DATABASE, TABLE } = constants
@@ -137,7 +138,7 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
     await t.test('ensure database name changes with a use statement', function (t, end) {
       const { agent, pool } = t.nr
       assert.ok(!agent.getTransaction(), 'no transaction should be in play yet')
-      helper.runInTransaction(agent, function transactionInScope() {
+      helper.runInTransaction(agent, function transactionInScope(tx) {
         assert.ok(agent.getTransaction(), 'we should be in a transaction')
         getClient(pool, function (err, client) {
           assert.ok(!err)
@@ -148,7 +149,7 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
               assert.ok(!err, 'should not fail to set database')
 
               client.query('SELECT 1 + 1 AS solution', function (err) {
-                const seg = agent.tracer.getSegment().parent
+                const seg = tx.trace.getParent(agent.tracer.getSegment().parentId)
                 const attributes = seg.getAttributes()
 
                 assert.ok(!err, 'no errors')
@@ -239,7 +240,7 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
             assert.ok(results && ended, 'result and end events should occur')
             const traceRoot = transaction.trace.root
             const traceRootDuration = traceRoot.timer.getDurationInMillis()
-            const segment = findSegment(traceRoot, 'Datastore/statement/MySQL/unknown/select')
+            const segment = findSegment(transaction.trace, traceRoot, 'Datastore/statement/MySQL/unknown/select')
             const queryNodeDuration = segment.timer.getDurationInMillis()
 
             assert.ok(
@@ -282,20 +283,21 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
               const transaction = agent.getTransaction().end()
               pool.release(client)
               const traceRoot = transaction.trace.root
-              const querySegment = traceRoot.children[0]
+              const [querySegment] = transaction.trace.getChildren(traceRoot.id)
+              const queryChildren = transaction.trace.getChildren(querySegment.id)
               assert.equal(
-                querySegment.children.length,
+                queryChildren.length,
                 2,
                 'the query segment should have two children'
               )
 
-              const childSegment = querySegment.children[1]
+              const childSegment = queryChildren[1]
               assert.equal(
                 childSegment.name,
                 'Callback: endCallback',
                 'children should be callbacks'
               )
-              const grandChildSegment = childSegment.children[0]
+              const [grandChildSegment] = transaction.trace.getChildren(childSegment.id)
               assert.equal(
                 grandChildSegment.name,
                 'timers.setTimeout',
@@ -366,7 +368,7 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
             client.query('use test_db;', function (err) {
               assert.ok(!err)
               client.query('SELECT 1 + 1 AS solution', function (err) {
-                const seg = agent.tracer.getSegment().parent
+                const seg = txn.trace.getParent(agent.tracer.getSegment().parentId)
                 const attributes = seg.getAttributes()
                 assert.ok(!err)
                 assert.ok(seg, 'should have a segment')
@@ -391,13 +393,4 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
       })
     })
   })
-}
-
-function findSegment(root, segmentName) {
-  for (let i = 0; i < root.children.length; i++) {
-    const segment = root.children[i]
-    if (segment.name === segmentName) {
-      return segment
-    }
-  }
 }

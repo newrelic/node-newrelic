@@ -15,8 +15,10 @@ function QContext(t, agent) {
 }
 
 QContext.prototype.assertTransaction = function assertTransaction(transaction) {
-  this.test.equal(this.agent.getTransaction(), transaction)
-  this.test.equal(this.agent.getTransaction().trace.root.children.length, 0)
+  const tx = this.agent.getTransaction()
+  this.test.equal(tx, transaction)
+  const children = tx.trace.getChildren(tx.trace.root.id)
+  this.test.equal(children.length, 0)
 }
 
 test('q.ninvoke', function testQNInvoke(t) {

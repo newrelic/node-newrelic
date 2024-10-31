@@ -55,9 +55,10 @@ module.exports = function ({ factory, poolFactory, constants }) {
       const trace = transaction.trace
       plan.ok(trace, 'trace should exist')
       plan.ok(trace.root, 'root element should exist.')
-      plan.equal(trace.root.children.length, 1, 'There should be only one child.')
+      const children = trace.getChildren(trace.root.id)
+      plan.equal(children.length, 1, 'There should be only one child.')
 
-      const selectSegment = trace.root.children[0]
+      const selectSegment = children[0]
       plan.ok(selectSegment, 'trace segment for first SELECT should exist')
 
       plan.equal(
@@ -66,9 +67,12 @@ module.exports = function ({ factory, poolFactory, constants }) {
         'should register as SELECT'
       )
 
-      plan.equal(selectSegment.children.length, 1, 'should only have a callback segment')
-      plan.equal(selectSegment.children[0].name, 'Callback: <anonymous>')
-      plan.equal(selectSegment.children[0].children.length, 0)
+      const selectChildren = trace.getChildren(selectSegment.id)
+      plan.equal(selectChildren.length, 1, 'should only have a callback segment')
+      const cb = selectChildren[0]
+      plan.equal(cb.name, 'Callback: <anonymous>')
+      const cbChildren = trace.getChildren(cb.id)
+      plan.equal(cbChildren.length, 0)
     }
   })
 }
