@@ -33,7 +33,7 @@ test('recording database metrics', async (t) => {
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
-        recordQueryMetrics.bind(ps)(segment, 'TEST')
+        recordQueryMetrics.bind(ps)(segment, 'TEST', transaction)
         transaction.end()
 
         ctx.nr.metrics = transaction.metrics
@@ -101,7 +101,7 @@ test('recording database metrics', async (t) => {
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
-        recordQueryMetrics.bind(ps)(segment, 'TEST')
+        recordQueryMetrics.bind(ps)(segment, 'TEST', transaction)
         transaction.end()
 
         ctx.nr.metrics = transaction.metrics
@@ -166,7 +166,7 @@ test('recording database metrics', async (t) => {
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
-        recordQueryMetrics.bind(ps)(segment, null)
+        recordQueryMetrics.bind(ps)(segment, null, transaction)
         transaction.end()
 
         ctx.nr.metrics = transaction.metrics
@@ -229,7 +229,7 @@ test('recording database metrics', async (t) => {
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
-        recordQueryMetrics.bind(ps)(segment, null)
+        recordQueryMetrics.bind(ps)(segment, null, transaction)
         transaction.end()
 
         ctx.nr.metrics = transaction.metrics
@@ -298,13 +298,13 @@ test('recording slow queries', async (t) => {
       ctx.nr.segment = segment
 
       segment.setDurationInMillis(503)
-      recordQueryMetrics.bind(ps)(segment, 'TEST')
+      recordQueryMetrics.bind(ps)(segment, 'TEST', transaction)
 
       const ps2 = new ParsedStatement('MySql', 'select', 'foo', 'select * from foo where b=2')
 
       const segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
-      recordQueryMetrics.bind(ps2)(segment2, 'TEST')
+      recordQueryMetrics.bind(ps2)(segment2, 'TEST', transaction)
 
       transaction.end()
     })
@@ -359,13 +359,13 @@ test('recording slow queries', async (t) => {
       ctx.nr.segment = segment
 
       segment.setDurationInMillis(503)
-      recordQueryMetrics.bind(ps)(segment, 'TEST')
+      recordQueryMetrics.bind(ps)(segment, 'TEST', transaction)
 
       const ps2 = new ParsedStatement('MySql', 'select', null, 'select * from foo where b=2')
 
       const segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
-      recordQueryMetrics.bind(ps2)(segment2, 'TEST')
+      recordQueryMetrics.bind(ps2)(segment2, 'TEST', transaction)
 
       transaction.end()
     })
@@ -428,13 +428,13 @@ test('recording slow queries', async (t) => {
       ctx.nr.segment = segment
 
       segment.setDurationInMillis(503)
-      recordQueryMetrics.bind(ps)(segment, 'TEST')
+      recordQueryMetrics.bind(ps)(segment, 'TEST', transaction)
 
       const ps2 = new ParsedStatement('MySql', 'select', null, null)
 
       const segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
-      recordQueryMetrics.bind(ps2)(segment2, 'TEST')
+      recordQueryMetrics.bind(ps2)(segment2, 'TEST', transaction)
 
       transaction.end()
     })

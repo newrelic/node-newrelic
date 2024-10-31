@@ -20,22 +20,16 @@ suite.add({
   name: 'tracer.bindFunction',
   fn: function () {
     const test = shared.getTest()
-    return tracer.bindFunction(test.func, tx.root, true)
+    let ctx = tracer.getContext()
+    ctx = ctx.enterSegment({ transaction: tx, segment: tx.trace.root })
+    return tracer.bindFunction(test.func, ctx, true)
   }
 })
 
 suite.add({
   name: 'tracer.bindEmitter',
   fn: function () {
-    return tracer.bindEmitter(new EventEmitter(), tx.root)
-  }
-})
-
-suite.add({
-  name: 'tracer.wrapFunctionNoSegment',
-  fn: function () {
-    const test = shared.getTest()
-    return tracer.wrapFunctionNoSegment(test.func, 'func', function () {})
+    return tracer.bindEmitter(new EventEmitter(), tx.trace.root)
   }
 })
 
@@ -83,7 +77,7 @@ suite.add({
   name: 'tracer.wrapCallback',
   fn: function () {
     const test = shared.getTest()
-    return tracer.wrapCallback(test.func, tx.root, null)
+    return tracer.wrapCallback(test.func, tx.trace.root, null)
   }
 })
 

@@ -66,14 +66,13 @@ module.exports = function runTests(name, clientFactory) {
     setupClient.end()
   }
 
-  function verify(expect = assert, segment, selectTable) {
-    verifyMetrics(expect, segment, selectTable)
-    verifyTrace(expect, segment, selectTable)
-    verifyInstanceParameters(expect, segment)
+  function verify(expect = assert, transaction, selectTable) {
+    verifyMetrics(expect, transaction, selectTable)
+    verifyTrace(expect, transaction, selectTable)
+    verifyInstanceParameters(expect, transaction)
   }
 
-  function verifyMetrics(expect = assert, segment, selectTable) {
-    const transaction = segment.transaction
+  function verifyMetrics(expect = assert, transaction, selectTable) {
     const agent = transaction.agent
     selectTable = selectTable || TABLE
     expect.equal(
@@ -121,8 +120,7 @@ module.exports = function runTests(name, clientFactory) {
     )
   }
 
-  function verifyTrace(expect = assert, segment, selectTable) {
-    const transaction = segment.transaction
+  function verifyTrace(expect = assert, transaction, selectTable) {
     selectTable = selectTable || TABLE
     const trace = transaction.trace
 
@@ -152,8 +150,7 @@ module.exports = function runTests(name, clientFactory) {
     expect.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
   }
 
-  function verifyInstanceParameters(expect = assert, segment) {
-    const transaction = segment.transaction
+  function verifyInstanceParameters(expect = assert, transaction) {
     const agent = transaction.agent
     const trace = transaction.trace
 
@@ -261,7 +258,7 @@ module.exports = function runTests(name, clientFactory) {
               assert.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
-              verify(assert, agent.tracer.getSegment())
+              verify(assert, transaction)
               end()
             })
           })
@@ -303,7 +300,7 @@ module.exports = function runTests(name, clientFactory) {
           assert.ok(agent.getTransaction(), 'transaction should still still be visible')
           assert.equal(selectResults.rows[0][COL], colVal, 'Postgres client should still work')
           transaction.end()
-          verify(assert, agent.tracer.getSegment())
+          verify(assert, transaction) 
           end()
         } catch (err) {
           assert.ifError(err)
@@ -337,11 +334,11 @@ module.exports = function runTests(name, clientFactory) {
           })
 
           pgQuery.on('end', () => {
-            assert.ok(agent.getTransaction(), 'transaction should still be visible')
+            const finalTx = agent.getTransaction()
+            assert.ok(finalTx, 'transaction should still be visible')
+
             transaction.end()
 
-            const segment = agent.tracer.getSegment()
-            const finalTx = segment.transaction
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
             assert.ok(
               metrics.total > 2.0,
@@ -375,12 +372,12 @@ module.exports = function runTests(name, clientFactory) {
           const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
 
           const selectResults = await client.query(selQuery)
-          assert.ok(agent.getTransaction(), 'transaction should still still be visible')
+
+          const finalTx = agent.getTransaction()
+          assert.ok(finalTx, 'transaction should still be visible')
           assert.ok(selectResults, 'Postgres client should still work')
           transaction.end()
 
-          const segment = agent.tracer.getSegment()
-          const finalTx = segment.transaction
           const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
           assert.ok(
             metrics.total > 2.0,
@@ -413,12 +410,11 @@ module.exports = function runTests(name, clientFactory) {
 
           client.query(selQuery, function (error, ok) {
             assert.ifError(error)
-            assert.ok(agent.getTransaction(), 'transaction should still be visible')
+            const finalTx = agent.getTransaction()
+            assert.ok(finalTx, 'transaction should still be visible')
             assert.ok(ok, 'everything should be peachy after setting')
 
             transaction.end()
-            const segment = agent.tracer.getSegment()
-            const finalTx = segment.transaction
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
             assert.ok(
               metrics.total > 2.0,
@@ -460,7 +456,7 @@ module.exports = function runTests(name, clientFactory) {
 
             transaction.end()
             pool.end()
-            verify(plan, agent.tracer.getSegment())
+            verify(plan, transaction) 
           })
         })
       })
@@ -509,7 +505,7 @@ module.exports = function runTests(name, clientFactory) {
               }
 
               done(true)
-              verify(plan, agent.tracer.getSegment())
+              verify(plan, transaction) 
             })
           })
         })

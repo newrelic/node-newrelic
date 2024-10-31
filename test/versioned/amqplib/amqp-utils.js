@@ -277,11 +277,9 @@ function verifyPurge(tx) {
   assertMetrics(tx.metrics, [[{ name: 'MessageBroker/RabbitMQ/Queue/Purge/Temp' }]], false, false)
 }
 
-function verifyTransaction(tx, msg) {
-  const seg = tx.agent.tracer.getSegment()
-  if (seg) {
-    assert.equal(seg.transaction.id, tx.id, 'should have correct transaction in ' + msg)
-  }
+function verifyTransaction(agent, tx, msg) {
+  const transaction = agent.getTransaction()
+  assert.equal(transaction.id, tx.id, 'should have correct transaction in ' + msg)
 }
 
 function getChannel(amqplib, cb) {

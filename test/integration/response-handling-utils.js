@@ -58,7 +58,13 @@ function createTestData(agent, callback) {
   helper.runInTransaction(agent, (transaction) => {
     const segment = transaction.trace.add('MySegment')
     segment.overwriteDurationInMillis(1)
-    agent.queries.add(segment, 'mysql', 'select * from foo', new Error().stack)
+    agent.queries.add({
+      segment,
+      transaction,
+      type: 'mysql',
+      query: 'select * from foo',
+      trace: new Error().stack
+    })
 
     transaction.finalizeNameFromUri('/some/test/url', 200)
     transaction.end()

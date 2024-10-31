@@ -28,6 +28,7 @@ test('should create a LlmChatCompletionMessage event', (t, end) => {
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
       const chatMessageEvent = new LlmChatCompletionMessage({
+        transaction: tx,
         agent,
         segment,
         request: req,
@@ -51,6 +52,7 @@ test('should create a LlmChatCompletionMessage from response choices', (t, end) 
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
       const chatMessageEvent = new LlmChatCompletionMessage({
+        transaction: tx,
         agent,
         segment,
         request: req,
@@ -77,6 +79,7 @@ test('should set conversation_id from custom attributes', (t, end) => {
   helper.runInTransaction(agent, () => {
     api.addCustomAttribute('llm.conversation_id', conversationId)
     const chatMessageEvent = new LlmChatCompletionMessage({
+      transaction: {},
       agent,
       segment: {},
       request: {},
@@ -98,6 +101,7 @@ test('respects record_content', (t, end) => {
     const chatMessageEvent = new LlmChatCompletionMessage({
       agent,
       segment: {},
+      transaction: {},
       request: {},
       response: {}
     })
@@ -116,12 +120,13 @@ test('should use token_count from tokenCountCallback for prompt message', (t, en
     return expectedCount
   }
   api.setLlmTokenCountCallback(cb)
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
       delete chatRes.usage
       const chatMessageEvent = new LlmChatCompletionMessage({
+        transaction: tx,
         agent,
         segment,
         request: req,
@@ -146,7 +151,7 @@ test('should use token_count from tokenCountCallback for completion messages', (
     return expectedCount
   }
   api.setLlmTokenCountCallback(cb)
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
@@ -154,6 +159,7 @@ test('should use token_count from tokenCountCallback for completion messages', (
       const chatMessageEvent = new LlmChatCompletionMessage({
         agent,
         segment,
+        transaction: tx,
         request: req,
         response: chatRes,
         completionId: summaryId,
@@ -169,7 +175,7 @@ test('should use token_count from tokenCountCallback for completion messages', (
 test('should not set token_count if not set in usage nor a callback registered', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
@@ -177,6 +183,7 @@ test('should not set token_count if not set in usage nor a callback registered',
       const chatMessageEvent = new LlmChatCompletionMessage({
         agent,
         segment,
+        transaction: tx,
         request: req,
         response: chatRes,
         completionId: summaryId,
@@ -196,7 +203,7 @@ test('should not set token_count if not set in usage nor a callback registered r
     // empty cb
   }
   api.setLlmTokenCountCallback(cb)
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
@@ -204,6 +211,7 @@ test('should not set token_count if not set in usage nor a callback registered r
       const chatMessageEvent = new LlmChatCompletionMessage({
         agent,
         segment,
+        transaction: tx,
         request: req,
         response: chatRes,
         completionId: summaryId,
