@@ -36,7 +36,7 @@ test('should still record child segments if express instrumentation is disabled'
       assert.equal(tx.name, 'WebTransaction/NormalizedUri/*', 'should not name transactions')
       const rootSegment = tx.trace.root
       const expectedSegments = ['WebTransaction/NormalizedUri/*', ['Datastore/operation/Redis/get']]
-      assertSegments(rootSegment, expectedSegments)
+      assertSegments(tx.trace, rootSegment, expectedSegments)
       resolve()
     })
   })

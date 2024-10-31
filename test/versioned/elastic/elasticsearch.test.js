@@ -104,8 +104,7 @@ test('Elasticsearch instrumentation', async (t) => {
       assert.ok(transaction, 'transaction should be visible')
       await client.indices.create({ index })
       const trace = transaction.trace
-      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${index}/index.create`,
@@ -120,8 +119,7 @@ test('Elasticsearch instrumentation', async (t) => {
       await bulkInsert({ client, pkgVersion })
       assert.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
-      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/bulk.create',
@@ -145,10 +143,9 @@ test('Elasticsearch instrumentation', async (t) => {
       })
       assert.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
-      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      assert.ok(trace?.root?.children?.[1], 'trace, trace root, and second child should exist')
       // helper interface results in a first child of timers.setTimeout, with the second child related to the operation
-      const secondChild = trace.root.children[1]
+      const [firstChild, secondChild] = trace.getChildren(trace.root.id)
+      assert.ok(firstChild)
       assert.equal(
         secondChild.name,
         'Datastore/statement/ElasticSearch/any/bulk.create',
@@ -169,8 +166,7 @@ test('Elasticsearch instrumentation', async (t) => {
       assert.ok(search, 'search should return a result')
       assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${DB_INDEX_2}/search`,
@@ -205,8 +201,7 @@ test('Elasticsearch instrumentation', async (t) => {
       assert.ok(search, 'search should return a result')
       assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${DB_INDEX}/search`,
@@ -244,8 +239,7 @@ test('Elasticsearch instrumentation', async (t) => {
       assert.ok(search, 'search should return a result')
       assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/search',
@@ -293,8 +287,7 @@ test('Elasticsearch instrumentation', async (t) => {
       assert.equal(results?.[1]?.hits?.hits?.length, 8, 'second search should return ten results')
       assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/msearch.create',
@@ -335,8 +328,7 @@ test('Elasticsearch instrumentation', async (t) => {
       assert.equal(resultsB?.hits?.length, 8, 'second search should return ten results')
       assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
         'timers.setTimeout',
@@ -423,7 +415,7 @@ test('Elasticsearch instrumentation', async (t) => {
         ...documentProp
       })
 
-      const createSegment = transaction.trace.root.children[0]
+      const [createSegment] = transaction.trace.getChildren(transaction.trace.root.id)
       const attributes = createSegment.getAttributes()
       assert.equal(attributes.host, undefined, 'should not have host attribute')
       assert.equal(attributes.port_path_or_id, undefined, 'should not have port attribute')
@@ -446,7 +438,7 @@ test('Elasticsearch instrumentation', async (t) => {
       } catch (e) {
         assert.ok(e, 'should not be able to create an index named _search')
       }
-      const firstChild = transaction?.trace?.root?.children[0]
+      const [firstChild] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/_search/index.create',

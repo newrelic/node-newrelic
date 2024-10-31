@@ -108,7 +108,7 @@ test('non-error hooks', async (t) => {
         ]
       ]
     }
-    assertSegments(transaction.trace.root, expectedSegments)
+    assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
 
     txPassed = true
   })
@@ -168,7 +168,7 @@ test('error hook', async function errorHookTest(t) {
       ]
     }
 
-    assertSegments(transaction.trace.root, expectedSegments)
+    assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
 
     txPassed = true
   })

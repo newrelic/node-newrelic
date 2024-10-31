@@ -27,36 +27,6 @@ test('TraceSegment', async (t) => {
   t.beforeEach(beforeEach)
   t.afterEach(afterEach)
 
-  await t.test('should not add new children when marked as opaque', (t) => {
-    const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
-    const segment = new TraceSegment({
-      config: agent.config,
-      name: 'UnitTest',
-      collect: true,
-      root
-    })
-    assert.ok(!segment.opaque)
-    segment.opaque = true
-    segment.add({
-      config: agent.config,
-      name: 'child',
-      collect: true,
-      root
-    })
-    assert.equal(segment.children.length, 0)
-    segment.opaque = false
-    segment.add({
-      config: agent.config,
-      name: 'child',
-      collect: true,
-      root
-    })
-    assert.equal(segment.children.length, 1)
-    trans.end()
-  })
-
   await t.test('has a name', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
@@ -68,19 +38,6 @@ test('TraceSegment', async (t) => {
       root
     })
     assert.equal(success.name, 'UnitTest')
-  })
-
-  await t.test('is created with no children', (t) => {
-    const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
-    const segment = new TraceSegment({
-      config: agent.config,
-      name: 'UnitTest',
-      collect: true,
-      root
-    })
-    assert.equal(segment.children.length, 0)
   })
 
   await t.test('has a timer', (t) => {
@@ -202,7 +159,7 @@ test('TraceSegment', async (t) => {
       collect: true,
       root
     })
-    segment.toJSON()
+    transaction.trace.toJSON()
     assert.deepEqual(segment.getAttributes(), {})
   })
 
@@ -231,8 +188,9 @@ test('TraceSegment', async (t) => {
 
     trace.end()
 
-    // See documentation on TraceSegment.toJSON for what goes in which field.
-    assert.deepEqual(segment.toJSON(), [
+    // get serialized segment from trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, [
       3,
       17,
       'DB/select/getSome',
@@ -283,7 +241,7 @@ test('TraceSegment', async (t) => {
     segment.timer.start = 1001
     segment.overwriteDurationInMillis(3)
 
-    segment.finalize()
+    segment.finalize(transaction.trace)
 
     assert.equal(segment.name, `Truncated/${segmentName}`)
     assert.equal(root.getDurationInMillis(), 4)
@@ -299,17 +257,9 @@ test('with children created from URLs', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
-    const root = transaction.trace.root
-    const segment = trace.add('UnitTest')
-
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add({
-      config: ctx.nr.agent,
-      name: url,
-      collect: true,
-      root
-    })
+    const webChild = trace.add(url)
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
 
@@ -318,6 +268,7 @@ test('with children created from URLs', async (t) => {
 
     trace.end()
     ctx.nr.webChild = webChild
+    ctx.nr.trace = trace
   })
 
   t.afterEach(afterEach)
@@ -350,8 +301,10 @@ test('with children created from URLs', async (t) => {
   })
 
   await t.test('should serialize the segment with the parameters', (t) => {
-    const { webChild } = t.nr
-    assert.deepEqual(webChild.toJSON(), [
+    const { trace } = t.nr
+    // get serialized segment from trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, [
       0,
       1,
       'WebTransaction/NormalizedUri/*',
@@ -374,10 +327,7 @@ test('with parameters parsed out by framework', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
-    const root = trace.root
     trace.mer = 6
-
-    const segment = trace.add('UnitTest')
 
     const url = '/test'
     const params = {}
@@ -387,12 +337,7 @@ test('with parameters parsed out by framework', async (t) => {
     params[1] = 'another'
     params.test3 = '50'
 
-    const webChild = segment.add({
-      config: ctx.nr.agent.config,
-      name: url,
-      collect: true,
-      root
-    })
+    const webChild = trace.add(url)
     transaction.trace.attributes.addAttributes(DESTINATIONS.TRANS_SCOPE, params)
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
@@ -429,7 +374,7 @@ test('with parameters parsed out by framework', async (t) => {
   })
 
   await t.test('should serialize the segment with the parameters', (t) => {
-    const { webChild } = t.nr
+    const { trace } = t.nr
     const expected = [
       0,
       1,
@@ -442,7 +387,9 @@ test('with parameters parsed out by framework', async (t) => {
       },
       []
     ]
-    assert.deepEqual(webChild.toJSON(), expected)
+    // get serialized segment from trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, expected)
   })
 })
 
@@ -453,17 +400,9 @@ test('with attributes.enabled set to false', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
-    const root = trace.root
-    const segment = trace.add('UnitTest')
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add({
-      config: ctx.nr.agent.config,
-      name: url,
-      collect: true,
-
-      root
-    })
+    const webChild = trace.add(url)
     webChild.addAttribute('test', 'non-null value')
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
@@ -471,6 +410,7 @@ test('with attributes.enabled set to false', async (t) => {
     trace.setDurationInMillis(1, 0)
     webChild.setDurationInMillis(1, 0)
     ctx.nr.webChild = webChild
+    ctx.nr.trace = trace
   })
   t.afterEach(afterEach)
 
@@ -485,9 +425,11 @@ test('with attributes.enabled set to false', async (t) => {
   })
 
   await t.test('should serialize the segment without the parameters', (t) => {
-    const { webChild } = t.nr
+    const { trace } = t.nr
     const expected = [0, 1, 'WebTransaction/NormalizedUri/*', {}, []]
-    assert.deepEqual(webChild.toJSON(), expected)
+    // get serialized segment from trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, expected)
   })
 })
 
@@ -504,18 +446,9 @@ test('with attributes.enabled set', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
-    const root = trace.root
-    const segment = trace.add('UnitTest')
-
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add({
-      config: ctx.nr.agent.config,
-      name: url,
-      collect: true,
-
-      root
-    })
+    const webChild = trace.add(url)
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
     webChild.markAsWeb(transaction)
@@ -526,6 +459,7 @@ test('with attributes.enabled set', async (t) => {
     ctx.nr.webChild = webChild
 
     trace.end()
+    ctx.nr.trace = trace
   })
   t.afterEach(afterEach)
 
@@ -558,8 +492,10 @@ test('with attributes.enabled set', async (t) => {
   })
 
   await t.test('should serialize the segment with the parameters', (t) => {
-    const { webChild } = t.nr
-    assert.deepEqual(webChild.toJSON(), [
+    const { trace } = t.nr
+    // get the specific segment from serialized trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, [
       0,
       1,
       'WebTransaction/NormalizedUri/*',
@@ -578,12 +514,7 @@ test('when serialized', async (t) => {
     const agent = helper.loadMockedAgent()
     const transaction = new Transaction(agent)
     const root = transaction.trace.root
-    const segment = new TraceSegment({
-      config: agent.config,
-      name: 'UnitTest',
-      collect: true,
-      root
-    })
+    const segment = transaction.trace.add('UnitTest')
 
     ctx.nr = {
       agent,
@@ -600,9 +531,9 @@ test('when serialized', async (t) => {
   })
 
   await t.test('should create a plain JS array', (t) => {
-    const { segment } = t.nr
+    const { segment, transaction } = t.nr
     segment.end()
-    const js = segment.toJSON()
+    const js = transaction.trace.toJSON()[4][0]
 
     assert.ok(Array.isArray(js))
     assert.equal(typeof js[0], 'number')
@@ -614,25 +545,6 @@ test('when serialized', async (t) => {
 
     assert.ok(Array.isArray(js[4]))
     assert.equal(js[4].length, 0)
-  })
-
-  await t.test('should not cause a stack overflow', { timeout: 30000 }, (t) => {
-    const { segment, agent, root } = t.nr
-    let parent = segment
-    for (let i = 0; i < 9000; ++i) {
-      const child = new TraceSegment({
-        config: agent.config,
-        name: 'Child ' + i,
-        collect: true,
-        root
-      })
-      parent.children.push(child)
-      parent = child
-    }
-
-    assert.doesNotThrow(function () {
-      segment.toJSON()
-    })
   })
 })
 

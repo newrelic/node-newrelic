@@ -61,11 +61,19 @@ test('amazon-dax-client', async (t) => {
         const root = transaction.trace.root
 
         // Won't have the attributes cause not making web request...
-        const segments = common.getMatchingSegments(root, common.DATASTORE_PATTERN)
+        const segments = common.getMatchingSegments({
+          trace: transaction.trace,
+          segment: root,
+          pattern: common.DATASTORE_PATTERN
+        })
 
         assert.equal(segments.length, 1)
 
-        const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
+        const externalSegments = common.checkAWSAttributes({
+          trace: transaction.trace,
+          segment: root,
+          pattern: common.EXTERN_PATTERN
+        })
         assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
         const segment = segments[0]

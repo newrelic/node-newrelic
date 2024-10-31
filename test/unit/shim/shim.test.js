@@ -1113,7 +1113,9 @@ test('Shim', async function (t) {
 
       stream.on('foobar', function () {
         const emitSegment = shim.getSegment()
-        assert.equal(emitSegment.parent, stream.segment)
+        const tx = agent.tracer.getTransaction()
+        const children = tx.trace.getChildren(stream.segment.id)
+        assert.ok(children.includes(emitSegment))
         end()
       })
 
@@ -1130,28 +1132,32 @@ test('Shim', async function (t) {
         return new RecorderSpec({ name: 'test segment', stream: 'foobar' })
       })
 
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const ret = wrapped()
         assert.equal(ret, stream)
         // Emit the event and check the segment name.
-        assert.equal(stream.segment.children.length, 0)
+        let children = tx.trace.getChildren(stream.segment.id)
+        assert.equal(children.length, 0)
         stream.emit('foobar')
-        assert.equal(stream.segment.children.length, 1)
+        children = tx.trace.getChildren(stream.segment.id)
+        assert.equal(children.length, 1)
 
-        const [eventSegment] = stream.segment.children
+        const [eventSegment] = children
         assert.match(eventSegment.name, /Event callback: foobar/)
         assert.equal(eventSegment.getAttributes().count, 1)
 
         // Emit it again and see if the name updated.
         stream.emit('foobar')
-        assert.equal(stream.segment.children.length, 1)
-        assert.equal(stream.segment.children[0], eventSegment)
+        children = tx.trace.getChildren(stream.segment.id)
+        assert.equal(children.length, 1)
+        assert.equal(children[0], eventSegment)
         assert.equal(eventSegment.getAttributes().count, 2)
 
         // Emit it once more and see if the name updated again.
         stream.emit('foobar')
-        assert.equal(stream.segment.children.length, 1)
-        assert.equal(stream.segment.children[0], eventSegment)
+        children = tx.trace.getChildren(stream.segment.id)
+        assert.equal(children.length, 1)
+        assert.equal(children[0], eventSegment)
         assert.equal(eventSegment.getAttributes().count, 3)
       })
     })
@@ -1563,12 +1569,14 @@ test('Shim', async function (t) {
         })
       })
 
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const parentSegment = shim.getSegment()
         const resultingSegment = wrapped(cb)
 
         assert.notEqual(resultingSegment, parentSegment)
-        assert.ok(parentSegment.children.includes(resultingSegment))
+
+        const children = tx.trace.getChildren(parentSegment.id)
+        assert.ok(children.includes(resultingSegment))
         end()
       })
     })
@@ -1589,12 +1597,13 @@ test('Shim', async function (t) {
         })
       })
 
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const parentSegment = shim.getSegment()
         const resultingSegment = wrapped()
 
         assert.equal(resultingSegment, parentSegment)
-        assert.ok(!parentSegment.children.includes(resultingSegment))
+        const children = tx.trace.getChildren(parentSegment.id)
+        assert.ok(!children.includes(resultingSegment))
         end()
       })
     })
@@ -2101,7 +2110,7 @@ test('Shim', async function (t) {
 
     await t.test('should create a new segment', function (t, end) {
       const { agent, shim, wrappable } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const args = [wrappable.getActiveSegment]
         const segment = wrappable.getActiveSegment()
         const parent = shim.createSegment({ name: 'test segment', parent: segment })
@@ -2110,7 +2119,7 @@ test('Shim', async function (t) {
 
         assert.notEqual(cbSegment, segment)
         assert.notEqual(cbSegment, parent)
-        compareSegments(parent, [cbSegment])
+        compareSegments({ parent, segments: [cbSegment], trace: tx.trace })
         end()
       })
     })
@@ -2125,7 +2134,7 @@ test('Shim', async function (t) {
         const cbSegment = args[0]()
 
         assert.notEqual(cbSegment, parent)
-        compareSegments(parent, [cbSegment])
+        compareSegments({ parent, segments: [cbSegment], trace: tx.trace })
         assert.equal(parent.opaque, false)
         end()
       })
@@ -2133,14 +2142,14 @@ test('Shim', async function (t) {
 
     await t.test('should default the `parentSegment` to the current one', function (t, end) {
       const { agent, shim, wrappable } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const args = [wrappable.getActiveSegment]
         const segment = wrappable.getActiveSegment()
         shim.bindCallbackSegment({}, args, shim.LAST)
         const cbSegment = args[0]()
 
         assert.notEqual(cbSegment, segment)
-        compareSegments(segment, [cbSegment])
+        compareSegments({ parent: segment, segments: [cbSegment], trace: tx.trace })
         end()
       })
     })
@@ -2153,14 +2162,14 @@ test('Shim', async function (t) {
           executed = true
         }
       }
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const args = [wrappable.getActiveSegment]
         const segment = wrappable.getActiveSegment()
         shim.bindCallbackSegment(spec, args, shim.LAST)
         const cbSegment = args[0]()
 
         assert.notEqual(cbSegment, segment)
-        compareSegments(segment, [cbSegment])
+        compareSegments({ parent: segment, segments: [cbSegment], trace: tx.trace })
         assert.equal(executed, true)
         end()
       })
@@ -2330,7 +2339,7 @@ test('Shim', async function (t) {
         const parent = shim.createSegment({ name: 'parent', parent: tx.trace.root })
         const child = shim.createSegment('child', parent)
         assert.equal(child.name, 'child')
-        compareSegments(parent, [child])
+        compareSegments({ parent, segments: [child], trace: tx.trace })
         end()
       })
     })
@@ -2341,7 +2350,7 @@ test('Shim', async function (t) {
         const parent = shim.createSegment('parent', tx.trace.root)
         const child = shim.createSegment('child', null, parent)
         assert.equal(child.name, 'child')
-        compareSegments(parent, [child])
+        compareSegments({ parent, segments: [child], trace: tx.trace })
         end()
       })
     })
@@ -2353,7 +2362,8 @@ test('Shim', async function (t) {
         parent.opaque = true
         const child = shim.createSegment('child', parent)
         assert.equal(child.name, 'parent')
-        assert.deepEqual(parent.children, [])
+        const children = tx.trace.getChildren(parent.id)
+        assert.deepEqual(children, [])
         end()
       })
     })
@@ -2376,10 +2386,10 @@ test('Shim', async function (t) {
 
     await t.test('should default to the current segment as the parent', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const parent = shim.getSegment()
         const child = shim.createSegment('child', parent)
-        compareSegments(parent, [child])
+        compareSegments({ parent, segments: [child], trace: tx.trace })
         end()
       })
     })
@@ -2406,7 +2416,7 @@ test('Shim', async function (t) {
         const parent = shim.createSegment('parent', tx.trace.root)
         const child = shim.createSegment({ name: 'child', parent })
         assert.equal(child.name, 'child')
-        compareSegments(parent, [child])
+        compareSegments({ parent, segments: [child], trace: tx.trace })
         end()
       })
     })

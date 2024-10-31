@@ -358,7 +358,7 @@ test('should create span on successful runnables create', (t, end) => {
     const result = await chain.invoke(input, options)
 
     assert.ok(result)
-    assertSegments(tx.trace.root, ['Llm/chain/Langchain/invoke'], { exact: false })
+    assertSegments(tx.trace, tx.trace.root, ['Llm/chain/Langchain/invoke'], { exact: false })
 
     tx.end()
     end()

@@ -61,9 +61,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', (tx) => {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [
           'doSomeWork',
@@ -98,8 +100,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
+
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [
           'doWork1',
@@ -141,9 +146,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [
           'doWork1',
@@ -172,9 +179,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['doWork1', ['Promise startSomeWork', ['Promise#catch catchHandler']]],
         {},
@@ -200,9 +209,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [
           'doWork1',
@@ -253,9 +264,11 @@ test('segments enabled', async (t) => {
     const { Promise } = when
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 2)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 2)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['Promise startSomeWork', ['Promise#then myThen'], 'doSomeWork'],
         { exact: true },
@@ -308,9 +321,10 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doSomeWork', ['someChildSegment']], {}, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doSomeWork', ['someChildSegment']], {}, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -337,9 +351,10 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1'], {}, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doWork1'], {}, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -362,9 +377,10 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1'], {}, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doWork1'], {}, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -385,9 +401,10 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1'], {}, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doWork1'], {}, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -408,9 +425,10 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1', ['doWork2']], {}, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doWork1', ['doWork2']], {}, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -438,9 +456,10 @@ test('segments disabled', async (t) => {
     const { Promise } = when
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doSomeWork'], { exact: true }, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doSomeWork'], { exact: true }, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {

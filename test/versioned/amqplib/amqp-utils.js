@@ -27,7 +27,7 @@ exports.verifyTransaction = verifyTransaction
 exports.getChannel = getChannel
 
 function verifySubscribe(tx, exchange, routingKey) {
-  const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
 
   let segments = []
 
@@ -39,7 +39,7 @@ function verifySubscribe(tx, exchange, routingKey) {
     segments = ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]
   }
 
-  assertSegments(tx.trace.root, segments)
+  assertSegments(tx.trace, tx.trace.root, segments)
 
   assertMetrics(
     tx.metrics,
@@ -51,6 +51,7 @@ function verifySubscribe(tx, exchange, routingKey) {
   assert.equal(tx.getFullName(), null, 'should not set transaction name')
 
   const consume = metrics.findSegment(
+    tx.trace,
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange
   )
@@ -91,7 +92,7 @@ function verifyDistributedTrace(produceTransaction, consumeTransaction) {
     consumeTransaction.traceId,
     'should have proper trace id'
   )
-  const produceSegment = produceTransaction.trace.root.children[0]
+  const [produceSegment] = produceTransaction.trace.getChildren(produceTransaction.trace.root.id)
   assert.equal(
     produceSegment.id,
     consumeTransaction.parentSpanId,
@@ -121,6 +122,7 @@ function verifyConsumeTransaction(tx, exchange, queue, routingKey) {
   )
 
   const consume = metrics.findSegment(
+    tx.trace,
     tx.trace.root,
     'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange
   )
@@ -143,7 +145,7 @@ function verifyConsumeTransaction(tx, exchange, queue, routingKey) {
 }
 
 function verifySendToQueue(tx) {
-  assertSegments(tx.trace.root, ['MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'])
+  assertSegments(tx.trace, tx.trace.root, ['MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'])
 
   assertMetrics(
     tx.metrics,
@@ -153,6 +155,7 @@ function verifySendToQueue(tx) {
   )
 
   const segment = metrics.findSegment(
+    tx.trace,
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'
   )
@@ -165,7 +168,7 @@ function verifySendToQueue(tx) {
 }
 
 function verifyProduce(tx, exchangeName, routingKey) {
-  const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
   let segments = []
 
   if (isCallback) {
@@ -197,7 +200,7 @@ function verifyProduce(tx, exchangeName, routingKey) {
     ]
   }
 
-  assertSegments(tx.trace.root, segments, 'should have expected segments')
+  assertSegments(tx.trace, tx.trace.root, segments, 'should have expected segments')
 
   assertMetrics(
     tx.metrics,
@@ -207,6 +210,7 @@ function verifyProduce(tx, exchangeName, routingKey) {
   )
 
   const segment = metrics.findSegment(
+    tx.trace,
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   )
@@ -222,17 +226,17 @@ function verifyProduce(tx, exchangeName, routingKey) {
 }
 
 function verifyGet({ tx, exchangeName, routingKey, queue, assertAttr }) {
-  const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
   const produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   const consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
   if (isCallback) {
-    assertSegments(tx.trace.root, [produceName, consumeName, ['Callback: <anonymous>']])
+    assertSegments(tx.trace, tx.trace.root, [produceName, consumeName, ['Callback: <anonymous>']])
   } else {
-    assertSegments(tx.trace.root, [produceName, consumeName])
+    assertSegments(tx.trace, tx.trace.root, [produceName, consumeName])
   }
   assertMetrics(tx.metrics, [[{ name: produceName }], [{ name: consumeName }]], false, false)
   if (assertAttr) {
-    const segment = metrics.findSegment(tx.trace.root, consumeName)
+    const segment = metrics.findSegment(tx.trace, tx.trace.root, consumeName)
     const attributes = segment.getAttributes()
     assert.equal(attributes.host, params.rabbitmq_host, 'should have host on segment')
     assert.equal(attributes.port, params.rabbitmq_port, 'should have port on segment')
@@ -241,7 +245,7 @@ function verifyGet({ tx, exchangeName, routingKey, queue, assertAttr }) {
 }
 
 function verifyPurge(tx) {
-  const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
   let segments = []
 
   if (isCallback) {
@@ -272,7 +276,7 @@ function verifyPurge(tx) {
       'MessageBroker/RabbitMQ/Queue/Purge/Temp'
     ]
   }
-  assertSegments(tx.trace.root, segments, 'should have expected segments')
+  assertSegments(tx.trace, tx.trace.root, segments, 'should have expected segments')
 
   assertMetrics(tx.metrics, [[{ name: 'MessageBroker/RabbitMQ/Queue/Purge/Temp' }]], false, false)
 }

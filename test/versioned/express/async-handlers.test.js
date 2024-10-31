@@ -36,8 +36,8 @@ test('async handlers', { skip: !isExpress5() }, async (t) => {
     })
 
     const tx = await runTest(t, '/test')
-    const [children] = tx.trace.root.children
-    const [mw, handler] = children.children
+    const [child] = tx.trace.getChildren(tx.trace.root.id)
+    const [mw, handler] = tx.trace.getChildren(child.id)
     assert.ok(
       Math.ceil(mw.getDurationInMillis()) >= mwTimeout,
       `should be at least ${mwTimeout} for middleware segment`

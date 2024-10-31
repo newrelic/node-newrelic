@@ -44,6 +44,7 @@ test('Client Premature Disconnection', { timeout: 3000 }, (t, end) => {
 
   agent.on('transactionFinished', (transaction) => {
     assertSegments(
+      transaction.trace,
       transaction.trace.root,
       [
         'WebTransaction/Expressjs/POST//test',

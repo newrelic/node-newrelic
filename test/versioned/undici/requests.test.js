@@ -82,7 +82,7 @@ test('Undici request tests', async (t) => {
       })
       assert.equal(statusCode, 200)
 
-      assertSegments(tx.trace.root, [`External/${HOST}/post`], { exact: false })
+      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/post`], { exact: false })
       tx.end()
     })
   })
@@ -115,7 +115,7 @@ test('Undici request tests', async (t) => {
 
       await client.request({ path: '/', method: 'GET' })
 
-      assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+      assertSegments(transaction.trace, transaction.trace.root, [`External/localhost:${port}/`], {
         exact: false
       })
 
@@ -130,7 +130,7 @@ test('Undici request tests', async (t) => {
         method: 'GET'
       })
       assert.equal(statusCode, 200)
-      const segment = metrics.findSegment(tx.trace.root, `External/${HOST}/get`)
+      const segment = metrics.findSegment(tx.trace, tx.trace.root, `External/${HOST}/get`)
       const attrs = segment.getAttributes()
       assert.equal(attrs.url, `${REQUEST_URL}/get`)
       assert.equal(attrs.procedure, 'GET')
@@ -194,7 +194,7 @@ test('Undici request tests', async (t) => {
       const [{ statusCode }, { statusCode: statusCode2 }] = await Promise.all([req1, req2])
       assert.equal(statusCode, 200)
       assert.equal(statusCode2, 200)
-      assertSegments(tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
+      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
         exact: false
       })
       tx.end()
@@ -210,7 +210,7 @@ test('Undici request tests', async (t) => {
         })
       } catch (err) {
         assert.ok(err)
-        assertSegments(tx.trace.root, ['External/invalidurl/foo'], { exact: false })
+        assertSegments(tx.trace, tx.trace.root, ['External/invalidurl/foo'], { exact: false })
         assert.equal(tx.exceptions.length, 1)
         tx.end()
       }
@@ -230,7 +230,7 @@ test('Undici request tests', async (t) => {
         }, 100)
         await req
       } catch {
-        assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
+        assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
         assert.equal(tx.exceptions.length, 1)
         const expectedErrMsg = semver.gte(pkgVersion, '6.3.0')
           ? 'This operation was aborted'
@@ -259,11 +259,11 @@ test('Undici request tests', async (t) => {
       try {
         await req
       } catch {
-        assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+        assertSegments(transaction.trace, transaction.trace.root, [`External/localhost:${port}/`], {
           exact: false
         })
 
-        const segments = transaction.trace.root.children
+        const segments = transaction.trace.getChildren(transaction.trace.root.id)
         const segment = segments[segments.length - 1]
 
         assert.ok(segment.timer.start, 'should have started')
@@ -281,7 +281,7 @@ test('Undici request tests', async (t) => {
         method: 'GET'
       })
       assert.equal(statusCode, 400)
-      assertSegments(tx.trace.root, [`External/${HOST}/status/400`], { exact: false })
+      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/status/400`], { exact: false })
       tx.end()
     })
   })
@@ -290,7 +290,7 @@ test('Undici request tests', async (t) => {
     await helper.runInTransaction(agent, async (tx) => {
       const res = await undici.fetch(REQUEST_URL)
       assert.equal(res.status, 200)
-      assertSegments(tx.trace.root, [`External/${HOST}/`], { exact: false })
+      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/`], { exact: false })
       tx.end()
     })
   })
@@ -312,7 +312,7 @@ test('Undici request tests', async (t) => {
           })
         }
       )
-      assertSegments(tx.trace.root, [`External/${HOST}/get`], { exact: false })
+      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/get`], { exact: false })
       tx.end()
     })
   })
@@ -347,7 +347,7 @@ test('Undici request tests', async (t) => {
         }),
         (err) => {
           assert.ok(!err)
-          assertSegments(tx.trace.root, [`External/${HOST}/get`], { exact: false })
+          assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/get`], { exact: false })
           tx.end()
           end()
         }
