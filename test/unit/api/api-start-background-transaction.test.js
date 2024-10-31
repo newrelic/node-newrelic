@@ -182,6 +182,31 @@ test('Agent API - startBackgroundTransaction', async (t) => {
     })
   })
 
+  await t.test('should record metrics', (t, end) => {
+    const { agent, api } = t.nr
+    let transaction
+    api.startBackgroundTransaction('test', function () {
+      transaction = agent.tracer.getTransaction()
+    })
+
+    transaction.end()
+    const metrics = transaction.metrics.unscoped
+    ;[
+      'OtherTransaction/Nodejs/test',
+      'OtherTransactionTotalTime/Nodejs/test',
+      'OtherTransaction/all',
+      'OtherTransactionTotalTime',
+      'OtherTransactionTotalTime',
+      'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all',
+      'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allOther'
+    ].forEach((metric) => {
+      assert.ok(metrics[metric].total, `${metric} has total`)
+      assert.ok(metrics[metric].totalExclusive, `${metric} has totalExclusive`)
+    })
+
+    end()
+  })
+
   await t.test('should not throw when no handler is supplied', (t, end) => {
     const { api } = t.nr
     assert.doesNotThrow(() => api.startBackgroundTransaction('test'))

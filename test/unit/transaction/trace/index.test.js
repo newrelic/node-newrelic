@@ -766,6 +766,37 @@ test('when inserting segments', async (t) => {
       trace.toJSON()
     })
   })
+
+  await t.test('should get all children for a segment', (t) => {
+    const { trace } = t.nr
+    assert.deepEqual(trace.segments, [])
+    const segment = trace.add('base')
+    const segment2 = trace.add('1', null, segment)
+    const segment3 = trace.add('2', null, segment)
+    const children = trace.getChildren(segment.id)
+    assert.deepEqual(children, [segment2, segment3])
+  })
+
+  await t.test('should get all collected children for a segment', (t) => {
+    const { trace } = t.nr
+    const segment = trace.add('base')
+    const segment2 = trace.add('1', null, segment)
+    const segment3 = trace.add('2', null, segment)
+    const segment4 = trace.add('3', null, segment)
+    segment4._collect = false
+    const segment5 = trace.add('4', null, segment)
+    segment5.ignore = true
+    const children = trace.getCollectedChildren(segment.id)
+    assert.deepEqual(children, [segment2, segment3])
+  })
+
+  await t.test('should get parent segment for a segment', (t) => {
+    const { trace } = t.nr
+    const segment = trace.add('base')
+    const segment2 = trace.add('1', null, segment)
+    const parent = trace.getParent(segment2.parentId)
+    assert.equal(parent, segment)
+  })
 })
 
 test('should set URI to null when request.uri attribute is excluded globally', async (t) => {
