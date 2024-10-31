@@ -60,7 +60,7 @@ test('SpanAggregator', async (t) => {
 
         assert.equal(spanEventAggregator.length, 0)
 
-        spanEventAggregator.addSegment(segment, 'p')
+        spanEventAggregator.addSegment({ segment, transaction: tx, parentId: 'p' })
         assert.equal(spanEventAggregator.length, 1)
 
         const event = spanEventAggregator.getEvents()[0]
@@ -84,7 +84,7 @@ test('SpanAggregator', async (t) => {
         const segment = agent.tracer.getSegment()
         assert.equal(spanEventAggregator.length, 0)
 
-        spanEventAggregator.addSegment(segment)
+        spanEventAggregator.addSegment({ segment, transaction: tx })
         assert.equal(spanEventAggregator.length, 1)
 
         const event = spanEventAggregator.getEvents()[0]
@@ -134,20 +134,20 @@ test('SpanAggregator', async (t) => {
         assert.equal(spanEventAggregator.seen, 0)
 
         // First segment is added regardless of priority.
-        assert.equal(spanEventAggregator.addSegment(segment), true)
+        assert.equal(spanEventAggregator.addSegment({ segment, transaction: tx }), true)
         assert.equal(spanEventAggregator.length, 1)
         assert.equal(spanEventAggregator.seen, 1)
 
         // Higher priority should be added.
         tx.priority = 100
-        assert.equal(spanEventAggregator.addSegment(segment), true)
+        assert.equal(spanEventAggregator.addSegment({ segment, transaction: tx }), true)
         assert.equal(spanEventAggregator.length, 1)
         assert.equal(spanEventAggregator.seen, 2)
         const event1 = spanEventAggregator.getEvents()[0]
 
         // Lower priority should not be added.
         tx.priority = 1
-        assert.equal(spanEventAggregator.addSegment(segment), false)
+        assert.equal(spanEventAggregator.addSegment({ segment, transaction: tx }), false)
         assert.equal(spanEventAggregator.length, 1)
         assert.equal(spanEventAggregator.seen, 3)
         const event2 = spanEventAggregator.getEvents()[0]
@@ -173,7 +173,7 @@ test('SpanAggregator', async (t) => {
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
 
-        spanEventAggregator.addSegment(segment)
+        spanEventAggregator.addSegment({ segment, transaction: tx })
 
         const payload = spanEventAggregator._toPayloadSync()
 

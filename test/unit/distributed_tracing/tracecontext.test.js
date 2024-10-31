@@ -97,6 +97,7 @@ test('TraceContext', async function (t) {
 
       helper.runInTransaction(agent, function (txn) {
         const childSegment = txn.trace.add('child')
+        agent.tracer.setSegment({ segment: childSegment })
         childSegment.start()
 
         txn.acceptTraceContextPayload(traceparent, undefined)
@@ -120,6 +121,7 @@ test('TraceContext', async function (t) {
 
       helper.runInTransaction(agent, function (txn) {
         const childSegment = txn.trace.add('child')
+        agent.tracer.setSegment({ segment: childSegment })
         childSegment.start()
 
         txn.acceptTraceContextPayload(traceparent, tracestate)
@@ -367,6 +369,7 @@ test('TraceContext', async function (t) {
       const { agent } = ctx.nr
       helper.runInTransaction(agent, function (txn) {
         const childSegment = txn.trace.add('child')
+        agent.tracer.setSegment({ segment: childSegment })
         childSegment.start()
 
         const tp1 = txn.traceContext.createTraceparent()
@@ -390,6 +393,7 @@ test('TraceContext', async function (t) {
 
       helper.runInTransaction(agent, function (txn) {
         const childSegment = txn.trace.add('child')
+        agent.tracer.setSegment({ segment: childSegment })
         childSegment.start()
 
         const headers = getTraceContextHeaders(txn)
@@ -422,6 +426,7 @@ test('TraceContext', async function (t) {
 
       helper.runInTransaction(agent, function (txn) {
         const childSegment = txn.trace.add('child')
+        agent.tracer.setSegment({ segment: childSegment })
         childSegment.start()
 
         txn.traceContext.acceptTraceContextPayload(traceparent, duplicateAcctTraceState)
@@ -470,6 +475,7 @@ test('TraceContext', async function (t) {
 
       helper.runInTransaction(agent, function (txn) {
         const childSegment = txn.trace.add('child')
+        agent.tracer.setSegment({ segment: childSegment })
         childSegment.start()
 
         txn.acceptTraceContextPayload(traceparent, tracestate)
@@ -691,6 +697,7 @@ test('TraceContext', async function (t) {
 
         helper.runInTransaction(agent, function (txn) {
           const childSegment = txn.trace.add('child')
+          agent.tracer.setSegment({ segment: childSegment })
           childSegment.start()
 
           txn.acceptTraceContextPayload(incomingTraceparent, incomingTracestate)
@@ -733,6 +740,7 @@ test('TraceContext', async function (t) {
 
         helper.runInTransaction(agent, function (txn) {
           const childSegment = txn.trace.add('child')
+          agent.tracer.setSegment({ segment: childSegment })
           childSegment.start()
 
           txn.acceptTraceContextPayload(incomingTraceparent, incomingTracestate)

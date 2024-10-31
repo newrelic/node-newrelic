@@ -16,7 +16,7 @@ const tx = helper.runInTransaction(s.agent, function (_tx) {
   return _tx
 })
 
-tracer.setSegment(tx.root)
+tracer.setSegment({ transaction: tx.root, segment: tx.root })
 
 suite.add({
   name: 'tracer.getSegment',
