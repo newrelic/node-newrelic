@@ -401,7 +401,8 @@ test('Express transaction names are unaffected by errorware', async (t) => {
   const promise = new Promise((resolve) => {
     transactionHandler = function (tx) {
       const expected = 'WebTransaction/Expressjs/GET//test'
-      plan.equal(tx.trace.root.children[0].name, expected)
+      const [baseSegment] = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(baseSegment.name, expected)
       resolve()
     }
   })

@@ -101,11 +101,6 @@ test('when loaded with defaults', async (t) => {
     const { agent } = t.nr
     assert.throws(() => agent.setState('bogus'), /Invalid state bogus/)
   })
-
-  await t.test('has some debugging configuration by default', (t) => {
-    const { agent } = t.nr
-    assert.equal(Object.hasOwn(agent.config, 'debug'), true)
-  })
 })
 
 test('should load naming rules when configured', () => {

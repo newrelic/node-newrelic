@@ -54,6 +54,7 @@ function run({ t, expected = 'done', cb, end, plan }) {
 
 function checkSegments(plan, tx) {
   assertSegments(
+    tx.trace,
     tx.trace.root,
     [
       // Until koa-router is instrumented and transaction naming is addressed,
@@ -292,6 +293,7 @@ test('correctly records actions interspersed among middleware', async (t) => {
 
   agent.on('transactionFinished', (tx) => {
     assertSegments(
+      tx.trace,
       tx.trace.root,
       [
         'WebTransaction/WebFrameworkUri/Koa/GET//',
@@ -355,6 +357,7 @@ test('maintains transaction state between middleware', async (t) => {
 
   agent.on('transactionFinished', function (txn) {
     assertSegments(
+      tx.trace,
       tx.trace.root,
       [
         txn.name,

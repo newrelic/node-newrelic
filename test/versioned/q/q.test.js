@@ -15,7 +15,8 @@ const helper = require('../../lib/agent_helper')
 
 function assertTransaction(agent, tx, expect = assert) {
   expect.equal(agent.getTransaction(), tx)
-  expect.equal(agent.getTransaction().trace.root.children.length, 0)
+  const children = tx.trace.getChildren(tx.trace.root.id)
+  expect.equal(children.length, 0)
 }
 
 test.beforeEach((ctx) => {
