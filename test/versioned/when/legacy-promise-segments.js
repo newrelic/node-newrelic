@@ -17,8 +17,14 @@ function runTests(t, agent, Promise) {
   // simulates a function that returns a promise and has a segment created for itself
   function doSomeWork(segmentName, shouldReject) {
     const tracer = agent.tracer
-    const segment = tracer.createSegment(segmentName)
-    return tracer.bindFunction(actualWork, segment)()
+    const ctx = tracer.getContext()
+    const segment = tracer.createSegment({
+      name: segmentName,
+      parent: ctx.segment,
+      transaction: ctx.transaction
+    })
+    const newCtx = ctx.enterSegment({ segment })
+    return tracer.bindFunction(actualWork, newCtx)()
     function actualWork() {
       segment.touch()
       return new Promise(function startSomeWork(resolve, reject) {
@@ -55,10 +61,16 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork('doSomeWork').then(function () {
-        const childSegment = tracer.createSegment('someChildSegment')
+        const ctx = agent.tracer.getContext()
+        const childSegment = tracer.createSegment({
+          name: 'someChildSegment',
+          parent: ctx.segment,
+          transaction
+        })
+        const newCtx = ctx.enterSegment({ segment: childSegment })
         // touch the segment, so that it is not truncated
         childSegment.touch()
-        tracer.bindFunction(function () {}, childSegment)
+        tracer.bindFunction(function () {}, newCtx)
         process.nextTick(transaction.end.bind(transaction))
       })
     })
@@ -83,7 +95,8 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
           return doSomeWork('doWork2')
         })
         .then(function secondThen() {
-          const s = tracer.createSegment('secondThen')
+          const ctx = agent.tracer.getContext()
+          const s = tracer.createSegment({ name: 'secondThen', parent: ctx.segment, transaction })
           s.start()
           s.end()
           process.nextTick(transaction.end.bind(transaction))
@@ -161,12 +174,14 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
           return doSomeWork('doWork2', true)
         })
         .then(function secondThen() {
-          const s = tracer.createSegment('secondThen')
+          const ctx = agent.tracer.getContext()
+          const s = tracer.createSegment({ name: 'secondThen', parent: ctx.segment, transaction })
           s.start()
           s.end()
         })
         .catch(function catchHandler() {
-          const s = tracer.createSegment('catchHandler')
+          const ctx = agent.tracer.getContext()
+          const s = tracer.createSegment({ name: 'catchHandler', parent: ctx.segment, transaction })
           s.start()
           s.end()
           process.nextTick(transaction.end.bind(transaction))
@@ -195,8 +210,10 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
         resolve = r
       })
 
-      const segment = tracer.createSegment('doSomeWork')
-      resolve = tracer.bindFunction(resolve, segment)
+      const ctx = agent.tracer.getContext()
+      const segment = tracer.createSegment({ name: 'doSomeWork', parent: ctx.segment, transaction })
+      const newCtx = ctx.enterSegment({ segment })
+      resolve = tracer.bindFunction(resolve, newCtx)
 
       p.then(function myThen() {
         segment.touch()
@@ -226,10 +243,16 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork('doSomeWork').then(function () {
-        const childSegment = tracer.createSegment('someChildSegment')
+        const ctx = agent.tracer.getContext()
+        const childSegment = tracer.createSegment({
+          name: 'someChildSegment',
+          parent: ctx.segment,
+          transaction
+        })
+        const newCtx = ctx.enterSegment({ segment: childSegment })
         // touch the segment, so that it is not truncated
         childSegment.touch()
-        tracer.bindFunction(function () {}, childSegment)
+        tracer.bindFunction(function () {}, newCtx)
         process.nextTick(transaction.end.bind(transaction))
       })
     })
@@ -343,8 +366,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
         resolve = r
       })
 
-      const segment = tracer.createSegment('doSomeWork')
-      resolve = tracer.bindFunction(resolve, segment)
+      const ctx = agent.tracer.getContext()
+      const segment = tracer.createSegment({ name: 'doSomeWork', parent: ctx.segment, transaction })
+      const newCtx = ctx.enterSegment({ segment })
+      resolve = tracer.bindFunction(resolve, newCtx)
 
       p.then(function myThen() {
         segment.touch()

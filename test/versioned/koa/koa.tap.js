@@ -212,9 +212,10 @@ tap.test('Koa instrumentation', (t) => {
     const { agent, app, testShim } = t.context
 
     app.use(function one(ctx, next) {
-      testShim.createSegment('testSegment')
+      const parent = agent.tracer.getSegment()
+      testShim.createSegment({ name: 'testSegment', parent })
       return next().then(function () {
-        testShim.createSegment('nestedSegment')
+        testShim.createSegment({ name: 'nestedSegment', parent })
       })
     })
     app.use(function two(ctx, next) {
