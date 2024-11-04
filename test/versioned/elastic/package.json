@@ -17,7 +17,7 @@
         "@elastic/elasticsearch": "7.13.0"
       },
       "files": [
-        "elasticsearchNoop.tap.js"
+        "elasticsearchNoop.test.js"
       ]
     },
     {
@@ -28,7 +28,7 @@
         "@elastic/elasticsearch": ">=7.16.0"
       },
       "files": [
-        "elasticsearch.tap.js"
+        "elasticsearch.test.js"
       ]
     }
   ]

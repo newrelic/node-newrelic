@@ -4,9 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
-const test = tap.test
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
@@ -15,7 +14,6 @@ const { readFile } = require('fs/promises')
 const semver = require('semver')
 const DB_INDEX = `test-${randomString()}`
 const DB_INDEX_2 = `test2-${randomString()}`
-const DB_INDEX_3 = `test3-${randomString()}`
 const SEARCHTERM_1 = randomString()
 
 function randomString() {
@@ -50,36 +48,35 @@ function setMsearch(body, version) {
   }
 }
 
-test('Elasticsearch instrumentation', (t) => {
-  t.autoend()
-
-  let METRIC_HOST_NAME = null
-  let HOST_ID = null
-
-  let agent
-  let client
-  let pkgVersion
-
-  t.before(async () => {
+test('Elasticsearch instrumentation', async (t) => {
+  t.beforeEach(async (ctx) => {
     // Determine version. ElasticSearch v7 did not export package, so we have to read the file
     // instead of requiring it, as we can with 8+.
     const pkg = await readFile(`${__dirname}/node_modules/@elastic/elasticsearch/package.json`)
-    ;({ version: pkgVersion } = JSON.parse(pkg.toString()))
+    const { version: pkgVersion } = JSON.parse(pkg.toString())
 
-    agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
 
-    METRIC_HOST_NAME = urltils.isLocalhost(params.elastic_host)
+    const METRIC_HOST_NAME = urltils.isLocalhost(params.elastic_host)
       ? agent.config.getHostnameSafe()
       : params.elastic_host
-    HOST_ID = METRIC_HOST_NAME + '/' + params.elastic_port
+    const HOST_ID = METRIC_HOST_NAME + '/' + params.elastic_port
 
     // need to capture attributes
     agent.config.attributes.enabled = true
 
     const { Client } = require('@elastic/elasticsearch')
-    client = new Client({
+    const client = new Client({
       node: `http://${params.elastic_host}:${params.elastic_port}`
     })
+
+    ctx.nr = {
+      agent,
+      client,
+      pkgVersion,
+      METRIC_HOST_NAME,
+      HOST_ID
+    }
 
     return Promise.all([
       client.indices.create({ index: DB_INDEX }),
@@ -87,30 +84,28 @@ test('Elasticsearch instrumentation', (t) => {
     ])
   })
 
-  t.afterEach(() => {
-    agent.queries.clear()
-  })
-
-  t.teardown(() => {
-    agent && helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    const { agent, client } = ctx.nr
+    helper.unloadAgent(agent)
     return Promise.all([
       client.indices.delete({ index: DB_INDEX }),
       client.indices.delete({ index: DB_INDEX_2 })
     ])
   })
 
-  t.test('should be able to record creating an index', async (t) => {
+  await t.test('should be able to record creating an index', async (t) => {
+    const { agent, client } = t.nr
     const index = `test-index-${randomString()}`
-    t.teardown(async () => {
+    t.after(async () => {
       await client.indices.delete({ index })
     })
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
-      t.ok(transaction, 'transaction should be visible')
+      assert.ok(transaction, 'transaction should be visible')
       await client.indices.create({ index })
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
       const firstChild = trace.root.children[0]
-      t.equal(
+      assert.equal(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${index}/index.create`,
         'should record index PUT as create'
@@ -118,36 +113,15 @@ test('Elasticsearch instrumentation', (t) => {
     })
   })
 
-  t.test('should record bulk operations', async (t) => {
+  await t.test('should record bulk operations', async (t) => {
+    const { agent, client, pkgVersion } = t.nr
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
-      const operations = [
-        { index: { _index: DB_INDEX } },
-        { title: 'First Bulk Doc', body: 'Content of first bulk document' },
-        { index: { _index: DB_INDEX } },
-        { title: 'Second Bulk Doc', body: 'Content of second bulk document.' },
-        { index: { _index: DB_INDEX } },
-        { title: 'Third Bulk Doc', body: 'Content of third bulk document.' },
-        { index: { _index: DB_INDEX } },
-        { title: 'Fourth Bulk Doc', body: 'Content of fourth bulk document.' },
-        { index: { _index: DB_INDEX_2 } },
-        { title: 'Fifth Bulk Doc', body: 'Content of fifth bulk document' },
-        { index: { _index: DB_INDEX_2 } },
-        {
-          title: 'Sixth Bulk Doc',
-          body: `Content of sixth bulk document. Has search term: ${SEARCHTERM_1}`
-        },
-        { index: { _index: DB_INDEX_2 } },
-        { title: 'Seventh Bulk Doc', body: 'Content of seventh bulk document.' },
-        { index: { _index: DB_INDEX_2 } },
-        { title: 'Eighth Bulk Doc', body: 'Content of eighth bulk document.' }
-      ]
-
-      await client.bulk(setBulkBody(operations, pkgVersion))
-      t.ok(transaction, 'transaction should still be visible after bulk create')
+      await bulkInsert({ client, pkgVersion })
+      assert.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
       const firstChild = trace.root.children[0]
-      t.equal(
+      assert.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/bulk.create',
         'should record bulk operation'
@@ -155,24 +129,10 @@ test('Elasticsearch instrumentation', (t) => {
     })
   })
 
-  t.test('should record bulk operations triggered by client helpers', async (t) => {
+  await t.test('should record bulk operations triggered by client helpers', async (t) => {
+    const { agent, client } = t.nr
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
-      const operations = [
-        { title: 'Ninth Bulk Doc from helpers', body: 'Content of ninth bulk document' },
-        { title: 'Tenth Bulk Doc from helpers', body: 'Content of tenth bulk document.' },
-        { title: 'Eleventh Bulk Doc from helpers', body: 'Content of eleventh bulk document.' },
-        { title: 'Twelfth Bulk Doc from helpers', body: 'Content of twelfth bulk document.' },
-        {
-          title: 'Thirteenth Bulk Doc from helpers',
-          body: 'Content of thirteenth bulk document'
-        },
-        {
-          title: 'Fourteenth Bulk Doc from helpers',
-          body: 'Content of fourteenth bulk document.'
-        },
-        { title: 'Fifteenth Bulk Doc from helpers', body: 'Content of fifteenth bulk document.' },
-        { title: 'Sixteenth Bulk Doc from helpers', body: 'Content of sixteenth bulk document.' }
-      ]
+      const operations = getBulkData()
       await client.helpers.bulk({
         datasource: operations,
         onDocument() {
@@ -182,13 +142,13 @@ test('Elasticsearch instrumentation', (t) => {
         },
         refreshOnCompletion: true
       })
-      t.ok(transaction, 'transaction should still be visible after bulk create')
+      assert.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      t.ok(trace?.root?.children?.[1], 'trace, trace root, and second child should exist')
+      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      assert.ok(trace?.root?.children?.[1], 'trace, trace root, and second child should exist')
       // helper interface results in a first child of timers.setTimeout, with the second child related to the operation
       const secondChild = trace.root.children[1]
-      t.equal(
+      assert.equal(
         secondChild.name,
         'Datastore/statement/ElasticSearch/any/bulk.create',
         'should record bulk operation'
@@ -196,7 +156,8 @@ test('Elasticsearch instrumentation', (t) => {
     })
   })
 
-  t.test('should record search with query string', async function (t) {
+  await t.test('should record search with query string', async function (t) {
+    const { agent, client, METRIC_HOST_NAME } = t.nr
     // enable slow queries
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
@@ -204,24 +165,24 @@ test('Elasticsearch instrumentation', (t) => {
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const expectedQuery = { q: SEARCHTERM_1 }
       const search = await client.search({ index: DB_INDEX_2, ...expectedQuery })
-      t.ok(search, 'search should return a result')
-      t.ok(transaction, 'transaction should still be visible after search')
+      assert.ok(search, 'search should return a result')
+      assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
       const firstChild = trace.root.children[0]
-      t.match(
+      assert.equal(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${DB_INDEX_2}/search`,
         'querystring search should be recorded as a search'
       )
       const attrs = firstChild.getAttributes()
-      t.match(attrs.product, 'ElasticSearch')
-      t.match(attrs.host, METRIC_HOST_NAME)
+      assert.equal(attrs.product, 'ElasticSearch')
+      assert.equal(attrs.host, METRIC_HOST_NAME)
       transaction.end()
-      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
-        t.ok(query.total > 0, 'the samples should have positive duration')
-        t.match(
+        assert.ok(query.total > 0, 'the samples should have positive duration')
+        assert.equal(
           query.trace.query,
           JSON.stringify(expectedQuery),
           'expected query string should have been used'
@@ -229,7 +190,8 @@ test('Elasticsearch instrumentation', (t) => {
       }
     })
   })
-  t.test('should record search with request body', async function (t) {
+  await t.test('should record search with request body', async function (t) {
+    const { agent, client, pkgVersion, METRIC_HOST_NAME } = t.nr
     // enable slow queries
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
@@ -239,27 +201,27 @@ test('Elasticsearch instrumentation', (t) => {
       const expectedQuery = { query: { match: { body: 'document' } } }
       const requestBody = setRequestBody(expectedQuery, pkgVersion)
       const search = await client.search({ index: DB_INDEX, ...requestBody })
-      t.ok(search, 'search should return a result')
-      t.ok(transaction, 'transaction should still be visible after search')
+      assert.ok(search, 'search should return a result')
+      assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
       const firstChild = trace.root.children[0]
-      t.match(
+      assert.equal(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${DB_INDEX}/search`,
         'search index is specified, so name shows it'
       )
       const attrs = firstChild.getAttributes()
-      t.equal(attrs.product, 'ElasticSearch')
-      t.equal(attrs.host, METRIC_HOST_NAME)
-      t.equal(attrs.port_path_or_id, `${params.elastic_port}`)
+      assert.equal(attrs.product, 'ElasticSearch')
+      assert.equal(attrs.host, METRIC_HOST_NAME)
+      assert.equal(attrs.port_path_or_id, `${params.elastic_port}`)
       // TODO: update once instrumentation is properly setting database name
-      t.equal(attrs.database_name, 'unknown')
+      assert.equal(attrs.database_name, 'unknown')
       transaction.end()
-      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
-        t.ok(query.total > 0, 'the samples should have positive duration')
-        t.match(
+        assert.ok(query.total > 0, 'the samples should have positive duration')
+        assert.equal(
           query.trace.query,
           JSON.stringify({ ...expectedQuery }),
           'expected query body should have been recorded'
@@ -268,7 +230,8 @@ test('Elasticsearch instrumentation', (t) => {
     })
   })
 
-  t.test('should record search across indices', async function (t) {
+  await t.test('should record search across indices', async function (t) {
+    const { agent, client, pkgVersion, METRIC_HOST_NAME } = t.nr
     // enable slow queries
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
@@ -277,24 +240,24 @@ test('Elasticsearch instrumentation', (t) => {
       const expectedQuery = { query: { match: { body: 'document' } } }
       const requestBody = setRequestBody(expectedQuery, pkgVersion)
       const search = await client.search({ ...requestBody })
-      t.ok(search, 'search should return a result')
-      t.ok(transaction, 'transaction should still be visible after search')
+      assert.ok(search, 'search should return a result')
+      assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
       const firstChild = trace.root.children[0]
-      t.match(
+      assert.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/search',
         'child name on all indices should show search'
       )
       const attrs = firstChild.getAttributes()
-      t.match(attrs.product, 'ElasticSearch')
-      t.match(attrs.host, METRIC_HOST_NAME)
+      assert.equal(attrs.product, 'ElasticSearch')
+      assert.equal(attrs.host, METRIC_HOST_NAME)
       transaction.end()
-      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
-        t.ok(query.total > 0, 'the samples should have positive duration')
-        t.match(
+        assert.ok(query.total > 0, 'the samples should have positive duration')
+        assert.equal(
           query.trace.query,
           JSON.stringify({ ...expectedQuery }),
           'expected query body should have been recorded'
@@ -302,10 +265,12 @@ test('Elasticsearch instrumentation', (t) => {
       }
     })
   })
-  t.test('should record msearch', async function (t) {
+  await t.test('should record msearch', async function (t) {
+    const { agent, client, METRIC_HOST_NAME, pkgVersion } = t.nr
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
+    await bulkInsert({ client, pkgVersion })
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const expectedQuery = [
         {}, // cross-index searches have can have an empty metadata section
@@ -321,27 +286,27 @@ test('Elasticsearch instrumentation', (t) => {
         results = search?.body?.responses
       }
 
-      t.ok(results, 'msearch should return results')
-      t.equal(results?.length, 2, 'there should be two responses--one per search')
-      t.equal(results?.[0]?.hits?.hits?.length, 1, 'first search should return one result')
-      t.equal(results?.[1]?.hits?.hits?.length, 10, 'second search should return ten results')
-      t.ok(transaction, 'transaction should still be visible after search')
+      assert.ok(results, 'msearch should return results')
+      assert.equal(results?.length, 2, 'there should be two responses--one per search')
+      assert.equal(results?.[0]?.hits?.hits?.length, 1, 'first search should return one result')
+      assert.equal(results?.[1]?.hits?.hits?.length, 8, 'second search should return ten results')
+      assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
       const firstChild = trace.root.children[0]
-      t.match(
+      assert.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/msearch.create',
         'child name should show msearch'
       )
       const attrs = firstChild.getAttributes()
-      t.match(attrs.product, 'ElasticSearch')
-      t.match(attrs.host, METRIC_HOST_NAME)
+      assert.equal(attrs.product, 'ElasticSearch')
+      assert.equal(attrs.host, METRIC_HOST_NAME)
       transaction.end()
-      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
-        t.ok(query.total > 0, 'the samples should have positive duration')
-        t.match(
+        assert.ok(query.total > 0, 'the samples should have positive duration')
+        assert.equal(
           query.trace.query,
           JSON.stringify(expectedQuery),
           'expected msearch query should have been recorded'
@@ -350,10 +315,12 @@ test('Elasticsearch instrumentation', (t) => {
     })
   })
 
-  t.test('should record msearch via helpers', async function (t) {
+  await t.test('should record msearch via helpers', async function (t) {
+    const { agent, client, pkgVersion } = t.nr
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
+    await bulkInsert({ client, pkgVersion })
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const m = client.helpers.msearch()
       const searchA = await m.search({}, { query: { match: { body: SEARCHTERM_1 } } })
@@ -361,31 +328,31 @@ test('Elasticsearch instrumentation', (t) => {
       const resultsA = searchA?.body?.hits
       const resultsB = searchB?.body?.hits
 
-      t.ok(resultsA, 'msearch for sixth should return results')
-      t.ok(resultsB, 'msearch for bulk should return results')
-      t.equal(resultsA?.hits?.length, 1, 'first search should return one result')
-      t.equal(resultsB?.hits?.length, 10, 'second search should return ten results')
-      t.ok(transaction, 'transaction should still be visible after search')
+      assert.ok(resultsA, 'msearch for sixth should return results')
+      assert.ok(resultsB, 'msearch for bulk should return results')
+      assert.equal(resultsA?.hits?.length, 1, 'first search should return one result')
+      assert.equal(resultsB?.hits?.length, 8, 'second search should return ten results')
+      assert.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      assert.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
       const firstChild = trace.root.children[0]
-      t.match(
+      assert.equal(
         firstChild.name,
         'timers.setTimeout',
         'helpers, for some reason, generates a setTimeout metric first'
       )
       transaction.end()
-      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
         // which query gets captured in helper.msearch is non-deterministic
-        t.ok(query.total > 0, 'the samples should have positive duration')
+        assert.ok(query.total > 0, 'the samples should have positive duration')
       }
     })
   })
 
-  t.test('should create correct metrics', async function (t) {
+  await t.test('should create correct metrics', async function (t) {
+    const { agent, client, pkgVersion, HOST_ID } = t.nr
     const id = `key-${randomString()}`
-    t.plan(28)
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const documentProp = setRequestBody(
         {
@@ -427,12 +394,12 @@ test('Elasticsearch instrumentation', (t) => {
         'Datastore/statement/ElasticSearch/any/search': 1
       }
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 5
-      checkMetrics(t, unscoped, expected)
+      checkMetrics(unscoped, expected)
     })
   })
 
-  t.test('should not add instance attributes/metrics when disabled', async function (t) {
-    t.plan(4)
+  await t.test('should not add instance attributes/metrics when disabled', async function (t) {
+    const { agent, client, pkgVersion, HOST_ID } = t.nr
 
     // disable
     agent.config.datastore_tracer.instance_reporting.enabled = false
@@ -457,140 +424,81 @@ test('Elasticsearch instrumentation', (t) => {
 
       const createSegment = transaction.trace.root.children[0]
       const attributes = createSegment.getAttributes()
-      t.equal(attributes.host, undefined, 'should not have host attribute')
-      t.equal(attributes.port_path_or_id, undefined, 'should not have port attribute')
-      t.equal(attributes.database_name, undefined, 'should not have db name attribute')
+      assert.equal(attributes.host, undefined, 'should not have host attribute')
+      assert.equal(attributes.port_path_or_id, undefined, 'should not have port attribute')
+      assert.equal(attributes.database_name, undefined, 'should not have db name attribute')
 
       transaction.end()
       const unscoped = transaction.metrics.unscoped
-      t.equal(
+      assert.equal(
         unscoped['Datastore/instance/ElasticSearch/' + HOST_ID],
         undefined,
         'should not have instance metric'
       )
     })
   })
-  t.test('edge cases', async (t) => {
+  await t.test('edge cases', async (t) => {
+    const { agent, client } = t.nr
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       try {
         await client.indices.create({ index: '_search' })
       } catch (e) {
-        t.ok(e, 'should not be able to create an index named _search')
+        assert.ok(e, 'should not be able to create an index named _search')
       }
       const firstChild = transaction?.trace?.root?.children[0]
-      t.equal(
+      assert.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/_search/index.create',
         'should record the attempted index creation without altering the index name'
       )
     })
   })
-  t.test('index existence check should not error', async (t) => {
+  await t.test('index existence check should not error', async (t) => {
+    const { agent, client } = t.nr
     await helper.runInTransaction(agent, async function transactionInScope() {
       try {
         await client.indices.exists({ index: DB_INDEX })
       } catch (e) {
-        t.notOk(e, 'should be able to check for index existence')
+        assert.ok(!e, 'should be able to check for index existence')
       }
     })
   })
 })
 
-test('Elasticsearch uninstrumented behavior, to check helpers', { skip: false }, (t) => {
-  t.autoend()
+function getBulkData(includeIndex) {
+  let operations = [
+    { title: 'First Bulk Doc', body: 'Content of first bulk document' },
+    { title: 'Second Bulk Doc', body: 'Content of second bulk document.' },
+    { title: 'Third Bulk Doc', body: 'Content of third bulk document.' },
+    { title: 'Fourth Bulk Doc', body: 'Content of fourth bulk document.' },
+    { title: 'Fifth Bulk Doc', body: 'Content of fifth bulk document' },
+    {
+      title: 'Sixth Bulk Doc',
+      body: `Content of sixth bulk document. Has search term: ${SEARCHTERM_1}`
+    },
+    { title: 'Seventh Bulk Doc', body: 'Content of seventh bulk document.' },
+    { title: 'Eighth Bulk Doc', body: 'Content of eighth bulk document.' }
+  ]
 
-  let client
-  // eslint-disable-next-line no-unused-vars
-  let pkgVersion
-
-  t.before(async () => {
-    // Determine version. ElasticSearch v7 did not export package, so we have to read the file
-    // instead of requiring it, as we can with 8+.
-    const pkg = await readFile(`${__dirname}/node_modules/@elastic/elasticsearch/package.json`)
-    ;({ version: pkgVersion } = JSON.parse(pkg.toString()))
-
-    const { Client } = require('@elastic/elasticsearch')
-    client = new Client({
-      node: `http://${params.elastic_host}:${params.elastic_port}`
+  if (includeIndex) {
+    operations = operations.flatMap((doc, i) => {
+      return [{ index: { _index: i < 4 ? DB_INDEX : DB_INDEX_2 } }, doc]
     })
+  }
 
-    return Promise.all([client.indices.create({ index: DB_INDEX_3 })])
-  })
+  return operations
+}
 
-  t.teardown(() => {
-    return Promise.all([client.indices.delete({ index: DB_INDEX_3 })])
-  })
+async function bulkInsert({ client, pkgVersion }) {
+  const operations = getBulkData(true)
+  await client.bulk(setBulkBody(operations, pkgVersion))
+}
 
-  t.test('should record bulk operations triggered by client helpers', async (t) => {
-    const operations = [
-      {
-        title: 'Uninstrumented First Bulk Doc from helpers',
-        body: 'Content of uninstrumented first bulk document'
-      },
-      {
-        title: 'Uninstrumented Second Bulk Doc from helpers',
-        body: 'Content of uninstrumented second bulk document.'
-      },
-      {
-        title: 'Uninstrumented Third Bulk Doc from helpers',
-        body: 'Content of uninstrumented third bulk document.'
-      },
-      {
-        title: 'Uninstrumented Fourth Bulk Doc from helpers',
-        body: 'Content of uninstrumented fourth bulk document.'
-      },
-      {
-        title: 'Uninstrumented Fifth Bulk Doc from helpers',
-        body: 'Content of uninstrumented fifth bulk document'
-      },
-      {
-        title: 'Uninstrumented Sixth Bulk Doc from helpers',
-        body: 'Content of uninstrumented sixth bulk document.'
-      },
-      {
-        title: 'Uninstrumented Seventh Bulk Doc from helpers',
-        body: 'Content of uninstrumented seventh bulk document.'
-      },
-      {
-        title: 'Uninstrumented Eighth Bulk Doc from helpers',
-        body: 'Content of uninstrumented eighth bulk document.'
-      }
-    ]
-    const result = await client.helpers.bulk({
-      datasource: operations,
-      onDocument() {
-        return {
-          index: { _index: DB_INDEX_3 }
-        }
-      }
-      // refreshOnCompletion: true
-    }) // setBulkBody(operations, pkgVersion)
-    t.ok(result, 'We should have been able to create bulk entries without error')
-    t.equal(result.total, 8, 'We should have been inserted eight records')
-  })
-  t.test('should be able to check bulk insert with msearch via helpers', async function (t) {
-    const m = client.helpers.msearch()
-    const searchA = await m.search({ index: DB_INDEX_3 }, { query: { match: { body: 'sixth' } } })
-    const searchB = await m.search(
-      { index: DB_INDEX_3 },
-      { query: { match: { body: 'uninstrumented' } } }
-    )
-    const resultsA = searchA?.body?.hits
-    const resultsB = searchB?.body?.hits
-
-    t.ok(resultsA, 'msearch should return a response for A')
-    t.ok(resultsB, 'msearch should return results for B')
-    // some versions of helper msearch seem not to return results for the first search.
-    // t.equal(resultsA?.hits?.length, 1, 'first search should return one result')
-    t.equal(resultsB?.hits?.length, 8, 'second search should return eight results')
-  })
-})
-
-function checkMetrics(t, metrics, expected) {
+function checkMetrics(metrics, expected) {
   Object.keys(expected).forEach(function (name) {
-    t.ok(metrics[name], 'should have metric ' + name)
+    assert.ok(metrics[name], 'should have metric ' + name)
     if (metrics[name]) {
-      t.equal(
+      assert.equal(
         metrics[name].callCount,
         expected[name],
         'should have ' + expected[name] + ' calls for ' + name
