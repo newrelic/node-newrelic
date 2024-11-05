@@ -181,6 +181,7 @@ function finish({ commands, tx, setDatastoreSpy }) {
     )
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
     attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
+    const accountId = tx.agent.config.cloud.aws.account_id
 
     match(attrs, {
       'host': String,
@@ -190,7 +191,8 @@ function finish({ commands, tx, setDatastoreSpy }) {
       'aws.operation': command.constructor.name,
       'aws.requestId': String,
       'aws.region': 'us-east-1',
-      'aws.service': /dynamodb|DynamoDB/
+      'aws.service': /dynamodb|DynamoDB/,
+      'cloud.resource_id': `arn:aws:dynamodb:${attrs['aws.region']}:${accountId}:table/${attrs.collection}`
     })
   })
 

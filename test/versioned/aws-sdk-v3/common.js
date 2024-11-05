@@ -56,6 +56,9 @@ function checkExternals({ service, operations, tx, end }) {
     operations.length,
     `should have ${operations.length} aws externals`
   )
+
+  const accountId = tx.agent.config.cloud.aws.account_id
+
   operations.forEach((operation, index) => {
     const attrs = externals[index].attributes.get(TRANS_SEGMENT)
     match(attrs, {
@@ -64,7 +67,8 @@ function checkExternals({ service, operations, tx, end }) {
       // in 3.1.0 they fixed service names from lower case
       // see: https://github.com/aws/aws-sdk-js-v3/commit/0011af27a62d0d201296225e2a70276645b3231a
       'aws.service': new RegExp(`${service}|${service.toLowerCase().replace(/ /g, '')}`),
-      'aws.region': 'us-east-1'
+      'aws.region': 'us-east-1',
+      'cloud.resource_id': `arn:aws:dynamodb:${attrs['aws.region']}:${accountId}:table/${attrs.collection}`
     })
   })
   end()
