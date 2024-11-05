@@ -15,7 +15,7 @@ const proxyquire = require('proxyquire')
 const helper = require('../../lib/agent_helper')
 const Config = require('../../../lib/config')
 const Collector = require('../../lib/test-collector')
-const { assertMetricValues } = require('../../lib/assert-metrics')
+const { assertMetricValues } = require('../../lib/custom-assertions')
 const RemoteMethod = require('../../../lib/collector/remote-method')
 
 const NAMES = require('../../../lib/metrics/names')
