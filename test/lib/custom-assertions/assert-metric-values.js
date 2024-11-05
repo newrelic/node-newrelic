@@ -5,12 +5,6 @@
 
 'use strict'
 
-module.exports = {
-  assertMetricValues
-}
-
-const assert = require('node:assert')
-
 /**
  * @param {Transaction} transaction Nodejs agent transaction
  * @param {Array} expected          Array of metric data where metric data is in this form:
@@ -27,8 +21,15 @@ const assert = require('node:assert')
  *                                      sum of squares]
  *                                  ]
  * @param {boolean} exact           When true, found and expected metric lengths should match
+ * @param {object} [deps] Injected dependencies.
+ * @param {object} [deps.assert] Assertion library to use.
  */
-function assertMetricValues(transaction, expected, exact) {
+module.exports = function assertMetricValues(
+  transaction,
+  expected,
+  exact,
+  { assert = require('node:assert') } = {}
+) {
   const metrics = transaction.metrics
 
   for (let i = 0; i < expected.length; ++i) {
