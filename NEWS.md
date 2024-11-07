@@ -14,16 +14,15 @@
 
 #### Miscellaneous chores
 
-* moved recorders to `lib/metrics/recorders` ([#2666](https://github.com/newrelic/node-newrelic/pull/2666)) ([d8dfe84](https://github.com/newrelic/node-newrelic/commit/d8dfe843aebf275bda6d5c857cfe263039bc1a83))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
-* Reorganized custom assertions and improved test reporter ([#2700](https://github.com/newrelic/node-newrelic/pull/2700)) ([9e98b18](https://github.com/newrelic/node-newrelic/commit/9e98b18b0f2768df9f75348975bebe904418a4a2))
-* Updated cassandra-driver tests to node:test ([#2678](https://github.com/newrelic/node-newrelic/pull/2678)) ([bd4f7ff](https://github.com/newrelic/node-newrelic/commit/bd4f7ff9df2cd1057e21a6ba3e28aac9fe02ecc6))
+* Moved recorders to `lib/metrics/recorders` ([#2666](https://github.com/newrelic/node-newrelic/pull/2666)) ([d8dfe84](https://github.com/newrelic/node-newrelic/commit/d8dfe843aebf275bda6d5c857cfe263039bc1a83))
 
 #### Tests
 
 * Fixed file extensions for aws-sdk v2 and v3 versioned tests to reflect they have been migrated to `node:test` ([#2687](https://github.com/newrelic/node-newrelic/pull/2687)) ([4ec09ba](https://github.com/newrelic/node-newrelic/commit/4ec09ba34a825fa9decdc2d854eec6d24ee37ac4))
 * Migrated elasticsearch and esm-package versioned tests to `node:test` ([#2680](https://github.com/newrelic/node-newrelic/pull/2680)) ([0e0c2b2](https://github.com/newrelic/node-newrelic/commit/0e0c2b2f15e2179def4e67741fc988b7d16248d7))
 * Updated cls and connect tests to node:test ([#2676](https://github.com/newrelic/node-newrelic/pull/2676)) ([1e74434](https://github.com/newrelic/node-newrelic/commit/1e74434efd21c13199ad12af837129d251136c76))
+* Reorganized custom assertions and improved test reporter ([#2700](https://github.com/newrelic/node-newrelic/pull/2700)) ([9e98b18](https://github.com/newrelic/node-newrelic/commit/9e98b18b0f2768df9f75348975bebe904418a4a2))
+* Updated cassandra-driver tests to node:test ([#2678](https://github.com/newrelic/node-newrelic/pull/2678)) ([bd4f7ff](https://github.com/newrelic/node-newrelic/commit/bd4f7ff9df2cd1057e21a6ba3e28aac9fe02ecc6))
 
 ### v12.6.0 (2024-10-30)
 
