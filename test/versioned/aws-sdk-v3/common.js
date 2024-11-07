@@ -56,7 +56,6 @@ function checkExternals({ service, operations, tx, end }) {
     operations.length,
     `should have ${operations.length} aws externals`
   )
-
   operations.forEach((operation, index) => {
     const attrs = externals[index].attributes.get(TRANS_SEGMENT)
     match(attrs, {
