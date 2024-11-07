@@ -78,5 +78,9 @@ function mockProcRead(data, v2) {
     common.readProc.onCall(1).yields(null, data)
   } else {
     common.readProc.onCall(0).yields(null, data)
+    // The empty.txt test fails if we don't have the next line present. This
+    // is due to solving NR-332492 (falling back to v1 if a v2 file is present
+    // but does not contain a parseable docker container id).
+    common.readProc.onCall(1).yields(null, data)
   }
 }
