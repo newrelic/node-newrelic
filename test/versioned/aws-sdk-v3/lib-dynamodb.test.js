@@ -21,7 +21,13 @@ test('DynamoDB', async (t) => {
     })
 
     ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      cloud: {
+        aws: {
+          account_id: 123456789123
+        }
+      }
+    })
     const lib = require('@aws-sdk/lib-dynamodb')
     ctx.nr.DynamoDBDocument = lib.DynamoDBDocument
     ctx.nr.DynamoDBDocumentClient = lib.DynamoDBDocumentClient

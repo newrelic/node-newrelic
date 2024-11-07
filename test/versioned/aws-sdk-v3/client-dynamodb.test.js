@@ -24,7 +24,14 @@ test('DynamoDB', async (t) => {
     })
 
     ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      cloud: {
+        aws: {
+          account_id: 123456789123
+        }
+      }
+    })
+
     const Shim = require('../../../lib/shim/datastore-shim')
     ctx.nr.setDatastoreSpy = sinon.spy(Shim.prototype, 'setDatastore')
     const lib = require('@aws-sdk/client-dynamodb')
