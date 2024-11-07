@@ -31,9 +31,11 @@ test.beforeEach(async (ctx) => {
   utilCommon.readProc = (path, cb) => {
     cb(null, 'docker-1')
   }
+  ctx.nr.utilCommon = utilCommon
 
-  const { getBootId } = require('../../../lib/utilization/docker-info')
+  const { getBootId, getVendorInfo } = require('../../../lib/utilization/docker-info')
   ctx.nr.getBootId = getBootId
+  ctx.nr.getVendorInfo = getVendorInfo
 
   ctx.nr.agent = helper.loadMockedAgent()
   ctx.nr.agent.config.utilization = {
@@ -97,6 +99,34 @@ test('data on success', (t, end) => {
     assert.equal(error, null)
     assert.equal(data, 'docker-1')
     assert.deepStrictEqual(t.nr.logs, [])
+    end()
+  }
+})
+
+test('falls back to v1 correctly', (t, end) => {
+  const { agent, logger, getVendorInfo, utilCommon } = t.nr
+  let invocation = 0
+
+  utilCommon.readProc = (path, callback) => {
+    if (invocation === 0) {
+      invocation += 1
+      return callback(null, 'invalid cgroups v2 file')
+    }
+    callback(null, '4:cpu:/docker/f37a7e4d17017e7bf774656b19ca4360c6cdc4951c86700a464101d0d9ce97ee')
+  }
+
+  getVendorInfo(agent, gotInfo, logger)
+
+  function gotInfo(error, info) {
+    assert.ifError(error)
+    assert.deepStrictEqual(info, {
+      id: 'f37a7e4d17017e7bf774656b19ca4360c6cdc4951c86700a464101d0d9ce97ee'
+    })
+    assert.deepStrictEqual(t.nr.logs, [
+      'Found /proc/self/mountinfo but failed to parse Docker container id.',
+      'Attempting to fall back to cgroups v1 parsing.',
+      'Found docker id from cgroups v1: f37a7e4d17017e7bf774656b19ca4360c6cdc4951c86700a464101d0d9ce97ee'
+    ])
     end()
   }
 })
