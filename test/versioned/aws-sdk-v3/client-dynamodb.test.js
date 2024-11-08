@@ -105,6 +105,25 @@ test('DynamoDB', async (t) => {
       finish({ commands, tx, setDatastoreSpy })
     })
   })
+
+  await t.test('cloud.resource_id attribute not set when account_id is not set', async (t) => {
+    const { agent, commands, client } = t.nr
+    agent.config.cloud.aws.account_id = null
+
+    await helper.runInTransaction(agent, async (tx) => {
+      for (const command of commands) {
+        await client.send(command)
+      }
+      tx.end()
+      const root = tx.trace.root
+      const segments = common.checkAWSAttributes(root, common.DATASTORE_PATTERN)
+
+      segments.forEach((segment) => {
+        const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+        assert.equal(attrs['cloud.resource_id'], null)
+      })
+    })
+  })
 })
 
 function createCommands({ lib, tableName }) {
