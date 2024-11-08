@@ -164,23 +164,6 @@ test('database query parser', async (t) => {
   })
 })
 
-// test(
-//   'handles statement with many solidus characters in a timely manner',
-//   { timeout: 1_000 },
-//   (t) => {
-//     const times = 800_000
-//     const json = JSON.stringify({
-//       something: '/' + '\\'.repeat(times) + 'aaa' + '\\'.repeat(times) + '/'
-//     })
-//     const statement = `insert into foo (col1) values('${json}')`
-//     const ps = parseSql(statement)
-//
-//     assert.equal(ps.operation, 'insert')
-//     // assert.equal(ps.table, 'foo')
-//     assert.equal(ps.collection, 'foo')
-//   }
-// )
-
 // test('reports correct info if inline comments present', () => {
 //   const statement = `--insert into`
 // })
@@ -273,5 +256,15 @@ test('handles leading CTE', () => {
     collection: 'foo_table',
     table: 'foo_table',
     database: undefined
+  })
+})
+
+test('maps `SELECT ? + ? AS solution` to "unknown" collection', () => {
+  const statement = 'SELECT ? + ? AS solution'
+  const found = parseSql(statement)
+  match(found, {
+    operation: 'select',
+    collection: 'unknown',
+    table: 'unknown'
   })
 })
