@@ -7,6 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+
+const match = require('../../../lib/custom-assertions/match')
 const parseSql = require('../../../../lib/db/query-parsers/sql')
 const CATs = require('../../../lib/cross_agent_tests/sql_parsing')
 
@@ -159,5 +161,117 @@ test('database query parser', async (t) => {
         }
       })
     }
+  })
+})
+
+// test(
+//   'handles statement with many solidus characters in a timely manner',
+//   { timeout: 1_000 },
+//   (t) => {
+//     const times = 800_000
+//     const json = JSON.stringify({
+//       something: '/' + '\\'.repeat(times) + 'aaa' + '\\'.repeat(times) + '/'
+//     })
+//     const statement = `insert into foo (col1) values('${json}')`
+//     const ps = parseSql(statement)
+//
+//     assert.equal(ps.operation, 'insert')
+//     // assert.equal(ps.table, 'foo')
+//     assert.equal(ps.collection, 'foo')
+//   }
+// )
+
+// test('reports correct info if inline comments present', () => {
+//   const statement = `--insert into`
+// })
+
+test('reports correct info if multi-line comments present', () => {
+  const expected = { operation: 'insert', collection: 'foo', table: 'foo' }
+
+  let statement = `/*insert into bar some stuff*/
+    insert into foo (col1) values('bar')
+    `
+  let found = parseSql(statement)
+  match(found, expected)
+
+  statement = `/****
+      insert into bar some stuff
+    ****/
+    insert into
+    foo (col1)
+    values('bar')
+    `
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert /* insert into bar */ into foo`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `/* insert into bar some stuff */ insert into foo (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into /* insert into bar some stuff */ foo (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert /* comments! */ into /* insert into bar some stuff */ foo /* MOAR */ (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+})
+
+test('handles quoted names', () => {
+  const expected = { operation: 'insert', collection: 'foo', table: 'foo' }
+
+  let statement = 'insert into `foo` (col1)'
+  let found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into 'foo' (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into "foo" (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+})
+
+test('handles fully qualified names', () => {
+  const expected = { operation: 'insert', collection: 'myDb.foo', table: 'foo', database: 'myDb' }
+
+  let statement = 'insert into `myDb.foo` (col1)'
+  let found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into 'myDb.foo' (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into "myDb.foo" (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+})
+
+test('handles leading CTE', () => {
+  const statement = `with cte1 as (
+      select
+        linking_col
+      from
+        linking_table
+    )
+    select
+      foo_col
+    from
+      foo_table a
+      join cte1 linking_col
+    where
+      a.bar_col = 'bar'`
+  const found = parseSql(statement)
+  match(found, {
+    operation: 'select',
+    collection: 'foo_table',
+    table: 'foo_table',
+    database: undefined
   })
 })
