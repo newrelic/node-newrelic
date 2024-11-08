@@ -13,15 +13,11 @@
         "generic-pool": "2.4"
       },
       "files": [
-        "basic-pool.tap.js",
-        "basic.tap.js",
-        "pooling.tap.js",
-        "transactions.tap.js"
+        "basic-pool.test.js",
+        "basic.test.js",
+        "pooling.test.js",
+        "transactions.test.js"
       ]
     }
-  ],
-  "dependencies": {
-    "generic-pool": "^2.4.6",
-    "mysql": "^2.16.0"
-  }
+  ]
 }

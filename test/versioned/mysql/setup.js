@@ -7,20 +7,10 @@
 
 const params = require('../../lib/params')
 const setup = require('./helpers')
-
-const USER = 'mysql_test_user'
-const DATABASE = 'mysql_agent_integration'
-const TABLE = 'test'
-
-module.exports = exports = setup.bind(null, USER, DATABASE, TABLE)
+module.exports = exports = setup
 exports.pool = setupPool
-exports.USER = USER
-exports.DATABASE = DATABASE
-exports.TABLE = TABLE
 
-function setupPool(mysql, logger) {
-  const generic = require('generic-pool')
-
+function setupPool(user, database, mysql, generic, logger) {
   return new generic.Pool({
     name: 'mysql',
     min: 2,
@@ -33,8 +23,8 @@ function setupPool(mysql, logger) {
 
     create: function (callback) {
       const client = mysql.createConnection({
-        user: USER,
-        database: DATABASE,
+        user,
+        database,
         host: params.mysql_host,
         port: params.mysql_port
       })
