@@ -7,6 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+
+const match = require('../../../lib/custom-assertions/match')
 const parseSql = require('../../../../lib/db/query-parsers/sql')
 const CATs = require('../../../lib/cross_agent_tests/sql_parsing')
 
@@ -160,4 +162,208 @@ test('database query parser', async (t) => {
       })
     }
   })
+})
+
+test('logs correctly if input is incorrect', () => {
+  let logs = []
+  const logger = {
+    traceEnabled() {
+      return true
+    },
+    trace(msg, data) {
+      logs.push([msg, data])
+    },
+    debug(error, msg) {
+      logs.push([error, msg])
+    }
+  }
+
+  let result = parseSql({ an: 'invalid object' }, { logger })
+  assert.deepStrictEqual(result, { operation: 'other', collection: null, query: '' })
+  assert.deepStrictEqual(logs, [
+    ['parseSQL got a non-string sql that looks like: %s', `{"an":"invalid object"}`]
+  ])
+
+  logs = []
+  logger.trace = () => {
+    throw Error('boom')
+  }
+  result = parseSql({ an: 'invalid object' }, { logger })
+  assert.deepStrictEqual(result, { operation: 'other', collection: null, query: '' })
+  assert.equal(logs[0][1], 'Unable to stringify SQL')
+})
+
+test('reports correct info if single line comments present', () => {
+  const expected = { operation: 'insert', collection: 'bar', table: 'bar' }
+  let statement = `-- insert into bar some stuff
+  insert into bar
+    (col1, col2) -- the columns
+  values('a', 'b') -- the values
+  `
+  let found = parseSql(statement)
+  match(found, expected)
+
+  statement = `# insert into bar some stuff
+  insert into bar
+    (col1, col2) # the columns
+  values('a', 'b') # the values
+  `
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `--insert into bar some stuff
+  insert into bar
+    (col1, col2) --the columns
+  values('--hoorah', '#foobar') #the values
+  `
+  found = parseSql(statement)
+  match(found, expected)
+})
+
+test('reports correct info if multi-line comments present', () => {
+  const expected = { operation: 'insert', collection: 'foo', table: 'foo' }
+
+  let statement = `/*insert into bar some stuff*/
+    insert into foo (col1) values('bar')
+    `
+  let found = parseSql(statement)
+  match(found, expected)
+
+  statement = `/****
+      insert into bar some stuff
+    ****/
+    insert into
+    foo (col1)
+    values('bar')
+    `
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert /* insert into bar */ into foo`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `/* insert into bar some stuff */ insert into foo (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into /* insert into bar some stuff */ foo (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert /* comments! */ into /* insert into bar some stuff */ foo /* MOAR */ (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+})
+
+test('handles quoted names', () => {
+  const expected = { operation: 'insert', collection: 'foo', table: 'foo' }
+
+  let statement = 'insert into `foo` (col1)'
+  let found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into 'foo' (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into "foo" (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+
+  expected.collection = 'foo``foo'
+  expected.table = 'foo``foo'
+  statement = 'insert into `foo``foo`'
+  found = parseSql(statement)
+  match(found, expected)
+
+  expected.collection = `foo''foo`
+  expected.table = `foo''foo`
+  statement = "insert into `foo''foo`"
+  found = parseSql(statement)
+  match(found, expected)
+
+  expected.collection = `foo"foo`
+  expected.table = `foo"foo`
+  statement = 'insert into `foo"foo`'
+  found = parseSql(statement)
+  match(found, expected)
+})
+
+test('handles fully qualified names', () => {
+  const expected = { operation: 'insert', collection: 'myDb.foo', table: 'foo', database: 'myDb' }
+
+  let statement = 'insert into `myDb`.`foo` (col1)'
+  let found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into 'myDb'.'foo' (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `insert into "myDb"."foo" (col1)`
+  found = parseSql(statement)
+  match(found, expected)
+})
+
+test('handles leading CTE', () => {
+  let statement = `with cte1 as (
+      select
+        linking_col
+      from
+        linking_table
+    )
+    select
+      foo_col
+    from
+      foo_table a
+      join cte1 linking_col
+    where
+      a.bar_col = 'bar'`
+  let found = parseSql(statement)
+  match(found, {
+    operation: 'select',
+    collection: 'foo_table',
+    table: 'foo_table',
+    database: undefined
+  })
+
+  statement = `with cte1 as (select * from foo) update bar set bar.a = cte1.a`
+  found = parseSql(statement)
+  match(found, {
+    operation: 'update',
+    collection: 'bar',
+    table: 'bar',
+    database: undefined
+  })
+})
+
+test('maps `SELECT ? + ? AS solution` to "unknown" collection', () => {
+  const statement = 'SELECT ? + ? AS solution'
+  const found = parseSql(statement)
+  match(found, {
+    operation: 'select',
+    collection: 'unknown',
+    table: 'unknown'
+  })
+})
+
+test('handles odd characters attached to table names', () => {
+  const expected = { operation: 'select', collection: 'unit-test', table: 'unit-test' }
+
+  let statement = 'select test from unit-test;'
+  let found = parseSql(statement)
+  match(found, expected)
+
+  expected.collection = 'schema.unit-test'
+  statement = 'select test from schema.unit-test;'
+  found = parseSql(statement)
+  match(found, expected)
+})
+
+test('handles subqueries in place of table identifiers', () => {
+  const expected = { operation: 'select', collection: 'foo', table: 'foo' }
+  const statement = 'select * from (select foo from foo) where bar = "baz"'
+  const found = parseSql(statement)
+  match(found, expected)
 })
