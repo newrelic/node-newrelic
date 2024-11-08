@@ -6,6 +6,8 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
+const sinon = require('sinon')
+const createLoggerMock = require('../../mocks/logger')
 const SegmentTree = require('../../../../lib/transaction/trace/segment-tree')
 
 test('should add root to segment tree', () => {
@@ -44,8 +46,10 @@ test('should find the proper parent node', () => {
 
 test('should not add child if parent cannot be found', () => {
   const segment = { id: '1', name: 'ROOT' }
-  const tree = new SegmentTree(segment)
+  const loggerStub = createLoggerMock(sinon)
+  const tree = new SegmentTree(segment, { logger: loggerStub })
   const segment2 = { id: '2', parentId: '0', name: 'segment2' }
   tree.add(segment2)
   assert.deepEqual(tree.root.children, [])
+  assert.deepEqual(loggerStub.debug.args[0], ['Cannot find parent %s in tree', '0'])
 })
