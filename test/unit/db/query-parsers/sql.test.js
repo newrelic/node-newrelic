@@ -218,12 +218,30 @@ test('handles quoted names', () => {
   statement = `insert into "foo" (col1)`
   found = parseSql(statement)
   match(found, expected)
+
+  expected.collection = 'foo``foo'
+  expected.table = 'foo``foo'
+  statement = 'insert into `foo``foo`'
+  found = parseSql(statement)
+  match(found, expected)
+
+  expected.collection = `foo''foo`
+  expected.table = `foo''foo`
+  statement = "insert into `foo''foo`"
+  found = parseSql(statement)
+  match(found, expected)
+
+  expected.collection = `foo"foo`
+  expected.table = `foo"foo`
+  statement = 'insert into `foo"foo`'
+  found = parseSql(statement)
+  match(found, expected)
 })
 
 test('handles fully qualified names', () => {
   const expected = { operation: 'insert', collection: 'myDb.foo', table: 'foo', database: 'myDb' }
 
-  let statement = 'insert into `myDb.foo` (col1)'
+  let statement = 'insert into `myDb`.`foo` (col1)'
   let found = parseSql(statement)
   match(found, expected)
 
@@ -268,3 +286,15 @@ test('maps `SELECT ? + ? AS solution` to "unknown" collection', () => {
     table: 'unknown'
   })
 })
+
+// test('handles odd characters attached to table names', () => {
+//   const expected = { operation: 'select', collection: 'unit-test', table: 'unit-test' }
+//
+//   let statement = 'select test from unit-test;'
+//   let found = parseSql(statement)
+//   match(found, expected)
+//
+//   statement = 'select test from schema.unit-test;'
+//   found = parseSql(statement)
+//   match(found, expected)
+// })
