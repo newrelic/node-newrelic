@@ -16,10 +16,9 @@
         }
       },
       "files": [
-        "segments.tap.mjs",
-        "transaction-naming.tap.mjs"
+        "segments.test.mjs",
+        "transaction-naming.test.mjs"
       ]
     }
-  ],
-  "dependencies": {}
+  ]
 }

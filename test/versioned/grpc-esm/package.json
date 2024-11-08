@@ -13,8 +13,8 @@
         "@grpc/grpc-js": ">=1.4.0"
       },
       "files": [
-        "client-unary.tap.mjs",
-        "server-unary.tap.mjs"
+        "client-unary.test.mjs",
+        "server-unary.test.mjs"
       ]
     }
   ]

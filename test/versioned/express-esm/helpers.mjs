@@ -12,12 +12,6 @@ const helpers = Object.create(null)
  * @returns { app, express }
  */
 helpers.setup = async function setup() {
-  /**
-   * This rule is not fully fleshed out and the library is no longer maintained
-   * See: https://github.com/mysticatea/eslint-plugin-node/issues/250
-   * Fix would be to migrate to use https://github.com/weiran-zsd/eslint-plugin-node
-   */
-
   const { default: express } = await import('express')
   const app = express()
   return { app, express }
@@ -39,14 +33,13 @@ helpers.makeRequest = function makeRequest(server, endpoint) {
  * Listens to express app, makes request, and returns transaction when `transactionFinished` event fires
  *
  * @param {Object} params
- * @param {Object} params.app express instance
- * @param {Object} params.t tap test
+ * @param {Object} params.server the underlying core server instance of the
+ * express app
  * @param {Object} params.agent mocked agent
  * @param {string} params.endpoint URI
  */
 helpers.makeRequestAndFinishTransaction = async function makeRequestAndFinishTransaction({
-  app,
-  t,
+  server,
   agent,
   endpoint
 }) {
@@ -59,13 +52,7 @@ helpers.makeRequestAndFinishTransaction = async function makeRequestAndFinishTra
 
   agent.on('transactionFinished', transactionHandler)
 
-  const server = app.listen(function () {
-    helpers.makeRequest(this, endpoint)
-  })
-  t.teardown(() => {
-    server.close()
-    agent.removeListener('transactionFinished', transactionHandler)
-  })
+  helpers.makeRequest(server, endpoint)
 
   return promise
 }
