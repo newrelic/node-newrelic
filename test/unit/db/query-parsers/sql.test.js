@@ -164,6 +164,35 @@ test('database query parser', async (t) => {
   })
 })
 
+test('logs correctly if input is incorrect', () => {
+  let logs = []
+  const logger = {
+    traceEnabled() {
+      return true
+    },
+    trace(msg, data) {
+      logs.push([msg, data])
+    },
+    debug(error, msg) {
+      logs.push([error, msg])
+    }
+  }
+
+  let result = parseSql({ an: 'invalid object' }, { logger })
+  assert.deepStrictEqual(result, { operation: 'other', collection: null, query: '' })
+  assert.deepStrictEqual(logs, [
+    ['parseSQL got a non-string sql that looks like: %s', `{"an":"invalid object"}`]
+  ])
+
+  logs = []
+  logger.trace = () => {
+    throw Error('boom')
+  }
+  result = parseSql({ an: 'invalid object' }, { logger })
+  assert.deepStrictEqual(result, { operation: 'other', collection: null, query: '' })
+  assert.equal(logs[0][1], 'Unable to stringify SQL')
+})
+
 // test('reports correct info if inline comments present', () => {
 //   const statement = `--insert into`
 // })
@@ -297,5 +326,12 @@ test('handles odd characters attached to table names', () => {
   expected.collection = 'schema.unit-test'
   statement = 'select test from schema.unit-test;'
   found = parseSql(statement)
+  match(found, expected)
+})
+
+test('handles subqueries in place of table identifiers', () => {
+  const expected = { operation: 'select', collection: 'foo', table: 'foo' }
+  const statement = 'select * from (select foo from foo) where bar = "baz"'
+  const found = parseSql(statement)
   match(found, expected)
 })
