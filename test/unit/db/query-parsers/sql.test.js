@@ -193,9 +193,32 @@ test('logs correctly if input is incorrect', () => {
   assert.equal(logs[0][1], 'Unable to stringify SQL')
 })
 
-// test('reports correct info if inline comments present', () => {
-//   const statement = `--insert into`
-// })
+test('reports correct info if single line comments present', () => {
+  const expected = { operation: 'insert', collection: 'bar', table: 'bar' }
+  let statement = `-- insert into bar some stuff
+  insert into bar
+    (col1, col2) -- the columns
+  values('a', 'b') -- the values
+  `
+  let found = parseSql(statement)
+  match(found, expected)
+
+  statement = `# insert into bar some stuff
+  insert into bar
+    (col1, col2) # the columns
+  values('a', 'b') # the values
+  `
+  found = parseSql(statement)
+  match(found, expected)
+
+  statement = `--insert into bar some stuff
+  insert into bar
+    (col1, col2) --the columns
+  values('--hoorah', '#foobar') #the values
+  `
+  found = parseSql(statement)
+  match(found, expected)
+})
 
 test('reports correct info if multi-line comments present', () => {
   const expected = { operation: 'insert', collection: 'foo', table: 'foo' }
@@ -284,7 +307,7 @@ test('handles fully qualified names', () => {
 })
 
 test('handles leading CTE', () => {
-  const statement = `with cte1 as (
+  let statement = `with cte1 as (
       select
         linking_col
       from
@@ -297,11 +320,20 @@ test('handles leading CTE', () => {
       join cte1 linking_col
     where
       a.bar_col = 'bar'`
-  const found = parseSql(statement)
+  let found = parseSql(statement)
   match(found, {
     operation: 'select',
     collection: 'foo_table',
     table: 'foo_table',
+    database: undefined
+  })
+
+  statement = `with cte1 as (select * from foo) update bar set bar.a = cte1.a`
+  found = parseSql(statement)
+  match(found, {
+    operation: 'update',
+    collection: 'bar',
+    table: 'bar',
     database: undefined
   })
 })
