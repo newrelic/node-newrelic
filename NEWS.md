@@ -8,9 +8,7 @@
 
 #### Documentation
 
-* Updated compatibility report ([#2712](https://github.com/newrelic/node-newrelic/pull/2712)) ([82f0e98](https://github.com/newrelic/node-newrelic/commit/82f0e9806c88d14cba2e0cdf47593e036107bd7d))
-* Updated compatibility report ([#2699](https://github.com/newrelic/node-newrelic/pull/2699)) ([4432c42](https://github.com/newrelic/node-newrelic/commit/4432c4215d68cc79333ee3828f1ecd55476c63d8))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#2712](https://github.com/newrelic/node-newrelic/pull/2712)) ([82f0e98](https://github.com/newrelic/node-newrelic/commit/82f0e9806c88d14cba2e0cdf47593e036107bd7d)) ([#2699](https://github.com/newrelic/node-newrelic/pull/2699)) ([4432c42](https://github.com/newrelic/node-newrelic/commit/4432c4215d68cc79333ee3828f1ecd55476c63d8))
 
 #### Miscellaneous chores
 
