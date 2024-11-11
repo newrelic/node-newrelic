@@ -58,7 +58,7 @@ version.
 | `superagent` | 3.0.0 | 10.1.1 | 4.9.0 |
 | `undici` | 5.0.0 | 6.20.1 | 11.1.0 |
 | `when` | 3.7.0 | 3.7.8 | 1.26.2 |
-| `winston` | 3.0.0 | 3.16.0 | 8.11.0 |
+| `winston` | 3.0.0 | 3.17.0 | 8.11.0 |
 
 *When package is not specified, support is within the `newrelic` package.
 
