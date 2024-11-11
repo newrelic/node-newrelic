@@ -24,6 +24,13 @@ const claude = {
   }
 }
 
+const claude35 = {
+  modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
+  body: {
+    messages: [{ role: 'user', content: { type: 'text', text: 'who are you' } }]
+  }
+}
+
 const claude3 = {
   modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
   body: {
@@ -182,6 +189,30 @@ test('claude3 complete command works', async (t) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
+test('claude35 minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(claude35))
+  const cmd = new BedrockCommand(t.nr.input)
+  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.maxTokens, undefined)
+  assert.equal(cmd.modelId, claude35.modelId)
+  assert.equal(cmd.modelType, 'completion')
+  assert.equal(cmd.prompt, claude35.body.messages[0].content.text)
+  assert.equal(cmd.temperature, undefined)
+})
+
+test('claude35 complete command works', async (t) => {
+  const payload = structuredClone(claude35)
+  payload.body.max_tokens = 25
+  payload.body.temperature = 0.5
+  t.nr.updatePayload(payload)
+  const cmd = new BedrockCommand(t.nr.input)
+  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.maxTokens, 25)
+  assert.equal(cmd.modelId, payload.modelId)
+  assert.equal(cmd.modelType, 'completion')
+  assert.equal(cmd.prompt, payload.body.messages[0].content.text)
+  assert.equal(cmd.temperature, payload.body.temperature)
+})
 test('cohere minimal command works', async (t) => {
   t.nr.updatePayload(structuredClone(cohere))
   const cmd = new BedrockCommand(t.nr.input)
