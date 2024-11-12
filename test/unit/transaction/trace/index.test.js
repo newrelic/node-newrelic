@@ -310,9 +310,9 @@ test('when serializing synchronously', async (t) => {
 
   await t.test('should produce a transaction trace in the expected format', async (t) => {
     const { details } = t.nr
-    assert.equal(details.trace.segments.length, 3)
+    assert.ok(details.trace.segments)
     const traceJSON = details.trace.generateJSONSync()
-    assert.equal(details.trace.segments.length, 0)
+    assert.ok(!details.trace.segments)
     const reconstituted = await codecDecodeAsync(traceJSON[4])
     assert.deepEqual(traceJSON, details.expectedEncoding, 'full trace JSON')
 
@@ -383,9 +383,9 @@ test('when serializing asynchronously', async (t) => {
 
   await t.test('should produce a transaction trace in the expected format', async (t) => {
     const { details } = t.nr
-    assert.equal(details.trace.segments.length, 3)
+    assert.ok(details.trace.segments)
     const traceJSON = await details.trace.generateJSONAsync()
-    assert.equal(details.trace.segments.length, 0)
+    assert.ok(!details.trace.segments)
     const reconstituted = await codecDecodeAsync(traceJSON[4])
 
     assert.deepEqual(traceJSON, details.expectedEncoding, 'full trace JSON')
@@ -743,14 +743,16 @@ test('when inserting segments', async (t) => {
     // They will be tagged as _collect = false after the limit runs out.
     for (let i = 0; i < 950; ++i) {
       const segment = trace.add(i.toString(), noop)
-      if (i < 900) {
+      // root segment is already added
+      if (i < 899) {
         assert.equal(segment._collect, true, `segment ${i} should be collected`)
       } else {
         assert.equal(segment._collect, false, `segment ${i} should not be collected`)
       }
     }
 
-    assert.equal(trace.segments.length, 950)
+    // 950 + root segment
+    assert.equal(transaction.numSegments, 951)
     assert.equal(transaction._recorders.length, 950)
     trace.end()
     function noop() {}
@@ -769,11 +771,12 @@ test('when inserting segments', async (t) => {
 
   await t.test('should get all children for a segment', (t) => {
     const { trace } = t.nr
-    assert.deepEqual(trace.segments, [])
+    assert.deepEqual(trace.segments.root.children, [])
     const segment = trace.add('base')
     const segment2 = trace.add('1', null, segment)
     const segment3 = trace.add('2', null, segment)
     const children = trace.getChildren(segment.id)
+    assert.ok(children.length, 2)
     assert.deepEqual(children, [segment2, segment3])
   })
 
@@ -786,8 +789,13 @@ test('when inserting segments', async (t) => {
     segment4._collect = false
     const segment5 = trace.add('4', null, segment)
     segment5.ignore = true
-    const children = trace.getCollectedChildren(segment.id)
-    assert.deepEqual(children, [segment2, segment3])
+    let { children } = trace.getNode(segment.id)
+    children = trace.getCollectedChildren(children)
+    assert.ok(children.length, 2)
+    assert.deepEqual(children[0].segment, segment2)
+    assert.deepEqual(children[0].children, [])
+    assert.deepEqual(children[1].segment, segment3)
+    assert.deepEqual(children[1].children, [])
   })
 
   await t.test('should get parent segment for a segment', (t) => {
