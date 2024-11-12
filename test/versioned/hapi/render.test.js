@@ -226,7 +226,7 @@ test('should trap errors correctly', (t, end) => {
 
         const first = errors[0]
         assert.ok(first, 'have the first error')
-        assert.match(first[2], /ohno/, 'got the expected error')
+        match(first[2], /ohno/, 'got the expected error')
 
         end()
       }
