@@ -44,7 +44,9 @@ test('should create span on successful tools create', (t, end) => {
   helper.runInTransaction(agent, async (tx) => {
     const result = await tool.call(input)
     assert.ok(result)
-    assertSegments(tx.trace, tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], { exact: false })
+    assertSegments(tx.trace, tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], {
+      exact: false
+    })
     tx.end()
     end()
   })

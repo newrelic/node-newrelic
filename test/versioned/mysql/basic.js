@@ -247,7 +247,11 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
             assert.ok(results && ended, 'result and end events should occur')
             const traceRoot = transaction.trace.root
             const traceRootDuration = traceRoot.timer.getDurationInMillis()
-            const segment = findSegment(transaction.trace, traceRoot, 'Datastore/statement/MySQL/unknown/select')
+            const segment = findSegment(
+              transaction.trace,
+              traceRoot,
+              'Datastore/statement/MySQL/unknown/select'
+            )
             const queryNodeDuration = segment.timer.getDurationInMillis()
 
             assert.ok(
@@ -292,11 +296,7 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
               const traceRoot = transaction.trace.root
               const [querySegment] = transaction.trace.getChildren(traceRoot.id)
               const queryChildren = transaction.trace.getChildren(querySegment.id)
-              assert.equal(
-                queryChildren.length,
-                2,
-                'the query segment should have two children'
-              )
+              assert.equal(queryChildren.length, 2, 'the query segment should have two children')
 
               const childSegment = queryChildren[1]
               assert.equal(

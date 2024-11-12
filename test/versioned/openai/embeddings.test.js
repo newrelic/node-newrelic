@@ -62,9 +62,14 @@ test('should create span on successful embedding create', (t, end) => {
     assert.equal(results.headers, undefined, 'should remove response headers from user result')
     assert.equal(results.model, 'text-embedding-ada-002-v2')
 
-    assertSegments(tx.trace, tx.trace.root, [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]], {
-      exact: false
-    })
+    assertSegments(
+      tx.trace,
+      tx.trace.root,
+      [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]],
+      {
+        exact: false
+      }
+    )
 
     tx.end()
     end()
