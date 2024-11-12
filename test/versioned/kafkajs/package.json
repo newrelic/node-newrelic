@@ -12,7 +12,7 @@
         "kafkajs": ">=2.0.0"
       },
       "files": [
-        "kafka.tap.js"
+        "kafka.test.js"
       ]
     }
   ]

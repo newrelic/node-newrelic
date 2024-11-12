@@ -5,60 +5,63 @@
 
 'use strict'
 
-const tap = require('tap')
-const helper = require('../../lib/agent_helper')
+const test = require('node:test')
+const assert = require('node:assert')
+
 const { removeModules } = require('../../lib/cache-buster')
-// load the assertSegments assertion
-require('../../lib/metrics_helper')
-const { filterLangchainEvents, filterLangchainEventsByType } = require('./common')
+const { assertSegments, match } = require('../../lib/custom-assertions')
+const {
+  assertLangChainChatCompletionMessages,
+  assertLangChainChatCompletionSummary,
+  filterLangchainEvents,
+  filterLangchainEventsByType
+} = require('./common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const createOpenAIMockServer = require('../openai/mock-server')
 const mockResponses = require('../openai/mock-responses')
+const helper = require('../../lib/agent_helper')
+
 const config = {
   ai_monitoring: {
-    enabled: true,
-    streaming: {
-      enabled: true
-    }
+    enabled: true
   }
 }
-
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
-async function beforeEach({ enabled, t }) {
+async function beforeEach({ enabled, ctx }) {
+  ctx.nr = {}
   const { host, port, server } = await createOpenAIMockServer()
-  t.context.server = server
-  t.context.agent = helper.instrumentMockedAgent(config)
-  t.context.agent.config.ai_monitoring.streaming.enabled = enabled
+  ctx.nr.server = server
+  ctx.nr.agent = helper.instrumentMockedAgent(config)
+  ctx.nr.agent.config.ai_monitoring.streaming.enabled = enabled
   const { ChatPromptTemplate } = require('@langchain/core/prompts')
   const { StringOutputParser } = require('@langchain/core/output_parsers')
   const { ChatOpenAI } = require('@langchain/openai')
 
-  t.context.prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} response']])
-  t.context.model = new ChatOpenAI({
+  ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} response']])
+  ctx.nr.model = new ChatOpenAI({
     openAIApiKey: 'fake-key',
     maxRetries: 0,
     configuration: {
       baseURL: `http://${host}:${port}`
     }
   })
-  t.context.outputParser = new StringOutputParser()
+  ctx.nr.outputParser = new StringOutputParser()
 }
 
-async function afterEach(t) {
-  t.context?.server?.close()
-  helper.unloadAgent(t.context.agent)
+async function afterEach(ctx) {
+  ctx.nr?.server?.close()
+  helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument
   removeModules(['@langchain/core', 'openai'])
 }
 
-tap.test('Langchain instrumentation - chain streaming', (t) => {
-  t.beforeEach(beforeEach.bind(null, { enabled: true, t }))
+test('streaming enabled', async (t) => {
+  t.beforeEach((ctx) => beforeEach({ enabled: true, ctx }))
+  t.afterEach((ctx) => afterEach(ctx))
 
-  t.afterEach(afterEach.bind(null, t))
-
-  t.test('should create langchain events for every stream call', (t) => {
-    const { agent, prompt, outputParser, model } = t.context
+  await t.test('should create langchain events for every stream call', (t, end) => {
+    const { agent, prompt, outputParser, model } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
       const input = { topic: 'Streamed' }
@@ -71,49 +74,52 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
       }
 
       const { streamData: expectedContent } = mockResponses.get('Streamed response')
-      t.equal(content, expectedContent)
+      assert.equal(content, expectedContent)
       const events = agent.customEventAggregator.events.toArray()
-      t.equal(events.length, 6, 'should create 6 events')
+      assert.equal(events.length, 6, 'should create 6 events')
 
       const langchainEvents = events.filter((event) => {
         const [, chainEvent] = event
         return chainEvent.vendor === 'langchain'
       })
 
-      t.equal(langchainEvents.length, 3, 'should create 3 langchain events')
+      assert.equal(langchainEvents.length, 3, 'should create 3 langchain events')
 
       tx.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should increment tracking metric for each langchain chat prompt event', (t) => {
-    const { agent, prompt, outputParser, model } = t.context
+  await t.test(
+    'should increment tracking metric for each langchain chat prompt event',
+    (t, end) => {
+      const { agent, prompt, outputParser, model } = t.nr
 
-    helper.runInTransaction(agent, async (tx) => {
-      const input = { topic: 'Streamed' }
+      helper.runInTransaction(agent, async (tx) => {
+        const input = { topic: 'Streamed' }
 
-      const chain = prompt.pipe(model).pipe(outputParser)
-      const stream = await chain.stream(input)
-      for await (const chunk of stream) {
-        chunk
-        // no-op
-      }
+        const chain = prompt.pipe(model).pipe(outputParser)
+        const stream = await chain.stream(input)
+        for await (const chunk of stream) {
+          chunk
+          // no-op
+        }
 
-      const metrics = agent.metrics.getOrCreateMetric(
-        `Supportability/Nodejs/ML/Langchain/${pkgVersion}`
-      )
-      t.equal(metrics.callCount > 0, true)
+        const metrics = agent.metrics.getOrCreateMetric(
+          `Supportability/Nodejs/ML/Langchain/${pkgVersion}`
+        )
+        assert.equal(metrics.callCount > 0, true)
 
-      tx.end()
-      t.end()
-    })
-  })
+        tx.end()
+        end()
+      })
+    }
+  )
 
-  t.test(
+  await t.test(
     'should create langchain events for every stream call on chat prompt + model + parser',
-    (t) => {
-      const { agent, prompt, outputParser, model } = t.context
+    (t, end) => {
+      const { agent, prompt, outputParser, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
         const input = { topic: 'Streamed' }
@@ -138,12 +144,12 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
           'LlmChatCompletionSummary'
         )
 
-        t.langchainSummary({
+        assertLangChainChatCompletionSummary({
           tx,
           chatSummary: langChainSummaryEvents[0]
         })
 
-        t.langchainMessages({
+        assertLangChainChatCompletionMessages({
           tx,
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1],
@@ -152,60 +158,63 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
         })
 
         tx.end()
-        t.end()
+        end()
       })
     }
   )
 
-  t.test('should create langchain events for every stream call on chat prompt + model', (t) => {
-    const { agent, prompt, model } = t.context
+  await t.test(
+    'should create langchain events for every stream call on chat prompt + model',
+    (t, end) => {
+      const { agent, prompt, model } = t.nr
 
-    helper.runInTransaction(agent, async (tx) => {
-      const input = { topic: 'Streamed' }
-      const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+      helper.runInTransaction(agent, async (tx) => {
+        const input = { topic: 'Streamed' }
+        const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
-      const chain = prompt.pipe(model)
-      const stream = await chain.stream(input, options)
-      let content = ''
-      for await (const chunk of stream) {
-        content += chunk
-      }
+        const chain = prompt.pipe(model)
+        const stream = await chain.stream(input, options)
+        let content = ''
+        for await (const chunk of stream) {
+          content += chunk
+        }
 
-      const events = agent.customEventAggregator.events.toArray()
+        const events = agent.customEventAggregator.events.toArray()
 
-      const langchainEvents = filterLangchainEvents(events)
-      const langChainMessageEvents = filterLangchainEventsByType(
-        langchainEvents,
-        'LlmChatCompletionMessage'
-      )
-      const langChainSummaryEvents = filterLangchainEventsByType(
-        langchainEvents,
-        'LlmChatCompletionSummary'
-      )
+        const langchainEvents = filterLangchainEvents(events)
+        const langChainMessageEvents = filterLangchainEventsByType(
+          langchainEvents,
+          'LlmChatCompletionMessage'
+        )
+        const langChainSummaryEvents = filterLangchainEventsByType(
+          langchainEvents,
+          'LlmChatCompletionSummary'
+        )
 
-      t.langchainSummary({
-        tx,
-        chatSummary: langChainSummaryEvents[0]
+        assertLangChainChatCompletionSummary({
+          tx,
+          chatSummary: langChainSummaryEvents[0]
+        })
+
+        assertLangChainChatCompletionMessages({
+          tx,
+          chatMsgs: langChainMessageEvents,
+          chatSummary: langChainSummaryEvents[0][1],
+          input: '{"topic":"Streamed"}',
+          output: content
+        })
+
+        tx.end()
+        end()
       })
+    }
+  )
 
-      t.langchainMessages({
-        tx,
-        chatMsgs: langChainMessageEvents,
-        chatSummary: langChainSummaryEvents[0][1],
-        input: '{"topic":"Streamed"}',
-        output: content
-      })
-
-      tx.end()
-      t.end()
-    })
-  })
-
-  t.test(
+  await t.test(
     'should create langchain events for every stream call with parser that returns an array as output',
-    (t) => {
+    (t, end) => {
       const { CommaSeparatedListOutputParser } = require('@langchain/core/output_parsers')
-      const { agent, prompt, model } = t.context
+      const { agent, prompt, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
         const parser = new CommaSeparatedListOutputParser()
@@ -232,12 +241,12 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
           'LlmChatCompletionSummary'
         )
 
-        t.langchainSummary({
+        assertLangChainChatCompletionSummary({
           tx,
           chatSummary: langChainSummaryEvents[0]
         })
 
-        t.langchainMessages({
+        assertLangChainChatCompletionMessages({
           tx,
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1],
@@ -246,12 +255,12 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
         })
 
         tx.end()
-        t.end()
+        end()
       })
     }
   )
 
-  t.test('should add runId when a callback handler exists', (t) => {
+  await t.test('should add runId when a callback handler exists', (t, end) => {
     const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
     let runId
     const cbHandler = BaseCallbackHandler.fromMethods({
@@ -260,7 +269,7 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
       }
     })
 
-    const { agent, prompt, outputParser, model } = t.context
+    const { agent, prompt, outputParser, model } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
       const input = { topic: 'Streamed' }
@@ -280,22 +289,22 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
       const events = agent.customEventAggregator.events.toArray()
 
       const langchainEvents = filterLangchainEvents(events)
-      t.equal(langchainEvents[0][1].request_id, runId)
+      assert.equal(langchainEvents[0][1].request_id, runId)
 
       tx.end()
-      t.end()
+      end()
     })
   })
 
-  t.test(
+  await t.test(
     'should create langchain events for every stream call on chat prompt + model + parser with callback',
-    (t) => {
+    (t, end) => {
       const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
       const cbHandler = BaseCallbackHandler.fromMethods({
         handleChainStart() {}
       })
 
-      const { agent, prompt, outputParser, model } = t.context
+      const { agent, prompt, outputParser, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
         const input = { topic: 'Streamed' }
@@ -324,13 +333,13 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
           langchainEvents,
           'LlmChatCompletionSummary'
         )
-        t.langchainSummary({
+        assertLangChainChatCompletionSummary({
           tx,
           chatSummary: langChainSummaryEvents[0],
           withCallback: cbHandler
         })
 
-        t.langchainMessages({
+        assertLangChainChatCompletionMessages({
           tx,
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1],
@@ -340,13 +349,13 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
         })
 
         tx.end()
-        t.end()
+        end()
       })
     }
   )
 
-  t.test('should not create langchain events when not in a transaction', async (t) => {
-    const { agent, prompt, outputParser, model } = t.context
+  await t.test('should not create langchain events when not in a transaction', async (t) => {
+    const { agent, prompt, outputParser, model } = t.nr
 
     const input = { topic: 'Streamed' }
 
@@ -358,12 +367,11 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
     }
 
     const events = agent.customEventAggregator.events.toArray()
-    t.equal(events.length, 0, 'should not create langchain events')
-    t.end()
+    assert.equal(events.length, 0, 'should not create langchain events')
   })
 
-  t.test('should add llm attribute to transaction', (t) => {
-    const { agent, prompt, model } = t.context
+  await t.test('should add llm attribute to transaction', (t, end) => {
+    const { agent, prompt, model } = t.nr
 
     const input = { topic: 'Streamed' }
 
@@ -376,15 +384,15 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
       }
 
       const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-      t.equal(attributes.llm, true)
+      assert.equal(attributes.llm, true)
 
       tx.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should create span on successful runnables create', (t) => {
-    const { agent, prompt, model } = t.context
+  await t.test('should create span on successful runnables create', (t, end) => {
+    const { agent, prompt, model } = t.nr
 
     const input = { topic: 'Streamed' }
 
@@ -396,18 +404,18 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
         // no-op
       }
 
-      t.assertSegments(tx.trace.root, ['Llm/chain/Langchain/stream'], { exact: false })
+      assertSegments(tx.trace.root, ['Llm/chain/Langchain/stream'], { exact: false })
 
       tx.end()
-      t.end()
+      end()
     })
   })
 
   // testing JSON.stringify on request (input) during creation of LangChainCompletionMessage event
-  t.test(
+  await t.test(
     'should use empty string for content property on completion message event when invalid input is used - circular reference',
-    (t) => {
-      const { agent, prompt, outputParser, model } = t.context
+    (t, end) => {
+      const { agent, prompt, outputParser, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
         const input = { topic: 'Streamed' }
@@ -432,20 +440,24 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
           (event) => event[1].content === ''
         )
 
-        t.equal(msgEventEmptyContent.length, 1, 'should have 1 event with empty content property')
+        assert.equal(
+          msgEventEmptyContent.length,
+          1,
+          'should have 1 event with empty content property'
+        )
 
         tx.end()
-        t.end()
+        end()
       })
     }
   )
 
-  t.test('should create error events from input', (t) => {
+  await t.test('should create error events from input', (t, end) => {
     const { ChatPromptTemplate } = require('@langchain/core/prompts')
     const prompt = ChatPromptTemplate.fromMessages([
       ['assistant', 'tell me short joke about {topic}']
     ])
-    const { agent, outputParser, model } = t.context
+    const { agent, outputParser, model } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
       const chain = prompt.pipe(model).pipe(outputParser)
@@ -453,32 +465,32 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
       try {
         await chain.stream('')
       } catch (error) {
-        t.ok(error)
+        assert.ok(error)
       }
 
       // No openai events as it errors before talking to LLM
       const events = agent.customEventAggregator.events.toArray()
-      t.equal(events.length, 2, 'should create 2 events')
+      assert.equal(events.length, 2, 'should create 2 events')
 
       const summary = events.find((e) => e[0].type === 'LlmChatCompletionSummary')?.[1]
-      t.equal(summary.error, true)
+      assert.equal(summary.error, true)
 
       // But, we should also get two error events: 1xLLM and 1xLangChain
       const exceptions = tx.exceptions
       for (const e of exceptions) {
         const str = Object.prototype.toString.call(e.customAttributes)
-        t.equal(str, '[object LlmErrorMessage]')
+        assert.equal(str, '[object LlmErrorMessage]')
       }
 
       tx.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should create error events when stream fails', (t) => {
+  await t.test('should create error events when stream fails', (t, end) => {
     const { ChatPromptTemplate } = require('@langchain/core/prompts')
     const prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} stream']])
-    const { agent, model, outputParser } = t.context
+    const { agent, model, outputParser } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
       const chain = prompt.pipe(model).pipe(outputParser)
@@ -490,28 +502,28 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
           // no-op
         }
       } catch (error) {
-        t.ok(error)
+        assert.ok(error)
       }
 
       // We should still get the same 3xLangChain and 3xLLM events as in the
       // success case:
       const events = agent.customEventAggregator.events.toArray()
-      t.equal(events.length, 6, 'should create 6 events')
+      assert.equal(events.length, 6, 'should create 6 events')
 
       const langchainEvents = events.filter((event) => {
         const [, chainEvent] = event
         return chainEvent.vendor === 'langchain'
       })
-      t.equal(langchainEvents.length, 3, 'should create 3 langchain events')
+      assert.equal(langchainEvents.length, 3, 'should create 3 langchain events')
       const summary = langchainEvents.find((e) => e[0].type === 'LlmChatCompletionSummary')?.[1]
-      t.equal(summary.error, true)
+      assert.equal(summary.error, true)
 
       // But, we should also get two error events: 1xLLM and 1xLangChain
       const exceptions = tx.exceptions
       for (const e of exceptions) {
         const str = Object.prototype.toString.call(e.customAttributes)
-        t.equal(str, '[object LlmErrorMessage]')
-        t.match(e, {
+        assert.equal(str, '[object LlmErrorMessage]')
+        match(e, {
           customAttributes: {
             'error.message': 'Premature close',
             'completion_id': /\w{32}/
@@ -519,51 +531,52 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
         })
       }
       tx.end()
-      t.end()
+      end()
     })
   })
-  t.end()
 })
 
-tap.test('Langchain instrumentation - streaming disabled', (t) => {
-  t.beforeEach(beforeEach.bind(null, { enabled: false, t }))
+test('streaming disabled', async (t) => {
+  t.beforeEach((ctx) => beforeEach({ enabled: false, ctx }))
+  t.afterEach((ctx) => afterEach(ctx))
 
-  t.afterEach(afterEach.bind(null, t))
+  await t.test(
+    'should not create llm events when `ai_monitoring.streaming.enabled` is false',
+    (t, end) => {
+      const { agent, prompt, outputParser, model } = t.nr
 
-  t.test('should not create llm events when `ai_monitoring.streaming.enabled` is false', (t) => {
-    const { agent, prompt, outputParser, model } = t.context
+      helper.runInTransaction(agent, async (tx) => {
+        const input = { topic: 'Streamed' }
 
-    helper.runInTransaction(agent, async (tx) => {
-      const input = { topic: 'Streamed' }
+        const chain = prompt.pipe(model).pipe(outputParser)
+        const stream = await chain.stream(input)
+        let content = ''
+        for await (const chunk of stream) {
+          content += chunk
+        }
 
-      const chain = prompt.pipe(model).pipe(outputParser)
-      const stream = await chain.stream(input)
-      let content = ''
-      for await (const chunk of stream) {
-        content += chunk
-      }
+        const { streamData: expectedContent } = mockResponses.get('Streamed response')
+        assert.equal(content, expectedContent)
+        const events = agent.customEventAggregator.events.toArray()
+        assert.equal(events.length, 0, 'should not create llm events when streaming is disabled')
+        const metrics = agent.metrics.getOrCreateMetric(
+          `Supportability/Nodejs/ML/Langchain/${pkgVersion}`
+        )
+        assert.equal(metrics.callCount > 0, true)
+        const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+        assert.equal(attributes.llm, true)
+        const streamingDisabled = agent.metrics.getOrCreateMetric(
+          'Supportability/Nodejs/ML/Streaming/Disabled'
+        )
+        assert.equal(
+          streamingDisabled.callCount,
+          2,
+          'should increment streaming disabled in both langchain and openai'
+        )
 
-      const { streamData: expectedContent } = mockResponses.get('Streamed response')
-      t.equal(content, expectedContent)
-      const events = agent.customEventAggregator.events.toArray()
-      t.equal(events.length, 0, 'should not create llm events when streaming is disabled')
-      const metrics = agent.metrics.getOrCreateMetric(
-        `Supportability/Nodejs/ML/Langchain/${pkgVersion}`
-      )
-      t.equal(metrics.callCount > 0, true)
-      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-      t.equal(attributes.llm, true)
-      const streamingDisabled = agent.metrics.getOrCreateMetric(
-        'Supportability/Nodejs/ML/Streaming/Disabled'
-      )
-      t.equal(
-        streamingDisabled.callCount,
-        2,
-        'should increment streaming disabled in both langchain and openai'
-      )
-      tx.end()
-      t.end()
-    })
-  })
-  t.end()
+        tx.end()
+        end()
+      })
+    }
+  )
 })
