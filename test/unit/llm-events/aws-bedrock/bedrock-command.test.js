@@ -224,6 +224,7 @@ test('claude35 complete command works', async (t) => {
   assert.equal(cmd.prompt, payload.body.messages[0].content.text)
   assert.equal(cmd.temperature, payload.body.temperature)
 })
+
 test('cohere minimal command works', async (t) => {
   t.nr.updatePayload(structuredClone(cohere))
   const cmd = new BedrockCommand(t.nr.input)
