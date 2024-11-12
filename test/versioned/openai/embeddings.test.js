@@ -146,7 +146,7 @@ test('embedding invalid payload errors should be tracked', (t, end) => {
       },
       customAttributes: {
         'http.statusCode': 403,
-        'error.message': '403 You are not allowed to generate embeddings from this model',
+        'error.message': /You are not allowed to generate embeddings from this model/,
         'error.code': null,
         'error.param': null,
         'completion_id': undefined,
