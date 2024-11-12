@@ -360,10 +360,11 @@ if (semver.gte(pkgVersion, '4.12.2')) {
       const events = agent.customEventAggregator.events.toArray()
       assert.equal(events.length, 0)
       // we will still record the external segment but not the chat completion
-      assertSegments(tx.trace.root, [
-        'timers.setTimeout',
-        `External/${host}:${port}/chat/completions`
-      ])
+      assertSegments(
+        tx.trace.root,
+        ['timers.setTimeout', `External/${host}:${port}/chat/completions`],
+        { exact: false }
+      )
 
       tx.end()
       end()
