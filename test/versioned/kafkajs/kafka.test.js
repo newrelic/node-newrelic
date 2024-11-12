@@ -81,7 +81,6 @@ test('send records correctly', async (t) => {
       )
       plan.equal(produceTrackingMetric.callCount, 1)
     }
-
   })
 
   helper.runInTransaction(agent, async (tx) => {
