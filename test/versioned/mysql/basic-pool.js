@@ -273,7 +273,6 @@ module.exports = function ({ factory, constants, pkgVersion }) {
           const transaction = agent.getTransaction()
           const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
 
-
           assert.ok(!err, 'no error occurred')
           assert.ok(transaction, 'transaction should exist')
           assert.ok(segment, 'segment should exist')
@@ -377,7 +376,10 @@ module.exports = function ({ factory, constants, pkgVersion }) {
           socketPool.query('SELECT 1 + 1 AS solution', function (err) {
             assert.ok(!err, 'should not error making query')
 
-            const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
+            const seg = getDatastoreSegment({
+              trace: txn.trace,
+              segment: agent.tracer.getSegment()
+            })
             const attributes = seg.getAttributes()
 
             // In the case where you don't have a server running on localhost
