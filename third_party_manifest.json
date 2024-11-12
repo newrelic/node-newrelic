@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Oct 24 2024 13:42:10 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Oct 29 2024 09:36:52 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -79,6 +79,18 @@
       "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v2.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
+    },
+    "@opentelemetry/api@1.9.0": {
+      "name": "@opentelemetry/api",
+      "version": "1.9.0",
+      "range": "^1.9.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v1.9.0",
+      "licenseFile": "node_modules/@opentelemetry/api/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v1.9.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
     },
     "@tyriar/fibonacci-heap@2.0.9": {
       "name": "@tyriar/fibonacci-heap",
@@ -326,6 +338,18 @@
       "licenseFile": "node_modules/@octokit/rest/LICENSE",
       "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.12.0/LICENSE",
       "licenseTextSource": "file"
+    },
+    "@opentelemetry/sdk-trace-base@1.27.0": {
+      "name": "@opentelemetry/sdk-trace-base",
+      "version": "1.27.0",
+      "range": "^1.27.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v1.27.0",
+      "licenseFile": "node_modules/@opentelemetry/sdk-trace-base/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v1.27.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
     },
     "@slack/bolt@3.22.0": {
       "name": "@slack/bolt",

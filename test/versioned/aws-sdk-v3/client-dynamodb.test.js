@@ -116,7 +116,11 @@ test('DynamoDB', async (t) => {
       }
       tx.end()
       const root = tx.trace.root
-      const segments = common.checkAWSAttributes(root, common.DATASTORE_PATTERN)
+      const segments = common.checkAWSAttributes({
+        trace: tx.trace,
+        segment: root,
+        pattern: common.DATASTORE_PATTERN
+      })
 
       segments.forEach((segment) => {
         const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
