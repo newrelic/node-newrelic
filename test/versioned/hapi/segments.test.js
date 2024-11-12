@@ -30,7 +30,7 @@ test.afterEach((ctx) => {
 
 function runTest(agent, server, callback) {
   agent.on('transactionFinished', function (tx) {
-    const [ baseSegment ] = tx.trace.getChildren(tx.trace.root.id)
+    const [baseSegment] = tx.trace.getChildren(tx.trace.root.id)
     callback(baseSegment, tx)
   })
 
@@ -102,9 +102,7 @@ test('custom handler type is recorded as middleware', (t, end) => {
 
   runTest(agent, server, function (baseSegment, transaction) {
     checkMetrics(transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'customHandler//test'])
-    assertSegments(transaction.trace, baseSegment, [
-      NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
-    ])
+    assertSegments(transaction.trace, baseSegment, [NAMES.HAPI.MIDDLEWARE + 'customHandler//test'])
     end()
   })
 })
