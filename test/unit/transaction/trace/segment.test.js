@@ -207,14 +207,16 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'TestSegment',
       collect: true,
-      root
+      root,
+      parentId: root.id
     })
 
+    transaction.trace.segments.add(segment)
     segment._setExclusiveDurationInMillis(1)
 
     assert.deepEqual(segment.getAttributes(), {})
 
-    segment.finalize()
+    segment.finalize(transaction.trace)
 
     assert.equal(segment.getAttributes()['nr_exclusive_duration_millis'], 1)
   })
@@ -229,8 +231,11 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: segmentName,
       collect: true,
-      root
+      root,
+      parentId: root.id
     })
+
+    transaction.trace.segments.add(segment)
 
     // Force truncation
     sinon.stub(segment.timer, 'softEnd').returns(true)
