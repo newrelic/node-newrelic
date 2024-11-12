@@ -5,18 +5,19 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const { redis_tls_host: HOST, redis_tls_port: PORT } = require('../../lib/params')
 const { removeModules } = require('../../lib/cache-buster')
 
-tap.test('redis over tls connection', (t) => {
+test('redis over tls connection', async (t) => {
   t.afterEach(() => {
     removeModules(['redis'])
   })
 
-  t.test('should work with self-signed tls cert on server', async (t) => {
+  await t.test('should work with self-signed tls cert on server', async (t) => {
     const { promise, resolve } = promiseResolvers()
     const agent = helper.instrumentMockedAgent()
     const redis = require('redis')
@@ -30,7 +31,7 @@ tap.test('redis over tls connection', (t) => {
     await client.connect()
     await client.flushAll()
 
-    t.teardown(async () => {
+    t.after(async () => {
       await client.flushAll()
       await client.disconnect()
       helper.unloadAgent(agent)
@@ -40,7 +41,7 @@ tap.test('redis over tls connection', (t) => {
       const tx = agent.getTransaction()
       await client.set('tls-test', 'foo')
       const found = await client.get('tls-test')
-      t.equal(found, 'foo')
+      assert.equal(found, 'foo')
       tx.end()
       resolve()
     })
@@ -48,7 +49,7 @@ tap.test('redis over tls connection', (t) => {
     await promise
   })
 
-  t.test('url parsing should add tls true', async (t) => {
+  await t.test('url parsing should add tls true', async (t) => {
     const { promise, resolve } = promiseResolvers()
     const agent = helper.instrumentMockedAgent()
     const redis = require('redis')
@@ -61,7 +62,7 @@ tap.test('redis over tls connection', (t) => {
     await client.connect()
     await client.flushAll()
 
-    t.teardown(async () => {
+    t.after(async () => {
       await client.flushAll()
       await client.disconnect()
       helper.unloadAgent(agent)
@@ -71,13 +72,11 @@ tap.test('redis over tls connection', (t) => {
       const tx = agent.getTransaction()
       await client.set('tls-test', 'foo')
       const found = await client.get('tls-test')
-      t.equal(found, 'foo')
+      assert.equal(found, 'foo')
       tx.end()
       resolve()
     })
 
     await promise
   })
-
-  t.end()
 })
