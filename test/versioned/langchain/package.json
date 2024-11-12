@@ -16,9 +16,9 @@
         "@langchain/openai": ">=0.0.34"
       },
       "files": [
-        "tools.tap.js",
-        "runnables.tap.js",
-        "runnables-streaming.tap.js"
+        "tools.test.js",
+        "runnables.test.js",
+        "runnables-streaming.test.js"
       ]
     },
     {
@@ -32,7 +32,7 @@
         "@elastic/elasticsearch": "8.13.1"
       },
       "files": [
-        "vectorstore.tap.js"
+        "vectorstore.test.js"
       ]
     }
   ]
