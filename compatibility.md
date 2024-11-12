@@ -16,14 +16,14 @@ version.
 | `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.687.0 | 11.13.0 |
 | `@aws-sdk/client-dynamodb` | 3.0.0 | 3.687.0 | 8.7.1 |
 | `@aws-sdk/client-sns` | 3.0.0 | 3.687.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.687.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.687.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.689.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.689.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
-| `@elastic/elasticsearch` | 7.16.0 | 8.15.1 | 11.9.0 |
+| `@elastic/elasticsearch` | 7.16.0 | 8.15.2 | 11.9.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.12.2 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.3.12 | 9.0.0 |
 | `@koa/router` | 11.0.2 | 13.1.0 | 3.2.0 |
-| `@langchain/core` | 0.1.17 | 0.3.17 | 11.13.0 |
+| `@langchain/core` | 0.1.17 | 0.3.18 | 11.13.0 |
 | `@nestjs/cli` | 9.0.0 | 10.4.7 | 10.1.0 |
 | `@prisma/client` | 5.0.0 | 5.22.0 | 11.0.0 |
 | `@smithy/smithy-client` | 2.0.0 | 3.4.2 | 11.0.0 |
@@ -48,7 +48,7 @@ version.
 | `mysql` | 2.2.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.11.4 | 1.32.0 |
 | `next` | 13.4.19 | 15.0.3 | 12.0.0 |
-| `openai` | 4.0.0 | 4.71.1 | 11.13.0 |
+| `openai` | 4.0.0 | 4.72.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.13.1 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.2.0 | 9.0.0 |
 | `pino` | 7.0.0 | 9.5.0 | 8.11.0 |
