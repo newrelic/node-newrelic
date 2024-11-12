@@ -189,6 +189,17 @@ test('claude3 complete command works', async (t) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
+test('claude35 minimal command works with claude 3 api', async (t) => {
+  t.nr.updatePayload(structuredClone(claude3))
+  const cmd = new BedrockCommand(t.nr.input)
+  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.maxTokens, undefined)
+  assert.equal(cmd.modelId, claude3.modelId)
+  assert.equal(cmd.modelType, 'completion')
+  assert.equal(cmd.prompt, claude3.body.messages[0].content)
+  assert.equal(cmd.temperature, undefined)
+})
+
 test('claude35 minimal command works', async (t) => {
   t.nr.updatePayload(structuredClone(claude35))
   const cmd = new BedrockCommand(t.nr.input)
