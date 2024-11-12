@@ -111,6 +111,45 @@ tap.test('external requests', function (t) {
     }
   })
 
+  t.test('should recognize requests via proxy correctly', function (t) {
+    const proxyUrl = 'https://www.google.com/proxy/path'
+    const proxyServer = http.createServer(function onRequest(req, res) {
+      t.equal(req.url, proxyUrl)
+      req.resume()
+      res.end('ok')
+    })
+    t.teardown(() => proxyServer.close())
+
+    proxyServer.listen(0)
+
+    helper.runInTransaction(agent, function inTransaction() {
+      const opts = {
+        host: 'localhost',
+        port: proxyServer.address().port,
+        path: proxyUrl,
+        protocol: 'http:'
+      }
+
+      const req = http.get(opts, function onResponse(res) {
+        res.resume()
+        res.once('end', function () {
+          const segment = agent.tracer.getTransaction().trace.root.children[0]
+          t.equal(
+            segment.name,
+            `External/www.google.com/proxy/path`,
+            'should name segment as an external service'
+          )
+          t.end()
+        })
+      })
+
+      req.on('error', function onError(err) {
+        t.fail('Request should not error: ' + err.message)
+        t.end()
+      })
+    })
+  })
+
   t.test('should not duplicate the external segment', function (t) {
     const https = require('https')
 

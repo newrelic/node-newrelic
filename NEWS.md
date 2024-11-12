@@ -1,3 +1,50 @@
+### v12.7.0 (2024-11-11)
+
+#### Features
+
+* Added `cloud.resource_id` attribute to dynamo spans ([#2701](https://github.com/newrelic/node-newrelic/pull/2701)) ([904f41b](https://github.com/newrelic/node-newrelic/commit/904f41b26637394a24aa13f31ff94b100ae6d090))
+* Enhance Proxy Request Handling to Display Actual External URLs ([#2698](https://github.com/newrelic/node-newrelic/pull/2698)) ([3ef7bbe](https://github.com/newrelic/node-newrelic/commit/3ef7bbe595860234c021a02235e6fd0615da5f69))
+    * Thanks for the contribution @mstarzec386
+
+#### Documentation
+
+* Updated compatibility report ([#2712](https://github.com/newrelic/node-newrelic/pull/2712)) ([82f0e98](https://github.com/newrelic/node-newrelic/commit/82f0e9806c88d14cba2e0cdf47593e036107bd7d)) ([#2699](https://github.com/newrelic/node-newrelic/pull/2699)) ([4432c42](https://github.com/newrelic/node-newrelic/commit/4432c4215d68cc79333ee3828f1ecd55476c63d8))
+
+#### Miscellaneous chores
+
+* Added a benchmark script for our sql parser ([#2708](https://github.com/newrelic/node-newrelic/pull/2708)) ([9b6de68](https://github.com/newrelic/node-newrelic/commit/9b6de6852747230b87a9873faffba6e5b39669f3))
+* Updated express-esm, generic-pool, grpc, & grpc-esm tests to node:test ([#2702](https://github.com/newrelic/node-newrelic/pull/2702)) ([a229bbf](https://github.com/newrelic/node-newrelic/commit/a229bbf0dd92c43fb2da077d8dce831b84c0c972))
+
+#### Tests
+
+* Migrated `mysql` and `mysql2` versioned tests to `node:test` ([#2711](https://github.com/newrelic/node-newrelic/pull/2711)) ([fc767e0](https://github.com/newrelic/node-newrelic/commit/fc767e08d8b546d14c53c07bc2cfe65f3fb55368))
+
+### v12.6.1 (2024-11-07)
+
+#### Features
+
+* added `cloud.aws.account_id` to default config ([#2691](https://github.com/newrelic/node-newrelic/pull/2691)) ([0ccee8e](https://github.com/newrelic/node-newrelic/commit/0ccee8e471b5568a36a5ef755f83f0da513548c8))
+
+#### Bug fixes
+
+* Fixed issue parsing docker container id ([#2705](https://github.com/newrelic/node-newrelic/pull/2705)) ([0c897ab](https://github.com/newrelic/node-newrelic/commit/0c897ab7bea32daf0afbf75e2349f2fad008cc92))
+
+#### Documentation
+
+* Updated compatibility report ([#2679](https://github.com/newrelic/node-newrelic/pull/2679)) ([3c19cdf](https://github.com/newrelic/node-newrelic/commit/3c19cdfed751dfa20ebba471a6cdd320f0610d95))
+
+#### Miscellaneous chores
+
+* Moved recorders to `lib/metrics/recorders` ([#2666](https://github.com/newrelic/node-newrelic/pull/2666)) ([d8dfe84](https://github.com/newrelic/node-newrelic/commit/d8dfe843aebf275bda6d5c857cfe263039bc1a83))
+
+#### Tests
+
+* Fixed file extensions for aws-sdk v2 and v3 versioned tests to reflect they have been migrated to `node:test` ([#2687](https://github.com/newrelic/node-newrelic/pull/2687)) ([4ec09ba](https://github.com/newrelic/node-newrelic/commit/4ec09ba34a825fa9decdc2d854eec6d24ee37ac4))
+* Migrated elasticsearch and esm-package versioned tests to `node:test` ([#2680](https://github.com/newrelic/node-newrelic/pull/2680)) ([0e0c2b2](https://github.com/newrelic/node-newrelic/commit/0e0c2b2f15e2179def4e67741fc988b7d16248d7))
+* Updated cls and connect tests to node:test ([#2676](https://github.com/newrelic/node-newrelic/pull/2676)) ([1e74434](https://github.com/newrelic/node-newrelic/commit/1e74434efd21c13199ad12af837129d251136c76))
+* Reorganized custom assertions and improved test reporter ([#2700](https://github.com/newrelic/node-newrelic/pull/2700)) ([9e98b18](https://github.com/newrelic/node-newrelic/commit/9e98b18b0f2768df9f75348975bebe904418a4a2))
+* Updated cassandra-driver tests to node:test ([#2678](https://github.com/newrelic/node-newrelic/pull/2678)) ([bd4f7ff](https://github.com/newrelic/node-newrelic/commit/bd4f7ff9df2cd1057e21a6ba3e28aac9fe02ecc6))
+
 ### v12.6.0 (2024-10-30)
 
 #### Features

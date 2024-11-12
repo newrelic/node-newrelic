@@ -592,6 +592,13 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
+  await t.test('should pick up cloud aws account_id', (t, end) => {
+    idempotentEnv({ NEW_RELIC_CLOUD_AWS_ACCOUNT_ID: '123456789123' }, (tc) => {
+      assert.equal(tc.cloud.aws.account_id, 123456789123)
+      end()
+    })
+  })
+
   await t.test('should reject disabling ssl', (t, end) => {
     idempotentEnv({ NEW_RELIC_USE_SSL: false }, (tc) => {
       assert.equal(tc.ssl, true)

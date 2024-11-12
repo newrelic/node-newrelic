@@ -4,12 +4,15 @@
  */
 
 'use strict'
+
 const util = module.exports
 const metricsHelpers = require('../../lib/metrics_helper')
 const protoLoader = require('@grpc/proto-loader')
 const serverImpl = require('./grpc-server.cjs')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
+
+const { assertMetrics, assertSegments, match } = require('../../lib/custom-assertions')
 
 const SERVER_ADDR = '0.0.0.0'
 const CLIENT_ADDR = 'localhost'
@@ -32,14 +35,16 @@ function buildExpectedMetrics(port) {
  * Iterates over all metrics created during a transaction and asserts no gRPC metrics were created
  *
  * @param {Object} params
- * @param {Object} params.t tap test
  * @param {Object} params.agent test agent
  */
-util.assertMetricsNotExisting = function assertMetricsNotExisting({ t, agent, port }) {
+util.assertMetricsNotExisting = function assertMetricsNotExisting(
+  { agent, port },
+  { assert = require('node:assert') } = {}
+) {
   const metrics = buildMetrics(port)
   metrics.forEach((metricName) => {
     const metric = agent.metrics.getMetric(metricName)
-    t.notOk(metric, `${metricName} should not be recorded`)
+    assert.equal(metric, undefined, `${metricName} should not be recorded`)
   })
 }
 
@@ -126,44 +131,39 @@ util.getServerTransactionName = function getRPCName(fnName) {
  * procedure, grpc.statusCode, grpc.statusText
  *
  * @param {Object} params
- * @param {Object} params.t tap test
  * @param {Object} params.tx transaction under test
  * @param {string} params.fnName gRPC method name
  * @param {number} [params.expectedStatusCode=0] expected status code for test
  * @param {string} [params.expectedStatusText=OK] expected status text for test
  */
-util.assertExternalSegment = function assertExternalSegment({
-  t,
-  tx,
-  fnName,
-  expectedStatusCode = 0,
-  expectedStatusText = 'OK',
-  port
-}) {
+util.assertExternalSegment = function assertExternalSegment(
+  { tx, fnName, expectedStatusCode = 0, expectedStatusText = 'OK', port },
+  { assert = require('node:assert') } = {}
+) {
   const methodName = util.getRPCName(fnName)
   const segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}:${port}${methodName}`
-  t.assertSegments(tx.trace.root, [segmentName], { exact: false })
+  assertSegments(tx.trace.root, [segmentName], { exact: false }, { assert })
   const segment = metricsHelpers.findSegment(tx.trace.root, segmentName)
   const attributes = segment.getAttributes()
-  t.equal(
+  assert.equal(
     attributes.url,
     `grpc://${CLIENT_ADDR}:${port}${methodName}`,
     'http.url attribute should be correct'
   )
-  t.equal(attributes.procedure, methodName, 'method name should be correct')
-  t.equal(
+  assert.equal(attributes.procedure, methodName, 'method name should be correct')
+  assert.equal(
     attributes['grpc.statusCode'],
     expectedStatusCode,
     `status code should be ${expectedStatusCode}`
   )
-  t.equal(
+  assert.equal(
     attributes['grpc.statusText'],
     expectedStatusText,
     `status text should be ${expectedStatusText}`
   )
-  t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
+  assert.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
   const expectedMetrics = buildExpectedMetrics(port)
-  t.assertMetrics(tx.metrics, [expectedMetrics], false, false)
+  assertMetrics(tx.metrics, [expectedMetrics], false, false, { assert })
 }
 
 /**
@@ -171,39 +171,39 @@ util.assertExternalSegment = function assertExternalSegment({
  * request.method, request.uri
  *
  * @param {Object} params
- * @param {Object} params.t tap test
  * @param {Object} params.tx transaction under test
  * @param {string} params.fnName gRPC method name
  * @param {number} [params.expectedStatusCode=0] expected status code for test
  */
-util.assertServerTransaction = function assertServerTransaction({
-  t,
-  transaction,
-  fnName,
-  expectedStatusCode = 0
-}) {
+util.assertServerTransaction = function assertServerTransaction(
+  { transaction, fnName, expectedStatusCode = 0 },
+  { assert = require('node:assert') } = {}
+) {
   const attributes = transaction.trace.attributes.get(DESTINATION)
   const expectedMethod = `/helloworld.Greeter/${fnName}`
   const expectedUri = `/helloworld.Greeter/${fnName}`
-  t.equal(
+  assert.equal(
     transaction.name,
     util.getServerTransactionName(fnName),
     'should have the right transaction name'
   )
-  t.equal(
+  assert.equal(
     attributes['response.status'],
     expectedStatusCode,
     `status code should be ${expectedStatusCode}`
   )
-  t.equal(
+  assert.equal(
     attributes['request.method'],
     expectedMethod,
     `should have server method ${expectedMethod}`
   )
-  t.equal(attributes['request.uri'], expectedUri, `should have server uri ${expectedUri}`)
+  assert.equal(attributes['request.uri'], expectedUri, `should have server uri ${expectedUri}`)
 }
 
-util.assertServerMetrics = function assertServerMetrics({ t, agentMetrics, fnName }) {
+util.assertServerMetrics = function assertServerMetrics(
+  { agentMetrics, fnName },
+  { assert = require('node:assert') } = {}
+) {
   const expectedServerMetrics = [
     [{ name: 'WebTransaction' }],
     [{ name: 'WebTransactionTotalTime' }],
@@ -213,26 +213,21 @@ util.assertServerMetrics = function assertServerMetrics({ t, agentMetrics, fnNam
     [{ name: `Apdex/WebFrameworkUri/gRPC//helloworld.Greeter/${fnName}` }],
     [{ name: 'Apdex' }]
   ]
-  t.assertMetrics(agentMetrics, expectedServerMetrics, false, false)
+  assertMetrics(agentMetrics, expectedServerMetrics, false, false, { assert })
 }
 
-util.assertDistributedTracing = function assertDistributedTracing({
-  t,
-  clientTransaction,
-  serverTransaction
-}) {
+util.assertDistributedTracing = function assertDistributedTracing(
+  { clientTransaction, serverTransaction },
+  { assert = require('node:assert') } = {}
+) {
   const serverAttributes = serverTransaction.trace.attributes.get(DESTINATION)
-  t.ok(
+  assert.ok(
     clientTransaction.id !== serverTransaction.id,
     'should get different transactions for client and server'
   )
-  t.match(
-    serverAttributes['request.headers.traceparent'],
-    /^[\w\d\-]{55}$/,
-    'should have traceparent in server attribute headers'
-  )
-  t.equal(serverAttributes['request.headers.newrelic'], '', 'should have the newrelic header')
-  t.equal(
+  match(serverAttributes['request.headers.traceparent'], /^[\w\d\-]{55}$/, { assert })
+  assert.equal(serverAttributes['request.headers.newrelic'], '', 'should have the newrelic header')
+  assert.equal(
     clientTransaction.traceId,
     serverTransaction.traceId,
     'should have matching traceIds on client and server transactions'
@@ -353,7 +348,6 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
  * If the client use case it will assert the external call segment
  *
  * @param {Object} params
- * @param {Object} params.t tap test
  * @param {Object} params.transaction transaction under test
  * @param {Array} params.errors agent errors array
  * @param {boolean} [params.expectErrors=true] flag to indicate if errors will exist
@@ -363,50 +357,58 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
  * @param {number} params.expectedStatusCode expected status code for test
  * @param {string} params.expectedStatusText expected status text for test
  */
-util.assertError = function assertError({
-  t,
-  transaction,
-  errors,
-  expectErrors = true,
-  clientError = false,
-  agentMetrics,
-  fnName,
-  expectedStatusText,
-  expectedStatusCode,
-  port
-}) {
+util.assertError = function assertError(
+  {
+    transaction,
+    errors,
+    expectErrors = true,
+    clientError = false,
+    agentMetrics,
+    fnName,
+    expectedStatusText,
+    expectedStatusCode,
+    port
+  },
+  { assert = require('node:assert') } = {}
+) {
   // when testing client the transaction will contain both server and client information. so we need to extract the client error which is always the 2nd
   const errorLength = expectErrors ? (clientError ? 2 : 1) : 0
 
-  t.equal(errors.traceAggregator.errors.length, errorLength, `should be ${errorLength} errors`)
+  assert.equal(errors.traceAggregator.errors.length, errorLength, `should be ${errorLength} errors`)
 
   if (expectErrors) {
     const errorPosition = clientError ? 1 : 0
     const error = errors.traceAggregator.errors[errorPosition][2]
-    t.equal(error, expectedStatusText, 'should have the error message')
+    assert.equal(error, expectedStatusText, 'should have the error message')
   }
 
   if (clientError) {
-    util.assertExternalSegment({
-      t,
-      tx: transaction,
-      fnName,
-      expectedStatusText,
-      port,
-      expectedStatusCode
-    })
+    util.assertExternalSegment(
+      {
+        tx: transaction,
+        fnName,
+        expectedStatusText,
+        port,
+        expectedStatusCode
+      },
+      { assert }
+    )
   } else {
-    util.assertServerTransaction({
-      t,
-      transaction,
-      fnName,
-      expectedStatusCode
-    })
-    util.assertServerMetrics({
-      t,
-      agentMetrics,
-      fnName,
-      expectedStatusCode
-    })
+    util.assertServerTransaction(
+      {
+        transaction,
+        fnName,
+        expectedStatusCode
+      },
+      { assert }
+    )
+    util.assertServerMetrics(
+      {
+        agentMetrics,
+        fnName,
+        expectedStatusCode
+      },
+      { assert }
+    )
   }
 }
