@@ -25,9 +25,7 @@ helpers.originalMsgAssertion = function originalMsgAssertion({
   hostname
 }) {
   CONTEXT_KEYS.forEach((key) => {
-    if (key !== 'hostname') {
-      assert.equal(logLine[key], undefined, `should not have ${key}`)
-    }
+    assert.equal(logLine[key], undefined, `should not have ${key}`)
   })
 
   assert.ok(logLine.time, 'should include timestamp')

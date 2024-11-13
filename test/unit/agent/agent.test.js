@@ -1112,3 +1112,52 @@ test('_reset*', async (t) => {
     assert.equal(agent.customEventAggregator.clear.callCount, 1)
   })
 })
+
+test('getLinkingMetadata', async (t) => {
+  t.beforeEach((ctx) => {
+    const agent = helper.loadMockedAgent()
+    ctx.nr = { agent }
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should include service links by default', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (tx) => {
+      const metadata = agent.getLinkingMetadata()
+      assert.ok(metadata['trace.id'], tx.traceId)
+      assert.ok(metadata['span.id'], tx.trace.root.getSpanId())
+      assert.equal(metadata['entity.name'], 'New Relic for Node.js tests')
+      assert.equal(metadata['entity.type'], 'SERVICE')
+      assert.ok(!metadata['entity.guid'])
+      assert.equal(metadata.hostname, agent.config.getHostnameSafe())
+      end()
+    })
+  })
+
+  await t.test('should not include service links when passing true', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (tx) => {
+      const metadata = agent.getLinkingMetadata(true)
+      assert.ok(metadata['trace.id'], tx.traceId)
+      assert.ok(metadata['span.id'], tx.trace.root.getSpanId())
+      assert.ok(!metadata['entity.name'])
+      assert.ok(!metadata['entity.type'])
+      assert.ok(!metadata['entity.guid'])
+      assert.ok(!metadata.hostname)
+      end()
+    })
+  })
+
+  await t.test('should return service linking metadata', (t) => {
+    const { agent } = t.nr
+    agent.config.entity_guid = 'guid'
+    const metadata = agent.getServiceLinkingMetadata()
+    assert.equal(metadata['entity.name'], 'New Relic for Node.js tests')
+    assert.equal(metadata['entity.type'], 'SERVICE')
+    assert.equal(metadata['entity.guid'], 'guid')
+    assert.equal(metadata.hostname, agent.config.getHostnameSafe())
+  })
+})

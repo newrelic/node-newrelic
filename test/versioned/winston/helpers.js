@@ -8,7 +8,7 @@
 const assert = require('node:assert')
 const helpers = module.exports
 
-const { CONTEXT_KEYS, validateLogLine } = require('../../lib/logging-helper')
+const { CONTEXT_KEYS, validateLogLine, validateCommonAttrs } = require('../../lib/logging-helper')
 
 /**
  * Stream factory for a test.  Iterates over every message and calls an assertFn.
@@ -165,4 +165,8 @@ helpers.logForwardingMsgAssertion = function logForwardingMsgAssertion(logLine, 
     assert.equal(typeof logLine['trace.id'], 'string', 'msg in trans should have trace id')
     assert.equal(typeof logLine['span.id'], 'string', 'msg in trans should have span id')
   }
+
+  const [payload] = agent.logs._toPayloadSync()
+  const commonAttrs = payload.common.attributes
+  validateCommonAttrs({ commonAttrs, config: agent.config })
 }

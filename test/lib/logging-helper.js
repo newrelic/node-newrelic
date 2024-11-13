@@ -7,28 +7,17 @@
 
 const assert = require('node:assert')
 
-// NOTE: pino adds hostname to log lines which is why we don't check it here
-const CONTEXT_KEYS = [
-  'entity.name',
-  'entity.type',
-  'entity.guid',
-  'trace.id',
-  'span.id',
-  'hostname'
-]
+const CONTEXT_KEYS = ['trace.id', 'span.id']
 
 /**
- * To be registered as a tap assertion
+ * Validates context about a given log line
+ *
+ * @param {object} params to fn
+ * @param {object} params.log log line
+ * @param {string} params.message message in log line
+ * @param {number} params.level log level
  */
-function validateLogLine({ line: logLine, message, level, config }) {
-  assert.equal(
-    logLine['entity.name'],
-    config.applications()[0],
-    'should have entity name that matches app'
-  )
-  assert.equal(logLine['entity.guid'], 'test-guid', 'should have set entity guid')
-  assert.equal(logLine['entity.type'], 'SERVICE', 'should have entity type of SERVICE')
-  assert.equal(logLine.hostname, config.getHostnameSafe(), 'should have proper hostname')
+function validateLogLine({ line: logLine, message, level }) {
   assert.equal(/[0-9]{10}/.test(logLine.timestamp), true, 'should have proper unix timestamp')
   assert.equal(
     logLine.message.includes('NR-LINKING'),
@@ -44,7 +33,26 @@ function validateLogLine({ line: logLine, message, level, config }) {
   }
 }
 
+/**
+ * Validates the common attributes of a given log payload
+ *
+ * @param {object} params to fn
+ * @param {object} params.commonAttrs common attributes on a log batch
+ * @param {object} params.config agent config
+ */
+function validateCommonAttrs({ commonAttrs, config }) {
+  assert.equal(
+    commonAttrs['entity.name'],
+    config.applications()[0],
+    'should have entity name that matches app'
+  )
+  assert.equal(commonAttrs['entity.guid'], 'test-guid', 'should have set entity guid')
+  assert.equal(commonAttrs['entity.type'], 'SERVICE', 'should have entity type of SERVICE')
+  assert.equal(commonAttrs.hostname, config.getHostnameSafe(), 'should have proper hostname')
+}
+
 module.exports = {
   CONTEXT_KEYS,
-  validateLogLine
+  validateLogLine,
+  validateCommonAttrs
 }
