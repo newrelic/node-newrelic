@@ -633,14 +633,20 @@ test('when overriding configuration values via environment variables', async (t)
       NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED: 'true',
       NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED: '12345',
       NEW_RELIC_APPLICATION_LOGGING_METRICS_ENABLED: 'false',
-      NEW_RELIC_APPLICATION_LOGGING_LOCAL_DECORATING_ENABLED: 'true'
+      NEW_RELIC_APPLICATION_LOGGING_LOCAL_DECORATING_ENABLED: 'true',
+      NEW_RELIC_APPLICATION_LOGGING_FORWARDING_LABELS_ENABLED: 'true',
+      NEW_RELIC_APPLICATION_LOGGING_FORWARDING_LABELS_EXCLUDE: 'one, two, three'
     }
     idempotentEnv(config, function (tc) {
       assert.deepStrictEqual(tc.application_logging, {
         enabled: true,
         forwarding: {
           enabled: true,
-          max_samples_stored: 12345
+          max_samples_stored: 12345,
+          labels: {
+            enabled: true,
+            exclude: ['one', 'two', 'three']
+          }
         },
         metrics: {
           enabled: false
@@ -652,6 +658,42 @@ test('when overriding configuration values via environment variables', async (t)
       end()
     })
   })
+
+  await t.test(
+    'should accept a comma delimited list with spaces for application logging forwarding exclusion list',
+    (t, end) => {
+      const config = {
+        NEW_RELIC_APPLICATION_LOGGING_FORWARDING_LABELS_EXCLUDE: 'one, two, three'
+      }
+
+      idempotentEnv(config, function (tc) {
+        assert.deepStrictEqual(tc.application_logging.forwarding.labels.exclude, [
+          'one',
+          'two',
+          'three'
+        ])
+        end()
+      })
+    }
+  )
+
+  await t.test(
+    'should accept a comma delimited list without spaces for application logging forwarding exclusion list',
+    (t, end) => {
+      const config = {
+        NEW_RELIC_APPLICATION_LOGGING_FORWARDING_LABELS_EXCLUDE: 'one,two,three'
+      }
+
+      idempotentEnv(config, function (tc) {
+        assert.deepStrictEqual(tc.application_logging.forwarding.labels.exclude, [
+          'one',
+          'two',
+          'three'
+        ])
+        end()
+      })
+    }
+  )
 
   await t.test('should pick up ignore_server_configuration', (t, end) => {
     idempotentEnv({ NEW_RELIC_IGNORE_SERVER_SIDE_CONFIG: 'true' }, function (tc) {
