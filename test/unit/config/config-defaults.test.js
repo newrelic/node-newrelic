@@ -212,7 +212,7 @@ test('with default properties', async (t) => {
         max_samples_stored: 10000,
         labels: {
           enabled: false,
-          exclude: null
+          exclude: []
         }
       },
       metrics: {
@@ -229,7 +229,7 @@ test('with default properties', async (t) => {
   })
 
   await t.test('should default exclude application logging forwarding label to null', () => {
-    assert.equal(configuration.application_logging.forwarding.labels.exclude, null)
+    assert.deepStrictEqual(configuration.application_logging.forwarding.labels.exclude, [])
   })
 
   await t.test('should default `code_level_metrics.enabled` to true', () => {

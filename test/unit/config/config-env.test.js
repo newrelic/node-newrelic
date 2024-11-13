@@ -660,7 +660,7 @@ test('when overriding configuration values via environment variables', async (t)
   })
 
   await t.test(
-    'should accept a comman delimited list with spaces for application logging forwarding exclusion list',
+    'should accept a comma delimited list with spaces for application logging forwarding exclusion list',
     (t, end) => {
       const config = {
         NEW_RELIC_APPLICATION_LOGGING_FORWARDING_LABELS_EXCLUDE: 'one, two, three'
@@ -678,7 +678,7 @@ test('when overriding configuration values via environment variables', async (t)
   )
 
   await t.test(
-    'should accept a comman delimited list without spaces for application logging forwarding exclusion list',
+    'should accept a comma delimited list without spaces for application logging forwarding exclusion list',
     (t, end) => {
       const config = {
         NEW_RELIC_APPLICATION_LOGGING_FORWARDING_LABELS_EXCLUDE: 'one,two,three'
