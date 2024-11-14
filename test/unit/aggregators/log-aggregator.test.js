@@ -229,6 +229,30 @@ test('Log Aggregator - common attributes', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
+  await t.test('should add labels to common attributes if labels.enabled is false', (t) => {
+    const { agent } = t.nr
+    const { commonAttrs, logEventAggregator, log } = t.nr
+
+    agent.config.application_logging = {
+      forwarding: {
+        labels: {
+          enabled: false,
+          exclude: ['label2']
+        }
+      }
+    }
+
+    agent.config.labels = {
+      'label1': 'value1',
+      'LABEL2': 'value2',
+      'LABEL2-ALSO': 'value3'
+    }
+
+    logEventAggregator.add(log)
+    const payload = logEventAggregator._toPayloadSync()
+    assert.deepStrictEqual(payload, [{ common: { attributes: commonAttrs }, logs: [log] }])
+  })
+
   await t.test('should add labels to common attributes if labels.enabled is true', (t) => {
     const { agent } = t.nr
     const { commonAttrs, logEventAggregator, log } = t.nr
