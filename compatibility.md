@@ -13,20 +13,20 @@ version.
 | --- | --- | --- | --- |
 | `@apollo/gateway` | 2.3.0 | 2.9.3 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 4.11.2 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.687.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.687.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.687.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.689.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.689.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.691.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.691.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.691.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.691.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.691.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
-| `@elastic/elasticsearch` | 7.16.0 | 8.15.2 | 11.9.0 |
+| `@elastic/elasticsearch` | 7.16.0 | 8.16.0 | 11.9.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.12.2 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.3.12 | 9.0.0 |
 | `@koa/router` | 11.0.2 | 13.1.0 | 3.2.0 |
 | `@langchain/core` | 0.1.17 | 0.3.18 | 11.13.0 |
 | `@nestjs/cli` | 9.0.0 | 10.4.7 | 10.1.0 |
 | `@prisma/client` | 5.0.0 | 5.22.0 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 3.4.2 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 3.4.3 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.4 | 2.0.0 |
 | `apollo-server` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-express` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
@@ -56,7 +56,7 @@ version.
 | `redis` | 3.1.0 | 4.7.0 | 1.31.0 |
 | `restify` | 11.0.0 | 11.1.0 | 2.6.0 |
 | `superagent` | 3.0.0 | 10.1.1 | 4.9.0 |
-| `undici` | 5.0.0 | 6.20.1 | 11.1.0 |
+| `undici` | 5.0.0 | 6.21.0 | 11.1.0 |
 | `when` | 3.7.0 | 3.7.8 | 1.26.2 |
 | `winston` | 3.0.0 | 3.17.0 | 8.11.0 |
 
