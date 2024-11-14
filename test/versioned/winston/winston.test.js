@@ -381,7 +381,7 @@ test('log forwarding enabled', async (t) => {
     const handleMessages = makeStreamTest((msgs) => {
       const events = agent.logs.getEvents()
       events.forEach((event) => {
-        logForwardingMsgAssertion(t, event, agent)
+        logForwardingMsgAssertion(event, agent)
         assert.equal(
           event.label,
           '123',

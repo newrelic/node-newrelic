@@ -19,9 +19,18 @@ test('Log Aggregator', async (t) => {
     ctx.nr = {}
 
     ctx.nr.txReturn = undefined
+    ctx.nr.commonAttrs = {
+      'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
+      'hostname': 'test-host',
+      'entity.name': 'unit-test',
+      'entity.type': 'SERVICE'
+    }
     ctx.nr.agent = {
       getTransaction() {
         return ctx.nr.txReturn
+      },
+      getServiceLinkingMetadata() {
+        return ctx.nr.commonAttrs
       },
       collector: {},
       metrics: new Metrics(5, {}, {}),
@@ -42,12 +51,8 @@ test('Log Aggregator', async (t) => {
       'level': 30,
       'timestamp': '1649689872369',
       'pid': 4856,
-      'hostname': 'test-host',
-      'entity.name': 'unit-test',
-      'entity.type': 'SERVICE',
       'trace.id': '2f93639c684a2dd33c28345173d218b8',
       'span.id': 'a136d77f2a5b997b',
-      'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
       'message': 'unit test msg'
     }
   })
@@ -59,7 +64,7 @@ test('Log Aggregator', async (t) => {
   })
 
   await t.test('toPayload() should return json format of data', (t) => {
-    const { logEventAggregator, log } = t.nr
+    const { logEventAggregator, log, commonAttrs } = t.nr
     const logs = []
 
     for (let i = 0; i <= 8; i += 1) {
@@ -70,13 +75,13 @@ test('Log Aggregator', async (t) => {
     }
     const payload = logEventAggregator._toPayloadSync()
     assert.equal(payload.length, 1)
-    assert.deepStrictEqual(payload, [{ logs: logs.reverse() }])
+    assert.deepStrictEqual(payload, [{ common: { attributes: commonAttrs }, logs: logs.reverse() }])
   })
 
   await t.test(
     'toPayload() should execute formatter function when an entry in aggregator is a function',
     (t) => {
-      const { logEventAggregator, log } = t.nr
+      const { commonAttrs, logEventAggregator, log } = t.nr
       const log2 = JSON.stringify(log)
       function formatLog() {
         return JSON.parse(log2)
@@ -84,12 +89,14 @@ test('Log Aggregator', async (t) => {
       logEventAggregator.add(log)
       logEventAggregator.add(formatLog)
       const payload = logEventAggregator._toPayloadSync()
-      assert.deepStrictEqual(payload, [{ logs: [log, JSON.parse(log2)] }])
+      assert.deepStrictEqual(payload, [
+        { common: { attributes: commonAttrs }, logs: [log, JSON.parse(log2)] }
+      ])
     }
   )
 
   await t.test('toPayload() should only return logs that have data', (t) => {
-    const { logEventAggregator, log } = t.nr
+    const { commonAttrs, logEventAggregator, log } = t.nr
     const log2 = JSON.stringify(log)
     function formatLog() {
       return JSON.parse(log2)
@@ -101,7 +108,9 @@ test('Log Aggregator', async (t) => {
     logEventAggregator.add(formatLog)
     logEventAggregator.add(formatLog2)
     const payload = logEventAggregator._toPayloadSync()
-    assert.deepStrictEqual(payload, [{ logs: [log, JSON.parse(log2)] }])
+    assert.deepStrictEqual(payload, [
+      { common: { attributes: commonAttrs }, logs: [log, JSON.parse(log2)] }
+    ])
   })
 
   await t.test('toPayload() should return nothing with no log event data', (t) => {

@@ -16,7 +16,7 @@ const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { originalMsgAssertion } = require('./helpers')
-const { validateLogLine } = require('../../lib/logging-helper')
+const { validateLogLine, validateCommonAttrs } = require('../../lib/logging-helper')
 
 const { version: pinoVersion } = require('pino/package')
 
@@ -131,6 +131,9 @@ test('forwarding', async (t) => {
     })
     assert.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
     const formattedLine = agent.logs.getEvents()[0]()
+    const [payload] = agent.logs._toPayloadSync()
+    const commonAttrs = payload.common.attributes
+    validateCommonAttrs({ commonAttrs, config })
     validateLogLine({ line: formattedLine, message, level, config })
   })
 
@@ -150,6 +153,9 @@ test('forwarding', async (t) => {
     // See: https://github.com/pinojs/pino/pull/1779/files
     if (semver.gte(pinoVersion, '8.15.1')) {
       const formattedLine = agent.logs.getEvents()[0]()
+      const [payload] = agent.logs._toPayloadSync()
+      const commonAttrs = payload.common.attributes
+      validateCommonAttrs({ commonAttrs, config })
       validateLogLine({ line: formattedLine, message: testMsg, level, config })
     } else {
       assert.equal(
@@ -180,6 +186,9 @@ test('forwarding', async (t) => {
       level,
       config
     })
+    const [payload] = agent.logs._toPayloadSync()
+    const commonAttrs = payload.common.attributes
+    validateCommonAttrs({ commonAttrs, config })
     assert.equal(formattedLine['error.class'], 'Error', 'should have Error as error.class')
     assert.equal(formattedLine['error.message'], err.message, 'should have proper error.message')
     assert.equal(
@@ -216,6 +225,9 @@ test('forwarding', async (t) => {
 
       const formattedLine = agent.logs.getEvents()[0]()
       validateLogLine({ line: formattedLine, message, level, config })
+      const [payload] = agent.logs._toPayloadSync()
+      const commonAttrs = payload.common.attributes
+      validateCommonAttrs({ commonAttrs, config })
       assert.equal(formattedLine['trace.id'], meta['trace.id'])
       assert.equal(formattedLine['span.id'], meta['span.id'])
 
@@ -292,6 +304,9 @@ test('forwarding', async (t) => {
         )
         assert.equal(formattedLine['span.id'], meta['span.id'], 'should be expected span.id value')
       })
+      const [payload] = agent.logs._toPayloadSync()
+      const commonAttrs = payload.common.attributes
+      validateCommonAttrs({ commonAttrs, config })
 
       end()
     })
