@@ -41,6 +41,15 @@ test('Log Aggregator', async (t) => {
           harvest_limits: {
             log_event_data: 42
           }
+        },
+        labels: {},
+        application_logging: {
+          forwarding: {
+            labels: {
+              enabled: true,
+              exclude: []
+            }
+          }
         }
       }
     }
@@ -175,6 +184,203 @@ test('Log Aggregator', async (t) => {
     logEventAggregator.addBatch(logs, priority)
     assert.equal(logEventAggregator.getEvents().length, 3)
   })
+})
+
+test('Log Aggregator - common attributes', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+
+    ctx.nr.commonAttrs = {
+      'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
+      'hostname': 'test-host',
+      'entity.name': 'unit-test',
+      'entity.type': 'SERVICE'
+    }
+
+    ctx.nr.agent = helper.instrumentMockedAgent()
+
+    ctx.nr.agent.getServiceLinkingMetadata = function () {
+      return {
+        ...ctx.nr.commonAttrs
+      }
+    }
+    ctx.nr.agent.config = {
+      event_harvest_config: {
+        harvest_limits: {
+          log_event_data: 42
+        }
+      },
+      labels: {}
+    }
+
+    ctx.nr.logEventAggregator = new LogAggregator({ runId: RUN_ID, limit: LIMIT }, ctx.nr.agent)
+
+    ctx.nr.log = {
+      'level': 30,
+      'timestamp': '1649689872369',
+      'pid': 4856,
+      'trace.id': '2f93639c684a2dd33c28345173d218b8',
+      'span.id': 'a136d77f2a5b997b',
+      'message': 'unit test msg'
+    }
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should add labels to common attributes if labels.enabled is true', (t) => {
+    const { agent } = t.nr
+    const { commonAttrs, logEventAggregator, log } = t.nr
+
+    agent.config.application_logging = {
+      forwarding: {
+        labels: {
+          enabled: true,
+          exclude: []
+        }
+      }
+    }
+
+    agent.config.labels = {
+      'label1': 'value1',
+      'LABEL2': 'value2',
+      'LABEL2-ALSO': 'value3'
+    }
+
+    const expectedLabels = {
+      'tags.label1': 'value1',
+      'tags.LABEL2': 'value2',
+      'tags.LABEL2-ALSO': 'value3'
+    }
+
+    logEventAggregator.add(log)
+    const payload = logEventAggregator._toPayloadSync()
+    assert.deepStrictEqual(payload, [
+      { common: { attributes: { ...commonAttrs, ...expectedLabels } }, logs: [log] }
+    ])
+  })
+
+  await t.test(
+    'should add labels to common attributes if labels.enabled is true but not those in excluded labels',
+    (t) => {
+      const { agent } = t.nr
+      const { commonAttrs, logEventAggregator, log } = t.nr
+
+      agent.config.application_logging = {
+        forwarding: {
+          labels: {
+            enabled: true,
+            exclude: ['label2']
+          }
+        }
+      }
+
+      agent.config.labels = {
+        'label1': 'value1',
+        'LABEL2': 'value2',
+        'LABEL2-ALSO': 'value3'
+      }
+
+      const expectedLabels = {
+        'tags.label1': 'value1',
+        'tags.LABEL2-ALSO': 'value3'
+      }
+
+      logEventAggregator.add(log)
+      const payload = logEventAggregator._toPayloadSync()
+      assert.deepStrictEqual(payload, [
+        { common: { attributes: { ...commonAttrs, ...expectedLabels } }, logs: [log] }
+      ])
+    }
+  )
+
+  await t.test('should exclude label even if casing is different', (t) => {
+    const { agent } = t.nr
+    const { commonAttrs, logEventAggregator, log } = t.nr
+
+    agent.config.application_logging = {
+      forwarding: {
+        labels: {
+          enabled: true,
+          exclude: ['LaBeL2']
+        }
+      }
+    }
+
+    agent.config.labels = {
+      'label1': 'value1',
+      'LABEL2': 'value2',
+      'LABEL2-ALSO': 'value3'
+    }
+
+    const expectedLabels = {
+      'tags.label1': 'value1',
+      'tags.LABEL2-ALSO': 'value3'
+    }
+
+    logEventAggregator.add(log)
+    const payload = logEventAggregator._toPayloadSync()
+    assert.deepStrictEqual(payload, [
+      { common: { attributes: { ...commonAttrs, ...expectedLabels } }, logs: [log] }
+    ])
+  })
+
+  await t.test(
+    'should not add labels when labels.enabled is true but there are no labels in the agent config',
+    (t) => {
+      const { agent } = t.nr
+      const { commonAttrs, logEventAggregator, log } = t.nr
+
+      agent.config.application_logging = {
+        forwarding: {
+          labels: {
+            enabled: true,
+            exclude: ['one']
+          }
+        }
+      }
+
+      logEventAggregator.add(log)
+      const payload = logEventAggregator._toPayloadSync()
+      assert.deepStrictEqual(payload, [{ common: { attributes: commonAttrs }, logs: [log] }])
+    }
+  )
+
+  await t.test(
+    'should add labels to common attributes keeping the same case of the labels',
+    (t) => {
+      const { agent } = t.nr
+      const { commonAttrs, logEventAggregator, log } = t.nr
+
+      agent.config.application_logging = {
+        forwarding: {
+          labels: {
+            enabled: true,
+            exclude: []
+          }
+        }
+      }
+
+      agent.config.labels = {
+        'label1': 'value1',
+        'LABEL2': 'value2',
+        'LABEL2-ALSO': 'value3'
+      }
+
+      const expectedLabels = {
+        'tags.label1': 'value1',
+        'tags.LABEL2': 'value2',
+        'tags.LABEL2-ALSO': 'value3'
+      }
+
+      logEventAggregator.add(log)
+      const payload = logEventAggregator._toPayloadSync()
+      assert.deepStrictEqual(payload, [
+        { common: { attributes: { ...commonAttrs, ...expectedLabels } }, logs: [log] }
+      ])
+    }
+  )
 })
 
 test('big red button', async (t) => {
