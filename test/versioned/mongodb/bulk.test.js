@@ -8,7 +8,7 @@
 const common = require('./collection-common')
 const { STATEMENT_PREFIX } = require('./common')
 
-common.test('unorderedBulkOp', async function unorderedBulkOpTest(t, collection, verify) {
+common.test('unorderedBulkOp', async function unorderedBulkOpTest(collection, verify) {
   const bulk = collection.initializeUnorderedBulkOp()
   bulk
     .find({
@@ -29,7 +29,7 @@ common.test('unorderedBulkOp', async function unorderedBulkOpTest(t, collection,
   verify(null, [`${STATEMENT_PREFIX}/unorderedBulk/batch`], ['unorderedBulk'], { strict: false })
 })
 
-common.test('orderedBulkOp', async function unorderedBulkOpTest(t, collection, verify) {
+common.test('orderedBulkOp', async function unorderedBulkOpTest(collection, verify) {
   const bulk = collection.initializeOrderedBulkOp()
   bulk
     .find({

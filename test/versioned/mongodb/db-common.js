@@ -4,76 +4,75 @@
  */
 
 'use strict'
+
+const test = require('node:test')
+const assert = require('node:assert')
+
+const { removeModules } = require('../../lib/cache-buster')
 const common = require('./common')
 const collectionCommon = require('./collection-common')
 const helper = require('../../lib/agent_helper')
-const tap = require('tap')
 
 let MONGO_HOST = null
 let MONGO_PORT = null
 const BAD_MONGO_COMMANDS = ['collection']
 
+/**
+ * Very similar to the test runner in `./collection-common.js`. Refer to the
+ * docblocks there for clarification.
+ *
+ * @param {string} name Parent test name.
+ * @param {function} run Provided a db instance and a verify callback.
+ */
 function dbTest(name, run) {
-  mongoTest(name, function init(t, agent) {
-    const mongodb = require('mongodb')
-    let db = null
-    let client = null
+  test(name, async (t) => {
+    t.beforeEach(async (ctx) => {
+      ctx.nr = {}
+      ctx.nr.agent = helper.instrumentMockedAgent()
 
-    t.autoend()
+      const mongodb = require('mongodb')
+      ctx.nr.mongodb = mongodb
 
-    t.test('remote connection', function (t) {
-      t.autoend()
-      t.beforeEach(async function () {
-        // mongo >= 3.6.9 fails if you try to create an existing collection
-        // drop before executing tests
-        if (name === 'createCollection') {
-          await collectionCommon.dropTestCollections(mongodb)
-        }
-        MONGO_HOST = common.getHostName(agent)
-        MONGO_PORT = common.getPort()
+      await collectionCommon.dropTestCollections(mongodb)
+      MONGO_HOST = common.getHostName(ctx.nr.agent)
+      MONGO_PORT = common.getPort()
 
-        const res = await common.connect({ mongodb })
-        client = res.client
-        db = res.db
+      const res = await common.connect({ mongodb })
+      ctx.nr.client = res.client
+      ctx.nr.db = res.db
+    })
+
+    t.afterEach(async (ctx) => {
+      await common.close(ctx.nr.client, ctx.nr.db)
+      helper.unloadAgent(ctx.nr.agent)
+      removeModules(['mongodb'])
+    })
+
+    await t.test('without transaction', (t, end) => {
+      const { agent, db } = t.nr
+      run(db, function () {
+        assert.equal(agent.getTransaction(), undefined, 'should not have transaction')
+        end()
       })
+    })
 
-      t.afterEach(async function () {
-        await common.close(client, db)
-      })
-
-      t.test('without transaction', function (t) {
-        run(t, db, function () {
-          t.notOk(agent.getTransaction(), 'should not have transaction')
-          t.end()
-        })
-      })
-
-      t.test('with transaction', function (t) {
-        t.notOk(agent.getTransaction(), 'should not have transaction')
-        helper.runInTransaction(agent, function (transaction) {
-          run(t, db, function (names, opts = {}) {
-            verifyMongoSegments(t, agent, transaction, names, opts)
-            transaction.end()
-            t.end()
-          })
+    await t.test('with transaction', (t, end) => {
+      const { agent, db } = t.nr
+      assert.equal(agent.getTransaction(), undefined, 'should not have transaction')
+      helper.runInTransaction(agent, function (transaction) {
+        run(db, function (names, opts = {}) {
+          verifyMongoSegments(agent, transaction, names, opts)
+          transaction.end()
+          end()
         })
       })
     })
   })
 }
 
-function mongoTest(name, run) {
-  tap.test(name, function testWrap(t) {
-    const mongodb = require('mongodb')
-    collectionCommon.dropTestCollections(mongodb).then(() => {
-      run(t, helper.loadTestAgent(t))
-    })
-  })
-}
-
-function verifyMongoSegments(t, agent, transaction, names, opts) {
-  t.ok(agent.getTransaction(), 'should not lose transaction state')
-  t.equal(agent.getTransaction().id, transaction.id, 'transaction is correct')
+function verifyMongoSegments(agent, transaction, names, opts) {
+  assert.ok(agent.getTransaction(), 'should not lose transaction state')
+  assert.equal(agent.getTransaction().id, transaction.id, 'transaction is correct')
 
   const segment = agent.tracer.getSegment()
   let current = transaction.trace.root
@@ -84,19 +83,18 @@ function verifyMongoSegments(t, agent, transaction, names, opts) {
       // Filter out net.createConnection segments as they could occur during execution, which is fine
       // but breaks out assertion function
       current.children = current.children.filter((c) => c.name !== 'net.createConnection')
-      t.equal(current.children.length, 1, 'should have one child segment')
+      assert.equal(current.children.length, 1, 'should have one child segment')
       child = current.children[0]
       current = current.children[0]
     } else {
       child = current.children[i]
     }
-    t.equal(child.name, names[i], 'segment should be named ' + names[i])
+    assert.equal(child.name, names[i], 'segment should be named ' + names[i])
 
     // If this is a Mongo operation/statement segment then it should have the
     // datastore instance attributes.
     if (/^Datastore\/.*?\/MongoDB/.test(child.name)) {
       if (isBadSegment(child)) {
-        t.comment('Skipping attributes check for ' + child.name)
         continue
       }
 
@@ -110,17 +108,17 @@ function verifyMongoSegments(t, agent, transaction, names, opts) {
       }
 
       const attributes = child.getAttributes()
-      t.equal(attributes.database_name, dbName, 'should have correct db name')
-      t.equal(attributes.host, MONGO_HOST, 'should have correct host name')
-      t.equal(attributes.port_path_or_id, MONGO_PORT, 'should have correct port')
-      t.equal(attributes.product, 'MongoDB', 'should have correct product attribute')
+      assert.equal(attributes.database_name, dbName, 'should have correct db name')
+      assert.equal(attributes.host, MONGO_HOST, 'should have correct host name')
+      assert.equal(attributes.port_path_or_id, MONGO_PORT, 'should have correct port')
+      assert.equal(attributes.product, 'MongoDB', 'should have correct product attribute')
     }
   }
 
   if (opts.legacy) {
     // Do not use `t.equal` for this comparison. When it is false tap would dump
     // way too much information to be useful.
-    t.ok(current === segment, 'current segment is ' + segment.name)
+    assert.ok(current === segment, 'current segment is ' + segment.name)
   }
 }
 
@@ -138,6 +136,5 @@ function isBadSegment(segment) {
 }
 
 module.exports = {
-  dbTest,
-  mongoTest
+  dbTest
 }
