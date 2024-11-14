@@ -27,7 +27,7 @@ const claude = {
 const claude35 = {
   modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
   body: {
-    messages: [{ role: 'user', content: { type: 'text', text: 'who are you' } }]
+    messages: [{ role: 'user', content: [{ type: 'text', text: 'who are you' }] }]
   }
 }
 
