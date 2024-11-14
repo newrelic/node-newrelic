@@ -5,16 +5,22 @@
 
 'use strict'
 
+const assert = require('node:assert')
+
 const common = require('./collection-common')
 const semver = require('semver')
 const { STATEMENT_PREFIX, COLLECTIONS, DB_NAME } = require('./common')
 
-function verifyAggregateData(t, data) {
-  t.equal(data.length, 3, 'should have expected amount of results')
-  t.same(data, [{ value: 5 }, { value: 15 }, { value: 25 }], 'should have expected results')
+function verifyAggregateData(data) {
+  assert.equal(data.length, 3, 'should have expected amount of results')
+  assert.deepStrictEqual(
+    data,
+    [{ value: 5 }, { value: 15 }, { value: 25 }],
+    'should have expected results'
+  )
 }
 
-common.test('aggregate', async function aggregateTest(t, collection, verify) {
+common.test('aggregate', async function aggregateTest(collection, verify) {
   const data = await collection
     .aggregate([
       { $sort: { i: 1 } },
@@ -23,7 +29,7 @@ common.test('aggregate', async function aggregateTest(t, collection, verify) {
       { $project: { value: '$i', _id: 0 } }
     ])
     .toArray()
-  verifyAggregateData(t, data)
+  verifyAggregateData(data)
   verify(
     null,
     [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`],
@@ -32,74 +38,74 @@ common.test('aggregate', async function aggregateTest(t, collection, verify) {
   )
 })
 
-common.test('bulkWrite', async function bulkWriteTest(t, collection, verify) {
+common.test('bulkWrite', async function bulkWriteTest(collection, verify) {
   const data = await collection.bulkWrite(
     [{ deleteMany: { filter: {} } }, { insertOne: { document: { a: 1 } } }],
     { ordered: true, w: 1 }
   )
 
-  t.equal(data.insertedCount, 1)
-  t.equal(data.deletedCount, 30)
+  assert.equal(data.insertedCount, 1)
+  assert.equal(data.deletedCount, 30)
   verify(null, [`${STATEMENT_PREFIX}/bulkWrite`], ['bulkWrite'], { strict: false })
 })
 
-common.test('count', async function countTest(t, collection, verify) {
+common.test('count', async function countTest(collection, verify) {
   const data = await collection.count()
-  t.equal(data, 30)
+  assert.equal(data, 30)
   verify(null, [`${STATEMENT_PREFIX}/count`], ['count'], { strict: false })
 })
 
-common.test('distinct', async function distinctTest(t, collection, verify) {
+common.test('distinct', async function distinctTest(collection, verify) {
   const data = await collection.distinct('mod10')
-  t.same(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+  assert.deepStrictEqual(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
   verify(null, [`${STATEMENT_PREFIX}/distinct`], ['distinct'], { strict: false })
 })
 
-common.test('drop', async function dropTest(t, collection, verify) {
+common.test('drop', async function dropTest(collection, verify) {
   const data = await collection.drop()
-  t.equal(data, true)
+  assert.equal(data, true)
   verify(null, [`${STATEMENT_PREFIX}/drop`], ['drop'], { strict: false })
 })
 
-common.test('isCapped', async function isCappedTest(t, collection, verify) {
+common.test('isCapped', async function isCappedTest(collection, verify) {
   const data = await collection.isCapped()
-  t.notOk(data)
+  assert.equal(data, false)
 
   verify(null, [`${STATEMENT_PREFIX}/isCapped`], ['isCapped'], { strict: false })
 })
 
-common.test('options', async function optionsTest(t, collection, verify) {
+common.test('options', async function optionsTest(collection, verify) {
   const data = await collection.options()
 
   // Depending on the version of the mongo server this will change.
   if (data) {
-    t.same(data, {}, 'should have expected results')
+    assert.deepStrictEqual(data, {}, 'should have expected results')
   } else {
-    t.notOk(data, 'should have expected results')
+    assert.equal(data, false, 'should have expected results')
   }
 
   verify(null, [`${STATEMENT_PREFIX}/options`], ['options'], { strict: false })
 })
 
-common.test('rename', async function renameTest(t, collection, verify) {
+common.test('rename', async function renameTest(collection, verify) {
   await collection.rename(COLLECTIONS.collection2)
 
   verify(null, [`${STATEMENT_PREFIX}/rename`], ['rename'], { strict: false })
 })
 
 if (semver.satisfies(common.pkgVersion, '<6.0.0')) {
-  common.test('stats', async function statsTest(t, collection, verify) {
+  common.test('stats', async function statsTest(collection, verify) {
     const data = await collection.stats({ i: 5 })
-    t.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
-    t.equal(data.count, 30)
-    t.equal(data.ok, 1)
+    assert.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
+    assert.equal(data.count, 30)
+    assert.equal(data.ok, 1)
 
     verify(null, [`${STATEMENT_PREFIX}/stats`], ['stats'], { strict: false })
   })
 }
 
 if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
-  common.test('mapReduce', async function mapReduceTest(t, collection, verify) {
+  common.test('mapReduce', async function mapReduceTest(collection, verify) {
     const data = await collection.mapReduce(map, reduce, { out: { inline: 1 } })
 
     const expectedData = [
@@ -118,7 +124,7 @@ if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
     // data is not sorted depending on speed of
     // db calls, sort to compare vs expected collection
     data.sort((a, b) => a._id - b._id)
-    t.same(data, expectedData)
+    assert.deepStrictEqual(data, expectedData)
 
     verify(null, [`${STATEMENT_PREFIX}/mapReduce`], ['mapReduce'], { strict: false })
 

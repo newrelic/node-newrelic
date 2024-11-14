@@ -4,10 +4,13 @@
  */
 
 'use strict'
+
+const assert = require('node:assert')
+
 const { COLLECTIONS } = require('./common')
 const { dbTest } = require('./db-common')
 
-dbTest('addUser, removeUser', async function addUserTest(t, db, verify) {
+dbTest('addUser, removeUser', async function addUserTest(db, verify) {
   const userName = 'user-test'
   const userPass = 'user-test-pass'
 
@@ -30,21 +33,21 @@ dbTest('addUser, removeUser', async function addUserTest(t, db, verify) {
   ])
 })
 
-dbTest('collections', async function collectionTest(t, db, verify) {
+dbTest('collections', async function collectionTest(db, verify) {
   const collections = await db.collections()
-  t.ok(Array.isArray(collections), 'got array of collections')
+  assert.ok(Array.isArray(collections), 'got array of collections')
   verify(['Datastore/operation/MongoDB/collections'])
 })
 
-dbTest('command', async function commandTest(t, db, verify) {
+dbTest('command', async function commandTest(db, verify) {
   const result = await db.command({ ping: 1 })
-  t.same(result, { ok: 1 }, 'got correct result')
+  assert.deepStrictEqual(result, { ok: 1 }, 'got correct result')
   verify(['Datastore/operation/MongoDB/command'])
 })
 
-dbTest('createCollection', async function createTest(t, db, verify) {
+dbTest('createCollection', async function createTest(db, verify) {
   const collection = await db.createCollection(COLLECTIONS.collection1)
-  t.equal(
+  assert.equal(
     collection.collectionName || collection.s.name,
     COLLECTIONS.collection1,
     'new collection should have the right name'
@@ -52,39 +55,43 @@ dbTest('createCollection', async function createTest(t, db, verify) {
   verify(['Datastore/operation/MongoDB/createCollection'])
 })
 
-dbTest('createIndex', async function createIndexTest(t, db, verify) {
+dbTest('createIndex', async function createIndexTest(db, verify) {
   const result = await db.createIndex(COLLECTIONS.collection1, 'foo')
-  t.equal(result, 'foo_1', 'should have the right result')
+  assert.equal(result, 'foo_1', 'should have the right result')
   verify(['Datastore/operation/MongoDB/createIndex'])
 })
 
-dbTest('dropCollection', async function dropTest(t, db, verify) {
+dbTest('dropCollection', async function dropTest(db, verify) {
   await db.createCollection(COLLECTIONS.collection1)
   const result = await db.dropCollection(COLLECTIONS.collection1)
-  t.ok(result === true, 'result should be boolean true')
+  assert.ok(result === true, 'result should be boolean true')
   verify([
     'Datastore/operation/MongoDB/createCollection',
     'Datastore/operation/MongoDB/dropCollection'
   ])
 })
 
-dbTest('dropDatabase', async function dropDbTest(t, db, verify) {
+dbTest('dropDatabase', async function dropDbTest(db, verify) {
   const result = await db.dropDatabase()
-  t.ok(result, 'result should be truthy')
+  assert.ok(result, 'result should be truthy')
   verify(['Datastore/operation/MongoDB/dropDatabase'])
 })
 
-dbTest('indexInformation', async function indexInfoTest(t, db, verify) {
+dbTest('indexInformation', async function indexInfoTest(db, verify) {
   await db.createIndex(COLLECTIONS.collection1, 'foo')
   const result = await db.indexInformation(COLLECTIONS.collection1)
-  t.same(result, { _id_: [['_id', 1]], foo_1: [['foo', 1]] }, 'result is the expected object')
+  assert.deepStrictEqual(
+    result,
+    { _id_: [['_id', 1]], foo_1: [['foo', 1]] },
+    'result is the expected object'
+  )
   verify([
     'Datastore/operation/MongoDB/createIndex',
     'Datastore/operation/MongoDB/indexInformation'
   ])
 })
 
-dbTest('renameCollection', async function (t, db, verify) {
+dbTest('renameCollection', async function (db, verify) {
   await db.createCollection(COLLECTIONS.collection1)
   await db.renameCollection(COLLECTIONS.collection1, COLLECTIONS.collection2)
   await db.dropCollection(COLLECTIONS.collection2)
@@ -95,8 +102,8 @@ dbTest('renameCollection', async function (t, db, verify) {
   ])
 })
 
-dbTest('stats', async function statsTest(t, db, verify) {
+dbTest('stats', async function statsTest(db, verify) {
   const stats = await db.stats({})
-  t.ok(stats, 'got stats')
+  assert.ok(stats, 'got stats')
   verify(['Datastore/operation/MongoDB/stats'])
 })
