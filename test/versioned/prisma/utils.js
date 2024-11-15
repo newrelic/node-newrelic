@@ -5,6 +5,7 @@
 
 'use strict'
 const utils = module.exports
+const assert = require('node:assert')
 const { findSegment, getMetricHostName } = require('../../lib/metrics_helper')
 const { DB, PRISMA } = require('../../../lib/metrics/names')
 const params = require('../../lib/params')
@@ -27,17 +28,17 @@ const raw = `${PRISMA.STATEMENT}User/select`
 utils.raw = raw
 const rawUpdate = `${PRISMA.STATEMENT}User/update`
 utils.rawUpdate = rawUpdate
+const { assertSegments } = require('../../lib/custom-assertions')
 
 /**
  * Asserts all the expected datastore metrics for a given query
  *
- * @param {Object} t tap test instance
  * @param {Object} agent mocked NR agent
  */
-function verifyMetrics(t, agent) {
+function verifyMetrics(agent) {
   for (const [metricName, expectedCount] of Object.entries(expectedUpsertMetrics)) {
     const metric = agent.metrics.getMetric(metricName)
-    t.equal(
+    assert.equal(
       metric.callCount,
       expectedCount,
       `should have counted ${metricName} ${expectedCount} times`
@@ -49,31 +50,30 @@ function verifyMetrics(t, agent) {
  * Asserts all relevant prisma segments and their associative datastore attributes.
  * It also asserts that every segment has a hrDuration which means it has ended
  *
- * @param {Object} t tap test instance
  * @param {Object} agent mocked NR agent
  * @param {Object} transaction active NR transaction
  */
-function verifyTraces(t, agent, transaction) {
+function verifyTraces(agent, transaction) {
   const host = getMetricHostName(agent, params.postgres_host)
   const trace = transaction.trace
-  t.ok(trace, 'trace should exist')
-  t.ok(trace.root, 'root element should exist')
+  assert.ok(trace, 'trace should exist')
+  assert.ok(trace.root, 'root element should exist')
 
-  t.assertSegments(trace.root, [findMany, update, update, findMany], { exact: true })
+  assertSegments(trace.root, [findMany, update, update, findMany], { exact: true })
   const findManySegment = findSegment(trace.root, findMany)
-  t.ok(findManySegment.timer.hrDuration, 'findMany segment should have ended')
+  assert.ok(findManySegment.timer.hrDuration, 'findMany segment should have ended')
   const updateSegment = findSegment(trace.root, update)
-  t.ok(updateSegment.timer.hrDuration, 'update segment should have ended')
+  assert.ok(updateSegment.timer.hrDuration, 'update segment should have ended')
   for (const segment of [findManySegment, updateSegment]) {
     const attributes = segment.getAttributes()
     const name = segment.name
-    t.equal(attributes.host, host, `host of segment ${name} should equal ${host}`)
-    t.equal(
+    assert.equal(attributes.host, host, `host of segment ${name} should equal ${host}`)
+    assert.equal(
       attributes.database_name,
       params.postgres_db,
       `database name of segment ${name} should be ${params.postgres_db}`
     )
-    t.equal(
+    assert.equal(
       attributes.port_path_or_id,
       params.postgres_prisma_port.toString(),
       `port of segment ${name} should be ${params.postgres_prisma_port}`
@@ -85,34 +85,37 @@ function verifyTraces(t, agent, transaction) {
  * Gets the sql traces from the agent query trace aggregator.  It then asserts all their
  * associative datastore attributes + backtrace.
  *
- * @param {Object} t tap test instance
  * @param {Object} agent mocked NR agent
  * @param {Number} [count=3] number of queries it expects in aggregator
  */
-utils.verifySlowQueries = function verifySlowQueries(t, agent, queries = []) {
+utils.verifySlowQueries = function verifySlowQueries(agent, queries = []) {
   const metricHostName = getMetricHostName(agent, params.postgres_host)
 
-  t.equal(agent.queries.samples.size, queries.length, `should have ${queries.length} queries`)
+  assert.equal(agent.queries.samples.size, queries.length, `should have ${queries.length} queries`)
   let i = 0
   for (const sample of agent.queries.samples.values()) {
-    t.equal(sample.trace.query, queries[i], 'Query name should be expected')
+    assert.equal(sample.trace.query, queries[i], 'Query name should be expected')
     const queryParams = sample.getParams()
 
-    t.equal(queryParams.host, metricHostName, 'instance data should show up in slow query params')
+    assert.equal(
+      queryParams.host,
+      metricHostName,
+      'instance data should show up in slow query params'
+    )
 
-    t.equal(
+    assert.equal(
       queryParams.port_path_or_id,
       String(params.postgres_prisma_port),
       'instance data should show up in slow query params'
     )
 
-    t.equal(
+    assert.equal(
       queryParams.database_name,
       params.postgres_db,
       'database name should show up in slow query params'
     )
 
-    t.ok(queryParams.backtrace, 'params should contain a backtrace')
+    assert.ok(queryParams.backtrace, 'params should contain a backtrace')
     i++
   }
 }
@@ -120,11 +123,10 @@ utils.verifySlowQueries = function verifySlowQueries(t, agent, queries = []) {
 /**
  * Helper that verifies both metrics and relevant segments on trace
  *
- * @param {Object} t tap test instance
  * @param {Object} agent mocked NR agent
  * @param {Object} transaction active NR transaction
  */
-utils.verify = function verify(t, agent, transaction) {
-  verifyMetrics(t, agent)
-  verifyTraces(t, agent, transaction)
+utils.verify = function verify(agent, transaction) {
+  verifyMetrics(agent)
+  verifyTraces(agent, transaction)
 }

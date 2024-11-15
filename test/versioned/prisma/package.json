@@ -15,7 +15,7 @@
         "@prisma/client": ">=5.0.0 <5.9.0 || >=5.9.1"
       },
       "files": [
-        "prisma.tap.js"
+        "prisma.test.js"
       ]
     }
   ],
