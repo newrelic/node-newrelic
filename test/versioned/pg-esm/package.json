@@ -14,11 +14,10 @@
         "pg-native": ">=3.0.0"
       },
       "files": [
-        "force-native.tap.mjs",
-        "native.tap.mjs",
-        "pg.tap.mjs"
+        "force-native.test.mjs",
+        "native.test.mjs",
+        "pg.test.mjs"
       ]
     }
-  ],
-  "dependencies": {}
+  ]
 }
