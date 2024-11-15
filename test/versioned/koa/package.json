@@ -20,8 +20,8 @@
         }
       },
       "files": [
-        "koa.tap.js",
-        "code-level-metrics.tap.js"
+        "koa.test.js",
+        "code-level-metrics.test.js"
       ]
     },
     {
@@ -39,8 +39,8 @@
         }
       },
       "files": [
-        "koa-router.tap.js",
-        "code-level-metrics.tap.js"
+        "koa-router.test.js",
+        "code-level-metrics.test.js"
       ]
     },
     {
@@ -58,8 +58,8 @@
         }
       },
       "files": [
-        "scoped-koa-router.tap.js",
-        "code-level-metrics.tap.js"
+        "scoped-koa-router.test.js",
+        "code-level-metrics.test.js"
       ]
     },
     {
@@ -77,7 +77,7 @@
         }
       },
       "files": [
-        "koa-route.tap.js"
+        "koa-route.test.js"
       ]
     }
   ],
