@@ -5,7 +5,8 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const semver = require('semver')
 const helpers = require('./helpers')
 const TRANSACTION_PREFX = 'WebTransaction/WebFrameworkUri/Nextjs/GET/'
@@ -16,7 +17,7 @@ const {
   isMiddlewareInstrumentationSupported
 } = require('../../../lib/instrumentation/nextjs/utils')
 const agentHelper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
+const { assertSegments } = require('../../lib/custom-assertions')
 
 function getChildSegments(uri) {
   const segments = [
@@ -34,30 +35,24 @@ function getChildSegments(uri) {
   return segments
 }
 
-tap.test('Next.js', (t) => {
-  t.autoend()
-  let agent
-  let server
+test('Next.js', async (t) => {
+  const agent = agentHelper.instrumentMockedAgent()
+  // assigning the fake agent to the require cache because in
+  // app/pages/_document we require the agent and want to not
+  // try to bootstrap a new, real one
+  agent.getBrowserTimingHeader = function getBrowserTimingHeader() {
+    return '<div>stub</div>'
+  }
+  require.cache.__NR_cache = agent
+  await helpers.build(__dirname)
+  const server = await helpers.start(__dirname)
 
-  t.before(async () => {
-    agent = agentHelper.instrumentMockedAgent()
-    // assigning the fake agent to the require cache because in
-    // app/pages/_document we require the agent and want to not
-    // try to bootstrap a new, real one
-    agent.getBrowserTimingHeader = function getBrowserTimingHeader() {
-      return '<div>stub</div>'
-    }
-    require.cache.__NR_cache = agent
-    await helpers.build(__dirname)
-    server = await helpers.start(__dirname)
-  })
-
-  t.teardown(async () => {
+  t.after(async () => {
     await server.close()
     agentHelper.unloadAgent(agent)
   })
 
-  t.test('should properly name getServerSideProps segments on static pages', async (t) => {
+  await t.test('should properly name getServerSideProps segments on static pages', async (t) => {
     const txPromise = helpers.setupTransactionHandler({ t, agent })
 
     const URI = '/ssr/people'
@@ -65,17 +60,17 @@ tap.test('Next.js', (t) => {
     const res = await helpers.makeRequest(URI)
     const [tx] = await txPromise
 
-    t.equal(res.statusCode, 200)
+    assert.equal(res.statusCode, 200)
     const expectedSegments = [
       {
         name: `${TRANSACTION_PREFX}${URI}`,
         children: getChildSegments(URI)
       }
     ]
-    t.assertSegments(tx.trace.root, expectedSegments, { exact: false })
+    assertSegments(tx.trace.root, expectedSegments, { exact: false })
   })
 
-  t.test('should properly name getServerSideProps segments on dynamic pages', async (t) => {
+  await t.test('should properly name getServerSideProps segments on dynamic pages', async (t) => {
     const txPromise = helpers.setupTransactionHandler({ t, agent })
 
     const EXPECTED_URI = '/ssr/dynamic/person/[id]'
@@ -83,7 +78,7 @@ tap.test('Next.js', (t) => {
 
     const res = await helpers.makeRequest(URI)
 
-    t.equal(res.statusCode, 200)
+    assert.equal(res.statusCode, 200)
     const [tx] = await txPromise
     const expectedSegments = [
       {
@@ -91,10 +86,10 @@ tap.test('Next.js', (t) => {
         children: getChildSegments(EXPECTED_URI)
       }
     ]
-    t.assertSegments(tx.trace.root, expectedSegments, { exact: false })
+    assertSegments(tx.trace.root, expectedSegments, { exact: false })
   })
 
-  t.test(
+  await t.test(
     'should record segment for middleware when making API call',
     { skip: !isMiddlewareInstrumentationSupported(nextPkg.version) },
     async (t) => {
@@ -105,7 +100,7 @@ tap.test('Next.js', (t) => {
 
       const res = await helpers.makeRequest(URI)
 
-      t.equal(res.statusCode, 200)
+      assert.equal(res.statusCode, 200)
       const [tx] = await txPromise
       const expectedSegments = [
         {
@@ -121,7 +116,7 @@ tap.test('Next.js', (t) => {
         ]
       }
 
-      t.assertSegments(tx.trace.root, expectedSegments, { exact: false })
+      assertSegments(tx.trace.root, expectedSegments, { exact: false })
     }
   )
 })
