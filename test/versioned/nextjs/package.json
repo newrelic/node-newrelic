@@ -12,7 +12,7 @@
         "next": ">=13.4.19"
       },
       "files": [
-        "app-dir.tap.js"
+        "app-dir.test.js"
       ]
     },
     {
@@ -23,9 +23,9 @@
         "next": ">=14.0.0"
       },
       "files": [
-        "attributes.tap.js",
-        "segments.tap.js",
-        "transaction-naming.tap.js"
+        "attributes.test.js",
+        "segments.test.js",
+        "transaction-naming.test.js"
       ]
     }
   ],

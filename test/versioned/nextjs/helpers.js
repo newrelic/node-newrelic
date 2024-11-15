@@ -161,7 +161,7 @@ helpers.setupTransactionHandler = function setupTransactionHandler({
 
     agent.on('transactionFinished', txHandler)
 
-    t.teardown(() => {
+    t.after(() => {
       agent.removeListener('transactionFinished', txHandler)
     })
   })
