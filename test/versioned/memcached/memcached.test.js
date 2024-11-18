@@ -874,7 +874,11 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
             assert.ok(!err)
             transaction.end()
             checkParams(firstSegment, 'server1', '1111')
-            checkParams(transaction.trace.getParent(agent.tracer.getSegment().parentId), 'server2', '2222')
+            checkParams(
+              transaction.trace.getParent(agent.tracer.getSegment().parentId),
+              'server2',
+              '2222'
+            )
             end()
           })
         })
