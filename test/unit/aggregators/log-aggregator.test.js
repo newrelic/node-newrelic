@@ -10,6 +10,7 @@ const assert = require('node:assert')
 const LogAggregator = require('../../../lib/aggregators/log-aggregator')
 const Metrics = require('../../../lib/metrics')
 const helper = require('../../lib/agent_helper')
+const { assertMetrics } = require('../../lib/custom-assertions')
 
 const RUN_ID = 1337
 const LIMIT = 5
@@ -42,9 +43,15 @@ test('Log Aggregator', async (t) => {
             log_event_data: 42
           }
         },
-        labels: {},
         application_logging: {
+          metrics: {
+            enabled: true
+          },
+          local_decorating: {
+            enabled: true
+          },
           forwarding: {
+            enabled: true,
             labels: {
               enabled: true,
               exclude: []
@@ -184,69 +191,14 @@ test('Log Aggregator', async (t) => {
     logEventAggregator.addBatch(logs, priority)
     assert.equal(logEventAggregator.getEvents().length, 3)
   })
-})
 
-test('Common Attributes - enabled labels with exclusion list', async (t) => {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-
-    ctx.nr.commonAttrs = {
-      'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
-      'hostname': 'test-host',
-      'entity.name': 'unit-test',
-      'entity.type': 'SERVICE'
-    }
-
-    ctx.nr.agent = helper.instrumentMockedAgent({
-      event_harvest_config: {
-        harvest_limits: {
-          log_event_data: 42
-        }
-      },
-      labels: {
-        'label1': 'value1',
-        'LABEL2': 'value2',
-        'LABEL2-ALSO': 'value3'
-      },
-      application_logging: {
-        forwarding: {
-          labels: {
-            enabled: true,
-            exclude: ['LaBeL2']
-          }
-        }
-      }
-    })
-
-    ctx.nr.agent.getServiceLinkingMetadata = function () {
-      return {
-        ...ctx.nr.commonAttrs
-      }
-    }
-
-    ctx.nr.logEventAggregator = new LogAggregator({ runId: RUN_ID, limit: LIMIT }, ctx.nr.agent)
-
-    ctx.nr.log = {
-      'level': 30,
-      'timestamp': '1649689872369',
-      'pid': 4856,
-      'trace.id': '2f93639c684a2dd33c28345173d218b8',
-      'span.id': 'a136d77f2a5b997b',
-      'message': 'unit test msg'
-    }
-  })
-
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
-  })
-
-  await t.test('should exclude label even if casing is different', (t) => {
-    const { commonAttrs, logEventAggregator, log } = t.nr
-
+  await t.test('add labels to logs when enabled', (t) => {
+    const { agent, commonAttrs, logEventAggregator, log } = t.nr
     const expectedLabels = {
       'tags.label1': 'value1',
       'tags.LABEL2-ALSO': 'value3'
     }
+    agent.config.loggingLabels = expectedLabels
 
     logEventAggregator.add(log)
     const payload = logEventAggregator._toPayloadSync()
@@ -256,235 +208,52 @@ test('Common Attributes - enabled labels with exclusion list', async (t) => {
   })
 
   await t.test(
-    'should add labels to common attributes if labels.enabled is true but not those in excluded labels',
+    'should not add labels to logs when `application_logging.forwarding.enabled` is false',
     (t) => {
-      const { commonAttrs, logEventAggregator, log } = t.nr
-
+      const { agent, commonAttrs, logEventAggregator, log } = t.nr
       const expectedLabels = {
         'tags.label1': 'value1',
         'tags.LABEL2-ALSO': 'value3'
       }
+      agent.config.loggingLabels = expectedLabels
+      agent.config.application_logging.forwarding.labels.enabled = false
 
       logEventAggregator.add(log)
       const payload = logEventAggregator._toPayloadSync()
-      assert.deepStrictEqual(payload, [
-        { common: { attributes: { ...commonAttrs, ...expectedLabels } }, logs: [log] }
-      ])
+      assert.deepStrictEqual(payload, [{ common: { attributes: { ...commonAttrs } }, logs: [log] }])
     }
   )
-})
 
-test('Common Attributes - disabled labels', async (t) => {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-
-    ctx.nr.commonAttrs = {
-      'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
-      'hostname': 'test-host',
-      'entity.name': 'unit-test',
-      'entity.type': 'SERVICE'
-    }
-
-    ctx.nr.agent = helper.instrumentMockedAgent({
-      event_harvest_config: {
-        harvest_limits: {
-          log_event_data: 42
-        }
-      },
-      labels: {
-        'label1': 'value1',
-        'LABEL2': 'value2',
-        'LABEL2-ALSO': 'value3'
-      },
-      application_logging: {
-        forwarding: {
-          labels: {
-            enabled: false,
-            exclude: ['label2']
-          }
-        }
-      }
-    })
-
-    ctx.nr.agent.getServiceLinkingMetadata = function () {
-      return {
-        ...ctx.nr.commonAttrs
-      }
-    }
-
-    ctx.nr.logEventAggregator = new LogAggregator({ runId: RUN_ID, limit: LIMIT }, ctx.nr.agent)
-
-    ctx.nr.log = {
-      'level': 30,
-      'timestamp': '1649689872369',
-      'pid': 4856,
-      'trace.id': '2f93639c684a2dd33c28345173d218b8',
-      'span.id': 'a136d77f2a5b997b',
-      'message': 'unit test msg'
-    }
-  })
-
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
-  })
-
-  await t.test('should not add labels to common attributes if labels.enabled is false', (t) => {
-    const { commonAttrs, logEventAggregator, log } = t.nr
-
-    logEventAggregator.add(log)
-    const payload = logEventAggregator._toPayloadSync()
-    assert.deepStrictEqual(payload, [{ common: { attributes: commonAttrs }, logs: [log] }])
-  })
-})
-
-test('Common Attributes - enabled labels with no exclusion list and existing labels', async (t) => {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-
-    ctx.nr.commonAttrs = {
-      'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
-      'hostname': 'test-host',
-      'entity.name': 'unit-test',
-      'entity.type': 'SERVICE'
-    }
-
-    ctx.nr.agent = helper.instrumentMockedAgent({
-      event_harvest_config: {
-        harvest_limits: {
-          log_event_data: 42
-        }
-      },
-      labels: {
-        'label1': 'value1',
-        'LABEL2': 'value2',
-        'LABEL2-ALSO': 'value3'
-      },
-      application_logging: {
-        forwarding: {
-          labels: {
-            enabled: true,
-            exclude: []
-          }
-        }
-      }
-    })
-
-    ctx.nr.agent.getServiceLinkingMetadata = function () {
-      return {
-        ...ctx.nr.commonAttrs
-      }
-    }
-
-    ctx.nr.logEventAggregator = new LogAggregator({ runId: RUN_ID, limit: LIMIT }, ctx.nr.agent)
-
-    ctx.nr.log = {
-      'level': 30,
-      'timestamp': '1649689872369',
-      'pid': 4856,
-      'trace.id': '2f93639c684a2dd33c28345173d218b8',
-      'span.id': 'a136d77f2a5b997b',
-      'message': 'unit test msg'
-    }
-  })
-
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
-  })
-
-  await t.test('should add labels to common attributes if labels.enabled is true', (t) => {
-    const { commonAttrs, logEventAggregator, log } = t.nr
-
-    const expectedLabels = {
-      'tags.label1': 'value1',
-      'tags.LABEL2': 'value2',
-      'tags.LABEL2-ALSO': 'value3'
-    }
-
-    logEventAggregator.add(log)
-    const payload = logEventAggregator._toPayloadSync()
-    assert.deepStrictEqual(payload, [
-      { common: { attributes: { ...commonAttrs, ...expectedLabels } }, logs: [log] }
-    ])
+  await t.test('should increment supportability metrics accordingly', (t) => {
+    const { agent } = t.nr
+    const expectedMetrics = [
+      [{ name: 'Supportability/Logging/Forwarding/Nodejs/enabled' }],
+      [{ name: 'Supportability/Logging/LocalDecorating/Nodejs/enabled' }],
+      [{ name: 'Supportability/Logging/Metrics/Nodejs/enabled' }],
+      [{ name: 'Supportability/Logging/Labels/Nodejs/enabled' }]
+    ]
+    assertMetrics(agent.metrics, expectedMetrics, false, false)
   })
 
   await t.test(
-    'should add labels to common attributes keeping the same case of the labels',
+    'should set features to disabled when all application logging features are not enabled',
     (t) => {
-      const { commonAttrs, logEventAggregator, log } = t.nr
-
-      const expectedLabels = {
-        'tags.label1': 'value1',
-        'tags.LABEL2': 'value2',
-        'tags.LABEL2-ALSO': 'value3'
-      }
-
-      logEventAggregator.add(log)
-      const payload = logEventAggregator._toPayloadSync()
-      assert.deepStrictEqual(payload, [
-        { common: { attributes: { ...commonAttrs, ...expectedLabels } }, logs: [log] }
-      ])
-    }
-  )
-})
-
-test('Common Attributes - enabled labels with no exclusion list and no labels', async (t) => {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-
-    ctx.nr.commonAttrs = {
-      'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
-      'hostname': 'test-host',
-      'entity.name': 'unit-test',
-      'entity.type': 'SERVICE'
-    }
-
-    ctx.nr.agent = helper.instrumentMockedAgent({
-      event_harvest_config: {
-        harvest_limits: {
-          log_event_data: 42
-        }
-      },
-      labels: {},
-      application_logging: {
-        forwarding: {
-          labels: {
-            enabled: true,
-            exclude: []
-          }
-        }
-      }
-    })
-
-    ctx.nr.agent.getServiceLinkingMetadata = function () {
-      return {
-        ...ctx.nr.commonAttrs
-      }
-    }
-
-    ctx.nr.logEventAggregator = new LogAggregator({ runId: RUN_ID, limit: LIMIT }, ctx.nr.agent)
-
-    ctx.nr.log = {
-      'level': 30,
-      'timestamp': '1649689872369',
-      'pid': 4856,
-      'trace.id': '2f93639c684a2dd33c28345173d218b8',
-      'span.id': 'a136d77f2a5b997b',
-      'message': 'unit test msg'
-    }
-  })
-
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
-  })
-
-  await t.test(
-    'should not add labels when labels.enabled is true but there are no labels in the agent config',
-    (t) => {
-      const { commonAttrs, logEventAggregator, log } = t.nr
-
-      logEventAggregator.add(log)
-      const payload = logEventAggregator._toPayloadSync()
-      assert.deepStrictEqual(payload, [{ common: { attributes: commonAttrs }, logs: [log] }])
+      const { agent } = t.nr
+      // clear metrics from the beforeEach init
+      agent.metrics.unscoped = {}
+      agent.config.application_logging.forwarding.enabled = false
+      agent.config.application_logging.metrics.enabled = false
+      agent.config.application_logging.local_decorating.enabled = false
+      agent.config.application_logging.forwarding.labels.enabled = false
+      const aggregator = new LogAggregator({ runId: RUN_ID, limit: LIMIT }, agent)
+      assert.ok(aggregator)
+      const expectedMetrics = [
+        [{ name: 'Supportability/Logging/Forwarding/Nodejs/disabled' }],
+        [{ name: 'Supportability/Logging/LocalDecorating/Nodejs/disabled' }],
+        [{ name: 'Supportability/Logging/Metrics/Nodejs/disabled' }],
+        [{ name: 'Supportability/Logging/Labels/Nodejs/disabled' }]
+      ]
+      assertMetrics(agent.metrics, expectedMetrics, false, false)
     }
   )
 })

@@ -105,6 +105,11 @@ test('should account for all *used* keys', (t) => {
 test('should warn if released flags are still in config', () => {
   let called = false
   Config.prototype.setLogger({
+    child() {
+      return {
+        warn() {}
+      }
+    },
     warn() {
       called = true
     },
@@ -119,6 +124,11 @@ test('should warn if released flags are still in config', () => {
 test('should warn if unreleased flags are still in config', () => {
   let called = false
   Config.prototype.setLogger({
+    child() {
+      return {
+        warn() {}
+      }
+    },
     warn() {
       called = true
     },

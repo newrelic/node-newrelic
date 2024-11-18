@@ -146,3 +146,80 @@ test('#publicSettings', async (t) => {
     assert.deepStrictEqual(configuration.applications(), ['test app name'])
   })
 })
+
+test('parsedLabels', () => {
+  const longKey = 'a'.repeat(257)
+  const longValue = 'b'.repeat(257)
+  const configuration = Config.initialize({ labels: `a: b; ${longKey}: ${longValue}` })
+  assert.deepEqual(configuration.parsedLabels, [
+    { label_type: 'a', label_value: 'b' },
+    { label_type: 'a'.repeat(255), label_value: 'b'.repeat(255) }
+  ])
+})
+
+test('loggingLabels', async (t) => {
+  await t.test('should exclude labels regardless of case', () => {
+    const config = {
+      labels: {
+        'label1': 'value1',
+        'LABEL2': 'value2',
+        'LABEL2-ALSO': 'value3'
+      },
+      application_logging: {
+        forwarding: {
+          labels: {
+            enabled: true,
+            exclude: ['LaBeL2']
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    const expectedLabels = {
+      'tags.label1': 'value1',
+      'tags.LABEL2-ALSO': 'value3'
+    }
+
+    assert.deepEqual(configuration.loggingLabels, expectedLabels)
+  })
+
+  await t.test(
+    'should not add applicationLabels when `application_logging.forwarding.labels.enabled` is false',
+    () => {
+      const config = {
+        labels: {
+          'label1': 'value1',
+          'LABEL2': 'value2',
+          'LABEL2-ALSO': 'value3'
+        },
+        application_logging: {
+          forwarding: {
+            labels: {
+              enabled: false
+            }
+          }
+        }
+      }
+
+      const configuration = Config.initialize(config)
+      assert.deepEqual(configuration.loggingLabels, undefined)
+    }
+  )
+
+  await t.test('should not applicationLabels if no labels defined', () => {
+    const config = {
+      labels: {},
+      application_logging: {
+        forwarding: {
+          labels: {
+            enabled: true
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.deepEqual(configuration.loggingLabels, {})
+  })
+})
