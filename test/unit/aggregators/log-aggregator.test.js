@@ -10,8 +10,6 @@ const assert = require('node:assert')
 const LogAggregator = require('../../../lib/aggregators/log-aggregator')
 const Metrics = require('../../../lib/metrics')
 const helper = require('../../lib/agent_helper')
-const { assertMetrics } = require('../../lib/custom-assertions')
-
 const RUN_ID = 1337
 const LIMIT = 5
 
@@ -221,39 +219,6 @@ test('Log Aggregator', async (t) => {
       logEventAggregator.add(log)
       const payload = logEventAggregator._toPayloadSync()
       assert.deepStrictEqual(payload, [{ common: { attributes: { ...commonAttrs } }, logs: [log] }])
-    }
-  )
-
-  await t.test('should increment supportability metrics accordingly', (t) => {
-    const { agent } = t.nr
-    const expectedMetrics = [
-      [{ name: 'Supportability/Logging/Forwarding/Nodejs/enabled' }],
-      [{ name: 'Supportability/Logging/LocalDecorating/Nodejs/enabled' }],
-      [{ name: 'Supportability/Logging/Metrics/Nodejs/enabled' }],
-      [{ name: 'Supportability/Logging/Labels/Nodejs/enabled' }]
-    ]
-    assertMetrics(agent.metrics, expectedMetrics, false, false)
-  })
-
-  await t.test(
-    'should set features to disabled when all application logging features are not enabled',
-    (t) => {
-      const { agent } = t.nr
-      // clear metrics from the beforeEach init
-      agent.metrics.unscoped = {}
-      agent.config.application_logging.forwarding.enabled = false
-      agent.config.application_logging.metrics.enabled = false
-      agent.config.application_logging.local_decorating.enabled = false
-      agent.config.application_logging.forwarding.labels.enabled = false
-      const aggregator = new LogAggregator({ runId: RUN_ID, limit: LIMIT }, agent)
-      assert.ok(aggregator)
-      const expectedMetrics = [
-        [{ name: 'Supportability/Logging/Forwarding/Nodejs/disabled' }],
-        [{ name: 'Supportability/Logging/LocalDecorating/Nodejs/disabled' }],
-        [{ name: 'Supportability/Logging/Metrics/Nodejs/disabled' }],
-        [{ name: 'Supportability/Logging/Labels/Nodejs/disabled' }]
-      ]
-      assertMetrics(agent.metrics, expectedMetrics, false, false)
     }
   )
 })

@@ -50,9 +50,13 @@ test('fun facts about apps that New Relic is interested in including', async (t)
 
     const logs = {
       debug: [],
-      trace: []
+      trace: [],
+      warn: []
     }
     const logger = {
+      warn(...args) {
+        logs.warn.push(args)
+      },
       debug(...args) {
         logs.debug.push(args)
       },
@@ -196,13 +200,16 @@ test('fun facts about apps that New Relic is interested in including', async (t)
   })
 
   await t.test('should convert label object to expected format', (t, end) => {
-    const { agent, facts } = t.nr
+    const { agent, logger, facts } = t.nr
     const longKey = '€'.repeat(257)
     const longValue = '𝌆'.repeat(257)
-    agent.config.parsedLabels = parseLabels({
-      a: 'b',
-      [longKey]: longValue
-    })
+    agent.config.parsedLabels = parseLabels(
+      {
+        a: 'b',
+        [longKey]: longValue
+      },
+      { child: () => logger }
+    )
     facts(agent, (result) => {
       const expected = [
         { label_type: 'a', label_value: 'b' },
@@ -214,10 +221,12 @@ test('fun facts about apps that New Relic is interested in including', async (t)
   })
 
   await t.test('should convert label string to expected format', (t, end) => {
-    const { agent, facts } = t.nr
+    const { agent, logger, facts } = t.nr
     const longKey = '€'.repeat(257)
     const longValue = '𝌆'.repeat(257)
-    agent.config.parsedLabels = parseLabels(`a: b; ${longKey}: ${longValue}`)
+    agent.config.parsedLabels = parseLabels(`a: b; ${longKey}: ${longValue}`, {
+      child: () => logger
+    })
     facts(agent, (result) => {
       const expected = [
         { label_type: 'a', label_value: 'b' },

@@ -949,7 +949,7 @@ test('when event_harvest_config update on connect with a valid config', async (t
 })
 
 test('logging supportability on connect', async (t) => {
-  const keys = ['Forwarding', 'Metrics', 'LocalDecorating']
+  const keys = ['Forwarding', 'Metrics', 'LocalDecorating', 'Labels']
 
   t.beforeEach((ctx) => {
     ctx.nr = {}
@@ -967,12 +967,13 @@ test('logging supportability on connect', async (t) => {
     agent.config.application_logging.metrics.enabled = false
     agent.config.application_logging.forwarding.enabled = false
     agent.config.application_logging.local_decorating.enabled = false
+    agent.config.application_logging.forwarding.labels.enabled = false
     agent.onConnect(false, () => {
       for (const key of keys) {
         const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
         const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
-        assert.equal(disabled.callCount, 1)
-        assert.equal(enabled, undefined)
+        assert.equal(disabled.callCount, 1, `${key} should be disabled`)
+        assert.equal(enabled, undefined, `${key} should not be enabled`)
       }
       end()
     })
@@ -987,12 +988,13 @@ test('logging supportability on connect', async (t) => {
       agent.config.application_logging.metrics.enabled = true
       agent.config.application_logging.forwarding.enabled = true
       agent.config.application_logging.local_decorating.enabled = true
+      agent.config.application_logging.forwarding.labels.enabled = true
       agent.onConnect(false, () => {
         for (const key of keys) {
           const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
           const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
-          assert.equal(disabled.callCount, 1)
-          assert.equal(enabled, undefined)
+          assert.equal(disabled.callCount, 1, `${key} should be disabled`)
+          assert.equal(enabled, undefined, `${key} should not be enabled`)
         }
         end()
       })
@@ -1006,12 +1008,13 @@ test('logging supportability on connect', async (t) => {
     agent.config.application_logging.metrics.enabled = true
     agent.config.application_logging.forwarding.enabled = true
     agent.config.application_logging.local_decorating.enabled = true
+    agent.config.application_logging.forwarding.labels.enabled = true
     agent.onConnect(false, () => {
       for (const key of keys) {
         const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
         const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
-        assert.equal(enabled.callCount, 1)
-        assert.equal(disabled, undefined)
+        assert.equal(enabled.callCount, 1, `${key} should be enabled`)
+        assert.equal(disabled, undefined, `${key} should not be enabled`)
       }
       end()
     })
