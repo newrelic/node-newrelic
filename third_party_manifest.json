@@ -92,6 +92,18 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
+    "@opentelemetry/semantic-conventions@1.27.0": {
+      "name": "@opentelemetry/semantic-conventions",
+      "version": "1.27.0",
+      "range": "^1.27.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v1.27.0",
+      "licenseFile": "node_modules/@opentelemetry/semantic-conventions/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v1.27.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
+    },
     "@tyriar/fibonacci-heap@2.0.9": {
       "name": "@tyriar/fibonacci-heap",
       "version": "2.0.9",
@@ -118,15 +130,15 @@
       "publisher": "Max Ogden",
       "email": "max@maxogden.com"
     },
-    "https-proxy-agent@7.0.5": {
+    "https-proxy-agent@7.0.4": {
       "name": "https-proxy-agent",
-      "version": "7.0.5",
+      "version": "7.0.4",
       "range": "^7.0.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/TooTallNate/proxy-agents",
-      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v7.0.5",
+      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v7.0.4",
       "licenseFile": "node_modules/https-proxy-agent/LICENSE",
-      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v7.0.5/LICENSE",
+      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v7.0.4/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nathan Rajlich",
       "email": "nathan@tootallnate.net",
@@ -211,15 +223,15 @@
       "email": "w@tson.dk",
       "url": "https://twitter.com/wa7son"
     },
-    "semver@7.6.3": {
+    "semver@7.6.2": {
       "name": "semver",
-      "version": "7.6.3",
+      "version": "7.6.2",
       "range": "^7.5.2",
       "licenses": "ISC",
       "repoUrl": "https://github.com/npm/node-semver",
-      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.6.3",
+      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.6.2",
       "licenseFile": "node_modules/semver/LICENSE",
-      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.6.3/LICENSE",
+      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.6.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "GitHub Inc."
     },
@@ -351,7 +363,7 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@slack/bolt@3.22.0": {
+    "@slack/bolt@3.19.0": {
       "name": "@slack/bolt",
       "version": "3.22.0",
       "range": "^3.7.0",

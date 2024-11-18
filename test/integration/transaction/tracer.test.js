@@ -333,8 +333,6 @@ test('createSegment', async function testCreateSegment(t) {
     }, outerCtx)()
   })
 
-
-
   await plan.completed
 })
 
@@ -376,7 +374,6 @@ test('addSegment', async function addSegmentTest(t) {
     root = transaction.trace.root
     let [child] = transaction.trace.getChildren(root.id)
     plan.equal(child, segment)
-
 
     const outside = tracer.addSegment('outside', null, root, false, check)
     ;[, child] = transaction.trace.getChildren(root.id)

@@ -223,7 +223,7 @@ test('AsyncLocalStorage based tracking', async (t) => {
     helper.runInTransaction(agent, function (txn) {
       plan.ok(txn, 'transaction should not be null')
 
-      const ctx = agent.tracer.getContext() 
+      const ctx = agent.tracer.getContext()
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
@@ -273,7 +273,7 @@ test('AsyncLocalStorage based tracking', async (t) => {
     helper.runInTransaction(agent, function (txn) {
       plan.ok(txn, 'transaction should not be null')
 
-      const ctx = agent.tracer.getContext() 
+      const ctx = agent.tracer.getContext()
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
@@ -323,7 +323,7 @@ test('AsyncLocalStorage based tracking', async (t) => {
     helper.runInTransaction(agent, function (txn) {
       plan.ok(txn, 'transaction should not be null')
 
-      const ctx = agent.tracer.getContext() 
+      const ctx = agent.tracer.getContext()
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
@@ -373,7 +373,7 @@ test('AsyncLocalStorage based tracking', async (t) => {
     helper.runInTransaction(agent, function (txn) {
       plan.ok(txn, 'transaction should not be null')
 
-      const ctx = agent.tracer.getContext() 
+      const ctx = agent.tracer.getContext()
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()

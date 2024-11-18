@@ -323,7 +323,13 @@ test('segments disabled', async (t) => {
       const children = tx.trace.getChildren(tx.trace.root.id)
       plan.equal(children.length, 1)
 
-      assertSegments(tx.trace, tx.trace.root, ['doSomeWork', ['someChildSegment']], {}, { assert: plan })
+      assertSegments(
+        tx.trace,
+        tx.trace.root,
+        ['doSomeWork', ['someChildSegment']],
+        {},
+        { assert: plan }
+      )
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
