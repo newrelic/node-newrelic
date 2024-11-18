@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const LogAggregator = require('../../../lib/aggregators/log-aggregator')
 const Metrics = require('../../../lib/metrics')
 const helper = require('../../lib/agent_helper')
-
 const RUN_ID = 1337
 const LIMIT = 5
 
@@ -40,6 +39,21 @@ test('Log Aggregator', async (t) => {
         event_harvest_config: {
           harvest_limits: {
             log_event_data: 42
+          }
+        },
+        application_logging: {
+          metrics: {
+            enabled: true
+          },
+          local_decorating: {
+            enabled: true
+          },
+          forwarding: {
+            enabled: true,
+            labels: {
+              enabled: true,
+              exclude: []
+            }
           }
         }
       }
@@ -175,6 +189,38 @@ test('Log Aggregator', async (t) => {
     logEventAggregator.addBatch(logs, priority)
     assert.equal(logEventAggregator.getEvents().length, 3)
   })
+
+  await t.test('add labels to logs when enabled', (t) => {
+    const { agent, commonAttrs, logEventAggregator, log } = t.nr
+    const expectedLabels = {
+      'tags.label1': 'value1',
+      'tags.LABEL2-ALSO': 'value3'
+    }
+    agent.config.loggingLabels = expectedLabels
+
+    logEventAggregator.add(log)
+    const payload = logEventAggregator._toPayloadSync()
+    assert.deepStrictEqual(payload, [
+      { common: { attributes: { ...commonAttrs, ...expectedLabels } }, logs: [log] }
+    ])
+  })
+
+  await t.test(
+    'should not add labels to logs when `application_logging.forwarding.enabled` is false',
+    (t) => {
+      const { agent, commonAttrs, logEventAggregator, log } = t.nr
+      const expectedLabels = {
+        'tags.label1': 'value1',
+        'tags.LABEL2-ALSO': 'value3'
+      }
+      agent.config.loggingLabels = expectedLabels
+      agent.config.application_logging.forwarding.labels.enabled = false
+
+      logEventAggregator.add(log)
+      const payload = logEventAggregator._toPayloadSync()
+      assert.deepStrictEqual(payload, [{ common: { attributes: { ...commonAttrs } }, logs: [log] }])
+    }
+  )
 })
 
 test('big red button', async (t) => {
