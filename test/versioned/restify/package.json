@@ -14,14 +14,14 @@
         "restify-errors": "6.1"
       },
       "files": [
-        "async-handlers.tap.js",
-        "capture-params.tap.js",
-        "ignoring.tap.js",
-        "restify.tap.js",
-        "rum.tap.js",
-        "router.tap.js",
-        "transaction-naming.tap.js",
-        "with-express.tap.js"
+        "async-handlers.test.js",
+        "capture-params.test.js",
+        "ignoring.test.js",
+        "restify.test.js",
+        "rum.test.js",
+        "router.test.js",
+        "transaction-naming.test.js",
+        "with-express.test.js"
       ]
     }
   ],

@@ -12,7 +12,7 @@
         "memcached": ">=2.2.0"
       },
       "files": [
-        "memcached.tap.js"
+        "memcached.test.js"
       ]
     }
   ]
