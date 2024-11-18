@@ -32,23 +32,74 @@ function colorize(type, text) {
   return text
 }
 
+class Tracker extends Map {
+  #total = 0
+  #passed = 0
+  #failed = 0
+
+  isTracked(file) {
+    return this.has(file)
+  }
+
+  enqueue(file, event) {
+    if (this.has(file) === false) {
+      this.set(file, {
+        queued: new Set(),
+        passed: 0,
+        failed: 0,
+        reported: false
+      })
+    }
+
+    const tracked = this.get(file)
+    tracked.queued.add(event.data.line)
+    this.#total += 1
+  }
+
+  dequeue(file, event) {
+    this.get(file).queued.delete(event.data.line)
+  }
+
+  fail(file) {
+    const tracked = this.get(file)
+    tracked.failed += 1
+    this.#failed += 1
+  }
+
+  pass(file) {
+    const tracked = this.get(file)
+    tracked.passed += 1
+    this.#passed += 1
+  }
+
+  get failedCount() {
+    return this.#failed
+  }
+
+  get passedCount() {
+    return this.#passed
+  }
+
+  get totalCount() {
+    return this.#total
+  }
+
+  get failures() {
+    const result = []
+    for (const [file, tracked] of this.entries()) {
+      if (tracked.failed > 0) {
+        result.push(file)
+      }
+    }
+    return result
+  }
+}
+
 async function* reporter(source) {
-  const passed = new Set()
-  const failed = new Set()
-
-  // We'll use the queued map to deal with `enqueue` and `dequeue` events.
-  // This lets us keep track of individual tests (each "test()" in a test file
-  // counts as one test). We can probably refactor this out once we are set
-  // Node >=20 as a baseline, because it has a `test:completed` event.
-  const queued = new Map()
-
-  // We only want to report for the overall test file having passed or failed.
-  // Since we don't have Node >= 20 events available, we have to fudge it
-  // ourselves.
-  const reported = new Set()
+  const tracker = new Tracker()
 
   for await (const event of source) {
-    const file = event.data.file
+    const file = event.data.file || event.data.name
 
     // Once v18 has been dropped, we might want to revisit the output of
     // cases. The `event` object is supposed to provide things like
@@ -64,42 +115,60 @@ async function* reporter(source) {
     // See https://nodejs.org/api/test.html#event-testfail.
     switch (event.type) {
       case 'test:enqueue': {
-        if (queued.has(file) === false) {
-          queued.set(file, new Set())
-        }
-        const tests = queued.get(file)
-        tests.add(event.data.line)
+        tracker.enqueue(file, event)
         break
       }
 
       case 'test:dequeue': {
-        queued.get(file).delete(event.data.line)
+        tracker.dequeue(file, event)
         break
       }
 
       case 'test:pass': {
-        passed.add(file)
+        tracker.pass(file, event)
+
+        const tracked = tracker.get(file)
+        if (tracked.queued.size > 0 || tracked.reported === true) {
+          break
+        }
+
         if (isSilent === true) {
           yield ''
           break
         }
 
-        if (queued.get(file).size > 0 || reported.has(file) === true) {
+        tracked.reported = true
+
+        // This event is fired for each subtest in a file. As an example,
+        // if a file has three tests, the first a passing, the second a failing,
+        // and the third a passing test, then we will hit `test:pass` for the
+        // final passing test, but the suite overall has failed. So we need
+        // report the failure here. At least until we get to Node.js 20 where
+        // there is a finalized `test:complete` event.
+        if (tracked.failed > 0) {
+          yield `${colorize('fail', 'failed')}: ${file}\n`
           break
         }
 
-        reported.add(file)
         yield `${colorize('pass', 'passed')}: ${file}\n`
         break
       }
 
       case 'test:fail': {
-        if (queued.get(file).size > 0 || reported.has(file) === true) {
+        tracker.fail(file, event)
+
+        const tracked = tracker.get(file)
+        if (tracked.queued.size > 0 || tracked.reported === true) {
           break
         }
 
-        reported.add(file)
-        failed.add(file || event.data.name)
+        if (isSilent === true) {
+          yield ''
+          break
+        }
+
+        tracked.reported = true
+
         yield `${colorize('fail', 'failed')}: ${file}\n`
         break
       }
@@ -110,14 +179,14 @@ async function* reporter(source) {
     }
   }
 
-  if (failed.size > 0) {
+  if (tracker.failedCount > 0) {
     yield `\n\n${colorize('fail', 'Failed tests:')}\n`
-    for (const file of failed) {
+    for (const file of tracker.failures) {
       yield `${file}\n`
     }
   }
 
-  yield `\n\nPassed: ${passed.size}\nFailed: ${failed.size}\nTotal: ${passed.size + failed.size}\n`
+  yield `\n\nPassed: ${tracker.passedCount}\nFailed: ${tracker.failedCount}\nTotal: ${tracker.totalCount}\n`
 }
 
 export default reporter
