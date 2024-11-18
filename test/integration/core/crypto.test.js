@@ -26,7 +26,6 @@ test('pbkdf2', function (t, end) {
     crypto.pbkdf2('hunter2', 'saltine', 5, 32, 'sha1', function (err, key) {
       assert.ok(!err, 'should not error')
       assert.equal(key.length, 32)
-      debugger
       verifySegments({ agent, end, name: 'crypto.pbkdf2' })
     })
   })

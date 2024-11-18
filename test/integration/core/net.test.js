@@ -143,11 +143,7 @@ test('connect', function connectTest(t, end) {
       )
       assert.ok(timeoutSegment.timer.touched, 'timeout should started and ended')
       const timeoutChildren = transaction.trace.getChildren(timeoutSegment.id)
-      assert.equal(
-        timeoutChildren.length,
-        1,
-        'timeout should have a single callback segment'
-      )
+      assert.equal(timeoutChildren.length, 1, 'timeout should have a single callback segment')
       end()
     }
   }
@@ -199,7 +195,7 @@ test('createServer and connect', function createServerTest(t, end) {
       clientChildren = transaction.trace.getChildren(clientSegment.id)
 
       assert.equal(clientChildren.length, 1, 'clientSegment should only have one child')
-      const [dnsSegment ] = clientChildren
+      const [dnsSegment] = clientChildren
       if (dnsSegment) {
         assert.equal(dnsSegment.name, 'dns.lookup', 'dnsSegment is named properly')
       } else {

@@ -309,7 +309,7 @@ module.exports = function runTests(name, clientFactory) {
           assert.ok(agent.getTransaction(), 'transaction should still still be visible')
           assert.equal(selectResults.rows[0][COL], colVal, 'Postgres client should still work')
           transaction.end()
-          verify(assert, transaction) 
+          verify(assert, transaction)
           end()
         } catch (err) {
           assert.ifError(err)
@@ -465,7 +465,7 @@ module.exports = function runTests(name, clientFactory) {
 
             transaction.end()
             pool.end()
-            verify(plan, transaction) 
+            verify(plan, transaction)
           })
         })
       })
@@ -514,7 +514,7 @@ module.exports = function runTests(name, clientFactory) {
               }
 
               done(true)
-              verify(plan, transaction) 
+              verify(plan, transaction)
             })
           })
         })
