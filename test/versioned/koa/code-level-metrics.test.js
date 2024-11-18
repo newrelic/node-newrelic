@@ -102,12 +102,12 @@ test('vanilla koa, no router', async (t) => {
           {
             segments: [
               {
-                segment: one, 
+                segment: one,
                 name: 'one',
                 filepath: 'code-level-metrics.test.js'
               },
               {
-                segment: two, 
+                segment: two,
                 name: 'two',
                 filepath: 'code-level-metrics.test.js'
               }
@@ -168,17 +168,17 @@ test('using koa-router', async (t) => {
           {
             segments: [
               {
-                segment: dispatch, 
+                segment: dispatch,
                 name: 'dispatch',
                 filepath: 'koa-router/lib/router.js'
               },
               {
-                segment: appLevel, 
+                segment: appLevel,
                 name: 'appLevelMiddleware',
                 filepath: 'code-level-metrics.test.js'
               },
               {
-                segment: secondMw, 
+                segment: secondMw,
                 name: 'secondMiddleware',
                 filepath: 'code-level-metrics.test.js'
               }
@@ -239,17 +239,17 @@ test('using @koa/router', async (t) => {
           {
             segments: [
               {
-                segment: dispatch, 
+                segment: dispatch,
                 name: 'dispatch',
                 filepath: '@koa/router/lib/router.js'
               },
               {
-                segment: appLevel, 
+                segment: appLevel,
                 name: 'appLevelMiddleware',
                 filepath: 'code-level-metrics.test.js'
               },
               {
-                segment: secondMw, 
+                segment: secondMw,
                 name: 'secondMiddleware',
                 filepath: 'code-level-metrics.test.js'
               }

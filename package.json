@@ -199,6 +199,7 @@
     "@grpc/proto-loader": "^0.7.5",
     "@newrelic/security-agent": "^2.2.0",
     "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/semantic-conventions": "^1.27.0",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "concat-stream": "^2.0.0",
     "https-proxy-agent": "^7.0.1",
