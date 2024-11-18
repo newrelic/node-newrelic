@@ -854,7 +854,6 @@ test('read', async function (t) {
       plan.equal(agent.getTransaction(), trans, 'should preserve transaction')
       const children = trans.trace.getChildren(trans.trace.root.id)
       plan.equal(children.length, 0, 'should not create any segments')
-
     })
   })
 

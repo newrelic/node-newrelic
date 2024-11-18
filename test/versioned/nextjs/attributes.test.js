@@ -258,7 +258,8 @@ test('Next.js', async (t) => {
           enabled,
           skipFull: true
         })
-      })
+      }
+    )
 
     await t.test('should not add CLM attrs to static page segment', async (t) => {
       agent.config.code_level_metrics = { enabled }

@@ -375,7 +375,6 @@ test('addSegment', async function addSegmentTest(t) {
     let [child] = transaction.trace.getChildren(root.id)
     plan.equal(child, segment)
 
-
     const outside = tracer.addSegment('outside', null, root, false, check)
     ;[, child] = transaction.trace.getChildren(root.id)
 
