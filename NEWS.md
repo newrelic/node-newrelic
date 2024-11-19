@@ -5,7 +5,8 @@
 * Added `labels.enabled` and `labels.exclude` to config defaults ([#2727](https://github.com/newrelic/node-newrelic/pull/2727)) ([36adb13](https://github.com/newrelic/node-newrelic/commit/36adb13caad41a5df5a5fa9345b9dcb9061db969))
 * Added new configuration options to add custom tags (labels) to logs ([#2743](https://github.com/newrelic/node-newrelic/pull/2743)) ([d20c874](https://github.com/newrelic/node-newrelic/commit/d20c874638ebb19f8888003d4402bce17e56360f))
     * With custom tags on logs, platform engineers can easily filter, search, and correlate log data for faster and more efficient troubleshooting, improved performance, and optimized resource utilization. To learn more about this feature see the [documentation](https://docs.newrelic.com/docs/logs/logs-context/custom-tags-agent-forwarder-logs/)
-* Added support for Bedrock invoke model user request ([#2721](https://github.com/newrelic/node-newrelic/pull/2721)) ([a901a24](https://github.com/newrelic/node-newrelic/commit/a901a2499e73e0f1142054ead53e7b99df94b201))
+* Added support for Bedrock Claude 3.5 invoke model user request ([#2721](https://github.com/newrelic/node-newrelic/pull/2721)) ([a901a24](https://github.com/newrelic/node-newrelic/commit/a901a2499e73e0f1142054ead53e7b99df94b201))
+
 * Moved `entity.guid`, `entity.name`, `entity.type`, and `hostname` to `common.attributes` on logs payload instead of in every log message ([#2736](https://github.com/newrelic/node-newrelic/pull/2736)) ([a7f14de](https://github.com/newrelic/node-newrelic/commit/a7f14def489000ab7492b01155069b1a084eeb36))
 
 #### Bug fixes
