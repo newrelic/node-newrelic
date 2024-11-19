@@ -6,23 +6,19 @@
 * Added new configuration options to add custom tags (labels) to logs ([#2743](https://github.com/newrelic/node-newrelic/pull/2743)) ([d20c874](https://github.com/newrelic/node-newrelic/commit/d20c874638ebb19f8888003d4402bce17e56360f))
     * With custom tags on logs, platform engineers can easily filter, search, and correlate log data for faster and more efficient troubleshooting, improved performance, and optimized resource utilization. To learn more about this feature see the [documentation](https://docs.newrelic.com/docs/logs/logs-context/custom-tags-agent-forwarder-logs/)
 * Added support for Bedrock invoke model user request ([#2721](https://github.com/newrelic/node-newrelic/pull/2721)) ([a901a24](https://github.com/newrelic/node-newrelic/commit/a901a2499e73e0f1142054ead53e7b99df94b201))
-    * Co-authored-by: James Sumners <jsumners@newrelic.com>
 * Moved `entity.guid`, `entity.name`, `entity.type`, and `hostname` to `common.attributes` on logs payload instead of in every log message ([#2736](https://github.com/newrelic/node-newrelic/pull/2736)) ([a7f14de](https://github.com/newrelic/node-newrelic/commit/a7f14def489000ab7492b01155069b1a084eeb36))
 
 #### Bug fixes
 
 * Corrected expected shape of user input in get Prompt() ([#2741](https://github.com/newrelic/node-newrelic/pull/2741)) ([a8eef8b](https://github.com/newrelic/node-newrelic/commit/a8eef8b0f80ec2b0db5834a722a69f58a32b5676))
-    * Co-authored-by: James Sumners <jsumners@newrelic.com>
 
 #### Documentation
 
 * Updated compatibility report ([#2755](https://github.com/newrelic/node-newrelic/pull/2755)) ([459a3f1](https://github.com/newrelic/node-newrelic/commit/459a3f19ee080a3a2e560636ce087f9e91bc529e))
 * Updated compatibility report ([#2748](https://github.com/newrelic/node-newrelic/pull/2748)) ([ccfc950](https://github.com/newrelic/node-newrelic/commit/ccfc950b550e3d4f7acd2dd8ac20eb27ec177deb))
 * Updated compatibility report ([#2740](https://github.com/newrelic/node-newrelic/pull/2740)) ([7b1357d](https://github.com/newrelic/node-newrelic/commit/7b1357d8a944e083afcd89d58ebdbf2bbf99740e))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 * Updated compatibility report ([#2724](https://github.com/newrelic/node-newrelic/pull/2724)) ([64fb1dc](https://github.com/newrelic/node-newrelic/commit/64fb1dcdd61c3980a7a63c5133961bd8dd6947fc))
 * Updated compatibility report ([#2720](https://github.com/newrelic/node-newrelic/pull/2720)) ([a158bde](https://github.com/newrelic/node-newrelic/commit/a158bde58f6fe0c50d83f781b21d0c352ed269ee))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 
 #### Miscellaneous chores
 
