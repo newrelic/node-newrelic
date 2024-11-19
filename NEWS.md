@@ -16,21 +16,11 @@
 #### Documentation
 
 * Updated compatibility report ([#2755](https://github.com/newrelic/node-newrelic/pull/2755)) ([459a3f1](https://github.com/newrelic/node-newrelic/commit/459a3f19ee080a3a2e560636ce087f9e91bc529e))
-* Updated compatibility report ([#2748](https://github.com/newrelic/node-newrelic/pull/2748)) ([ccfc950](https://github.com/newrelic/node-newrelic/commit/ccfc950b550e3d4f7acd2dd8ac20eb27ec177deb))
-* Updated compatibility report ([#2740](https://github.com/newrelic/node-newrelic/pull/2740)) ([7b1357d](https://github.com/newrelic/node-newrelic/commit/7b1357d8a944e083afcd89d58ebdbf2bbf99740e))
-* Updated compatibility report ([#2724](https://github.com/newrelic/node-newrelic/pull/2724)) ([64fb1dc](https://github.com/newrelic/node-newrelic/commit/64fb1dcdd61c3980a7a63c5133961bd8dd6947fc))
-* Updated compatibility report ([#2720](https://github.com/newrelic/node-newrelic/pull/2720)) ([a158bde](https://github.com/newrelic/node-newrelic/commit/a158bde58f6fe0c50d83f781b21d0c352ed269ee))
 
 #### Miscellaneous chores
 
 * Fixed test reporter ([#2751](https://github.com/newrelic/node-newrelic/pull/2751)) ([5878ef9](https://github.com/newrelic/node-newrelic/commit/5878ef9844fd56038d08e3b2f8cd9e26ba8c4c92))
 * Improved unit test speed ([#2728](https://github.com/newrelic/node-newrelic/pull/2728)) ([9640030](https://github.com/newrelic/node-newrelic/commit/96400304e451502ce2f09b569b46eaff271fd9ab))
-* Removed unused code ([#2742](https://github.com/newrelic/node-newrelic/pull/2742)) ([004fd12](https://github.com/newrelic/node-newrelic/commit/004fd12c21360abb0bb19deaeb2a5c3d5107dfe7))
-* Updated hapi tests to node:test ([#2722](https://github.com/newrelic/node-newrelic/pull/2722)) ([636899b](https://github.com/newrelic/node-newrelic/commit/636899b487e196572a3bc0970e7338d0c9f113cf))
-* Updated kafkajs, langchain, & openai tests to node:test ([#2723](https://github.com/newrelic/node-newrelic/pull/2723)) ([b6e4c5d](https://github.com/newrelic/node-newrelic/commit/b6e4c5d4c59032a615fea6d12623a881a6211917))
-* Updated koa tests to node:test ([#2744](https://github.com/newrelic/node-newrelic/pull/2744)) ([86c22a4](https://github.com/newrelic/node-newrelic/commit/86c22a4813ec5a63ae8bd04f7d9d013979ac34ed))
-* Updated mongodb tests to node:test ([#2738](https://github.com/newrelic/node-newrelic/pull/2738)) ([295e7e6](https://github.com/newrelic/node-newrelic/commit/295e7e6441b7220022ce4fcaaf33054945a678b0))
-* Updated pg and pg-esm tests to node:test ([#2750](https://github.com/newrelic/node-newrelic/pull/2750)) ([40aea36](https://github.com/newrelic/node-newrelic/commit/40aea36320d15b201800431268be2c3d4c794a7b))
 
 #### Tests
 
@@ -39,6 +29,11 @@
 * Migrated `memcached`, `nestjs`, and `restify` versioned tests to `node:test` ([#2752](https://github.com/newrelic/node-newrelic/pull/2752)) ([653f614](https://github.com/newrelic/node-newrelic/commit/653f61410a0258683ac104cd8b8b2e7ae7c61043))
 * Migrated `nextjs` versioned tests to `node:test` ([#2749](https://github.com/newrelic/node-newrelic/pull/2749)) ([d385af6](https://github.com/newrelic/node-newrelic/commit/d385af69c84a5425cee9ff19eaeadcba9e63a761))
 * Migrated `redis` versioned tests to `node:test` ([#2725](https://github.com/newrelic/node-newrelic/pull/2725)) ([9752827](https://github.com/newrelic/node-newrelic/commit/97528270c70ecaac9161f4eb0cc78ffcc482be36))
+* Updated `hapi` tests to `node:test` ([#2722](https://github.com/newrelic/node-newrelic/pull/2722)) ([636899b](https://github.com/newrelic/node-newrelic/commit/636899b487e196572a3bc0970e7338d0c9f113cf))
+* Updated `kafkajs`, `langchain`, & `openai` tests to `node:test` ([#2723](https://github.com/newrelic/node-newrelic/pull/2723)) ([b6e4c5d](https://github.com/newrelic/node-newrelic/commit/b6e4c5d4c59032a615fea6d12623a881a6211917))
+* Updated `koa` tests to `node:test` ([#2744](https://github.com/newrelic/node-newrelic/pull/2744)) ([86c22a4](https://github.com/newrelic/node-newrelic/commit/86c22a4813ec5a63ae8bd04f7d9d013979ac34ed))
+* Updated `mongodb` tests to `node:test` ([#2738](https://github.com/newrelic/node-newrelic/pull/2738)) ([295e7e6](https://github.com/newrelic/node-newrelic/commit/295e7e6441b7220022ce4fcaaf33054945a678b0))
+* Updated `pg` and `pg-esm` tests to `node:test` ([#2750](https://github.com/newrelic/node-newrelic/pull/2750)) ([40aea36](https://github.com/newrelic/node-newrelic/commit/40aea36320d15b201800431268be2c3d4c794a7b))
 
 ### v12.7.0 (2024-11-11)
 
