@@ -5,106 +5,107 @@
 
 'use strict'
 
-const tap = require('tap')
-
+const test = require('node:test')
+const { tspl } = require('@matteo.collina/tspl')
 const fakeCert = require('../../lib/fake-cert')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
+const { assertMetrics } = require('../../lib/custom-assertions')
 
 const METRIC = 'WebTransaction/Restify/GET//hello/:name'
 
-tap.test('Restify', (t) => {
-  t.autoend()
-
-  let agent = null
-  let restify = null
-  t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent()
-
-    restify = require('restify')
+test('Restify', async (t) => {
+  t.beforeEach((ctx) => {
+    const agent = helper.instrumentMockedAgent()
+    const restify = require('restify')
+    ctx.nr = {
+      agent,
+      restify
+    }
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should not crash when handling a connection', function (t) {
-    t.plan(7)
+  await t.test('should not crash when handling a connection', async function (t) {
+    const { agent, restify } = t.nr
+    const plan = tspl(t, { plan: 8 })
 
     const server = restify.createServer()
-    t.teardown(() => server.close())
+    t.after(() => server.close())
 
     agent.on('transactionFinished', () => {
       const metric = agent.metrics.getMetric(METRIC)
-      t.ok(metric, 'request metrics should have been gathered')
-      t.equal(metric.callCount, 1, 'handler should have been called')
+      plan.ok(metric, 'request metrics should have been gathered')
+      plan.equal(metric.callCount, 1, 'handler should have been called')
       const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
-      t.ok(isFramework, 'should indicate that restify is a framework')
+      plan.ok(isFramework, 'should indicate that restify is a framework')
     })
 
     server.get('/hello/:name', function sayHello(req, res, next) {
-      t.ok(agent.getTransaction(), 'transaction should be available in handler')
+      plan.ok(agent.getTransaction(), 'transaction should be available in handler')
       res.send('hello ' + req.params.name)
       next()
     })
 
     server.listen(0, function () {
       const port = server.address().port
-      t.notOk(agent.getTransaction(), 'transaction should not leak into server')
+      plan.ok(!agent.getTransaction(), 'transaction should not leak into server')
 
       const url = 'http://localhost:' + port + '/hello/friend'
       helper.makeGetRequest(url, function (error, response, body) {
-        if (error) {
-          return t.fail(error)
-        }
-        t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
-        t.equal(body, 'hello friend', 'should return expected data')
+        plan.ok(!error)
+        plan.ok(!agent.getTransaction(), 'transaction should not leak into external request')
+        plan.equal(body, 'hello friend', 'should return expected data')
       })
     })
+
+    await plan.completed
   })
 
-  t.test('should still be instrumented when run with SSL', function (t) {
-    t.plan(7)
+  await t.test('should still be instrumented when run with SSL', async function (t) {
+    const { agent, restify } = t.nr
+    const plan = tspl(t, { plan: 8 })
 
     agent.on('transactionFinished', () => {
       const metric = agent.metrics.getMetric(METRIC)
 
-      t.ok(metric, 'request metrics should have been gathered')
-      t.equal(metric.callCount, 1, 'handler should have been called')
+      plan.ok(metric, 'request metrics should have been gathered')
+      plan.equal(metric.callCount, 1, 'handler should have been called')
 
       const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
-      t.ok(isFramework, 'should indicate that restify is a framework')
+      plan.ok(isFramework, 'should indicate that restify is a framework')
     })
 
     const cert = fakeCert()
 
     const server = restify.createServer({ key: cert.privateKey, certificate: cert.certificate })
-    t.teardown(() => server.close())
+    t.after(() => server.close())
 
     server.get('/hello/:name', function sayHello(req, res, next) {
-      t.ok(agent.getTransaction(), 'transaction should be available in handler')
+      plan.ok(agent.getTransaction(), 'transaction should be available in handler')
       res.send('hello ' + req.params.name)
       next()
     })
 
     server.listen(0, function () {
       const port = server.address().port
-      t.notOk(agent.getTransaction(), 'transaction should not leak into server')
+      plan.ok(!agent.getTransaction(), 'transaction should not leak into server')
 
       const url = `https://127.0.0.1:${port}/hello/friend`
       helper.makeGetRequest(url, { ca: cert.certificate }, function (error, response, body) {
-        if (error) {
-          t.fail(error)
-          return t.end()
-        }
-
-        t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
-        t.equal(body, 'hello friend', 'should return expected data')
+        plan.ok(!error)
+        plan.ok(!agent.getTransaction(), 'transaction should not leak into external request')
+        plan.equal(body, 'hello friend', 'should return expected data')
       })
     })
+
+    await plan.completed
   })
 
-  t.test('should generate middleware metrics', (t) => {
+  await t.test('should generate middleware metrics', async (t) => {
+    const { agent, restify } = t.nr
+    const plan = tspl(t, { plan: 16 })
     // Metrics for this transaction with the right name.
     const expectedMiddlewareMetrics = [
       [{ name: 'WebTransaction/Restify/GET//foo/:bar' }],
@@ -138,20 +139,20 @@ tap.test('Restify', (t) => {
     ]
 
     const server = restify.createServer()
-    t.teardown(() => server.close())
+    t.after(() => server.close())
 
     server.use(function middleware(req, res, next) {
-      t.ok(agent.getTransaction(), 'should be in transaction context')
+      plan.ok(agent.getTransaction(), 'should be in transaction context')
       next()
     })
 
     server.use(function middleware2(req, res, next) {
-      t.ok(agent.getTransaction(), 'should be in transaction context')
+      plan.ok(agent.getTransaction(), 'should be in transaction context')
       next()
     })
 
     server.get('/foo/:bar', function handler(req, res, next) {
-      t.ok(agent.getTransaction(), 'should be in transaction context')
+      plan.ok(agent.getTransaction(), 'should be in transaction context')
       res.send({ message: 'done' })
       next()
     })
@@ -161,11 +162,11 @@ tap.test('Restify', (t) => {
       const url = `http://localhost:${port}/foo/bar`
 
       helper.makeGetRequest(url, function (error) {
-        t.error(error)
-
-        t.assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)
-        t.end()
+        plan.ok(!error)
+        assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false, { assert: plan })
       })
     })
+
+    await plan.completed
   })
 })

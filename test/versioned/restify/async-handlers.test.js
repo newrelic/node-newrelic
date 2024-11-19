@@ -5,11 +5,12 @@
 
 'use strict'
 
-const tap = require('tap')
-
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
 const { runTest } = require('./common')
+const { tspl } = require('@matteo.collina/tspl')
+const { assertMetrics } = require('../../lib/custom-assertions')
 
 const simulateAsyncWork = async () => {
   const delay = Math.floor(Math.random() * 100)
@@ -17,21 +18,19 @@ const simulateAsyncWork = async () => {
   return delay
 }
 
-tap.test('Restify with async handlers should work the same as with sync', (t) => {
-  t.autoend()
-
-  let agent = null
-  let restify = null
-  let server = null
-
-  t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent()
-
-    restify = require('restify')
-    server = restify.createServer()
+test('Restify with async handlers should work the same as with sync', async (t) => {
+  t.beforeEach((ctx) => {
+    const agent = helper.instrumentMockedAgent()
+    const restify = require('restify')
+    const server = restify.createServer()
+    ctx.nr = {
+      agent,
+      server
+    }
   })
 
-  t.afterEach(() => {
+  t.afterEach((ctx) => {
+    const { agent, server } = ctx.nr
     return new Promise((resolve) => {
       helper.unloadAgent(agent)
       if (server) {
@@ -44,18 +43,21 @@ tap.test('Restify with async handlers should work the same as with sync', (t) =>
 
   /* very similar synchronous tests are in transaction-naming */
 
-  t.test('transaction name for single async route', (t) => {
-    t.plan(1)
+  await t.test('transaction name for single async route', async (t) => {
+    const { agent, server } = t.nr
+    const plan = tspl(t, { plan: 1 })
 
     server.get('/path1', async (req, res) => {
       res.send()
     })
 
-    runTest({ agent, server, t, endpoint: '/path1', expectedName: 'GET//path1' })
+    runTest({ agent, server, assert: plan, endpoint: '/path1', expectedName: 'GET//path1' })
+    await plan.completed
   })
 
-  t.test('transaction name for async route with sync middleware', (t) => {
-    t.plan(1)
+  await t.test('transaction name for async route with sync middleware', async (t) => {
+    const { agent, server } = t.nr
+    const plan = tspl(t, { plan: 1 })
 
     server.use((req, res, next) => {
       next()
@@ -64,11 +66,13 @@ tap.test('Restify with async handlers should work the same as with sync', (t) =>
       res.send()
     })
 
-    runTest({ agent, server, t, endpoint: '/path1', expectedName: 'GET//path1' })
+    runTest({ agent, server, assert: plan, endpoint: '/path1', expectedName: 'GET//path1' })
+    await plan.completed
   })
 
-  t.test('transaction name for async route with async middleware', (t) => {
-    t.plan(1)
+  await t.test('transaction name for async route with async middleware', async (t) => {
+    const { agent, server } = t.nr
+    const plan = tspl(t, { plan: 1 })
 
     server.use(async (req) => {
       req.test = await simulateAsyncWork()
@@ -77,46 +81,42 @@ tap.test('Restify with async handlers should work the same as with sync', (t) =>
       res.send()
     })
 
-    runTest({ agent, server, t, endpoint: '/path1', expectedName: 'GET//path1' })
+    runTest({ agent, server, assert: plan, endpoint: '/path1', expectedName: 'GET//path1' })
+    await plan.completed
   })
 
-  t.test('transaction name for async route with multiple async middleware', (t) => {
-    t.plan(4)
+  await t.test('transaction name for async route with multiple async middleware', async (t) => {
+    const { agent, server } = t.nr
+    const plan = tspl(t, { plan: 4 })
 
     server.use(async (req) => {
-      t.pass('should enter first `use` middleware')
+      plan.ok(1, 'should enter first `use` middleware')
       req.test = await simulateAsyncWork()
     })
     // eslint-disable-next-line no-unused-vars
     server.use(async (req) => {
-      t.pass('should enter second `use` middleware')
+      plan.ok(1, 'should enter second `use` middleware')
       req.test2 = await simulateAsyncWork()
     })
     server.get('/path1', async (req, res) => {
-      t.pass('should enter route handler')
+      plan.ok(1, 'should enter route handler')
       res.send()
     })
 
-    runTest({ agent, server, t, endpoint: '/path1', expectedName: 'GET//path1' })
+    runTest({ agent, server, assert: plan, endpoint: '/path1', expectedName: 'GET//path1' })
+    await plan.completed
   })
 })
 
-tap.test('Restify metrics for async handlers', (t) => {
-  t.autoend()
+test('Restify metrics for async handlers', async (t) => {
+  const agent = helper.instrumentMockedAgent()
+  const restify = require('restify')
 
-  let agent = null
-  let restify = null
-  t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent()
-
-    restify = require('restify')
-  })
-
-  t.afterEach(() => {
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
-  t.test('should generate middleware metrics for async handlers', (t) => {
+  await t.test('should generate middleware metrics for async handlers', (t, end) => {
     // Metrics for this transaction with the right name.
     const expectedMiddlewareMetrics = [
       [{ name: 'WebTransaction/Restify/GET//foo/:bar' }],
@@ -150,18 +150,18 @@ tap.test('Restify metrics for async handlers', (t) => {
     ]
 
     const server = restify.createServer()
-    t.teardown(() => server.close())
+    t.after(() => server.close())
 
     server.use(async function middleware() {
-      t.ok(agent.getTransaction(), 'should be in transaction context')
+      assert.ok(agent.getTransaction(), 'should be in transaction context')
     })
 
     server.use(async function middleware2() {
-      t.ok(agent.getTransaction(), 'should be in transaction context')
+      assert.ok(agent.getTransaction(), 'should be in transaction context')
     })
 
     server.get('/foo/:bar', async function handler(req, res) {
-      t.ok(agent.getTransaction(), 'should be in transaction context')
+      assert.ok(agent.getTransaction(), 'should be in transaction context')
       res.send({ message: 'done' })
     })
 
@@ -170,10 +170,10 @@ tap.test('Restify metrics for async handlers', (t) => {
       const url = `http://localhost:${port}/foo/bar`
 
       helper.makeGetRequest(url, function (error) {
-        t.error(error)
+        assert.ok(!error)
 
-        t.assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)
-        t.end()
+        assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)
+        end()
       })
     })
   })

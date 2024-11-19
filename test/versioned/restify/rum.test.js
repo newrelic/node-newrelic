@@ -5,14 +5,13 @@
 
 'use strict'
 
-const tap = require('tap')
-
+const test = require('node:test')
+const { tspl } = require('@matteo.collina/tspl')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 
-tap.test('Restify router introspection', function (t) {
-  t.plan(3)
-
+test('Restify router introspection', async function (t) {
+  const plan = tspl(t, { plan: 3 })
   const agent = helper.instrumentMockedAgent()
   const server = require('restify').createServer()
   const api = new API(agent)
@@ -21,7 +20,7 @@ tap.test('Restify router introspection', function (t) {
   agent.config.browser_monitoring.browser_key = '12345'
   agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-  t.teardown(() => {
+  t.after(() => {
     server.close(() => {
       helper.unloadAgent(agent)
     })
@@ -29,7 +28,7 @@ tap.test('Restify router introspection', function (t) {
 
   server.get('/test/:id', function (req, res, next) {
     const rum = api.getBrowserTimingHeader()
-    t.equal(rum.substring(0, 7), '<script')
+    plan.equal(rum.substring(0, 7), '<script')
     res.send({ status: 'ok' })
     next()
   })
@@ -37,9 +36,9 @@ tap.test('Restify router introspection', function (t) {
   server.listen(0, function () {
     const port = server.address().port
     helper.makeGetRequest('http://localhost:' + port + '/test/31337', function (error, res, body) {
-      t.equal(res.statusCode, 200, 'nothing exploded')
-      t.same(body, { status: 'ok' }, 'got expected respose')
-      t.end()
+      plan.equal(res.statusCode, 200, 'nothing exploded')
+      plan.deepEqual(body, { status: 'ok' }, 'got expected respose')
     })
   })
+  await plan.completed
 })

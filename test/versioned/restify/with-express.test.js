@@ -5,14 +5,13 @@
 
 'use strict'
 
-const tap = require('tap')
-
+const test = require('node:test')
+const { tspl } = require('@matteo.collina/tspl')
 const helper = require('../../lib/agent_helper')
-
 const MAX_PORT_ATTEMPTS = 5
 
-tap.test("restify shouldn't affect express query parsing middleware", function (t) {
-  t.plan(2)
+test("restify shouldn't affect express query parsing middleware", async function (t) {
+  const plan = tspl(t, { plan: 2 })
 
   const agent = helper.instrumentMockedAgent()
   const express = require('express')
@@ -21,6 +20,10 @@ tap.test("restify shouldn't affect express query parsing middleware", function (
 
   const app = express()
   const server = require('http').createServer(app)
+  t.after(() => {
+    server.close()
+    helper.unloadAgent(agent)
+  })
 
   app.get('/', (req, res) => {
     // Unforunately, restify has its own issues with Express right now
@@ -35,7 +38,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function (
 
     // The restify function replacement mentioned above also results
     // in a string instead of an object.
-    t.same(query, 'test=success', 'express req.query property is correct')
+    plan.deepEqual(query, 'test=success', 'express req.query property is correct')
     res.sendStatus(200)
   })
 
@@ -73,12 +76,9 @@ tap.test("restify shouldn't affect express query parsing middleware", function (
         return t.fail(err)
       }
 
-      t.equal(200, response.statusCode)
+      plan.equal(200, response.statusCode)
     })
   })
 
-  t.teardown(() => {
-    server.close()
-    helper.unloadAgent(agent)
-  })
+  await plan.completed
 })
