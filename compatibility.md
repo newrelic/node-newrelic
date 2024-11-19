@@ -19,7 +19,7 @@ version.
 | `@aws-sdk/client-sqs` | 3.0.0 | 3.693.0 | 8.7.1 |
 | `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.693.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
-| `@elastic/elasticsearch` | 7.16.0 | 8.16.0 | 11.9.0 |
+| `@elastic/elasticsearch` | 7.16.0 | 8.16.1 | 11.9.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.12.2 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.3.12 | 9.0.0 |
 | `@koa/router` | 11.0.2 | 13.1.0 | 3.2.0 |
