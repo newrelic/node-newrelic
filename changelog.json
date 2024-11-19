@@ -2,6 +2,21 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.8.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Corrected expected shape of user input in get Prompt()"
+        ],
+        "features": [
+          "Added new configuration options to add custom tags (labels) to logs",
+          "Moved `entity.guid`, `entity.name`, `entity.type`, and `hostname` to `common.attributes` on logs payload instead of in every log message",
+          "Added `labels.enabled` and `labels.exclude` to config defaults",
+          "Added support for Bedrock invoke model user request"
+        ]
+      }
+    },
+    {
       "version": "12.7.0",
       "changes": {
         "security": [],
