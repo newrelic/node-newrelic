@@ -27,7 +27,11 @@ const claude = {
 const claude35 = {
   modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
   body: {
-    messages: [{ role: 'user', content: [{ type: 'text', text: 'who are you' }] }]
+    messages: [
+      { role: 'user', content: [{ type: 'text', text: 'who are' }] },
+      { role: 'assistant', content: [{ type: 'text', text: 'researching' }] },
+      { role: 'user', content: [{ type: 'text', text: 'you' }] }
+    ]
   }
 }
 
@@ -207,7 +211,7 @@ test('claude35 minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude35.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, claude35.body.messages[0].content[0].text)
+  assert.equal(cmd.prompt, 'who are you')
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -221,7 +225,7 @@ test('claude35 complete command works', async (t) => {
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, payload.body.messages[0].content[0].text)
+  assert.equal(cmd.prompt, 'who are you')
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
