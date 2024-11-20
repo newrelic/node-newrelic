@@ -4,8 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
@@ -13,7 +13,7 @@ const { getTestSecret } = require('../helpers/secrets')
 const laspLicense = getTestSecret('LASP_LICENSE')
 const laspSecureLicense = getTestSecret('LASP_SECURE_LICENSE')
 
-tap.test('connecting with a LASP token should not error', (t) => {
+test('connecting with a LASP token should not error', (t, end) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: laspLicense,
@@ -34,22 +34,22 @@ tap.test('connecting with a LASP token should not error', (t) => {
   const api = new CollectorAPI(agent)
 
   api.connect(function (error, response) {
-    t.notOk(error, 'connected without error')
+    assert.ok(!error, 'connected without error')
 
     const returned = response && response.payload
-    t.ok(returned, 'got boot configuration')
-    t.ok(returned.agent_run_id, 'got run ID')
-    t.ok(agent.config.run_id, 'run ID set in configuration')
+    assert.ok(returned, 'got boot configuration')
+    assert.ok(returned.agent_run_id, 'got run ID')
+    assert.ok(agent.config.run_id, 'run ID set in configuration')
 
     api.shutdown(function (error) {
-      t.notOk(error, 'should have shut down without issue')
-      t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
-      t.end()
+      assert.ok(!error, 'should have shut down without issue')
+      assert.ok(!agent.config.run_id, 'run ID should have been cleared by shutdown')
+      end()
     })
   })
 })
 
-tap.test('missing required policies should result in shutdown', (t) => {
+test('missing required policies should result in shutdown', (t, end) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: laspSecureLicense,
@@ -69,10 +69,10 @@ tap.test('missing required policies should result in shutdown', (t) => {
   const agent = new Agent(config)
 
   agent.start(function (error, response) {
-    t.ok(error, 'should have error')
-    t.equal(error.message, 'Failed to connect to collector')
-    t.notOk(response, 'should not have response payload')
-    t.equal(agent._state, 'errored')
-    t.end()
+    assert.ok(error, 'should have error')
+    assert.equal(error.message, 'Failed to connect to collector')
+    assert.ok(!response, 'should not have response payload')
+    assert.equal(agent._state, 'errored')
+    end()
   })
 })

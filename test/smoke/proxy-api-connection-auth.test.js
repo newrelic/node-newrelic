@@ -4,25 +4,25 @@
  */
 
 'use strict'
-
+const test = require('node:test')
 const net = require('net')
-const tap = require('tap')
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
 const { getTestSecret } = require('../helpers/secrets')
 const license = getTestSecret('TEST_LICENSE')
+const { tspl } = require('@matteo.collina/tspl')
 
-tap.test('proxy authentication should set headers', (t) => {
-  t.plan(2)
+test('proxy authentication should set headers', async (t) => {
+  const plan = tspl(t, { plan: 2 })
 
   const server = net.createServer()
 
   server.on('connection', (socket) => {
     socket.on('data', (chunk) => {
       const data = chunk.toString().split('\r\n')
-      t.equal(data[0], 'CONNECT staging-collector.newrelic.com:443 HTTP/1.1')
-      t.equal(data[1], 'Proxy-Authorization: Basic YTpi')
+      plan.equal(data[0], 'CONNECT staging-collector.newrelic.com:443 HTTP/1.1')
+      plan.equal(data[1], 'Proxy-Authorization: Basic YTpi')
       server.close()
     })
     socket.end()
@@ -52,7 +52,10 @@ tap.test('proxy authentication should set headers', (t) => {
     const api = new CollectorAPI(agent)
 
     api.connect(() => {
-      t.end()
+      // need a callback even though we dont care and
+      // are just asserting some of the outgoing http requests above
     })
   })
+
+  await plan.completed
 })
