@@ -5,13 +5,15 @@
 
 'use strict'
 
-const test = require('tap').test
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const cp = require('child_process')
 const path = require('path')
 const hashes = require('../../../lib/util/hashes')
+const { tspl } = require('@matteo.collina/tspl')
 
-test('client_cross_process_id in called service', function (t) {
+test('client_cross_process_id in called service', async function (t) {
+  const plan = tspl(t, { plan: 3 })
   let startedCalled = false
   let transactionFinishedCalled = false
 
@@ -47,7 +49,7 @@ test('client_cross_process_id in called service', function (t) {
       transactionFinishedCalled = true
 
       const intrinsics = msg.intrinsicAttributes
-      t.equal(
+      plan.equal(
         intrinsics.client_cross_process_id,
         config.cross_process_id,
         'client_cross_process_id attribute should equal cross_process_id of caller'
@@ -58,8 +60,8 @@ test('client_cross_process_id in called service', function (t) {
   })
 
   child.on('exit', function () {
-    t.ok(startedCalled, 'should have hit started state')
-    t.ok(transactionFinishedCalled, 'should have hit transactionFinished state')
-    t.end()
+    plan.ok(startedCalled, 'should have hit started state')
+    plan.ok(transactionFinishedCalled, 'should have hit transactionFinished state')
   })
+  await plan.completed
 })

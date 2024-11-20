@@ -5,7 +5,8 @@
 
 'use strict'
 
-const test = require('tap').test
+const test = require('node:test')
+const { tspl } = require('@matteo.collina/tspl')
 const helper = require('../../lib/agent_helper')
 const hashes = require('../../../lib/util/hashes')
 const API = require('../../../api')
@@ -14,8 +15,8 @@ const API = require('../../../api')
 const CROSS_PROCESS_ID = '1337#7331'
 const PORT = 1337
 
-test('background transactions should not blow up with CAT', function (t) {
-  t.plan(19)
+test('background transactions should not blow up with CAT', async function (t) {
+  const plan = tspl(t, { plan: 19 })
   const config = {
     cross_application_tracer: { enabled: true },
     distributed_tracing: { enabled: false },
@@ -30,8 +31,8 @@ test('background transactions should not blow up with CAT', function (t) {
   const api = new API(agent)
 
   const server = http.createServer(function (req, res) {
-    t.ok(req.headers['x-newrelic-id'], 'got incoming x-newrelic-id')
-    t.ok(req.headers['x-newrelic-transaction'], 'got incoming x-newrelic-transaction')
+    plan.ok(req.headers['x-newrelic-id'], 'got incoming x-newrelic-id')
+    plan.ok(req.headers['x-newrelic-transaction'], 'got incoming x-newrelic-transaction')
     req.resume()
     res.end()
   })
@@ -55,42 +56,42 @@ test('background transactions should not blow up with CAT', function (t) {
 
   const finishedHandlers = [
     function web(trans, event) {
-      t.equal(trans.name, 'WebTransaction/NormalizedUri/*', 'got web trans first')
+      plan.equal(trans.name, 'WebTransaction/NormalizedUri/*', 'got web trans first')
       const intrinsic = event[0]
 
-      t.equal(intrinsic.name, 'WebTransaction/NormalizedUri/*', 'web event has name')
-      t.ok(intrinsic['nr.guid'], 'web should have an nr.guid on event')
-      t.ok(intrinsic['nr.tripId'], 'web should have an nr.tripId on event')
-      t.ok(intrinsic['nr.pathHash'], 'web should have an nr.pathHash on event')
-      t.ok(intrinsic['nr.referringPathHash'], 'web should have an nr.referringPathHash on event')
-      t.ok(
+      plan.equal(intrinsic.name, 'WebTransaction/NormalizedUri/*', 'web event has name')
+      plan.ok(intrinsic['nr.guid'], 'web should have an nr.guid on event')
+      plan.ok(intrinsic['nr.tripId'], 'web should have an nr.tripId on event')
+      plan.ok(intrinsic['nr.pathHash'], 'web should have an nr.pathHash on event')
+      plan.ok(intrinsic['nr.referringPathHash'], 'web should have an nr.referringPathHash on event')
+      plan.ok(
         intrinsic['nr.referringTransactionGuid'],
         'web should have an nr.referringTransactionGuid on event'
       )
-      t.ok(intrinsic['nr.apdexPerfZone'], 'web should have an nr.apdexPerfZone on event')
-      t.notOk(
-        intrinsic['nr.alternatePathHashes'],
+      plan.ok(intrinsic['nr.apdexPerfZone'], 'web should have an nr.apdexPerfZone on event')
+      plan.ok(
+        !intrinsic['nr.alternatePathHashes'],
         'web should not have an nr.alternatePathHashes on event'
       )
     },
     function background(trans, event) {
-      t.equal(trans.name, 'OtherTransaction/Nodejs/myTx', 'got background trans second')
+      plan.equal(trans.name, 'OtherTransaction/Nodejs/myTx', 'got background trans second')
       const intrinsic = event[0]
 
-      t.ok(intrinsic['nr.guid'], 'bg should have an nr.guid on event')
-      t.ok(intrinsic['nr.tripId'], 'bg should have an nr.tripId on event')
-      t.ok(intrinsic['nr.pathHash'], 'bg should have an nr.pathHash on event')
-      t.notOk(
-        intrinsic['nr.referringPathHash'],
+      plan.ok(intrinsic['nr.guid'], 'bg should have an nr.guid on event')
+      plan.ok(intrinsic['nr.tripId'], 'bg should have an nr.tripId on event')
+      plan.ok(intrinsic['nr.pathHash'], 'bg should have an nr.pathHash on event')
+      plan.ok(
+        !intrinsic['nr.referringPathHash'],
         'bg should not have an nr.referringPathHash on event'
       )
-      t.notOk(
-        intrinsic['nr.referringTransactionGuid'],
+      plan.ok(
+        !intrinsic['nr.referringTransactionGuid'],
         'bg should not have an nr.referringTransactionGuid on event'
       )
-      t.notOk(intrinsic['nr.apdexPerfZone'], 'bg should have an nr.apdexPerfZone on event')
-      t.notOk(
-        intrinsic['nr.alternatePathHashes'],
+      plan.ok(!intrinsic['nr.apdexPerfZone'], 'bg should have an nr.apdexPerfZone on event')
+      plan.ok(
+        !intrinsic['nr.alternatePathHashes'],
         'bg should have an nr.alternatePathHashes on event'
       )
     }
@@ -103,4 +104,6 @@ test('background transactions should not blow up with CAT', function (t) {
     finishedHandlers[count](trans, event)
     count += 1
   })
+
+  await plan.completed
 })
