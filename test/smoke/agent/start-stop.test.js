@@ -4,14 +4,14 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const { getTestSecret } = require('../../helpers/secrets')
 
 const license = getTestSecret('TEST_LICENSE')
-tap.test('Collector API should connect to staging-collector.newrelic.com', (t) => {
+test('Collector API should connect to staging-collector.newrelic.com', (t, end) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: license,
@@ -31,16 +31,16 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', (t) =
   const agent = new Agent(config)
 
   agent.start((error, returned) => {
-    t.notOk(error, 'connected without error')
-    t.ok(returned, 'got boot configuration')
-    t.ok(returned.agent_run_id, 'got run ID')
-    t.ok(agent.config.run_id, 'run ID set in configuration')
+    assert.ok(!error, 'connected without error')
+    assert.ok(returned, 'got boot configuration')
+    assert.ok(returned.agent_run_id, 'got run ID')
+    assert.ok(agent.config.run_id, 'run ID set in configuration')
 
     agent.stop((error) => {
-      t.notOk(error, 'should have shut down without issue')
-      t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
+      assert.ok(!error, 'should have shut down without issue')
+      assert.ok(!agent.config.run_id, 'run ID should have been cleared by shutdown')
 
-      t.end()
+      end()
     })
   })
 })

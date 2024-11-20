@@ -4,14 +4,14 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const { getTestSecret } = require('../../helpers/secrets')
 const StubApi = require('../../../stub_api')
 
 const license = getTestSecret('TEST_LICENSE')
 const VERSIONS = ['garbage', '4.0.0']
-tap.test('load agent with bad versions should load stub agent', (t) => {
+test('load agent with bad versions should load stub agent', async (t) => {
   process.env.NEW_RELIC_HOME = __dirname + '/..'
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
   process.env.NEW_RELIC_LICENSE_KEY = license
@@ -23,21 +23,19 @@ tap.test('load agent with bad versions should load stub agent', (t) => {
     delete require.cache[require.resolve('../../../index.js')]
   })
 
-  VERSIONS.forEach((version) => {
-    t.test(`agent version: ${version}`, (t) => {
-      t.doesNotThrow(function () {
+  for (const version of VERSIONS) {
+    await t.test(`agent version: ${version}`, (t, end) => {
+      assert.doesNotThrow(function () {
         const _version = process.version
         Object.defineProperty(process, 'version', { value: version, writable: true })
-        t.equal(process.version, version, 'should have set bad version')
+        assert.equal(process.version, version, 'should have set bad version')
 
         const api = require('../../../index.js')
-        t.ok(api instanceof StubApi)
+        assert.ok(api instanceof StubApi)
 
         process.version = _version
       }, "malformed process.version doesn't blow up the process")
-      t.end()
+      end()
     })
-  })
-
-  t.end()
+  }
 })

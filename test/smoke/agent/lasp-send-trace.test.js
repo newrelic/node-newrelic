@@ -5,20 +5,17 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const API = require('../../../api')
 const { getTestSecret } = require('../../helpers/secrets')
 const license = getTestSecret('LASP_LICENSE')
 
-tap.test('LASP-enabled agent', (t) => {
-  let agent = null
-  let api = null
-  let config = null
-
-  t.beforeEach(function () {
-    config = configurator.initialize({
+test('LASP-enabled agent', async (t) => {
+  t.beforeEach(function (ctx) {
+    const config = configurator.initialize({
       app_name: 'node.js Tests',
       license_key: license,
       security_policies_token: 'ffff-ffff-ffff-ffff',
@@ -36,14 +33,19 @@ tap.test('LASP-enabled agent', (t) => {
       }
     })
 
-    agent = new Agent(config)
-    api = new API(agent)
+    const agent = new Agent(config)
+    const api = new API(agent)
 
     // Agent cannot create transactions from initial 'stopped' state
     agent.setState('started')
+    ctx.nr = {
+      agent,
+      api
+    }
   })
 
-  t.test('drops full trace if custom attributes are disabled by LASP', function (t) {
+  await t.test('drops full trace if custom attributes are disabled by LASP', function (t, end) {
+    const { agent, api } = t.nr
     let transaction
     const proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
@@ -53,26 +55,31 @@ tap.test('LASP-enabled agent', (t) => {
       api.addCustomAttribute('foo', 'bar')
       api.addCustomAttribute('fizz', 'buzz')
       const attributes = transaction.trace.custom.attributes
-      t.same(Object.keys(attributes), ['foo', 'fizz'], 'transaction trace has custom attributes')
+      assert.deepEqual(
+        Object.keys(attributes),
+        ['foo', 'fizz'],
+        'transaction trace has custom attributes'
+      )
     })
     proxy()
 
     transaction.end()
-    t.ok(agent.traces.trace, 'should have a trace before connect')
+    assert.ok(agent.traces.trace, 'should have a trace before connect')
 
     agent.start(function (error) {
-      t.error(error, 'connected without error')
-      t.notOk(agent.traces.trace, 'should no longer have a trace')
+      assert.ok(!error, 'connected without error')
+      assert.ok(!agent.traces.trace, 'should no longer have a trace')
 
       agent.stop(function (error) {
-        t.error(error, 'stopped without error')
+        assert.ok(!error, 'stopped without error')
 
-        t.end()
+        end()
       })
     })
   })
 
-  t.test('drops full trace if attributes.include is disabled by LASP', function (t) {
+  await t.test('drops full trace if attributes.include is disabled by LASP', function (t, end) {
+    const { agent, api } = t.nr
     agent.config.attributes.include = ['f*']
     agent.config.emit('attributes.include')
     let transaction
@@ -84,24 +91,26 @@ tap.test('LASP-enabled agent', (t) => {
       api.addCustomAttribute('foo', 'bar')
       api.addCustomAttribute('fizz', 'buzz')
       const attributes = transaction.trace.custom.attributes
-      t.same(Object.keys(attributes), ['foo', 'fizz'], 'transaction trace has custom attributes')
+      assert.deepEqual(
+        Object.keys(attributes),
+        ['foo', 'fizz'],
+        'transaction trace has custom attributes'
+      )
     })
     proxy()
 
     transaction.end()
-    t.ok(agent.traces.trace, 'should have a trace before connect')
+    assert.ok(agent.traces.trace, 'should have a trace before connect')
 
     agent.start(function (error) {
-      t.error(error, 'connected without error')
-      t.notOk(agent.traces.trace, 'should no longer have a trace')
+      assert.ok(!error, 'connected without error')
+      assert.ok(!agent.traces.trace, 'should no longer have a trace')
 
       agent.stop(function (error) {
-        t.error(error, 'stopped without error')
+        assert.ok(!error, 'stopped without error')
 
-        t.end()
+        end()
       })
     })
   })
-
-  t.autoend()
 })
