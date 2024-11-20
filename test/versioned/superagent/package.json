@@ -14,8 +14,8 @@
       }
     },
     "files": [
-      "async-await.tap.js",
-      "superagent.tap.js"
+      "async-await.test.js",
+      "superagent.test.js"
     ]
   }]
 }
