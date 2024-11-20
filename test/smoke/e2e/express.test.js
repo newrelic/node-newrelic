@@ -4,17 +4,17 @@
  */
 
 'use strict'
-
 const cp = require('child_process')
 const http = require('http')
 const path = require('path')
 const util = require('util')
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 
 const EXIT_TYPES = ['error', 'exit', 'disconnect', 'close']
 const exitHandlers = {}
 
-tap.test('Express e2e request smoke test', (t) => {
+test('Express e2e request smoke test', (t, end) => {
   const server = cp.fork(path.join(__dirname, 'express-server'))
 
   // Bind to the various ways failure could happen
@@ -40,13 +40,13 @@ tap.test('Express e2e request smoke test', (t) => {
       })
 
       res.on('end', function onEnd() {
-        t.equal(data, 'hello world!', 'should return appropriate response data')
+        assert.equal(data, 'hello world!', 'should return appropriate response data')
         // unbind from the exit conditions
         EXIT_TYPES.forEach((type) => {
           server.removeListener(type, exitHandlers[type])
         })
         server.kill()
-        t.end()
+        end()
       })
     })
   })

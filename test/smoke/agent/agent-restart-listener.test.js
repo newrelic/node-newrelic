@@ -5,13 +5,14 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const { getTestSecret } = require('../../helpers/secrets')
 
 const license = getTestSecret('TEST_LICENSE')
-tap.test('Collector API should connect to staging-collector.newrelic.com', (t) => {
+test('Collector API should connect to staging-collector.newrelic.com', (t, end) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: license,
@@ -31,9 +32,9 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', (t) =
   const agent = new Agent(config)
 
   agent.start((error, returned) => {
-    t.notOk(error, 'connected without error')
-    t.ok(returned, 'got boot configuration')
-    t.ok(returned.agent_run_id, 'got run ID')
+    assert.ok(!error, 'connected without error')
+    assert.ok(returned, 'got boot configuration')
+    assert.ok(returned.agent_run_id, 'got run ID')
 
     const initialStoppedListeners = agent.listenerCount('stopped')
     const initialErroredListeners = agent.listenerCount('errored')
@@ -43,24 +44,24 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', (t) =
       const currentStoppedListeners = agent.listenerCount('stopped')
       const currentErroredListeners = agent.listenerCount('errored')
       const currentDisconnectedListeners = agent.listenerCount('disconnected')
-      t.equal(
+      assert.equal(
         currentStoppedListeners,
         initialStoppedListeners,
         'should not have extra stopped listeners'
       )
-      t.equal(
+      assert.equal(
         currentErroredListeners,
         initialErroredListeners,
         'should not have extra errored listeners'
       )
-      t.equal(
+      assert.equal(
         currentDisconnectedListeners,
         initialDisconnectedListeners,
         'should not have extra disconnected listeners'
       )
 
       agent.stop(() => {
-        t.end()
+        end()
       })
     })
   })
