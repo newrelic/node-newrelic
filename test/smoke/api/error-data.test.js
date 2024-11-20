@@ -4,14 +4,14 @@
  */
 
 'use strict'
-
-const test = require('tap').test
+const test = require('node:test')
+const assert = require('node:assert')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const { getTestSecret } = require('../../helpers/secrets')
 
 const license = getTestSecret('TEST_LICENSE')
-test('Collector API should send errors to staging-collector.newrelic.com', (t) => {
+test('Collector API should send errors to staging-collector.newrelic.com', (t, end) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: license,
@@ -32,7 +32,7 @@ test('Collector API should send errors to staging-collector.newrelic.com', (t) =
   const api = agent.collector
 
   api.connect(function (error) {
-    t.error(error, 'connected without error')
+    assert.ok(!error, 'connected without error')
 
     let transaction
     const proxy = agent.tracer.transactionProxy(function () {
@@ -40,18 +40,18 @@ test('Collector API should send errors to staging-collector.newrelic.com', (t) =
       transaction.finalizeNameFromUri('/nonexistent', 501)
     })
     proxy()
-    t.ok(transaction, 'got a transaction')
+    assert.ok(transaction, 'got a transaction')
     agent.errors.add(transaction, new Error('test error'))
 
     const payload = [agent.config.run_id, agent.errors.traceAggregator.errors]
 
     api.send('error_data', payload, function (error, command) {
-      t.error(error, 'sent errors without error')
-      t.notOk(command.returned, 'return value is null')
+      assert.ok(!error, 'sent errors without error')
+      assert.ok(!command.returned, 'return value is null')
 
       agent.stop((err) => {
-        t.error(err, 'should not fail to stop')
-        t.end()
+        assert.ok(!err, 'should not fail to stop')
+        end()
       })
     })
   })
