@@ -54,7 +54,6 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', (tx) => {
-      // doSomeWork => Promise startSomeWork => Promise#then <anonymous> => someChildSegment
       plan.equal(tx.trace.root.children.length, 1)
 
       assertSegments(
@@ -81,8 +80,6 @@ test('segments enabled', async (t) => {
     await plan.completed
   })
 
-  // Note: this test was originally a `promise_segments: false` test listed
-  // under the segments enabled suite.
   await t.test('then handler that returns a new promise', async (t) => {
     const plan = tspl(t, { plan: 8 })
     const { agent, tracer, when } = t.nr
@@ -184,8 +181,6 @@ test('segments enabled', async (t) => {
     await plan.completed
   })
 
-  // Note: this test was originally a `promise_segments: false` test listed
-  // under the segments enabled suite.
   await t.test('catch handler with error from subsequent promise', async (t) => {
     const plan = tspl(t, { plan: 7 })
     const { agent, tracer, when } = t.nr
