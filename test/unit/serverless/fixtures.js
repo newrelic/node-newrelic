@@ -215,6 +215,50 @@ const httpApiGatewayV2Event = {
   }
 }
 
+const albEvent = {
+  requestContext: {
+    elb: {
+      targetGroupArn:
+        'arn:aws:elasticloadbalancing:us-west-2:1234567890:path/directory/otherDirectory'
+    }
+  },
+  httpMethod: 'POST',
+  path: '/elbCategory/elbEndpoint',
+  queryStringParameters: {
+    parameter1: 'value1,value2',
+    parameter2: 'value',
+    name: 'me',
+    team: 'node agent'
+  },
+  headers: {
+    'accept': 'application/json;v=4',
+    'content-length': '35',
+    'content-type': 'application/json',
+    'header2': 'value1,value2',
+    'host': 'examplehost.example.com',
+    'x-amzn-trace-id': 'Root=1-1234567890',
+    'x-forwarded-for': '10.10.10.10',
+    'x-forwarded-port': '443',
+    'x-forwarded-proto': 'https',
+    'x-message-id': 'albtest'
+  },
+  body: '{"exampleProperty": "exampleValue"}',
+  isBase64Encoded: false,
+  rawHeaders: {
+    'accept': 'application/json;v=4',
+    'content-length': '35',
+    'content-type': 'application/json',
+    'host': 'examplehost.example.com',
+    'x-amzn-trace-id': 'Root=1-1234567890',
+    'x-forwarded-for': '10.10.10.10',
+    'x-forwarded-port': '443',
+    'x-forwarded-proto': 'https',
+    'x-message-id': 'albtest'
+  },
+  multiValueQueryStringParameters: {},
+  pathParameters: {}
+}
+
 // Event used when one Lambda directly invokes another Lambda.
 // https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-retain-records.html#invocation-async-destinations
 const lambaV1InvocationEvent = {
@@ -248,5 +292,6 @@ module.exports = {
   restApiGatewayV1Event,
   httpApiGatewayV1Event,
   httpApiGatewayV2Event,
+  albEvent,
   lambaV1InvocationEvent
 }
