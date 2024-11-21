@@ -4,53 +4,51 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const { tspl } = require('@matteo.collina/tspl')
 const cp = require('child_process')
 const path = require('path')
 const helper = require('../../lib/agent_helper')
 const helpersDir = path.join(path.resolve(__dirname, '../../'), 'helpers')
 
-tap.test('Uncaught exceptions', (t) => {
+test('Uncaught exceptions', async (t) => {
+  const plan = tspl(t, { plan: 1 })
   const proc = startProc()
 
   const timer = setTimeout(function () {
-    t.fail('child did not exit')
     proc.kill()
-    t.end()
   }, 10000)
 
   proc.on('exit', function () {
-    t.ok(true, 'Did not timeout')
+    plan.ok(1, 'Did not timeout')
     clearTimeout(timer)
-    t.end()
   })
 
   proc.send({ name: 'uncaughtException' })
+  await plan.completed
 })
 
-tap.test('Caught uncaught exceptions', (t) => {
+test('Caught uncaught exceptions', async (t) => {
+  const plan = tspl(t, { plan: 1 })
   const proc = startProc()
 
   const theRightStuff = 31415927
   const timer = setTimeout(function () {
-    t.fail('child hung')
     proc.kill()
-    t.end()
   }, 10000)
 
   proc.on('message', function (code) {
-    t.equal(parseInt(code, 10), theRightStuff, 'should have the correct code')
+    plan.equal(parseInt(code, 10), theRightStuff, 'should have the correct code')
     clearTimeout(timer)
     proc.kill()
-    t.end()
   })
 
   proc.send({ name: 'caughtUncaughtException', args: theRightStuff })
+  await plan.completed
 })
 
-tap.test('Report uncaught exceptions', (t) => {
-  t.plan(3)
+test('Report uncaught exceptions', async (t) => {
+  const plan = tspl(t, { plan: 3 })
 
   const proc = startProc()
   const message = 'I am a test error'
@@ -58,21 +56,21 @@ tap.test('Report uncaught exceptions', (t) => {
 
   proc.on('message', function (errors) {
     messageReceived = true
-    t.equal(errors.count, 1, 'should have collected an error')
-    t.equal(errors.messages[0], message, 'should have the correct message')
+    plan.equal(errors.count, 1, 'should have collected an error')
+    plan.equal(errors.messages[0], message, 'should have the correct message')
     proc.kill()
   })
 
   proc.on('exit', function () {
-    t.ok(messageReceived, 'should receive message')
-    t.end()
+    plan.ok(messageReceived, 'should receive message')
   })
 
   proc.send({ name: 'checkAgent', args: message })
+  await plan.completed
 })
 
-tap.test('Triggers harvest while in serverless mode', (t) => {
-  t.plan(9)
+test('Triggers harvest while in serverless mode', async (t) => {
+  const plan = tspl(t, { plan: 9 })
 
   const proc = startProc({
     NEW_RELIC_SERVERLESS_MODE_ENABLED: 'y',
@@ -89,94 +87,94 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
 
   proc.on('message', function (errors) {
     messageReceived = true
-    t.equal(errors.count, 0, 'should have harvested the error')
+    plan.equal(errors.count, 0, 'should have harvested the error')
 
     const lambdaPayload = findLambdaPayload(payload)
-    t.ok(lambdaPayload, 'should find lambda payload log line')
+    plan.ok(lambdaPayload, 'should find lambda payload log line')
 
     const parsed = JSON.parse(lambdaPayload)
 
     helper.decodeServerlessPayload(t, parsed[2], function testDecoded(err, decoded) {
-      t.error(err, 'should not run into errors decoding serverless payload')
-      t.ok(decoded.metadata, 'metadata should be present')
-      t.ok(decoded.data, 'data should be present')
+      plan.ok(!err, 'should not run into errors decoding serverless payload')
+      plan.ok(decoded.metadata, 'metadata should be present')
+      plan.ok(decoded.data, 'data should be present')
       const error = decoded.data.error_data[1][0]
-      t.equal(error[2], message)
+      plan.equal(error[2], message)
       const transactionEvents = decoded.data.analytic_event_data
-      t.ok(transactionEvents, 'should have a transaction event')
+      plan.ok(transactionEvents, 'should have a transaction event')
       const transactionEvent = transactionEvents[2][0]
-      t.ok(transactionEvent[0].error, 'should be errored')
+      plan.ok(transactionEvent[0].error, 'should be errored')
       proc.kill()
     })
   })
 
   proc.on('exit', function () {
-    t.ok(messageReceived, 'should receive message')
-    t.end()
+    plan.ok(messageReceived, 'should receive message')
   })
 
   proc.send({ name: 'runServerlessTransaction', args: message })
+  await plan.completed
 })
 
-tap.test('Do not report domained exceptions', (t) => {
-  t.plan(3)
+test('Do not report domained exceptions', async (t) => {
+  const plan = tspl(t, { plan: 3 })
   const proc = startProc()
   const message = 'I am a test error'
   let messageReceived = false
 
   proc.on('message', function (errors) {
     messageReceived = true
-    t.equal(errors.count, 0, 'should not have collected an error')
-    t.same(errors.messages, [], 'should have no error messages')
+    plan.equal(errors.count, 0, 'should not have collected an error')
+    plan.deepEqual(errors.messages, [], 'should have no error messages')
     proc.kill()
   })
 
   proc.on('exit', function () {
-    t.ok(messageReceived, 'should receive message')
-    t.end()
+    plan.ok(messageReceived, 'should receive message')
   })
 
   proc.send({ name: 'domainUncaughtException', args: message })
+  await plan.completed
 })
 
-tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
-  t.plan(3)
+test('Report exceptions handled in setUncaughtExceptionCaptureCallback', async (t) => {
+  const plan = tspl(t, { plan: 3 })
   const proc = startProc()
   let messageReceived = false
 
   proc.on('message', (errors) => {
     messageReceived = true
-    t.equal(errors.count, 0, 'should not have collected an error')
-    t.same(errors.messages, [], 'should have no error messages')
+    plan.equal(errors.count, 0, 'should not have collected an error')
+    plan.deepEqual(errors.messages, [], 'should have no error messages')
     proc.kill()
   })
 
   proc.on('exit', () => {
-    t.ok(messageReceived, 'should receive message')
-    t.end()
+    plan.ok(messageReceived, 'should receive message')
   })
 
   proc.send({ name: 'setUncaughtExceptionCallback' })
+  await plan.completed
 })
 
-tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
-  t.plan(3)
+test('Report exceptions handled in setUncaughtExceptionCaptureCallback', async (t) => {
+  const plan = tspl(t, { plan: 3 })
   const proc = startProc()
   let messageReceived = false
 
   proc.on('message', (errors) => {
     messageReceived = true
-    t.equal(errors.count, 1, 'should have collected an error')
-    t.same(errors.messages, ['nothing can keep me down'], 'should have error messages')
+    plan.equal(errors.count, 1, 'should have collected an error')
+    plan.deepEqual(errors.messages, ['nothing can keep me down'], 'should have error messages')
     proc.kill()
   })
 
   proc.on('exit', () => {
-    t.ok(messageReceived, 'should receive message')
-    t.end()
+    plan.ok(messageReceived, 'should receive message')
   })
 
   proc.send({ name: 'unsetUncaughtExceptionCallback' })
+  await plan.completed
 })
 
 function startProc(env) {
