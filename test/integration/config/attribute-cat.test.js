@@ -5,9 +5,11 @@
 
 'use strict'
 
+const test = require('node:test')
+const tspl = require('@matteo.collina/tspl')
+
 const Config = require('../../../lib/config')
 const helper = require('../../lib/agent_helper')
-const tap = require('tap')
 const tests = require('../../lib/cross_agent_tests/attribute_configuration')
 
 const DEST_TO_ID = {
@@ -32,20 +34,22 @@ function setPath(obj, path, value) {
   obj[paths[0]] = value
 }
 
-tap.test('Attribute include/exclude configurations', function (t) {
-  t.plan(tests.length)
+test('Attribute include/exclude configurations', async (t) => {
+  const plan = tspl(t, { plan: tests.length })
 
   const agent = helper.loadMockedAgent()
-  t.teardown(function () {
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
-  tests.forEach(function (test) {
-    runTest(t, test)
-  })
+  for (const tst of tests) {
+    runTest(plan, tst)
+  }
+
+  await plan.completed
 })
 
-function runTest(t, test) {
+function runTest(plan, test) {
   // The tests list the configurations in flat, dot notation (i.e.
   // `transaction_tracer.attributes.enabled`). We need to expand that into a
   // deep object in order for our config to load it as though it came from the
@@ -62,12 +66,11 @@ function runTest(t, test) {
     return config.attributeFilter.filterAll(destId, test.input_key) & destId
   })
 
-  // Did we pass?
-  const passed = t.same(destinations, test.expected_destinations, test.testname)
-
-  // If not, log the test information to make debugging easier.
-  if (!passed) {
-    t.comment(
+  try {
+    plan.deepStrictEqual(destinations, test.expected_destinations, test.testname)
+  } catch {
+    // If not, log the test information to make debugging easier.
+    plan.diagnostic(
       JSON.stringify(
         {
           input: test.config,
