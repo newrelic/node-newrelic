@@ -6,16 +6,28 @@
 'use strict'
 
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
-const tap = require('tap')
-const test = tap.test
+const test = require('node:test')
+const { tspl } = require('@matteo.collina/tspl')
+const assert = require('node:assert')
 const http = require('http')
 const helper = require('../../lib/agent_helper')
 const StreamSink = require('../../../lib/util/stream-sink')
 const HTTP_ATTRS = require('../../lib/fixtures').httpAttributes
+const tempRemoveListeners = require('../../lib/temp-remove-listeners')
 
-test('built-in http instrumentation should handle internal & external requests', function (t) {
+test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent()
+  ctx.nr = {
+    agent
+  }
+})
 
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
+})
+
+test('built-in http instrumentation should handle internal & external requests', function (t, end) {
+  const { agent } = t.nr
   agent.config.attributes.enabled = true
 
   const TEST_INTERNAL_PORT = 8123
@@ -43,15 +55,15 @@ test('built-in http instrumentation should handle internal & external requests',
   const internalResponseHandler = function (response) {
     return function (requestResponse) {
       transaction = agent.getTransaction()
-      t.ok(transaction, 'handler is part of transaction')
+      assert.ok(transaction, 'handler is part of transaction')
 
       if (requestResponse.statusCode !== 200) {
-        return t.fail(requestResponse.statusCode)
+        return assert.fail(requestResponse.statusCode)
       }
 
       requestResponse.setEncoding('utf8')
       requestResponse.on('data', function (data) {
-        t.equal(data, PAYLOAD, "response handler shouldn't alter payload")
+        assert.equal(data, PAYLOAD, "response handler shouldn't alter payload")
       })
 
       response.writeHead(200, {
@@ -63,7 +75,7 @@ test('built-in http instrumentation should handle internal & external requests',
   }
 
   const server = http.createServer((request, response) => {
-    t.ok(agent.getTransaction(), 'should be within the scope of the transaction')
+    assert.ok(agent.getTransaction(), 'should be within the scope of the transaction')
 
     const req = http.request(
       {
@@ -76,23 +88,19 @@ test('built-in http instrumentation should handle internal & external requests',
     )
 
     req.on('error', function (error) {
-      t.fail(error)
+      assert.ok(!error)
     })
 
     req.end()
   })
 
-  t.teardown(() => {
+  t.after(() => {
     external.close()
     server.close()
-    helper.unloadAgent(agent)
   })
 
   const testResponseHandler = function (response) {
-    if (response.statusCode !== 200) {
-      return t.fail(response.statusCode)
-    }
-
+    assert.equal(response.statusCode, 200, 'should return 200')
     response.setEncoding('utf8')
 
     let fetchedBody = ''
@@ -102,62 +110,58 @@ test('built-in http instrumentation should handle internal & external requests',
 
     // this is where execution ends up -- test asserts go here
     response.on('end', function () {
-      if (!transaction) {
-        t.fail("Transaction wasn't set by response handler")
-        return t.end()
-      }
-
-      t.equal(response.statusCode, 200, 'should successfully fetch the page')
-      t.equal(fetchedBody, PAGE, "page shouldn't change")
+      assert.ok(transaction, 'should have transaction')
+      assert.equal(response.statusCode, 200, 'should successfully fetch the page')
+      assert.equal(fetchedBody, PAGE, "page shouldn't change")
 
       const scope = 'WebTransaction/NormalizedUri/*'
       let stats = agent.metrics.getOrCreateMetric(scope)
 
-      t.equal(transaction.type, 'web', 'should be a web transaction')
-      t.equal(transaction.name, scope, 'should set transaction name')
-      t.equal(
+      assert.equal(transaction.type, 'web', 'should be a web transaction')
+      assert.equal(transaction.name, scope, 'should set transaction name')
+      assert.equal(
         transaction.name,
         transaction.baseSegment.name,
         'baseSegment name should match transaction name'
       )
 
-      t.equal(stats.callCount, 2, 'should record unscoped path stats after a normal request')
+      assert.equal(stats.callCount, 2, 'should record unscoped path stats after a normal request')
 
       const isDispatcher = agent.environment.get('Dispatcher').indexOf('http') > -1
-      t.ok(isDispatcher, 'should indicate that the http dispatcher is in play')
+      assert.ok(isDispatcher, 'should indicate that the http dispatcher is in play')
 
       stats = agent.metrics.getOrCreateMetric('HttpDispatcher')
-      t.equal(stats.callCount, 2, 'should have accounted for all the internal http requests')
+      assert.equal(stats.callCount, 2, 'should have accounted for all the internal http requests')
 
       stats = agent.metrics.getOrCreateMetric('External/localhost:8321/http', scope)
-      t.equal(stats.callCount, 1, 'should record outbound HTTP requests in metrics')
+      assert.equal(stats.callCount, 1, 'should record outbound HTTP requests in metrics')
 
       stats = transaction.metrics.getOrCreateMetric('External/localhost:8321/http', scope)
-      t.equal(
+      assert.equal(
         stats.callCount,
         1,
         'should associate outbound HTTP requests with the inbound transaction'
       )
 
       stats = transaction.metrics.getOrCreateMetric('External/localhost:8321/all')
-      t.equal(stats.callCount, 1, 'should record unscoped outbound HTTP requests in metrics')
+      assert.equal(stats.callCount, 1, 'should record unscoped outbound HTTP requests in metrics')
 
       stats = transaction.metrics.getOrCreateMetric('External/allWeb')
-      t.equal(stats.callCount, 1, 'should record unscoped outbound HTTP requests in metrics')
+      assert.equal(stats.callCount, 1, 'should record unscoped outbound HTTP requests in metrics')
 
       stats = transaction.metrics.getOrCreateMetric('External/all')
-      t.equal(stats.callCount, 1, 'should record unscoped outbound HTTP requests in metrics')
+      assert.equal(stats.callCount, 1, 'should record unscoped outbound HTTP requests in metrics')
 
       const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
 
       HTTP_ATTRS.forEach(function (key) {
-        t.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)
+        assert.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)
       })
       if (attributes.httpResponseMessage) {
-        t.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+        assert.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
       }
 
-      t.end()
+      end()
     })
   }.bind(this)
 
@@ -165,7 +169,7 @@ test('built-in http instrumentation should handle internal & external requests',
     server.listen(TEST_INTERNAL_PORT, TEST_HOST, function () {
       // The transaction doesn't get created until after the instrumented
       // server handler fires.
-      t.notOk(agent.getTransaction(), 'should create tx until first request')
+      assert.ok(!agent.getTransaction(), 'should create tx until first request')
 
       const req = http.request(
         {
@@ -178,7 +182,7 @@ test('built-in http instrumentation should handle internal & external requests',
       )
 
       req.on('error', function (error) {
-        t.fail(error)
+        assert.fail(error)
       })
 
       req.end()
@@ -186,18 +190,13 @@ test('built-in http instrumentation should handle internal & external requests',
   })
 })
 
-test('built-in http instrumentation should not swallow errors', function (t) {
-  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
-
-  t.plan(8)
-
-  const agent = helper.instrumentMockedAgent()
-
+test('built-in http instrumentation should not swallow errors', async function (t) {
+  const { agent } = t.nr
+  tempRemoveListeners({ t, emitter: process, event: 'uncaughtException' })
+  const plan = tspl(t, { plan: 8 })
   let server = null
-
-  t.teardown(() => {
+  t.after(() => {
     server.close()
-    helper.unloadAgent(agent)
   })
 
   const pin = setTimeout(function () {}, 1000)
@@ -210,7 +209,7 @@ test('built-in http instrumentation should not swallow errors', function (t) {
 
   function handleRequest(req, res) {
     process.once('uncaughtException', function (error) {
-      t.ok(error, 'got error in uncaughtException handler.')
+      plan.ok(error, 'got error in uncaughtException handler.')
       res.statusCode = 501
 
       res.end()
@@ -229,30 +228,31 @@ test('built-in http instrumentation should not swallow errors', function (t) {
     }
 
     http.get(options, function (res) {
-      t.equal(res.statusCode, 501, 'should get expected (error) status code')
+      plan.equal(res.statusCode, 501, 'should get expected (error) status code')
 
       const errors = agent.errors.traceAggregator.errors
-      t.ok(errors, 'should find error')
-      t.equal(errors.length, 2, 'should be 2 errors')
+      plan.ok(errors, 'should find error')
+      plan.equal(errors.length, 2, 'should be 2 errors')
 
       const first = errors[0]
       const second = errors[1]
-      t.ok(first, 'should have the first error')
+      plan.ok(first, 'should have the first error')
 
-      t.equal(first[2], "Cannot access 'x' before initialization", 'should get the expected error')
+      plan.equal(
+        first[2],
+        "Cannot access 'x' before initialization",
+        'should get the expected error'
+      )
 
-      if (t.ok(second, 'should have the second error')) {
-        t.equal(second[2], 'HttpError 501', 'should get the expected error')
-      }
-
-      t.end()
+      plan.ok(second, 'should have the second error')
+      plan.equal(second[2], 'HttpError 501', 'should get the expected error')
     })
   }
+  await plan.completed
 })
 
-test('built-in http instrumentation making outbound requests', function (t) {
-  const agent = helper.instrumentMockedAgent()
-
+test('built-in http instrumentation making outbound requests', function (t, end) {
+  const { agent } = t.nr
   const server = http.createServer((req, res) => {
     const body = '{"status":"ok"}'
     res.writeHead(200, {
@@ -262,23 +262,22 @@ test('built-in http instrumentation making outbound requests', function (t) {
     res.end(body)
   })
 
-  t.teardown(() => {
+  t.after(() => {
     server.close()
-    helper.unloadAgent(agent)
   })
 
   function request(type, options, next) {
     http
       .request(options, function (res) {
-        t.equal(res.statusCode, 200, 'got HTTP OK status code')
+        assert.equal(res.statusCode, 200, 'got HTTP OK status code')
 
         const sink = new StreamSink(function (err, body) {
-          if (err) {
-            t.fail(err)
-            return t.end()
-          }
-
-          t.same(JSON.parse(body), { status: 'ok' }, 'request with ' + type + ' defined succeeded')
+          assert.ok(!err, 'should not error')
+          assert.deepEqual(
+            JSON.parse(body),
+            { status: 'ok' },
+            'request with ' + type + ' defined succeeded'
+          )
           next()
         })
         res.pipe(sink)
@@ -329,7 +328,7 @@ test('built-in http instrumentation making outbound requests', function (t) {
       requestWithHost(function () {
         requestWithHostname(function () {
           requestWithNOTHING(function () {
-            t.end()
+            end()
           })
         })
       })
@@ -340,14 +339,8 @@ test('built-in http instrumentation making outbound requests', function (t) {
 test(
   'built-in http instrumentation should not crash for requests that are in progress' +
     ' when the server is closed',
-  function (t) {
-    t.plan(5)
-
-    const agent = helper.instrumentMockedAgent()
-
-    t.teardown(() => {
-      helper.unloadAgent(agent)
-    })
+  async function (t) {
+    const plan = tspl(t, { plan: 5 })
 
     let count = 0
     let closing = false
@@ -356,7 +349,7 @@ test(
 
       if (count === 1) {
         setTimeout(() => {
-          t.pass('request #1 was received')
+          plan.ok(1, 'request #1 was received')
           res.end()
 
           closing = true
@@ -364,8 +357,8 @@ test(
         }, 5)
       } else {
         setTimeout(function () {
-          t.pass('request #2 was received')
-          t.ok(closing, 'server should be closing when request #2 is handled')
+          plan.ok(1, 'request #2 was received')
+          plan.ok(closing, 'server should be closing when request #2 is handled')
           res.end()
         }, 10)
       }
@@ -374,11 +367,11 @@ test(
     server.listen(0, function () {
       // make two quick requests
       makeRequest(function () {
-        t.pass('request #1 got response')
+        plan.ok(1, 'request #1 got response')
       })
 
       makeRequest(function () {
-        t.pass('request #2 got response')
+        plan.ok(1, 'request #2 got response')
       })
     })
 
@@ -391,34 +384,37 @@ test(
       }
       const req = http.request(options, callback)
       req.on('error', function (err) {
-        t.error(err, 'should not fail to make requests')
+        plan.ok(!err, 'should not fail to make requests')
       })
       req.end()
     }
+
+    await plan.completed
   }
 )
 
 // NODE-999
-test('built-in http instrumentation should not crash when server does not have addess', function (t) {
-  t.plan(3)
-
-  const agent = helper.instrumentMockedAgent()
+test('built-in http instrumentation should not crash when server does not have address', async function (t) {
+  const plan = tspl(t, { plan: 3 })
 
   const server = http.createServer(function (req, res) {
     res.end()
+  })
+  t.after(() => {
+    server.close()
   })
 
   let port
   server.listen(0, function () {
     port = server.address().port
-    t.ok(server.address, 'has address')
+    plan.ok(server.address, 'has address')
 
     // remove address function
     server.address = null
-    t.notOk(server.address, 'should not have address')
+    plan.ok(!server.address, 'should not have address')
 
     makeRequest(function () {
-      t.ok(true, 'request #1 got response')
+      plan.ok(true, 'request #1 got response')
     })
   })
 
@@ -432,8 +428,5 @@ test('built-in http instrumentation should not crash when server does not have a
     http.request(options, callback).end()
   }
 
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    server.close()
-  })
+  await plan.completed
 })
