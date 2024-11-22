@@ -10,6 +10,7 @@ const { tspl } = require('@matteo.collina/tspl')
 const helper = require('../../lib/agent_helper')
 const { EventEmitter } = require('events')
 const symbols = require('../../../lib/symbols')
+const tempRemoveListeners = require('../../lib/temp-remove-listeners')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent()
@@ -122,24 +123,12 @@ test('bind + throw', async function testThrows(t) {
 
 test('bind + capture error', async function testThrows(t) {
   const { agent, tracer } = t.nr
-  const listeners = process.listeners('uncaughtException')
-  process.removeAllListeners('uncaughtException')
-
-  t.after(() => {
-    for (const listener of listeners) {
-      process.on('uncaughtException', listener)
-    }
-  })
-
+  tempRemoveListeners({ t, emitter: process, event: 'uncaughtException' })
   const error = new Error('oh no!!')
   const name = 'some custom transaction name'
   const plan = tspl(t, { plan: 8 })
 
-  // Need to break out of tap's domain so the error is truly uncaught.
-  const pin = setTimeout(function () {}, 5000)
   helper.runOutOfContext(function () {
-    clearTimeout(pin)
-
     helper.runInTransaction(agent, inTrans)
   })
 
@@ -163,11 +152,8 @@ test('bind + capture error', async function testThrows(t) {
 
   function dangerous(segment) {
     return tracer.bindFunction(function bound() {
-      // next tick to avoid tap error handler
-      process.nextTick(function ohno() {
-        plan.equal(tracer.getSegment(), segment)
-        throw error
-      })
+      plan.equal(tracer.getSegment(), segment)
+      throw error
     }, segment)
   }
   await plan.completed
