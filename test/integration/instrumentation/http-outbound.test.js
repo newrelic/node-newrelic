@@ -6,26 +6,32 @@
 'use strict'
 
 const helper = require('../../lib/agent_helper')
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const symbols = require('../../../lib/symbols')
 
-tap.test('external requests', function (t) {
-  t.autoend()
-
-  let agent = null
-  let http = null
-  t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent()
-    http = require('http')
+test('external requests', async function (t) {
+  t.beforeEach((ctx) => {
+    const agent = helper.instrumentMockedAgent()
+    const http = require('http')
+    ctx.nr = {
+      agent,
+      http
+    }
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('segments should end on error', function (t) {
+  await t.test('segments should end on error', function (t, end) {
+    const { agent, http } = t.nr
     const notVeryReliable = http.createServer(function badHandler(req) {
       req.socket.end()
+    })
+
+    t.after(() => {
+      notVeryReliable.close()
     })
 
     notVeryReliable.listen(0)
@@ -36,22 +42,20 @@ tap.test('external requests', function (t) {
       req.on('error', function onError() {
         const segment = agent.tracer.getTransaction().trace.root.children[0]
 
-        t.equal(
+        assert.equal(
           segment.name,
           'External/localhost:' + notVeryReliable.address().port + '/',
           'should be named'
         )
-        t.ok(segment.timer.start, 'should have started')
-        t.ok(segment.timer.hasEnd(), 'should have ended')
-
-        notVeryReliable.close(function closed() {
-          t.end()
-        })
+        assert.ok(segment.timer.start, 'should have started')
+        assert.ok(segment.timer.hasEnd(), 'should have ended')
+        end()
       })
     })
   })
 
-  t.test('should have expected child segments', function (t) {
+  await t.test('should have expected child segments', function (t, end) {
+    const { agent, http } = t.nr
     // The externals segment is based on the lifetime of the request and response.
     // These objects are event emitters and we consider the external to be
     // completed when the response emits `end`. Since there are actions that
@@ -63,7 +67,7 @@ tap.test('external requests', function (t) {
       req.resume()
       res.end('ok')
     })
-    t.teardown(function () {
+    t.after(function () {
       server.close()
     })
 
@@ -83,18 +87,18 @@ tap.test('external requests', function (t) {
 
     function check(tx) {
       const external = tx.trace.root.children[0]
-      t.equal(
+      assert.equal(
         external.name,
         'External/localhost:' + server.address().port + '/some/path',
         'should be named as an external'
       )
-      t.ok(external.timer.start, 'should have started')
-      t.ok(external.timer.hasEnd(), 'should have ended')
-      t.ok(external.children.length, 'should have children')
+      assert.ok(external.timer.start, 'should have started')
+      assert.ok(external.timer.hasEnd(), 'should have ended')
+      assert.ok(external.children.length, 'should have children')
 
       let connect = external.children[0]
-      t.equal(connect.name, 'http.Agent#createConnection', 'should be connect segment')
-      t.equal(connect.children.length, 1, 'connect should have 1 child')
+      assert.equal(connect.name, 'http.Agent#createConnection', 'should be connect segment')
+      assert.equal(connect.children.length, 1, 'connect should have 1 child')
 
       // There is potentially an extra layer of create/connect segments.
       if (connect.children[0].name === 'net.Socket.connect') {
@@ -102,23 +106,24 @@ tap.test('external requests', function (t) {
       }
 
       const dnsLookup = connect.children[0]
-      t.equal(dnsLookup.name, 'dns.lookup', 'should be dns.lookup segment')
+      assert.equal(dnsLookup.name, 'dns.lookup', 'should be dns.lookup segment')
 
       const callback = external.children[external.children.length - 1]
-      t.equal(callback.name, 'timers.setTimeout', 'should have timeout segment')
+      assert.equal(callback.name, 'timers.setTimeout', 'should have timeout segment')
 
-      t.end()
+      end()
     }
   })
 
-  t.test('should recognize requests via proxy correctly', function (t) {
+  await t.test('should recognize requests via proxy correctly', function (t, end) {
+    const { agent, http } = t.nr
     const proxyUrl = 'https://www.google.com/proxy/path'
     const proxyServer = http.createServer(function onRequest(req, res) {
-      t.equal(req.url, proxyUrl)
+      assert.equal(req.url, proxyUrl)
       req.resume()
       res.end('ok')
     })
-    t.teardown(() => proxyServer.close())
+    t.after(() => proxyServer.close())
 
     proxyServer.listen(0)
 
@@ -134,23 +139,24 @@ tap.test('external requests', function (t) {
         res.resume()
         res.once('end', function () {
           const segment = agent.tracer.getTransaction().trace.root.children[0]
-          t.equal(
+          assert.equal(
             segment.name,
             `External/www.google.com/proxy/path`,
             'should name segment as an external service'
           )
-          t.end()
+          end()
         })
       })
 
       req.on('error', function onError(err) {
-        t.fail('Request should not error: ' + err.message)
-        t.end()
+        assert.fail('Request should not error: ' + err.message)
+        end()
       })
     })
   })
 
-  t.test('should not duplicate the external segment', function (t) {
+  await t.test('should not duplicate the external segment', function (t, end) {
+    const { agent } = t.nr
     const https = require('https')
 
     helper.runInTransaction(agent, function inTransaction() {
@@ -164,57 +170,60 @@ tap.test('external requests', function (t) {
       const root = agent.tracer.getTransaction().trace.root
       const segment = root.children[0]
 
-      t.equal(segment.name, 'External/example.com/', 'should be named')
-      t.ok(segment.timer.start, 'should have started')
-      t.ok(segment.timer.hasEnd(), 'should have ended')
-      t.equal(segment.children.length, 1, 'should have 1 child')
+      assert.equal(segment.name, 'External/example.com/', 'should be named')
+      assert.ok(segment.timer.start, 'should have started')
+      assert.ok(segment.timer.hasEnd(), 'should have ended')
+      assert.equal(segment.children.length, 1, 'should have 1 child')
 
       const notDuped = segment.children[0]
-      t.not(
+      assert.notEqual(
         notDuped.name,
         segment.name,
         'child should not be named the same as the external segment'
       )
 
-      t.end()
+      end()
     }
   })
 
-  t.test('NODE-1647 should not interfere with `got`', { timeout: 5000 }, function (t) {
+  await t.test('NODE-1647 should not interfere with `got`', { timeout: 5000 }, function (t, end) {
+    const { agent } = t.nr
     // Our way of wrapping HTTP response objects caused `got` to hang. This was
     // resolved in agent 2.5.1.
     const got = require('got')
     helper.runInTransaction(agent, function () {
       const req = got('https://example.com/')
-      t.teardown(function () {
+      t.after(function () {
         req.cancel()
       })
       req.then(
         function () {
-          t.end()
+          end()
         },
         function (e) {
-          t.error(e)
-          t.end()
+          assert.ok(!e)
+          end()
         }
       )
     })
   })
 
-  t.test('should record requests to default ports', (t) => {
+  await t.test('should record requests to default ports', (t, end) => {
+    const { agent, http } = t.nr
     helper.runInTransaction(agent, (tx) => {
       http.get('http://example.com', (res) => {
         res.resume()
         res.on('end', () => {
           const segment = tx.trace.root.children[0]
-          t.equal(segment.name, 'External/example.com/', 'should create external segment')
-          t.end()
+          assert.equal(segment.name, 'External/example.com/', 'should create external segment')
+          end()
         })
       })
     })
   })
 
-  t.test('should expose the external segment on the http request', (t) => {
+  await t.test('should expose the external segment on the http request', (t, end) => {
+    const { agent, http } = t.nr
     helper.runInTransaction(agent, (tx) => {
       let reqSegment = null
       const req = http.get('http://example.com', (res) => {
@@ -222,12 +231,12 @@ tap.test('external requests', function (t) {
         res.on('end', () => {
           const segment = tx.trace.root.children[0]
           const attrs = segment.getAttributes()
-          t.same(attrs, {
+          assert.deepEqual(attrs, {
             url: 'http://example.com/',
             procedure: 'GET'
           })
-          t.equal(reqSegment, segment, 'should expose external')
-          t.end()
+          assert.equal(reqSegment, segment, 'should expose external')
+          end()
         })
       })
       reqSegment = req[symbols.segment]
