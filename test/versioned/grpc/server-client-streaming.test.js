@@ -86,11 +86,9 @@ test('should add DT headers when `distributed_tracing` is enabled', async (t) =>
     tx.end()
   })
 
-  payload.forEach(({ name }) => {
-    // TODO: gotta instrument and test event listeners on client streaming
-    // t.test(`adding '${name}' should create a server trace segment`)
-    t.diagnostic(`adding '${name}' should create a server trace segment`)
-  })
+  // TODO: gotta instrument and test event listeners on client streaming
+  // payload.forEach(({ name }) => {})
+
   assertDistributedTracing({ clientTransaction, serverTransaction })
 })
 

@@ -731,7 +731,7 @@ test('display_host facts', async (t) => {
     const { agent, facts } = t.nr
     if (!agent.config.getIPAddresses().ipv6) {
       t.diagnostic('this machine does not have an ipv6 address, skipping')
-      return end()
+      end()
     }
 
     agent.config.process_host.ipv_preference = '6'
@@ -754,7 +754,7 @@ test('display_host facts', async (t) => {
     const { agent, facts } = t.nr
     if (!agent.config.getIPAddresses().ipv6) {
       t.diagnostic('this machine does not have an ipv6 address, skipping')
-      return end()
+      end()
     }
 
     const mockedNI = {
