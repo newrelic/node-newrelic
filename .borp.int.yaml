@@ -1,5 +1,7 @@
 files:
   - 'test/integration/**/*.tap.js'
   - 'test/integration/**/*.test.js'
+  # We need to ignore any `*.test.js` files within nested `node_modules`
+  # directories. We only want to target the tests we have written ourselves.
   - '!test/integration/**/node_modules/**/*'
-  
+

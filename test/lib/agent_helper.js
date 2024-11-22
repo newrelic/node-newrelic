@@ -523,15 +523,13 @@ helper.runOutOfContext = function runOutOfContext(fn) {
   tasks.push(fn)
 }
 
-helper.decodeServerlessPayload = (t, payload, cb) => {
+helper.decodeServerlessPayload = (payload, cb) => {
   if (!payload) {
-    t.comment('No payload to decode')
     return cb()
   }
 
   zlib.gunzip(Buffer.from(payload, 'base64'), (err, decompressed) => {
     if (err) {
-      t.comment('Error occurred when decompressing payload')
       return cb(err)
     }
 

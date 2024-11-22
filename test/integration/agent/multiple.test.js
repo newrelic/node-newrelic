@@ -5,10 +5,12 @@
 
 'use strict'
 
-const test = require('tap').test
+const test = require('node:test')
+const assert = require('node:assert')
+
 const metricPrefix = require('../../../lib/metrics/names').SUPPORTABILITY.PREFIX
 
-test('Multiple require("newrelic")', function (t) {
+test('Multiple require("newrelic")', () => {
   process.env.NEW_RELIC_ENABLED = true
   process.env.NEW_RELIC_APP_NAME = 'agent test'
 
@@ -19,8 +21,7 @@ test('Multiple require("newrelic")', function (t) {
 
   const second = require(path)
 
-  t.equal(first, second)
+  assert.equal(first, second)
   const doubleLoadMetric = second.agent.metrics.getOrCreateMetric(`${metricPrefix}Agent/DoubleLoad`)
-  t.equal(doubleLoadMetric.callCount, 1, 'should have tried to double-load the agent once')
-  t.end()
+  assert.equal(doubleLoadMetric.callCount, 1, 'should have tried to double-load the agent once')
 })
