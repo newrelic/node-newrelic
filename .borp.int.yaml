@@ -1,7 +1,5 @@
 files:
   - 'test/integration/**/*.tap.js'
-  # We can't do a simple '**/*.test.js' because the "uninstrumented" suite
-  # includes a `node_modules` directory that includes several `.test.js` files.
-  - 'test/integration/*.test.js'
-  - 'test/integration/cat/*.test.js'
-  - 'test/integration/config/*.test.js'
+  - 'test/integration/**/*.test.js'
+  - '!test/integration/**/node_modules/**/*'
+  
