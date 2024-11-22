@@ -37,13 +37,10 @@ class Tracker extends Map {
   #passed = 0
   #failed = 0
 
-  isTracked(file) {
-    return this.has(file)
-  }
-
   enqueue(file, event) {
     if (this.has(file) === false) {
       this.set(file, {
+        duration: 0,
         queued: new Set(),
         passed: 0,
         failed: 0,
@@ -57,19 +54,22 @@ class Tracker extends Map {
   }
 
   dequeue(file, event) {
-    this.get(file).queued.delete(event.data.line)
+    const tracked = this.get(file)
+    tracked.queued.delete(event.data.line)
   }
 
-  fail(file) {
+  fail(file, event) {
     const tracked = this.get(file)
     tracked.failed += 1
     this.#failed += 1
+    tracked.duration += event.data.details?.duration_ms ?? 0
   }
 
-  pass(file) {
+  pass(file, event) {
     const tracked = this.get(file)
     tracked.passed += 1
     this.#passed += 1
+    tracked.duration += event.data.details?.duration_ms ?? 0
   }
 
   get failedCount() {
@@ -145,12 +145,17 @@ async function* reporter(source) {
         // final passing test, but the suite overall has failed. So we need
         // report the failure here. At least until we get to Node.js 20 where
         // there is a finalized `test:complete` event.
+        const time = tracked.duration.toLocaleString('en-US', {
+          style: 'unit',
+          unit: 'millisecond',
+          maximumSignificantDigits: 4
+        })
         if (tracked.failed > 0) {
-          yield `${colorize('fail', 'failed')}: ${file}\n`
+          yield `${colorize('fail', 'failed')}: ${file} (${time})\n`
           break
         }
 
-        yield `${colorize('pass', 'passed')}: ${file}\n`
+        yield `${colorize('pass', 'passed')}: ${file} (${time})\n`
         break
       }
 
@@ -169,7 +174,12 @@ async function* reporter(source) {
 
         tracked.reported = true
 
-        yield `${colorize('fail', 'failed')}: ${file}\n`
+        const time = tracked.duration.toLocaleString('en-US', {
+          style: 'unit',
+          unit: 'millisecond',
+          maximumSignificantDigits: 4
+        })
+        yield `${colorize('fail', 'failed')}: ${file} (${time})\n`
         break
       }
 
