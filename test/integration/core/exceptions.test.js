@@ -94,7 +94,7 @@ test('Triggers harvest while in serverless mode', async (t) => {
 
     const parsed = JSON.parse(lambdaPayload)
 
-    helper.decodeServerlessPayload(t, parsed[2], function testDecoded(err, decoded) {
+    helper.decodeServerlessPayload(parsed[2], function testDecoded(err, decoded) {
       plan.ok(!err, 'should not run into errors decoding serverless payload')
       plan.ok(decoded.metadata, 'metadata should be present')
       plan.ok(decoded.data, 'data should be present')
