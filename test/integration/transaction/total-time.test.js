@@ -5,11 +5,21 @@
 
 'use strict'
 
-const test = require('tap').test
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 
-test('totaltime: single segment', function (t) {
-  const agent = getAgent(t)
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = helper.loadMockedAgent()
+})
+
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
+})
+
+test('totaltime: single segment', function (t, end) {
+  const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
     const start = Date.now()
     const root = transaction.trace.root
@@ -17,13 +27,13 @@ test('totaltime: single segment', function (t) {
     const only = root.add('only')
     only.timer.setDurationInMillis(1000, start)
 
-    t.equal(transaction.trace.getTotalTimeDurationInMillis(), 1000)
-    t.end()
+    assert.equal(transaction.trace.getTotalTimeDurationInMillis(), 1000)
+    end()
   })
 })
 
-test('totaltime: parent with child not overlapping', function (t) {
-  const agent = getAgent(t)
+test('totaltime: parent with child not overlapping', function (t, end) {
+  const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
     const start = Date.now()
     const root = transaction.trace.root
@@ -34,13 +44,13 @@ test('totaltime: parent with child not overlapping', function (t) {
     const child = parent.add('child')
     child.timer.setDurationInMillis(1000, start + 1000)
 
-    t.equal(transaction.trace.getTotalTimeDurationInMillis(), 2000)
-    t.end()
+    assert.equal(transaction.trace.getTotalTimeDurationInMillis(), 2000)
+    end()
   })
 })
 
-test('totaltime: parent with a child overlapping by 500ms', function (t) {
-  const agent = getAgent(t)
+test('totaltime: parent with a child overlapping by 500ms', function (t, end) {
+  const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
     const start = Date.now()
     const root = transaction.trace.root
@@ -51,13 +61,13 @@ test('totaltime: parent with a child overlapping by 500ms', function (t) {
     const child = parent.add('child')
     child.timer.setDurationInMillis(1000, start + 500)
 
-    t.equal(transaction.trace.getTotalTimeDurationInMillis(), 1500)
-    t.end()
+    assert.equal(transaction.trace.getTotalTimeDurationInMillis(), 1500)
+    end()
   })
 })
 
-test('totaltime: 1 parent, 2 parallel equal children no overlap with parent', (t) => {
-  const agent = getAgent(t)
+test('totaltime: 1 parent, 2 parallel equal children no overlap with parent', (t, end) => {
+  const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
     const start = Date.now()
     const root = transaction.trace.root
@@ -71,13 +81,13 @@ test('totaltime: 1 parent, 2 parallel equal children no overlap with parent', (t
     const second = parent.add('second')
     second.timer.setDurationInMillis(1000, start + 1000)
 
-    t.equal(transaction.trace.getTotalTimeDurationInMillis(), 3000)
-    t.end()
+    assert.equal(transaction.trace.getTotalTimeDurationInMillis(), 3000)
+    end()
   })
 })
 
-test('totaltime: 1 parent, 2 parallel equal children one overlaps with parent by 500ms', function (t) {
-  const agent = getAgent(t)
+test('totaltime: 1 parent, 2 parallel equal children one overlaps with parent by 500ms', function (t, end) {
+  const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
     const start = Date.now()
     const root = transaction.trace.root
@@ -91,13 +101,13 @@ test('totaltime: 1 parent, 2 parallel equal children one overlaps with parent by
     const second = parent.add('second')
     second.timer.setDurationInMillis(1000, start + 500)
 
-    t.equal(transaction.trace.getTotalTimeDurationInMillis(), 2500)
-    t.end()
+    assert.equal(transaction.trace.getTotalTimeDurationInMillis(), 2500)
+    end()
   })
 })
 
-test('totaltime: 1 parent, 1 child, 1 grand child, all at same time', function (t) {
-  const agent = getAgent(t)
+test('totaltime: 1 parent, 1 child, 1 grand child, all at same time', function (t, end) {
+  const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
     const start = Date.now()
     const root = transaction.trace.root
@@ -111,13 +121,13 @@ test('totaltime: 1 parent, 1 child, 1 grand child, all at same time', function (
     const grandchild = child.add('grandchild')
     grandchild.timer.setDurationInMillis(1000, start)
 
-    t.equal(transaction.trace.getTotalTimeDurationInMillis(), 1000)
-    t.end()
+    assert.equal(transaction.trace.getTotalTimeDurationInMillis(), 1000)
+    end()
   })
 })
 
-test('totaltime: 1 parent, 1 child, 1 grand child, 500ms at each step', function (t) {
-  const agent = getAgent(t)
+test('totaltime: 1 parent, 1 child, 1 grand child, 500ms at each step', function (t, end) {
+  const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
     const start = Date.now()
     const root = transaction.trace.root
@@ -131,13 +141,13 @@ test('totaltime: 1 parent, 1 child, 1 grand child, 500ms at each step', function
     const grandchild = child.add('grandchild')
     grandchild.timer.setDurationInMillis(1000, start + 1000)
 
-    t.equal(transaction.trace.getTotalTimeDurationInMillis(), 2000)
-    t.end()
+    assert.equal(transaction.trace.getTotalTimeDurationInMillis(), 2000)
+    end()
   })
 })
 
-test('totaltime: 1 parent, 1 child, 1 grand child, 250ms after previous start', (t) => {
-  const agent = getAgent(t)
+test('totaltime: 1 parent, 1 child, 1 grand child, 250ms after previous start', (t, end) => {
+  const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
     const start = Date.now()
     const root = transaction.trace.root
@@ -151,13 +161,13 @@ test('totaltime: 1 parent, 1 child, 1 grand child, 250ms after previous start', 
     const grandchild = child.add('grandchild')
     grandchild.timer.setDurationInMillis(1000, start + 500)
 
-    t.equal(transaction.trace.getTotalTimeDurationInMillis(), 1500)
-    t.end()
+    assert.equal(transaction.trace.getTotalTimeDurationInMillis(), 1500)
+    end()
   })
 })
 
-test('totaltime: 1 child ending before parent, 1 grand child ending after parent', function (t) {
-  const agent = getAgent(t)
+test('totaltime: 1 child ending before parent, 1 grand child ending after parent', function (t, end) {
+  const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
     const start = Date.now()
     const root = transaction.trace.root
@@ -171,17 +181,7 @@ test('totaltime: 1 child ending before parent, 1 grand child ending after parent
     const grandchild = child.add('grandchild')
     grandchild.timer.setDurationInMillis(1000, start + 200)
 
-    t.equal(transaction.trace.getTotalTimeDurationInMillis(), 1200)
-    t.end()
+    assert.equal(transaction.trace.getTotalTimeDurationInMillis(), 1200)
+    end()
   })
 })
-
-function getAgent(t) {
-  const agent = helper.loadMockedAgent()
-
-  t.teardown(function () {
-    helper.unloadAgent(agent)
-  })
-
-  return agent
-}
