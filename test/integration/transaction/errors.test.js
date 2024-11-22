@@ -5,16 +5,29 @@
 
 'use strict'
 
-const test = require('tap').test
+const test = require('node:test')
+const { tspl } = require('@matteo.collina/tspl')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 
-test('errors in web transactions should gather the query params', function (t) {
-  t.plan(9)
-
-  const agent = helper.loadTestAgent(t)
+test.beforeEach((ctx) => {
+  const agent = helper.instrumentMockedAgent()
   const api = new API(agent)
   const http = require('http')
+  ctx.nr = {
+    agent,
+    api,
+    http
+  }
+})
+
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
+})
+
+test('errors in web transactions should gather the query params', async function (t) {
+  const { agent, api, http } = t.nr
+  const plan = tspl(t, { plan: 9 })
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
@@ -30,7 +43,7 @@ test('errors in web transactions should gather the query params', function (t) {
       const server = this
       const url = 'http://localhost:' + server.address().port + '/?some=param&data'
       http.get(url, function (res) {
-        t.equal(res.statusCode, 200, 'request should be successful')
+        plan.equal(res.statusCode, 200, 'request should be successful')
         res.resume()
         server.close()
       })
@@ -38,41 +51,39 @@ test('errors in web transactions should gather the query params', function (t) {
 
   agent.on('transactionFinished', function () {
     const error = agent.errors.traceAggregator.errors[0]
-    t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
-    t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
-    t.equal(error[3], 'Error', 'should have gathered the type of the error')
+    plan.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
+    plan.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
+    plan.equal(error[3], 'Error', 'should have gathered the type of the error')
 
     const attributes = error[4]
     // top level attributes
-    t.ok(Array.isArray(attributes.stack_trace), 'should be an array')
+    plan.ok(Array.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
-    t.equal(Object.keys(attributes.userAttributes).length, 0, 'should have no custom attributes')
+    plan.equal(Object.keys(attributes.userAttributes).length, 0, 'should have no custom attributes')
 
-    t.equal(
+    plan.equal(
       Object.keys(attributes.agentAttributes).length,
       9,
       'should have collected the query, request, and response params'
     )
-    t.equal(
+    plan.equal(
       attributes.agentAttributes['request.parameters.some'],
       'param',
       'should have collected a query param with a value'
     )
-    t.equal(
+    plan.equal(
       attributes.agentAttributes['request.parameters.data'],
       true,
       'should have collected a query param without a value'
     )
   })
+  await plan.completed
 })
 
-test('multiple errors in web transactions should gather the query params', function (t) {
-  t.plan(17)
-
-  const agent = helper.loadTestAgent(t)
-  const api = new API(agent)
-  const http = require('http')
+test('multiple errors in web transactions should gather the query params', async function (t) {
+  const { agent, api, http } = t.nr
+  const plan = tspl(t, { plan: 17 })
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
@@ -92,7 +103,7 @@ test('multiple errors in web transactions should gather the query params', funct
       let url = 'http://localhost:' + server.address().port + '/testing'
       url += '?some=param&data'
       http.get(url, function (res) {
-        t.equal(res.statusCode, 200, 'request should be successful')
+        plan.equal(res.statusCode, 200, 'request should be successful')
         res.resume()
         server.close()
       })
@@ -100,46 +111,49 @@ test('multiple errors in web transactions should gather the query params', funct
 
   agent.on('transactionFinished', function () {
     agent.errors.traceAggregator.errors.forEach(function (error) {
-      t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
+      plan.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
 
-      t.not(names.indexOf(error[2]), -1, 'should have gathered the errors message')
+      plan.notEqual(names.indexOf(error[2]), -1, 'should have gathered the errors message')
       // Remove the found name from the list of names. Since they are unique and
       // should only appear on one error.
       names.splice(names.indexOf(error[2]), 1)
-      t.equal(error[3], 'Error', 'should have gathered the type of the error')
+      plan.equal(error[3], 'Error', 'should have gathered the type of the error')
 
       const attributes = error[4]
       // top level attributes
-      t.ok(Array.isArray(attributes.stack_trace), 'should be an array')
+      plan.ok(Array.isArray(attributes.stack_trace), 'should be an array')
 
       // custom attributes
-      t.equal(Object.keys(attributes.userAttributes).length, 0, 'should have no custom attributes')
+      plan.equal(
+        Object.keys(attributes.userAttributes).length,
+        0,
+        'should have no custom attributes'
+      )
 
-      t.equal(
+      plan.equal(
         Object.keys(attributes.agentAttributes).length,
         9,
         'should have collected the query, request, and response params'
       )
-      t.equal(
+      plan.equal(
         attributes.agentAttributes['request.parameters.some'],
         'param',
         'should have collected a query param with a value'
       )
-      t.equal(
+      plan.equal(
         attributes.agentAttributes['request.parameters.data'],
         true,
         'should have collected a query param without a value'
       )
     })
   })
+
+  await plan.completed
 })
 
-test('errors in web transactions should gather and merge custom params', function (t) {
-  t.plan(12)
-
-  const agent = helper.loadTestAgent(t)
-  const api = new API(agent)
-  const http = require('http')
+test('errors in web transactions should gather and merge custom params', async function (t) {
+  const { agent, api, http } = t.nr
+  const plan = tspl(t, { plan: 12 })
 
   agent.config.attributes.enabled = true
 
@@ -165,7 +179,7 @@ test('errors in web transactions should gather and merge custom params', functio
       const server = this
       const url = 'http://localhost:' + server.address().port + '/'
       http.get(url, function (res) {
-        t.equal(res.statusCode, 200, 'request should be successful')
+        plan.equal(res.statusCode, 200, 'request should be successful')
         res.resume()
         server.close()
       })
@@ -173,37 +187,36 @@ test('errors in web transactions should gather and merge custom params', functio
 
   agent.on('transactionFinished', function () {
     const error = agent.errors.traceAggregator.errors[0]
-    t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
-    t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
-    t.equal(error[3], 'Error', 'should have gathered the type of the error')
+    plan.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
+    plan.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
+    plan.equal(error[3], 'Error', 'should have gathered the type of the error')
 
     const attributes = error[4]
     // top level attributes
-    t.ok(Array.isArray(attributes.stack_trace), 'should be an array')
+    plan.ok(Array.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
     const ua = attributes.userAttributes
-    t.equal(Object.keys(ua).length, 5, 'should have 5 custom attributes after merging')
-    t.equal(ua.preErrorKeep, true, 'kept custom param from before error')
-    t.equal(ua.preErrorReplace, 'yesssssssss', 'replace custom param from before error')
-    t.equal(ua.thisOneIsUnique, 1987, 'custom param that is not overriding also was kept')
-    t.equal(ua.postErrorKeep, 2, 'kept custom param from after error')
-    t.equal(ua.postErrorReplace, 'this one is better', 'replace custom param from after error')
+    plan.equal(Object.keys(ua).length, 5, 'should have 5 custom attributes after merging')
+    plan.equal(ua.preErrorKeep, true, 'kept custom param from before error')
+    plan.equal(ua.preErrorReplace, 'yesssssssss', 'replace custom param from before error')
+    plan.equal(ua.thisOneIsUnique, 1987, 'custom param that is not overriding also was kept')
+    plan.equal(ua.postErrorKeep, 2, 'kept custom param from after error')
+    plan.equal(ua.postErrorReplace, 'this one is better', 'replace custom param from after error')
 
-    t.equal(
+    plan.equal(
       Object.keys(attributes.agentAttributes).length,
       7,
       'should have collected the query, request, and response params'
     )
   })
+
+  await plan.completed
 })
 
-test('multiple errors in web tx should gather and merge custom params', function (t) {
-  t.plan(21)
-
-  const agent = helper.loadTestAgent(t)
-  const api = new API(agent)
-  const http = require('http')
+test('multiple errors in web tx should gather and merge custom params', async function (t) {
+  const { agent, api, http } = t.nr
+  const plan = tspl(t, { plan: 21 })
 
   agent.config.attributes.enabled = true
 
@@ -246,7 +259,7 @@ test('multiple errors in web tx should gather and merge custom params', function
       const server = this
       const url = 'http://localhost:' + server.address().port + '/'
       http.get(url, function (res) {
-        t.equal(res.statusCode, 200, 'request should be successful')
+        plan.equal(res.statusCode, 200, 'request should be successful')
         res.resume()
         server.close()
       })
@@ -266,64 +279,65 @@ test('multiple errors in web tx should gather and merge custom params', function
         return
       }
 
-      t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
-      t.equal(error[3], 'Error', 'should have gathered the type of the error')
+      plan.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
+      plan.equal(error[3], 'Error', 'should have gathered the type of the error')
 
       const attributes = error[4]
       // top level attributes
-      t.ok(Array.isArray(attributes.stack_trace), 'should be an array')
+      plan.ok(Array.isArray(attributes.stack_trace), 'should be an array')
 
       // custom attributes
       const ua = attributes.userAttributes
-      t.equal(Object.keys(ua).length, 5, 'should have 5 custom attributes after merging')
+      plan.equal(Object.keys(ua).length, 5, 'should have 5 custom attributes after merging')
       // Overriden for error custom params
       Object.keys(expectedParams).forEach(function (paramKey) {
-        t.equal(ua[paramKey], expectedParams[paramKey], 'has the passed in params')
+        plan.equal(ua[paramKey], expectedParams[paramKey], 'has the passed in params')
       })
 
       // transaction custom params
-      t.equal(ua.preErrorKeep, true, 'kept custom param from before error')
-      t.equal(ua.postErrorKeep, 2, 'kept custom param from after error')
+      plan.equal(ua.preErrorKeep, true, 'kept custom param from before error')
+      plan.equal(ua.postErrorKeep, 2, 'kept custom param from after error')
 
-      t.equal(
+      plan.equal(
         Object.keys(attributes.agentAttributes).length,
         7,
         'should have collected the query, request, and response params'
       )
     })
   })
+
+  await plan.completed
 })
 
-test('errors in background transactions are collected with correct data', function (t) {
-  const agent = helper.loadTestAgent(t)
-  const api = new API(agent)
+test('errors in background transactions are collected with correct data', async function (t) {
+  const { agent, api } = t.nr
+  const plan = tspl(t, { plan: 7 })
 
   agent.config.attributes.enabled = true
 
   agent.on('transactionFinished', function () {
     const error = agent.errors.traceAggregator.errors[0]
-    t.equal(error[1], 'OtherTransaction/TheGroup/SomeWork', 'should have set tx name')
-    t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
-    t.equal(error[3], 'Error', 'should have gathered the type of the error')
+    plan.equal(error[1], 'OtherTransaction/TheGroup/SomeWork', 'should have set tx name')
+    plan.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
+    plan.equal(error[3], 'Error', 'should have gathered the type of the error')
 
     const attributes = error[4]
     // top level attributes
-    t.ok(Array.isArray(attributes.stack_trace), 'should be an array')
+    plan.ok(Array.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
-    t.equal(Object.keys(attributes.userAttributes).length, 0, 'should have no custom params')
+    plan.equal(Object.keys(attributes.userAttributes).length, 0, 'should have no custom params')
     // agent/query parameters
-    t.equal(
+    plan.equal(
       Object.keys(attributes.agentAttributes).length,
       1,
       'should only have collected the "spanId" agent attribute'
     )
-    t.equal(
+    plan.equal(
       Object.keys(attributes.agentAttributes)[0],
       'spanId',
       'should only have collected the "spanId" agent attribute'
     )
-    t.end()
   })
 
   // Create transaction generator
@@ -331,4 +345,6 @@ test('errors in background transactions are collected with correct data', functi
     api.noticeError(new Error('errors in tx test'))
     // Auto-end transaction in setImmediate.
   })
+
+  await plan.completed
 })

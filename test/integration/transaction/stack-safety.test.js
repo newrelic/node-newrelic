@@ -5,13 +5,14 @@
 
 'use strict'
 
-const test = require('tap').test
-const spawn = require('child_process').spawn
+const test = require('node:test')
+const assert = require('node:assert')
+const { spawn } = require('child_process')
 
 // node --v8-options | grep -B0 -A1 stack-size
 // --stack-size (default size of stack region v8 is allowed to use (in kBytes))
 // type: int  default: 984
-test('should not exceed stack size for extremely wide segment trees', function (t) {
+test('should not exceed stack size for extremely wide segment trees', function (t, end) {
   const nodeExec = process.argv[0]
 
   const args = [
@@ -27,8 +28,7 @@ test('should not exceed stack size for extremely wide segment trees', function (
   const child = spawn(nodeExec, args, options)
 
   child.on('exit', (code) => {
-    t.equal(code, 0, 'Should have succesful exit. Check output')
-
-    t.end()
+    assert.equal(code, 0, 'Should have successful exit. Check output')
+    end()
   })
 })
