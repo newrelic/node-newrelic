@@ -5,7 +5,8 @@
 
 'use strict'
 
-const test = require('tap').test
+const test = require('node:test')
+const assert = require('node:assert')
 const fs = require('fs/promises')
 const common = require('../../../lib/utilization/common')
 const dockerInfo = require('../../../lib/utilization/docker-info')
@@ -27,7 +28,7 @@ const tests = [
 tests.forEach(({ name, testsDir }) => {
   test(`pricing docker info ${name}`, async function (t) {
     const os = require('os')
-    t.teardown(function () {
+    t.after(function () {
       os.platform.restore()
     })
 
@@ -36,34 +37,38 @@ tests.forEach(({ name, testsDir }) => {
     const data = await fs.readFile(`${testsDir}/cases.json`)
     const cases = JSON.parse(data)
 
-    cases.forEach((testCase) => {
-      const testFile = path.join(testsDir, testCase.filename)
-      t.test(testCase.filename, makeTest(testCase, testFile, name === 'v2'))
+    t.beforeEach((ctx) => {
+      const agent = helper.loadMockedAgent()
+      sinon.stub(common, 'readProc')
+      ctx.nr = { agent }
     })
-    t.end()
+
+    t.afterEach((ctx) => {
+      helper.unloadAgent(ctx.nr.agent)
+      dockerInfo.clearVendorCache()
+      common.readProc.restore()
+    })
+
+    for (const testCase of cases) {
+      const testFile = path.join(testsDir, testCase.filename)
+      await t.test(testCase.filename, makeTest(testCase, testFile, name === 'v2'))
+    }
   })
 })
 
 function makeTest(testCase, testFile, v2) {
   return async function (t) {
-    const agent = helper.loadMockedAgent()
-    sinon.stub(common, 'readProc')
+    const { agent } = t.nr
     const file = await fs.readFile(testFile, { encoding: 'utf8' })
     mockProcRead(file, v2)
-
-    t.teardown(function () {
-      helper.unloadAgent(agent)
-      dockerInfo.clearVendorCache()
-      common.readProc.restore()
-    })
 
     await new Promise((resolve) => {
       dockerInfo.getVendorInfo(agent, function (err, info) {
         if (testCase.containerId) {
-          t.error(err, 'should not have failed')
-          t.same(info, { id: testCase.containerId }, 'should have expected container id')
+          assert.ok(!err, 'should not have failed')
+          assert.deepEqual(info, { id: testCase.containerId }, 'should have expected container id')
         } else {
-          t.notOk(info, 'should not have found container id')
+          assert.ok(!info, 'should not have found container id')
         }
 
         resolve()

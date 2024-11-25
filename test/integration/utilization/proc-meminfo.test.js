@@ -5,32 +5,25 @@
 
 'use strict'
 
-const test = require('tap').test
-const glob = require('glob')
+const test = require('node:test')
+const { tspl } = require('@matteo.collina/tspl')
 const fs = require('fs/promises')
 const parseProcMemInfo = require('../../../lib/parse-proc-meminfo')
-const path = require('path')
+const { getProcTests } = require('./common')
 
 test('pricing proc_meminfo', async function (t) {
-  const testDir = path.resolve(__dirname, '../../lib/cross_agent_tests/proc_meminfo')
-  const data = await new Promise((resolve, reject) => {
-    glob(path.join(testDir, '*.txt'), function (err, fileList) {
-      if (err) {
-        return reject(err)
-      }
-      return resolve(fileList)
-    })
-  })
-
-  t.ok(data.length > 0, 'should have tests to run')
+  const data = await getProcTests('proc_meminfo')
+  const plan = tspl(t, { plan: data.length + 1 })
+  plan.ok(data.length > 0, 'should have tests to run')
   for (const name of data) {
     const buffer = await fs.readFile(name)
     const file = buffer.toString()
     const expected = parseName(name)
     const info = parseProcMemInfo(file)
-    t.same(info, expected, 'should have expected info for ' + name)
+    plan.deepEqual(info, expected, 'should have expected info for ' + name)
   }
-  t.end()
+
+  await plan.completed
 
   function parseName(name) {
     const pattern = /^meminfo_(\d+)MB.txt$/
