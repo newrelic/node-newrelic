@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import tap from 'tap'
-import crypto from 'crypto'
-import path from 'path'
-import url from 'url'
+import test from 'node:test'
+import assert from 'node:assert'
+import crypto from 'node:crypto'
+import path from 'node:path'
+import url from 'node:url'
+
 import helper from '../../lib/agent_helper.js'
 import shimmer from '../../../lib/shimmer.js'
 import InstrumentationDescriptor from '../../../lib/instrumentation-descriptor.js'
@@ -35,7 +37,8 @@ function instrumentation(shim, resolvedModule) {
   })
 }
 
-tap.beforeEach(async (t) => {
+test.beforeEach(async (ctx) => {
+  ctx.nr = {}
   shimmer.registerInstrumentation({
     type: InstrumentationDescriptor.TYPE_GENERIC,
     moduleName: 'foo',
@@ -44,18 +47,18 @@ tap.beforeEach(async (t) => {
   })
 
   const agent = helper.instrumentMockedAgent()
-  t.context.agent = agent
+  ctx.nr.agent = agent
 
   const { default: foo } = await import('./foo.cjs?v=' + crypto.randomBytes(16).toString('hex'))
-  t.context.mod = foo
+  ctx.nr.mod = foo
 })
 
-tap.afterEach((t) => {
-  helper.unloadAgent(t.context.agent)
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
 })
 
-tap.test('CJS imported as ESM gets wrapped correctly', async (t) => {
-  const { mod } = t.context
+test('CJS imported as ESM gets wrapped correctly', async (t) => {
+  const { mod } = t.nr
   const instance = mod()
-  t.equal(instance.name(), 'wrapped: foo')
+  assert.equal(instance.name(), 'wrapped: foo')
 })
