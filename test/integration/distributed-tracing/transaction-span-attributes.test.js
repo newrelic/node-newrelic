@@ -5,18 +5,19 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 
 const helper = require('../../lib/agent_helper')
 
-tap.test('should apply transaction name as active span intrinsic on transaction end', (t) => {
+test('should apply transaction name as active span intrinsic on transaction end', (t, end) => {
   const agent = helper.instrumentMockedAgent({
     distributed_tracing: {
       enabled: true
     }
   })
 
-  t.teardown(() => {
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
@@ -40,9 +41,9 @@ tap.test('should apply transaction name as active span intrinsic on transaction 
 
       const [intrinsics] = serialized
 
-      t.equal(intrinsics['transaction.name'], transaction.name)
+      assert.equal(intrinsics['transaction.name'], transaction.name)
 
-      t.end()
+      end()
     }, 10)
   })
 })

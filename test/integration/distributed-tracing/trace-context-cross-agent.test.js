@@ -1,13 +1,16 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
-const tap = require('tap')
+
+const test = require('node:test')
+const assert = require('node:assert')
+
+const { TYPES } = require('../../../lib/transaction')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
-const TYPES = require('../../../lib/transaction').TYPES
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
 const recordSupportability = require('../../../lib/agent').prototype.recordSupportability
 
@@ -43,21 +46,10 @@ function hasNestedProperty(object, descendants) {
   return true
 }
 
-const testExpectedFixtureKeys = function (t, thingWithKeys, expectedKeys) {
-  let actualKeys = thingWithKeys
-  if (!Array.isArray(actualKeys)) {
-    actualKeys = Object.keys(thingWithKeys)
-  }
-  for (const [i] of actualKeys.entries()) {
-    const key = actualKeys[i]
-    t.ok(expectedKeys.indexOf(key) !== -1, 'key [' + key + '] should be expected?')
-  }
-}
-
-const testExact = function (t, object, fixture) {
+const testExact = function (object, fixture) {
   for (const [descendants, fixtureValue] of Object.entries(fixture)) {
     const valueToTest = getDescendantValue(object, descendants)
-    t.same(
+    assert.deepEqual(
       valueToTest,
       fixtureValue,
       `Expected ${descendants} to be ${fixtureValue} but got ${valueToTest}`
@@ -65,42 +57,42 @@ const testExact = function (t, object, fixture) {
   }
 }
 
-const testNotEqual = function (t, object, fixture) {
+const testExpected = function (object, fixture) {
+  for (const [key] of fixture.entries()) {
+    const fixtureValue = fixture[key]
+
+    const exists = hasNestedProperty(object, fixtureValue)
+    assert.ok(exists, 'is ' + fixtureValue + ' set?')
+  }
+}
+
+const testUnexpected = function (object, fixture) {
+  for (const [key] of fixture.entries()) {
+    const fixtureValue = fixture[key]
+
+    const exists = hasNestedProperty(object, fixtureValue)
+    assert.equal(exists, false, 'is ' + fixtureValue + ' absent?')
+  }
+}
+
+const testNotEqual = function (object, fixture) {
   for (const [descendants, fixtureValue] of Object.entries(fixture)) {
     const valueToTest = getDescendantValue(object, descendants)
-    t.ok(valueToTest !== fixtureValue, 'is ' + descendants + ' not equal?')
+    assert.ok(valueToTest !== fixtureValue, 'is ' + descendants + ' not equal?')
   }
 }
 
-const testUnexpected = function (t, object, fixture) {
-  for (const [key] of fixture.entries()) {
-    const fixtureValue = fixture[key]
-
-    const exists = hasNestedProperty(object, fixtureValue)
-    t.notOk(exists, 'is ' + fixtureValue + ' absent?')
-  }
+const testVendor = function (object, vendors) {
+  assert.deepStrictEqual(object.tracestate.vendors, vendors, 'do vendors match?')
 }
 
-const testExpected = function (t, object, fixture) {
-  for (const [key] of fixture.entries()) {
-    const fixtureValue = fixture[key]
-
-    const exists = hasNestedProperty(object, fixtureValue)
-    t.ok(exists, 'is ' + fixtureValue + ' set?')
-  }
-}
-
-const testVendor = function (t, object, vendors) {
-  t.same(object.tracestate.vendors, vendors, 'do vendors match?')
-}
-
-// tests a few of the helper functions we wrote for this test case
-tap.test('helper functions', function (t) {
+// Tests a few of the helper functions we wrote for this test suite.
+test('helper functions', () => {
   const objectExact = {
     foo: { bar: 'baz' },
     one: { two: 'three' }
   }
-  testExact(t, objectExact, { 'foo.bar': 'baz', 'one.two': 'three' })
+  testExact(objectExact, { 'foo.bar': 'baz', 'one.two': 'three' })
 
   const objectExpected = {
     foo: { bar: 'baz' },
@@ -108,7 +100,7 @@ tap.test('helper functions', function (t) {
     science: false,
     science2: NaN
   }
-  testExpected(t, objectExpected, ['foo.bar', 'one.two', 'science', 'science2'])
+  testExpected(objectExpected, ['foo.bar', 'one.two', 'science', 'science2'])
 
   const objectUnExpected = {
     foo: { bar: 'baz' },
@@ -116,17 +108,23 @@ tap.test('helper functions', function (t) {
     science: false,
     science2: NaN
   }
-  testUnexpected(t, objectUnExpected, ['apple', 'orange'])
+  testUnexpected(objectUnExpected, ['apple', 'orange'])
 
   const objectNotEqual = {
     foo: { bar: 'baz' },
     one: { two: 'three' }
   }
-  testNotEqual(t, objectNotEqual, { 'foo.bar': 'bazz', 'one.two': 'threee' })
-  t.end()
+  testNotEqual(objectNotEqual, { 'foo.bar': 'bazz', 'one.two': 'threee' })
 })
 
-const getEventsToCheck = function (eventType, agent) {
+test('distributed tracing trace context', async (t) => {
+  const testCases = require('../../lib/cross_agent_tests/distributed_tracing/trace_context.json')
+  for (const [i] of testCases.entries()) {
+    await runTestCase(testCases[i], t)
+  }
+})
+
+function getEventsToCheck(eventType, agent) {
   let toCheck
   switch (eventType) {
     case 'Transaction':
@@ -144,7 +142,7 @@ const getEventsToCheck = function (eventType, agent) {
   return toCheck
 }
 
-const getExactExpectedUnexpectedFromIntrinsics = function (testCase, eventType) {
+function getExactExpectedUnexpectedFromIntrinsics(testCase, eventType) {
   const common = testCase.intrinsics.common
   const specific = testCase.intrinsics[eventType] || {}
   const exact = Object.assign(specific.exact || {}, common.exact || {})
@@ -158,52 +156,73 @@ const getExactExpectedUnexpectedFromIntrinsics = function (testCase, eventType) 
   }
 }
 
-const testSingleEvent = function (t, event, eventType, fixture) {
+function testSingleEvent(event, eventType, fixture) {
   const { exact, expected, unexpected } = fixture
   const attributes = event[0]
 
-  t.ok(attributes, 'Should have attributes')
+  assert.ok(attributes, 'Should have attributes')
   const attributesHasOwnProperty = Object.hasOwnProperty.bind(attributes)
 
   expected.forEach((key) => {
     const hasAttribute = attributesHasOwnProperty(key)
-    t.ok(hasAttribute, `does ${eventType} have ${key}`)
+    assert.ok(hasAttribute, `does ${eventType} have ${key}`)
   })
 
   unexpected.forEach((key) => {
     const hasAttribute = attributesHasOwnProperty(key)
 
-    t.notOk(hasAttribute, `${eventType} should not have ${key}`)
+    assert.equal(hasAttribute, false, `${eventType} should not have ${key}`)
   })
 
   Object.keys(exact).forEach((key) => {
     const attributeValue = attributes[key]
     const expectedValue = exact[key]
 
-    t.equal(attributeValue, expectedValue, `${eventType} should have ${key}=${expectedValue}`)
+    assert.equal(attributeValue, expectedValue, `${eventType} should have ${key}=${expectedValue}`)
   })
 }
 
-const runTestCaseTargetEvents = function (t, testCase, agent) {
-  if (!testCase.intrinsics) {
+const testExpectedFixtureKeys = function (thingWithKeys, expectedKeys) {
+  let actualKeys = thingWithKeys
+  if (!Array.isArray(actualKeys)) {
+    actualKeys = Object.keys(thingWithKeys)
+  }
+  for (const [i] of actualKeys.entries()) {
+    const key = actualKeys[i]
+    assert.ok(expectedKeys.indexOf(key) !== -1, 'key [' + key + '] should be expected?')
+  }
+}
+
+function runTestCaseOutboundPayloads(testCase, context) {
+  if (!testCase.outbound_payloads) {
     return
   }
-  for (const [key] of testCase.intrinsics.target_events.entries()) {
-    const eventType = testCase.intrinsics.target_events[key]
-    const toCheck = getEventsToCheck(eventType, agent)
-    t.ok(toCheck.length > 0, 'do we have an event ( ' + eventType + ' ) to test?')
-    const fixture = getExactExpectedUnexpectedFromIntrinsics(testCase, eventType)
-
-    for (const [index] of toCheck.entries()) {
-      // Span events are not payload-formatted
-      // straight out of the aggregator.
-      const event = 'Span' === eventType ? toCheck[index].toJSON() : toCheck[index]
-      testSingleEvent(t, event, eventType, fixture)
+  for (const [key] of testCase.outbound_payloads.entries()) {
+    const testToRun = testCase.outbound_payloads[key]
+    for (const [assertType, fields] of Object.entries(testToRun)) {
+      switch (assertType) {
+        case 'exact':
+          testExact(context[key], fields)
+          break
+        case 'expected':
+          testExpected(context[key], fields)
+          break
+        case 'unexpected':
+          testUnexpected(context[key], fields)
+        case 'notequal':
+          testNotEqual(context[key], fields)
+          break
+        case 'vendors':
+          testVendor(context[key], fields)
+          break
+        default:
+          throw new Error("I don't know how to test a(n) " + assertType)
+      }
     }
   }
 }
 
-const runTestCaseMetrics = function (t, testCase, agent) {
+function runTestCaseMetrics(testCase, agent) {
   if (!testCase.expected_metrics) {
     return
   }
@@ -213,45 +232,35 @@ const runTestCaseMetrics = function (t, testCase, agent) {
     const metricName = metricPair[0]
     const callCount = metrics.getOrCreateMetric(metricName).callCount
     const metricCount = metricPair[1]
-    t.ok(callCount === metricCount, `${metricName} should have ${metricCount} samples`)
+    assert.ok(callCount === metricCount, `${metricName} should have ${metricCount} samples`)
   }
 }
 
-const runTestCaseOutboundPayloads = function (t, testCase, context) {
-  if (!testCase.outbound_payloads) {
+function runTestCaseTargetEvents(testCase, agent) {
+  if (!testCase.intrinsics) {
     return
   }
-  for (const [key] of testCase.outbound_payloads.entries()) {
-    const testToRun = testCase.outbound_payloads[key]
-    for (const [assertType, fields] of Object.entries(testToRun)) {
-      switch (assertType) {
-        case 'exact':
-          testExact(t, context[key], fields)
-          break
-        case 'expected':
-          testExpected(t, context[key], fields)
-          break
-        case 'unexpected':
-          testUnexpected(t, context[key], fields)
-        case 'notequal':
-          testNotEqual(t, context[key], fields)
-          break
-        case 'vendors':
-          testVendor(t, context[key], fields)
-          break
-        default:
-          throw new Error("I don't know how to test a(n) " + assertType)
-      }
+  for (const [key] of testCase.intrinsics.target_events.entries()) {
+    const eventType = testCase.intrinsics.target_events[key]
+    const toCheck = getEventsToCheck(eventType, agent)
+    assert.ok(toCheck.length > 0, 'do we have an event ( ' + eventType + ' ) to test?')
+    const fixture = getExactExpectedUnexpectedFromIntrinsics(testCase, eventType)
+
+    for (const [index] of toCheck.entries()) {
+      // Span events are not payload-formatted
+      // straight out of the aggregator.
+      const event = 'Span' === eventType ? toCheck[index].toJSON() : toCheck[index]
+      testSingleEvent(event, eventType, fixture)
     }
   }
 }
 
-const runTestCase = function (testCase, parentTest) {
+async function runTestCase(testCase, parentTest) {
   // validates the test case data has what we're looking for.  Good for
   // catching any changes to the test format over time, as well as becoming
   // familiar with what we need to do to implement a test runner
-  parentTest.test('validate test: ' + testCase.test_name, function (t) {
-    testExpectedFixtureKeys(t, testCase, [
+  await parentTest.test('validate test: ' + testCase.test_name, (t, end) => {
+    testExpectedFixtureKeys(testCase, [
       'account_id',
       'expected_metrics',
       'force_sampled_true',
@@ -271,7 +280,7 @@ const runTestCase = function (testCase, parentTest) {
     if (testCase.outbound_payloads) {
       for (const [i] of testCase.outbound_payloads.entries()) {
         const outboundPayload = testCase.outbound_payloads[i]
-        testExpectedFixtureKeys(t, outboundPayload, [
+        testExpectedFixtureKeys(outboundPayload, [
           'exact',
           'expected',
           'notequal',
@@ -283,7 +292,7 @@ const runTestCase = function (testCase, parentTest) {
 
     if (testCase.intrinsics) {
       // top level intrinsics keys
-      testExpectedFixtureKeys(t, testCase.intrinsics, [
+      testExpectedFixtureKeys(testCase.intrinsics, [
         'Transaction',
         'Span',
         'common',
@@ -291,11 +300,11 @@ const runTestCase = function (testCase, parentTest) {
         'TransactionError'
       ])
 
-      testExpectedFixtureKeys(t, testCase.intrinsics.common, ['exact', 'unexpected', 'expected'])
+      testExpectedFixtureKeys(testCase.intrinsics.common, ['exact', 'unexpected', 'expected'])
 
       // test there are no unexpected event types in there
       const expectedEvents = ['Span', 'Transaction', 'TransactionError']
-      testExpectedFixtureKeys(t, testCase.intrinsics.target_events, expectedEvents)
+      testExpectedFixtureKeys(testCase.intrinsics.target_events, expectedEvents)
 
       // test the top level keys of each event
       for (const [i] of testCase.intrinsics.target_events.entries()) {
@@ -306,19 +315,19 @@ const runTestCase = function (testCase, parentTest) {
         if (!eventTestConfig) {
           continue
         }
-        testExpectedFixtureKeys(t, eventTestConfig, ['exact', 'unexpected', 'expected'])
+        testExpectedFixtureKeys(eventTestConfig, ['exact', 'unexpected', 'expected'])
       }
     }
-    t.end()
+    end()
   })
 
-  parentTest.test('trace context: ' + testCase.test_name, function (t) {
+  await parentTest.test('trace context: ' + testCase.test_name, (t, end) => {
     if (testCase.comment && testCase.comment.length > 0) {
       const comment = Array.isArray(testCase.comment)
         ? testCase.comment.join('\n')
         : testCase.comment
 
-      t.comment(comment)
+      t.diagnostic(comment)
     }
 
     const agent = helper.instrumentMockedAgent({})
@@ -329,6 +338,7 @@ const runTestCase = function (testCase, parentTest) {
     agent.config.span_events.enabled = testCase.span_events_enabled
     agent.config.transaction_events.enabled = testCase.transaction_events_enabled
     agent.config.distributed_tracing.enabled = true
+    t.after(() => helper.unloadAgent(agent))
 
     const agentApi = new API(agent)
 
@@ -474,23 +484,14 @@ const runTestCase = function (testCase, parentTest) {
           payloadTest.exact['newrelic.d.pr'] = 1.1234321
         }
 
-        runTestCaseOutboundPayloads(t, testCase, insertedTraceContextTraces)
-        runTestCaseTargetEvents(t, testCase, agent)
-        runTestCaseMetrics(t, testCase, agent)
+        runTestCaseOutboundPayloads(testCase, insertedTraceContextTraces)
+        runTestCaseTargetEvents(testCase, agent)
+        runTestCaseMetrics(testCase, agent)
       }
 
-      t.ok(transaction, 'we have a transaction')
+      assert.ok(transaction, 'we have a transaction')
     })
 
-    t.end()
-    helper.unloadAgent(agent)
+    end()
   })
 }
-
-tap.test('distributed tracing trace context', (t) => {
-  const testCases = require('../../lib/cross_agent_tests/distributed_tracing/trace_context.json')
-  for (const [i] of testCases.entries()) {
-    runTestCase(testCases[i], t)
-  }
-  t.end()
-})

@@ -5,10 +5,13 @@
 
 'use strict'
 
+const test = require('node:test')
+const assert = require('node:assert')
+const url = require('node:url')
+const tspl = require('@matteo.collina/tspl')
+
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
-const tap = require('tap')
-const url = require('url')
 
 const ACCOUNT_ID = '1337'
 const APP_ID = '7331'
@@ -18,8 +21,9 @@ const symbols = require('../../../lib/symbols')
 
 let compareSampled = null
 
-tap.test('distributed tracing full integration', (t) => {
-  t.plan(79)
+test('distributed tracing full integration', async (t) => {
+  const plan = tspl(t, { plan: 79 })
+
   const config = {
     distributed_tracing: {
       enabled: true
@@ -31,10 +35,6 @@ tap.test('distributed tracing full integration', (t) => {
   agent.config.primary_application_id = APP_ID
   agent.config.account_id = ACCOUNT_ID
   agent.config.trusted_account_key = ACCOUNT_ID
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-  })
 
   // require http after creating the agent
   const http = require('http')
@@ -74,7 +74,7 @@ tap.test('distributed tracing full integration', (t) => {
   const START_PORT = start.address().port
 
   const middle = generateServer(http, api, started, (req, res) => {
-    t.ok(req.headers.newrelic, 'middle received newrelic from start')
+    plan.ok(req.headers.newrelic, 'middle received newrelic from start')
 
     const tx = agent.tracer.getTransaction()
     tx.nameState.appendPath('foobar')
@@ -91,13 +91,14 @@ tap.test('distributed tracing full integration', (t) => {
   MIDDLE_PORT = middle.address().port
 
   const end = generateServer(http, api, started, (req, res) => {
-    t.ok(req.headers.newrelic, 'end received newrelic from middle')
+    plan.ok(req.headers.newrelic, 'end received newrelic from middle')
     res.end()
   })
 
   END_PORT = end.address().port
 
-  t.teardown(() => {
+  t.after(() => {
+    helper.unloadAgent(agent)
     start.close()
     middle.close()
     end.close()
@@ -110,24 +111,24 @@ tap.test('distributed tracing full integration', (t) => {
 
       EXPECTED_DT_METRICS.forEach((name) => {
         const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/HTTP/all`
-        t.ok(unscoped[metric], `end generated a ${name} metric`)
-        t.ok(unscoped[`${metric}Web`], `end generated a ${name} (Web) metric`)
+        plan.ok(unscoped[metric], `end generated a ${name} metric`)
+        plan.ok(unscoped[`${metric}Web`], `end generated a ${name} (Web) metric`)
       })
 
-      t.equal(Object.keys(unscoped).length, 11, 'end should only have expected unscoped metrics')
-      t.equal(Object.keys(trans.metrics.scoped).length, 0, 'should have no scoped metrics')
+      plan.equal(Object.keys(unscoped).length, 11, 'end should only have expected unscoped metrics')
+      plan.equal(Object.keys(trans.metrics.scoped).length, 0, 'should have no scoped metrics')
       // check the intrinsic attributes
-      validateIntrinsics(t, trans.trace.intrinsics, 'end', 'trace')
+      validateIntrinsics(plan, trans.trace.intrinsics, 'end', 'trace')
 
       // check the insights event
       const intrinsic = event[0]
 
-      compareSampled = currySampled(t, {
+      compareSampled = currySampled(plan, {
         sampled: intrinsic.sampled,
         priority: intrinsic.priority
       })
 
-      validateIntrinsics(t, intrinsic, 'end', 'event', secondExternalId)
+      validateIntrinsics(plan, intrinsic, 'end', 'event', secondExternalId)
     },
     function middleTest(trans, event) {
       // check the unscoped metrics
@@ -135,32 +136,36 @@ tap.test('distributed tracing full integration', (t) => {
 
       EXPECTED_DT_METRICS.forEach((name) => {
         const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/HTTP/all`
-        t.ok(unscoped[metric], `middle generated a ${name} metric`)
-        t.ok(unscoped[`${metric}Web`], `middle generated a ${name} (Web) metric`)
+        plan.ok(unscoped[metric], `middle generated a ${name} metric`)
+        plan.ok(unscoped[`${metric}Web`], `middle generated a ${name} (Web) metric`)
       })
 
       const external = `External/localhost:${END_PORT}/`
       EXTERNAL_METRIC_SUFFIXES.forEach((suf) => {
-        t.ok(unscoped[external + suf], `middle generated expected External metric (/${suf})`)
+        plan.ok(unscoped[external + suf], `middle generated expected External metric (/${suf})`)
       })
 
-      t.equal(Object.keys(unscoped).length, 15, 'middle should only have expected unscoped metrics')
+      plan.equal(
+        Object.keys(unscoped).length,
+        15,
+        'middle should only have expected unscoped metrics'
+      )
 
       // check the scoped metrics
       const scoped = trans.metrics.scoped
       const middleMetric = scoped['WebTransaction/Nodejs/GET//start/middle']
-      t.ok(middleMetric, 'middle generated a scoped metric block')
-      t.ok(middleMetric[external + 'http'], 'middle generated an External scoped metric')
+      plan.ok(middleMetric, 'middle generated a scoped metric block')
+      plan.ok(middleMetric[external + 'http'], 'middle generated an External scoped metric')
       const scopedKeys = Object.keys(middleMetric)
-      t.equal(scopedKeys.length, 1, 'middle should only be the inbound and outbound request.')
-      t.same(
+      plan.equal(scopedKeys.length, 1, 'middle should only be the inbound and outbound request.')
+      plan.deepStrictEqual(
         scopedKeys,
         [`External/localhost:${END_PORT}/http`],
         'should have expected scoped metric name'
       )
 
       // check the intrinsic attributes
-      validateIntrinsics(t, trans.trace.intrinsics, 'middle', 'trace')
+      validateIntrinsics(plan, trans.trace.intrinsics, 'middle', 'trace')
 
       // check the insights event
       const intrinsic = event[0]
@@ -170,36 +175,40 @@ tap.test('distributed tracing full integration', (t) => {
         priority: intrinsic.priority
       })
 
-      validateIntrinsics(t, intrinsic, 'middle', 'event', firstExternalId)
+      validateIntrinsics(plan, intrinsic, 'middle', 'event', firstExternalId)
     },
     function startTest(trans, event) {
       // check the unscoped metrics
       const unscoped = trans.metrics.unscoped
 
       const metric = 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all'
-      t.ok(unscoped[metric], 'start has expected DT unscoped metric')
+      plan.ok(unscoped[metric], 'start has expected DT unscoped metric')
 
       const external = `External/localhost:${MIDDLE_PORT}/`
       EXTERNAL_METRIC_SUFFIXES.forEach((suf) => {
-        t.ok(unscoped[external + suf], `start generated expected External metric (/${suf})`)
+        plan.ok(unscoped[external + suf], `start generated expected External metric (/${suf})`)
       })
 
-      t.equal(Object.keys(unscoped).length, 13, 'start should only have expected unscoped metrics')
+      plan.equal(
+        Object.keys(unscoped).length,
+        13,
+        'start should only have expected unscoped metrics'
+      )
       // check the scoped metrics
       const scoped = trans.metrics.scoped
       const startMetric = scoped['WebTransaction/Nodejs/GET//start']
-      t.ok(startMetric, 'start generated a scoped metric block')
-      t.ok(startMetric[external + 'http'], 'start generated an External scoped metric')
+      plan.ok(startMetric, 'start generated a scoped metric block')
+      plan.ok(startMetric[external + 'http'], 'start generated an External scoped metric')
       const scopedKeys = Object.keys(startMetric)
-      t.equal(scopedKeys.length, 1, 'start should only be the inbound and outbound request.')
-      t.same(
+      plan.equal(scopedKeys.length, 1, 'start should only be the inbound and outbound request.')
+      plan.deepStrictEqual(
         scopedKeys,
         [`External/localhost:${MIDDLE_PORT}/http`],
         'should have expected scoped metric name'
       )
 
       // check the intrinsic attributes
-      validateIntrinsics(t, trans.trace.intrinsics, 'start', 'trace')
+      validateIntrinsics(plan, trans.trace.intrinsics, 'start', 'trace')
 
       // check the insights event
       const intrinsic = event[0]
@@ -209,11 +218,12 @@ tap.test('distributed tracing full integration', (t) => {
         priority: intrinsic.priority
       })
 
-      validateIntrinsics(t, intrinsic, 'start', 'event')
-
-      t.end()
+      validateIntrinsics(plan, intrinsic, 'start', 'event')
     }
   ]
+
+  await plan.completed
+
   function runTest() {
     http.get(generateUrl(START_PORT, 'start'), (res) => {
       res.resume()
@@ -230,7 +240,9 @@ tap.test('distributed tracing full integration', (t) => {
       })[0]
       testsToCheck.push(transInspector[txCount].bind(this, trans, event))
       if (++txCount === 3) {
-        testsToCheck.forEach((test) => test())
+        for (const testToCheck of testsToCheck) {
+          testToCheck()
+        }
       }
     })
   }
@@ -245,22 +257,12 @@ const createResponse = (req, res, body, bodyProperty) => {
   res.end()
 }
 
-tap.test('distributed tracing', (t) => {
-  let agent = null
-  let start = null
-  let middle = null
-  let end = null
-  let START_PORT
-  let MIDDLE_PORT
-  let END_PORT
-
-  t.autoend()
-
+test('distributed tracing', async (t) => {
   // simulation of the callback used by the async library, used by generateServer and close
   const cb = () => new Promise((resolve) => resolve())
 
-  t.beforeEach(async () => {
-    agent = helper.instrumentMockedAgent({
+  t.beforeEach(async (ctx) => {
+    const agent = helper.instrumentMockedAgent({
       distributed_tracing: { enabled: true },
       cross_application_tracer: { enabled: true }
     })
@@ -282,59 +284,65 @@ tap.test('distributed tracing', (t) => {
       })
     }
 
-    start = generateServer(http, api, cb, (req, res) => {
-      return getNextUrl('start/middle', 'start', MIDDLE_PORT, req, res)
-    })
-
-    START_PORT = start.address().port
-    middle = generateServer(http, api, cb, (req, res) => {
-      return getNextUrl('middle/end', 'middle', END_PORT, req, res)
-    })
-    MIDDLE_PORT = middle.address().port
-    end = generateServer(http, api, cb, (req, res) => {
+    const end = generateServer(http, api, cb, (req, res) => {
       return createResponse(req, res, {}, 'end')
     })
-    END_PORT = end.address().port
+    const END_PORT = end.address().port
+    const middle = generateServer(http, api, cb, (req, res) => {
+      return getNextUrl('middle/end', 'middle', END_PORT, req, res)
+    })
+    const MIDDLE_PORT = middle.address().port
+    const start = generateServer(http, api, cb, (req, res) => {
+      return getNextUrl('start/middle', 'start', MIDDLE_PORT, req, res)
+    })
+    const START_PORT = start.address().port
+
+    ctx.nr = { agent, start, START_PORT, middle, MIDDLE_PORT, end, END_PORT }
   })
 
-  t.afterEach(async () => {
-    helper.unloadAgent(agent)
-    await Promise.all([start.close(cb), middle.close(cb), end.close(cb)])
+  t.afterEach(async (ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    await Promise.all([ctx.nr.start.close(cb), ctx.nr.middle.close(cb), ctx.nr.end.close(cb)])
   })
 
-  t.test('should create tracing headers at each step', (t) => {
+  await t.test('should create tracing headers at each step', (t, end) => {
+    const { agent, START_PORT } = t.nr
     helper.runInTransaction(agent, (tx) => {
       get(generateUrl(START_PORT, 'start'), (err, { body }) => {
-        t.error(err)
+        assert.ifError(err)
 
-        t.ok(body.start.newrelic, 'should have DT headers from the start')
-        t.ok(body.middle.newrelic, 'should continue trace to through next state')
-        t.ok(tx.isDistributedTrace, 'should mark transaction as distributed')
+        assert.ok(body.start.newrelic, 'should have DT headers from the start')
+        assert.ok(body.middle.newrelic, 'should continue trace to through next state')
+        assert.ok(tx.isDistributedTrace, 'should mark transaction as distributed')
 
-        t.end()
+        end()
       })
     })
   })
 
-  const headerValues = [symbols.disableDT, 'x-new-relic-disable-dt']
-  headerValues.forEach((header) => {
-    t.test(`should be disabled by ${header.toString()}`, (t) => {
+  for (const header of [symbols.disableDT, 'x-new-relic-disable-dt']) {
+    await t.test(`should be disabled by ${header.toString()}`, (t, end) => {
+      const { agent, START_PORT } = t.nr
       helper.runInTransaction(agent, (tx) => {
         const OLD_HEADER = 'x-newrelic-transaction'
         const headers = { [header]: 'true' }
         get(generateUrl(START_PORT, 'start'), { headers }, (err, { body }) => {
-          t.error(err)
-          t.notOk(body.start.newrelic, 'should not add DT header when disabled')
-          t.notOk(body.start[OLD_HEADER], 'should not add old CAT header either')
-          t.ok(body.middle.newrelic, 'should not stop down-stream DT from working')
+          assert.ifError(err)
+          assert.equal(body.start.newrelic, undefined, 'should not add DT header when disabled')
+          assert.equal(body.start[OLD_HEADER], undefined, 'should not add old CAT header either')
+          assert.ok(body.middle.newrelic, undefined, 'should not stop down-stream DT from working')
 
-          t.notOk(tx.isDistributedTrace, 'should not mark transaction as distributed')
+          assert.equal(
+            tx.isDistributedTrace,
+            undefined,
+            'should not mark transaction as distributed'
+          )
 
-          t.end()
+          end()
         })
       })
     })
-  })
+  }
 })
 
 function generateServer(http, api, started, responseHandler) {
@@ -352,10 +360,10 @@ function generateUrl(port, endpoint) {
   return 'http://localhost:' + port + '/' + endpoint
 }
 
-function currySampled(t, a) {
+function currySampled(plan, a) {
   return (b) => {
     b = b || a
-    t.ok(
+    plan.ok(
       a.sampled === b.sampled && a.priority === b.priority,
       'sampled values and priority persist across transactions'
     )
@@ -364,36 +372,36 @@ function currySampled(t, a) {
   }
 }
 
-function validateIntrinsics(t, intrinsic, reqName, type, parentSpanId) {
+function validateIntrinsics(plan, intrinsic, reqName, type, parentSpanId) {
   reqName = reqName || 'start'
   type = type || 'event'
 
-  t.ok(intrinsic.guid, `${reqName} should have a guid on ${type}`)
-  t.ok(intrinsic.traceId, `${reqName} should have a traceId on ${type}`)
-  t.ok(intrinsic.sampled != null, `${reqName} should have a sampled boolean on ${type}`)
-  t.ok(intrinsic.priority, `${reqName} should have a priority on ${type}`)
+  plan.ok(intrinsic.guid, `${reqName} should have a guid on ${type}`)
+  plan.ok(intrinsic.traceId, `${reqName} should have a traceId on ${type}`)
+  plan.ok(intrinsic.sampled != null, `${reqName} should have a sampled boolean on ${type}`)
+  plan.ok(intrinsic.priority, `${reqName} should have a priority on ${type}`)
 
   if (reqName === 'start') {
-    t.notOk(intrinsic.parentId, `${reqName} should not have a parentId on ${type}`)
+    plan.equal(intrinsic.parentId, undefined, `${reqName} should not have a parentId on ${type}`)
     return
   }
 
   if (type !== 'trace') {
-    t.ok(intrinsic.parentId, `${reqName} should have a parentId on ${type}`)
-    t.equal(
+    plan.ok(intrinsic.parentId, `${reqName} should have a parentId on ${type}`)
+    plan.equal(
       intrinsic.parentSpanId,
       parentSpanId,
       `${reqName} should have a parentSpanId of ${parentSpanId} on ${type}`
     )
   }
-  t.ok(intrinsic['parent.app'], `${reqName} should have a parent app on ${type}`)
-  t.ok(intrinsic['parent.type'], `${reqName} should have a parent type on ${type}`)
-  t.ok(intrinsic['parent.account'], `${reqName} should have a parent account on ${type}`)
-  t.ok(
+  plan.ok(intrinsic['parent.app'], `${reqName} should have a parent app on ${type}`)
+  plan.ok(intrinsic['parent.type'], `${reqName} should have a parent type on ${type}`)
+  plan.ok(intrinsic['parent.account'], `${reqName} should have a parent account on ${type}`)
+  plan.ok(
     intrinsic['parent.transportType'],
     `${reqName} should have a parent transportType on ${type}`
   )
-  t.ok(
+  plan.ok(
     intrinsic['parent.transportDuration'],
     `${reqName} should have a parent transportDuration on ${type}`
   )
