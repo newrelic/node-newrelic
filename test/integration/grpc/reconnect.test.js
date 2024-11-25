@@ -4,7 +4,9 @@
  */
 
 'use strict'
-const tap = require('tap')
+
+const test = require('node:test')
+const tspl = require('@matteo.collina/tspl')
 
 const GrpcConnection = require('../../../lib/grpc/connection')
 const grpc = require('../../../lib/proxy/grpc')
@@ -24,13 +26,13 @@ const helper = require('../../lib/agent_helper')
 // own certificate.
 const cert = fakeCert({ commonName: 'localhost' })
 
-tap.test('test that connection class reconnects', async (t) => {
+test('test that connection class reconnects', async (t) => {
   // one assert for the initial connection
   // a second assert for the disconnect
   // a third assert for the reconnection
   // a fourth assert for the disconnect
   // a fifth assert for server connection count
-  t.plan(5)
+  const plan = tspl(t, { plan: 5 })
 
   let serverConnections = 0
 
@@ -52,13 +54,14 @@ tap.test('test that connection class reconnects', async (t) => {
   }
 
   const sslOpts = await setupSsl()
-  const port = await setupServer(t, sslOpts, recordSpan)
+  const { port, server } = await setupServer(t, sslOpts, recordSpan)
 
   // Currently test-only configuration
   const origEnv = process.env.NEWRELIC_GRPCCONNECTION_CA
   process.env.NEWRELIC_GRPCCONNECTION_CA = cert.certificate
-  t.teardown(() => {
+  t.after(() => {
     process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
+    server.tryShutdown(() => {})
   })
 
   return new Promise((resolve) => {
@@ -78,7 +81,7 @@ tap.test('test that connection class reconnects', async (t) => {
     let countDisconnects = 0
 
     connection.on('connected', (callStream) => {
-      t.equal(
+      plan.equal(
         callStream.constructor.name,
         'ClientDuplexStreamImpl',
         'connected and received ClientDuplexStreamImpl'
@@ -87,7 +90,7 @@ tap.test('test that connection class reconnects', async (t) => {
 
     connection.on('disconnected', () => {
       countDisconnects++
-      t.ok(true, 'disconnected')
+      plan.ok(true, 'disconnected')
 
       // if we've disconnected twice, the test is done
       // mark the state as permanantly closed in order to
@@ -96,7 +99,7 @@ tap.test('test that connection class reconnects', async (t) => {
       if (countDisconnects > 1) {
         connection._state = 3 // replace with actual fake enum
 
-        t.equal(serverConnections, 2)
+        plan.equal(serverConnections, 2)
         // Ends the test
         resolve()
       }
@@ -111,13 +114,13 @@ tap.test('test that connection class reconnects', async (t) => {
  * data event, the status event never fires thus preventing reconnects. This results in
  * us being pinned to a bad stream and throwing 'ERR_STREAM_WRITE_AFTER_END' errors.
  */
-tap.test('Should reconnect even when data sent back', async (t) => {
+test('Should reconnect even when data sent back', async (t) => {
   // one assert for the initial connection
   // a second assert for the disconnect
   // a third assert for the reconnection
   // a fourth assert for the disconnect
   // a fifth assert for server connection count
-  t.plan(5)
+  const plan = tspl(t, { plan: 5 })
 
   let serverConnections = 0
 
@@ -135,13 +138,14 @@ tap.test('Should reconnect even when data sent back', async (t) => {
   }
 
   const sslOpts = await setupSsl()
-  const port = await setupServer(t, sslOpts, recordSpan)
+  const { port, server } = await setupServer(t, sslOpts, recordSpan)
 
   // Currently test-only configuration
   const origEnv = process.env.NEWRELIC_GRPCCONNECTION_CA
   process.env.NEWRELIC_GRPCCONNECTION_CA = cert.certificate
-  t.teardown(() => {
+  t.after(() => {
     process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
+    server.tryShutdown(() => {})
   })
 
   return new Promise((resolve) => {
@@ -161,7 +165,7 @@ tap.test('Should reconnect even when data sent back', async (t) => {
     let countDisconnects = 0
 
     connection.on('connected', (callStream) => {
-      t.equal(
+      plan.equal(
         callStream.constructor.name,
         'ClientDuplexStreamImpl',
         'connected and received ClientDuplexStreamImpl'
@@ -172,7 +176,7 @@ tap.test('Should reconnect even when data sent back', async (t) => {
 
     connection.on('disconnected', () => {
       countDisconnects++
-      t.ok(true, 'disconnected')
+      plan.ok(true, 'disconnected')
 
       // if we've disconnected twice, the test is done
       // mark the state as permanantly closed in order to
@@ -181,7 +185,7 @@ tap.test('Should reconnect even when data sent back', async (t) => {
       if (countDisconnects > 1) {
         connection._state = 3 // replace with actual fake enum
 
-        t.equal(serverConnections, 2)
+        plan.equal(serverConnections, 2)
         // Ends the test
         resolve()
       }
@@ -223,11 +227,7 @@ function setupServer(t, sslOpts, recordSpan) {
         if (err) {
           reject(err)
         }
-        resolve(port)
-        // shutdown server when tests finish
-        t.teardown(() => {
-          server.tryShutdown(() => {})
-        })
+        resolve({ port, server })
       }
     )
   })
