@@ -6,14 +6,15 @@
 'use strict'
 
 const test = require('node:test')
+const path = require('node:path')
+const fs = require('node:fs')
+const os = require('node:os')
+const crypto = require('node:crypto')
 const { tspl } = require('@matteo.collina/tspl')
-const path = require('path')
-const fs = require('fs')
-const os = require('os')
+
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify')
 const NAMES = require('../../../lib/metrics/names')
-const crypto = require('crypto')
 
 const isGlobSupported = require('semver').satisfies(process.version, '>=22.0.0')
 const tempDir = path.join(os.tmpdir(), crypto.randomUUID())
@@ -632,14 +633,22 @@ test('utimes', async function (t) {
   const name = path.join(tempDir, 'utimes-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
-  const accessed = new Date(5)
-  const modified = new Date(15)
+  const accessed = new Date('2024-11-25T08:00:00.000-05:00')
+  const modified = new Date('2024-11-25T08:01:00.000-05:00')
+
+  t.after(async () => await fs.promises.unlink(name))
 
   helper.runInTransaction(agent, function (trans) {
     fs.utimes(name, accessed, modified, function (err) {
       plan.ok(!err, 'should not error')
       const stats = fs.statSync(name)
-      plan.equal(stats.atime.toISOString(), accessed.toISOString())
+
+      if (process.platform !== 'darwin') {
+        plan.equal(stats.atime.toISOString(), accessed.toISOString())
+      } else {
+        plan.ok('skipping access time check on macOS')
+      }
+
       plan.equal(stats.mtime.toISOString(), modified.toISOString())
       verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'utimes' })
 
@@ -661,14 +670,22 @@ test('futimes', async function (t) {
   const content = 'some-content'
   fs.writeFileSync(name, content)
   const fd = fs.openSync(name, 'r+')
-  const accessed = new Date(5)
-  const modified = new Date(15)
+  const accessed = new Date('2024-11-25T08:00:00.000-05:00')
+  const modified = new Date('2024-11-25T08:01:00.000-05:00')
+
+  t.after(async () => await fs.promises.unlink(name))
 
   helper.runInTransaction(agent, function (trans) {
     fs.futimes(fd, accessed, modified, function (err) {
       plan.ok(!err, 'should not error')
       const stats = fs.statSync(name)
-      plan.equal(stats.atime.toISOString(), accessed.toISOString())
+
+      if (process.platform !== 'darwin') {
+        plan.equal(stats.atime.toISOString(), accessed.toISOString())
+      } else {
+        plan.ok('skipping access time check on macOS')
+      }
+
       plan.equal(stats.mtime.toISOString(), modified.toISOString())
       verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'futimes' })
 
