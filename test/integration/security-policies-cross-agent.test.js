@@ -4,17 +4,14 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+const { nockRequest } = require('./response-handling-utils')
 const nock = require('nock')
-
 const helper = require('../lib/agent_helper')
 const testCases = require('../lib/cross_agent_tests/language_agents_security_policies.json')
-
-const LASP_MAP = require('../../lib/config/lasp').LASP_MAP
-
+const { LASP_MAP } = require('../../lib/config/lasp')
 const TEST_DOMAIN = 'test-collector.newrelic.com'
-const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`
 const RUN_ID = 'runId'
 
 const DEFAULT_CONFIG = {
@@ -45,99 +42,86 @@ function getPreconnectReply(securityPolicies) {
 
 const CONNECT_REPLY = { return_value: { agent_run_id: RUN_ID } }
 
-tap.test('LASP/CSP - Cross Agent Tests', (t) => {
-  t.plan(testCases.length)
+function beforeTest(t, testCase) {
+  const initialConfig = createTestConfiguration(testCase)
+  const agent = helper.loadMockedAgent(initialConfig)
+  nock.disableNetConnect()
 
-  let agent = null
-  let preconnect = null
-  let connect = null
-  let connectBody = null
+  const preconnectReply = getPreconnectReply(testCase.security_policies)
+  const preconnect = nockRequest('preconnect').reply(200, preconnectReply)
 
-  function beforeTest(t, testCase) {
-    const initialConfig = createTestConfiguration(t, testCase)
-    agent = helper.loadMockedAgent(initialConfig)
-
-    nock.disableNetConnect()
-
-    const preconnectReply = getPreconnectReply(testCase.security_policies)
-    preconnect = nockRequest('preconnect').reply(200, preconnectReply)
-
-    if (!testCase.should_shutdown) {
-      connect = nockRequest('connect', (body) => {
-        connectBody = body
-        // just take the failure via test framework instead of blowing up connection
-        return true
-      }).reply(200, CONNECT_REPLY)
-    }
+  let connect
+  if (!testCase.should_shutdown) {
+    connect = nockRequest('connect', null, (body) => {
+      t.nr.connectBody = body
+      // just take the failure via test framework instead of blowing up connection
+      return true
+    }).reply(200, CONNECT_REPLY)
   }
+  t.nr = {
+    agent,
+    connect,
+    preconnect
+  }
+}
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
-    preconnect = null
-    connect = null
-    connectBody = null
+test('LASP/CSP - Cross Agent Tests', async (t) => {
+  for (const testCase of testCases) {
+    const isUnsupported = hasRequiredFeatures(testCase.required_features)
+    const options = { skip: isUnsupported }
 
-    if (!nock.isDone()) {
-      // eslint-disable-next-line no-console
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-  })
-
-  testCases.forEach((testCase) => {
-    const hasFeatures = hasRequiredFeatures(t, testCase.required_features)
-    if (!hasFeatures) {
-      t.comment('Agent does not support all required features for test, skipping.')
-    }
-
-    const options = {
-      skip: !hasFeatures
-    }
-
-    t.test(testCase.name, options, (t) => {
+    await t.test(testCase.name, options, (t, end) => {
       beforeTest(t, testCase)
-
-      agent.start((error) => {
-        t.ok(preconnect.isDone())
-
-        if (!testCase.should_shutdown) {
-          t.ok(connect.isDone())
-
-          const connectData = connectBody[0]
-          verifyConnectData(t, testCase, connectData)
+      const { agent, connect, preconnect } = t.nr
+      t.after(() => {
+        helper.unloadAgent(agent)
+        if (!nock.isDone()) {
+          // eslint-disable-next-line no-console
+          console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+          nock.cleanAll()
         }
 
-        verifyEndingConfigPolicySettings(t, testCase, agent.config)
+        nock.enableNetConnect()
+      })
 
-        verifyAgentBehavior(t, testCase, agent, error)
+      agent.start((error) => {
+        assert.ok(preconnect.isDone())
+
+        if (!testCase.should_shutdown) {
+          assert.ok(connect.isDone())
+
+          const connectData = t.nr.connectBody[0]
+          verifyConnectData(testCase, connectData)
+        }
+
+        verifyEndingConfigPolicySettings(testCase, agent.config)
+
+        verifyAgentBehavior(testCase, agent, error)
 
         // These tests do not verify logging.
-        t.end()
+        end()
       })
     })
-  })
+  }
 })
 
-function verifyConnectData(t, testCase, connectData) {
-  t.ok(connectData.security_policies)
+function verifyConnectData(testCase, connectData) {
+  assert.ok(connectData.security_policies)
 
   for (const [policyName, expectedPolicy] of Object.entries(testCase.expected_connect_policies)) {
     const actualPolicy = connectData.security_policies[policyName]
 
-    t.ok(actualPolicy)
-    t.equal(actualPolicy.enabled, expectedPolicy.enabled)
+    assert.ok(actualPolicy)
+    assert.equal(actualPolicy.enabled, expectedPolicy.enabled)
   }
 
   for (const [, policyName] of testCase.validate_policies_not_in_connect.entries()) {
     const hasProperty = Object.hasOwnProperty.call(connectData.security_policies, policyName)
-    t.notOk(hasProperty)
+    assert.ok(!hasProperty)
   }
 }
 
-function verifyEndingConfigPolicySettings(t, testCase, config) {
+function verifyEndingConfigPolicySettings(testCase, config) {
   for (const [policyName, policyValue] of Object.entries(testCase.ending_policy_settings)) {
     const matchingConfigPath = LASP_MAP[policyName].path
 
@@ -157,19 +141,19 @@ function verifyEndingConfigPolicySettings(t, testCase, config) {
     const actual = allowedIndex >= 0 ? Boolean(allowedIndex) : value
     const expected = policyValue.enabled
 
-    t.equal(actual, expected)
+    assert.equal(actual, expected)
   }
 }
 
-function verifyAgentBehavior(t, testCase, agent, error) {
+function verifyAgentBehavior(testCase, agent, error) {
   if (testCase.should_shutdown) {
-    t.ok(error)
+    assert.ok(error)
     const shutdownStates = ['stopped', 'disconnected', 'disconnecting', 'stopping', 'errored']
     const isShutdownState = shutdownStates.indexOf(agent._state) >= 0
-    t.ok(isShutdownState)
+    assert.ok(isShutdownState)
   } else {
-    t.error(error)
-    t.equal(agent._state, 'started')
+    assert.ok(!error)
+    assert.equal(agent._state, 'started')
   }
 }
 
@@ -194,7 +178,7 @@ function initConfigurationItem(config, path, value) {
   })
 }
 
-function createTestConfiguration(t, testCase) {
+function createTestConfiguration(testCase) {
   const initialPolicies = testCase.starting_policy_settings
   const initialConfig = Object.assign({}, DEFAULT_CONFIG)
 
@@ -204,33 +188,17 @@ function createTestConfiguration(t, testCase) {
 
     const settingValue = policyMappings.allowedValues[policyValue.enabled ? 1 : 0]
 
-    t.comment(
-      `${policyName}.enabled: ${policyValue.enabled} ` + `-> ${matchingConfigPath}: ${settingValue}`
-    )
-
     initConfigurationItem(initialConfig, matchingConfigPath, settingValue)
   }
 
   return initialConfig
 }
 
-function hasRequiredFeatures(t, requiredFeatures) {
+function hasRequiredFeatures(requiredFeatures) {
   const unsupportedFeatures = requiredFeatures.filter((featureName) => {
     const mapping = LASP_MAP[featureName]
     return mapping == null
   })
 
-  if (unsupportedFeatures.length > 0) {
-    const featureList = unsupportedFeatures.join(', ')
-    t.comment(`Missing features: ${featureList}`)
-
-    return false
-  }
-
-  return true
-}
-
-function nockRequest(endpointMethod, bodyMatcher) {
-  const relativepath = helper.generateCollectorPath(endpointMethod)
-  return nock(TEST_COLLECTOR_URL).post(relativepath, bodyMatcher)
+  return unsupportedFeatures.length > 0
 }
