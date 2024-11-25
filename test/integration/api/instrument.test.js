@@ -4,7 +4,8 @@
  */
 
 'use strict'
-const { test } = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
 const symbols = require('../../../lib/symbols')
@@ -12,23 +13,24 @@ const sinon = require('sinon')
 const moduleName = 'TestMod'
 const modulePath = './node_modules/TestMod'
 
-test('instrument', (t) => {
-  t.autoend()
-  let agent
-  let api
-
-  t.beforeEach(() => {
-    agent = agentHelper.instrumentMockedAgent()
-    api = new API(agent)
+test('instrument', async (t) => {
+  t.beforeEach((ctx) => {
+    const agent = agentHelper.instrumentMockedAgent()
+    const api = new API(agent)
+    ctx.nr = {
+      agent,
+      api
+    }
   })
 
-  t.afterEach(() => {
+  t.afterEach((ctx) => {
     const mod = require.resolve(modulePath)
     delete require.cache[mod]
-    agentHelper.unloadAgent(agent)
+    agentHelper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should allow registering of multiple onRequire hooks', (t) => {
+  await t.test('should allow registering of multiple onRequire hooks', (t, end) => {
+    const { api } = t.nr
     api.instrument(moduleName, onRequire)
     api.instrument(moduleName, onRequire2)
     let firstShim
@@ -37,41 +39,42 @@ test('instrument', (t) => {
     function onRequire(shim, TestMod) {
       firstShim = shim
       shim.wrap(TestMod.prototype, 'foo', function wrapFoo(shim, orig) {
-        t.notOk(shim.isWrapped(orig))
+        assert.ok(!shim.isWrapped(orig))
         return function wrappedFoo(...args) {
-          t.ok(secondShim.isWrapped(TestMod.prototype.foo))
+          assert.ok(secondShim.isWrapped(TestMod.prototype.foo))
           args[0] = `${args[0]} in onRequire`
           return orig.apply(this, args)
         }
       })
-      t.ok(shim.isWrapped(TestMod.prototype.foo))
+      assert.ok(shim.isWrapped(TestMod.prototype.foo))
     }
 
     function onRequire2(shim, TestMod) {
       secondShim = shim
       shim.wrap(TestMod.prototype, 'foo', function wrapFoo(shim, orig) {
-        t.ok(firstShim.isWrapped(orig))
-        t.notOk(shim.isWrapped(TestMod.prototype.foo))
+        assert.ok(firstShim.isWrapped(orig))
+        assert.ok(!shim.isWrapped(TestMod.prototype.foo))
         return function wrappedFoo2(...args) {
-          t.ok(shim.isWrapped(TestMod.prototype.foo))
+          assert.ok(shim.isWrapped(TestMod.prototype.foo))
           args[0] = `${args[0]} in onRequire2`
           return orig.apply(this, args)
         }
       })
-      t.ok(shim.isWrapped(TestMod.prototype.foo))
+      assert.ok(shim.isWrapped(TestMod.prototype.foo))
     }
 
     const TestMod = require(modulePath)
 
     const testMod = new TestMod()
     const ret = testMod.foo('this is orig arg')
-    t.equal(ret, 'value of this is orig arg in onRequire2 in onRequire')
-    t.end()
+    assert.equal(ret, 'value of this is orig arg in onRequire2 in onRequire')
+    end()
   })
 
-  t.test(
+  await t.test(
     'should allow checking for isWrapped relevant to the wrapping you are about to do',
-    (t) => {
+    (t, end) => {
+      const { api } = t.nr
       api.instrument(moduleName, onRequire)
       api.instrument(moduleName, onRequire2)
 
@@ -104,12 +107,13 @@ test('instrument', (t) => {
       const testMod = new TestMod()
       const ret = testMod.foo('this is orig arg')
       require(modulePath)
-      t.equal(ret, 'value of this is orig arg in onRequire2 in onRequire')
-      t.end()
+      assert.equal(ret, 'value of this is orig arg in onRequire2 in onRequire')
+      end()
     }
   )
 
-  t.test('shim.unwrap should not break instrumentation registered after it', (t) => {
+  await t.test('shim.unwrap should not break instrumentation registered after it', (t, end) => {
+    const { api } = t.nr
     api.instrument(moduleName, onRequire)
 
     function onRequire(shim, TestMod) {
@@ -125,15 +129,16 @@ test('instrument', (t) => {
 
     const testMod = new TestMod()
     const ret = testMod.foo('Hello world')
-    t.equal(ret, 'value of Hello world')
+    assert.equal(ret, 'value of Hello world')
     const shim = TestMod[symbols.shim]
-    t.notOk(shim.isWrapped(TestMod.prototype.foo), 'should unwrap as expected')
-    t.end()
+    assert.ok(!shim.isWrapped(TestMod.prototype.foo), 'should unwrap as expected')
+    end()
   })
 
-  t.test(
+  await t.test(
     'shim.unwrap should not log warning if you try to unwrap and it has been wrapped more than once',
-    (t) => {
+    (t, end) => {
+      const { api } = t.nr
       api.instrument(moduleName, onRequire)
       api.instrument(moduleName, onRequire2)
       let shim1
@@ -166,15 +171,15 @@ test('instrument', (t) => {
       const testMod = new TestMod()
       testMod.foo('this is orig arg')
       testMod.foo('this is call 2')
-      t.ok(shim2.isWrapped(TestMod.prototype.foo), 'should unwrap as expected')
+      assert.ok(shim2.isWrapped(TestMod.prototype.foo), 'should unwrap as expected')
       ;[loggerSpy1, loggerSpy2].forEach((spy) => {
-        t.equal(
+        assert.equal(
           spy.args[0][0],
           'Attempting to unwrap %s, which its unwrapped version is also wrapped. This is unsupported, unwrap will not occur.'
         )
-        t.equal(spy.args[0][1], 'foo')
+        assert.equal(spy.args[0][1], 'foo')
       })
-      t.end()
+      end()
     }
   )
 })
