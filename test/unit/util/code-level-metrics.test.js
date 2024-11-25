@@ -104,9 +104,7 @@ test('CLM Meta', async (t) => {
   await t.test('should not add CLM attrs when filePath is null', (t) => {
     const { segmentStub } = t.nr
     function fn() {}
-    t.diagnostic(
-      'This is testing Express router.route which binds a function thus breaking any function metadata'
-    )
+    // This is testing Express router.route which binds a function thus breaking any function metadata
     const boundFn = fn.bind(null)
     boundFn[symbols.clm] = true
     addCLMAttributes(boundFn, segmentStub)
