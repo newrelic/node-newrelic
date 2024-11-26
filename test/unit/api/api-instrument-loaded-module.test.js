@@ -70,7 +70,7 @@ test('Agent API - instrumentLoadedModule', async (t) => {
 
   await t.test('should return false when no instrumentation exists', (t, end) => {
     const { api } = t.nr
-    const result = api.instrumentLoadedModule('tap', {})
+    const result = api.instrumentLoadedModule('sinon', {})
 
     assert.equal(result, false)
 
