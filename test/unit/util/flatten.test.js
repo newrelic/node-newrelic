@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const flatten = require('../../lib/util/flatten')
+const flatten = require('../../../lib/util/flatten')
 
 test('util.flatten', async (t) => {
   await t.test('flattens things', () => {
