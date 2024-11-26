@@ -5,14 +5,17 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const tspl = require('@matteo.collina/tspl')
+
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 
 let compareSampled = null
 
-tap.test('background transactions should not blow up with DT', (t) => {
-  t.plan(24)
+test('background transactions should not blow up with DT', async (t) => {
+  const plan = tspl(t, { plan: 24 })
+
   const config = {
     distributed_tracing: {
       enabled: true
@@ -34,7 +37,7 @@ tap.test('background transactions should not blow up with DT', (t) => {
   const api = new API(agent)
 
   const server = http.createServer(function (req, res) {
-    t.ok(req.headers.newrelic, 'got incoming newrelic header')
+    plan.ok(req.headers.newrelic, 'got incoming newrelic header')
 
     req.resume()
     res.end()
@@ -59,52 +62,60 @@ tap.test('background transactions should not blow up with DT', (t) => {
 
   const finishedHandlers = [
     function web(trans, event) {
-      t.equal(trans.name, 'WebTransaction/NormalizedUri/*', 'got web trans first')
+      plan.equal(trans.name, 'WebTransaction/NormalizedUri/*', 'got web trans first')
       const intrinsic = event[0]
 
-      t.equal(intrinsic.name, 'WebTransaction/NormalizedUri/*', 'web event has name')
-      t.ok(intrinsic.guid, 'web should have a guid on event')
-      t.ok(intrinsic.traceId, 'web should have a traceId on event')
-      t.ok(intrinsic.priority, 'web should have a priority on event')
-      t.ok(intrinsic.sampled != null, 'web should have a sampled boolean on event')
-      t.ok(intrinsic.parentId, 'web should have parentId on event')
-      t.ok(intrinsic['parent.type'], 'web should have parent type on event')
-      t.ok(intrinsic['parent.app'], 'web should have parent app on event')
-      t.ok(intrinsic['parent.account'], 'web should have parent account on event')
-      t.ok(intrinsic['parent.transportType'], 'web should have parent transport type on event')
-      t.ok(
+      plan.equal(intrinsic.name, 'WebTransaction/NormalizedUri/*', 'web event has name')
+      plan.ok(intrinsic.guid, 'web should have a guid on event')
+      plan.ok(intrinsic.traceId, 'web should have a traceId on event')
+      plan.ok(intrinsic.priority, 'web should have a priority on event')
+      plan.ok(intrinsic.sampled != null, 'web should have a sampled boolean on event')
+      plan.ok(intrinsic.parentId, 'web should have parentId on event')
+      plan.ok(intrinsic['parent.type'], 'web should have parent type on event')
+      plan.ok(intrinsic['parent.app'], 'web should have parent app on event')
+      plan.ok(intrinsic['parent.account'], 'web should have parent account on event')
+      plan.ok(intrinsic['parent.transportType'], 'web should have parent transport type on event')
+      plan.ok(
         intrinsic['parent.transportDuration'],
         'web should have parent transport duration on event'
       )
-      t.notOk(
+      plan.equal(
         intrinsic['nr.alternatePathHashes'],
+        undefined,
         'web should not have an nr.alternatePathHashes on event'
       )
 
-      compareSampled = currySampled(t, {
+      compareSampled = currySampled(plan, {
         sampled: intrinsic.sampled,
         priority: intrinsic.priority
       })
     },
     function background(trans, event) {
-      t.equal(trans.name, 'OtherTransaction/Nodejs/myTx', 'got background trans second')
+      plan.equal(trans.name, 'OtherTransaction/Nodejs/myTx', 'got background trans second')
       const intrinsic = event[0]
 
-      t.ok(intrinsic.traceId, 'bg should have a traceId on event')
-      t.ok(intrinsic.priority, 'bg should have a priority on event')
-      t.ok(intrinsic.guid, 'bg should have a guid on event')
-      t.ok(intrinsic.sampled != null, 'bg should have a sampled boolean on event')
-      t.notOk(
+      plan.ok(intrinsic.traceId, 'bg should have a traceId on event')
+      plan.ok(intrinsic.priority, 'bg should have a priority on event')
+      plan.ok(intrinsic.guid, 'bg should have a guid on event')
+      plan.ok(intrinsic.sampled != null, 'bg should have a sampled boolean on event')
+      plan.equal(
         intrinsic['nr.referringPathHash'],
+        undefined,
         'bg should not have an nr.referringPathHash on event'
       )
-      t.notOk(
+      plan.equal(
         intrinsic['nr.referringTransactionGuid'],
+        undefined,
         'bg should not have an nr.referringTransactionGuid on event'
       )
-      t.notOk(intrinsic['nr.apdexPerfZone'], 'bg should have an nr.apdexPerfZone on event')
-      t.notOk(
+      plan.equal(
+        intrinsic['nr.apdexPerfZone'],
+        undefined,
+        'bg should have an nr.apdexPerfZone on event'
+      )
+      plan.equal(
         intrinsic['nr.alternatePathHashes'],
+        undefined,
         'bg should have an nr.alternatePathHashes on event'
       )
 
@@ -122,12 +133,14 @@ tap.test('background transactions should not blow up with DT', (t) => {
     finishedHandlers[count](trans, event)
     count += 1
   })
+
+  await plan.completed
 })
 
-function currySampled(t, a) {
+function currySampled(plan, a) {
   return (b) => {
     b = b || a
-    t.ok(
+    plan.ok(
       a.sampled === b.sampled && a.priority === b.priority,
       'sampled values and priority persist across transactions'
     )
