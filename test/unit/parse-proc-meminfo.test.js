@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const parseMemInfo = require('../../lib/parse-proc-meminfo')
 
 // Most functionality is covered in-depth via cross-agent tests in
-// test/integration/pricing/proc_meminfo.tap.js
+// test/integration/utilization/proc-meminfo.test.js
 
 test('Should return `null` when data is null', () => {
   const result = parseMemInfo(null)

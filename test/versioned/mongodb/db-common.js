@@ -116,7 +116,7 @@ function verifyMongoSegments(agent, transaction, names, opts) {
   }
 
   if (opts.legacy) {
-    // Do not use `t.equal` for this comparison. When it is false tap would dump
+    // Do not use `assert.equal` for this comparison. When it is false tap would dump
     // way too much information to be useful.
     assert.ok(current === segment, 'current segment is ' + segment.name)
   }
