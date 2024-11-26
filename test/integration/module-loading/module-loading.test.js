@@ -5,9 +5,9 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const path = require('path')
-
 const helper = require('../../lib/agent_helper')
 const shimmer = require('../../../lib/shimmer')
 const symbols = require('../../../lib/symbols')
@@ -20,16 +20,15 @@ const CUSTOM_MODULE_PATH = `./node_modules/${CUSTOM_MODULE}`
 const CUSTOM_MODULE_PATH_SUB = `./node_modules/subPkg/node_modules/${CUSTOM_MODULE}`
 const EXPECTED_REQUIRE_METRIC_NAME = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/${CUSTOM_MODULE}`
 
-tap.test('Should properly track module paths to enable shim.require()', function (t) {
-  t.autoend()
+test.beforeEach((ctx) => {
+  const agent = helper.instrumentMockedAgent()
+  ctx.nr = { agent }
+})
 
-  let agent = helper.instrumentMockedAgent()
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
-
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
+})
+test('Should properly track module paths to enable shim.require()', function () {
   shimmer.registerInstrumentation({
     moduleName: CUSTOM_MODULE,
     onRequire: () => {}
@@ -41,23 +40,14 @@ tap.test('Should properly track module paths to enable shim.require()', function
   const moduleRoot = shim._moduleRoot
 
   const resolvedPackagePath = path.resolve(__dirname, CUSTOM_MODULE_PATH)
-  t.equal(moduleRoot, resolvedPackagePath)
+  assert.equal(moduleRoot, resolvedPackagePath)
 
   const shimLoadedCustom = shim.require('custom')
-  t.ok(shimLoadedCustom, 'shim.require() should load module')
-  t.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
+  assert.ok(shimLoadedCustom, 'shim.require() should load module')
+  assert.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
 })
 
-tap.test('should instrument multiple versions of the same package', function (t) {
-  t.autoend()
-
-  let agent = helper.instrumentMockedAgent()
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
-
+test('should instrument multiple versions of the same package', function () {
   const instrumentation = {
     moduleName: CUSTOM_MODULE,
     onRequire: () => {}
@@ -67,56 +57,52 @@ tap.test('should instrument multiple versions of the same package', function (t)
 
   const pkg1 = require(CUSTOM_MODULE_PATH)
   const pkg2 = require(CUSTOM_MODULE_PATH_SUB)
-  t.ok(pkg1[symbols.shim], 'should wrap first package')
-  t.ok(pkg2[symbols.shim], 'should wrap sub package of same name, different version')
+  assert.ok(pkg1[symbols.shim], 'should wrap first package')
+  assert.ok(pkg2[symbols.shim], 'should wrap sub package of same name, different version')
 
   const trackedItems = shimmer.registeredInstrumentations.getAllByName(CUSTOM_MODULE)
-  t.equal(trackedItems.length, 2)
-  t.equal(trackedItems[0].instrumentation.resolvedName.includes(CUSTOM_MODULE_PATH.slice(1)), true)
-  t.equal(
+  assert.equal(trackedItems.length, 2)
+  assert.equal(
+    trackedItems[0].instrumentation.resolvedName.includes(CUSTOM_MODULE_PATH.slice(1)),
+    true
+  )
+  assert.equal(
     trackedItems[1].instrumentation.resolvedName.includes(CUSTOM_MODULE_PATH_SUB.slice(1)),
     true
   )
 })
 
-tap.test('should only log supportability metric for tracking type instrumentation', function (t) {
-  t.autoend()
-
-  let agent = helper.instrumentMockedAgent()
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
-
+test('should only log supportability metric for tracking type instrumentation', function (t) {
+  const { agent } = t.nr
   const PKG = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/knex`
   const PKG_VERSION = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/knex/Version/1`
 
   // eslint-disable-next-line node/no-extraneous-require
   require('knex')
   const knexOnRequiredMetric = agent.metrics._metrics.unscoped[PKG]
-  t.equal(knexOnRequiredMetric.callCount, 1, `should record ${PKG}`)
+  assert.equal(knexOnRequiredMetric.callCount, 1, `should record ${PKG}`)
   const knexVersionMetric = agent.metrics._metrics.unscoped[PKG_VERSION]
-  t.equal(knexVersionMetric.callCount, 1, `should record ${PKG_VERSION}`)
+  assert.equal(knexVersionMetric.callCount, 1, `should record ${PKG_VERSION}`)
   // eslint-disable-next-line node/no-extraneous-require
   const modPath = path.dirname(require.resolve('knex'))
-  t.ok(shimmer.isInstrumented('knex', modPath), 'should mark tracking modules as instrumented')
-  t.end()
+  assert.ok(shimmer.isInstrumented('knex', modPath), 'should mark tracking modules as instrumented')
 })
 
-tap.test('shim.require() should play well with multiple test runs', (t) => {
-  simulateTestLoadAndUnload()
+test('shim.require() should play well with multiple test runs', (t) => {
+  const { agent } = t.nr
+  shimmer.registerInstrumentation({
+    moduleName: CUSTOM_MODULE
+  })
 
-  let agent = helper.instrumentMockedAgent()
+  require(CUSTOM_MODULE_PATH)
+
+  helper.unloadAgent(agent)
+
+  t.nr.agent = helper.instrumentMockedAgent()
 
   shimmer.registerInstrumentation({
     moduleName: CUSTOM_MODULE,
     onRequire: () => {}
-  })
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
   })
 
   require(CUSTOM_MODULE_PATH)
@@ -126,23 +112,15 @@ tap.test('shim.require() should play well with multiple test runs', (t) => {
   const moduleRoot = shim._moduleRoot
 
   const resolvedPackagePath = path.resolve(__dirname, CUSTOM_MODULE_PATH)
-  t.equal(moduleRoot, resolvedPackagePath)
+  assert.equal(moduleRoot, resolvedPackagePath)
 
   const shimLoadedCustom = shim.require('custom')
-  t.ok(shimLoadedCustom, 'shim.require() should load module')
-  t.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
-
-  t.end()
+  assert.ok(shimLoadedCustom, 'shim.require() should load module')
+  assert.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
 })
 
-tap.test('Should create usage metric onRequire', (t) => {
-  let agent = helper.instrumentMockedAgent()
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
-
+test('Should create usage metric onRequire', (t, end) => {
+  const { agent } = t.nr
   shimmer.registerInstrumentation({
     moduleName: CUSTOM_MODULE,
     onRequire: onRequireHandler
@@ -153,21 +131,14 @@ tap.test('Should create usage metric onRequire', (t) => {
   function onRequireHandler() {
     const onRequireMetric = agent.metrics._metrics.unscoped[EXPECTED_REQUIRE_METRIC_NAME]
 
-    t.ok(onRequireMetric)
-    t.equal(onRequireMetric.callCount, 1)
-
-    t.end()
+    assert.ok(onRequireMetric)
+    assert.equal(onRequireMetric.callCount, 1)
+    end()
   }
 })
 
-tap.test('Should create usage version metric onRequire', (t) => {
-  let agent = helper.instrumentMockedAgent()
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
-
+test('Should create usage version metric onRequire', (t, end) => {
+  const { agent } = t.nr
   shimmer.registerInstrumentation({
     moduleName: CUSTOM_MODULE,
     onRequire: onRequireHandler
@@ -180,43 +151,27 @@ tap.test('Should create usage version metric onRequire', (t) => {
 
     const onRequireMetric = agent.metrics._metrics.unscoped[expectedVersionMetricName]
 
-    t.ok(onRequireMetric)
-    t.equal(onRequireMetric.callCount, 1)
-
-    t.end()
+    assert.ok(onRequireMetric)
+    assert.equal(onRequireMetric.callCount, 1)
+    end()
   }
 })
 
-tap.test('Should create usage metric onRequire for built-in', (t) => {
+test('Should create usage metric onRequire for built-in', (t) => {
+  const { agent } = t.nr
   const domainMetric = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/domain`
-  let agent = helper.instrumentMockedAgent()
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
-
   // eslint-disable-next-line node/no-deprecated-api
   require('domain')
 
   const onRequireMetric = agent.metrics._metrics.unscoped[domainMetric]
 
-  t.ok(onRequireMetric)
-  t.equal(onRequireMetric.callCount, 1)
+  assert.ok(onRequireMetric)
+  assert.equal(onRequireMetric.callCount, 1)
   const domainMetrics = Object.keys(agent.metrics._metrics.unscoped)
-  t.equal(domainMetrics.length, 1, 'should not log a version metric for a built-in')
-
-  t.end()
+  assert.equal(domainMetrics.length, 1, 'should not log a version metric for a built-in')
 })
 
-tap.test('should instrument a local package', (t) => {
-  let agent = helper.instrumentMockedAgent()
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
-
+test('should instrument a local package', (t, end) => {
   shimmer.registerInstrumentation({
     moduleName: LOCAL_MODULE,
     absolutePath: LOCAL_MODULE_PATH,
@@ -226,27 +181,15 @@ tap.test('should instrument a local package', (t) => {
   require('./local-package')
 
   function onRequireHandler(shim, localPkg, name) {
-    t.equal(
+    assert.equal(
       shim.pkgVersion,
       process.version,
       'defaults to node version for pkgVersion as this is not a package'
     )
-    t.ok(shim.id)
-    t.equal(name, LOCAL_MODULE)
+    assert.ok(shim.id)
+    assert.equal(name, LOCAL_MODULE)
     const result = localPkg()
-    t.same(result, { hello: 'world' })
-    t.end()
+    assert.deepEqual(result, { hello: 'world' })
+    end()
   }
 })
-
-function simulateTestLoadAndUnload() {
-  const agent = helper.instrumentMockedAgent()
-
-  shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE
-  })
-
-  require(CUSTOM_MODULE_PATH)
-
-  helper.unloadAgent(agent)
-}
