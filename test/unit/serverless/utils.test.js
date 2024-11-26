@@ -8,24 +8,44 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { isGatewayV1Event, isGatewayV2Event } = require('../../../lib/serverless/api-gateway')
+const {
+  isGatewayV1Event,
+  isGatewayV2Event,
+  isAlbEvent
+} = require('../../../lib/serverless/api-gateway')
+
 const {
   restApiGatewayV1Event,
   httpApiGatewayV1Event,
   httpApiGatewayV2Event,
-  lambaV1InvocationEvent
+  secondApiGatewayV2Event,
+  lambaV1InvocationEvent,
+  albEvent
 } = require('./fixtures')
 
 test('isGatewayV1Event', () => {
   assert.equal(isGatewayV1Event(restApiGatewayV1Event), true)
   assert.equal(isGatewayV1Event(httpApiGatewayV1Event), true)
   assert.equal(isGatewayV1Event(httpApiGatewayV2Event), false)
+  assert.equal(isGatewayV1Event(secondApiGatewayV2Event), false)
   assert.equal(isGatewayV1Event(lambaV1InvocationEvent), false)
+  assert.equal(isGatewayV1Event(albEvent), false)
 })
 
 test('isGatewayV2Event', () => {
   assert.equal(isGatewayV2Event(restApiGatewayV1Event), false)
   assert.equal(isGatewayV2Event(httpApiGatewayV1Event), false)
   assert.equal(isGatewayV2Event(httpApiGatewayV2Event), true)
+  assert.equal(isGatewayV2Event(secondApiGatewayV2Event), true)
   assert.equal(isGatewayV2Event(lambaV1InvocationEvent), false)
+  assert.equal(isGatewayV2Event(albEvent), false)
+})
+
+test('isAlbEvent', () => {
+  assert.equal(isAlbEvent(restApiGatewayV1Event), false)
+  assert.equal(isAlbEvent(httpApiGatewayV1Event), false)
+  assert.equal(isAlbEvent(httpApiGatewayV2Event), false)
+  assert.equal(isAlbEvent(secondApiGatewayV2Event), false)
+  assert.equal(isAlbEvent(lambaV1InvocationEvent), false)
+  assert.equal(isAlbEvent(albEvent), true)
 })
