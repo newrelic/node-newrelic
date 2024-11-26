@@ -5,15 +5,14 @@
 
 'use strict'
 
-const test = require('tap').test
+const test = require('node:test')
+const assert = require('node:assert')
 
-test('loading the application via index.js with agent disabled', function (t) {
-  t.plan(2)
-
+test('loading the application via index.js with agent disabled', () => {
   process.env.NEW_RELIC_HOME = __dirname + '/..'
   process.env.NEW_RELIC_ENABLED = 'false'
   const api = require('../../../index.js')
 
-  t.ok(api, 'should have an API')
-  t.notOk(api.agent, 'should not have an associated agent')
+  assert.ok(api, 'should have an API')
+  assert.equal(api.agent, undefined, 'should not have an associated agent')
 })
