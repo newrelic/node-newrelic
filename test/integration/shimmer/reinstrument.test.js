@@ -5,21 +5,24 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const tspl = require('@matteo.collina/tspl')
+
 const helper = require('../../lib/agent_helper')
 
-tap.beforeEach((t) => {
-  t.context.agent = helper.instrumentMockedAgent({})
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = helper.instrumentMockedAgent({})
 })
 
-tap.afterEach((t) => {
-  helper.unloadAgent(t.context.agent)
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
 })
 
-tap.test('can instrument the same module from multiple installs', (t) => {
-  t.plan(3)
+test('can instrument the same module from multiple installs', async (t) => {
+  const plan = tspl(t, { plan: 3 })
 
-  const { agent } = t.context
+  const { agent } = t.nr
   agent.start(() => {
     const api = helper.getAgentApi()
 
@@ -44,13 +47,13 @@ tap.test('can instrument the same module from multiple installs', (t) => {
       }
     })
     const person = new Person(dest)
-    t.equal(person.isHuman, true)
-    t.same(lines, ['human constructed\n', 'person constructed\n'])
+    plan.equal(person.isHuman, true)
+    plan.deepStrictEqual(lines, ['human constructed\n', 'person constructed\n'])
 
     // We loaded the same module from two different installed paths.
     // Thus, we should have two instrumentations.
-    t.equal(instrumentedCount, 2)
-
-    t.end()
+    plan.equal(instrumentedCount, 2)
   })
+
+  await plan.completed
 })

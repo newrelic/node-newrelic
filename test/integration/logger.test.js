@@ -5,15 +5,15 @@
 
 'use strict'
 
-const path = require('path')
-const fs = require('fs')
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+const path = require('node:path')
+const fs = require('node:fs')
+
 const rimraf = require('rimraf')
 const DIRNAME = 'XXXNOCONFTEST'
 
-tap.test('logger', function (t) {
-  t.autoend()
-
+test('logger', async (t) => {
   t.afterEach(async () => {
     if (path.basename(process.cwd()) === DIRNAME) {
       process.chdir('..')
@@ -31,21 +31,19 @@ tap.test('logger', function (t) {
     delete process.env.NEW_RELIC_LOG
   })
 
-  t.test('configuration from environment', function (t) {
+  await t.test('configuration from environment', (t, end) => {
     fs.mkdir(DIRNAME, function (error) {
-      if (!t.error(error, 'should not fail to make directory')) {
-        return t.end()
-      }
+      assert.ifError(error, 'should not fail to make directory')
 
       process.chdir(DIRNAME)
 
       process.env.NEW_RELIC_LOG = 'stdout'
 
-      t.doesNotThrow(function () {
-        t.ok(require('../../lib/logger'), 'requiring logger returned a logging object')
+      assert.doesNotThrow(function () {
+        assert.ok(require('../../lib/logger'), 'requiring logger returned a logging object')
       })
 
-      t.end()
+      end()
     })
   })
 })
