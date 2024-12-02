@@ -215,6 +215,100 @@ const httpApiGatewayV2Event = {
   }
 }
 
+const httpApiGatewayV2EventAlt = {
+  version: '2.0',
+  routeKey: 'ANY /',
+  rawPath: '/dev/',
+  rawQueryString: '',
+  headers: {
+    'accept':
+      'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'accept-encoding': 'gzip, deflate, br, zstd',
+    'accept-language': 'en-US,en;q=0.9',
+    'content-length': '0',
+    'host': 'zzz1234567890.execute-api.us-east-2.amazonaws.com',
+    'priority': 'u=0, i',
+    'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"macOS"',
+    'sec-fetch-dest': 'document',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-site': 'cross-site',
+    'sec-fetch-user': '?1',
+    'upgrade-insecure-requests': '1',
+    'user-agent':
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'x-amzn-trace-id': 'Root=1-abcdef01-01234567890abcdef0123456',
+    'x-forwarded-for': '11.11.11.148',
+    'x-forwarded-port': '443',
+    'x-forwarded-proto': 'https'
+  },
+  requestContext: {
+    accountId: '466768951184',
+    apiId: 'zzz1234567890',
+    domainName: 'zzz1234567890.execute-api.us-east-2.amazonaws.com',
+    domainPrefix: 'zzz1234567890',
+    http: {
+      method: 'GET',
+      path: '/dev/',
+      protocol: 'HTTP/1.1',
+      sourceIp: '11.11.11.148',
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+    },
+    requestId: 'ABCDEF0123456=',
+    routeKey: 'ANY /',
+    stage: 'dev',
+    time: '26/Nov/2024:19:14:00 +0000',
+    timeEpoch: 1732648440329
+  },
+  isBase64Encoded: false
+}
+
+const albEvent = {
+  requestContext: {
+    elb: {
+      targetGroupArn:
+        'arn:aws:elasticloadbalancing:us-west-2:1234567890:path/directory/otherDirectory'
+    }
+  },
+  httpMethod: 'POST',
+  path: '/elbCategory/elbEndpoint',
+  queryStringParameters: {
+    parameter1: 'value1,value2',
+    parameter2: 'value',
+    name: 'me',
+    team: 'node agent'
+  },
+  headers: {
+    'accept': 'application/json;v=4',
+    'content-length': '35',
+    'content-type': 'application/json',
+    'header2': 'value1,value2',
+    'host': 'examplehost.example.com',
+    'x-amzn-trace-id': 'Root=1-1234567890',
+    'x-forwarded-for': '10.10.10.10',
+    'x-forwarded-port': '443',
+    'x-forwarded-proto': 'https',
+    'x-message-id': 'albtest'
+  },
+  body: '{"exampleProperty": "exampleValue"}',
+  isBase64Encoded: false,
+  rawHeaders: {
+    'accept': 'application/json;v=4',
+    'content-length': '35',
+    'content-type': 'application/json',
+    'host': 'examplehost.example.com',
+    'x-amzn-trace-id': 'Root=1-1234567890',
+    'x-forwarded-for': '10.10.10.10',
+    'x-forwarded-port': '443',
+    'x-forwarded-proto': 'https',
+    'x-message-id': 'albtest'
+  },
+  multiValueQueryStringParameters: {},
+  pathParameters: {}
+}
+
 // Event used when one Lambda directly invokes another Lambda.
 // https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-retain-records.html#invocation-async-destinations
 const lambaV1InvocationEvent = {
@@ -248,5 +342,7 @@ module.exports = {
   restApiGatewayV1Event,
   httpApiGatewayV1Event,
   httpApiGatewayV2Event,
+  httpApiGatewayV2EventAlt,
+  albEvent,
   lambaV1InvocationEvent
 }
