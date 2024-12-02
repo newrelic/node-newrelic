@@ -215,7 +215,7 @@ const httpApiGatewayV2Event = {
   }
 }
 
-const secondApiGatewayV2Event = {
+const httpApiGatewayV2EventAlt = {
   version: '2.0',
   routeKey: 'ANY /',
   rawPath: '/dev/',
@@ -342,7 +342,7 @@ module.exports = {
   restApiGatewayV1Event,
   httpApiGatewayV1Event,
   httpApiGatewayV2Event,
-  secondApiGatewayV2Event,
+  httpApiGatewayV2EventAlt,
   albEvent,
   lambaV1InvocationEvent
 }

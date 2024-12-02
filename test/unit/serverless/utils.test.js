@@ -18,7 +18,7 @@ const {
   restApiGatewayV1Event,
   httpApiGatewayV1Event,
   httpApiGatewayV2Event,
-  secondApiGatewayV2Event,
+  httpApiGatewayV2EventAlt,
   lambaV1InvocationEvent,
   albEvent
 } = require('./fixtures')
@@ -27,7 +27,7 @@ test('isGatewayV1Event', () => {
   assert.equal(isGatewayV1Event(restApiGatewayV1Event), true)
   assert.equal(isGatewayV1Event(httpApiGatewayV1Event), true)
   assert.equal(isGatewayV1Event(httpApiGatewayV2Event), false)
-  assert.equal(isGatewayV1Event(secondApiGatewayV2Event), false)
+  assert.equal(isGatewayV1Event(httpApiGatewayV2EventAlt), false)
   assert.equal(isGatewayV1Event(lambaV1InvocationEvent), false)
   assert.equal(isGatewayV1Event(albEvent), false)
 })
@@ -36,7 +36,7 @@ test('isGatewayV2Event', () => {
   assert.equal(isGatewayV2Event(restApiGatewayV1Event), false)
   assert.equal(isGatewayV2Event(httpApiGatewayV1Event), false)
   assert.equal(isGatewayV2Event(httpApiGatewayV2Event), true)
-  assert.equal(isGatewayV2Event(secondApiGatewayV2Event), true)
+  assert.equal(isGatewayV2Event(httpApiGatewayV2EventAlt), true)
   assert.equal(isGatewayV2Event(lambaV1InvocationEvent), false)
   assert.equal(isGatewayV2Event(albEvent), false)
 })
@@ -45,7 +45,7 @@ test('isAlbEvent', () => {
   assert.equal(isAlbEvent(restApiGatewayV1Event), false)
   assert.equal(isAlbEvent(httpApiGatewayV1Event), false)
   assert.equal(isAlbEvent(httpApiGatewayV2Event), false)
-  assert.equal(isAlbEvent(secondApiGatewayV2Event), false)
+  assert.equal(isAlbEvent(httpApiGatewayV2EventAlt), false)
   assert.equal(isAlbEvent(lambaV1InvocationEvent), false)
   assert.equal(isAlbEvent(albEvent), true)
 })
