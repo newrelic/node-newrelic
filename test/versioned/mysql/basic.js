@@ -21,7 +21,14 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
   test('Basic run through mysql functionality', { timeout: 30 * 1000 }, async function (t) {
     t.beforeEach(async function (ctx) {
       const poolLogger = logger.child({ component: 'pool' })
-      const agent = helper.instrumentMockedAgent()
+      const agent = helper.instrumentMockedAgent({
+        slow_sql: { enabled: true },
+        transaction_tracer: {
+          recod_sql: 'raw',
+          explain_threshold: 0,
+          enabled: true
+        }
+      })
       const mysql = factory()
       const genericPool = poolFactory()
       const pool = setup.pool(USER, DATABASE, mysql, genericPool, poolLogger)
