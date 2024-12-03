@@ -16,7 +16,14 @@ const { DATABASE, USER, TABLE } = require('./constants')
 test('mysql2 promises', { timeout: 30000 }, async (t) => {
   t.beforeEach(async (ctx) => {
     await setup(USER, DATABASE, TABLE, require('mysql2'))
-    const agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent({
+      slow_sql: { enabled: true },
+      transaction_tracer: {
+        recod_sql: 'raw',
+        explain_threshold: 0,
+        enabled: true
+      }
+    })
 
     const mysql = require('mysql2/promise')
 
