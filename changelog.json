@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.8.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `mysql2` instrumentation to work with 3.11.5+",
+          "Fixed matching for ALB and API Gateway (v1 & v2) events for Lambda"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "12.8.0",
       "changes": {
         "security": [],
