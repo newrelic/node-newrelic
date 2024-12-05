@@ -19,6 +19,7 @@ const repos = [
     additionalFiles: [
       'tests/agent-testing.js',
       'tests/create-apollo-server-setup.js',
+      'tests/custom-assertions.js',
       'tests/data-definitions.js',
       'tests/metrics-tests.js',
       'tests/test-client.js',
