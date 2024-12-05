@@ -122,12 +122,17 @@ test('Agent API - shutdown', async (t) => {
 
   await t.test('calls stop when timeout is given and state changes to "errored"', (t, end) => {
     const { agent, api } = t.nr
+    const clock = sinon.useFakeTimers()
+    t.after(() => {
+      clock.restore()
+    })
     const mock = sinon.mock(agent)
     agent.setState('starting')
     mock.expects('stop').once()
     api.shutdown({ collectPendingData: true, timeout: 1000 })
     agent.setState('errored')
     mock.verify()
+    clock.tick(1001)
 
     end()
   })
@@ -165,38 +170,27 @@ test('Agent API - shutdown', async (t) => {
 
   await t.test('calls forceHarvestAll when a timeout is given and not reached', (t, end) => {
     const { agent, api } = t.nr
+    const clock = sinon.useFakeTimers()
+    t.after(() => {
+      clock.restore()
+    })
     const mock = sinon.mock(agent)
     agent.setState('starting')
     mock.expects('forceHarvestAll').once()
     api.shutdown({ collectPendingData: true, timeout: 1000 })
     agent.setState('started')
     mock.verify()
+    clock.tick(1001)
 
     end()
   })
 
   await t.test('calls stop when timeout is reached and does not forceHarvestAll', (t, end) => {
     const { agent, api } = t.nr
-    const originalSetTimeout = setTimeout
-    let timeoutHandle = null
-    global.setTimeout = function patchedSetTimeout() {
-      timeoutHandle = originalSetTimeout.apply(this, arguments)
-
-      // This is a hack to keep tap from shutting down test early.
-      // Is there a better way to do this?
-      setImmediate(() => {
-        timeoutHandle.ref()
-      })
-
-      return timeoutHandle
-    }
-
+    const clock = sinon.useFakeTimers()
     t.after(() => {
-      timeoutHandle.unref()
-      timeoutHandle = null
-      global.setTimeout = originalSetTimeout
+      clock.restore()
     })
-
     let didCallForceHarvestAll = false
     agent.forceHarvestAll = function mockedForceHarvest() {
       didCallForceHarvestAll = true
@@ -218,6 +212,7 @@ test('Agent API - shutdown', async (t) => {
 
       end()
     })
+    clock.tick(1001)
   })
 
   await t.test('calls forceHarvestAll when timeout is not a number', (t, end) => {

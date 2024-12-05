@@ -108,10 +108,6 @@ async function* reporter(source) {
     // test name gets set to the `file`. So there isn't really any point in
     // trying to provide more useful reports here while we need to support v18.
     //
-    // The issue may also stem from the current test suites still being based
-    // on `tap`. Once we are able to migrate the actual test code to `node:test`
-    // we should revisit this reporter to determine if we can improve it.
-    //
     // See https://nodejs.org/api/test.html#event-testfail.
     switch (event.type) {
       case 'test:enqueue': {
