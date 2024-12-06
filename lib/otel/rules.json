@@ -1,6 +1,7 @@
 [
   {
     "name": "OtelHttpServer1_23",
+    "type": "server",
     "matcher": {
       "required_metric_names": [
         "http.server.request.duration"
@@ -41,6 +42,7 @@
   },
   {
     "name": "OtelHttpServer1_20",
+    "type": "server",
     "matcher": {
       "required_metric_names": [
         "http.server.duration"
@@ -81,6 +83,7 @@
   },
   {
     "name": "OtelRpcServer1_20",
+    "type": "server",
     "matcher": {
       "required_metric_names": [
         "rpc.server.duration"
@@ -121,6 +124,7 @@
   },
   {
     "name": "FallbackServer",
+    "type": "server",
     "matcher": {
       "required_metric_names": [
         "rpc.server.duration",

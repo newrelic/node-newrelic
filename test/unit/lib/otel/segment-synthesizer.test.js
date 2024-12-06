@@ -8,15 +8,20 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const helper = require('../../../lib/agent_helper')
-const { ROOT_CONTEXT, SpanKind, TraceFlags } = require('@opentelemetry/api')
-const { BasicTracerProvider, Span } = require('@opentelemetry/sdk-trace-base')
+const { BasicTracerProvider } = require('@opentelemetry/sdk-trace-base')
 const SegmentSynthesizer = require('../../../../lib/otel/segment-synthesis')
-const {
-  SEMATTRS_DB_SYSTEM,
-  SEMATTRS_HTTP_HOST,
-  SEMATTRS_HTTP_METHOD
-} = require('@opentelemetry/semantic-conventions')
 const createMockLogger = require('../../mocks/logger')
+const {
+  createDbClientSpan,
+  createSpan,
+  createHttpClientSpan,
+  createDbStatementSpan,
+  createMongoDbSpan,
+  createRedisDbSpan,
+  createMemcachedDbSpan
+} = require('./fixtures')
+const { SEMATTRS_HTTP_METHOD, SEMATTRS_DB_SYSTEM } = require('@opentelemetry/semantic-conventions')
+const { SpanKind } = require('@opentelemetry/api')
 
 test.beforeEach((ctx) => {
   const loggerMock = createMockLogger()
@@ -40,14 +45,7 @@ test.afterEach((ctx) => {
 test('should create http external segment from otel http client span', (t, end) => {
   const { agent, synthesizer, parentId, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
-    const spanContext = {
-      traceId: tx.trace.id,
-      spanId: tx.trace.root.id,
-      traceFlags: TraceFlags.SAMPLED
-    }
-    const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.CLIENT, parentId)
-    span.setAttribute(SEMATTRS_HTTP_METHOD, 'GET')
-    span.setAttribute(SEMATTRS_HTTP_HOST, 'newrelic.com')
+    const span = createHttpClientSpan({ tx, parentId, tracer })
     const segment = synthesizer.synthesize(span)
     assert.equal(segment.name, 'External/newrelic.com')
     assert.equal(segment.parentId, tx.trace.root.id)
@@ -56,22 +54,91 @@ test('should create http external segment from otel http client span', (t, end) 
   })
 })
 
-test('should log warning if a rule does have a synthesis for the given type', (t, end) => {
+test('should create db segment', (t, end) => {
+  const { agent, synthesizer, parentId, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createDbClientSpan({ tx, parentId, tracer })
+    const segment = synthesizer.synthesize(span)
+    assert.equal(segment.name, 'Datastore/statement/custom-db/test-table/select')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    tx.end()
+    end()
+  })
+})
+
+test('should create db segment and get operation and table from db.statement', (t, end) => {
+  const { agent, synthesizer, parentId, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createDbStatementSpan({ tx, parentId, tracer })
+    const segment = synthesizer.synthesize(span)
+    assert.equal(segment.name, 'Datastore/statement/custom-db/test-table/select')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    tx.end()
+    end()
+  })
+})
+
+test('should create db segment and get collection from db.mongodb.collection', (t, end) => {
+  const { agent, synthesizer, parentId, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createMongoDbSpan({ tx, parentId, tracer })
+    const segment = synthesizer.synthesize(span)
+    assert.equal(segment.name, 'Datastore/statement/mongodb/test-collection/insert')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    tx.end()
+    end()
+  })
+})
+
+test('should create db segment and get operation from db.statement when system is redis', (t, end) => {
+  const { agent, synthesizer, parentId, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createRedisDbSpan({ tx, parentId, tracer })
+    const segment = synthesizer.synthesize(span)
+    assert.equal(segment.name, 'Datastore/operation/redis/hset')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    tx.end()
+    end()
+  })
+})
+
+test('should create db segment and get operation from db.operation when system is memcached', (t, end) => {
+  const { agent, synthesizer, parentId, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createMemcachedDbSpan({ tx, parentId, tracer })
+    const segment = synthesizer.synthesize(span)
+    assert.equal(segment.name, 'Datastore/operation/memcached/set')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    tx.end()
+    end()
+  })
+})
+
+test('should log table and operation as unknown when the db.system, db.sql.table and db.operation to not exist as span attributes', (t, end) => {
+  const { agent, synthesizer, parentId, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createSpan({ name: 'test-span', kind: SpanKind.CLIENT, parentId, tx, tracer })
+    span.setAttribute(SEMATTRS_DB_SYSTEM, 'test-db')
+
+    const segment = synthesizer.synthesize(span)
+    assert.equal(segment.name, 'Datastore/statement/test-db/Unknown/Unknown')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    tx.end()
+    end()
+  })
+})
+
+test('should log warning when span does not have a synthesis rule', (t, end) => {
   const { agent, synthesizer, loggerMock, parentId, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
-    const spanContext = {
-      traceId: tx.trace.id,
-      spanId: tx.trace.root.id,
-      traceFlags: TraceFlags.SAMPLED
-    }
-    const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.CLIENT, parentId)
-    span.setAttribute(SEMATTRS_DB_SYSTEM, 'postgres')
+    const span = createSpan({ name: 'test-span', kind: SpanKind.SERVER, parentId, tx, tracer })
+    span.setAttribute(SEMATTRS_HTTP_METHOD, 'get')
     const segment = synthesizer.synthesize(span)
     assert.ok(!segment)
     assert.deepEqual(loggerMock.debug.args[0], [
-      'Found type: %s, no synthesize rule currently built',
-      'db'
+      'Found type: %s, no synthesis rule currently built',
+      'server'
     ])
     tx.end()
     end()
@@ -82,13 +149,7 @@ test('should log warning span does not match a rule', (t, end) => {
   const { agent, synthesizer, loggerMock, parentId, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
-    const spanContext = {
-      traceId: tx.trace.id,
-      spanId: tx.trace.root.id,
-      traceFlags: TraceFlags.SAMPLED
-    }
-
-    const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, 'bogus', parentId)
+    const span = createSpan({ name: 'test-span', kind: 'bogus', parentId, tx, tracer })
     const segment = synthesizer.synthesize(span)
     assert.ok(!segment)
     assert.deepEqual(loggerMock.debug.args[0], [
