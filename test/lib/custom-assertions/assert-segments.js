@@ -6,6 +6,63 @@
 'use strict'
 
 /**
+ * This function is used to verify that a tree of trace segments matches an
+ * expected tree of segment names. For example, if the trace looks like (i.e
+ * the `parent` parameter):
+ *
+ * ```js
+ * {
+ *   name: 'root-segment',
+ *   children: [
+ *    {
+ *      name: 'child 1',
+ *      children: [
+ *        {
+ *          name: 'grandchild 1',
+ *          children: [
+ *            {
+ *              name: 'great-grandchild',
+ *              children: []
+ *            }
+ *          ]
+ *        },
+ *        {
+ *          name: 'grandchild 2',
+ *          children: []
+ *        }
+ *      ]
+ *    },
+ *    {
+ *      name: 'child 2',
+ *      children: []
+ *    }
+ *   ]
+ * }
+ * ```
+ *
+ * Then the provided `expected` parameter should look like:
+ *
+ * ```js
+ * [
+ *   'root-segment',
+ *   [
+ *     'child 1',
+ *     [
+ *      'grandchild 1',
+ *      ['great-grandchild],
+ *      'grandchild 2'
+ *     ],
+ *     'child 2'
+ *   ],
+ * ]
+ * ```
+ *
+ * Ordering of the elements in the `expected` parameter is significant when
+ * `options.exact = true`. Regardless of the `exact` value, ordering of elements
+ * is significant to indicate the nesting order. Any string immediately
+ * followed by an array of strings indicates that the first string is a parent
+ * element, and the subsequent array of strings is its child elements.
+ *
  * @param {TraceSegment} parent     Parent segment
  * @param {Array} expected          Array of strings that represent segment names.
  *                                  If an item in the array is another array, it
