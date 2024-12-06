@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { parsePath, queryParser } = require('../../../lib/instrumentation/@elastic/elasticsearch')
+const { parsePath, queryParser } = require('../../../../lib/db/query-parsers/elasticsearch')
 const methods = [
   { name: 'GET', expected: 'get' },
   { name: 'PUT', expected: 'create' },
