@@ -51,5 +51,5 @@ test('isAlbEvent', () => {
   assert.equal(isAlbEvent(httpApiGatewayV2EventAlt), false)
   assert.equal(isAlbEvent(lambaV1InvocationEvent), false)
   assert.equal(isAlbEvent(albEvent), true)
-  assert.equal(isAlbEvent(lambdaEvent), true)
+  assert.equal(isAlbEvent(lambdaEvent), false)
 })
