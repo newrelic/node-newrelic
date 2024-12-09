@@ -11,7 +11,7 @@ const assert = require('node:assert')
 const parseCpuInfo = require('../../lib/parse-proc-cpuinfo')
 
 // Most functionality is covered in-depth via cross-agent tests in
-// test/integration/pricing/proc_cpuinfo.tap.js
+// test/integration/utilization/proc-cpuinfo.test.js
 
 test('Should return object with null processor stats when data is null', () => {
   const expectedStats = {

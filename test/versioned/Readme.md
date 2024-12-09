@@ -91,8 +91,8 @@ that are specific to our versioned test runner. The following is a
       // `files` lists out the test files that comprise the test suite for the
       // current block.
       "files": [
-        "test-one.tap.js",
-        "test-two.tap.js"
+        "test-one.test.js",
+        "test-two.test.js"
       ]
     },
     

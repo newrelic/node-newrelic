@@ -4,8 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const proxyquire = require('proxyquire')
 const sinon = require('sinon')
 const stream = require('node:stream')
@@ -63,35 +63,35 @@ const exampleMarkdown = `### v1.0.0 (2020-04-03)
     * Thing no longer mutates provided inputs, but instead clones inputs before performing modifications. Thing will now always return an entirely new output
 `
 
-tap.test('Conventional Changelog Class', (testHarness) => {
-  testHarness.autoend()
-
-  let clock
-  let MockGithubSdk
-  let mockGetPrByCommit
-  let mockGitLog
-  let ConventionalChangelog
-
-  testHarness.beforeEach(() => {
-    clock = sinon.useFakeTimers(new Date('2020-04-03'))
-    mockGetPrByCommit = sinon.stub()
-    MockGithubSdk = sinon.stub().returns({
+test('Conventional Changelog Class', async (t) => {
+  t.beforeEach((ctx) => {
+    const clock = sinon.useFakeTimers(new Date('2020-04-03'))
+    const mockGetPrByCommit = sinon.stub()
+    const MockGithubSdk = sinon.stub().returns({
       getPullRequestByCommit: mockGetPrByCommit
     })
 
-    mockGitLog = new stream.Readable({ objectMode: true })
+    const mockGitLog = new stream.Readable({ objectMode: true })
 
-    ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
+    const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
       './github': MockGithubSdk,
       'git-raw-commits': sinon.stub().returns(mockGitLog)
     })
+    ctx.nr = {
+      clock,
+      mockGetPrByCommit,
+      mockGitLog,
+      MockGithubSdk,
+      ConventionalChangelog
+    }
   })
 
-  testHarness.afterEach(() => {
-    clock.restore()
+  t.afterEach((ctx) => {
+    ctx.nr.clock.restore()
   })
 
-  testHarness.test('rankedGroupSort - should order a list of groupings based on rank', (t) => {
+  await t.test('rankedGroupSort - should order a list of groupings based on rank', (t) => {
+    const { ConventionalChangelog } = t.nr
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
 
     const groupedCommits = [
@@ -111,23 +111,22 @@ tap.test('Conventional Changelog Class', (testHarness) => {
 
     groupedCommits.sort(changelog.rankedGroupSort)
 
-    t.equal(groupedCommits[0].title, 'Features')
-    t.equal(groupedCommits[1].title, 'Bug fixes')
-    t.equal(groupedCommits[2].title, 'Security improvements')
-    t.equal(groupedCommits[3].title, 'Performance improvements')
-    t.equal(groupedCommits[4].title, 'Code refactoring')
-    t.equal(groupedCommits[5].title, 'Reverts')
-    t.equal(groupedCommits[6].title, 'Documentation')
-    t.equal(groupedCommits[7].title, 'Miscellaneous chores')
-    t.equal(groupedCommits[8].title, 'Styles')
-    t.equal(groupedCommits[9].title, 'Tests')
-    t.equal(groupedCommits[10].title, 'Continuous integration')
-    t.equal(groupedCommits[11].title, 'Build system')
-
-    t.end()
+    assert.equal(groupedCommits[0].title, 'Features')
+    assert.equal(groupedCommits[1].title, 'Bug fixes')
+    assert.equal(groupedCommits[2].title, 'Security improvements')
+    assert.equal(groupedCommits[3].title, 'Performance improvements')
+    assert.equal(groupedCommits[4].title, 'Code refactoring')
+    assert.equal(groupedCommits[5].title, 'Reverts')
+    assert.equal(groupedCommits[6].title, 'Documentation')
+    assert.equal(groupedCommits[7].title, 'Miscellaneous chores')
+    assert.equal(groupedCommits[8].title, 'Styles')
+    assert.equal(groupedCommits[9].title, 'Tests')
+    assert.equal(groupedCommits[10].title, 'Continuous integration')
+    assert.equal(groupedCommits[11].title, 'Build system')
   })
 
-  testHarness.test('getFormattedCommits - should get a list of commits', async (t) => {
+  await t.test('getFormattedCommits - should get a list of commits', async (t) => {
+    const { ConventionalChangelog, mockGetPrByCommit, mockGitLog } = t.nr
     mockGetPrByCommit.resolves({
       html_url: 'https://github.com/newrelic/node-newrelic/pull/123',
       number: 123
@@ -145,15 +144,14 @@ tap.test('Conventional Changelog Class', (testHarness) => {
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
     const commits = await changelog.getFormattedCommits()
 
-    t.equal(commits.length, 1)
+    assert.equal(commits.length, 1)
 
     const commit = commits[0]
-    t.same(commit, exampleCommit)
-
-    t.end()
+    assert.deepEqual(commit, exampleCommit)
   })
 
-  testHarness.test('addPullRequestMetadata - should add pr info if available', async (t) => {
+  await t.test('addPullRequestMetadata - should add pr info if available', async (t) => {
+    const { mockGetPrByCommit, ConventionalChangelog } = t.nr
     mockGetPrByCommit
       .onCall(0)
       .resolves({
@@ -174,16 +172,15 @@ tap.test('Conventional Changelog Class', (testHarness) => {
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
     await changelog.addPullRequestMetadata(commits)
 
-    t.same(commits[0].pr, {
+    assert.deepEqual(commits[0].pr, {
       url: 'https://github.com/newrelic/node-newrelic/pull/345',
       id: 345
     })
-    t.notOk(commits[1].pr)
-
-    t.end()
+    assert.ok(!commits[1].pr)
   })
 
-  testHarness.test('generateJsonChangelog - should create the new JSON changelog entry', (t) => {
+  await t.test('generateJsonChangelog - should create the new JSON changelog entry', (t) => {
+    const { ConventionalChangelog } = t.nr
     const commits = [
       { type: 'fix', subject: 'Fixed issue one' },
       { type: 'fix', subject: 'Fixed issue two' },
@@ -193,27 +190,27 @@ tap.test('Conventional Changelog Class', (testHarness) => {
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
 
     const jsonEntry = changelog.generateJsonChangelog(commits)
-    t.same(jsonEntry, exampleJson)
-    t.end()
+    assert.deepEqual(jsonEntry, exampleJson)
   })
 
-  testHarness.test(
+  await t.test(
     'generateMarkdownChangelog - should create the new Markdown changelog entry',
     async (t) => {
+      const { ConventionalChangelog } = t.nr
       const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
       const markdown = await changelog.generateMarkdownChangelog([exampleCommit])
-      t.equal(markdown, exampleMarkdown)
-      t.end()
+      assert.equal(markdown, exampleMarkdown)
     }
   )
 
-  testHarness.test(
+  await t.test(
     'writeMarkdownChangelog - should not update the markdown file if notes already exist',
     async (t) => {
+      const { MockGithubSdk, mockGitLog } = t.nr
       const mockReadFile = sinon.stub().resolves('### v1.0.0')
       const mockWriteFile = sinon.stub()
 
-      ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
+      const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
         './github': MockGithubSdk,
         'git-raw-commits': sinon.stub().returns(mockGitLog),
         'node:fs/promises': {
@@ -224,16 +221,16 @@ tap.test('Conventional Changelog Class', (testHarness) => {
       const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
       await changelog.writeMarkdownChangelog(exampleMarkdown)
 
-      t.equal(mockWriteFile.callCount, 0)
-      t.end()
+      assert.equal(mockWriteFile.callCount, 0)
     }
   )
 
-  testHarness.test('writeMarkdownChangelog - should update the markdown file', async (t) => {
+  await t.test('writeMarkdownChangelog - should update the markdown file', async (t) => {
+    const { MockGithubSdk, mockGitLog } = t.nr
     const mockReadFile = sinon.stub().resolves('### v0.9.0')
     const mockWriteFile = sinon.stub().resolves()
 
-    ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
+    const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
       './github': MockGithubSdk,
       'git-raw-commits': sinon.stub().returns(mockGitLog),
       'node:fs/promises': {
@@ -244,22 +241,22 @@ tap.test('Conventional Changelog Class', (testHarness) => {
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
     await changelog.writeMarkdownChangelog(exampleMarkdown)
 
-    t.equal(mockWriteFile.callCount, 1)
-    t.match(mockWriteFile.args[0][0], 'NEWS.md')
-    t.equal(mockWriteFile.args[0][1], `${exampleMarkdown}\n### v0.9.0`)
-    t.equal(mockWriteFile.args[0][2], 'utf-8')
-    t.end()
+    assert.equal(mockWriteFile.callCount, 1)
+    assert.match(mockWriteFile.args[0][0], /NEWS\.md/)
+    assert.equal(mockWriteFile.args[0][1], `${exampleMarkdown}\n### v0.9.0`)
+    assert.equal(mockWriteFile.args[0][2], 'utf-8')
   })
 
-  testHarness.test(
+  await t.test(
     'writeJsonChangelog - should not update the json file if notes already exist',
     async (t) => {
+      const { MockGithubSdk, mockGitLog } = t.nr
       const mockReadFile = sinon
         .stub()
         .resolves(JSON.stringify({ entries: [{ version: '1.0.0' }] }))
       const mockWriteFile = sinon.stub()
 
-      ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
+      const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
         './github': MockGithubSdk,
         'git-raw-commits': sinon.stub().returns(mockGitLog),
         'node:fs/promises': {
@@ -270,16 +267,16 @@ tap.test('Conventional Changelog Class', (testHarness) => {
       const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
       await changelog.writeJsonChangelog(exampleJson)
 
-      t.equal(mockWriteFile.callCount, 0)
-      t.end()
+      assert.equal(mockWriteFile.callCount, 0)
     }
   )
 
-  testHarness.test('writeJsonChangelog - should update the json file', async (t) => {
+  await t.test('writeJsonChangelog - should update the json file', async (t) => {
+    const { MockGithubSdk, mockGitLog } = t.nr
     const mockReadFile = sinon.stub().resolves(JSON.stringify({ entries: [{ version: '0.9.0' }] }))
     const mockWriteFile = sinon.stub().resolves()
 
-    ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
+    const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
       './github': MockGithubSdk,
       'git-raw-commits': sinon.stub().returns(mockGitLog),
       'node:fs/promises': {
@@ -290,13 +287,12 @@ tap.test('Conventional Changelog Class', (testHarness) => {
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
     await changelog.writeJsonChangelog(exampleJson)
 
-    t.equal(mockWriteFile.callCount, 1)
-    t.match(mockWriteFile.args[0][0], 'changelog.json')
-    t.equal(
+    assert.equal(mockWriteFile.callCount, 1)
+    assert.match(mockWriteFile.args[0][0], /changelog\.json/)
+    assert.equal(
       mockWriteFile.args[0][1],
       JSON.stringify({ entries: [{ ...exampleJson }, { version: '0.9.0' }] }, null, 2)
     )
-    t.equal(mockWriteFile.args[0][2], 'utf-8')
-    t.end()
+    assert.equal(mockWriteFile.args[0][2], 'utf-8')
   })
 })
