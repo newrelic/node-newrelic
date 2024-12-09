@@ -1,3 +1,25 @@
+### v12.8.2 (2024-12-09)
+
+#### Bug fixes
+
+* Fixed `mysql2` promise instrumentation to properly handle `createPool` and `createPoolCluster` ([#2823](https://github.com/newrelic/node-newrelic/pull/2823)) ([a679872](https://github.com/newrelic/node-newrelic/commit/a6798723b7d282d56a01f7ad9f7c8deb70ca525d))
+    * Thanks for the contribution @Kit-p 🙏🏻 
+* Fixed matching for Lambda events containing resource but which aren't API Gateway ([#2825](https://github.com/newrelic/node-newrelic/pull/2825)) ([64d2042](https://github.com/newrelic/node-newrelic/commit/64d2042e673aae9ea65ecca3b6d122d0a303ad0f))
+
+#### Documentation
+
+* Updated compatibility report ([#2814](https://github.com/newrelic/node-newrelic/pull/2814)) ([580a27f](https://github.com/newrelic/node-newrelic/commit/580a27fb7bda92b55748a0dc54baf07dd91aecb6))
+    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Improved documentation for assertSegments ([#2819](https://github.com/newrelic/node-newrelic/pull/2819)) ([298473c](https://github.com/newrelic/node-newrelic/commit/298473ca4a3c3219dba9d007bbcb0287ca60e264))
+
+#### Tests
+
+* Added `test/custom-assertions.js` to the apollo-server external versioned tests config ([#2817](https://github.com/newrelic/node-newrelic/pull/2817)) ([568525a](https://github.com/newrelic/node-newrelic/commit/568525ae174f02365b9868a1fe3c7fb0dac3977f))
+* Fixed flakey `when` versioned test ([#2821](https://github.com/newrelic/node-newrelic/pull/2821)) ([54f034b](https://github.com/newrelic/node-newrelic/commit/54f034bbf6918420874f10ed87656dcd0171317e))
+
 ### v12.8.1 (2024-12-04)
 
 #### Bug fixes
