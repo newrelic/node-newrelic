@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.8.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed matching for Lambda events containing resource but which aren't API Gateway",
+          "Fixed `mysql2` promise instrumentation to properly handle `createPool` and `createPoolCluster`"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "12.8.1",
       "changes": {
         "security": [],
