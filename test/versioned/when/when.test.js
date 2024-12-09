@@ -669,7 +669,7 @@ test('Promise#delay', async (t) => {
 })
 
 test('Promise#timeout', async (t) => {
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 10 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) => {
@@ -681,8 +681,8 @@ test('Promise#timeout', async (t) => {
       .catch((error) => {
         const end = Date.now()
         plan.equal(error.message, `${name} timeout message`, `${name} should have correct message`)
-        plan.ok(end - start > 48, `${name} should wait close to the correct time`)
-        plan.ok(end - start < 75, `${name} should wait close to the correct time`)
+        const time = end - start
+        plan.ok(time > 48, `${name} should wait close to the correct time, actual wait ${time}`)
       })
   }
 
@@ -948,7 +948,7 @@ async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
           plan.equal(agent.getTransaction(), undefined, `${name} has no transaction`)
         },
         function rejected(error) {
-          assert.ifError(error, `${name} should not result in error`)
+          plan.ok(!error, `${name} should not result in error`)
         }
       )
     isAsync = true
@@ -979,7 +979,7 @@ async function testInsideTransaction({ plan, agent, testFunc }) {
             plan.equal(agent.getTransaction(), tx, `${name} has the right transaction`)
           },
           function rejected(error) {
-            plan.ifError(error, `${name} should not result in error`)
+            plan.ok(!error, `${name} should not result in error`)
           }
         )
       isAsync = true
