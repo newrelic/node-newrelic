@@ -13,7 +13,7 @@ version.
 | --- | --- | --- | --- |
 | `@apollo/gateway` | 2.3.0 | 2.9.3 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 4.11.2 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.705.0 | 11.13.0 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.706.0 | 11.13.0 |
 | `@aws-sdk/client-dynamodb` | 3.0.0 | 3.705.0 | 8.7.1 |
 | `@aws-sdk/client-sns` | 3.0.0 | 3.699.0 | 8.7.1 |
 | `@aws-sdk/client-sqs` | 3.0.0 | 3.699.0 | 8.7.1 |
@@ -23,10 +23,10 @@ version.
 | `@grpc/grpc-js` | 1.4.0 | 1.12.4 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.3.12 | 9.0.0 |
 | `@koa/router` | 11.0.2 | 13.1.0 | 3.2.0 |
-| `@langchain/core` | 0.1.17 | 0.3.20 | 11.13.0 |
-| `@nestjs/cli` | 9.0.0 | 10.4.8 | 10.1.0 |
+| `@langchain/core` | 0.1.17 | 0.3.22 | 11.13.0 |
+| `@nestjs/cli` | 9.0.0 | 10.4.9 | 10.1.0 |
 | `@prisma/client` | 5.0.0 | 6.0.1 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 3.4.5 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 3.4.6 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.5 | 2.0.0 |
 | `apollo-server` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-express` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
@@ -35,7 +35,7 @@ version.
 | `bunyan` | 1.8.12 | 1.8.15 | 9.3.0 |
 | `cassandra-driver` | 3.4.0 | 4.7.2 | 1.7.1 |
 | `connect` | 3.0.0 | 3.7.0 | 2.6.0 |
-| `express` | 4.6.0 | 4.21.1 | 2.6.0 |
+| `express` | 4.6.0 | 4.21.2 | 2.6.0 |
 | `fastify` | 2.0.0 | 5.1.0 | 8.5.0 |
 | `generic-pool` | 3.0.0 | 3.9.0 | 0.9.0 |
 | `ioredis` | 4.0.0 | 5.4.1 | 1.26.2 |
@@ -47,8 +47,8 @@ version.
 | `mongodb` | 4.1.4 | 6.11.0 | 1.32.0 |
 | `mysql` | 2.2.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.11.5 | 1.32.0 |
-| `next` | 13.4.19 | 15.0.3 | 12.0.0 |
-| `openai` | 4.0.0 | 4.75.0 | 11.13.0 |
+| `next` | 13.4.19 | 15.0.4 | 12.0.0 |
+| `openai` | 4.0.0 | 4.76.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.13.1 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.2.0 | 9.0.0 |
 | `pino` | 7.0.0 | 9.5.0 | 8.11.0 |
