@@ -948,7 +948,7 @@ async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
           plan.equal(agent.getTransaction(), undefined, `${name} has no transaction`)
         },
         function rejected(error) {
-          plan.oko(!error, `${name} should not result in error`)
+          plan.ok(!error, `${name} should not result in error`)
         }
       )
     isAsync = true
