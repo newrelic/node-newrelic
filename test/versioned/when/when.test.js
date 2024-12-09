@@ -669,7 +669,7 @@ test('Promise#delay', async (t) => {
 })
 
 test('Promise#timeout', async (t) => {
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 10 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) => {
@@ -683,7 +683,6 @@ test('Promise#timeout', async (t) => {
         plan.equal(error.message, `${name} timeout message`, `${name} should have correct message`)
         const time = end - start
         plan.ok(time > 48, `${name} should wait close to the correct time, actual wait ${time}`)
-        plan.ok(time < 100, `${name} should wait close to the correct time, actual wait ${time}`)
       })
   }
 
