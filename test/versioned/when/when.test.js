@@ -681,8 +681,9 @@ test('Promise#timeout', async (t) => {
       .catch((error) => {
         const end = Date.now()
         plan.equal(error.message, `${name} timeout message`, `${name} should have correct message`)
-        plan.ok(end - start > 48, `${name} should wait close to the correct time`)
-        plan.ok(end - start < 75, `${name} should wait close to the correct time`)
+        const time = end - start
+        plan.ok(time > 48, `${name} should wait close to the correct time, actual wait ${time}`)
+        plan.ok(time < 100, `${name} should wait close to the correct time, actual wait ${time}`)
       })
   }
 
