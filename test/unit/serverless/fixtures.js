@@ -338,11 +338,20 @@ const lambaV1InvocationEvent = {
   }
 }
 
+// Event which contains `resource` key and should not be a web event.
+const lambdaEvent = {
+  someKey: 'someValue',
+  resource: {
+    otherKey: 'otherValue'
+  }
+}
+
 module.exports = {
   restApiGatewayV1Event,
   httpApiGatewayV1Event,
   httpApiGatewayV2Event,
   httpApiGatewayV2EventAlt,
   albEvent,
-  lambaV1InvocationEvent
+  lambaV1InvocationEvent,
+  lambdaEvent
 }

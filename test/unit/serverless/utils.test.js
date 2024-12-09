@@ -20,7 +20,8 @@ const {
   httpApiGatewayV2Event,
   httpApiGatewayV2EventAlt,
   lambaV1InvocationEvent,
-  albEvent
+  albEvent,
+  lambdaEvent
 } = require('./fixtures')
 
 test('isGatewayV1Event', () => {
@@ -30,6 +31,7 @@ test('isGatewayV1Event', () => {
   assert.equal(isGatewayV1Event(httpApiGatewayV2EventAlt), false)
   assert.equal(isGatewayV1Event(lambaV1InvocationEvent), false)
   assert.equal(isGatewayV1Event(albEvent), false)
+  assert.equal(isGatewayV1Event(lambdaEvent), false)
 })
 
 test('isGatewayV2Event', () => {
@@ -39,6 +41,7 @@ test('isGatewayV2Event', () => {
   assert.equal(isGatewayV2Event(httpApiGatewayV2EventAlt), true)
   assert.equal(isGatewayV2Event(lambaV1InvocationEvent), false)
   assert.equal(isGatewayV2Event(albEvent), false)
+  assert.equal(isGatewayV2Event(lambdaEvent), false)
 })
 
 test('isAlbEvent', () => {
@@ -48,4 +51,5 @@ test('isAlbEvent', () => {
   assert.equal(isAlbEvent(httpApiGatewayV2EventAlt), false)
   assert.equal(isAlbEvent(lambaV1InvocationEvent), false)
   assert.equal(isAlbEvent(albEvent), true)
+  assert.equal(isAlbEvent(lambdaEvent), true)
 })
