@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Nov 22 2024 11:56:53 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Tue Nov 26 2024 13:05:10 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -773,20 +773,6 @@
       "licenseTextSource": "file",
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
-    },
-    "tap@16.3.10": {
-      "name": "tap",
-      "version": "16.3.10",
-      "range": "^16.3.4",
-      "licenses": "ISC",
-      "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.3.10",
-      "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.3.10/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Isaac Z. Schlueter",
-      "email": "i@izs.me",
-      "url": "http://blog.izs.me"
     }
   }
 }
