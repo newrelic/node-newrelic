@@ -20,10 +20,10 @@ const spanContext = {
   spanId: '6e0c63257de34c92',
   traceFlags: TraceFlags.SAMPLED
 }
+const parentId = '5c1c63257de34c67'
 
 test('engine returns correct matching rule', () => {
   const engine = new RulesEngine()
-  const parentId = '5c1c63257de34c67'
   const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.SERVER, parentId)
   span.setAttribute('http.request.method', 'GET')
   span.end()
@@ -31,4 +31,37 @@ test('engine returns correct matching rule', () => {
   const rule = engine.test(span)
   assert.notEqual(rule, undefined)
   assert.equal(rule.name, 'OtelHttpServer1_23')
+})
+
+test('consumer does not match fallback rule', () => {
+  const engine = new RulesEngine()
+  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.CONSUMER, parentId)
+  span.setAttribute('messaging.operation', 'create')
+  span.end()
+
+  const rule = engine.test(span)
+  assert.notEqual(rule, undefined)
+  assert.equal(rule.name, 'OtelMessagingConsumer1_24')
+})
+
+test('fallback server rule is met', () => {
+  const engine = new RulesEngine()
+  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.SERVER, parentId)
+  span.setAttribute('foo.bar', 'baz')
+  span.end()
+
+  const rule = engine.test(span)
+  assert.notEqual(rule, undefined)
+  assert.equal(rule.name, 'FallbackServer')
+})
+
+test('fallback client rule is met', () => {
+  const engine = new RulesEngine()
+  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.PRODUCER, parentId)
+  span.setAttribute('foo.bar', 'baz')
+  span.end()
+
+  const rule = engine.test(span)
+  assert.notEqual(rule, undefined)
+  assert.equal(rule.name, 'FallbackClient')
 })
