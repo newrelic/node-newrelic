@@ -1,3 +1,2 @@
 files:
-  - 'test/integration/**/*.tap.mjs'
-  - 'test/integration/*.test.mjs'
+  - 'test/integration/**/*.test.mjs'
