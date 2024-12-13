@@ -14,17 +14,16 @@ const util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
 test('should gracefully handle ESM imports', async (t) => {
-  // allowing require of esm made this test invalid
+  // allowing require of esm made this test change
   // see: https://github.com/nodejs/node/pull/55085/
-  // Until we can figure out if this is still valid we are skipping it
-  await t.test(
-    'when newrelic.js is misnamed',
-    { skip: semver.gte(process.version, '22.12.0') },
-    async () => {
-      const { stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-bad` })
+  await t.test('when newrelic.js is misnamed', async () => {
+    const { stdout, stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-bad` })
+    if (semver.gte(process.version, '22.12.0')) {
+      match(stdout, 'Hello esm-test')
+    } else {
       match(stderr, 'ERR_REQUIRE_ESM', 'should mention ERR_REQUIRE_ESM in error message')
     }
-  )
+  })
 
   await t.test('when newrelic.cjs is properly named', async () => {
     const { stdout, stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-good` })
