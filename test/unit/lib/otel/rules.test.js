@@ -57,11 +57,22 @@ test('fallback server rule is met', () => {
 
 test('fallback client rule is met', () => {
   const engine = new RulesEngine()
-  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.PRODUCER, parentId)
+  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.CLIENT, parentId)
   span.setAttribute('foo.bar', 'baz')
   span.end()
 
   const rule = engine.test(span)
   assert.notEqual(rule, undefined)
   assert.equal(rule.name, 'FallbackClient')
+})
+
+test('fallback producer rule is met', () => {
+  const engine = new RulesEngine()
+  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.PRODUCER, parentId)
+  span.setAttribute('foo.bar', 'baz')
+  span.end()
+
+  const rule = engine.test(span)
+  assert.notEqual(rule, undefined)
+  assert.equal(rule.name, 'FallbackProducer')
 })
