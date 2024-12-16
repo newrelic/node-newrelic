@@ -14,6 +14,7 @@ const {
 const createSpan = require('./span')
 const createHttpClientSpan = require('./http-client')
 const { createRpcServerSpan, createHttpServerSpan, createBaseHttpSpan } = require('./server')
+const { createQueueProducerSpan, createTopicProducerSpan } = require('./producer')
 
 module.exports = {
   createBaseHttpSpan,
@@ -23,7 +24,9 @@ module.exports = {
   createHttpServerSpan,
   createMemcachedDbSpan,
   createMongoDbSpan,
+  createQueueProducerSpan,
   createRedisDbSpan,
   createRpcServerSpan,
-  createSpan
+  createSpan,
+  createTopicProducerSpan
 }

@@ -455,6 +455,7 @@
   },
   {
     "name": "FallbackProducer",
+    "type": "producer",
     "matcher": {
       "required_span_kinds": [
         "producer"
