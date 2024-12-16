@@ -161,7 +161,7 @@
     "bench": "node ./bin/run-bench.js",
     "docker-env": "./bin/docker-env-vars.sh",
     "docs": "rm -rf ./out && jsdoc -c ./jsdoc-conf.jsonc --private -r .",
-    "integration": "npm run prepare-test && npm run sub-install && BORP_CONF_FILE=.borp.int.yaml time c8 -o ./coverage/integration borp --timeout 600000 --reporter ./test/lib/test-reporter.mjs",
+    "integration": "npm run sub-install && BORP_CONF_FILE=.borp.int.yaml time c8 -o ./coverage/integration borp --timeout 600000 --reporter ./test/lib/test-reporter.mjs",
     "integration:esm": "NODE_OPTIONS='--loader=./esm-loader.mjs' BORP_CONF_FILE=.borp.int-esm.yaml time c8 -o ./coverage/integration-esm borp --reporter ./test/lib/test-reporter.mjs",
     "prepare-test": "npm run docker-env",
     "lint": "eslint ./*.{js,mjs} lib test bin",
