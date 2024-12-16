@@ -21,7 +21,9 @@ const {
   createMongoDbSpan,
   createRedisDbSpan,
   createRpcServerSpan,
-  createMemcachedDbSpan
+  createMemcachedDbSpan,
+  createTopicProducerSpan,
+  createQueueProducerSpan
 } = require('./fixtures')
 const { SEMATTRS_DB_SYSTEM } = require('@opentelemetry/semantic-conventions')
 const { SpanKind } = require('@opentelemetry/api')
@@ -184,6 +186,32 @@ test('should create base http server segment', (t) => {
   assert.equal(transaction.baseSegment.name, segment.name)
   assert.ok(transaction)
   assert.equal(transaction.name, expectedName)
+})
+
+test('should create topic producer segment', (t, end) => {
+  const { agent, synthesizer, parentId, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createTopicProducerSpan({ tx, parentId, tracer })
+    const { segment, transaction } = synthesizer.synthesize(span)
+    assert.equal(tx.id, transaction.id)
+    assert.equal(segment.name, 'MessageBroker/messaging-lib/topic/Produce/Named/test-topic')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    tx.end()
+    end()
+  })
+})
+
+test('should create queue producer segment', (t, end) => {
+  const { agent, synthesizer, parentId, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createQueueProducerSpan({ tx, parentId, tracer })
+    const { segment, transaction } = synthesizer.synthesize(span)
+    assert.equal(tx.id, transaction.id)
+    assert.equal(segment.name, 'MessageBroker/messaging-lib/queue/Produce/Named/test-queue')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    tx.end()
+    end()
+  })
 })
 
 test('should log warning span does not match a rule', (t, end) => {
