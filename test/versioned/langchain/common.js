@@ -5,7 +5,7 @@
 
 'use strict'
 
-const tap = require('tap')
+const { match } = require('../../lib/custom-assertions')
 
 function filterLangchainEvents(events) {
   return events.filter((event) => {
@@ -21,7 +21,10 @@ function filterLangchainEventsByType(events, msgType) {
   })
 }
 
-function assertLangChainVectorSearch({ tx, vectorSearch, responseDocumentSize }) {
+function assertLangChainVectorSearch(
+  { tx, vectorSearch, responseDocumentSize },
+  { assert = require('node:assert') } = {}
+) {
   const expectedSearch = {
     'id': /[a-f0-9]{36}/,
     'appName': 'New Relic for Node.js tests',
@@ -36,11 +39,14 @@ function assertLangChainVectorSearch({ tx, vectorSearch, responseDocumentSize })
     'duration': tx.trace.root.children[0].getDurationInMillis()
   }
 
-  this.equal(vectorSearch[0].type, 'LlmVectorSearch')
-  this.match(vectorSearch[1], expectedSearch, 'should match vector search')
+  assert.equal(vectorSearch[0].type, 'LlmVectorSearch')
+  match(vectorSearch[1], expectedSearch, { assert })
 }
 
-function assertLangChainVectorSearchResult({ tx, vectorSearchResult, vectorSearchId }) {
+function assertLangChainVectorSearchResult(
+  { tx, vectorSearchResult, vectorSearchId },
+  { assert = require('node:assert') } = {}
+) {
   const baseSearchResult = {
     'id': /[a-f0-9]{36}/,
     'search_id': vectorSearchId,
@@ -63,12 +69,15 @@ function assertLangChainVectorSearchResult({ tx, vectorSearchResult, vectorSearc
       expectedChatMsg.page_content = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
     }
 
-    this.equal(search[0].type, 'LlmVectorSearchResult')
-    this.match(search[1], expectedChatMsg, 'should match vector search result')
+    assert.equal(search[0].type, 'LlmVectorSearchResult')
+    match(search[1], expectedChatMsg, { assert })
   })
 }
 
-function assertLangChainChatCompletionSummary({ tx, chatSummary, withCallback }) {
+function assertLangChainChatCompletionSummary(
+  { tx, chatSummary, withCallback },
+  { assert = require('node:assert') } = {}
+) {
   const expectedSummary = {
     'id': /[a-f0-9]{36}/,
     'appName': 'New Relic for Node.js tests',
@@ -90,18 +99,21 @@ function assertLangChainChatCompletionSummary({ tx, chatSummary, withCallback })
     expectedSummary.id = /[a-f0-9\-]{36}/
   }
 
-  this.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
-  this.match(chatSummary[1], expectedSummary, 'should match chat summary message')
+  assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
+  match(chatSummary[1], expectedSummary, { assert })
 }
 
-function assertLangChainChatCompletionMessages({
-  tx,
-  chatMsgs,
-  chatSummary,
-  withCallback,
-  input = '{"topic":"scientist"}',
-  output = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
-}) {
+function assertLangChainChatCompletionMessages(
+  {
+    tx,
+    chatMsgs,
+    chatSummary,
+    withCallback,
+    input = '{"topic":"scientist"}',
+    output = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
+  },
+  { assert = require('node:assert') } = {}
+) {
   const baseMsg = {
     id: /[a-f0-9]{36}/,
     appName: 'New Relic for Node.js tests',
@@ -131,17 +143,16 @@ function assertLangChainChatCompletionMessages({
       expectedChatMsg.is_response = true
     }
 
-    this.equal(msg[0].type, 'LlmChatCompletionMessage')
-    this.match(msg[1], expectedChatMsg, 'should match chat completion message')
+    assert.equal(msg[0].type, 'LlmChatCompletionMessage')
+    match(msg[1], expectedChatMsg, { assert })
   })
 }
 
-tap.Test.prototype.addAssert('langchainMessages', 1, assertLangChainChatCompletionMessages)
-tap.Test.prototype.addAssert('langchainSummary', 1, assertLangChainChatCompletionSummary)
-tap.Test.prototype.addAssert('langchainVectorSearch', 1, assertLangChainVectorSearch)
-tap.Test.prototype.addAssert('langchainVectorSearchResult', 1, assertLangChainVectorSearchResult)
-
 module.exports = {
+  assertLangChainChatCompletionMessages,
+  assertLangChainChatCompletionSummary,
+  assertLangChainVectorSearch,
+  assertLangChainVectorSearchResult,
   filterLangchainEvents,
   filterLangchainEventsByType
 }

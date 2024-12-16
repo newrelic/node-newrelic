@@ -392,8 +392,8 @@ test(`retries on misconfigured proxy`, async (t) => {
   // do with our in-process HTTP server is to generate an abruptly closed
   // request, but that will not meet the "is misconfigured proxy" assertion
   // the agent uses. We'd like a better way of dealing with this, but for now
-  // (2024-08), we are moving on so that this does not block our conversion
-  // from `tap` to `node:test`.
+  // (2024-08), we are moving on so that this does not block our test conversion
+  // to `node:test`.
   //
   // See https://github.com/nock/nock/blob/66eb7f48a7bdf50ee79face6403326b02d23253b/lib/socket.js#L81-L88.
   // That `destroy` method is what ends up implementing the functionality

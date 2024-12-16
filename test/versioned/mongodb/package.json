@@ -13,13 +13,13 @@
         "mongodb": ">=4.1.4"
       },
       "files": [
-        "bulk.tap.js",
-        "collection-find.tap.js",
-        "collection-index.tap.js",
-        "collection-misc.tap.js",
-        "collection-update.tap.js",
-        "cursor.tap.js",
-        "db.tap.js"
+        "bulk.test.js",
+        "collection-find.test.js",
+        "collection-index.test.js",
+        "collection-misc.test.js",
+        "collection-update.test.js",
+        "cursor.test.js",
+        "db.test.js"
       ]
     }
   ],

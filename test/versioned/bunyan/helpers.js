@@ -8,7 +8,7 @@
 const assert = require('node:assert')
 
 const helpers = module.exports
-const { CONTEXT_KEYS, validateLogLine } = require('../../lib/logging-helper')
+const { CONTEXT_KEYS, validateLogLine, validateCommonAttrs } = require('../../lib/logging-helper')
 
 /**
  * Provides a mocked-up writable stream that can be provided to Bunyan for easier testing
@@ -56,9 +56,7 @@ helpers.originalMsgAssertion = function originalMsgAssertion({
   hostname
 }) {
   CONTEXT_KEYS.forEach((key) => {
-    if (key !== 'hostname') {
-      assert.equal(logLine[key], undefined, `should not have ${key}`)
-    }
+    assert.equal(logLine[key], undefined, `should not have ${key}`)
   })
 
   assert.ok(logLine.time, 'should include timestamp')
@@ -103,4 +101,8 @@ helpers.logForwardingMsgAssertion = function logForwardingMsgAssertion(logLine, 
     assert.equal(typeof logLine['trace.id'], 'string', 'msg in trans should have trace id')
     assert.equal(typeof logLine['span.id'], 'string', 'msg in trans should have span id')
   }
+
+  const [payload] = agent.logs._toPayloadSync()
+  const commonAttrs = payload.common.attributes
+  validateCommonAttrs({ commonAttrs, config: agent.config })
 }

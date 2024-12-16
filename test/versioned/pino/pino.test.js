@@ -7,25 +7,34 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const stream = require('node:stream')
+const { once } = require('node:events')
 const split = require('split2')
 const semver = require('semver')
 
-const { sink, once } = require('pino/test/helper')
 const { truncate } = require('../../../lib/util/application-logging')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { originalMsgAssertion } = require('./helpers')
-const { validateLogLine } = require('../../lib/logging-helper')
+const { validateLogLine, validateCommonAttrs } = require('../../lib/logging-helper')
 
 const { version: pinoVersion } = require('pino/package')
 
 function setup(testContext, config) {
+  testContext.logs = []
+  const sink = new stream.Writable({
+    write(chunk, encoding, callback) {
+      testContext.logs.push(JSON.parse(chunk.toString('utf8')))
+      callback()
+    }
+  })
+  testContext.sink = sink
+
   testContext.agent = helper.instrumentMockedAgent(config)
   testContext.agent.config.entity_guid = 'test-guid'
   testContext.pino = require('pino')
-  testContext.stream = sink()
-  testContext.logger = testContext.pino({ level: 'debug' }, testContext.stream)
+  testContext.logger = testContext.pino({ level: 'debug' }, testContext.sink)
   testContext.config = testContext.agent.config
 }
 
@@ -42,12 +51,12 @@ test.afterEach((ctx) => {
 
 test('logging disabled', async (t) => {
   setup(t.nr, { application_logging: { enabled: false } })
-  const { agent, pino, stream } = t.nr
+  const { agent, pino, sink } = t.nr
 
-  const disabledLogger = pino({ level: 'info' }, stream)
+  const disabledLogger = pino({ level: 'info' }, sink)
   const message = 'logs are not enriched'
   disabledLogger.info(message)
-  const line = await once(stream, 'data')
+  const line = t.nr.logs[0]
   originalMsgAssertion({
     logLine: line,
     hostname: agent.config.getHostnameSafe()
@@ -77,11 +86,11 @@ test('local_decorating', (t, end) => {
       metrics: { enabled: false }
     }
   })
-  const { agent, logger, stream } = t.nr
+  const { agent, logger } = t.nr
   const message = 'pino decorating test'
   helper.runInTransaction(agent, 'pino-test', async () => {
     logger.info(message)
-    let line = await once(stream, 'data')
+    let line = t.nr.logs.shift()
     originalMsgAssertion({
       includeLocalDecorating: true,
       hostname: agent.config.getHostnameSafe(),
@@ -91,7 +100,7 @@ test('local_decorating', (t, end) => {
 
     // Verify that merging object only logs get decorated:
     logger.info({ msg: message })
-    line = await once(stream, 'data')
+    line = t.nr.logs.shift()
     assert.equal(line.msg.startsWith(`${message} NR-LINKING|test-guid`), true)
     originalMsgAssertion({
       includeLocalDecorating: true,
@@ -120,17 +129,20 @@ test('forwarding', async (t) => {
   })
 
   await t.test('should have proper metadata outside of a transaction', async (t) => {
-    const { agent, config, logger, stream } = t.nr
+    const { agent, config, logger } = t.nr
     const message = 'pino unit test'
     const level = 'info'
     logger[level](message)
-    const line = await once(stream, 'data')
+    const line = t.nr.logs.shift()
     originalMsgAssertion({
       hostname: agent.config.getHostnameSafe(),
       logLine: line
     })
     assert.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
     const formattedLine = agent.logs.getEvents()[0]()
+    const [payload] = agent.logs._toPayloadSync()
+    const commonAttrs = payload.common.attributes
+    validateCommonAttrs({ commonAttrs, config })
     validateLogLine({ line: formattedLine, message, level, config })
   })
 
@@ -150,6 +162,9 @@ test('forwarding', async (t) => {
     // See: https://github.com/pinojs/pino/pull/1779/files
     if (semver.gte(pinoVersion, '8.15.1')) {
       const formattedLine = agent.logs.getEvents()[0]()
+      const [payload] = agent.logs._toPayloadSync()
+      const commonAttrs = payload.common.attributes
+      validateCommonAttrs({ commonAttrs, config })
       validateLogLine({ line: formattedLine, message: testMsg, level, config })
     } else {
       assert.equal(
@@ -162,11 +177,11 @@ test('forwarding', async (t) => {
   })
 
   await t.test('should have proper error keys when error is present', async (t) => {
-    const { agent, config, logger, stream } = t.nr
+    const { agent, config, logger } = t.nr
     const err = new Error('This is a test')
     const level = 'error'
     logger[level](err)
-    const line = await once(stream, 'data')
+    const line = t.nr.logs.shift()
     originalMsgAssertion({
       hostname: agent.config.getHostnameSafe(),
       logLine: line,
@@ -180,6 +195,9 @@ test('forwarding', async (t) => {
       level,
       config
     })
+    const [payload] = agent.logs._toPayloadSync()
+    const commonAttrs = payload.common.attributes
+    validateCommonAttrs({ commonAttrs, config })
     assert.equal(formattedLine['error.class'], 'Error', 'should have Error as error.class')
     assert.equal(formattedLine['error.message'], err.message, 'should have proper error.message')
     assert.equal(
@@ -191,13 +209,13 @@ test('forwarding', async (t) => {
   })
 
   await t.test('should add proper trace info in transaction', (t, end) => {
-    const { agent, config, logger, stream } = t.nr
+    const { agent, config, logger } = t.nr
     helper.runInTransaction(agent, 'pino-test', async (tx) => {
       const level = 'info'
       const message = 'My debug test'
       logger[level](message)
       const meta = agent.getLinkingMetadata()
-      const line = await once(stream, 'data')
+      const line = t.nr.logs.shift()
       originalMsgAssertion({
         hostname: agent.config.getHostnameSafe(),
         logLine: line
@@ -216,6 +234,9 @@ test('forwarding', async (t) => {
 
       const formattedLine = agent.logs.getEvents()[0]()
       validateLogLine({ line: formattedLine, message, level, config })
+      const [payload] = agent.logs._toPayloadSync()
+      const commonAttrs = payload.common.attributes
+      validateCommonAttrs({ commonAttrs, config })
       assert.equal(formattedLine['trace.id'], meta['trace.id'])
       assert.equal(formattedLine['span.id'], meta['span.id'])
 
@@ -226,13 +247,12 @@ test('forwarding', async (t) => {
   await t.test(
     'should assign hostname from NR linking metadata when not defined as a core chinding',
     async (t) => {
-      const { agent, config, pino } = t.nr
-      const localStream = sink()
-      const localLogger = pino({ base: undefined }, localStream)
+      const { agent, config, pino, sink } = t.nr
+      const localLogger = pino({ base: undefined }, sink)
       const message = 'pino unit test'
       const level = 'info'
       localLogger[level](message)
-      const line = await once(localStream, 'data')
+      const line = t.nr.logs.shift()
       assert.equal(line.pid, undefined, 'should not have pid when overriding base chindings')
       assert.equal(
         line.hostname,
@@ -246,7 +266,7 @@ test('forwarding', async (t) => {
   )
 
   await t.test('should properly handle child loggers', (t, end) => {
-    const { agent, config, logger, stream } = t.nr
+    const { agent, config, logger } = t.nr
     const childLogger = logger.child({ module: 'child' })
     helper.runInTransaction(agent, 'pino-test', async (tx) => {
       // these are defined in opposite order because the log aggregator is LIFO
@@ -254,13 +274,13 @@ test('forwarding', async (t) => {
       const level = 'info'
       logger[level](messages[1])
       const meta = agent.getLinkingMetadata()
-      const line = await once(stream, 'data')
+      const line = t.nr.logs.shift()
       originalMsgAssertion({
         hostname: agent.config.getHostnameSafe(),
         logLine: line
       })
       childLogger[level](messages[0])
-      const childLine = await once(stream, 'data')
+      const childLine = t.nr.logs.shift()
       originalMsgAssertion({
         hostname: agent.config.getHostnameSafe(),
         logLine: childLine
@@ -292,6 +312,9 @@ test('forwarding', async (t) => {
         )
         assert.equal(formattedLine['span.id'], meta['span.id'], 'should be expected span.id value')
       })
+      const [payload] = agent.logs._toPayloadSync()
+      const commonAttrs = payload.common.attributes
+      validateCommonAttrs({ commonAttrs, config })
 
       end()
     })
@@ -315,7 +338,7 @@ test('metrics', async (t) => {
   })
 
   await t.test('should count logger metrics', (t, end) => {
-    const { agent, pino, stream } = t.nr
+    const { agent, pino, sink } = t.nr
     const pinoLogger = pino(
       {
         level: 'debug',
@@ -323,7 +346,7 @@ test('metrics', async (t) => {
           http: 35
         }
       },
-      stream
+      sink
     )
 
     helper.runInTransaction(agent, 'pino-test', async () => {
@@ -340,7 +363,6 @@ test('metrics', async (t) => {
           pinoLogger[logLevel](msg)
         }
       }
-      await once(stream, 'data')
 
       let grandTotal = 0
       for (const [logLevel, maxCount] of Object.entries(logLevels)) {
@@ -390,10 +412,9 @@ test('metrics', async (t) => {
       }
       setup(t.nr, config)
 
-      const { agent, logger, stream } = t.nr
+      const { agent, logger } = t.nr
       helper.runInTransaction(agent, 'pino-test', async () => {
         logger.info('This is a log message test')
-        await once(stream, 'data')
 
         const linesMetric = agent.metrics.getMetric(LOGGING.LINES)
         assert.equal(linesMetric, undefined, `should not create ${LOGGING.LINES} metric`)
@@ -409,13 +430,11 @@ test('metrics', async (t) => {
 test('should honor msg key in merging object (issue 2410)', async (t) => {
   setup(t.nr, { application_logging: { enabled: true } })
 
-  const { agent, config, pino } = t.nr
-  const localStream = sink()
-  const localLogger = pino({ base: undefined }, localStream)
+  const { agent, config, pino, sink } = t.nr
+  const localLogger = pino({ base: undefined }, sink)
   const message = 'pino unit test'
   const level = 'info'
   localLogger[level]({ msg: message })
-  await once(localStream, 'data')
   assert.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
   const formattedLine = agent.logs.getEvents()[0]()
   validateLogLine({ line: formattedLine, message, level, config })

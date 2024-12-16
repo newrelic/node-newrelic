@@ -4,31 +4,29 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const proxyquire = require('proxyquire')
 const sinon = require('sinon')
 const SCRIPT_PATH = '../create-docs-pr'
 
-tap.test('Create Docs PR script', (testHarness) => {
-  testHarness.autoend()
-
-  testHarness.test('getReleaseNotes', (t) => {
-    t.autoend()
-
-    let mockFs
-    let script
-
-    t.beforeEach(() => {
-      mockFs = {
+test('Create Docs PR script', async (t) => {
+  await t.test('getReleaseNotes', async (t) => {
+    t.beforeEach((ctx) => {
+      const mockFs = {
         readFile: sinon.stub()
       }
-      script = proxyquire(SCRIPT_PATH, {
+      const script = proxyquire(SCRIPT_PATH, {
         fs: mockFs
       })
+      ctx.nr = {
+        mockFs,
+        script
+      }
     })
 
-    t.test('should return our release notes', async (t) => {
+    await t.test('should return our release notes', async (t) => {
+      const { mockFs, script } = t.nr
       const expectedMarkdown = [
         '### v1.2.3 (2020-04-03)',
         '',
@@ -45,43 +43,40 @@ tap.test('Create Docs PR script', (testHarness) => {
 
       const result = await script.getReleaseNotes('v1.2.3', 'NEWS.md')
 
-      t.equal(result.releaseDate, '2020-04-03')
+      assert.equal(result.releaseDate, '2020-04-03')
 
       const body = result.body.split('\n')
-      t.equal(body[0], '#### Stuff heading')
-      t.equal(body[1], '* first commit')
-      t.equal(body[4], '### Support statement:')
-
-      t.end()
+      assert.equal(body[0], '#### Stuff heading')
+      assert.equal(body[1], '* first commit')
+      assert.equal(body[4], '### Support statement:')
     })
   })
 
-  testHarness.test('getFrontMatter', (t) => {
-    t.autoend()
-
-    let mockFs
-    let script
-
-    t.beforeEach(() => {
-      mockFs = {
+  await t.test('getFrontMatter', async (t) => {
+    t.beforeEach((ctx) => {
+      const mockFs = {
         readFile: sinon.stub()
       }
-      script = proxyquire(SCRIPT_PATH, {
+      const script = proxyquire(SCRIPT_PATH, {
         fs: mockFs
       })
+      ctx.nr = {
+        mockFs,
+        script
+      }
     })
 
-    t.test('should throw an error if there is no frontmatter', async (t) => {
+    await t.test('should throw an error if there is no frontmatter', async (t) => {
+      const { mockFs, script } = t.nr
       mockFs.readFile.yields(null, JSON.stringify({ entries: [{ version: '1.2.3', changes: [] }] }))
 
       // eslint-disable-next-line sonarjs/no-duplicate-string
       const func = () => script.getFrontMatter('v2.0.0', 'changelog.json')
-      t.rejects(func, 'Unable to find 2.0.0 entry in changelog.json')
-
-      t.end()
+      await assert.rejects(func, { message: 'Unable to find 2.0.0 entry in changelog.json' })
     })
 
-    t.test('should return our formatted frontmatter', async (t) => {
+    await t.test('should return our formatted frontmatter', async (t) => {
+      const { mockFs, script } = t.nr
       mockFs.readFile.yields(
         null,
         JSON.stringify({
@@ -100,15 +95,15 @@ tap.test('Create Docs PR script', (testHarness) => {
 
       const result = await script.getFrontMatter('v2.0.0', 'changelog.json')
 
-      t.same(result, {
+      assert.deepEqual(result, {
         security: '["one","two"]',
         bugfixes: '["five","six"]',
         features: '["three","four"]'
       })
-      t.end()
     })
 
-    t.test('should return empty arrays if missing changes', async (t) => {
+    await t.test('should return empty arrays if missing changes', async (t) => {
+      const { mockFs, script } = t.nr
       mockFs.readFile.yields(
         null,
         JSON.stringify({
@@ -123,25 +118,22 @@ tap.test('Create Docs PR script', (testHarness) => {
 
       const result = await script.getFrontMatter('v2.0.0', 'changelog.json')
 
-      t.same(result, {
+      assert.deepEqual(result, {
         security: '[]',
         bugfixes: '[]',
         features: '[]'
       })
-      t.end()
     })
   })
 
-  testHarness.test('formatReleaseNotes', (t) => {
-    t.autoend()
-
-    let script
-
-    t.beforeEach(() => {
-      script = proxyquire(SCRIPT_PATH, {})
+  await t.test('formatReleaseNotes', async (t) => {
+    t.beforeEach((ctx) => {
+      const script = proxyquire(SCRIPT_PATH, {})
+      ctx.nr = { script }
     })
 
-    t.test('should generate the release note markdown', (t) => {
+    await t.test('should generate the release note markdown', (t) => {
+      const { script } = t.nr
       const markdown = [
         '#### Stuff',
         '* commit number one',
@@ -175,9 +167,7 @@ tap.test('Create Docs PR script', (testHarness) => {
         '* commit number two'
       ].join('\n')
 
-      t.equal(result, expected)
-
-      t.end()
+      assert.equal(result, expected)
     })
   })
 })

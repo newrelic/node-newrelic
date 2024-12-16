@@ -55,7 +55,6 @@ function getValidatorCallback({ t, tx, segments, metrics, end, childrenLength = 
 
     tx.end()
     checkMetrics({
-      t,
       agent,
       host: METRIC_HOST_NAME,
       port: METRIC_HOST_PORT,

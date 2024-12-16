@@ -79,6 +79,9 @@ test('Application Logging Config Tests', async (t) => {
           enabled: false
         },
         forwarding: {
+          labels: {
+            enabled: false
+          },
           enabled: false
         },
         local_decorating: {
@@ -124,11 +127,22 @@ test('Application Logging Config Tests', async (t) => {
     const { config } = t.nr
     assert.equal(loggingUtils.isApplicationLoggingEnabled(config), false)
   })
+
+  await t.test('should be true when application_logging.forwarding.labels is true', (t) => {
+    const { config } = t.nr
+    config.application_logging.forwarding.labels.enabled = true
+    assert.equal(loggingUtils.isLogLabelingEnabled(config), true)
+  })
+
+  await t.test('should be false when application_logging.forwarding.labels is false', (t) => {
+    const { config } = t.nr
+    config.application_logging.forwarding.labels.enabled = false
+    assert.equal(loggingUtils.isLogLabelingEnabled(config), false)
+  })
 })
 
 test('incrementLoggingLinesMetrics', async (t) => {
   t.beforeEach((ctx) => {
-    console.log('before test')
     ctx.nr = {}
     const callCountStub = { incrementCallCount: sinon.stub() }
     ctx.nr.metricsStub = {

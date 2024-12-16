@@ -32,6 +32,11 @@ const selfCert = require('self-cert')
  */
 module.exports = function fakeCert({ commonName = null } = {}) {
   const cert = selfCert({
+    // We set the certificate bits to 1,024 because we don't need 4,096 bit
+    // certificates for tests. This speeds up certificate generation time by
+    // a significant amount, and thus speeds up tests that rely on these
+    // certificates.
+    bits: 1_024,
     attrs: {
       commonName: commonName,
       stateName: 'Georgia',

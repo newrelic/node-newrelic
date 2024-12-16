@@ -17,12 +17,7 @@ const repos = [
     repository: 'https://github.com/newrelic/newrelic-node-apollo-server-plugin.git',
     branch: 'main',
     additionalFiles: [
-      'tests/agent-testing.js',
-      'tests/create-apollo-server-setup.js',
-      'tests/data-definitions.js',
-      'tests/metrics-tests.js',
-      'tests/test-client.js',
-      'tests/utils.js'
+      'tests/lib',
     ]
   }
 ]

@@ -949,7 +949,7 @@ test('when event_harvest_config update on connect with a valid config', async (t
 })
 
 test('logging supportability on connect', async (t) => {
-  const keys = ['Forwarding', 'Metrics', 'LocalDecorating']
+  const keys = ['Forwarding', 'Metrics', 'LocalDecorating', 'Labels']
 
   t.beforeEach((ctx) => {
     ctx.nr = {}
@@ -967,12 +967,13 @@ test('logging supportability on connect', async (t) => {
     agent.config.application_logging.metrics.enabled = false
     agent.config.application_logging.forwarding.enabled = false
     agent.config.application_logging.local_decorating.enabled = false
+    agent.config.application_logging.forwarding.labels.enabled = false
     agent.onConnect(false, () => {
       for (const key of keys) {
         const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
         const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
-        assert.equal(disabled.callCount, 1)
-        assert.equal(enabled, undefined)
+        assert.equal(disabled.callCount, 1, `${key} should be disabled`)
+        assert.equal(enabled, undefined, `${key} should not be enabled`)
       }
       end()
     })
@@ -987,12 +988,13 @@ test('logging supportability on connect', async (t) => {
       agent.config.application_logging.metrics.enabled = true
       agent.config.application_logging.forwarding.enabled = true
       agent.config.application_logging.local_decorating.enabled = true
+      agent.config.application_logging.forwarding.labels.enabled = true
       agent.onConnect(false, () => {
         for (const key of keys) {
           const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
           const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
-          assert.equal(disabled.callCount, 1)
-          assert.equal(enabled, undefined)
+          assert.equal(disabled.callCount, 1, `${key} should be disabled`)
+          assert.equal(enabled, undefined, `${key} should not be enabled`)
         }
         end()
       })
@@ -1006,12 +1008,13 @@ test('logging supportability on connect', async (t) => {
     agent.config.application_logging.metrics.enabled = true
     agent.config.application_logging.forwarding.enabled = true
     agent.config.application_logging.local_decorating.enabled = true
+    agent.config.application_logging.forwarding.labels.enabled = true
     agent.onConnect(false, () => {
       for (const key of keys) {
         const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
         const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
-        assert.equal(enabled.callCount, 1)
-        assert.equal(disabled, undefined)
+        assert.equal(enabled.callCount, 1, `${key} should be enabled`)
+        assert.equal(disabled, undefined, `${key} should not be enabled`)
       }
       end()
     })
@@ -1110,5 +1113,54 @@ test('_reset*', async (t) => {
     const { agent } = t.nr
     agent._resetCustomEvents()
     assert.equal(agent.customEventAggregator.clear.callCount, 1)
+  })
+})
+
+test('getLinkingMetadata', async (t) => {
+  t.beforeEach((ctx) => {
+    const agent = helper.loadMockedAgent()
+    ctx.nr = { agent }
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should include service links by default', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (tx) => {
+      const metadata = agent.getLinkingMetadata()
+      assert.ok(metadata['trace.id'], tx.traceId)
+      assert.ok(metadata['span.id'], tx.trace.root.getSpanId())
+      assert.equal(metadata['entity.name'], 'New Relic for Node.js tests')
+      assert.equal(metadata['entity.type'], 'SERVICE')
+      assert.ok(!metadata['entity.guid'])
+      assert.equal(metadata.hostname, agent.config.getHostnameSafe())
+      end()
+    })
+  })
+
+  await t.test('should not include service links when passing true', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (tx) => {
+      const metadata = agent.getLinkingMetadata(true)
+      assert.ok(metadata['trace.id'], tx.traceId)
+      assert.ok(metadata['span.id'], tx.trace.root.getSpanId())
+      assert.ok(!metadata['entity.name'])
+      assert.ok(!metadata['entity.type'])
+      assert.ok(!metadata['entity.guid'])
+      assert.ok(!metadata.hostname)
+      end()
+    })
+  })
+
+  await t.test('should return service linking metadata', (t) => {
+    const { agent } = t.nr
+    agent.config.entity_guid = 'guid'
+    const metadata = agent.getServiceLinkingMetadata()
+    assert.equal(metadata['entity.name'], 'New Relic for Node.js tests')
+    assert.equal(metadata['entity.type'], 'SERVICE')
+    assert.equal(metadata['entity.guid'], 'guid')
+    assert.equal(metadata.hostname, agent.config.getHostnameSafe())
   })
 })

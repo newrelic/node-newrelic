@@ -19,13 +19,19 @@ const helper = require('../../lib/agent_helper')
  * @property {object} cfg.server
  */
 common.runTest = function runTest(cfg) {
-  const { t, endpoint, agent, prefix = 'Restify', requestOpts = null, server } = cfg
+  const {
+    assert = require('node:assert'),
+    endpoint,
+    agent,
+    prefix = 'Restify',
+    requestOpts = null,
+    server
+  } = cfg
   let { expectedName } = cfg
   expectedName = `WebTransaction/${prefix}/${expectedName}`
 
   agent.on('transactionFinished', (tx) => {
-    t.equal(tx.name, expectedName, 'should have correct name')
-    t.end()
+    assert.equal(tx.name, expectedName, 'should have correct name')
   })
 
   server.listen(() => {

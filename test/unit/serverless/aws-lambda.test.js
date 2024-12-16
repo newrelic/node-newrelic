@@ -108,6 +108,48 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       body: 'worked'
     }
 
+    await t.test(
+      'should not create web transaction for custom direct invocation payload',
+      (t, end) => {
+        const { agent, awsLambda, stubContext, stubCallback } = t.nr
+        agent.on('transactionFinished', confirmAgentAttribute)
+
+        const nonApiGatewayProxyEvent = {
+          resource: {
+            some: 'key'
+          },
+          action: 'someAction'
+        }
+
+        const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+          const transaction = agent.tracer.getTransaction()
+
+          assert.ok(transaction)
+          assert.equal(transaction.type, 'bg')
+          assert.equal(transaction.getFullName(), expectedBgTransactionName)
+          assert.equal(transaction.isActive(), true)
+
+          callback(null, validResponse)
+        })
+
+        wrappedHandler(nonApiGatewayProxyEvent, stubContext, stubCallback)
+
+        function confirmAgentAttribute(transaction) {
+          const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+          const segment = transaction.baseSegment
+          const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+          assert.equal(agentAttributes['request.method'], undefined)
+          assert.equal(agentAttributes['request.uri'], undefined)
+
+          assert.equal(spanAttributes['request.method'], undefined)
+          assert.equal(spanAttributes['request.uri'], undefined)
+
+          end()
+        }
+      }
+    )
+
     await t.test('should create web transaction', (t, end) => {
       const { agent, awsLambda, stubContext, stubCallback } = t.nr
       agent.on('transactionFinished', confirmAgentAttribute)
