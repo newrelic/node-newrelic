@@ -476,6 +476,7 @@
   },
   {
     "name": "Fallback",
+    "type": "internal",
     "matcher": {
       "required_span_kinds": [
         "internal"
