@@ -12,7 +12,7 @@
         "@nestjs/cli": ">=9.0.0"
       },
       "files": [
-        "nest.tap.js"
+        "nest.test.js"
       ]
     }
   ]

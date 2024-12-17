@@ -13,9 +13,9 @@
         "pg-native": ">=3.0.0"
       },
       "files": [
-        "force-native.tap.js",
-        "native.tap.js",
-        "pg.tap.js"
+        "force-native.test.js",
+        "native.test.js",
+        "pg.test.js"
       ]
     }
   ],

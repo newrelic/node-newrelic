@@ -68,7 +68,10 @@ function getPort() {
   return String(params.mongodb_port)
 }
 
-function checkMetrics({ t, agent, host, port, metrics = [], prefix = STATEMENT_PREFIX }) {
+function checkMetrics(
+  { agent, host, port, metrics = [], prefix = STATEMENT_PREFIX },
+  { assert = require('node:assert') } = {}
+) {
   const agentMetrics = getMetrics(agent)
 
   const unscopedMetrics = agentMetrics.unscoped
@@ -79,10 +82,9 @@ function checkMetrics({ t, agent, host, port, metrics = [], prefix = STATEMENT_P
   const scoped = agentMetrics.scoped[TRANSACTION_NAME]
   let total = 0
 
-  if (!t.ok(scoped, 'should have scoped metrics')) {
-    return
-  }
-  t.equal(Object.keys(agentMetrics.scoped).length, 1, 'should have one metric scope')
+  assert.ok(scoped, 'should have scoped metrics')
+
+  assert.equal(Object.keys(agentMetrics.scoped).length, 1, 'should have one metric scope')
   for (let i = 0; i < metrics.length; ++i) {
     let count = null
     let name = null
@@ -97,17 +99,17 @@ function checkMetrics({ t, agent, host, port, metrics = [], prefix = STATEMENT_P
 
     total += count
 
-    t.equal(
+    assert.equal(
       unscopedMetrics['Datastore/operation/MongoDB/' + name].callCount,
       count,
       'unscoped operation metric should be called ' + count + ' times'
     )
-    t.equal(
+    assert.equal(
       unscopedMetrics[`${prefix}/` + name].callCount,
       count,
       'unscoped statement metric should be called ' + count + ' times'
     )
-    t.equal(
+    assert.equal(
       scoped[`${prefix}/` + name].callCount,
       count,
       'scoped statement metric should be called ' + count + ' times'
@@ -120,7 +122,7 @@ function checkMetrics({ t, agent, host, port, metrics = [], prefix = STATEMENT_P
     // via `API.prototype.instrumentDatastore`.
     expectedUnscopedCount += 1
   }
-  t.equal(
+  assert.equal(
     unscopedDatastoreNames.length,
     expectedUnscopedCount,
     'should have ' + expectedUnscopedCount + ' unscoped metrics'
@@ -133,9 +135,8 @@ function checkMetrics({ t, agent, host, port, metrics = [], prefix = STATEMENT_P
     'Datastore/instance/MongoDB/' + host + '/' + port
   ]
   expectedUnscopedMetrics.forEach(function (metric) {
-    if (t.ok(unscopedMetrics[metric], 'should have unscoped metric ' + metric)) {
-      t.equal(unscopedMetrics[metric].callCount, total, 'should have correct call count')
-    }
+    assert.ok(unscopedMetrics[metric], 'should have unscoped metric ' + metric)
+    assert.equal(unscopedMetrics[metric].callCount, total, 'should have correct call count')
   })
 }
 

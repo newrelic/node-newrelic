@@ -198,7 +198,7 @@ test('BatchSpanStreamer', async (t) => {
 
   await t.test('should send in appropriate batch sizes', (t) => {
     const { fakeConnection, spanStreamer } = t.nr
-    t.diagnostic('this will simulate n full batches and the last batch being 1/3 full')
+    // this will simulate n full batches and the last batch being 1/3 full
     const SPANS = 10000
     const BATCH = 750
     const metrics = spanStreamer._metrics

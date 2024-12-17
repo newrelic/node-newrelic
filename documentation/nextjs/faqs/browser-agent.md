@@ -8,5 +8,5 @@ A: It depends on if you are using the Pages or App Router for Next.js.
 ## Inject Browser Agent 
 The following links demonstrates how to inject the browser agent.
 
- * [Pages Router](https://github.com/newrelic/newrelic-node-examples/blob/e118117470ae9f9038c60d8a171a6f0d440f6291/nextjs-legacy/pages/_document.jsx)
- * [App Router](https://github.com/newrelic/newrelic-node-examples/blob/58f760e828c45d90391bda3f66764d4420ba4990/nextjs-app-router/app/layout.js)
+ * [Pages Router](https://github.com/newrelic/newrelic-node-examples/blob/9415503f3bd78fa5d87a7214596d51c946199474/nextjs/nextjs-legacy/pages/_document.jsx)
+ * [App Router](https://github.com/newrelic/newrelic-node-examples/blob/9415503f3bd78fa5d87a7214596d51c946199474/nextjs/nextjs-app-router/app/layout.js)

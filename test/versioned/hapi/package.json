@@ -14,16 +14,16 @@
         "@hapi/vision": "latest"
       },
       "files": [
-        "capture-params.tap.js",
-        "errors.tap.js",
-        "ext.tap.js",
-        "hapi.tap.js",
-        "ignoring.tap.js",
-        "plugins.tap.js",
-        "render.tap.js",
-        "router.tap.js",
-        "segments.tap.js",
-        "vhost.tap.js"
+        "capture-params.test.js",
+        "errors.test.js",
+        "ext.test.js",
+        "hapi.test.js",
+        "ignoring.test.js",
+        "plugins.test.js",
+        "render.test.js",
+        "router.test.js",
+        "segments.test.js",
+        "vhost.test.js"
       ]
     }
   ]

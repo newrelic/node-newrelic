@@ -51,7 +51,7 @@ test('addUser, authenticate, removeUser', async (t) => {
       if (typeof db.authenticate === 'function') {
         db.authenticate(username, password, authed)
       } else {
-        t.diagnostic('skipping authentication test, not supported on db')
+        // skipping authentication test, not supported on db
         db.removeUser(username, removedNoAuth)
       }
     }
@@ -476,7 +476,7 @@ function verifyMongoSegments({ t, tx, expectedSegments }) {
     // datastore instance attributes.
     if (/^Datastore\/.*?\/MongoDB/.test(current.name) === true) {
       if (isBadSegment(current) === true) {
-        t.diagnostic(`skipping attributes check for ${current.name}`)
+        // skipping attributes check for ${current.name}
         continue
       }
 

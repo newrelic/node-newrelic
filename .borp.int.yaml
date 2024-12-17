@@ -1,5 +1,6 @@
 files:
-  - 'test/integration/**/*.tap.js'
-  # We can't do a simple '**/*.test.js' because the "uninstrumented" suite
-  # includes a `node_modules` directory that includes several `.tests.js` files.
-  - 'test/integration/*.test.js'
+  - 'test/integration/**/*.test.js'
+  # We need to ignore any `*.test.js` files within nested `node_modules`
+  # directories. We only want to target the tests we have written ourselves.
+  - '!test/integration/**/node_modules/**/*'
+

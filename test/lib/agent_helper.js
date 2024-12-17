@@ -25,8 +25,6 @@ const cp = require('child_process')
 let _agent = null
 let _agentApi = null
 const tasks = []
-// Load custom tap assertions
-require('./custom-tap-assertions')
 
 const helper = module.exports
 
@@ -461,48 +459,6 @@ helper.makeRequest = (url, options, callback) => {
   req.end()
 }
 
-helper.temporarilyRemoveListeners = (t, emitter, evnt) => {
-  if (!emitter) {
-    t.comment('Not removing %s listeners, emitter does not exist', evnt)
-    return
-  }
-
-  t.comment('Removing listeners for %s', evnt)
-  let listeners = emitter.listeners(evnt)
-  t.teardown(() => {
-    t.comment('Re-adding listeners for %s', evnt)
-    listeners.forEach((fn) => {
-      emitter.on(evnt, fn)
-    })
-    listeners = []
-  })
-  emitter.removeAllListeners(evnt)
-}
-
-/**
- * Tap will prevent certain uncaughtException behaviors from occuring
- * and adds extra properties. This bypasses that.
- * While t.expectUncaughtException seems intended for a similar use case,
- * it does not seem to work appropriately for some of our use casese.
- */
-helper.temporarilyOverrideTapUncaughtBehavior = (tap, t) => {
-  const originalThrew = tap.threw
-  // Prevent tap from failing test and remove extra prop
-  tap.threw = (err) => {
-    delete err.tapCaught
-  }
-
-  const originalTestThrew = t.threw
-  t.threw = (err) => {
-    delete err.tapCaught
-  }
-
-  t.teardown(() => {
-    t.threw = originalTestThrew
-    tap.threw = originalThrew
-  })
-}
-
 /**
  * Set up an unref'd loop to execute tasks that are added
  * via helper.runOutOfContext
@@ -523,15 +479,13 @@ helper.runOutOfContext = function runOutOfContext(fn) {
   tasks.push(fn)
 }
 
-helper.decodeServerlessPayload = (t, payload, cb) => {
+helper.decodeServerlessPayload = (payload, cb) => {
   if (!payload) {
-    t.comment('No payload to decode')
     return cb()
   }
 
   zlib.gunzip(Buffer.from(payload, 'base64'), (err, decompressed) => {
     if (err) {
-      t.comment('Error occurred when decompressing payload')
       return cb(err)
     }
 

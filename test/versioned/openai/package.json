@@ -15,9 +15,9 @@
         "openai": ">=4.0.0"
       },
       "files": [
-        "chat-completions.tap.js",
-        "embeddings.tap.js",
-        "feedback-messages.tap.js"
+        "chat-completions.test.js",
+        "embeddings.test.js",
+        "feedback-messages.test.js"
       ]
     }
   ]

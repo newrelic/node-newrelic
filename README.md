@@ -81,8 +81,8 @@ If you are having trouble getting the `newrelic` package to instrument Next.js, 
 ### Next.js example projects
 The following example applications show how to load the `newrelic` instrumentation, inject browser agent, and handle errors:
 
- * [Pages Router example](https://github.com/newrelic/newrelic-node-examples/tree/58f760e828c45d90391bda3f66764d4420ba4990/nextjs-legacy)
- * [App Router example](https://github.com/newrelic/newrelic-node-examples/tree/58f760e828c45d90391bda3f66764d4420ba4990/nextjs-app-router)
+ * [Pages Router example](https://github.com/newrelic/newrelic-node-examples/tree/9415503f3bd78fa5d87a7214596d51c946199474/nextjs/nextjs-legacy)
+ * [App Router example](https://github.com/newrelic/newrelic-node-examples/tree/9415503f3bd78fa5d87a7214596d51c946199474/nextjs/nextjs-app-router)
 
 ### Custom Next.js servers
 

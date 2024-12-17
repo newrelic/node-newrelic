@@ -24,7 +24,14 @@ test('DynamoDB', async (t) => {
     })
 
     ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      cloud: {
+        aws: {
+          account_id: 123456789123
+        }
+      }
+    })
+
     const Shim = require('../../../lib/shim/datastore-shim')
     ctx.nr.setDatastoreSpy = sinon.spy(Shim.prototype, 'setDatastore')
     const lib = require('@aws-sdk/client-dynamodb')
@@ -96,6 +103,25 @@ test('DynamoDB', async (t) => {
 
       tx.end()
       finish({ commands, tx, setDatastoreSpy })
+    })
+  })
+
+  await t.test('cloud.resource_id attribute not set when account_id is not set', async (t) => {
+    const { agent, commands, client } = t.nr
+    agent.config.cloud.aws.account_id = null
+
+    await helper.runInTransaction(agent, async (tx) => {
+      for (const command of commands) {
+        await client.send(command)
+      }
+      tx.end()
+      const root = tx.trace.root
+      const segments = common.checkAWSAttributes(root, common.DATASTORE_PATTERN)
+
+      segments.forEach((segment) => {
+        const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+        assert.equal(attrs['cloud.resource_id'], null)
+      })
     })
   })
 })
@@ -181,6 +207,7 @@ function finish({ commands, tx, setDatastoreSpy }) {
     )
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
     attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
+    const accountId = tx.agent.config.cloud.aws.account_id
 
     match(attrs, {
       'host': String,
@@ -190,7 +217,8 @@ function finish({ commands, tx, setDatastoreSpy }) {
       'aws.operation': command.constructor.name,
       'aws.requestId': String,
       'aws.region': 'us-east-1',
-      'aws.service': /dynamodb|DynamoDB/
+      'aws.service': /dynamodb|DynamoDB/,
+      'cloud.resource_id': `arn:aws:dynamodb:${attrs['aws.region']}:${accountId}:table/${attrs.collection}`
     })
   })
 

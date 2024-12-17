@@ -15,6 +15,7 @@ const helper = require('../../lib/agent_helper')
 const sysInfo = require('../../../lib/system-info')
 const utilTests = require('../../lib/cross_agent_tests/utilization/utilization_json')
 const bootIdTests = require('../../lib/cross_agent_tests/utilization/boot_id')
+const parseLabels = require('../../../lib/util/label-parser')
 
 const APP_NAMES = ['a', 'c', 'b']
 const DISABLE_ALL_DETECTIONS = {
@@ -49,9 +50,13 @@ test('fun facts about apps that New Relic is interested in including', async (t)
 
     const logs = {
       debug: [],
-      trace: []
+      trace: [],
+      warn: []
     }
     const logger = {
+      warn(...args) {
+        logs.warn.push(args)
+      },
       debug(...args) {
         logs.debug.push(args)
       },
@@ -195,13 +200,16 @@ test('fun facts about apps that New Relic is interested in including', async (t)
   })
 
   await t.test('should convert label object to expected format', (t, end) => {
-    const { agent, facts } = t.nr
+    const { agent, logger, facts } = t.nr
     const longKey = '€'.repeat(257)
     const longValue = '𝌆'.repeat(257)
-    agent.config.labels = {
-      a: 'b',
-      [longKey]: longValue
-    }
+    agent.config.parsedLabels = parseLabels(
+      {
+        a: 'b',
+        [longKey]: longValue
+      },
+      { child: () => logger }
+    )
     facts(agent, (result) => {
       const expected = [
         { label_type: 'a', label_value: 'b' },
@@ -213,10 +221,12 @@ test('fun facts about apps that New Relic is interested in including', async (t)
   })
 
   await t.test('should convert label string to expected format', (t, end) => {
-    const { agent, facts } = t.nr
+    const { agent, logger, facts } = t.nr
     const longKey = '€'.repeat(257)
     const longValue = '𝌆'.repeat(257)
-    agent.config.labels = `a: b; ${longKey}: ${longValue}`
+    agent.config.parsedLabels = parseLabels(`a: b; ${longKey}: ${longValue}`, {
+      child: () => logger
+    })
     facts(agent, (result) => {
       const expected = [
         { label_type: 'a', label_value: 'b' },
@@ -721,7 +731,7 @@ test('display_host facts', async (t) => {
     const { agent, facts } = t.nr
     if (!agent.config.getIPAddresses().ipv6) {
       t.diagnostic('this machine does not have an ipv6 address, skipping')
-      return end()
+      end()
     }
 
     agent.config.process_host.ipv_preference = '6'
@@ -744,7 +754,7 @@ test('display_host facts', async (t) => {
     const { agent, facts } = t.nr
     if (!agent.config.getIPAddresses().ipv6) {
       t.diagnostic('this machine does not have an ipv6 address, skipping')
-      return end()
+      end()
     }
 
     const mockedNI = {

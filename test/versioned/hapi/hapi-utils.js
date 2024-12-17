@@ -5,8 +5,6 @@
 
 'use strict'
 
-const tap = require('tap')
-
 exports.getServer = function getServer(cfg) {
   cfg = cfg || {}
   const host = cfg.host || 'localhost'
@@ -19,6 +17,5 @@ exports.getServer = function getServer(cfg) {
   const servers = ['Server', 'server']
   const server = servers[Math.round(Math.random())]
 
-  tap.comment(`Randomly testing with hapi.${server}`)
   return hapi[server](Object.assign({}, opts, { host, port }))
 }

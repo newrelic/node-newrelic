@@ -21,7 +21,13 @@ test('DynamoDB', async (t) => {
     })
 
     ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      cloud: {
+        aws: {
+          account_id: 123456789123
+        }
+      }
+    })
     const lib = require('@aws-sdk/lib-dynamodb')
     ctx.nr.DynamoDBDocument = lib.DynamoDBDocument
     ctx.nr.DynamoDBDocumentClient = lib.DynamoDBDocumentClient
@@ -137,6 +143,8 @@ function finish(end, tests, tx) {
   const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
+  const accountId = tx.agent.config.cloud.aws.account_id
+
   segments.forEach((segment, i) => {
     const operation = tests[i].operation
     assert.equal(
@@ -154,7 +162,8 @@ function finish(end, tests, tx) {
       'aws.operation': operation,
       'aws.requestId': String,
       'aws.region': 'us-east-1',
-      'aws.service': 'DynamoDB'
+      'aws.service': 'DynamoDB',
+      'cloud.resource_id': `arn:aws:dynamodb:${attrs['aws.region']}:${accountId}:table/${attrs.collection}`
     })
   })
 

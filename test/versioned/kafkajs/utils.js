@@ -4,6 +4,8 @@
  */
 
 'use strict'
+
+const { assertMetrics } = require('../../lib/custom-assertions')
 const { makeId } = require('../../../lib/util/hashes')
 const utils = module.exports
 const metrics = require('../../lib/metrics_helper')
@@ -70,14 +72,14 @@ utils.waitForConsumersToJoinGroup = ({ consumer, maxWait = 10000 }) =>
  * and the relevant tx attributes
  *
  * @param {object} params function params
- * @param {object} params.t test instance
+ * @param {object} params.plan assertion library instance with plan support
  * @param {object} params.tx consumer transaction
  * @param {string} params.topic topic name
  * @params {string} params.clientId client id
  */
-utils.verifyConsumeTransaction = ({ t, tx, topic, clientId }) => {
+utils.verifyConsumeTransaction = ({ plan, tx, topic, clientId }) => {
   const expectedName = `OtherTransaction/Message/Kafka/Topic/Consume/Named/${topic}`
-  t.assertMetrics(
+  assertMetrics(
     tx.metrics,
     [
       [{ name: expectedName }],
@@ -88,34 +90,35 @@ utils.verifyConsumeTransaction = ({ t, tx, topic, clientId }) => {
       [{ name: 'OtherTransactionTotalTime' }]
     ],
     false,
-    false
+    false,
+    { assert: plan }
   )
 
-  t.equal(tx.getFullName(), expectedName)
+  plan.equal(tx.getFullName(), expectedName)
   const consume = metrics.findSegment(tx.trace.root, expectedName)
-  t.equal(consume, tx.baseSegment)
+  plan.equal(consume, tx.baseSegment)
 
   const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_SCOPE)
-  t.ok(attributes['kafka.consume.byteCount'], 'should have byteCount')
-  t.equal(attributes['kafka.consume.client_id'], clientId, 'should have client_id')
+  plan.ok(attributes['kafka.consume.byteCount'], 'should have byteCount')
+  plan.equal(attributes['kafka.consume.client_id'], clientId, 'should have client_id')
 }
 
 /**
  * Asserts the properties on both the produce and consume transactions
  * @param {object} params function params
- * @param {object} params.t test instance
+ * @param {object} params.plan assertion library instance with plan support
  * @param {object} params.consumeTxs consumer transactions
  * @param {object} params.produceTx produce transaction
  */
-utils.verifyDistributedTrace = ({ t, consumeTxs, produceTx }) => {
-  t.ok(produceTx.isDistributedTrace, 'should mark producer as distributed')
+utils.verifyDistributedTrace = ({ plan, consumeTxs, produceTx }) => {
+  plan.ok(produceTx.isDistributedTrace, 'should mark producer as distributed')
   const produceSegment = produceTx.trace.root.children[3]
   consumeTxs.forEach((consumeTx) => {
-    t.ok(consumeTx.isDistributedTrace, 'should mark consumer as distributed')
-    t.equal(consumeTx.incomingCatId, null, 'should not set old CAT properties')
-    t.equal(produceTx.id, consumeTx.parentId, 'should have proper parent id')
-    t.equal(produceTx.traceId, consumeTx.traceId, 'should have proper trace id')
-    t.equal(produceSegment.id, consumeTx.parentSpanId, 'should have proper parentSpanId')
-    t.equal(consumeTx.parentTransportType, 'Kafka', 'should have correct transport type')
+    plan.ok(consumeTx.isDistributedTrace, 'should mark consumer as distributed')
+    plan.equal(consumeTx.incomingCatId, null, 'should not set old CAT properties')
+    plan.equal(produceTx.id, consumeTx.parentId, 'should have proper parent id')
+    plan.equal(produceTx.traceId, consumeTx.traceId, 'should have proper trace id')
+    plan.equal(produceSegment.id, consumeTx.parentSpanId, 'should have proper parentSpanId')
+    plan.equal(consumeTx.parentTransportType, 'Kafka', 'should have correct transport type')
   })
 }
