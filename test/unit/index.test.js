@@ -7,9 +7,11 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const tspl = require('@matteo.collina/tspl')
 
 const sinon = require('sinon')
 
+const HealthReporter = require('#agentlib/health-reporter.js')
 const proxyquire = require('proxyquire').noCallThru()
 const createLoggerMock = require('./mocks/logger')
 const createMockAgent = require('./mocks/agent')
@@ -322,30 +324,52 @@ test('index tests', async (t) => {
     )
   })
 
-  await t.test('should throw error is app name is not set in config', (t) => {
+  await t.test('should throw error is app name is not set in config', async (t) => {
+    const plan = tspl(t, { plan: 3 })
+    const setStatus = HealthReporter.prototype.setStatus
+    HealthReporter.prototype.setStatus = (status) => {
+      plan.equal(status, HealthReporter.STATUS_MISSING_APP_NAME)
+    }
+    t.after(() => {
+      HealthReporter.prototype.setStatus = setStatus
+    })
+
     t.nr.processVersionStub.satisfies.onCall(0).returns(true)
     t.nr.processVersionStub.satisfies.onCall(1).returns(false)
     t.nr.mockConfig.applications.returns([])
     loadIndex(t)
-    assert.equal(t.nr.loggerMock.error.callCount, 1, 'should log an error')
-    assert.match(
+    plan.equal(t.nr.loggerMock.error.callCount, 1, 'should log an error')
+    plan.match(
       t.nr.loggerMock.error.args[0][0].message,
       /New Relic requires that you name this application!/
     )
+
+    await plan.completed
   })
 
-  await t.test('should log error if agent startup failed', (t) => {
+  await t.test('should log error if agent startup failed', async (t) => {
+    const plan = tspl(t, { plan: 3 })
+    const setStatus = HealthReporter.prototype.setStatus
+    HealthReporter.prototype.setStatus = (status) => {
+      plan.equal(status, HealthReporter.STATUS_INTERNAL_UNEXPECTED_ERROR)
+    }
+    t.after(() => {
+      HealthReporter.prototype.setStatus = setStatus
+    })
+
     t.nr.processVersionStub.satisfies.onCall(0).returns(true)
     t.nr.processVersionStub.satisfies.onCall(1).returns(false)
     t.nr.mockConfig.applications.returns(['my-app-name'])
     const err = new Error('agent start failed')
     t.nr.MockAgent.prototype.start.yields(err)
     loadIndex(t)
-    assert.equal(t.nr.loggerMock.error.callCount, 1, 'should log a startup error')
-    assert.equal(
+    plan.equal(t.nr.loggerMock.error.callCount, 1, 'should log a startup error')
+    plan.equal(
       t.nr.loggerMock.error.args[0][1],
       'New Relic for Node.js halted startup due to an error:'
     )
+
+    await plan.completed
   })
 
   await t.test('should log warning if not in main thread and make a stub api', (t) => {

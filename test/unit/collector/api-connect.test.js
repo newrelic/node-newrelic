@@ -9,10 +9,13 @@ const test = require('node:test')
 const assert = require('node:assert')
 const nock = require('nock')
 const proxyquire = require('proxyquire')
+const tspl = require('@matteo.collina/tspl')
 
+const HealthReporter = require('#agentlib/health-reporter.js')
 const Collector = require('../../lib/test-collector')
 const CollectorResponse = require('../../../lib/collector/response')
 const helper = require('../../lib/agent_helper')
+const { match } = require('#test/assert')
 const { securityPolicies } = require('../../lib/fixtures')
 const CollectorApi = require('../../../lib/collector/api')
 
@@ -275,6 +278,22 @@ test('disconnects on force disconnect (410)', async (t) => {
       end()
     })
   })
+
+  await t.test('should update health status', async (t) => {
+    const plan = tspl(t, { plan: 3 })
+    const { agent, collector, collectorApi } = t.nr
+
+    agent.healthReporter.setStatus = status => {
+      plan.equal(status, HealthReporter.STATUS_FORCED_DISCONNECT)
+    }
+
+    collectorApi.connect((error) => {
+      plan.equal(error, undefined)
+      plan.equal(collector.isDone('preconnect'), true)
+    })
+
+    await plan.completed
+  })
 })
 
 test('retries preconnect until forced to disconnect (410)', async (t) => {
@@ -389,6 +408,26 @@ test('retries on receiving invalid license key (401)', async (t) => {
       end()
     })
   })
+
+  await t.test('should update health status', async (t) => {
+    const plan = tspl(t, { plan: 6 })
+    const { agent, collectorApi } = t.nr
+
+    let invocation = 0
+    agent.healthReporter.setStatus = status => {
+      invocation += 1
+      if (invocation < 6) {
+        plan.equal(status, HealthReporter.STATUS_INVALID_LICENSE_KEY)
+      } else {
+        // After 5 retries, we get a success.
+        plan.equal(status, HealthReporter.STATUS_HEALTHY)
+      }
+    }
+
+    collectorApi.connect(() => {})
+
+    await plan.completed
+  })
 })
 
 test('retries on misconfigured proxy', async (t) => {
@@ -457,14 +496,26 @@ test('retries on misconfigured proxy', async (t) => {
     nock.enableNetConnect()
   })
 
-  await t.test('should log warning when proxy is misconfigured', (t, end) => {
-    const { collectorApi } = t.nr
+  await t.test('should log warning when proxy is misconfigured', async (t) => {
+    const plan = tspl(t, { plan: 8 })
+    const { agent, collectorApi } = t.nr
+
+    let invocation = 0
+    agent.healthReporter.setStatus = status => {
+      invocation += 1
+      if (invocation === 1) {
+        plan.equal(status, HealthReporter.STATUS_HTTP_PROXY_MISCONFIGURED)
+      } else {
+        plan.equal(status, HealthReporter.STATUS_HEALTHY)
+      }
+    }
+
     collectorApi.connect((error, res) => {
-      assert.ifError(error)
-      assert.equal(t.nr.failure.isDone(), true)
-      assert.equal(t.nr.success.isDone(), true)
-      assert.equal(t.nr.connect.isDone(), true)
-      assert.equal(res.payload.agent_run_id, 31338)
+      plan.ifError(error)
+      plan.equal(t.nr.failure.isDone(), true)
+      plan.equal(t.nr.success.isDone(), true)
+      plan.equal(t.nr.connect.isDone(), true)
+      plan.equal(res.payload.agent_run_id, 31338)
 
       const expectErrorMsg = [
         'Your proxy server appears to be configured to accept connections ',
@@ -472,14 +523,14 @@ test('retries on misconfigured proxy', async (t) => {
         'SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` ',
         'to a fully qualified URL(e.g http://proxy-host:8080).'
       ].join('')
-      assert.deepStrictEqual(
+      plan.deepStrictEqual(
         t.nr.logs,
         [[expectedError, expectErrorMsg]],
         'Proxy misconfigured message correct'
       )
-
-      end()
     })
+
+    await plan.completed
   })
 
   await t.test(
@@ -494,12 +545,93 @@ test('retries on misconfigured proxy', async (t) => {
         assert.equal(t.nr.connect.isDone(), true)
         assert.equal(res.payload.agent_run_id, 31338)
 
-        assert.deepStrictEqual(t.nr.logs, [], 'Proxy misconfigured message not logged')
+        match(
+          t.nr.logs,
+          [[{ code: 'EPROTO' }, 'Unexpected error communicating with New Relic backend.']]
+        )
 
         end()
       })
     }
   )
+})
+
+test('non-specific error statuses', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
+
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
+
+    ctx.nr.logs = []
+    const CAPI = proxyquire('../../../lib/collector/api', {
+      '../logger': {
+        child() {
+          return this
+        },
+        debug() {},
+        error() {},
+        info() {},
+        warn(...args) {
+          ctx.nr.logs.push(args)
+        },
+        trace() {}
+      }
+    })
+
+    ctx.nr.collectorApi = new CAPI(ctx.nr.agent)
+  })
+
+  t.afterEach(afterEach)
+
+  await t.test('should update health status for responses with status code', async (t) => {
+    const plan = tspl(t, { plan: 2 })
+    const { agent, collector, collectorApi } = t.nr
+
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+      res.json({ code: 418, payload: 'bad stuff' })
+    })
+
+    agent.healthReporter.setStatus = status => {
+      plan.equal(status, HealthReporter.STATUS_BACKEND_ERROR)
+      match(
+        t.nr.logs,
+        [[null, 'Received error status code from New Relic backend: 418.']],
+        { assert: plan }
+      )
+    }
+
+    collectorApi.connect(() => {})
+
+    await plan.completed
+  })
+
+  await t.test('should update health status for responses without status code', async (t) => {
+    const plan = tspl(t, { plan: 3 })
+    const { agent, collector, collectorApi } = t.nr
+
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req) => {
+      req.destroy()
+    })
+
+    agent.healthReporter.setStatus = status => {
+      plan.equal(status, HealthReporter.STATUS_BACKEND_ERROR)
+      plan.match(t.nr.logs[0][0].message, /socket hang up/)
+      plan.equal(t.nr.logs[0][1], 'Unexpected error communicating with New Relic backend.')
+    }
+
+    collectorApi.connect(() => {})
+
+    await plan.completed
+  })
 })
 
 test('in a LASP/CSP enabled agent', async (t) => {

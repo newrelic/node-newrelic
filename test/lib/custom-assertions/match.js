@@ -41,10 +41,18 @@ const TYPE_MAPPINGS = {
  * @param {object} [deps] Injected dependencies.
  * @param {object} [deps.assert] Assertion library to use.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 module.exports = function match(actual, expected, { assert = require('node:assert') } = {}) {
   // match substring
   if (typeof actual === 'string' && typeof expected === 'string') {
     assert.ok(actual.indexOf(expected) > -1)
+    return
+  }
+
+  if (Array.isArray(expected) === true) {
+    for (let i = 0; i < expected.length; i += 1) {
+      match(actual[i], expected[i], { assert })
+    }
     return
   }
 
