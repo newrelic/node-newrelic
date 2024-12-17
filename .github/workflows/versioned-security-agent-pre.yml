@@ -41,8 +41,8 @@ jobs:
       run: npm install
     - name: Install Version ${{ inputs.version }} of security agent
       if: ${{ inputs.version }}
-      # run: npm install @newrelic/security-agent@${{ inputs.version }}
-      run: npm install github:newrelic/csec-node-agent#main
+      run: npm install @newrelic/security-agent@${{ inputs.version }}
+      # run: npm install github:newrelic/csec-node-agent#main
     - name: Run Docker Services
       run: npm run services
     - name: Versioned Tests w/ Security Agent
