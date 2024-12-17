@@ -173,6 +173,19 @@ test('logs error if writing failed', async (t) => {
   }
 })
 
+test('setStatus and stop do nothing if reporter disabled', (t, end) => {
+  delete process.env.NEW_RELIC_SUPERAGENT_FLEET_ID
+  fs.writeFile = () => {
+    assert.fail('should not be invoked')
+  }
+  const reporter = new HealthReporter(t.nr)
+  reporter.setStatus(HealthReporter.STATUS_AGENT_SHUTDOWN)
+  reporter.stop(() => {
+    assert.ok('stopped')
+    end()
+  })
+})
+
 test('setStatus warns for bad code', (t) => {
   const reporter = new HealthReporter(t.nr)
   reporter.setStatus('bad-code')

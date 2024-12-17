@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const tspl = require('@matteo.collina/tspl')
 const Collector = require('../../lib/test-collector')
 
 const sinon = require('sinon')
@@ -17,10 +18,49 @@ const Agent = require('../../../lib/agent')
 const Transaction = require('../../../lib/transaction')
 const CollectorResponse = require('../../../lib/collector/response')
 
+const fs = require('node:fs')
+const os = require('node:os')
+const path = require('node:path')
+process.env.NEW_RELIC_SUPERAGENT_FLEET_ID = 42
+process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION = os.tmpdir()
+process.env.NEW_RELIC_SUPERAGENT_HEALTH_FREQUENCY = 1
+const HealthReporter = require('../../../lib/health-reporter')
+test.after(() => {
+  const files = fs.readdirSync(process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION)
+  for (const file of files) {
+    if (file.startsWith('health-') !== true) {
+      continue
+    }
+    fs.rmSync(path.join(process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION, file), {
+      force: true
+    })
+  }
+  delete process.env.NEW_RELIC_SUPERAGENT_FLEET_ID
+  delete process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION
+  delete process.env.NEW_RELIC_SUPERAGENT_HEALTH_FREQUENCY
+})
+
 const RUN_ID = 1337
 
 test('should require configuration passed to constructor', () => {
   assert.throws(() => new Agent())
+})
+
+test('should update health reporter if configuration is bad', (t, end) => {
+  const setStatus = HealthReporter.prototype.setStatus
+  t.after(() => {
+    HealthReporter.prototype.setStatus = setStatus
+  })
+
+  HealthReporter.prototype.setStatus = (status) => {
+    assert.equal(status, HealthReporter.STATUS_CONFIG_PARSE_FAILURE)
+    end()
+  }
+
+  try {
+    const _ = new Agent()
+    assert.ok(_, 'should not be hit, just satisfying linter')
+  } catch {}
 })
 
 test('should not throw with valid config', () => {
@@ -310,6 +350,29 @@ test('when starting', async (t) => {
     })
   })
 
+  await t.test('should error when no license key is included, and update health', async (t) => {
+    const plan = tspl(t, { plan: 2 })
+    const { agent } = t.nr
+    const setStatus = HealthReporter.prototype.setStatus
+    t.after(() => {
+      HealthReporter.prototype.setStatus = setStatus
+    })
+
+    HealthReporter.prototype.setStatus = (status) => {
+      plan.equal(status, HealthReporter.STATUS_LICENSE_KEY_MISSING)
+    }
+
+    agent.config.license_key = undefined
+    agent.collector.connect = function () {
+      plan.fail('should not be called')
+    }
+    agent.start((error) => {
+      plan.equal(error.message, 'Not starting without license key!')
+    })
+
+    await plan.completed
+  })
+
   await t.test('should call connect when using proxy', (t, end) => {
     const { agent } = t.nr
     agent.config.proxy = 'fake://url'
@@ -460,6 +523,26 @@ test('when stopping', async (t) => {
     agent.collector.shutdown = () => {}
     agent.stop(() => {})
     assert.equal(sampler.state, 'stopped')
+  })
+
+  await t.test('should stop health reporter', async (t) => {
+    const plan = tspl(t, { plan: 1 })
+    const setStatus = HealthReporter.prototype.setStatus
+
+    t.after(() => {
+      HealthReporter.prototype.setStatus = setStatus
+    })
+
+    HealthReporter.prototype.setStatus = (status) => {
+      plan.equal(status, HealthReporter.STATUS_AGENT_SHUTDOWN)
+    }
+
+    const { agent } = t.nr
+    sampler.start(agent)
+    agent.collector.shutdown = () => {}
+    agent.stop(() => {})
+
+    await plan.completed
   })
 
   await t.test('should change state to "stopping"', (t) => {
