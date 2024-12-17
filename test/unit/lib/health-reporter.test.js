@@ -208,12 +208,13 @@ test('stop leaves last error code in place', async (t) => {
       ].join('\n')
     )
     callback()
-    plan.deepStrictEqual(t.nr.logs.error, [])
   }
 
   const reporter = new HealthReporter({ ...t.nr, setInterval: simpleInterval })
   reporter.setStatus(HealthReporter.STATUS_BACKEND_ERROR)
-  reporter.stop()
+  reporter.stop(() => {
+    plan.deepStrictEqual(t.nr.logs.error, [])
+  })
   plan.ok(reporter)
 
   await plan.completed
@@ -239,11 +240,12 @@ test('stop sets shutdown status', async (t) => {
       ].join('\n')
     )
     callback()
-    plan.deepStrictEqual(t.nr.logs.error, [])
   }
 
   const reporter = new HealthReporter({ ...t.nr, setInterval: simpleInterval })
-  reporter.stop()
+  reporter.stop(() => {
+    plan.deepStrictEqual(t.nr.logs.error, [])
+  })
   plan.ok(reporter)
 
   await plan.completed
@@ -259,13 +261,14 @@ test('stop logs writing error', async (t) => {
     }
 
     callback(Error('boom'))
-    plan.deepStrictEqual(t.nr.logs.error, [
-      ['error when writing out health status during shutdown: boom']
-    ])
   }
 
   const reporter = new HealthReporter({ ...t.nr, setInterval: simpleInterval })
-  reporter.stop()
+  reporter.stop(() => {
+    plan.deepStrictEqual(t.nr.logs.error, [
+      ['error when writing out health status during shutdown: boom']
+    ])
+  })
   plan.ok(reporter)
 
   await plan.completed
