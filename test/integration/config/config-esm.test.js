@@ -7,19 +7,37 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const semver = require('semver')
 
 const match = require('../../lib/custom-assertions/match')
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
+// allowing require of esm made this test change
+// see: https://github.com/nodejs/node/pull/55085/
+// depending on node version this will either verify
+// it cannot require ESM configuration or can
 test('should gracefully handle ESM imports', async (t) => {
-  await t.test('when newrelic.js is misnamed', async () => {
-    const { stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-bad` })
-    match(stderr, 'ERR_REQUIRE_ESM', 'should mention ERR_REQUIRE_ESM in error message')
+  await t.test('when requiring newrelic.js in ESM app', async () => {
+    const { stdout, stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-js` })
+    if (semver.gte(process.version, '22.12.0')) {
+      match(stdout, 'Hello esm-test')
+    } else {
+      match(stderr, 'ERR_REQUIRE_ESM', 'should mention ERR_REQUIRE_ESM in error message')
+    }
   })
 
-  await t.test('when newrelic.cjs is properly named', async () => {
-    const { stdout, stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-good` })
+  await t.test('when requiring newrelic.mjs in ESM app', async () => {
+    const { stdout, stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-mjs` })
+    if (semver.gte(process.version, '22.12.0')) {
+      match(stdout, 'Hello esm-test')
+    } else {
+      match(stderr, 'ERR_REQUIRE_ESM', 'should mention ERR_REQUIRE_ESM in error message')
+    }
+  })
+
+  await t.test('when requiring newrelic.cjs in ESM app', async () => {
+    const { stdout, stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-cjs` })
     assert.deepStrictEqual(stdout, 'Hello good-esm\n', 'should greet in stdout')
     assert.deepStrictEqual(stderr, '', 'all should be quiet in stderr')
   })
