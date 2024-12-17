@@ -214,6 +214,25 @@ test('should create queue producer segment', (t, end) => {
   })
 })
 
+test('should create internal custom segment', (t, end) => {
+  const { agent, synthesizer, parentId, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createSpan({
+      name: 'doer-of-stuff',
+      kind: SpanKind.INTERNAL,
+      parentId,
+      tx,
+      tracer
+    })
+    const { segment, transaction } = synthesizer.synthesize(span)
+    assert.equal(tx.id, transaction.id)
+    assert.equal(segment.name, 'Custom/doer-of-stuff')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    tx.end()
+    end()
+  })
+})
+
 test('should log warning span does not match a rule', (t, end) => {
   const { agent, synthesizer, loggerMock, parentId, tracer } = t.nr
 
