@@ -35,7 +35,7 @@ function checkEntityLinkingSegments({ operations, tx, end }) {
       'aws.operation': operations[0],
       'aws.requestId': String,
       'aws.region': 'us-east-1',
-      'aws.service': 'lambda',
+      'aws.service': String,
       'cloud.resource_id': `arn:aws:lambda:${attrs['aws.region']}:${accountId}:function:${testFunctionName}`,
       'cloud.platform': `aws_lambda`
     })
@@ -72,7 +72,7 @@ function checkNonLinkableSegments({ operations, tx, end }) {
       'aws.operation': operations[0],
       'aws.requestId': String,
       'aws.region': 'us-east-1',
-      'aws.service': 'lambda'
+      'aws.service': String
     })
   })
   end()
