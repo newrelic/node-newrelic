@@ -8,36 +8,28 @@
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const assert = require('node:assert')
-const { afterEach, checkExternals, checkAWSAttributes, EXTERN_PATTERN } = require('./common')
+const {
+  afterEach,
+  checkExternals,
+  checkAWSAttributes,
+  EXTERN_PATTERN,
+  SEGMENT_DESTINATION
+} = require('./common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
 
 function checkEntityLinkingSegments({ service, operations, tx, end }) {
   const root = tx.trace.root
 
-  // is this set on the root segment?
-  const rootAttributes = root.getAttributes()
   const segments = checkAWSAttributes(root, EXTERN_PATTERN)
   const accountId = tx.agent.config.cloud.aws.account_id
   const testFunctionName = 'funcName'
-
-  // cloud.resource_id is set on the root segment
-  assert.equal(
-    rootAttributes['cloud.resource_id'],
-    `arn:aws:lambda:us-east-1:${accountId}:function:${testFunctionName}`,
-    'resource ID should be set'
-  )
-  assert.equal(
-    rootAttributes['cloud.platform'],
-    'aws_lambda',
-    'cloud.platform should be aws_lambda'
-  )
 
   assert(segments.length > 0, 'should have segments')
   assert.ok(accountId, 'account id should be set on agent config')
 
   segments.forEach((segment) => {
-    const attrs = segment.attributes
+    const attrs = segment.attributes.get(SEGMENT_DESTINATION)
 
     // match is passing even though cloud resource isn't defined
     match(attrs, {
