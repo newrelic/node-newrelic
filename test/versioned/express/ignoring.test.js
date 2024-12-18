@@ -18,7 +18,7 @@ test.beforeEach(async (ctx) => {
 test.afterEach(teardown)
 
 test('ignoring an Express route', async function (t) {
-  const { agent, app, port } = t.nr
+  const { agent, app, port, isExpress5 } = t.nr
   const plan = tsplan(t, { plan: 7 })
 
   const api = new API(agent)
@@ -36,7 +36,7 @@ test('ignoring an Express route', async function (t) {
 
     const metrics = agent.metrics._metrics.unscoped
     // loading k2 adds instrumentation metrics for things it loads
-    const expectedMetrics = helper.isSecurityAgentEnabled(agent) ? 11 : 3
+    const expectedMetrics = helper.isSecurityAgentEnabled(agent) ? (isExpress5 ? 13 : 11) : 3
     plan.equal(
       Object.keys(metrics).length,
       expectedMetrics,
