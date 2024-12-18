@@ -18,7 +18,7 @@ const {
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
 
-function checkEntityLinkingSegments({ service, operations, tx, end }) {
+function checkEntityLinkingSegments({ operations, tx, end }) {
   const root = tx.trace.root
 
   const segments = checkAWSAttributes(root, EXTERN_PATTERN)
@@ -35,7 +35,7 @@ function checkEntityLinkingSegments({ service, operations, tx, end }) {
       'aws.operation': operations[0],
       'aws.requestId': String,
       'aws.region': 'us-east-1',
-      'aws.service': String(service).toLowerCase(),
+      'aws.service': 'lambda',
       'cloud.resource_id': `arn:aws:lambda:${attrs['aws.region']}:${accountId}:function:${testFunctionName}`,
       'cloud.platform': `aws_lambda`
     })
@@ -43,7 +43,7 @@ function checkEntityLinkingSegments({ service, operations, tx, end }) {
   end()
 }
 
-function checkNonLinkableSegments({ service, operations, tx, end }) {
+function checkNonLinkableSegments({ operations, tx, end }) {
   // When no account ID or ARN is available, make sure not to set cloud resource id or platform
   const root = tx.trace.root
 
@@ -72,7 +72,7 @@ function checkNonLinkableSegments({ service, operations, tx, end }) {
       'aws.operation': operations[0],
       'aws.requestId': String,
       'aws.region': 'us-east-1',
-      'aws.service': String(service).toLowerCase()
+      'aws.service': 'lambda'
     })
   })
   end()
@@ -134,7 +134,6 @@ test('LambdaClient', async (t) => {
       await service.send(cmd)
       tx.end()
       setImmediate(checkEntityLinkingSegments, {
-        service: 'Lambda',
         operations: ['InvokeCommand'],
         tx,
         end
@@ -153,7 +152,6 @@ test('LambdaClient', async (t) => {
       await service.send(cmd)
       tx.end()
       setImmediate(checkNonLinkableSegments, {
-        service: 'Lambda',
         operations: ['InvokeCommand'],
         tx,
         end
