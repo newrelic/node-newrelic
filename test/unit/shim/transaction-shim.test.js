@@ -441,7 +441,7 @@ test('TransactionShim', async function (t) {
         assert.ok(!segment.catTransaction)
         assert.ok(!segment.getAttributes().transaction_guid)
 
-        shim.handleMqTracingHeaders(headers, segment, tx)
+        shim.handleMqTracingHeaders(headers, segment, null, tx)
 
         assert.ok(!tx.incomingCatId)
         assert.ok(!tx.referringTransactionGuid)
@@ -465,7 +465,7 @@ test('TransactionShim', async function (t) {
         assert.ok(!segment.catTransaction)
         assert.ok(!segment.getAttributes().transaction_guid)
 
-        shim.handleMqTracingHeaders(headers, segment, tx)
+        shim.handleMqTracingHeaders(headers, segment, null, tx)
 
         assert.ok(!tx.incomingCatId)
         assert.ok(!tx.referringTransactionGuid)
@@ -488,7 +488,7 @@ test('TransactionShim', async function (t) {
         assert.ok(!segment.getAttributes().transaction_guid)
 
         assert.doesNotThrow(function () {
-          shim.handleMqTracingHeaders(null, segment, tx)
+          shim.handleMqTracingHeaders(null, segment, null, tx)
         })
 
         assert.ok(!tx.incomingCatId)
@@ -516,7 +516,7 @@ test('TransactionShim', async function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             assert.notEqual(tx2, tx)
-            shim.handleMqTracingHeaders(headers, segment, tx)
+            shim.handleMqTracingHeaders(headers, segment, null, tx)
           })
 
           assert.equal(tx.incomingCatId, '9876#id')
@@ -541,7 +541,7 @@ test('TransactionShim', async function (t) {
           assert.ok(!tx.tripId)
           assert.ok(!tx.referringPathHash)
 
-          shim.handleMqTracingHeaders(headers, null, tx)
+          shim.handleMqTracingHeaders(headers)
 
           assert.equal(tx.incomingCatId, '9876#id')
           assert.equal(tx.referringTransactionGuid, 'trans id')
@@ -568,7 +568,7 @@ test('TransactionShim', async function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             assert.notEqual(tx2, tx)
-            shim.handleMqTracingHeaders(headers, segment, tx)
+            shim.handleMqTracingHeaders(headers, segment, null, tx)
           })
 
           assert.equal(tx.incomingCatId, '9876#id')
@@ -592,7 +592,7 @@ test('TransactionShim', async function (t) {
         helper.runInTransaction(agent, function (tx) {
           const headers = { traceparent, tracestate }
           const segment = shim.getSegment()
-          shim.handleMqTracingHeaders(headers, segment, tx)
+          shim.handleMqTracingHeaders(headers, segment)
 
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -615,7 +615,7 @@ test('TransactionShim', async function (t) {
         helper.runInTransaction(agent, function (tx) {
           const headers = { traceparent }
           const segment = shim.getSegment()
-          shim.handleMqTracingHeaders(headers, segment, tx)
+          shim.handleMqTracingHeaders(headers, segment, null, tx)
 
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -638,7 +638,7 @@ test('TransactionShim', async function (t) {
         helper.runInTransaction(agent, function (tx) {
           const headers = { traceparent, tracestate }
           const segment = shim.getSegment()
-          shim.handleMqTracingHeaders(headers, segment, tx)
+          shim.handleMqTracingHeaders(headers, segment, null, tx)
 
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -660,7 +660,7 @@ test('TransactionShim', async function (t) {
       helper.runInTransaction(agent, function (tx) {
         const headers = { traceparent, tracestate }
         const segment = shim.getSegment()
-        shim.handleMqTracingHeaders(headers, segment, tx)
+        shim.handleMqTracingHeaders(headers, segment, null, tx)
 
         const outboundHeaders = {}
         tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -687,7 +687,7 @@ test('TransactionShim', async function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             assert.notEqual(tx2, tx)
-            shim.handleMqTracingHeaders(headers, segment, tx2)
+            shim.handleMqTracingHeaders(headers, segment, null, tx2)
           })
 
           assert.equal(segment.catId, '6789#app')
@@ -712,7 +712,7 @@ test('TransactionShim', async function (t) {
           assert.ok(!segment.catTransaction)
           assert.ok(!segment.getAttributes().transaction_guid)
 
-          shim.handleMqTracingHeaders(headers, null, tx)
+          shim.handleMqTracingHeaders(headers, null, null, tx)
 
           assert.equal(segment.catId, '6789#app')
           assert.equal(segment.catTransaction, 'app data transaction name')
@@ -738,7 +738,7 @@ test('TransactionShim', async function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             assert.notEqual(tx2, tx)
-            shim.handleMqTracingHeaders(headers, segment, tx2)
+            shim.handleMqTracingHeaders(headers, segment, null, tx2)
           })
 
           assert.equal(segment.catId, '6789#app')
@@ -764,7 +764,7 @@ test('TransactionShim', async function (t) {
           assert.ok(!segment.catTransaction)
           assert.ok(!segment.getAttributes().transaction_guid)
 
-          shim.handleMqTracingHeaders(headers, null, tx)
+          shim.handleMqTracingHeaders(headers, null, null, tx)
 
           assert.ok(!segment.catId)
           assert.ok(!segment.catTransaction)
