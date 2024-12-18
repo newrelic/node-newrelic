@@ -7,8 +7,57 @@
 
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-const { afterEach, checkExternals } = require('./common')
+const assert = require('node:assert')
+const { afterEach, checkExternals, checkAWSAttributes, EXTERN_PATTERN } = require('./common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
+const { match } = require('../../lib/custom-assertions')
+
+function checkEntityLinkingSegments({ service, operations, tx, end }) {
+  const root = tx.trace.root
+
+  // is this set on the root segment?
+  const rootAttributes = root.getAttributes()
+  const segments = checkAWSAttributes(root, EXTERN_PATTERN)
+  const accountId = tx.agent.config.cloud.aws.account_id
+  const testFunctionName = 'funcName'
+
+  // cloud.resource_id is set on the root segment
+  assert.equal(
+    rootAttributes['cloud.resource_id'],
+    `arn:aws:lambda:us-east-1:${accountId}:function:${testFunctionName}`,
+    'resource ID should be set'
+  )
+  assert.equal(
+    rootAttributes['cloud.platform'],
+    'aws_lambda',
+    'cloud.platform should be aws_lambda'
+  )
+
+  assert(segments.length > 0, 'should have segments')
+  assert.ok(accountId, 'account id should be set on agent config')
+
+  segments.forEach((segment) => {
+    const attrs = segment.attributes
+
+    // match is passing even though cloud resource isn't defined
+    match(attrs, {
+      'hostname': String,
+      'port': Number,
+      'product': service,
+      'aws.operation': operations[0],
+      'aws.requestId': String,
+      'aws.region': 'us-east-1',
+      'aws.service': 'Lambda',
+      'cloud.resource_id': `arn:aws:lambda:${attrs['aws.region']}:${accountId}:function:${testFunctionName}`,
+      'cloud.platform': `aws_lambda`
+    })
+
+    // this does fail:
+    assert.ok(attrs['cloud.resource_id'], 'cloud.resource_id should be set on Lambda segments')
+    assert.ok(attrs['cloud.platform'], 'cloud.platform should be set on Lambda segments')
+  })
+  end()
+}
 
 test('LambdaClient', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -18,9 +67,16 @@ test('LambdaClient', async (t) => {
       server.listen(0, resolve)
     })
     ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      cloud: {
+        aws: {
+          account_id: 123456789123
+        }
+      }
+    })
     const { LambdaClient, ...lib } = require('@aws-sdk/client-lambda')
     ctx.nr.AddLayerVersionPermissionCommand = lib.AddLayerVersionPermissionCommand
+    ctx.nr.InvokeCommand = lib.InvokeCommand
     const endpoint = `http://localhost:${server.address().port}`
     ctx.nr.service = new LambdaClient({
       credentials: FAKE_CREDENTIALS,
@@ -48,6 +104,24 @@ test('LambdaClient', async (t) => {
       setImmediate(checkExternals, {
         service: 'Lambda',
         operations: ['AddLayerVersionPermissionCommand'],
+        tx,
+        end
+      })
+    })
+  })
+
+  await t.test('InvokeCommand', (t, end) => {
+    const { service, agent, InvokeCommand } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const cmd = new InvokeCommand({
+        FunctionName: 'funcName',
+        Payload: JSON.stringify({ prop1: 'test', prop2: 'test 2' })
+      })
+      await service.send(cmd)
+      tx.end()
+      setImmediate(checkEntityLinkingSegments, {
+        service: 'Lambda',
+        operations: ['InvokeCommand'],
         tx,
         end
       })
