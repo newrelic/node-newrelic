@@ -38,3 +38,9 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 * Configuration: `{ feature_flag: { kafkajs_instrumentation: true|false }}`
 * Environment Variable: `NEW_RELIC_FEATURE_FLAG_KAFKAJS_INSTRUMENTATION`
 * Description: Enables instrumentation of `kafkajs`. 
+
+#### otel_instrumentation
+* Enabled by default: `false`
+* Configuration: `{ feature_flag: { otel_instrumentation: true|false }}`
+* Environment Variable: `NEW_RELIC_FEATURE_FLAG_OTEL_INSTRUMENTATION`
+* Description: Enables utilizing OpenTelemetry instrumentation. 
