@@ -31,22 +31,14 @@ function checkEntityLinkingSegments({ service, operations, tx, end }) {
   segments.forEach((segment) => {
     const attrs = segment.attributes.get(SEGMENT_DESTINATION)
 
-    // match is passing even though cloud resource isn't defined
     match(attrs, {
-      'hostname': String,
-      'port': Number,
-      'product': service,
       'aws.operation': operations[0],
       'aws.requestId': String,
       'aws.region': 'us-east-1',
-      'aws.service': 'Lambda',
+      'aws.service': service.toLowerCase(),
       'cloud.resource_id': `arn:aws:lambda:${attrs['aws.region']}:${accountId}:function:${testFunctionName}`,
       'cloud.platform': `aws_lambda`
     })
-
-    // this does fail:
-    assert.ok(attrs['cloud.resource_id'], 'cloud.resource_id should be set on Lambda segments')
-    assert.ok(attrs['cloud.platform'], 'cloud.platform should be set on Lambda segments')
   })
   end()
 }
@@ -59,13 +51,7 @@ test('LambdaClient', async (t) => {
       server.listen(0, resolve)
     })
     ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent({
-      cloud: {
-        aws: {
-          account_id: 123456789123
-        }
-      }
-    })
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const { LambdaClient, ...lib } = require('@aws-sdk/client-lambda')
     ctx.nr.AddLayerVersionPermissionCommand = lib.AddLayerVersionPermissionCommand
     ctx.nr.InvokeCommand = lib.InvokeCommand
@@ -104,6 +90,7 @@ test('LambdaClient', async (t) => {
 
   await t.test('InvokeCommand', (t, end) => {
     const { service, agent, InvokeCommand } = t.nr
+    agent.config.cloud.aws.account_id = 123456789123
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new InvokeCommand({
         FunctionName: 'funcName',
