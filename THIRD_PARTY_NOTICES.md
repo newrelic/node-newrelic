@@ -508,7 +508,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.0.0](https://github.com/newrelic/csec-node-agent/tree/v2.0.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.0.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.2.0](https://github.com/newrelic/csec-node-agent/tree/v2.2.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.2.0/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -1040,7 +1040,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### winston-transport
 
-This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.7.1](https://github.com/winstonjs/winston-transport/tree/v4.7.1)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.7.1/LICENSE):
+This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.8.0](https://github.com/winstonjs/winston-transport/tree/v4.8.0)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.8.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -1073,7 +1073,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.621.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.621.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.621.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.668.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.668.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.668.0/LICENSE):
 
 ```
                                 Apache License
@@ -1282,7 +1282,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.621.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.621.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.621.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.668.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.668.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.668.0/LICENSE):
 
 ```
                                 Apache License
@@ -1491,7 +1491,7 @@ This product includes source derived from [@aws-sdk/s3-request-presigner](https:
 
 ### @koa/router
 
-This product includes source derived from [@koa/router](https://github.com/koajs/router) ([v12.0.1](https://github.com/koajs/router/tree/v12.0.1)), distributed under the [MIT License](https://github.com/koajs/router/blob/v12.0.1/LICENSE):
+This product includes source derived from [@koa/router](https://github.com/koajs/router) ([v12.0.2](https://github.com/koajs/router/tree/v12.0.2)), distributed under the [MIT License](https://github.com/koajs/router/blob/v12.0.2/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2205,7 +2205,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.19.0](https://github.com/slackapi/bolt/tree/v3.19.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.19.0/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.22.0](https://github.com/slackapi/bolt/tree/v3.22.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.22.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2682,7 +2682,7 @@ SOFTWARE.
 
 ### async
 
-This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.5](https://github.com/caolan/async/tree/v3.2.5)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.5/LICENSE):
+This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.6](https://github.com/caolan/async/tree/v3.2.6)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.6/LICENSE):
 
 ```
 Copyright (c) 2010-2018 Caolan McMahon
@@ -2709,7 +2709,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1665.0](https://github.com/aws/aws-sdk-js/tree/v2.1665.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1665.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1691.0](https://github.com/aws/aws-sdk-js/tree/v2.1691.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1691.0/LICENSE.txt):
 
 ```
 
@@ -3137,7 +3137,7 @@ THE SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.10.2](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.10.2)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.10.2/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.11.0](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.11.0)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.11.0/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -3342,7 +3342,7 @@ Library.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.57.0](https://github.com/eslint/eslint/tree/v8.57.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.57.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.57.1](https://github.com/eslint/eslint/tree/v8.57.1)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.57.1/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -3369,7 +3369,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v4.19.2](https://github.com/expressjs/express/tree/v4.19.2)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.19.2/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v4.21.1](https://github.com/expressjs/express/tree/v4.21.1)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.21.1/LICENSE):
 
 ```
 (The MIT License)
@@ -4000,7 +4000,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### self-cert
 
-This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.0](https://github.com/jsumners/self-cert/tree/v2.0.0)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.0/Readme.md):
+This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.1](https://github.com/jsumners/self-cert/tree/v2.0.1)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.1/Readme.md):
 
 ```
 MIT License
