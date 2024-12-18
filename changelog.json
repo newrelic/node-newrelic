@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.9.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added entity linking attributes to aws-sdk v3 Lambda segments",
+          "Provided ability to define newrelic config as `newrelic.mjs`"
+        ]
+      }
+    },
+    {
       "version": "12.8.2",
       "changes": {
         "security": [],
