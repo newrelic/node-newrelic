@@ -43,6 +43,41 @@ function checkEntityLinkingSegments({ service, operations, tx, end }) {
   end()
 }
 
+function checkNonLinkableSegments({ service, operations, tx, end }) {
+  // When no account ID or ARN is available, make sure not to set cloud resource id or platform
+  const root = tx.trace.root
+
+  const segments = checkAWSAttributes(root, EXTERN_PATTERN)
+  const accountId = tx.agent.config?.cloud?.aws?.account_id
+
+  assert(segments.length > 0, 'should have segments')
+  assert.equal(accountId, undefined, 'account id should not have been set for this test')
+
+  segments.forEach((segment) => {
+    const attrs = segment.attributes.get(SEGMENT_DESTINATION)
+
+    assert.equal(
+      attrs['cloud.resource_id'],
+      undefined,
+      'if account Id has not been set, cloud.resource_id should not be set'
+    )
+    assert.equal(
+      attrs['cloud.platform'],
+      undefined,
+      'if account Id has not been set, cloud.platform should not be set'
+    )
+
+    // other attributes should be as expected
+    match(attrs, {
+      'aws.operation': operations[0],
+      'aws.requestId': String,
+      'aws.region': 'us-east-1',
+      'aws.service': service.toLowerCase()
+    })
+  })
+  end()
+}
+
 test('LambdaClient', async (t) => {
   t.beforeEach(async (ctx) => {
     ctx.nr = {}
@@ -99,6 +134,25 @@ test('LambdaClient', async (t) => {
       await service.send(cmd)
       tx.end()
       setImmediate(checkEntityLinkingSegments, {
+        service: 'Lambda',
+        operations: ['InvokeCommand'],
+        tx,
+        end
+      })
+    })
+  })
+
+  await t.test('InvokeCommand without account ID defined', (t, end) => {
+    const { service, agent, InvokeCommand } = t.nr
+    agent.config.cloud.aws.account_id = null
+    helper.runInTransaction(agent, async (tx) => {
+      const cmd = new InvokeCommand({
+        FunctionName: 'funcName',
+        Payload: JSON.stringify({ prop1: 'test', prop2: 'test 2' })
+      })
+      await service.send(cmd)
+      tx.end()
+      setImmediate(checkNonLinkableSegments, {
         service: 'Lambda',
         operations: ['InvokeCommand'],
         tx,
