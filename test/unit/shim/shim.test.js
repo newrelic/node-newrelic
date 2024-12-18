@@ -2113,7 +2113,7 @@ test('Shim', async function (t) {
       helper.runInTransaction(agent, function (tx) {
         const args = [wrappable.getActiveSegment]
         const segment = wrappable.getActiveSegment()
-        const parent = shim.createSegment({ name: 'test segment', parent: segment })
+        const parent = shim.createSegment('test-segment')
         shim.bindCallbackSegment({}, args, shim.LAST, parent)
         const cbSegment = args[0]()
 
