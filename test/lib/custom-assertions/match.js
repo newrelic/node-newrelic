@@ -60,6 +60,8 @@ module.exports = function match(actual, expected, { assert = require('node:asser
       } else {
         assert.equal(actual[key], expected[key])
       }
+    } else {
+      assert.fail(`Missing ${key} in ${JSON.stringify(actual)}`)
     }
   }
 }
