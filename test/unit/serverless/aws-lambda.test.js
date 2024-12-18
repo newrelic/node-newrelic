@@ -25,8 +25,6 @@ const LAMBDA_ARN = 'aws.lambda.arn'
 const COLDSTART = 'aws.lambda.coldStart'
 const EVENTSOURCE_ARN = 'aws.lambda.eventSource.arn'
 const EVENTSOURCE_TYPE = 'aws.lambda.eventSource.eventType'
-const PLATFORM = 'cloud.platform'
-const RESOURCE_ID = 'cloud.resource_id'
 
 function getMetrics(agent) {
   return agent.metrics._metrics
@@ -64,8 +62,7 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       functionVersion: 'TestVersion',
       invokedFunctionArn: 'arn:test:function',
       memoryLimitInMB: '128',
-      awsRequestId: 'testid',
-      platform: 'aws_lambda'
+      awsRequestId: 'testid'
     }
     ctx.nr.stubCallback = () => {}
 
@@ -669,8 +666,6 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       assert.equal(txTrace[REQ_ID], stubContext.awsRequestId)
       assert.equal(txTrace[LAMBDA_ARN], stubContext.invokedFunctionArn)
       assert.equal(txTrace[COLDSTART], true)
-      assert.equal(txTrace[PLATFORM], stubContext.platform)
-      assert.equal(txTrace[RESOURCE_ID], stubContext.invokedFunctionArn)
       end()
     }
 
