@@ -3,7 +3,6 @@
 #### Features
 
 * Added entity linking attributes to aws-sdk v3 Lambda segments ([#2845](https://github.com/newrelic/node-newrelic/pull/2845)) ([8820265](https://github.com/newrelic/node-newrelic/commit/882026502dbc12b700b893485458176bcd03f68e))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com> Co-authored-by: Bob Evans <robert.evans25@gmail.com>
 * Provided ability to define newrelic config as `newrelic.mjs` ([#2836](https://github.com/newrelic/node-newrelic/pull/2836)) ([972b59d](https://github.com/newrelic/node-newrelic/commit/972b59d4c4bd5f212d5fd695ce1007802354b7a0))
 
 #### Documentation
