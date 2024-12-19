@@ -65,3 +65,34 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
           GITHUB_USER: ${{ vars.NODE_AGENT_CI_USER_NAME }}
           GITHUB_EMAIL: ${{ vars.NODE_AGENT_CI_USER_EMAIL }}
+
+  release-tags:
+    runs-on: ubuntu-latest
+    if:
+      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - run: npm install
+      - run: |
+          git config user.name ${GITHUB_ACTOR}
+          git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+      - id: get_tag
+        run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
+      - name: Create release tags for Lambda and K8s Init Containers
+        uses: dev-hanz-ops/install-gh-cli-action@c78dbed4be2f8d6133a14a9a597ee12fd4ed5c93 # v3
+        with:
+          gh-cli-version: 2.63.2
+        run: |
+          gh auth login --with-token <<< $GH_RELEASE_TOKEN
+          echo "newrelic/newrelic-lambda-layers - Releasing New Relic Node Agent v${{ steps.get_tag.outputs.latest_tag }}.0 with tag v${{ steps.get_tag.outputs.latest_tag }}.0_nodejs"
+          gh create release "v${{ steps.get_tag.outputs.latest_tag }}.0_nodejs" -t "New Relic Node Agent v${{ steps.get_tag.outputs.latest_tag }}.0" --repo=newrelic/newrelic-lambda-layers
+          echo "newrelic/newrelic-agent-init-container - Releasing New Relic Node Agent v${{ steps.get_tag.outputs.latest_tag }}.0 with tag v${{ steps.get_tag.outputs.latest_tag }}.0_nodejs"
+          gh create release "v${{ steps.get_tag.outputs.latest_tag }}.0_nodejs" -t "New Relic Node Agent v${{ steps.get_tag.outputs.latest_tag }}.0" --repo=newrelic/newrelic-agent-init-container
+        env:
+          GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
