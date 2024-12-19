@@ -1,0 +1,22 @@
+{
+  "name": "opensearch-tests",
+  "targets": [{"name":"@opensearch-project/opensearch","minAgentVersion":"12.10.0"}],
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "@opensearch-project/opensearch": ">=2.1.0"
+      },
+      "files": [
+        "opensearch.test.js"
+      ]
+    }
+  ]
+}
