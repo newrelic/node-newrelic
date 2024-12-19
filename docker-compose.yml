@@ -21,6 +21,28 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+  
+  opensearch:
+    container_name: nr_node_opensearch
+    image: opensearchproject/opensearch:2.1.0 
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # Disable password
+      - "DISABLE_SECURITY_PLUGIN=true"
+      # Set cluster to single node
+      - "discovery.type=single-node"
+      # Disable high watermarks, used in CI as the runner is constrained on disk space
+      - "cluster.routing.allocation.disk.threshold_enabled=false"
+      - "network.host=_site_"
+      - "transport.host=127.0.0.1"
+      - "http.host=0.0.0.0"
+    ports:
+      - "9201:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9200"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   # Kafka setup based on the e2e tests in node-rdkafka. Needs both the
   # `zookeeper` and `kafka` services.

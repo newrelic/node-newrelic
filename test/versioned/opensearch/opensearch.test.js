@@ -35,17 +35,17 @@ test('opensearch instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
     const agent = helper.instrumentMockedAgent()
 
-    const METRIC_HOST_NAME = urltils.isLocalhost(params.elastic_host)
+    const METRIC_HOST_NAME = urltils.isLocalhost(params.opensearch_host)
       ? agent.config.getHostnameSafe()
-      : params.elastic_host
-    const HOST_ID = METRIC_HOST_NAME + '/' + params.elastic_port
+      : params.opensearch_host
+    const HOST_ID = METRIC_HOST_NAME + '/' + params.opensearch_port
 
     // need to capture attributes
     agent.config.attributes.enabled = true
 
     const { Client } = require('@opensearch-project/opensearch')
     const client = new Client({
-      node: `http://${params.elastic_host}:${params.elastic_port}`
+      node: `http://${params.opensearch_host}:${params.opensearch_port}`
     })
 
     ctx.nr = {
@@ -191,7 +191,7 @@ test('opensearch instrumentation', async (t) => {
       const attrs = firstChild.getAttributes()
       assert.equal(attrs.product, 'OpenSearch')
       assert.equal(attrs.host, METRIC_HOST_NAME)
-      assert.equal(attrs.port_path_or_id, `${params.elastic_port}`)
+      assert.equal(attrs.port_path_or_id, `${params.opensearch_port}`)
       // TODO: update once instrumentation is properly setting database name
       assert.equal(attrs.database_name, 'unknown')
       transaction.end()
