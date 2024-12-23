@@ -76,21 +76,21 @@ test('should create LlmTool event for every tool.call', (t, end) => {
     const [[{ type }, toolEvent]] = events
     assert.equal(type, 'LlmTool')
     match(toolEvent, {
-      'id': /[a-f0-9]{36}/,
-      'appName': 'New Relic for Node.js tests',
-      'span_id': tx.trace.root.children[0].id,
-      'trace_id': tx.traceId,
-      'ingest_source': 'Node',
-      'vendor': 'langchain',
+      id: /[a-f0-9]{36}/,
+      appName: 'New Relic for Node.js tests',
+      span_id: tx.trace.root.children[0].id,
+      trace_id: tx.traceId,
+      ingest_source: 'Node',
+      vendor: 'langchain',
       'metadata.key': 'value',
       'metadata.hello': 'world',
-      'tags': 'tag1,tag2,tag3',
+      tags: 'tag1,tag2,tag3',
       input,
-      'output': tool.fakeData[input],
-      'name': tool.name,
-      'description': tool.description,
-      'duration': tx.trace.root.children[0].getDurationInMillis(),
-      'run_id': undefined
+      output: tool.fakeData[input],
+      name: tool.name,
+      description: tool.description,
+      duration: tx.trace.root.children[0].getDurationInMillis(),
+      run_id: undefined
     })
     tx.end()
     end()

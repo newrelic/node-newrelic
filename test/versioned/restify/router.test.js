@@ -39,7 +39,7 @@ test('Restify router', async function (t) {
 
   await t.test('introspection', async function (t) {
     const { agent, server } = t.nr
-    const plan = tspl(t, { plan: 12 })
+    const plan = tspl(t, { plan: 13 })
 
     // need to capture attributes
     agent.config.attributes.enabled = true
@@ -79,7 +79,7 @@ test('Restify router', async function (t) {
 
   await t.test('trailing slash differentiates routes (without slash)', async function (t) {
     const { agent, server } = t.nr
-    const plan = tspl(t, { plan: 3 })
+    const plan = tspl(t, { plan: 4 })
 
     server.get('/path1/', function first(req, res, next) {
       plan.ok(0, 'should not enter this route')
@@ -98,7 +98,7 @@ test('Restify router', async function (t) {
 
   await t.test('trailing slash differentiates routes (with slash)', async function (t) {
     const { agent, server } = t.nr
-    const plan = tspl(t, { plan: 3 })
+    const plan = tspl(t, { plan: 4 })
 
     server.get('/path1/', function first(req, res, next) {
       plan.ok(agent.getTransaction(), 'should enter this route')
@@ -120,7 +120,7 @@ test('Restify router', async function (t) {
   if (semver.satisfies(pkgVersion, '>=7.1.0')) {
     await t.test('ignoreTrailingSlash option should ignore trailing slash', async function (t) {
       const { agent } = t.nr
-      const plan = tspl(t, { plan: 3 })
+      const plan = tspl(t, { plan: 4 })
 
       const server = require('restify').createServer({ ignoreTrailingSlash: true })
 
@@ -144,7 +144,7 @@ test('Restify router', async function (t) {
   if (semver.satisfies(pkgVersion, '>=7.2.3')) {
     await t.test('next(true): terminates processing', async function (t) {
       const { agent, server } = t.nr
-      const plan = tspl(t, { plan: 4 })
+      const plan = tspl(t, { plan: 5 })
 
       server.get(
         '/test/:id',
@@ -170,7 +170,7 @@ test('Restify router', async function (t) {
 
   await t.test('next(false): stop processing', async function (t) {
     const { agent, server } = t.nr
-    const plan = tspl(t, { plan: 4 })
+    const plan = tspl(t, { plan: 5 })
 
     server.get(
       '/test/:id',
@@ -225,6 +225,7 @@ test('Restify router', async function (t) {
       const port = server.address().port
       const url = 'http://localhost:' + port + route
       helper.makeGetRequest(url, function (error, res, body) {
+        plan.ifError(error)
         plan.equal(res.statusCode, 200, 'nothing exploded')
         plan.deepEqual(body, { status: 'ok' }, 'got expected response')
       })

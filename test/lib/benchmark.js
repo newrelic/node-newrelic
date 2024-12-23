@@ -33,19 +33,20 @@ class Benchmark {
 
   processSamples() {
     const samples = this.samples
-    return (this.processedSamples = Object.keys(samples).reduce((acc, sampleName) => {
+    this.processedSamples = Object.keys(samples).reduce((acc, sampleName) => {
       try {
         acc[sampleName] = new BenchmarkStats(samples[sampleName], this.name, sampleName)
         return acc
       } catch (e) {
-        /* eslint-disable no-console */
         console.error(e)
       }
-    }, {}))
+      return undefined
+    }, {})
+    return this.processedSamples
   }
 
   print() {
-    console.log(JSON.stringify(this.processSamples(), null, 2)) // eslint-disable-line
+    console.log(JSON.stringify(this.processSamples(), null, 2))
   }
 
   async run() {
@@ -134,7 +135,7 @@ class Benchmark {
 
       const samples = []
       for (let i = 0; i < test.runs; i++) {
-        await runTest(i, test, (err, delta) => {
+        await runTest(i, test, (_, delta) => {
           samples.push(delta)
         }) // reliant on callback; should refactor test simply to return delta
       }

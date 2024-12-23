@@ -161,7 +161,7 @@ test('each handler in route has its own segment', function (t, end) {
 test('segments for routers', function (t, end) {
   const { app, express } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.all('/test', function (req, res) {
     res.end()
   })
@@ -191,13 +191,13 @@ test('segments for routers', function (t, end) {
 test('two root routers', function (t, end) {
   const { app, express } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
   router1.all('/', function (req, res) {
     res.end()
   })
   app.use('/', router1)
 
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router2 = express.Router()
   router2.all('/test', function (req, res) {
     res.end()
   })
@@ -223,7 +223,7 @@ test('two root routers', function (t, end) {
 test('router mounted as a route handler', function (t, end) {
   const { app, express, isExpress5 } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
   router1.all('/test', function testHandler(req, res) {
     res.send('test')
   })
@@ -267,7 +267,7 @@ test('router mounted as a route handler', function (t, end) {
 test('segments for routers', function (t, end) {
   const { app, express } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.all('/test', function (req, res) {
     res.end()
   })
@@ -408,7 +408,7 @@ test('segments for wildcard', function (t, end) {
 test('router with subapp', function (t, end) {
   const { app, express, isExpress5 } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   const subapp = express()
   subapp.all('/test', function (req, res) {
     res.end()
@@ -498,7 +498,7 @@ test('error middleware', function (t, end) {
 test('error handler in router', function (t, end) {
   const { app, express } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/test', function () {
     throw new Error('some error')
@@ -515,7 +515,7 @@ test('error handler in router', function (t, end) {
   runTest(
     t,
     {
-      endpoint: endpoint,
+      endpoint,
       errors: 0
     },
     function (segments, transaction) {
@@ -549,8 +549,8 @@ test('error handler in router', function (t, end) {
 test('error handler in second router', function (t, end) {
   const { app, express } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   router2.get('/test', function () {
     throw new Error('some error')
@@ -568,7 +568,7 @@ test('error handler in second router', function (t, end) {
   runTest(
     t,
     {
-      endpoint: endpoint,
+      endpoint,
       errors: 0
     },
     function (segments, transaction) {
@@ -605,7 +605,7 @@ test('error handler in second router', function (t, end) {
 test('error handler outside of router', function (t, end) {
   const { app, express } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/test', function () {
     throw new Error('some error')
@@ -621,7 +621,7 @@ test('error handler outside of router', function (t, end) {
   runTest(
     t,
     {
-      endpoint: endpoint,
+      endpoint,
       errors: 0
     },
     function (segments, transaction) {
@@ -652,8 +652,8 @@ test('error handler outside of router', function (t, end) {
 test('error handler outside of two routers', function (t, end) {
   const { app, express } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   router1.use('/router2', router2)
 
@@ -671,7 +671,7 @@ test('error handler outside of two routers', function (t, end) {
   runTest(
     t,
     {
-      endpoint: endpoint,
+      endpoint,
       errors: 0
     },
     function (segments, transaction) {

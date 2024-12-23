@@ -57,7 +57,7 @@ test('resolve', function (t, end) {
     dns.resolve('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
-      assert.ok(ips[0].match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/))
+      assert.ok(ips[0].match(/^(?:\d{1,3}\.){3}\d{1,3}$/))
 
       const children = []
       verifySegments({ agent, end, name: 'dns.resolve', children })
@@ -71,7 +71,7 @@ test('resolve4', function (t, end) {
     dns.resolve4('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
-      assert.ok(ips[0].match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/))
+      assert.ok(ips[0].match(/^(?:\d{1,3}\.){3}\d{1,3}$/))
       verifySegments({ agent, end, name: 'dns.resolve4' })
     })
   })
@@ -83,7 +83,7 @@ test('resolve6', function (t, end) {
     dns.resolve6('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
-      assert.ok(ips[0].match(/^(([0-9a-f]{1,4})(\:|$)){8}/))
+      assert.ok(ips[0].match(/^(([0-9a-f]{1,4})(:|$)){8}/))
       verifySegments({ agent, end, name: 'dns.resolve6' })
     })
   })

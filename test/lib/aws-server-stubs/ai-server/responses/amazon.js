@@ -68,11 +68,11 @@ responses.set('text amazon ultimate question streamed', {
     },
     {
       body: {
-        'outputText': '',
-        'index': 0,
-        'totalOutputTextTokenCount': 75,
-        'completionReason': 'endoftext',
-        'inputTextTokenCount': null,
+        outputText: '',
+        index: 0,
+        totalOutputTextTokenCount: 75,
+        completionReason: 'endoftext',
+        inputTextTokenCount: null,
         'amazon-bedrock-invocationMetrics': {
           inputTokenCount: 8,
           outputTokenCount: 4,

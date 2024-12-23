@@ -127,10 +127,10 @@ test('instrumentOutbound', async (t) => {
       assert.deepEqual(
         transaction.trace.root.children[0].attributes.get(DESTINATIONS.SPAN_EVENT),
         {
-          'hostname': HOSTNAME,
-          'port': PORT,
-          'url': `http://${HOSTNAME}:${PORT}/asdf`,
-          'procedure': 'GET',
+          hostname: HOSTNAME,
+          port: PORT,
+          url: `http://${HOSTNAME}:${PORT}/asdf`,
+          procedure: 'GET',
           'request.parameters.a': 'b',
           'request.parameters.another': 'yourself',
           'request.parameters.thing': true,
@@ -342,7 +342,7 @@ test('should add data from cat header to segment', async (t) => {
 
       const port = server.address().port
       http
-        .get({ host: 'localhost', port: port }, function (res) {
+        .get({ host: 'localhost', port }, function (res) {
           const segment = agent.tracer.getTransaction().trace.root.children[0]
 
           assert.equal(segment.catId, '123#456')
@@ -364,7 +364,7 @@ test('should add data from cat header to segment', async (t) => {
 
       const port = server.address().port
       http
-        .get({ host: 'localhost', port: port }, function (res) {
+        .get({ host: 'localhost', port }, function (res) {
           const segment = agent.tracer.getTransaction().trace.root.children[0]
 
           assert.equal(segment.catId, '123#456')

@@ -221,13 +221,13 @@ const httpApiGatewayV2EventAlt = {
   rawPath: '/dev/',
   rawQueryString: '',
   headers: {
-    'accept':
+    accept:
       'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'accept-encoding': 'gzip, deflate, br, zstd',
     'accept-language': 'en-US,en;q=0.9',
     'content-length': '0',
-    'host': 'zzz1234567890.execute-api.us-east-2.amazonaws.com',
-    'priority': 'u=0, i',
+    host: 'zzz1234567890.execute-api.us-east-2.amazonaws.com',
+    priority: 'u=0, i',
     'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"macOS"',
@@ -281,11 +281,11 @@ const albEvent = {
     team: 'node agent'
   },
   headers: {
-    'accept': 'application/json;v=4',
+    accept: 'application/json;v=4',
     'content-length': '35',
     'content-type': 'application/json',
-    'header2': 'value1,value2',
-    'host': 'examplehost.example.com',
+    header2: 'value1,value2',
+    host: 'examplehost.example.com',
     'x-amzn-trace-id': 'Root=1-1234567890',
     'x-forwarded-for': '10.10.10.10',
     'x-forwarded-port': '443',
@@ -295,10 +295,10 @@ const albEvent = {
   body: '{"exampleProperty": "exampleValue"}',
   isBase64Encoded: false,
   rawHeaders: {
-    'accept': 'application/json;v=4',
+    accept: 'application/json;v=4',
     'content-length': '35',
     'content-type': 'application/json',
-    'host': 'examplehost.example.com',
+    host: 'examplehost.example.com',
     'x-amzn-trace-id': 'Root=1-1234567890',
     'x-forwarded-for': '10.10.10.10',
     'x-forwarded-port': '443',

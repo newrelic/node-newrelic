@@ -20,7 +20,6 @@ test("adding 'handle' middleware", async function (t) {
   const { app, port } = t.nr
   const plan = tsplan(t, { plan: 2 })
 
-  // eslint-disable-next-line no-unused-vars
   function handle(err, req, res, next) {
     plan.ok(err, 'error should exist')
 
@@ -35,7 +34,7 @@ test("adding 'handle' middleware", async function (t) {
   app.use(handle)
 
   http
-    .request({ port: port }, function (res) {
+    .request({ port }, function (res) {
       // drain response to let process exit
       res.pipe(process.stderr)
 

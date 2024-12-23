@@ -16,9 +16,10 @@ const CONTEXT_KEYS = ['trace.id', 'span.id']
  * @param {object} params.log log line
  * @param {string} params.message message in log line
  * @param {number} params.level log level
+ * @param params.line
  */
 function validateLogLine({ line: logLine, message, level }) {
-  assert.equal(/[0-9]{10}/.test(logLine.timestamp), true, 'should have proper unix timestamp')
+  assert.equal(/\d{10}/.test(logLine.timestamp), true, 'should have proper unix timestamp')
   assert.equal(
     logLine.message.includes('NR-LINKING'),
     false,

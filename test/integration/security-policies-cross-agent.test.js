@@ -76,7 +76,6 @@ test('LASP/CSP - Cross Agent Tests', async (t) => {
       t.after(() => {
         helper.unloadAgent(agent)
         if (!nock.isDone()) {
-          // eslint-disable-next-line no-console
           console.error('Cleaning pending mocks: %j', nock.pendingMocks())
           nock.cleanAll()
         }

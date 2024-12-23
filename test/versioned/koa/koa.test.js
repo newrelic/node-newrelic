@@ -386,8 +386,8 @@ test('errors handled within middleware are not recorded', async (t) => {
     })
   })
   app.use(function two(ctx) {
-    throw new Error('middleware error')
     ctx.body = 'done'
+    throw new Error('middleware error')
   })
 
   agent.on('transactionFinished', (tx) => {

@@ -14,7 +14,7 @@ const helper = require('../../lib/agent_helper')
 const AwsLambda = require('../../../lib/serverless/aws-lambda')
 
 const { DESTINATIONS: ATTR_DEST } = require('../../../lib/config/attribute-filter')
-const { albEvent: albEvent } = require('./fixtures')
+const { albEvent } = require('./fixtures')
 
 test.beforeEach((ctx) => {
   // This env var suppresses console output we don't need to inspect.

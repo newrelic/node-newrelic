@@ -210,10 +210,10 @@ function finish({ commands, tx, setDatastoreSpy }) {
     const accountId = tx.agent.config.cloud.aws.account_id
 
     match(attrs, {
-      'host': String,
-      'port_path_or_id': Number,
-      'product': 'DynamoDB',
-      'collection': String,
+      host: String,
+      port_path_or_id: Number,
+      product: 'DynamoDB',
+      collection: String,
       'aws.operation': command.constructor.name,
       'aws.requestId': String,
       'aws.region': 'us-east-1',

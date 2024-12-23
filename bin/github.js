@@ -45,8 +45,8 @@ class Github {
       owner: this.repoOwner,
       repo: this.repository,
       tag_name: tag,
-      name: name,
-      body: body
+      name,
+      body
     })
 
     return result.data
@@ -146,7 +146,7 @@ class Github {
       owner: this.repoOwner,
       repo: this.repository,
       workflow_id: nameOrId,
-      branch: branch,
+      branch,
       per_page: 5
     })
 
@@ -159,11 +159,11 @@ class Github {
     await octokit.pulls.create({
       owner: this.repoOwner,
       repo: this.repository,
-      head: head,
-      base: base,
-      title: title,
-      body: body,
-      draft: draft
+      head,
+      base,
+      title,
+      body,
+      draft
     })
   }
 
@@ -181,7 +181,7 @@ class Github {
         release_id: id,
         body
       })
-    } catch (err) {
+    } catch {
       await new Promise((resolve) => {
         const retryWait = 2 ** retryCount * 1000
         console.log(

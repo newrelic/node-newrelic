@@ -19,7 +19,7 @@ test.beforeEach((ctx) => {
             'llm.conversation_id': 'test-conversation',
             'llm.foo': 'bar',
             'llm.bar': 'baz',
-            'customKey': 'customValue'
+            customKey: 'customValue'
           }
         }
       }

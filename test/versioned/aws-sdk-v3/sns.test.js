@@ -220,7 +220,7 @@ function finish(end, tx, destName, setLibrarySpy) {
     'aws.requestId': String,
     'aws.service': /sns|SNS/,
     'aws.region': 'us-east-1'
-  }),
-    assert.equal(setLibrarySpy.callCount, 1, 'should only call setLibrary once and not per call')
+  })
+  assert.equal(setLibrarySpy.callCount, 1, 'should only call setLibrary once and not per call')
   end()
 }

@@ -152,7 +152,7 @@ test('sending error traces', async (t) => {
           const attrs = errData.agentAttributes
           plan.deepStrictEqual(
             attrs,
-            { 'foo': 'bar', 'request.uri': '/nonexistent', spanId },
+            { foo: 'bar', 'request.uri': '/nonexistent', spanId },
             'should have the correct attributes'
           )
         }
@@ -297,7 +297,7 @@ test('sending error events', async (t) => {
 
         plan.deepStrictEqual(
           agentAttr,
-          { 'foo': 'bar', 'request.uri': '/nonexistent', spanId },
+          { foo: 'bar', 'request.uri': '/nonexistent', spanId },
           'should have the correct attributes'
         )
       })

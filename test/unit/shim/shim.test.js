@@ -29,7 +29,7 @@ test('Shim', async function (t) {
     ctx.nr.shim = new Shim(agent, 'test-module')
     ctx.nr.wrappable = {
       name: 'this is a name',
-      bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
+      bar: function barsName(unused, params) { return 'bar' },
       fiz: function fizsName() {
         return 'fiz'
       },
@@ -219,7 +219,7 @@ test('Shim', async function (t) {
 
     await t.test('should match the arity and name of the original when specified', function (t) {
       const { shim } = t.nr
-      // eslint-disable-next-line no-unused-vars
+
       function toWrap(a, b) {}
       const wrapped = shim.wrap(toWrap, {
         wrapper: function () {
@@ -233,7 +233,6 @@ test('Shim', async function (t) {
     })
 
     await t.test('should pass items in the `args` parameter to the spec', function (t, end) {
-      /* eslint-disable max-params */
       const { shim, wrappable } = t.nr
       shim.wrap(
         wrappable,
@@ -246,7 +245,6 @@ test('Shim', async function (t) {
         },
         ['a', 'b', 'c']
       )
-      /* eslint-enable max-params */
     })
 
     await t.test('should wrap the first parameter', function (t, end) {
@@ -684,7 +682,7 @@ test('Shim', async function (t) {
 
     await t.test('should pass items in the `args` parameter to the spec', function (t, end) {
       const { shim, toWrap } = t.nr
-      /* eslint-disable max-params */
+
       shim.wrapReturn(
         toWrap,
         'foo',
@@ -697,7 +695,6 @@ test('Shim', async function (t) {
         },
         ['a', 'b', 'c']
       )
-      /* eslint-enable max-params */
 
       toWrap.foo()
     })
@@ -793,7 +790,7 @@ test('Shim', async function (t) {
 
     await t.test('should pass items in the `args` parameter to the spec', function (t) {
       const { shim, toWrap } = t.nr
-      /* eslint-disable max-params */
+
       shim.wrapClass(
         toWrap,
         'Foo',
@@ -805,7 +802,6 @@ test('Shim', async function (t) {
         },
         ['a', 'b', 'c']
       )
-      /* eslint-enable max-params */
 
       const foo = new toWrap.Foo()
       assert.ok(foo)
@@ -2064,7 +2060,7 @@ test('Shim', async function (t) {
 
     await t.test('should work with an object and a string index', function (t) {
       const { cb, shim } = t.nr
-      const opts = { a: 'a', cb: cb, b: 'b' }
+      const opts = { a: 'a', cb, b: 'b' }
       shim.bindCallbackSegment({}, opts, 'cb')
       assert.equal(shim.isWrapped(opts, 'cb'), true)
     })
@@ -2268,6 +2264,7 @@ test('Shim', async function (t) {
     await t.test('should not throw in a transaction when `func` has no `.apply` method', (t) => {
       const { segment, shim } = t.nr
       const func = function () {}
+      // eslint-disable-next-line no-proto
       func.__proto__ = {}
       assert.ok(!func.apply)
       assert.doesNotThrow(() => shim.applySegment(func, segment))
@@ -2276,6 +2273,7 @@ test('Shim', async function (t) {
     await t.test('should not throw out of a transaction', (t) => {
       const { shim } = t.nr
       const func = function () {}
+      // eslint-disable-next-line no-proto
       func.__proto__ = {}
       assert.ok(!func.apply)
       assert.doesNotThrow(() => shim.applySegment(func, null))
@@ -2566,6 +2564,7 @@ test('Shim', async function (t) {
     await t.test('should detect if an item is a string', function (t) {
       const { shim } = t.nr
       assert.ok(shim.isString('foobar'))
+      // eslint-disable-next-line sonarjs/no-primitive-wrappers, no-new-wrappers
       assert.ok(shim.isString(new String('foobar')))
       assert.ok(!shim.isString({}))
       assert.ok(!shim.isString([]))
@@ -3089,7 +3088,7 @@ test('Shim', async function (t) {
 
     await t.test('should properly resolve _moduleRoot as windows path', (t) => {
       const { agent } = t.nr
-      const root = `c:\\path\\to\\app\\node_modules\\@scope\\test`
+      const root = 'c:\\path\\to\\app\\node_modules\\@scope\\test'
       const shim = new Shim(agent, '@scope/test', root)
       assert.equal(shim._moduleRoot, root)
     })

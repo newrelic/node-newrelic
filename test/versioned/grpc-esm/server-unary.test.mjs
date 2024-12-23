@@ -200,7 +200,7 @@ for (const config of grpcConfigs) {
         fnName: 'sayError',
         payload: { oh: 'noes' }
       })
-    } catch (err) {
+    } catch {
       // err tested in client tests
     }
 

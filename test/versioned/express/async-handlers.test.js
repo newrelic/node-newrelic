@@ -57,8 +57,7 @@ test('async handlers', { skip: !isExpress5() }, async (t) => {
     app.use('/test', function handler() {
       throw new Error('should not call handler on error')
     })
-    // eslint-disable-next-line no-unused-vars
-    app.use(function (error, req, res, next) {
+    app.use(function (_, req, res, next) {
       res.status(400).end()
     })
 

@@ -247,7 +247,7 @@ test('TraceAggregator', async function (t) {
       assert.ok(!err)
       // This 6th transaction should not be collected.
       assert.ok(!agent.traces.trace)
-      createTransaction(agent, `/test-0`, 500)
+      createTransaction(agent, '/test-0', 500)
       assert.ok(!agent.traces.trace, '6th trace to collect')
       end()
     }

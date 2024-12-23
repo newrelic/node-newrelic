@@ -632,7 +632,7 @@ test('display_host facts', async (t) => {
     ctx.nr.osNetworkInterfaces = os.networkInterfaces
     ctx.nr.osHostname = os.hostname
     os.hostname = () => {
-      throw 'BROKEN'
+      throw Error('BROKEN')
     }
   })
 

@@ -89,11 +89,11 @@ test('custom naming rules should be applied early for RUM', async function (t) {
   external.listen(0, function () {
     const port = external.address().port
 
-    http.request({ port: port, path: '/test' }, done).end()
+    http.request({ port, path: '/test' }, done).end()
 
     function done(res) {
       res.pipe(
-        new StreamSink(function (err, header) {
+        new StreamSink(function (_, header) {
           assertBrowserHeader({ agent, header, plan })
         })
       )

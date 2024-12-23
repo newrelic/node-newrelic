@@ -252,11 +252,11 @@ test('SpanAggregator', async (t) => {
     assert.equal(
       spanEventAggregator.periodMs,
       4000,
-      `should use span_event_harvest_config.report_period_ms`
+      'should use span_event_harvest_config.report_period_ms'
     )
   })
 
-  await t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
+  await t.test("should use 'span_event_harvest_config.harvest_limit' from server", (t) => {
     const { spanEventAggregator } = t.nr
     const fakeConfig = {
       span_event_harvest_config: {
@@ -273,10 +273,10 @@ test('SpanAggregator', async (t) => {
       2000,
       'should use span_event_harvest_config.harvest_limit'
     )
-    assert.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
+    assert.equal(spanEventAggregator._items.limit, 2000, 'should set queue limit')
   })
 
-  await t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
+  await t.test("should use 'span_event_harvest_config.harvest_limit' from server", (t) => {
     const { spanEventAggregator } = t.nr
     const fakeConfig = {
       span_event_harvest_config: {
@@ -293,7 +293,7 @@ test('SpanAggregator', async (t) => {
       2000,
       'should use span_event_harvest_config.harvest_limit'
     )
-    assert.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
+    assert.equal(spanEventAggregator._items.limit, 2000, 'should set queue limit')
   })
 
   await t.test('should use max_samples_stored as-is when no span harvest config', (t) => {

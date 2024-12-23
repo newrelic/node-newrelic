@@ -85,9 +85,9 @@ function handler(req, res) {
         break
       }
 
+      // v1 seems to be the same as v2, just with less helpful responses.
       case 'anthropic.claude-v1':
       case 'anthropic.claude-instant-v1':
-      // v1 seems to be the same as v2, just with less helpful responses.
       case 'anthropic.claude-v2':
       case 'anthropic.claude-v2:1': {
         response = responses.claude.get(payload.prompt)
@@ -113,9 +113,9 @@ function handler(req, res) {
         break
       }
 
+      // llama3 responses are identical, just return llama2 data
       case 'meta.llama2-13b-chat-v1':
       case 'meta.llama2-70b-chat-v1':
-      // llama3 responses are indentical, just return llama2 data
       case 'meta.llama3-8b-instruct-v1:0':
       case 'meta.llama3-70b-instruct-v1:0': {
         response = responses.llama.get(payload.prompt)

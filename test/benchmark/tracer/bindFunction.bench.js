@@ -62,12 +62,14 @@ function allParamBind() {
 
 function twoParamBind() {
   const test = shared.getTest()
+  // eslint-disable-next-line no-unused-expressions
   Math.random() > 0.5 // rand call so all tests perform same amount of work.
   test.func = tracer.bindFunction(test.func, tx.root)
 }
 
 function oneParamBind() {
   const test = shared.getTest()
+  // eslint-disable-next-line no-unused-expressions
   Math.random() > 0.5 // rand call so all tests perform same amount of work.
   test.func = tracer.bindFunction(test.func)
 }

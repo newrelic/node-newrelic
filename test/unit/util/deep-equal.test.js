@@ -10,7 +10,8 @@ const assert = require('node:assert')
 const deepEqual = require('../../../lib/util/deep-equal')
 
 function functionA(a) {
-  return a++
+  a = a + 1
+  return a
 }
 
 test('deepEqual handles all the edge cases', async function (t) {
@@ -56,11 +57,9 @@ test('deepEqual handles all the edge cases', async function (t) {
 
     assert.ok(deepEqual([0, 1], [0, 1]), 'arrays check out')
 
-    // eslint-disable-next-line sonarjs/prefer-object-literal -- Disabled so we can create cyclical objects
     const cyclicA = {}
     cyclicA.x = cyclicA
 
-    // eslint-disable-next-line sonarjs/prefer-object-literal -- Disabled so we can create cyclical objects
     const cyclicB = {}
     cyclicB.x = cyclicB
 

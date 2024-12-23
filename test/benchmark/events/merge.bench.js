@@ -73,7 +73,7 @@ suite.add({
   },
   fn: function () {
     const ev = queue2.getRawEvents()
-    const mapped = ev.map((e) => e.value) // eslint-disable-line no-unused-vars
+    ev.map((e) => e.value)
     queue1.merge(ev)
   }
 })

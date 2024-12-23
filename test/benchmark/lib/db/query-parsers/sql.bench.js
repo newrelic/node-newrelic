@@ -46,7 +46,7 @@ for (const test of tests) {
 suite.run()
 
 function leadingMultiLineCommentSingleLine() {
-  parseSql(`/* insert into bar some stuff */ insert into foo (col1)`)
+  parseSql('/* insert into bar some stuff */ insert into foo (col1)')
 }
 
 function leadingMultiLineCommentMultipleLines() {
@@ -56,23 +56,23 @@ function leadingMultiLineCommentMultipleLines() {
 }
 
 function singleEmbeddedMultiLineComment() {
-  parseSql(`insert /* insert into bar */ into foo`)
+  parseSql('insert /* insert into bar */ into foo')
 }
 
 function multipleEmbeddedMultiLineComments() {
-  parseSql(`insert /* comments! */ into /* insert into bar some stuff */ foo /* MOAR */ (col1)`)
+  parseSql('insert /* comments! */ into /* insert into bar some stuff */ foo /* MOAR */ (col1)')
 }
 
 function selectStatement() {
   parseSql(
-    `with foobar (col1) as cte select * from foo as a join on cte using (col1) where a.bar = 'baz'`
+    "with foobar (col1) as cte select * from foo as a join on cte using (col1) where a.bar = 'baz'"
   )
 }
 
 function updateStatement() {
-  parseSql(`update foo set bar = 'baz' where col1 = 1`)
+  parseSql("update foo set bar = 'baz' where col1 = 1")
 }
 
 function deleteStatement() {
-  parseSql(`delete from foo where bar = 'baz'`)
+  parseSql("delete from foo where bar = 'baz'")
 }

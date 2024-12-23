@@ -84,6 +84,6 @@ function finish(end, tx) {
     'aws.requestId': String,
     'aws.service': 'Amazon SNS',
     'aws.region': 'us-east-1'
-  }),
-    end()
+  })
+  end()
 }

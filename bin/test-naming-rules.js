@@ -5,7 +5,6 @@
  */
 
 'use strict'
-/* eslint-disable no-console */
 
 const fs = require('fs')
 const path = require('path')
@@ -110,7 +109,7 @@ function run(opts) {
 
   function onAppliedRule(rule, newValue, oldValue) {
     appliedRules.push({
-      rule: rule,
+      rule,
       original: oldValue,
       normalized: newValue
     })

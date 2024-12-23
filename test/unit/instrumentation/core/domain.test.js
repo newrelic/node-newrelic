@@ -37,7 +37,7 @@ test('Domains', async (t) => {
 
   await t.test('should retain transaction scope on error events', (t, end) => {
     const { agent, tasks } = t.nr
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     const domain = require('domain')
     const d = domain.create()
 

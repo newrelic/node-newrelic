@@ -1271,6 +1271,7 @@ test('Errors', async (t) => {
 
       try {
         api.startBackgroundTransaction('job', () => {
+          // eslint-disable-next-line no-throw-literal
           throw null
         })
       } catch (err) {
@@ -2029,7 +2030,7 @@ test('Errors', async (t) => {
 
           server.listen(0, 'localhost', () => {
             const port = server.address().port
-            http.get({ port: port, host: 'localhost' })
+            http.get({ port, host: 'localhost' })
           })
 
           agent.on('transactionFinished', function (tx) {

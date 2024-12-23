@@ -9,9 +9,10 @@ const { promisify } = require('node:util')
 const exec = promisify(require('node:child_process').exec)
 const fsPromises = require('node:fs/promises')
 const fs = require('node:fs')
+const path = require('node:path')
 
-const APP_DIR = `${__dirname}/test-app`
-const PATCH_DIR = `${__dirname}/test-app-replacements`
+const APP_DIR = path.join(__dirname, 'test-app')
+const PATCH_DIR = path.join(__dirname, 'test-app-replacements')
 
 async function initNestApp() {
   if (fs.existsSync(APP_DIR)) {

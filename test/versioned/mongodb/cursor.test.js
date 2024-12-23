@@ -24,7 +24,7 @@ common.test('count', async function countTest(collection, verify) {
 
 common.test('explain', async function explainTest(collection, verify) {
   const data = await collection.find({}).explain()
-  assert.ok(data.hasOwnProperty('queryPlanner'), 'should have correct response')
+  assert.ok(Object.prototype.hasOwnProperty.call(data, 'queryPlanner'), 'should have correct response')
   verify(null, [`${STATEMENT_PREFIX}/explain`], ['explain'], { strict: false })
 })
 

@@ -277,7 +277,6 @@ test('when overriding configuration values via environment variables', async (t)
       err: 'error'
     }
 
-    // eslint-disable-next-line guard-for-in
     for (const key in logAliases) {
       idempotentEnv({ NEW_RELIC_LOG_LEVEL: key }, (tc) => {
         assert.equal(tc.logging.level, logAliases[key])
@@ -874,7 +873,7 @@ test('when overriding configuration values via environment variables', async (t)
     await t.test('should convert NEW_RELIC_INSTRUMENTATION*  accordingly', (t, end) => {
       const env = {
         NEW_RELIC_INSTRUMENTATION_IOREDIS_ENABLED: 'false',
-        ['NEW_RELIC_INSTRUMENTATION_@GRPC/GRPC-JS_ENABLED']: 'false',
+        'NEW_RELIC_INSTRUMENTATION_@GRPC/GRPC-JS_ENABLED': 'false',
         NEW_RELIC_INSTRUMENTATION_KNEX_ENABLED: 'false'
       }
       idempotentEnv(env, (config) => {
