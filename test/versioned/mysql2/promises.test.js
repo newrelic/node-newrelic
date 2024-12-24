@@ -275,7 +275,7 @@ if (semver.satisfies(pkgVersion, '>=2.3.0')) {
 
     // does not work until mysql2 bug is fixed
     // https://github.com/sidorares/node-mysql2/issues/3091
-    if (!semver.satisfies(pkgVersion, '>=3.11.1 <3.12.0')) {
+    if (!semver.satisfies(pkgVersion, '>=3.11.1 <3.13.0')) {
       await t.test('get star', async function (t) {
         const { agent, poolCluster } = t.nr
         const connection = await poolCluster.of('*').getConnection()
