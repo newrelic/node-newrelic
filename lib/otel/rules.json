@@ -165,6 +165,7 @@
   },
   {
     "name": "OtelMessagingConsumer1_24",
+    "type": "consumer",
     "matcher": {
       "required_span_kinds": [
         "consumer"
@@ -200,6 +201,7 @@
   },
   {
     "name": "FallbackConsumer",
+    "type": "consumer",
     "matcher": {
       "required_span_kinds": [
         "consumer"
