@@ -86,7 +86,8 @@ function verifyTraces(agent, transaction) {
  * associative datastore attributes + backtrace.
  *
  * @param {Object} agent mocked NR agent
- * @param {Number} [count=3] number of queries it expects in aggregator
+ * @param {Number} [count] number of queries it expects in aggregator
+ * @param queries
  */
 utils.verifySlowQueries = function verifySlowQueries(agent, queries = []) {
   const metricHostName = getMetricHostName(agent, params.postgres_host)

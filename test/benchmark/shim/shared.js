@@ -12,8 +12,8 @@ const Shim = require('../../../lib/shim/shim')
 function makeSuite(name) {
   const agent = helper.loadMockedAgent()
   const shim = new Shim(agent, 'test-module', './')
-  const suite = benchmark.createBenchmark({ name: name, delay: 0.01 })
-  return { agent: agent, suite: suite, shim: shim }
+  const suite = benchmark.createBenchmark({ name, delay: 0.01 })
+  return { agent, suite, shim }
 }
 
 function getTest() {

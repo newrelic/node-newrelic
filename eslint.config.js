@@ -62,8 +62,10 @@ const localConfig = {
     // Prefer single quotes, but utilize others to avoid escaping:
     '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
 
-    // These rules would be too disruptive for an initial migration to
-    // neostandard:
+    // Neostandard sets this to "warn", but we'd like "error":
+    'object-shorthand': 'error',
+
+    // These neostandard would generate unnecessary noise:
     '@stylistic/space-before-function-paren': 'off'
   },
 
@@ -169,6 +171,14 @@ const nodeRecommended = neostandard.plugins.n.configs['flat/recommended']
 delete nodeRecommended.languageOptions.sourceType
 nodeRecommended.rules['n/no-unsupported-features/node-builtins'] = ['error', { version: '>=18.8.0' }]
 nodeRecommended.rules['n/no-process-exit'] = 'off'
+nodeRecommended.rules['n/no-deprecated-api'] = [
+  'error',
+  {
+    ignoreModuleItems: [
+      'url.parse'
+    ]
+  }
+]
 nodeRecommended.ignores = testFiles
 
 // Configuration objects are merged in order. That is, the last object in the

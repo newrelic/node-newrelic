@@ -294,14 +294,14 @@ function getChannel(amqplib, cb) {
       conn.createChannel(function (err, channel) {
         cb(err, {
           connection: conn,
-          channel: channel
+          channel
         })
       })
     })
   } else {
     return amqplib.connect(CON_STRING).then(function (conn) {
       return conn.createChannel().then(function (channel) {
-        return { connection: conn, channel: channel }
+        return { connection: conn, channel }
       })
     })
   }

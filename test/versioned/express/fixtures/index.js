@@ -7,6 +7,7 @@
 
 /**
  * Created by lmarkus on 11/24/14.
+ * @param router
  */
 const routes = function (router) {
   router.get('/', function (req, res) {

@@ -26,6 +26,7 @@ const { STATEMENT_PREFIX } = require('./common')
  * @param {Number} params.count, optional
  * @param {string} params.keyPrefix prefix where the count exists
  * @param {Object} params.extraValues extra fields to assert on >=4.0.0 version of module
+ * @param params.count
  */
 function assertExpectedResult({ data, count, keyPrefix, extraValues }) {
   const expectedResult = { acknowledged: true, ...extraValues }

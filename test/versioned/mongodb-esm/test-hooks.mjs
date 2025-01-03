@@ -39,7 +39,7 @@ async function populate(db, collection) {
   const items = []
   for (let i = 0; i < 30; ++i) {
     items.push({
-      i: i,
+      i,
       next3: [i + 1, i + 2, i + 3],
       data: Math.random().toString(36).slice(2),
       mod10: i % 10,

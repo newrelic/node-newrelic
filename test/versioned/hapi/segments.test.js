@@ -37,7 +37,7 @@ function runTest(agent, server, callback) {
   server.start().then(function () {
     const port = server.info.port
     http
-      .request({ port: port, path: '/test' }, function (response) {
+      .request({ port, path: '/test' }, function (response) {
         response.resume()
       })
       .end()

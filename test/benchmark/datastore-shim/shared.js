@@ -12,7 +12,7 @@ const { OperationSpec, QuerySpec } = require('../../../lib/shim/specs')
 const TestDatastore = require('./test-datastore')
 
 function makeSuite(name) {
-  return benchmark.createBenchmark({ name: name, runs: 10000 })
+  return benchmark.createBenchmark({ name, runs: 10000 })
 }
 
 function getTestDatastore(agent, instrumented) {
@@ -24,7 +24,7 @@ function getTestDatastore(agent, instrumented) {
       return {
         collection: 'test',
         operation: 'test',
-        query: query
+        query
       }
     })
 
