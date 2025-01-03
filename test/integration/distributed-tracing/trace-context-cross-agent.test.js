@@ -326,14 +326,6 @@ async function runTestCase(testCase, parentTest) {
   })
 
   await parentTest.test('trace context: ' + testCase.test_name, (t, end) => {
-    if (testCase.comment && testCase.comment.length > 0) {
-      const comment = Array.isArray(testCase.comment)
-        ? testCase.comment.join('\n')
-        : testCase.comment
-
-      t.diagnostic(comment)
-    }
-
     const agent = helper.instrumentMockedAgent({})
     agent.recordSupportability = recordSupportability
     agent.config.trusted_account_key = testCase.trusted_account_key

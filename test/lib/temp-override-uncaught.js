@@ -34,9 +34,7 @@ const oldListeners = {
  */
 function tempOverrideUncaught({ t, handler, type = EXCEPTION }) {
   if (!handler) {
-    handler = function uncaughtTestHandler() {
-      t.diagnostic('uncaught handler not defined')
-    }
+    handler = function uncaughtTestHandler() {}
   }
 
   oldListeners[type] = process.listeners(type)

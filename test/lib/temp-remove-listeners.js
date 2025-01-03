@@ -19,7 +19,6 @@
  */
 module.exports = function tempRemoveListeners({ t, emitter, event }) {
   if (!emitter) {
-    t.diagnostic(`Not removing ${event} listeners, emitter does not exist`)
     return
   }
 
