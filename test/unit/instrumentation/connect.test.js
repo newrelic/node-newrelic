@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/* eslint-disable strict */
-
 const test = require('node:test')
 const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
@@ -58,7 +56,7 @@ test('for Connect 1 (stubbed)', async function (t) {
         prototype: {
           use: function (route, middleware) {
             if (this.stack && typeof middleware === 'function') {
-              this.stack.push({ route: route, handle: middleware })
+              this.stack.push({ route, handle: middleware })
             } else if (this.stack && typeof route === 'function') {
               this.stack.push({ route: '', handle: route })
             }
@@ -83,7 +81,7 @@ test('for Connect 1 (stubbed)', async function (t) {
   await t.test("shouldn't throw if there's no middleware chain", async function (t) {
     const { app } = t.nr
     assert.doesNotThrow(() => {
-      app.use.call(app, nextulator)
+      app.use(nextulator)
     })
   })
 
@@ -92,7 +90,7 @@ test('for Connect 1 (stubbed)', async function (t) {
     app.stack = []
 
     assert.doesNotThrow(function () {
-      app.use.call(app, '/')
+      app.use('/')
     })
   })
 
@@ -103,7 +101,7 @@ test('for Connect 1 (stubbed)', async function (t) {
       app.stack = []
 
       assert.doesNotThrow(function () {
-        app.use.call(app, '/', 'hamburglar')
+        app.use('/', 'hamburglar')
       })
     }
   )
@@ -116,11 +114,11 @@ test('for Connect 1 (stubbed)', async function (t) {
 
     app.stack = []
 
-    app.use.call(app, '/', nextulator)
-    app.use.call(app, '/test', nextulator)
-    app.use.call(app, '/error1', errulator)
-    app.use.call(app, '/help', nextulator)
-    app.use.call(app, '/error2', errulator)
+    app.use('/', nextulator)
+    app.use('/test', nextulator)
+    app.use('/error1', errulator)
+    app.use('/help', nextulator)
+    app.use('/error2', errulator)
 
     assert.equal(app.stack.length, 5)
   })
@@ -128,33 +126,28 @@ test('for Connect 1 (stubbed)', async function (t) {
   await t.test(
     "shouldn't barf on functions with ES5 future reserved keyword names",
     async function (t) {
+      // We are using a `new Function` here to get around:
+      // https://github.com/eslint/eslint/issues/19251
       const { app } = t.nr
-      // doin this on porpoise
-      /* eslint-disable */
-    function static(req, res, next) {
-      return next()
-    }
-
-    app.stack = []
-
-    assert.doesNotThrow(function () { app.use.call(app, '/', static); })
-  })
+      const fn = new Function('function static(req, res, next) { return next() }')
+      app.stack = []
+      assert.doesNotThrow(function () { app.use('/', fn) })
+    })
 })
 
-test("for Connect 2 (stubbed)", async function(t) {
+test('for Connect 2 (stubbed)', async function(t) {
   t.beforeEach(function (ctx) {
     ctx.nr = {}
     const agent = helper.instrumentMockedAgent()
 
     const stub = {
-      version : '2.7.2',
-      proto : {
-        use : function (route, middleware) {
+      version: '2.7.2',
+      proto: {
+        use: function (route, middleware) {
           if (this.stack && typeof middleware === 'function') {
-            this.stack.push({route : route, handle : middleware})
-          }
-          else if (this.stack && typeof route === 'function') {
-            this.stack.push({route : '', handle : route})
+            this.stack.push({ route, handle: middleware })
+          } else if (this.stack && typeof route === 'function') {
+            this.stack.push({ route: '', handle: route })
           }
 
           return this
@@ -175,21 +168,21 @@ test("for Connect 2 (stubbed)", async function(t) {
 
   await t.test("shouldn't throw if there's no middleware chain", async function(t) {
     const { app } = t.nr
-    assert.doesNotThrow(function () { app.use.call(app, nextulator); })
+    assert.doesNotThrow(function () { app.use(nextulator) })
   })
 
   await t.test("shouldn't throw if there's a middleware link with no handler", async function(t) {
     const { app } = t.nr
     app.stack = []
 
-    assert.doesNotThrow(function () { app.use.call(app, '/'); })
+    assert.doesNotThrow(function () { app.use('/') })
   })
 
   await t.test("shouldn't throw if there's a middleware link with a non-function handler", async function(t) {
     const { app } = t.nr
     app.stack = []
 
-    assert.doesNotThrow(function () { app.use.call(app, '/', 'hamburglar'); })
+    assert.doesNotThrow(function () { app.use('/', 'hamburglar') })
   })
 
   await t.test("shouldn't break use", async function(t) {
@@ -200,26 +193,21 @@ test("for Connect 2 (stubbed)", async function(t) {
 
     app.stack = []
 
-    app.use.call(app, '/', nextulator)
-    app.use.call(app, '/test', nextulator)
-    app.use.call(app, '/error1', errulator)
-    app.use.call(app, '/help', nextulator)
-    app.use.call(app, '/error2', errulator)
+    app.use('/', nextulator)
+    app.use('/test', nextulator)
+    app.use('/error1', errulator)
+    app.use('/help', nextulator)
+    app.use('/error2', errulator)
 
     assert.equal(app.stack.length, 5)
   })
 
   await t.test("shouldn't barf on functions with ES5 future reserved keyword names", async function(t) {
+    // We are using a `new Function` here to get around:
+    // https://github.com/eslint/eslint/issues/19251
     const { app } = t.nr
-    // doin this on porpoise
-    function static(req, res, next) {
-      return next()
-    }
-
+    const fn = new Function('function static(req, res, next) { return next() }')
     app.stack = []
-
-    assert.doesNotThrow(function () { app.use.call(app, '/', static); })
+    assert.doesNotThrow(function () { app.use('/', fn) })
   })
 })
-
-/* eslint-enable strict */

@@ -4,6 +4,10 @@
  */
 
 'use strict'
+
+// Make express quiet.
+process.env.NODE_ENV = 'test'
+
 const assert = require('node:assert')
 const http = require('http')
 const test = require('node:test')
@@ -184,7 +188,7 @@ test('with error', function (t, end) {
     next(new Error('some error'))
   })
 
-  app.use(function (err, req, res) {
+  app.use(function (_, req, res) {
     return res.status(500).end()
   })
 
@@ -216,8 +220,7 @@ test('when router error is handled outside of the router', function (t, end) {
 
   app.use('/router1', router)
 
-  // eslint-disable-next-line no-unused-vars
-  app.use(function (err, req, res, next) {
+  app.use(function (_, req, res, next) {
     return res.status(500).end()
   })
 
@@ -259,7 +262,7 @@ test('when using a regular expression in path', function (t, end) {
 test('when using router with a route variable', function (t, end) {
   const { app, express } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/:var2/path1', function (req, res) {
     res.end()
@@ -286,8 +289,8 @@ test('when mounting a subapp using a variable', function (t, end) {
 test('using two routers', function (t, end) {
   const { app, express } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   app.use('/:router1', router1)
   router1.use('/:router2', router2)
@@ -301,8 +304,8 @@ test('using two routers', function (t, end) {
 
 test('transactions running in parallel should be recorded correctly', function (t, end) {
   const { app, express } = t.nr
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   app.use('/:router1', router1)
   router1.use('/:router2', router2)
@@ -328,7 +331,7 @@ test('transactions running in parallel should be recorded correctly', function (
 })
 
 test('names transaction when request is aborted', async function (t) {
-  const plan = tsplan(t, { plan: 5 })
+  const plan = tsplan(t, { plan: 6 })
 
   const { agent, app, port } = t.nr
 
@@ -345,8 +348,8 @@ test('names transaction when request is aborted', async function (t) {
     }, 100)
   })
 
-  // eslint-disable-next-line no-unused-vars
   app.use(function (error, req, res, next) {
+    plan.equal(error.message, 'some error')
     plan.ok(agent.getTransaction() == null, 'no active transaction when responding')
     res.end()
   })
@@ -386,7 +389,6 @@ test('Express transaction names are unaffected by errorware', async function (t)
     throw new Error('endpoint error')
   })
 
-  // eslint-disable-next-line no-unused-vars
   app.use('/test', function (err, req, res, next) {
     res.send(err.message)
   })
@@ -442,7 +444,7 @@ test('when next is called after transaction state loss', async function (t) {
   })
 
   // Send first request to `/foo` which is slow and uses the work queue.
-  http.get({ port: port, path: '/foo' }, function (res) {
+  http.get({ port, path: '/foo' }, function (res) {
     res.resume()
     res.on('end', function () {
       plan.equal(transactionsFinished, 2, 'should have two transactions done')
@@ -452,7 +454,7 @@ test('when next is called after transaction state loss', async function (t) {
   // Send the second request after a short wait `/bar` which is fast and
   // does not use the work queue.
   setTimeout(function () {
-    http.get({ port: port, path: '/bar' }, function (res) {
+    http.get({ port, path: '/bar' }, function (res) {
       res.resume()
     })
   }, 100)

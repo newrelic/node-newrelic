@@ -18,10 +18,10 @@ test('LlmErrorMessage', async () => {
     'error.message': undefined,
     'error.code': 'insufficient_quota',
     'error.param': 'test-param',
-    'completion_id': undefined,
-    'embedding_id': undefined,
-    'vector_store_id': undefined,
-    'tool_id': undefined
+    completion_id: undefined,
+    embedding_id: undefined,
+    vector_store_id: undefined,
+    tool_id: undefined
   }
   assert.ok(errorMsg.toString(), 'LlmErrorMessage')
   assert.equal(errorMsg['http.statusCode'], expected['http.statusCode'])

@@ -37,7 +37,7 @@ function checkEntityLinkingSegments({ operations, tx, end }) {
       'aws.region': 'us-east-1',
       'aws.service': String,
       'cloud.resource_id': `arn:aws:lambda:${attrs['aws.region']}:${accountId}:function:${testFunctionName}`,
-      'cloud.platform': `aws_lambda`
+      'cloud.platform': 'aws_lambda'
     })
   })
   end()

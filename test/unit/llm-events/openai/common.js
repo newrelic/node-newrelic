@@ -46,17 +46,17 @@ const req = {
 function getExpectedResult(tx, event, type, completionId) {
   const trace = tx.trace.root
   let expected = {
-    'id': event.id,
-    'appName': 'New Relic for Node.js tests',
-    'request_id': 'req-id',
-    'trace_id': tx.traceId,
-    'span_id': trace.children[0].id,
+    id: event.id,
+    appName: 'New Relic for Node.js tests',
+    request_id: 'req-id',
+    trace_id: tx.traceId,
+    span_id: trace.children[0].id,
     'response.model': 'gpt-3.5-turbo-0613',
-    'vendor': 'openai',
-    'ingest_source': 'Node'
+    vendor: 'openai',
+    ingest_source: 'Node'
   }
   const resKeys = {
-    'duration': trace.children[0].getDurationInMillis(),
+    duration: trace.children[0].getDurationInMillis(),
     'request.model': 'gpt-3.5-turbo-0613',
     'response.organization': 'new-relic',
     'response.headers.llmVersion': '1.0.0',
@@ -78,10 +78,10 @@ function getExpectedResult(tx, event, type, completionId) {
       expected = {
         ...expected,
         ...resKeys,
-        ['request.max_tokens']: '1000000',
-        ['request.temperature']: 'medium-rare',
-        ['response.number_of_messages']: 3,
-        ['response.choices.finish_reason']: 'stop',
+        'request.max_tokens': '1000000',
+        'request.temperature': 'medium-rare',
+        'response.number_of_messages': 3,
+        'response.choices.finish_reason': 'stop',
         error: false
       }
       break

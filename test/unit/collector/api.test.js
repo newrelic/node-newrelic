@@ -45,6 +45,7 @@ test('reportSettings', async (t) => {
   await t.test('should return the expected `empty` response', (t, end) => {
     const { collectorApi } = t.nr
     collectorApi.reportSettings((error, res) => {
+      assert.ifError(error)
       assert.deepStrictEqual(res.payload, [])
       end()
     })
@@ -186,19 +187,19 @@ const apiMethods = [
       [
         {
           'error.expected': false,
-          'traceId': '2714fa36883e18f6',
+          traceId: '2714fa36883e18f6',
           'error.class': 'I am an error',
-          'type': 'TransactionError',
-          'transactionName': 'OtherTransaction/Custom/Simple/sqlTransaction',
-          'priority': 1.205386,
-          'duration': 0.001,
+          type: 'TransactionError',
+          transactionName: 'OtherTransaction/Custom/Simple/sqlTransaction',
+          priority: 1.205386,
+          duration: 0.001,
           'nr.transactionGuid': '2714fa36883e18f6',
-          'port': 8080,
+          port: 8080,
           'error.message': 'I am an error',
-          'guid': '2714fa36883e18f6',
+          guid: '2714fa36883e18f6',
           'nr.tripId': '2714fa36883e18f6',
-          'sampled': true,
-          'timestamp': '1543864407859'
+          sampled: true,
+          timestamp: '1543864407859'
         },
         {
           test: 'metric'
@@ -262,7 +263,7 @@ const apiMethods = [
         0,
         'OtherTransaction/Custom/Simple/sqlTransaction',
         'Custom/Simple/sqlTransaction',
-        `[1543864412869,{},{},[0,1,'ROOT',{'async_context':'main','exclusive_duration_millis':0.886261},[[0,1,'Java/Simple/sqlTransaction',{'async_context':'main','exclusive_duration_millis':0.886261},[],'Simple','sqlTransaction']],'Simple','sqlTransaction'],{'userAttributes':{'test':'metric'},'intrinsics':{'traceId':'731f4eebda5f292c','guid':'731f4eebda5f292c','priority':1.825609,'sampled':true,'totalTime':8.86261E-4},'agentAttributes':{'request.uri':'Custom/Simple/sqlTransaction','jvm.thread_name':'main'}}]`,
+        "[1543864412869,{},{},[0,1,'ROOT',{'async_context':'main','exclusive_duration_millis':0.886261},[[0,1,'Java/Simple/sqlTransaction',{'async_context':'main','exclusive_duration_millis':0.886261},[],'Simple','sqlTransaction']],'Simple','sqlTransaction'],{'userAttributes':{'test':'metric'},'intrinsics':{'traceId':'731f4eebda5f292c','guid':'731f4eebda5f292c','priority':1.825609,'sampled':true,'totalTime':8.86261E-4},'agentAttributes':{'request.uri':'Custom/Simple/sqlTransaction','jvm.thread_name':'main'}}]",
         '731f4eebda5f292c',
         null,
         false
@@ -274,17 +275,17 @@ const apiMethods = [
     data: [
       [
         {
-          'traceId': 'd959974e17abe2b5',
-          'duration': 0.011713522,
-          'name': 'Nodejs/Test/span',
-          'guid': 'b5ca3c76520b680a',
-          'type': 'Span',
-          'category': 'generic',
-          'priority': 1.9650071,
-          'sampled': true,
-          'transactionId': 'd959974e17abe2b5',
+          traceId: 'd959974e17abe2b5',
+          duration: 0.011713522,
+          name: 'Nodejs/Test/span',
+          guid: 'b5ca3c76520b680a',
+          type: 'Span',
+          category: 'generic',
+          priority: 1.9650071,
+          sampled: true,
+          transactionId: 'd959974e17abe2b5',
           'nr.entryPoint': true,
-          'timestamp': 1543864402820
+          timestamp: 1543864402820
         },
         {},
         {}
@@ -301,15 +302,15 @@ const apiMethods = [
       {
         logs: [
           {
-            'timestamp': '1649353816647',
+            timestamp: '1649353816647',
             'log.level': 'INFO',
-            'message': 'Unit testing',
+            message: 'Unit testing',
             'span.id': '1122334455',
             'trace.id': 'aabbccddee'
           }
         ],
         common: {
-          attributes: { 'entity.guid': 'guid', 'entity.name': 'test app', 'hostname': 'test-host' }
+          attributes: { 'entity.guid': 'guid', 'entity.name': 'test app', hostname: 'test-host' }
         }
       }
     ]

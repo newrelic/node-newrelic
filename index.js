@@ -108,10 +108,8 @@ function initialize() {
     message = 'New Relic for Node.js was unable to bootstrap itself due to an error:'
     logger.error(error, message)
 
-    /* eslint-disable no-console */
     console.error(message)
     console.error(error.stack)
-    /* eslint-enable no-console */
   }
 
   const api = agent ? initApi({ agent, apiPath: 'api' }) : initApi({ apiPath: 'stub_api' })
@@ -172,10 +170,8 @@ function createAgent(config) {
       const errorMessage = 'New Relic for Node.js halted startup due to an error:'
       logger.error(error, errorMessage)
 
-      /* eslint-disable no-console */
       console.error(errorMessage)
       console.error(error.stack)
-      /* eslint-enable no-console */
 
       return
     }

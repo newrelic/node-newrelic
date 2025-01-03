@@ -58,7 +58,8 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     assert.doesNotThrow(function noCallback() {
-      new TraceSegment(trans, 'UnitTest') // eslint-disable-line no-new
+      // eslint-disable-next-line no-new
+      new TraceSegment(trans, 'UnitTest')
     })
     const working = new TraceSegment(trans, 'UnitTest', function () {
       end()
@@ -171,7 +172,8 @@ test('TraceSegment', async (t) => {
     assert.equal(tx.numSegments, 1)
     assert.equal(agent.activeTransactions, 1)
 
-    const segment = new TraceSegment(tx, 'Test') // eslint-disable-line no-unused-vars
+    // eslint-disable-next-line sonarjs/no-unused-vars, sonarjs/no-dead-store, no-unused-vars
+    const segment = new TraceSegment(tx, 'Test')
     assert.equal(agent.totalActiveSegments, 2)
     assert.equal(agent.segmentsCreatedInHarvest, 2)
     assert.equal(tx.numSegments, 2)
@@ -328,7 +330,7 @@ test('with children created from URLs', async (t) => {
       1,
       'WebTransaction/NormalizedUri/*',
       {
-        'nr_exclusive_duration_millis': 1,
+        nr_exclusive_duration_millis: 1,
         'request.parameters.test1': 'value1',
         'request.parameters.test2': true,
         'request.parameters.test3': '50',
@@ -516,7 +518,7 @@ test('with attributes.enabled set', async (t) => {
       1,
       'WebTransaction/NormalizedUri/*',
       {
-        'nr_exclusive_duration_millis': 1,
+        nr_exclusive_duration_millis: 1,
         'request.parameters.test2': true,
         'request.parameters.test3': '50'
       },

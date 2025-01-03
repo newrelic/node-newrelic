@@ -31,7 +31,7 @@ test('Query Trace Aggregator', async (t) => {
 
       let cbCalledWithNull = false
 
-      const cb = (err, data) => {
+      const cb = (_, data) => {
         if (data === null) {
           cbCalledWithNull = true
         }
@@ -309,6 +309,7 @@ test('Query Trace Aggregator', async (t) => {
           addQuery(queries, 600, '/abc')
 
           queries.prepareJSON(function preparedJSON(err, data) {
+            assert.ifError(err)
             const sample = data[0]
 
             codec.decode(sample[9], function decoded(error, params) {
@@ -334,6 +335,7 @@ test('Query Trace Aggregator', async (t) => {
           addQuery(queries, 600, '/abc')
 
           queries.prepareJSON(function preparedJSON(err, data) {
+            assert.ifError(err)
             const sample = data[0]
             const params = sample[9]
             const keys = Object.keys(params)

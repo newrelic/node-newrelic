@@ -124,7 +124,7 @@ responses.set('text claude3 ultimate question streamed', {
     {
       body: {
         type: 'message_stop',
-        ['amazon-bedrock-invocationMetrics']: {
+        'amazon-bedrock-invocationMetrics': {
           inputTokenCount: 8,
           outputTokenCount: 4,
           invocationLatency: 511,

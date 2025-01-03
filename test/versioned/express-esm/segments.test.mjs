@@ -161,7 +161,7 @@ test('each handler in route has its own segment', async (t) => {
 test('segments for routers', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.all('/test', function (req, res) {
     res.end()
   })
@@ -188,13 +188,13 @@ test('segments for routers', async (t) => {
 test('two root routers', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
   router1.all('/', function (req, res) {
     res.end()
   })
   app.use('/', router1)
 
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router2 = express.Router()
   router2.all('/test', function (req, res) {
     res.end()
   })
@@ -217,7 +217,7 @@ test('two root routers', async (t) => {
 test('router mounted as a route handler', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
   router1.all('/test', function testHandler(req, res) {
     res.send('test')
   })
@@ -259,7 +259,7 @@ test('router mounted as a route handler', async (t) => {
 test('segments for routers', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.all('/test', function (req, res) {
     res.end()
   })
@@ -390,7 +390,7 @@ test('segments for wildcard', async (t) => {
 test('router with subapp', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   const subapp = express()
   subapp.all('/test', function (req, res) {
     res.end()
@@ -472,7 +472,7 @@ test('error middleware', async (t) => {
 test('error handler in router', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/test', function () {
     throw new Error('some error')
@@ -513,8 +513,8 @@ test('error handler in router', async (t) => {
 test('error handler in second router', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   router2.get('/test', function () {
     throw new Error('some error')
@@ -559,7 +559,7 @@ test('error handler in second router', async (t) => {
 test('error handler outside of router', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/test', function () {
     throw new Error('some error')
@@ -596,8 +596,8 @@ test('error handler outside of router', async (t) => {
 test('error handler outside of two routers', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   router1.use('/router2', router2)
 

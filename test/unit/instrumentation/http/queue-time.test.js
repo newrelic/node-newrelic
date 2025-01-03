@@ -28,6 +28,7 @@ test('built-in http queueTime', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
+  // eslint-disable-next-line no-template-curly-in-string
   await t.test('header should allow t=${time} style headers', (t, end) => {
     const { agent, testDate } = t.nr
     const server = http.createServer(function createServerCb(request, response) {
@@ -41,7 +42,7 @@ test('built-in http queueTime', async (t) => {
       const port = server.address().port
       const opts = {
         host: 'localhost',
-        port: port,
+        port,
         headers: {
           'x-request-start': 't=' + (testDate - 10)
         }
@@ -64,7 +65,7 @@ test('built-in http queueTime', async (t) => {
       const port = server.address().port
       const opts = {
         host: 'localhost',
-        port: port,
+        port,
         headers: {
           'x-request-start': 'alskdjf'
         }
@@ -88,7 +89,7 @@ test('built-in http queueTime', async (t) => {
       const port = server.address().port
       const opts = {
         host: 'localhost',
-        port: port,
+        port,
         headers: {
           'x-request-start': testDate - 10
         }
@@ -113,7 +114,7 @@ test('built-in http queueTime', async (t) => {
       const port = server.address().port
       const opts = {
         host: 'localhost',
-        port: port,
+        port,
         headers: {
           'x-queue-start': testDate - 10
         }
@@ -137,7 +138,7 @@ test('built-in http queueTime', async (t) => {
       const port = server.address().port
       const opts = {
         host: 'localhost',
-        port: port,
+        port,
         headers: {
           'x-request-start': (testDate - 10) * 1e3
         }
@@ -161,7 +162,7 @@ test('built-in http queueTime', async (t) => {
       const port = server.address().port
       const opts = {
         host: 'localhost',
-        port: port,
+        port,
         headers: {
           'x-queue-start': (testDate - 10) * 1e6
         }
@@ -185,7 +186,7 @@ test('built-in http queueTime', async (t) => {
       const port = server.address().port
       const opts = {
         host: 'localhost',
-        port: port,
+        port,
         headers: {
           'x-request-start': (testDate - 10) / 1e3
         }

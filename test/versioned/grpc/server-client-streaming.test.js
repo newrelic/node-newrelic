@@ -170,7 +170,7 @@ for (const config of grpcConfigs) {
     try {
       const payload = [{ oh: 'noes' }]
       await makeClientStreamingRequest({ client, fnName: 'sayErrorClientStream', payload })
-    } catch (err) {
+    } catch {
       // err tested in client tests
     }
 
@@ -200,7 +200,7 @@ test('should not record errors if `grpc.record_errors` is disabled', async (t) =
   try {
     const payload = [{ oh: 'noes' }]
     await makeClientStreamingRequest({ client, fnName: 'sayErrorClientStream', payload })
-  } catch (err) {
+  } catch {
     // err tested in client tests
   }
   assert.ok(transaction, 'transaction exists')
@@ -234,7 +234,7 @@ test('should record errors if `grpc.record_errors` is enabled and server sends e
       payload,
       endStream: false
     })
-  } catch (err) {
+  } catch {
     // err tested in client tests
   }
   assert.ok(transaction, 'transaction exists')

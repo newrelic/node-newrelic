@@ -10,6 +10,7 @@ const fs = require('fs')
 const semver = require('semver')
 const test = require('node:test')
 const assert = require('node:assert')
+const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
@@ -21,7 +22,7 @@ try {
   ;({ version: pkgVersion } = require('mysql2/package'))
 } catch {
   ;({ version: pkgVersion } = JSON.parse(
-    fs.readFileSync(`${__dirname}/node_modules/mysql2/package.json`)
+    fs.readFileSync(path.join(__dirname, '/node_modules/mysql2/package.json'))
   ))
 }
 

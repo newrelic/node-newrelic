@@ -25,7 +25,10 @@ const camelCaseToSnakeCase = function (object) {
 
 const getDescendantValue = function (object, descendants) {
   const arrayDescendants = descendants.split('.')
-  while (arrayDescendants.length && (object = object[arrayDescendants.shift()])) {}
+  const noop = () => {}
+  while (arrayDescendants.length && (object = object[arrayDescendants.shift()])) {
+    noop()
+  }
   return object
 }
 
@@ -36,7 +39,7 @@ function hasNestedProperty(object, descendants) {
   for (let i = 0; i < arrayDescendants.length; i++) {
     const property = arrayDescendants[i]
 
-    if (!currentItem || !currentItem.hasOwnProperty(property)) {
+    if (!currentItem || !Object.prototype.hasOwnProperty.call(currentItem, property)) {
       return false
     }
 
@@ -150,9 +153,9 @@ function getExactExpectedUnexpectedFromIntrinsics(testCase, eventType) {
   const unexpected = (specific.unexpected || []).concat(common.unexpected || [])
 
   return {
-    exact: exact,
-    expected: expected,
-    unexpected: unexpected
+    exact,
+    expected,
+    unexpected
   }
 }
 
@@ -209,6 +212,7 @@ function runTestCaseOutboundPayloads(testCase, context) {
           break
         case 'unexpected':
           testUnexpected(context[key], fields)
+          break
         case 'notequal':
           testNotEqual(context[key], fields)
           break
@@ -249,7 +253,7 @@ function runTestCaseTargetEvents(testCase, agent) {
     for (const [index] of toCheck.entries()) {
       // Span events are not payload-formatted
       // straight out of the aggregator.
-      const event = 'Span' === eventType ? toCheck[index].toJSON() : toCheck[index]
+      const event = eventType === 'Span' ? toCheck[index].toJSON() : toCheck[index]
       testSingleEvent(event, eventType, fixture)
     }
   }

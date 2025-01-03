@@ -53,10 +53,10 @@ responses.set('text llama ultimate question streamed', {
         ':message-type': { type: 'string', value: 'event' }
       },
       body: {
-        'generation': '',
-        'prompt_token_count': null,
-        'generation_token_count': 212,
-        'stop_reason': 'endoftext',
+        generation: '',
+        prompt_token_count: null,
+        generation_token_count: 212,
+        stop_reason: 'endoftext',
         'amazon-bedrock-invocationMetrics': {
           inputTokenCount: 8,
           outputTokenCount: 4,

@@ -18,11 +18,13 @@ const CollectorValidators = require('./test-collector-validators')
 /**
  * Extends {@link http.IncomingMessage} with convenience properties and methods.
  * @typedef {object} CollectorIncomingRequest
+ * @property
  */
 
 /**
  * Extends {@link http.OutgoingMessage} with convenience properties and methods.
  * @typedef {object} CollectorOutgoingResponse
+ * @property
  */
 
 /**
@@ -57,7 +59,7 @@ class Collector {
        *
        * @param {object} params
        * @param {object} params.payload The object to serialize into a response.
-       * @param {number} [params.code=200] The status code to use for the
+       * @param {number} [params.code] The status code to use for the
        * response.
        * @memberof CollectorOutgoingResponse
        */
@@ -83,9 +85,9 @@ class Collector {
       req.body = function () {
         let resolve
         let reject
-        const promise = new Promise((res, rej) => {
-          resolve = res
-          reject = rej
+        const promise = new Promise((_resolve, _reject) => {
+          resolve = _resolve
+          reject = _reject
         })
 
         let data = ''

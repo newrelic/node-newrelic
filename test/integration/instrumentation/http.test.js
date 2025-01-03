@@ -163,7 +163,7 @@ test('built-in http instrumentation should handle internal & external requests',
 
       end()
     })
-  }.bind(this)
+  }
 
   external.listen(TEST_EXTERNAL_PORT, TEST_HOST, function () {
     server.listen(TEST_INTERNAL_PORT, TEST_HOST, function () {
@@ -216,7 +216,7 @@ test('built-in http instrumentation should not swallow errors', async function (
     })
 
     // this is gonna blow up
-    // eslint-disable-next-line no-use-before-define
+    // eslint-disable-next-line no-use-before-define, sonarjs/no-dead-store
     const x = x.dieshere.ohno
   }
 
@@ -421,7 +421,7 @@ test('built-in http instrumentation should not crash when server does not have a
   function makeRequest(callback) {
     const options = {
       hostname: 'localhost',
-      port: port,
+      port,
       path: '/',
       agent: false
     }

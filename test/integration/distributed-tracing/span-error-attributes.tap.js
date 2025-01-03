@@ -40,7 +40,7 @@ test('core', async (t) => {
 
     spanEvents.forEach((s) => {
       const attrs = s.attributes
-      match(attrs['error.message'], /test[0-9]/, { assert: plan })
+      match(attrs['error.message'], /test\d/, { assert: plan })
 
       match(attrs['error.class'], 'Error', { assert: plan })
     })

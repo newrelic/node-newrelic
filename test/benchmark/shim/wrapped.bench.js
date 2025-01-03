@@ -34,7 +34,7 @@ suite.add({
   before: function () {
     test = shared.getTest()
     shim.wrapReturn(test, 'func', function (shim, fn, fnName, ret) {
-      return { ret: ret }
+      return { ret }
     })
     return test
   },
@@ -48,7 +48,7 @@ suite.add({
   before: function () {
     test = shared.getTest()
     shim.wrapClass(test, 'func', function (shim, fn, fnName, args) {
-      return { args: args }
+      return { args }
     })
     return test
   },
@@ -62,7 +62,7 @@ suite.add({
   before: function () {
     test = shared.getTest()
     shim.wrapExport(test, function (shim, nodule) {
-      return { nodule: nodule }
+      return { nodule }
     })
     return test
   },

@@ -19,7 +19,7 @@ test.afterEach(teardown)
 
 test('ignoring an Express route', async function (t) {
   const { agent, app, port, isExpress5 } = t.nr
-  const plan = tsplan(t, { plan: 7 })
+  const plan = tsplan(t, { plan: 8 })
 
   const api = new API(agent)
 
@@ -36,7 +36,14 @@ test('ignoring an Express route', async function (t) {
 
     const metrics = agent.metrics._metrics.unscoped
     // loading k2 adds instrumentation metrics for things it loads
-    const expectedMetrics = helper.isSecurityAgentEnabled(agent) ? (isExpress5 ? 13 : 11) : 3
+    let expectedMetrics = 3
+    if (helper.isSecurityAgentEnabled(agent) === true) {
+      if (isExpress5 === true) {
+        expectedMetrics = 13
+      } else {
+        expectedMetrics = 11
+      }
+    }
     plan.equal(
       Object.keys(metrics).length,
       expectedMetrics,
@@ -54,6 +61,7 @@ test('ignoring an Express route', async function (t) {
 
   const url = 'http://localhost:' + port + '/polling/31337'
   helper.makeGetRequest(url, function (error, res, body) {
+    plan.ifError(error)
     plan.equal(res.statusCode, 400, 'got expected error')
     plan.deepEqual(body, { status: 'pollpollpoll' }, 'got expected response')
   })

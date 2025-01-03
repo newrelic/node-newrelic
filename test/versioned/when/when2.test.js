@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const helper = require('../../lib/agent_helper')
-const testTransactionState = require(`../../lib/promises/transaction-state`)
+const testTransactionState = require('../../lib/promises/transaction-state')
 
 // We cannot use `test.beforeEach` and `test.afterEach` with this suite because
 // of the `testTransactionState` waterfall tests. Those setup nested subtests

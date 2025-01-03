@@ -23,6 +23,7 @@ function doSomeWork({ tracer, Promise = global.Promise, segmentName, shouldRejec
     return new Promise(function startSomeWork(resolve, reject) {
       if (shouldReject) {
         process.nextTick(function () {
+          // eslint-disable-next-line prefer-promise-reject-errors
           reject('some reason')
         })
       } else {
@@ -249,8 +250,8 @@ test('segments enabled', async (t) => {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       let resolve
-      const p = new Promise(function startSomeWork(r) {
-        resolve = r
+      const p = new Promise(function startSomeWork(_resolve) {
+        resolve = _resolve
       })
 
       const segment = tracer.createSegment('doSomeWork')
@@ -321,8 +322,8 @@ test('segments disabled', async (t) => {
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork({ tracer, segmentName: 'doWork1', Promise: when.Promise })
         .then(function firstThen() {
-          return new Promise(function secondChain(res) {
-            res()
+          return new Promise(function secondChain(resolve) {
+            resolve()
           })
         })
         .then(function secondThen() {
@@ -421,8 +422,8 @@ test('segments disabled', async (t) => {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       let resolve
-      const p = new Promise(function startSomeWork(r) {
-        resolve = r
+      const p = new Promise(function startSomeWork(_resolve) {
+        resolve = _resolve
       })
 
       const segment = tracer.createSegment('doSomeWork')

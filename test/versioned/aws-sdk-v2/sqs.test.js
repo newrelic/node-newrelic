@@ -28,7 +28,7 @@ test('SQS API', async (t) => {
     const endpoint = `http://localhost:${server.address().port}`
     ctx.nr.sqs = new AWS.SQS({
       credentials: FAKE_CREDENTIALS,
-      endpoint: endpoint,
+      endpoint,
       apiVersion: '2012-11-05',
       region: AWS_REGION
     })

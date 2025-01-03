@@ -132,9 +132,9 @@ test('AsyncLocalStorage based tracking', async (t) => {
     await helper.runInTransaction(agent, function () {
       let promise = null
       assert.doesNotThrow(function () {
-        promise = new Promise(function (res) {
-          res()
-          res()
+        promise = new Promise(function (resolve) {
+          resolve()
+          resolve()
         })
       })
       return promise
@@ -570,8 +570,8 @@ test('AsyncLocalStorage based tracking', async (t) => {
     async function (t) {
       const plan = tspl(t, { plan: 3 })
       const testMetrics = createHook()
-      await new Promise(function (res) {
-        setTimeout(res, 10)
+      await new Promise(function (resolve) {
+        setTimeout(resolve, 10)
       })
       setImmediate(checkCallMetrics, plan, testMetrics)
       await plan.completed

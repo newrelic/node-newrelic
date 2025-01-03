@@ -27,7 +27,7 @@ test('ioredis instrumentation', async (t) => {
       : params.redis_host
     const HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
 
-    await new Promise(async (resolve, reject) => {
+    await new Promise((resolve, reject) => {
       redisClient.select(DB_INDEX, (err) => {
         if (err) {
           return reject(err)

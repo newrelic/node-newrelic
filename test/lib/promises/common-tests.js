@@ -9,6 +9,7 @@ const helper = require('../agent_helper')
 const COUNT = 2
 const { checkTransaction, end, runMultiple } = require('./helpers')
 
+/* eslint-disable sonarjs/no-globals-shadowing */
 module.exports = function init({ t, agent, Promise }) {
   return async function performTests(name, resolve, reject) {
     const inTx = doPerformTests({ t, agent, Promise, name, resolve, reject, inTx: true })

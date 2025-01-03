@@ -159,6 +159,7 @@ test('Metric Aggregator', async (t) => {
     const expectedEndSeconds = EXPECTED_START_SECONDS + secondsToElapse
 
     metricAggregator._toPayload((err, payload) => {
+      assert.ifError(err)
       assert.equal(payload.length, 4)
 
       const [runId, startTime, endTime, metricData] = payload

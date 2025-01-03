@@ -35,6 +35,7 @@ test('when initialized properly and response status is 200', async (t) => {
 
   await t.test('should pass through return value', (t, end) => {
     const parser = parse(methodName, response, (error, res) => {
+      assert.ifError(error)
       assert.deepStrictEqual(res.payload, [1, 1, 2, 3, 5, 8])
       end()
     })
@@ -43,6 +44,7 @@ test('when initialized properly and response status is 200', async (t) => {
 
   await t.test('should pass through status code', (t, end) => {
     const parser = parse(methodName, response, (error, res) => {
+      assert.ifError(error)
       assert.deepStrictEqual(res.status, 200)
       end()
     })
@@ -51,6 +53,7 @@ test('when initialized properly and response status is 200', async (t) => {
 
   await t.test('should pass through even a null return value', (t, end) => {
     const parser = parse(methodName, response, (error, res) => {
+      assert.ifError(error)
       assert.equal(res.payload, null)
       end()
     })

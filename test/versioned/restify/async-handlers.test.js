@@ -93,7 +93,7 @@ test('Restify with async handlers should work the same as with sync', async (t) 
       plan.ok(1, 'should enter first `use` middleware')
       req.test = await simulateAsyncWork()
     })
-    // eslint-disable-next-line no-unused-vars
+
     server.use(async (req) => {
       plan.ok(1, 'should enter second `use` middleware')
       req.test2 = await simulateAsyncWork()

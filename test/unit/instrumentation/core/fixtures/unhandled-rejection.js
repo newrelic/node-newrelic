@@ -10,11 +10,11 @@ const agent = helper.instrumentMockedAgent()
 process.once('unhandledRejection', function () {})
 
 helper.runInTransaction(agent, function (transaction) {
-  Promise.reject('test rejection')
+  Promise.reject(Error('test rejection'))
 
   setTimeout(function () {
     assert.equal(transaction.exceptions.length, 0)
-    // eslint-disable-next-line no-process-exit
+
     process.exit(0)
   }, 15)
 })

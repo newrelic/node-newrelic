@@ -11,7 +11,7 @@ const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 
 test('Restify router introspection', async function (t) {
-  const plan = tspl(t, { plan: 3 })
+  const plan = tspl(t, { plan: 4 })
   const agent = helper.instrumentMockedAgent()
   const server = require('restify').createServer()
   const api = new API(agent)
@@ -36,6 +36,7 @@ test('Restify router introspection', async function (t) {
   server.listen(0, function () {
     const port = server.address().port
     helper.makeGetRequest('http://localhost:' + port + '/test/31337', function (error, res, body) {
+      plan.ifError(error)
       plan.equal(res.statusCode, 200, 'nothing exploded')
       plan.deepEqual(body, { status: 'ok' }, 'got expected respose')
     })

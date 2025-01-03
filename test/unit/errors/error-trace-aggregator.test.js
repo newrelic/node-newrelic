@@ -81,6 +81,7 @@ test('Error Trace Aggregator', async (t) => {
     errorTraceAggregator.add(rawErrorTrace)
 
     errorTraceAggregator._toPayload((err, payload) => {
+      assert.ifError(err)
       assert.equal(payload.length, 2, 'payload should have two elements')
 
       const [runId, errorTraceData] = payload

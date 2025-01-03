@@ -9,6 +9,7 @@
 process.env.NODE_ENV = 'test'
 const assert = require('node:assert')
 const test = require('node:test')
+const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 const symbols = require('../../../lib/symbols')
@@ -32,7 +33,7 @@ const BODY =
 // https://github.com/newrelic/node-newrelic/pull/154
 test('using only the express router', function (t, end) {
   const agent = helper.instrumentMockedAgent()
-  const router = require('express').Router() // eslint-disable-line new-cap
+  const router = require('express').Router()
   t.after(() => {
     helper.unloadAgent(agent)
   })
@@ -47,7 +48,7 @@ test('using only the express router', function (t, end) {
 
 test('the express router should go through a whole request lifecycle', async function (t) {
   const agent = helper.instrumentMockedAgent()
-  const router = require('express').Router() // eslint-disable-line new-cap
+  const router = require('express').Router()
   const finalhandler = require('finalhandler')
 
   const plan = tsplan(t, { plan: 2 })
@@ -170,7 +171,7 @@ test('agent instrumentation of Express', async function (t) {
   await t.test('using EJS templates', { timeout: 1000 }, async function (t) {
     const plan = tsplan(t, { plan: 4 })
     const { app, agent, port } = t.nr
-    app.set('views', __dirname + '/views')
+    app.set('views', path.join(__dirname, 'views'))
     app.set('view engine', 'ejs')
 
     app.get(TEST_PATH, function (req, res) {
@@ -201,7 +202,7 @@ test('agent instrumentation of Express', async function (t) {
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function() {}'
 
-    app.set('views', __dirname + '/views')
+    app.set('views', path.join(__dirname, 'views'))
     app.set('view engine', 'ejs')
 
     app.get(TEST_PATH, function (req, res) {
@@ -396,6 +397,7 @@ test('agent instrumentation of Express', async function (t) {
     const { agent, app, port } = t.nr
 
     app.get(TEST_PATH, function () {
+      // eslint-disable-next-line no-throw-literal
       throw 'some error'
     })
 
@@ -417,8 +419,7 @@ test('agent instrumentation of Express', async function (t) {
       throw new Error('some error')
     })
 
-    // eslint-disable-next-line no-unused-vars
-    app.use(function (err, rer, res, next) {
+    app.use(function (_, rer, res, next) {
       res.status(400).end()
     })
 
@@ -446,7 +447,6 @@ test('agent instrumentation of Express', async function (t) {
       throw error
     })
 
-    // eslint-disable-next-line no-unused-vars
     app.use(function (err, rer, res, next) {
       delete err.message
       delete err.stack
@@ -493,7 +493,7 @@ test('agent instrumentation of Express', async function (t) {
 
   await t.test('layer wrapping', async function (t) {
     const { app, port } = t.nr
-    const plan = tsplan(t, { plan: 1 })
+    const plan = tsplan(t, { plan: 2 })
     // Add our route.
     app.get(TEST_PATH, function (req, res) {
       res.send('bar')
@@ -506,6 +506,7 @@ test('agent instrumentation of Express', async function (t) {
 
     // Make our request.
     helper.makeGetRequest(`${TEST_URL}:${port}${TEST_PATH}`, function (err, response, body) {
+      plan.ifError(err)
       plan.equal(body, 'bar', 'should not fail with a proxy layer')
     })
     await plan.completed
@@ -518,7 +519,7 @@ test('agent instrumentation of Express', async function (t) {
  *
  * @param {express.Layer} layer - The layer to proxy.
  *
- * @return {object} A POD object with all the fields of the layer copied over.
+ * @returns {object} A POD object with all the fields of the layer copied over.
  */
 function makeProxyLayer(layer) {
   const fakeLayer = {

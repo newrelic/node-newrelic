@@ -152,7 +152,7 @@ test('should generate rum headers', { timeout: 1000 }, (t, end) => {
     handler: function (req, h) {
       const rum = api.getBrowserTimingHeader()
       assert.equal(rum.substring(0, 7), '<script')
-      return h.view('index', { title: 'yo dawg', rum: rum })
+      return h.view('index', { title: 'yo dawg', rum })
     }
   })
 

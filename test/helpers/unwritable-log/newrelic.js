@@ -5,6 +5,8 @@
 
 'use strict'
 
+const path = require('node:path')
+
 /**
  * New Relic agent configuration.
  *
@@ -27,6 +29,6 @@ exports.config = {
      * production applications.
      */
     level: 'trace',
-    filepath: __dirname + '/test.log'
+    filepath: path.join(__dirname, 'test.log')
   }
 }

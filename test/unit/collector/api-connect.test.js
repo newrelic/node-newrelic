@@ -137,6 +137,7 @@ test('succeeds when given a different port number for redirect', async (t) => {
   await t.test('should have a run ID', (t, end) => {
     const { collectorApi } = t.nr
     collectorApi.connect((error, res) => {
+      assert.ifError(error)
       assert.equal(res.payload.agent_run_id, RUN_ID)
       end()
     })
@@ -145,6 +146,7 @@ test('succeeds when given a different port number for redirect', async (t) => {
   await t.test('should pass through server-side configuration untouched', (t, end) => {
     const { collectorApi } = t.nr
     collectorApi.connect((error, res) => {
+      assert.ifError(error)
       assert.deepStrictEqual(res.payload, { agent_run_id: RUN_ID })
       end()
     })
@@ -198,6 +200,7 @@ for (const retryCount of retryCounts) {
     await t.test('should not error out', (t, end) => {
       const { collectorApi } = t.nr
       collectorApi.connect((error) => {
+        assert.ifError(error)
         assert.equal(error, undefined)
         end()
       })
@@ -206,6 +209,7 @@ for (const retryCount of retryCounts) {
     await t.test('should have a run ID', (t, end) => {
       const { collectorApi } = t.nr
       collectorApi.connect((error, res) => {
+        assert.ifError(error)
         assert.equal(res.payload.agent_run_id, RUN_ID)
         end()
       })
@@ -214,6 +218,7 @@ for (const retryCount of retryCounts) {
     await t.test('should pass through server-side configuration untouched', (t, end) => {
       const { collectorApi } = t.nr
       collectorApi.connect((error, res) => {
+        assert.ifError(error)
         assert.deepStrictEqual(res.payload, { agent_run_id: RUN_ID })
         end()
       })
@@ -264,6 +269,7 @@ test('disconnects on force disconnect (410)', async (t) => {
   await t.test('should not have a response body', (t, end) => {
     const { collector, collectorApi } = t.nr
     collectorApi.connect((error, res) => {
+      assert.ifError(error)
       assert.equal(res.payload, undefined)
       assert.equal(collector.isDone('preconnect'), true)
       end()
@@ -271,7 +277,7 @@ test('disconnects on force disconnect (410)', async (t) => {
   })
 })
 
-test(`retries preconnect until forced to disconnect (410)`, async (t) => {
+test('retries preconnect until forced to disconnect (410)', async (t) => {
   const retryCount = 500
   const exception = {
     exception: {
@@ -319,6 +325,7 @@ test(`retries preconnect until forced to disconnect (410)`, async (t) => {
   await t.test('should have received shutdown response', (t, end) => {
     const { collectorApi } = t.nr
     collectorApi.connect((error, res) => {
+      assert.ifError(error)
       const shutdownCommand = CollectorResponse.AGENT_RUN_BEHAVIOR.SHUTDOWN
       assert.deepStrictEqual(res.agentRun, shutdownCommand)
       end()
@@ -326,7 +333,7 @@ test(`retries preconnect until forced to disconnect (410)`, async (t) => {
   })
 })
 
-test(`retries on receiving invalid license key (401)`, async (t) => {
+test('retries on receiving invalid license key (401)', async (t) => {
   const retryCount = 5
 
   t.beforeEach(async (ctx) => {
@@ -376,6 +383,7 @@ test(`retries on receiving invalid license key (401)`, async (t) => {
   await t.test('should call the expected number of times', (t, end) => {
     const { collectorApi } = t.nr
     collectorApi.connect((error, res) => {
+      assert.ifError(error)
       assert.equal(t.nr.retries, 5)
       assert.equal(res.payload.agent_run_id, 31338)
       end()
@@ -383,7 +391,7 @@ test(`retries on receiving invalid license key (401)`, async (t) => {
   })
 })
 
-test(`retries on misconfigured proxy`, async (t) => {
+test('retries on misconfigured proxy', async (t) => {
   // We are using `nock` for these tests because it provides its own socket
   // implementation that is able to fake a bad connection to a server.
   // Basically, these tests are attempting to verify conditions around
@@ -452,16 +460,18 @@ test(`retries on misconfigured proxy`, async (t) => {
   await t.test('should log warning when proxy is misconfigured', (t, end) => {
     const { collectorApi } = t.nr
     collectorApi.connect((error, res) => {
+      assert.ifError(error)
       assert.equal(t.nr.failure.isDone(), true)
       assert.equal(t.nr.success.isDone(), true)
       assert.equal(t.nr.connect.isDone(), true)
       assert.equal(res.payload.agent_run_id, 31338)
 
-      const expectErrorMsg =
-        'Your proxy server appears to be configured to accept connections \
-over http. When setting `proxy_host` and `proxy_port` New Relic attempts to connect over \
-SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` \
-to a fully qualified URL(e.g http://proxy-host:8080).'
+      const expectErrorMsg = [
+        'Your proxy server appears to be configured to accept connections ',
+        'over http. When setting `proxy_host` and `proxy_port` New Relic attempts to connect over ',
+        'SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` ',
+        'to a fully qualified URL(e.g http://proxy-host:8080).'
+      ].join('')
       assert.deepStrictEqual(
         t.nr.logs,
         [[expectedError, expectErrorMsg]],
@@ -478,6 +488,7 @@ to a fully qualified URL(e.g http://proxy-host:8080).'
       const { collectorApi } = t.nr
       collectorApi._agent.config.proxy = 'http://test-proxy-server:8080'
       collectorApi.connect((error, res) => {
+        assert.ifError(error)
         assert.equal(t.nr.failure.isDone(), true)
         assert.equal(t.nr.success.isDone(), true)
         assert.equal(t.nr.connect.isDone(), true)

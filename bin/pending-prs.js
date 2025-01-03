@@ -91,9 +91,9 @@ function stopOnError(err) {
 
 function areEnvVarsSet(dryRun) {
   if (dryRun) {
-    return process.env.hasOwnProperty('GITHUB_TOKEN')
+    return Object.prototype.hasOwnProperty.call(process.env, 'GITHUB_TOKEN')
   }
-  missingEnvVars = requiredEnvVars.filter((envVar) => !process.env.hasOwnProperty(envVar))
+  missingEnvVars = requiredEnvVars.filter((envVar) => !Object.prototype.hasOwnProperty.call(process.env, envVar))
   return missingEnvVars.length === 0
 }
 
