@@ -12,6 +12,20 @@ const header = require('./eslint-plugin-newrelic-header.js')
 
 // The new eslint configuration format is a simple array of configuration
 // objects. See https://eslint.org/docs/latest/use/configure/configuration-files#configuration-objects.
+//
+// While working on the config, it can be helpful to run:
+//  npx @eslint/config-inspector
+
+// This should be used to override rules we don't need applied to our
+// test suites.
+const testFiles = [
+  'test/benchmark/**',
+  'test/integration/**',
+  'test/unit/**',
+  'test/smoke/**',
+  'test/versioned/**',
+  'bin/test/**'
+]
 
 // See https://eslint.org/docs/latest/use/configure/ignore#ignoring-files
 const globalIgnores = {
@@ -66,13 +80,7 @@ const newrelicConfigOverrides = {
 }
 
 const sonarjsTestsConfig = {
-  files: [
-    'test/benchmark/**',
-    'test/integration/**',
-    'test/unit/**',
-    'test/smoke/**',
-    'test/versioned/**',
-  ],
+  files: testFiles,
 
   rules: {
     // We sometimes need to shadow things like Promise for testing:
@@ -157,6 +165,12 @@ const jsdocOverrides = {
   }
 }
 
+const nodeRecommended = neostandard.plugins.n.configs['flat/recommended']
+delete nodeRecommended.languageOptions.sourceType
+nodeRecommended.rules['n/no-unsupported-features/node-builtins'] = ['error', { version: '>=18.8.0' }]
+nodeRecommended.rules['n/no-process-exit'] = 'off'
+nodeRecommended.ignores = testFiles
+
 // Configuration objects are merged in order. That is, the last object in the
 // list will merge with objects earlier in the list. This allows for overriding
 // any settings by adding objects to the end of the list.
@@ -176,6 +190,17 @@ module.exports = [
   jsdoc.configs['flat/recommended'],
   jsdocConfig,
   jsdocOverrides,
+
+  // Add customized eslint-plugin-n recommended rules:
+  nodeRecommended,
+  {
+    files: [
+      'bin/*.js'
+    ],
+    rules: {
+      'n/hashbang': 'off'
+    }
+  },
 
   // Apply local configuration and overrides:
   localConfig,
