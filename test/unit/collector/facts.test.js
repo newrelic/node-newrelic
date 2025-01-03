@@ -730,7 +730,6 @@ test('display_host facts', async (t) => {
   await t.test('should be ipv6 when ipv_preference === 6', (t, end) => {
     const { agent, facts } = t.nr
     if (!agent.config.getIPAddresses().ipv6) {
-      t.diagnostic('this machine does not have an ipv6 address, skipping')
       end()
     }
 
@@ -753,7 +752,6 @@ test('display_host facts', async (t) => {
   await t.test('returns no ipv4, hostname should be ipv6 if possible', (t, end) => {
     const { agent, facts } = t.nr
     if (!agent.config.getIPAddresses().ipv6) {
-      t.diagnostic('this machine does not have an ipv6 address, skipping')
       end()
     }
 

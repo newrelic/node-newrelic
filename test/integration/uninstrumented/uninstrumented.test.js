@@ -60,7 +60,7 @@ test('all instrumented modules should be detected when uninstrumented', (t, end)
         require(module)
         loaded.push(module)
       } catch {
-        t.diagnostic('failed to load ' + module)
+        // silently fail
       }
     }
   })
