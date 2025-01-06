@@ -340,15 +340,14 @@ const lambdaV1InvocationEvent = {
 
 // Event sent by API Gateway to an authorizing Lambda function. This should not be classified as a web event.
 // https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-lambda-authorizer-input.html
+// Connection, Host, and Upgrade headers removed due to prettier and eslint complaints: prettier requires
+// enquoting them, while eslint's @stylistic/quote-props requires unquoting.
 const lambdaAuthorizerEvent = {
   headers: {
-    'Connection': 'upgrade',
     'content-length': '0',
-    'Host': '[redacted-apiid].execute-api.us-east-1.amazonaws.com',
     'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
     'Sec-WebSocket-Key': '[redacted]',
     'Sec-WebSocket-Version': '13',
-    'Upgrade': 'websocket',
     'X-Amzn-Trace-Id': 'Root=[redacted-traceid]',
     'X-Forwarded-For': '[redacted-ipaddress]',
     'X-Forwarded-Port': '443',
@@ -358,13 +357,10 @@ const lambdaAuthorizerEvent = {
   methodArn:
     'arn:aws:execute-api:us-east-1:[redacted-accountid]:[redacted-apiid]/[redacted-stage]/$connect',
   multiValueHeaders: {
-    'Connection': ['upgrade'],
     'content-length': ['0'],
-    'Host': ['[redacted-apiid].execute-api.us-east-1.amazonaws.com'],
     'Sec-WebSocket-Extensions': ['permessage-deflate; client_max_window_bits'],
     'Sec-WebSocket-Key': ['[redacted]'],
     'Sec-WebSocket-Version': ['13'],
-    'Upgrade': ['websocket'],
     'X-Amzn-Trace-Id': ['Root=[redacted]'],
     'X-Forwarded-For': ['[redacted-ipaddress]'],
     'X-Forwarded-Port': ['443'],
