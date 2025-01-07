@@ -340,7 +340,7 @@ const lambdaV1InvocationEvent = {
 
 // Event sent by API Gateway to an authorizing Lambda function. This should not be classified as a web event.
 // https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-lambda-authorizer-input.html
-// Connection, Host, and Upgrade headers removed due to prettier and eslint complaints: prettier requires
+// Connection, Host, and Upgrade headers removed due to eslint complaints: it requires
 // enquoting them, while eslint's @stylistic/quote-props requires unquoting.
 const lambdaAuthorizerEvent = {
   headers: {
