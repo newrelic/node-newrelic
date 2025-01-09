@@ -8,11 +8,6 @@
 
 * Fixed event matcher to use properties specific to web requests (v1/ALB and v2) ([#2863](https://github.com/newrelic/node-newrelic/pull/2863)) ([a93fe6e](https://github.com/newrelic/node-newrelic/commit/a93fe6e68e5b8047cc7c3bca8b9f50a0a7ffddd6))
 
-#### Documentation
-
-* Updated compatibility report ([#2856](https://github.com/newrelic/node-newrelic/pull/2856)) ([59f2bd9](https://github.com/newrelic/node-newrelic/commit/59f2bd9e6967af50150f07750d415b903746fee1))
-* Updated compatibility report ([#2847](https://github.com/newrelic/node-newrelic/pull/2847)) ([daa3700](https://github.com/newrelic/node-newrelic/commit/daa37006d6b11270b9ffc6c4dea9cb5724758f48))
-
 #### Miscellaneous chores
 
 * Fixed mysql2 tests for new mysql2 version ([#2853](https://github.com/newrelic/node-newrelic/pull/2853)) ([30a6de0](https://github.com/newrelic/node-newrelic/commit/30a6de00d22b92332009d7127bf52fbd10310214))
