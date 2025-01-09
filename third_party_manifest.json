@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Dec 23 2024 09:14:45 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Jan 08 2025 12:42:52 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -278,6 +278,19 @@
       "publisher": "Matteo Collina",
       "email": "hello@matteocollina.com"
     },
+    "@newrelic/eslint-config@0.5.0": {
+      "name": "@newrelic/eslint-config",
+      "version": "0.5.0",
+      "range": "^0.5.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/eslint-config-newrelic",
+      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.5.0",
+      "licenseFile": "node_modules/@newrelic/eslint-config/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.5.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
     "@newrelic/newrelic-oss-cli@0.1.2": {
       "name": "@newrelic/newrelic-oss-cli",
       "version": "0.1.2",
@@ -493,18 +506,6 @@
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
       "url": "http://gajus.com"
-    },
-    "eslint-plugin-sonarjs@3.0.1": {
-      "name": "eslint-plugin-sonarjs",
-      "version": "3.0.1",
-      "range": "^3.0.1",
-      "licenses": "LGPL-3.0-only",
-      "repoUrl": "https://github.com/SonarSource/SonarJS",
-      "versionedRepoUrl": "https://github.com/SonarSource/SonarJS/tree/v3.0.1",
-      "licenseFile": "node_modules/eslint-plugin-sonarjs/LICENSE",
-      "licenseUrl": "https://github.com/SonarSource/SonarJS/blob/v3.0.1/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "SonarSource"
     },
     "eslint@9.17.0": {
       "name": "eslint",
