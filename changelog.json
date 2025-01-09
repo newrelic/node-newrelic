@@ -6,7 +6,7 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          " Fixed event matcher to focus on properties specific to web requests (v1/ALB and v2)"
+          "Fixed event matcher to use properties specific to web requests (v1/ALB and v2)"
         ],
         "features": [
           "Added instrumentation for `@opensearch-projects/opensearch` v2.1.0+"

@@ -6,8 +6,7 @@
 
 #### Bug fixes
 
-*  Fixed event matcher to focus on properties specific to web requests (v1/ALB and v2) ([#2863](https://github.com/newrelic/node-newrelic/pull/2863)) ([a93fe6e](https://github.com/newrelic/node-newrelic/commit/a93fe6e68e5b8047cc7c3bca8b9f50a0a7ffddd6))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com> Co-authored-by: Bob Evans <robert.evans25@gmail.com>
+* Fixed event matcher to use properties specific to web requests (v1/ALB and v2) ([#2863](https://github.com/newrelic/node-newrelic/pull/2863)) ([a93fe6e](https://github.com/newrelic/node-newrelic/commit/a93fe6e68e5b8047cc7c3bca8b9f50a0a7ffddd6))
 
 #### Documentation
 
