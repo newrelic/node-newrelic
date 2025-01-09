@@ -9,9 +9,8 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const {
-  isGatewayV1Event,
-  isGatewayV2Event,
-  isAlbEvent
+  isGatewayV1ProxyEvent,
+  isGatewayV2ProxyEvent
 } = require('../../../lib/serverless/api-gateway')
 
 const {
@@ -19,37 +18,30 @@ const {
   httpApiGatewayV1Event,
   httpApiGatewayV2Event,
   httpApiGatewayV2EventAlt,
-  lambaV1InvocationEvent,
+  lambdaV1InvocationEvent,
   albEvent,
-  lambdaEvent
+  lambdaEvent,
+  lambdaAuthorizerEvent
 } = require('./fixtures')
 
-test('isGatewayV1Event', () => {
-  assert.equal(isGatewayV1Event(restApiGatewayV1Event), true)
-  assert.equal(isGatewayV1Event(httpApiGatewayV1Event), true)
-  assert.equal(isGatewayV1Event(httpApiGatewayV2Event), false)
-  assert.equal(isGatewayV1Event(httpApiGatewayV2EventAlt), false)
-  assert.equal(isGatewayV1Event(lambaV1InvocationEvent), false)
-  assert.equal(isGatewayV1Event(albEvent), false)
-  assert.equal(isGatewayV1Event(lambdaEvent), false)
+test('isGatewayV1ProxyEvent', () => {
+  assert.equal(isGatewayV1ProxyEvent(restApiGatewayV1Event), true)
+  assert.equal(isGatewayV1ProxyEvent(httpApiGatewayV1Event), true)
+  assert.equal(isGatewayV1ProxyEvent(httpApiGatewayV2Event), false)
+  assert.equal(isGatewayV1ProxyEvent(httpApiGatewayV2EventAlt), false)
+  assert.equal(isGatewayV1ProxyEvent(lambdaV1InvocationEvent), false)
+  assert.equal(isGatewayV1ProxyEvent(albEvent), true)
+  assert.equal(isGatewayV1ProxyEvent(lambdaEvent), false)
+  assert.equal(isGatewayV1ProxyEvent(lambdaAuthorizerEvent), false)
 })
 
-test('isGatewayV2Event', () => {
-  assert.equal(isGatewayV2Event(restApiGatewayV1Event), false)
-  assert.equal(isGatewayV2Event(httpApiGatewayV1Event), false)
-  assert.equal(isGatewayV2Event(httpApiGatewayV2Event), true)
-  assert.equal(isGatewayV2Event(httpApiGatewayV2EventAlt), true)
-  assert.equal(isGatewayV2Event(lambaV1InvocationEvent), false)
-  assert.equal(isGatewayV2Event(albEvent), false)
-  assert.equal(isGatewayV2Event(lambdaEvent), false)
-})
-
-test('isAlbEvent', () => {
-  assert.equal(isAlbEvent(restApiGatewayV1Event), false)
-  assert.equal(isAlbEvent(httpApiGatewayV1Event), false)
-  assert.equal(isAlbEvent(httpApiGatewayV2Event), false)
-  assert.equal(isAlbEvent(httpApiGatewayV2EventAlt), false)
-  assert.equal(isAlbEvent(lambaV1InvocationEvent), false)
-  assert.equal(isAlbEvent(albEvent), true)
-  assert.equal(isAlbEvent(lambdaEvent), false)
+test('isGatewayV2ProxyEvent', () => {
+  assert.equal(isGatewayV2ProxyEvent(restApiGatewayV1Event), false)
+  assert.equal(isGatewayV2ProxyEvent(httpApiGatewayV1Event), false)
+  assert.equal(isGatewayV2ProxyEvent(httpApiGatewayV2Event), true)
+  assert.equal(isGatewayV2ProxyEvent(httpApiGatewayV2EventAlt), true)
+  assert.equal(isGatewayV2ProxyEvent(lambdaV1InvocationEvent), false)
+  assert.equal(isGatewayV2ProxyEvent(albEvent), false)
+  assert.equal(isGatewayV2ProxyEvent(lambdaEvent), false)
+  assert.equal(isGatewayV2ProxyEvent(lambdaAuthorizerEvent), false)
 })
