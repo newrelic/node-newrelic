@@ -50,6 +50,16 @@ const requests = {
     }),
     modelId
   }),
+  claude3Chunked: (chunks, modelId) => ({
+    body: JSON.stringify({
+      anthropic_version: 'bedrock-2023-05-31',
+      max_tokens: 100,
+      temperature: 0.5,
+      system: 'Please respond in the style of Christopher Walken',
+      messages: chunks
+    }),
+    modelId
+  }),
   cohere: (prompt, modelId) => ({
     body: JSON.stringify({ prompt, temperature: 0.5, max_tokens: 100 }),
     modelId
@@ -462,6 +472,57 @@ test('ai21: should properly create errors on create completion (streamed)', asyn
     })
 
     assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
+    tx.end()
+  })
+})
+
+test('anthropic-claude-3: should properly create events for chunked messages', async (t) => {
+  const { bedrock, client, agent, expectedExternalPath } = t.nr
+  const modelId = 'anthropic.claude-3-5-sonnet-20240620-v1:0'
+  const prompt = 'text claude3 ultimate question chunked'
+  const input = requests.claude3Chunked(
+    [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: prompt
+          }
+        ]
+      }
+    ],
+    modelId
+  )
+
+  const command = new bedrock.InvokeModelCommand(input)
+
+  const api = helper.getAgentApi()
+  await helper.runInTransaction(agent, async (tx) => {
+    api.addCustomAttribute('llm.conversation_id', 'convo-id')
+    await client.send(command)
+
+    assertSegments(
+      tx.trace.root,
+      ['Llm/completion/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId, 'invoke')]],
+      { exact: false }
+    )
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 3)
+    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+
+    // Note the <image> placeholder for the image chunk
+    assertChatCompletionMessages({
+      modelId,
+      prompt,
+      resContent: "Here's a nice picture of a 42\n\n<image>",
+      tx,
+      chatMsgs
+    })
+
+    assertChatCompletionSummary({ tx, modelId, chatSummary })
     tx.end()
   })
 })
