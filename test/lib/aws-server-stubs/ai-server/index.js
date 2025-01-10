@@ -101,6 +101,12 @@ function handler(req, res) {
         break
       }
 
+      // Chunked claude model
+      case 'anthropic.claude-3-5-sonnet-20240620-v1:0': {
+        response = responses.claude3.get(payload?.messages?.[0]?.content?.[0].text)
+        break
+      }
+
       case 'cohere.command-text-v14':
       case 'cohere.command-light-text-v14': {
         response = responses.cohere.get(payload.prompt)
