@@ -24,7 +24,8 @@ const path = require('node:path')
 process.env.NEW_RELIC_SUPERAGENT_FLEET_ID = 42
 process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION = os.tmpdir()
 process.env.NEW_RELIC_SUPERAGENT_HEALTH_FREQUENCY = 1
-const HealthReporter = require('../../../lib/health-reporter')
+const HealthReporter = require('#agentlib/health-reporter.js')
+
 test.after(() => {
   const files = fs.readdirSync(process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION)
   for (const file of files) {

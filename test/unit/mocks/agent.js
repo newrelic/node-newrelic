@@ -8,7 +8,7 @@
 const { EventEmitter } = require('events')
 const util = require('util')
 const sinon = require('sinon')
-const HealthReporter = require('../../../lib/health-reporter')
+const HealthReporter = require('#agentlib/health-reporter.js')
 
 module.exports = (sandbox = sinon, metricsMock) => {
   function MockAgent(config = {}) {

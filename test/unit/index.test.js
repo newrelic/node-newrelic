@@ -11,7 +11,7 @@ const tspl = require('@matteo.collina/tspl')
 
 const sinon = require('sinon')
 
-const HealthReporter = require('../../lib/health-reporter')
+const HealthReporter = require('#agentlib/health-reporter.js')
 const proxyquire = require('proxyquire').noCallThru()
 const createLoggerMock = require('./mocks/logger')
 const createMockAgent = require('./mocks/agent')

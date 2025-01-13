@@ -12,10 +12,6 @@ const fs = require('node:fs')
 const tspl = require('@matteo.collina/tspl')
 
 const match = require('../../lib/custom-assertions/match')
-
-// TODO: testing this out. Current eslint config doesn't allow for it. If
-// it doesn't cause issues, then I'll investigate how to fix the suppression.
-// eslint-disable-next-line node/no-missing-require
 const HealthReporter = require('#agentlib/health-reporter.js')
 
 function simpleInterval(method) {
@@ -123,7 +119,7 @@ test('initializes and writes to destination', async (t) => {
       data,
       [
         'healthy: true',
-        `status: 'Healthy.'`,
+        "status: 'Healthy.'",
         'last_error: NR-APM-000',
         'start_time_unix_nano: 1',
         'status_time_unix_nano: 2'
@@ -214,7 +210,7 @@ test('stop leaves last error code in place', async (t) => {
       data,
       [
         'healthy: false',
-        `status: 'HTTP error communicating with New Relic.'`,
+        "status: 'HTTP error communicating with New Relic.'",
         'last_error: NR-APM-004',
         'start_time_unix_nano: 1',
         'status_time_unix_nano: 3'
@@ -246,7 +242,7 @@ test('stop sets shutdown status', async (t) => {
       data,
       [
         'healthy: true',
-        `status: 'Agent has shutdown.'`,
+        "status: 'Agent has shutdown.'",
         'last_error: NR-APM-099',
         'start_time_unix_nano: 1',
         'status_time_unix_nano: 3'
