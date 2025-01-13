@@ -195,7 +195,8 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "imports": {
-    "#agentlib/*.js": "./lib/*.js"
+    "#agentlib/*.js": "./lib/*.js",
+    "#test/assert": "./test/lib/custom-assertions/index.js"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.12.2",
