@@ -11,7 +11,8 @@ const os = require('node:os')
 const fs = require('node:fs')
 const tspl = require('@matteo.collina/tspl')
 
-const match = require('../../lib/custom-assertions/match')
+const { match } = require('#test/assert')
+const Config = require('#agentlib/config/index.js')
 const HealthReporter = require('#agentlib/health-reporter.js')
 
 function simpleInterval(method) {
@@ -54,21 +55,24 @@ test.beforeEach((ctx) => {
     }
   }
 
-  process.env.NEW_RELIC_SUPERAGENT_FLEET_ID = 42
-  process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION = os.tmpdir()
-  process.env.NEW_RELIC_SUPERAGENT_HEALTH_FREQUENCY = 1
+  ctx.nr.agentConfig = Config.initialize({
+    agent_control: {
+      fleet_id: 42,
+      health: {
+        delivery_location: os.tmpdir(),
+        frequency: 1
+      }
+    }
+  })
 })
 
 test.afterEach((ctx) => {
   fs.writeFile = ctx.nr.writeFileOrig
   process.hrtime.bigint = ctx.nr.bigintOrig
-  delete process.env.NEW_RELIC_SUPERAGENT_FLEET_ID
-  delete process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION
-  delete process.env.NEW_RELIC_SUPERAGENT_HEALTH_FREQUENCY
 })
 
 test('requires fleet id to be set', (t) => {
-  delete process.env.NEW_RELIC_SUPERAGENT_FLEET_ID
+  delete t.nr.agentConfig.agent_control.fleet_id
 
   const reporter = new HealthReporter(t.nr)
   assert.ok(reporter)
@@ -80,7 +84,7 @@ test('requires fleet id to be set', (t) => {
 })
 
 test('requires output directory to be set', (t) => {
-  delete process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION
+  delete t.nr.agentConfig.agent_control.health.delivery_location
 
   const reporter = new HealthReporter(t.nr)
   assert.ok(reporter)
@@ -95,7 +99,7 @@ test('requires output directory to be set', (t) => {
 })
 
 test('sets default interval', (t) => {
-  delete process.env.NEW_RELIC_SUPERAGENT_HEALTH_FREQUENCY
+  delete t.nr.agentConfig.agent_control.health.frequency
 
   const reporter = new HealthReporter(t.nr)
   assert.ok(reporter)
@@ -170,7 +174,7 @@ test('logs error if writing failed', async (t) => {
 })
 
 test('setStatus and stop do nothing if reporter disabled', (t, end) => {
-  delete process.env.NEW_RELIC_SUPERAGENT_FLEET_ID
+  delete t.nr.agentConfig.agent_control.fleet_id
   fs.writeFile = () => {
     assert.fail('should not be invoked')
   }
