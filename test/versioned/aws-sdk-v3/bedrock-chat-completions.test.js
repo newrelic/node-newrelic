@@ -6,7 +6,12 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
-const { afterEach, assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
+const {
+  afterEach,
+  assertChatCompletionMessages,
+  assertChatCompletionSummary,
+  assertChatCompletionMessage
+} = require('./common')
 const helper = require('../../lib/agent_helper')
 const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
@@ -477,9 +482,10 @@ test('ai21: should properly create errors on create completion (streamed)', asyn
 })
 
 test('anthropic-claude-3: should properly create events for chunked messages', async (t) => {
-  const { bedrock, client, agent, expectedExternalPath } = t.nr
+  const { bedrock, client, agent } = t.nr
   const modelId = 'anthropic.claude-3-5-sonnet-20240620-v1:0'
   const prompt = 'text claude3 ultimate question chunked'
+  const promptFollowUp = 'And please include an image in the response'
   const input = requests.claude3Chunked(
     [
       {
@@ -488,6 +494,15 @@ test('anthropic-claude-3: should properly create events for chunked messages', a
           {
             type: 'text',
             text: prompt
+          }
+        ]
+      },
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: promptFollowUp
           }
         ]
       }
@@ -502,27 +517,42 @@ test('anthropic-claude-3: should properly create events for chunked messages', a
     api.addCustomAttribute('llm.conversation_id', 'convo-id')
     await client.send(command)
 
-    assertSegments(
-      tx.trace.root,
-      ['Llm/completion/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId, 'invoke')]],
-      { exact: false }
-    )
-
     const events = agent.customEventAggregator.events.toArray()
-    assert.equal(events.length, 3)
+    assert.equal(events.length, 4)
     const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+    const chatMsgs = events
+      .filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      .sort(([, a], [, b]) => a.sequence - b.sequence)
 
-    // Note the <image> placeholder for the image chunk
-    assertChatCompletionMessages({
-      modelId,
-      prompt,
-      resContent: "Here's a nice picture of a 42\n\n<image>",
+    assertChatCompletionMessage({
       tx,
-      chatMsgs
+      message: chatMsgs[0],
+      modelId,
+      expectedContent: prompt,
+      isResponse: false,
+      expectedRole: 'user'
     })
 
-    assertChatCompletionSummary({ tx, modelId, chatSummary })
+    assertChatCompletionMessage({
+      tx,
+      message: chatMsgs[1],
+      modelId,
+      expectedContent: promptFollowUp,
+      isResponse: false,
+      expectedRole: 'user'
+    })
+
+    // Note the <image> placeholder for the image chunk
+    assertChatCompletionMessage({
+      tx,
+      message: chatMsgs[2],
+      modelId,
+      expectedContent: "Here's a nice picture of a 42\n\n<image>",
+      isResponse: true,
+      expectedRole: 'assistant'
+    })
+
+    assertChatCompletionSummary({ tx, modelId, chatSummary, numMsgs: 3 })
     tx.end()
   })
 })
