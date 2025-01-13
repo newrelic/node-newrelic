@@ -278,7 +278,7 @@ test('distributed tracing', async (t) => {
       const tx = agent.tracer.getTransaction()
       tx.nameState.appendPath('foobar')
 
-      return get(generateUrl(port, endpoint), (err, { body }) => {
+      return get(generateUrl(port, endpoint), (_, { body }) => {
         tx.nameState.popPath('foobar')
         createResponse(req, res, body, bodyProperty)
       })

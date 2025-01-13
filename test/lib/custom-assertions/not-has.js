@@ -12,6 +12,7 @@ const get = require('../../../lib/util/get')
  * by `doNotWant`.
  *
  * @param {object} params Input parameters
+ * @param params.found
  * @param {object} found The object to test for absence.
  * @param {string} doNotWant Dot separated path to a field that should not
  * have a value.
@@ -19,6 +20,9 @@ const get = require('../../../lib/util/get')
  * @param {object} [deps] Injected dependencies.
  * @param {object} [deps.assert] Assertion library to use.
  *
+ * @param params.doNotWant
+ * @param params.msg
+ * @param found.assert
  * @throws {Error} When the `found` object contains a value at the specified
  * `doNotWant` path.
  */

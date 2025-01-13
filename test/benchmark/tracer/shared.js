@@ -10,8 +10,8 @@ const helper = require('../../lib/agent_helper')
 
 function makeSuite(name) {
   const agent = helper.loadMockedAgent()
-  const suite = benchmark.createBenchmark({ name: name, delay: 0.01 })
-  return { agent: agent, suite: suite }
+  const suite = benchmark.createBenchmark({ name, delay: 0.01 })
+  return { agent, suite }
 }
 
 function getTest() {

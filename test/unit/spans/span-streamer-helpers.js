@@ -65,8 +65,8 @@ helpers.createMetricAggregator = function createMetricAggregator() {
     {
       // runId: RUN_ID,
       apdexT: 0.5,
-      mapper: mapper,
-      normalizer: normalizer
+      mapper,
+      normalizer
     },
     {},
     { add() {} }

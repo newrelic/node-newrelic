@@ -4,6 +4,10 @@
  */
 
 'use strict'
+
+// Make express quiet.
+process.env.NODE_ENV = 'test'
+
 const assert = require('node:assert')
 const http = require('http')
 const test = require('node:test')
@@ -66,8 +70,7 @@ test('Error handling tests', async (t) => {
       throw new Error('some error')
     })
 
-    // eslint-disable-next-line no-unused-vars
-    app.use(function (error, req, res, next) {
+    app.use(function (_, req, res, next) {
       res.end()
     })
 
@@ -87,8 +90,7 @@ test('Error handling tests', async (t) => {
         throw new Error('some error')
       })
 
-      // eslint-disable-next-line no-unused-vars
-      app.use(function (error, req, res, next) {
+      app.use(function (_, req, res, next) {
         res.status(400).end()
       })
 
@@ -148,7 +150,7 @@ test('Error handling tests', async (t) => {
       throw new Error('some error')
     })
 
-    app.use(function (err, req, res, next) {
+    app.use(function (_, req, res, next) {
       next()
     })
 
@@ -166,15 +168,14 @@ test('Error handling tests', async (t) => {
   await t.test('should not report errors handled by errorware outside router', function (t, end) {
     const { app, express } = t.nr
 
-    const router1 = express.Router() // eslint-disable-line new-cap
+    const router1 = express.Router()
     router1.get('/test', function () {
       throw new Error('some error')
     })
 
     app.use(router1)
 
-    // eslint-disable-next-line no-unused-vars
-    app.use(function (error, req, res, next) {
+    app.use(function (_, req, res, next) {
       res.end()
     })
 
@@ -186,7 +187,7 @@ test('Error handling tests', async (t) => {
   })
 
   await t.test('does not error when request is aborted', async function (t) {
-    const plan = tsplan(t, { plan: 4 })
+    const plan = tsplan(t, { plan: 5 })
     const { app, agent, port } = t.nr
     let request = null
 
@@ -201,8 +202,8 @@ test('Error handling tests', async (t) => {
       }, 100)
     })
 
-    // eslint-disable-next-line no-unused-vars
     app.use(function (error, req, res, next) {
+      plan.equal(error.message, 'some error')
       plan.equal(agent.getTransaction(), null, 'no active transaction when responding')
       res.end()
     })

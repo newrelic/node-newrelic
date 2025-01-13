@@ -4,8 +4,10 @@
  */
 
 'use strict'
+
 const test = require('node:test')
 const assert = require('node:assert')
+const path = require('node:path')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const sinon = require('sinon')
@@ -30,7 +32,7 @@ test('Agent API - instrumentMessages', async (t) => {
     const { api } = t.nr
     const opts = {
       moduleName: 'foobar',
-      absolutePath: `${__dirname}/foobar`,
+      absolutePath: path.join(__dirname, 'foobar'),
       onRequire: function () {}
     }
     api.instrumentMessages(opts)

@@ -53,7 +53,7 @@ const tests = [
 
   function longThrowToEnd(Promise) {
     return function runTest() {
-      let prom = Promise.reject()
+      let prom = Promise.reject(Error('boom'))
       for (let i = 0; i < NUM_PROMISES - 1; ++i) {
         prom = prom.then(function () {})
       }
@@ -65,10 +65,9 @@ const tests = [
     return function runTest() {
       const promises = []
       for (let i = 0; i < NUM_PROMISES; ++i) {
-        /* eslint-disable no-new */
         promises.push(
-          new Promise(function (res) {
-            res()
+          new Promise(function (resolve) {
+            resolve()
           })
         )
       }
@@ -81,13 +80,11 @@ const tests = [
       const promises = []
       for (let i = 0; i < NUM_PROMISES / 2; ++i) {
         promises.push(
-          new Promise(function (resolve) {
-            resolve(
-              new Promise(function (res) {
-                setImmediate(res)
-              })
-            )
-          })
+          Promise.resolve(
+            new Promise(function (resolve) {
+              setImmediate(resolve)
+            })
+          )
         )
       }
       return Promise.all(promises)
@@ -99,8 +96,8 @@ const tests = [
       let prom = Promise.resolve()
       for (let i = 0; i < NUM_PROMISES / 2; ++i) {
         prom = prom.then(function () {
-          return new Promise(function (res) {
-            setImmediate(res)
+          return new Promise(function (resolve) {
+            setImmediate(resolve)
           })
         })
       }

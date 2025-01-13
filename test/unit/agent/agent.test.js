@@ -591,7 +591,7 @@ test('when connected', async (t) => {
     })
   })
 
-  function setupAggregators({ enableAggregator: enableAggregator = true, agent, collector }) {
+  function setupAggregators({ enableAggregator = true, agent, collector }) {
     agent.config.application_logging.enabled = enableAggregator
     agent.config.application_logging.forwarding.enabled = enableAggregator
     agent.config.slow_sql.enabled = enableAggregator

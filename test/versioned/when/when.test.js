@@ -69,7 +69,6 @@ test('new Promise() throw', async (t) => {
         plan.equal(err.message, 'test error', 'Error should be as expected')
       }
     )
-    /* eslint-disable-next-line node/no-unsupported-features/es-syntax */
   } catch {
     plan.fail('Error should have passed to `reject`.')
   }
@@ -94,7 +93,6 @@ test('new Promise() resolve then throw', async (t) => {
         plan.fail('Error should have been swallowed by promise.')
       }
     )
-    /* eslint-disable-next-line node/no-unsupported-features/es-syntax */
   } catch {
     plan.fail('Error should have passed to `reject`.')
   }
@@ -403,7 +401,7 @@ test('Promise#then', async (t) => {
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) =>
-    new Promise((resolve) => resolve([1, 2, 3, name]))
+    Promise.resolve([1, 2, 3, name])
       .then((value) => {
         plan.deepStrictEqual(value, [1, 2, 3, name], `${name} should have the correct result value`)
         throw Error('Promise#then test error')
@@ -426,7 +424,7 @@ test('Promise#catch', async (t) => {
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) =>
-    new Promise((resolve) => resolve([1, 2, 3, name]))
+    Promise.resolve([1, 2, 3, name])
       .catch(() => plan.fail(`${name} should not go into catch from a resolved promise`))
       .then(() => {
         throw Error('Promise#catch test error')
@@ -446,7 +444,7 @@ test('Promise#otherwise', async (t) => {
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) =>
-    new Promise((resolve) => resolve([1, 2, 3, name]))
+    Promise.resolve([1, 2, 3, name])
       .otherwise(() => plan.fail(`${name} should not go into otherwise from a resolved promise`))
       .then(() => {
         throw Error('Promise#otherwise test error')
@@ -466,7 +464,7 @@ test('Promise#finally', async (t) => {
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) =>
-    new Promise((resolve) => resolve([1, 2, 3, name]))
+    Promise.resolve([1, 2, 3, name])
       .finally((...args) => {
         plan.equal(args.length, 0, `${name} should not receive any parameters`)
       })
@@ -497,7 +495,7 @@ test('Promise#ensure', async (t) => {
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) =>
-    new Promise((resolve) => resolve([1, 2, 3, name]))
+    Promise.resolve([1, 2, 3, name])
       .ensure((...args) => {
         plan.equal(args.length, 0, `${name} should not receive any parameters`)
       })
@@ -528,7 +526,7 @@ test('Promise#tap', async (t) => {
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) =>
-    new Promise((resolve) => resolve([1, 2, 3, name]))
+    Promise.resolve([1, 2, 3, name])
       .tap((value) => {
         plan.deepStrictEqual(value, [1, 2, 3, name], `${name} should pass values into tap handler`)
       })
@@ -556,7 +554,7 @@ test('Promise#spread', async (t) => {
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) =>
-    new Promise((resolve) => resolve([1, 2, 3, name])).spread((a, b, c, d) =>
+    Promise.resolve([1, 2, 3, name]).spread((a, b, c, d) =>
       plan.deepStrictEqual([a, b, c, d], [1, 2, 3, name], `${name} parameters should be correct`)
     )
 
@@ -570,7 +568,7 @@ test('Promise#fold', async (t) => {
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) => {
-    const p = new Promise((resolve) => resolve([1, 2, 3, name]))
+    const p = Promise.resolve([1, 2, 3, name])
     return p
       .fold(
         (a, b) => {
@@ -603,7 +601,7 @@ test('Promise#yield', async (t) => {
   const { agent, when } = setupTest(t)
   const { Promise } = when
   const testFunc = (name) =>
-    new Promise((resolve) => resolve([1, 2, 3, name]))
+    Promise.resolve([1, 2, 3, name])
       .yield(`${name} yield value`)
       .then((value) =>
         plan.equal(value, `${name} yield value`, `${name} should have correct value`)
@@ -620,7 +618,7 @@ for (const method of ['else', 'orElse']) {
     const { agent, when } = setupTest(t)
     const { Promise } = when
     const testFunc = (name) => {
-      const p = new Promise((resolve) => resolve([1, 2, 3, name]))
+      const p = Promise.resolve([1, 2, 3, name])
       return p[method](Error(`${name} skipped else message`))
         .then(
           (value) =>
@@ -633,9 +631,7 @@ for (const method of ['else', 'orElse']) {
         )
         .then(() => {
           throw Error(`${name} original error`)
-        })
-        [method](`${name} elsed value`)
-        .then((value) =>
+        })[method](`${name} elsed value`).then((value) =>
           plan.deepStrictEqual(
             value,
             `${name} elsed value`,
@@ -656,7 +652,7 @@ test('Promise#delay', async (t) => {
   const { Promise } = when
   const testFunc = (name) => {
     const start = Date.now()
-    return new Promise((resolve) => resolve([1, 2, 3, name])).delay(100).then((value) => {
+    return Promise.resolve([1, 2, 3, name]).delay(100).then((value) => {
       const end = Date.now()
       plan.deepStrictEqual(value, [1, 2, 3, name], `${name} should resolve with original promise`)
       plan.ok(end - start >= 100, `${name} should delay at least the specified duration`)
@@ -674,7 +670,7 @@ test('Promise#timeout', async (t) => {
   const { Promise } = when
   const testFunc = (name) => {
     const start = Date.now()
-    return new Promise((resolve) => resolve([1, 2, 3, name]))
+    return Promise.resolve([1, 2, 3, name])
       .delay(100)
       .timeout(50, Error(`${name} timeout message`))
       .then(() => plan.fail(`${name} should not have resolved`))
@@ -699,7 +695,7 @@ test('Promise#with', async (t) => {
     const obj = {
       [Symbol.toStringTag]: 'test-obj'
     }
-    return new Promise((resolve) => resolve([1, 2, 3, name])).with(obj).then(function (value) {
+    return Promise.resolve([1, 2, 3, name]).with(obj).then(function (value) {
       plan.deepStrictEqual(value, [1, 2, 3, name], `${name} should resolve with original promise`)
       plan.strictEqual(this === obj, true, `${name} should have correct context`)
     })
@@ -714,8 +710,8 @@ test('all', async (t) => {
   await t.test('on library', (t, end) => {
     const { agent, when } = setupTest(t, false)
     const { Promise } = when
-    const p1 = new Promise((resolve) => resolve(1))
-    const p2 = new Promise((resolve) => resolve(2))
+    const p1 = Promise.resolve(1)
+    const p2 = Promise.resolve(2)
 
     helper.runInTransaction(agent, (tx) => {
       when.all([p1, p2]).then(() => {
@@ -728,8 +724,8 @@ test('all', async (t) => {
   await t.test('on Promise', (t, end) => {
     const { agent, when } = setupTest(t, false)
     const { Promise } = when
-    const p1 = new Promise((resolve) => resolve(1))
-    const p2 = new Promise((resolve) => resolve(2))
+    const p1 = Promise.resolve(1)
+    const p2 = Promise.resolve(2)
 
     helper.runInTransaction(agent, (tx) => {
       Promise.all([p1, p2]).then(() => {
@@ -927,12 +923,15 @@ test('node.apply', (t, end) => {
  * Tests a `when` library method outside of an agent transaction.
  *
  * @param {object} params
+ * @param params.plan
  * @param {object} plan The assertion library that expects a set number of
  * assertions to be completed during the test.
  * @param {object} agent A mocked agent instance.
  * @param {function} testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
+ * @param params.agent
+ * @param params.testFunc
  * @returns {Promise<void>}
  */
 async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
@@ -959,12 +958,15 @@ async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
  * Tests a `when` library method inside of an agent transaction.
  *
  * @param {object} params
+ * @param params.plan
  * @param {object} plan The assertion library that expects a set number of
  * assertions to be completed during the test.
  * @param {object} agent A mocked agent instance.
  * @param {function} testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
+ * @param params.agent
+ * @param params.testFunc
  * @returns {Promise<void>}
  */
 async function testInsideTransaction({ plan, agent, testFunc }) {

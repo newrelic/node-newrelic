@@ -165,7 +165,7 @@ for (const config of grpcConfigs) {
     try {
       const payload = { name: ['noes'] }
       await makeServerStreamingRequest({ client, fnName: 'sayErrorServerStream', payload })
-    } catch (err) {
+    } catch {
       // err tested in client tests
     }
 

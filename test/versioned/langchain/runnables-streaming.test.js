@@ -28,6 +28,10 @@ const config = {
 }
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
+function consumeStreamChunk() {
+  // A no-op function used to consume chunks of a stream.
+}
+
 async function beforeEach({ enabled, ctx }) {
   ctx.nr = {}
   const { host, port, server } = await createOpenAIMockServer()
@@ -101,8 +105,7 @@ test('streaming enabled', async (t) => {
         const chain = prompt.pipe(model).pipe(outputParser)
         const stream = await chain.stream(input)
         for await (const chunk of stream) {
-          chunk
-          // no-op
+          consumeStreamChunk(chunk)
         }
 
         const metrics = agent.metrics.getOrCreateMetric(
@@ -282,7 +285,7 @@ test('streaming enabled', async (t) => {
       const chain = prompt.pipe(model).pipe(outputParser)
       const stream = await chain.stream(input, options)
       for await (const chunk of stream) {
-        chunk
+        consumeStreamChunk(chunk)
         // no-op
       }
 
@@ -362,7 +365,7 @@ test('streaming enabled', async (t) => {
     const chain = prompt.pipe(model).pipe(outputParser)
     const stream = await chain.stream(input)
     for await (const chunk of stream) {
-      chunk
+      consumeStreamChunk(chunk)
       // no-op
     }
 
@@ -379,7 +382,7 @@ test('streaming enabled', async (t) => {
       const chain = prompt.pipe(model)
       const stream = await chain.stream(input)
       for await (const chunk of stream) {
-        chunk
+        consumeStreamChunk(chunk)
         // no-op
       }
 
@@ -400,7 +403,7 @@ test('streaming enabled', async (t) => {
       const chain = prompt.pipe(model)
       const stream = await chain.stream(input)
       for await (const chunk of stream) {
-        chunk
+        consumeStreamChunk(chunk)
         // no-op
       }
 
@@ -424,7 +427,7 @@ test('streaming enabled', async (t) => {
         const chain = prompt.pipe(model).pipe(outputParser)
         const stream = await chain.stream(input)
         for await (const chunk of stream) {
-          chunk
+          consumeStreamChunk(chunk)
           // no-op
         }
 
@@ -498,7 +501,7 @@ test('streaming enabled', async (t) => {
       try {
         const stream = await chain.stream({ topic: 'bad' })
         for await (const chunk of stream) {
-          chunk
+          consumeStreamChunk(chunk)
           // no-op
         }
       } catch (error) {
@@ -526,7 +529,7 @@ test('streaming enabled', async (t) => {
         match(e, {
           customAttributes: {
             'error.message': 'Premature close',
-            'completion_id': /\w{32}/
+            completion_id: /\w{32}/
           }
         })
       }

@@ -97,9 +97,8 @@ test('Agent API - instrumentLoadedModule', async (t) => {
     const EMPTY_MODULE = {}
     let mod = EMPTY_MODULE
     try {
-      // eslint-disable-next-line node/no-missing-require
       mod = require('mysql')
-    } catch (e) {}
+    } catch {}
     assert.ok(mod === EMPTY_MODULE, 'mysql is not installed')
 
     // attempt to instrument -- if nothing throws we're good

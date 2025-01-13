@@ -446,6 +446,7 @@ test('receiving no config back from connect', async (t) => {
   await t.test('should pass along no server-side configuration from collector', (t, end) => {
     const { collectorApi } = t.nr
     collectorApi._login((error, res) => {
+      assert.equal(error.message, 'No agent run ID received from handshake.')
       assert.equal(res.payload, undefined)
       end()
     })

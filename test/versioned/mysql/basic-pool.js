@@ -30,7 +30,6 @@ module.exports = function ({ factory, constants, pkgVersion }) {
       database: DATABASE
     }
 
-    // eslint-disable-next-line guard-for-in
     for (const key in extras) {
       conf[key] = extras[key]
     }
@@ -488,6 +487,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
     await t.test('get MASTER connection', function (t, end) {
       const { agent, poolCluster } = t.nr
       poolCluster.getConnection('MASTER', function (err, connection) {
+        assert.ifError(err)
         helper.runInTransaction(agent, function (txn) {
           connection.query('SELECT ? + ? AS solution', [1, 1], function (err) {
             assert.ok(!err, 'no error occurred')
@@ -526,6 +526,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
     await t.test('get glob', function (t, end) {
       const { agent, poolCluster } = t.nr
       poolCluster.getConnection('REPLICA*', 'ORDER', function (err, connection) {
+        assert.ifError(err)
         helper.runInTransaction(agent, function (txn) {
           connection.query('SELECT ? + ? AS solution', [1, 1], function (err) {
             assert.ok(!err, 'no error occurred')
@@ -563,6 +564,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
     await t.test('get star', function (t, end) {
       const { agent, poolCluster } = t.nr
       poolCluster.of('*').getConnection(function (err, connection) {
+        assert.ifError(err)
         helper.runInTransaction(agent, function (txn) {
           connection.query('SELECT ? + ? AS solution', [1, 1], function (err) {
             assert.ok(!err, 'no error occurred')
@@ -602,6 +604,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
       const { agent, poolCluster } = t.nr
       const pool = poolCluster.of('REPLICA*', 'RANDOM')
       pool.getConnection(function (err, connection) {
+        assert.ifError(err)
         helper.runInTransaction(agent, function (txn) {
           connection.query('SELECT ? + ? AS solution', [1, 1], function (err) {
             assert.ok(!err, 'no error occurred')
@@ -690,7 +693,7 @@ async function getDomainSocketPath() {
     const sock = stdout.toString().trim()
     await fs.access(sock)
     return sock
-  } catch (err) {
+  } catch {
     return false
   }
 }

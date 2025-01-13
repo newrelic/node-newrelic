@@ -11,7 +11,7 @@ const { AsyncLocalStorage } = require('async_hooks')
 
 test('extractLlmAttributes', () => {
   const context = {
-    'skip': 1,
+    skip: 1,
     'llm.get': 2,
     'fllm.skip': 3
   }
@@ -50,7 +50,7 @@ test('extractLlmContext', async (t) => {
 
   await t.test('extract LLM context', (t, end) => {
     const { tx, agent } = t.nr
-    tx._llmContextManager.run({ 'llm.test': 1, 'skip': 2 }, () => {
+    tx._llmContextManager.run({ 'llm.test': 1, skip: 2 }, () => {
       const llmContext = extractLlmContext(agent)
       assert.equal(llmContext['llm.test'], 1)
       assert.ok(!llmContext.skip)

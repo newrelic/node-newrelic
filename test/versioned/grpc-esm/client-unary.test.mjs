@@ -82,7 +82,7 @@ test('should include distributed trace headers when enabled', (t, end) => {
     const dtMeta = server.metadataMap.get(payload.name)
     match(
       dtMeta.get('traceparent')[0],
-      /^[\w\d\-]{55}$/,
+      /^[\w-]{55}$/,
       'should have traceparent in server metadata'
     )
     assert.equal(dtMeta.get('newrelic')[0], '', 'should have newrelic in server metadata')
@@ -174,6 +174,7 @@ for (const config of grpcConfigs) {
 test('should bind callback to the proper transaction context', (t, end) => {
   helper.runInTransaction(agent, 'web', async (tx) => {
     client.sayHello({ name: 'Callback' }, (err, response) => {
+      assert.ifError(err)
       assert.ok(response)
       assert.equal(response.message, 'Hello Callback')
       assert.ok(agent.getTransaction(), 'callback should have transaction context')

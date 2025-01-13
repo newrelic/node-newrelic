@@ -1,3 +1,48 @@
+### v12.10.0 (2025-01-09)
+
+#### Features
+
+* Added instrumentation for `@opensearch-projects/opensearch` v2.1.0+ ([#2850](https://github.com/newrelic/node-newrelic/pull/2850)) ([763c0e6](https://github.com/newrelic/node-newrelic/commit/763c0e6ad50f15677b5f535999f93f122c84b583))
+
+#### Bug fixes
+
+* Fixed event matcher to use properties specific to web requests (v1/ALB and v2) ([#2863](https://github.com/newrelic/node-newrelic/pull/2863)) ([a93fe6e](https://github.com/newrelic/node-newrelic/commit/a93fe6e68e5b8047cc7c3bca8b9f50a0a7ffddd6))
+
+#### Miscellaneous chores
+
+* Fixed mysql2 tests for new mysql2 version ([#2853](https://github.com/newrelic/node-newrelic/pull/2853)) ([30a6de0](https://github.com/newrelic/node-newrelic/commit/30a6de00d22b92332009d7127bf52fbd10310214))
+* Updated eslint configuration ([#2851](https://github.com/newrelic/node-newrelic/pull/2851)) ([d2fba9d](https://github.com/newrelic/node-newrelic/commit/d2fba9da8b9ba28d94e50c24fa494a35c442f0a5))
+* Utilize updated @newrelic/eslint-config ([#2865](https://github.com/newrelic/node-newrelic/pull/2865)) ([f53d4fc](https://github.com/newrelic/node-newrelic/commit/f53d4fc8d911a998759cae90a9cd0bf09ff17828))
+
+#### Tests
+
+* Removed `t.diagnostic` from tests ([#2858](https://github.com/newrelic/node-newrelic/pull/2858)) ([23ca237](https://github.com/newrelic/node-newrelic/commit/23ca237731d4fd94b13d03eab9feb645aabe36d0))
+
+#### Continuous integration
+
+* Updated codecov-action to latest released version sha ([#2866](https://github.com/newrelic/node-newrelic/pull/2866)) ([75f8902](https://github.com/newrelic/node-newrelic/commit/75f8902e2dd9e1946666db6b1cf8617a5360d757))
+
+### v12.9.0 (2024-12-18)
+
+#### Features
+
+* Added entity linking attributes to aws-sdk v3 Lambda segments ([#2845](https://github.com/newrelic/node-newrelic/pull/2845)) ([8820265](https://github.com/newrelic/node-newrelic/commit/882026502dbc12b700b893485458176bcd03f68e))
+* Provided ability to define newrelic config as `newrelic.mjs` ([#2836](https://github.com/newrelic/node-newrelic/pull/2836)) ([972b59d](https://github.com/newrelic/node-newrelic/commit/972b59d4c4bd5f212d5fd695ce1007802354b7a0))
+
+#### Documentation
+
+* Updated compatibility report ([#2828](https://github.com/newrelic/node-newrelic/pull/2828)) ([d5fe8e3](https://github.com/newrelic/node-newrelic/commit/d5fe8e323c34464e8cc10be3f5c968a96357b6f6))
+
+#### Miscellaneous chores
+
+* **deps:** Updated @newrelic/security-agent to v2.2.0 ([#2842](https://github.com/newrelic/node-newrelic/pull/2842)) ([170941e](https://github.com/newrelic/node-newrelic/commit/170941e2f16d7e84edabfff40fd31906612b393e))
+* Updated borp configs to target tests correctly ([#2835](https://github.com/newrelic/node-newrelic/pull/2835)) ([66ae59d](https://github.com/newrelic/node-newrelic/commit/66ae59d1e047dead092b3fa681017e3d42ce9474))
+
+#### Tests
+
+* Removed `tap` and cleaned up left over tap helpers ([#2804](https://github.com/newrelic/node-newrelic/pull/2804)) ([37407b6](https://github.com/newrelic/node-newrelic/commit/37407b6d14c2bd6a1c577cce811277753eb8069e))
+* Updated `match` to fail if you pass in an object that lacks the expected keys ([#2843](https://github.com/newrelic/node-newrelic/pull/2843)) ([a3db8bd](https://github.com/newrelic/node-newrelic/commit/a3db8bd993d82a3c1c8873f9e552ba5fdf7cb5f4))
+
 ### v12.8.2 (2024-12-09)
 
 #### Bug fixes

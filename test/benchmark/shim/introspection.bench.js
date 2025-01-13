@@ -46,8 +46,8 @@ suite.add({
   name: 'shim.isPromise',
   fn: function () {
     return shim.isPromise(
-      new Promise(function (res) {
-        res()
+      new Promise(function (resolve) {
+        resolve()
       })
     )
   }

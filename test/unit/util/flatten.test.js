@@ -15,18 +15,17 @@ test('util.flatten', async (t) => {
     assert.deepStrictEqual(flatten({}, '', { a: 5, b: true }), { a: 5, b: true }, '1 level')
     assert.deepStrictEqual(
       flatten({}, '', { a: 5, b: { c: true, d: 7 } }),
-      { 'a': 5, 'b.c': true, 'b.d': 7 },
+      { a: 5, 'b.c': true, 'b.d': 7 },
       '2 levels'
     )
     assert.deepStrictEqual(
       flatten({}, '', { a: 5, b: { c: true, d: 7, e: { foo: 'efoo', bar: 'ebar' } } }),
-      { 'a': 5, 'b.c': true, 'b.d': 7, 'b.e.foo': 'efoo', 'b.e.bar': 'ebar' },
+      { a: 5, 'b.c': true, 'b.d': 7, 'b.e.foo': 'efoo', 'b.e.bar': 'ebar' },
       '3 levels'
     )
   })
 
   await t.test('flattens recursive objects', () => {
-    // eslint-disable-next-line sonarjs/prefer-object-literal -- Disabled so we can create cyclical objects
     const obj = {}
     obj.x = obj
     assert.deepStrictEqual(flatten({}, '', obj), {})
@@ -49,7 +48,6 @@ test('util.flatten.keys', async (t) => {
   })
 
   await t.test('flattens recursive objects', () => {
-    // eslint-disable-next-line sonarjs/prefer-object-literal -- Disabled so we can create cyclical objects
     const obj = {}
     obj.x = obj
     assert.deepStrictEqual(flatten.keys(obj), [])

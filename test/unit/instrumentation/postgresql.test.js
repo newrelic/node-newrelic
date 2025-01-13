@@ -65,6 +65,7 @@ test('Lazy loading of native PG client', async (t) => {
 
     initialize(agent, mockPg, 'pg', shim)
     assert.doesNotThrow(function pleaseDoNotThrow() {
+      // eslint-disable-next-line no-unused-expressions
       mockPg.native
     })
 

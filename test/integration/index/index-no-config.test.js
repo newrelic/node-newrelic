@@ -15,14 +15,12 @@ test('loading the application via index.js with no config', (t) => {
     return __dirname
   }
 
-  /* eslint-disable no-console */
   const logs = []
   const logError = console.error
   t.after(() => {
     console.error = logError
   })
   console.error = (...args) => logs.push(args)
-  /* eslint-enable no-console */
 
   let api
   assert.doesNotThrow(function () {

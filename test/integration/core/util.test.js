@@ -46,7 +46,7 @@ test('promisify', async function (t) {
   })
 
   await t.test('should work on fs.exists', async function () {
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     const asyncExists = util.promisify(require('fs').exists)
 
     const result = await asyncExists(path.join(__dirname, 'exec-me.js'))

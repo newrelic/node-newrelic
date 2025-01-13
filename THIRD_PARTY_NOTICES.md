@@ -52,9 +52,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [conventional-changelog-conventionalcommits](#conventional-changelog-conventionalcommits)
 * [conventional-changelog-writer](#conventional-changelog-writer)
 * [conventional-commits-parser](#conventional-commits-parser)
-* [eslint-plugin-disable](#eslint-plugin-disable)
 * [eslint-plugin-jsdoc](#eslint-plugin-jsdoc)
-* [eslint-plugin-sonarjs](#eslint-plugin-sonarjs)
 * [eslint](#eslint)
 * [express](#express)
 * [git-raw-commits](#git-raw-commits)
@@ -67,6 +65,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [koa](#koa)
 * [lint-staged](#lint-staged)
 * [lockfile-lint](#lockfile-lint)
+* [neostandard](#neostandard)
 * [nock](#nock)
 * [proxyquire](#proxyquire)
 * [rimraf](#rimraf)
@@ -90,7 +89,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.12.2](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.12.2)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.12.2/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.12.4](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.12.4)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.12.4/LICENSE):
 
 ```
                                  Apache License
@@ -508,7 +507,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.0.0](https://github.com/newrelic/csec-node-agent/tree/v2.0.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.0.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.2.0](https://github.com/newrelic/csec-node-agent/tree/v2.2.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.2.0/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -614,7 +613,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### https-proxy-agent
 
-This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/proxy-agents) ([v7.0.5](https://github.com/TooTallNate/proxy-agents/tree/v7.0.5)), distributed under the [MIT License](https://github.com/TooTallNate/proxy-agents/blob/v7.0.5/LICENSE):
+This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/proxy-agents) ([v7.0.6](https://github.com/TooTallNate/proxy-agents/tree/v7.0.6)), distributed under the [MIT License](https://github.com/TooTallNate/proxy-agents/blob/v7.0.6/LICENSE):
 
 ```
 (The MIT License)
@@ -643,7 +642,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.11.2](https://github.com/nodejs/import-in-the-middle/tree/v1.11.2)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.11.2/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.12.0](https://github.com/nodejs/import-in-the-middle/tree/v1.12.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.12.0/LICENSE):
 
 ```
                                  Apache License
@@ -1040,7 +1039,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### winston-transport
 
-This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.7.1](https://github.com/winstonjs/winston-transport/tree/v4.7.1)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.7.1/LICENSE):
+This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.9.0](https://github.com/winstonjs/winston-transport/tree/v4.9.0)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.9.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -1073,7 +1072,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.621.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.621.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.621.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.714.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.714.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.714.0/LICENSE):
 
 ```
                                 Apache License
@@ -1282,7 +1281,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.621.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.621.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.621.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.714.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.714.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.714.0/LICENSE):
 
 ```
                                 Apache License
@@ -1491,7 +1490,7 @@ This product includes source derived from [@aws-sdk/s3-request-presigner](https:
 
 ### @koa/router
 
-This product includes source derived from [@koa/router](https://github.com/koajs/router) ([v12.0.1](https://github.com/koajs/router/tree/v12.0.1)), distributed under the [MIT License](https://github.com/koajs/router/blob/v12.0.1/LICENSE):
+This product includes source derived from [@koa/router](https://github.com/koajs/router) ([v12.0.2](https://github.com/koajs/router/tree/v12.0.2)), distributed under the [MIT License](https://github.com/koajs/router/blob/v12.0.2/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -1549,7 +1548,7 @@ SOFTWARE.
 
 ### @newrelic/eslint-config
 
-This product includes source derived from [@newrelic/eslint-config](https://github.com/newrelic/eslint-config-newrelic) ([v0.3.0](https://github.com/newrelic/eslint-config-newrelic/tree/v0.3.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/eslint-config-newrelic/blob/v0.3.0/LICENSE):
+This product includes source derived from [@newrelic/eslint-config](https://github.com/newrelic/eslint-config-newrelic) ([v0.5.0](https://github.com/newrelic/eslint-config-newrelic/tree/v0.5.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/eslint-config-newrelic/blob/v0.5.0/LICENSE):
 
 ```
                                  Apache License
@@ -2205,7 +2204,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.19.0](https://github.com/slackapi/bolt/tree/v3.19.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.19.0/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.22.0](https://github.com/slackapi/bolt/tree/v3.22.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.22.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2682,7 +2681,7 @@ SOFTWARE.
 
 ### async
 
-This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.5](https://github.com/caolan/async/tree/v3.2.5)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.5/LICENSE):
+This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.6](https://github.com/caolan/async/tree/v3.2.6)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.6/LICENSE):
 
 ```
 Copyright (c) 2010-2018 Caolan McMahon
@@ -2709,7 +2708,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1665.0](https://github.com/aws/aws-sdk-js/tree/v2.1665.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1665.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1692.0](https://github.com/aws/aws-sdk-js/tree/v2.1692.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1692.0/LICENSE.txt):
 
 ```
 
@@ -3108,36 +3107,9 @@ SOFTWARE.
 
 ```
 
-### eslint-plugin-disable
-
-This product includes source derived from [eslint-plugin-disable](https://github.com/mradionov/eslint-plugin-disable) ([v2.0.3](https://github.com/mradionov/eslint-plugin-disable/tree/v2.0.3)), distributed under the [MIT License](https://github.com/mradionov/eslint-plugin-disable/blob/v2.0.3/LICENSE):
-
-```
-Copyright (c) 2015 Michael Radionov (https://github.com/mradionov)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-```
-
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.10.2](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.10.2)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.10.2/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.6.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.6.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.6.1/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -3167,182 +3139,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-### eslint-plugin-sonarjs
-
-This product includes source derived from [eslint-plugin-sonarjs](https://github.com/SonarSource/eslint-plugin-sonarjs) ([v0.18.0](https://github.com/SonarSource/eslint-plugin-sonarjs/tree/v0.18.0)), distributed under the [LGPL-3.0 License](https://github.com/SonarSource/eslint-plugin-sonarjs/blob/v0.18.0/LICENSE):
-
-```
-                   GNU LESSER GENERAL PUBLIC LICENSE
-                       Version 3, 29 June 2007
-
- Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
- Everyone is permitted to copy and distribute verbatim copies
- of this license document, but changing it is not allowed.
-
-
-  This version of the GNU Lesser General Public License incorporates
-the terms and conditions of version 3 of the GNU General Public
-License, supplemented by the additional permissions listed below.
-
-  0. Additional Definitions.
-
-  As used herein, "this License" refers to version 3 of the GNU Lesser
-General Public License, and the "GNU GPL" refers to version 3 of the GNU
-General Public License.
-
-  "The Library" refers to a covered work governed by this License,
-other than an Application or a Combined Work as defined below.
-
-  An "Application" is any work that makes use of an interface provided
-by the Library, but which is not otherwise based on the Library.
-Defining a subclass of a class defined by the Library is deemed a mode
-of using an interface provided by the Library.
-
-  A "Combined Work" is a work produced by combining or linking an
-Application with the Library.  The particular version of the Library
-with which the Combined Work was made is also called the "Linked
-Version".
-
-  The "Minimal Corresponding Source" for a Combined Work means the
-Corresponding Source for the Combined Work, excluding any source code
-for portions of the Combined Work that, considered in isolation, are
-based on the Application, and not on the Linked Version.
-
-  The "Corresponding Application Code" for a Combined Work means the
-object code and/or source code for the Application, including any data
-and utility programs needed for reproducing the Combined Work from the
-Application, but excluding the System Libraries of the Combined Work.
-
-  1. Exception to Section 3 of the GNU GPL.
-
-  You may convey a covered work under sections 3 and 4 of this License
-without being bound by section 3 of the GNU GPL.
-
-  2. Conveying Modified Versions.
-
-  If you modify a copy of the Library, and, in your modifications, a
-facility refers to a function or data to be supplied by an Application
-that uses the facility (other than as an argument passed when the
-facility is invoked), then you may convey a copy of the modified
-version:
-
-   a) under this License, provided that you make a good faith effort to
-   ensure that, in the event an Application does not supply the
-   function or data, the facility still operates, and performs
-   whatever part of its purpose remains meaningful, or
-
-   b) under the GNU GPL, with none of the additional permissions of
-   this License applicable to that copy.
-
-  3. Object Code Incorporating Material from Library Header Files.
-
-  The object code form of an Application may incorporate material from
-a header file that is part of the Library.  You may convey such object
-code under terms of your choice, provided that, if the incorporated
-material is not limited to numerical parameters, data structure
-layouts and accessors, or small macros, inline functions and templates
-(ten or fewer lines in length), you do both of the following:
-
-   a) Give prominent notice with each copy of the object code that the
-   Library is used in it and that the Library and its use are
-   covered by this License.
-
-   b) Accompany the object code with a copy of the GNU GPL and this license
-   document.
-
-  4. Combined Works.
-
-  You may convey a Combined Work under terms of your choice that,
-taken together, effectively do not restrict modification of the
-portions of the Library contained in the Combined Work and reverse
-engineering for debugging such modifications, if you also do each of
-the following:
-
-   a) Give prominent notice with each copy of the Combined Work that
-   the Library is used in it and that the Library and its use are
-   covered by this License.
-
-   b) Accompany the Combined Work with a copy of the GNU GPL and this license
-   document.
-
-   c) For a Combined Work that displays copyright notices during
-   execution, include the copyright notice for the Library among
-   these notices, as well as a reference directing the user to the
-   copies of the GNU GPL and this license document.
-
-   d) Do one of the following:
-
-       0) Convey the Minimal Corresponding Source under the terms of this
-       License, and the Corresponding Application Code in a form
-       suitable for, and under terms that permit, the user to
-       recombine or relink the Application with a modified version of
-       the Linked Version to produce a modified Combined Work, in the
-       manner specified by section 6 of the GNU GPL for conveying
-       Corresponding Source.
-
-       1) Use a suitable shared library mechanism for linking with the
-       Library.  A suitable mechanism is one that (a) uses at run time
-       a copy of the Library already present on the user's computer
-       system, and (b) will operate properly with a modified version
-       of the Library that is interface-compatible with the Linked
-       Version.
-
-   e) Provide Installation Information, but only if you would otherwise
-   be required to provide such information under section 6 of the
-   GNU GPL, and only to the extent that such information is
-   necessary to install and execute a modified version of the
-   Combined Work produced by recombining or relinking the
-   Application with a modified version of the Linked Version. (If
-   you use option 4d0, the Installation Information must accompany
-   the Minimal Corresponding Source and Corresponding Application
-   Code. If you use option 4d1, you must provide the Installation
-   Information in the manner specified by section 6 of the GNU GPL
-   for conveying Corresponding Source.)
-
-  5. Combined Libraries.
-
-  You may place library facilities that are a work based on the
-Library side by side in a single library together with other library
-facilities that are not Applications and are not covered by this
-License, and convey such a combined library under terms of your
-choice, if you do both of the following:
-
-   a) Accompany the combined library with a copy of the same work based
-   on the Library, uncombined with any other library facilities,
-   conveyed under the terms of this License.
-
-   b) Give prominent notice with the combined library that part of it
-   is a work based on the Library, and explaining where to find the
-   accompanying uncombined form of the same work.
-
-  6. Revised Versions of the GNU Lesser General Public License.
-
-  The Free Software Foundation may publish revised and/or new versions
-of the GNU Lesser General Public License from time to time. Such new
-versions will be similar in spirit to the present version, but may
-differ in detail to address new problems or concerns.
-
-  Each version is given a distinguishing version number. If the
-Library as you received it specifies that a certain numbered version
-of the GNU Lesser General Public License "or any later version"
-applies to it, you have the option of following the terms and
-conditions either of that published version or of any later version
-published by the Free Software Foundation. If the Library as you
-received it does not specify a version number of the GNU Lesser
-General Public License, you may choose any version of the GNU Lesser
-General Public License ever published by the Free Software Foundation.
-
-  If the Library as you received it specifies that a proxy can decide
-whether future versions of the GNU Lesser General Public License shall
-apply, that proxy's public statement of acceptance of any version is
-permanent authorization for you to choose that version for the
-Library.
-
-```
-
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.57.0](https://github.com/eslint/eslint/tree/v8.57.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.57.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.17.0](https://github.com/eslint/eslint/tree/v9.17.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.17.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -3369,7 +3168,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v4.19.2](https://github.com/expressjs/express/tree/v4.19.2)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.19.2/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v4.21.2](https://github.com/expressjs/express/tree/v4.21.2)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.21.2/LICENSE):
 
 ```
 (The MIT License)
@@ -3505,7 +3304,7 @@ SOFTWARE.
 
 ### jsdoc
 
-This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.3](https://github.com/jsdoc/jsdoc/tree/v4.0.3)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.3/LICENSE.md):
+This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.4](https://github.com/jsdoc/jsdoc/tree/v4.0.4)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.4/LICENSE.md):
 
 ```
 # License
@@ -3915,6 +3714,35 @@ This product includes source derived from [lockfile-lint](https://github.com/lir
    limitations under the License.
 ```
 
+### neostandard
+
+This product includes source derived from [neostandard](https://github.com/neostandard/neostandard) ([v0.12.0](https://github.com/neostandard/neostandard/tree/v0.12.0)), distributed under the [MIT License](https://github.com/neostandard/neostandard/blob/v0.12.0/LICENSE):
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2024 neostandard contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
 ### nock
 
 This product includes source derived from [nock](https://github.com/nock/nock) ([v11.8.0](https://github.com/nock/nock/tree/v11.8.0)), distributed under the [MIT License](https://github.com/nock/nock/blob/v11.8.0/LICENSE):
@@ -4000,7 +3828,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### self-cert
 
-This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.0](https://github.com/jsumners/self-cert/tree/v2.0.0)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.0/Readme.md):
+This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.1](https://github.com/jsumners/self-cert/tree/v2.0.1)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.1/Readme.md):
 
 ```
 MIT License

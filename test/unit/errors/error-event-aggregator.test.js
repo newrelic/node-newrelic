@@ -51,7 +51,7 @@ test('Error Event Aggregator', async (t) => {
   await t.test('toPayload() should return json format of data', (t) => {
     const { errorEventAggregator } = t.nr
     const expectedMetrics = { reservoir_size: LIMIT, events_seen: 1 }
-    const rawErrorEvent = [{ 'type': 'TransactionError', 'error.class': 'class' }, {}, {}]
+    const rawErrorEvent = [{ type: 'TransactionError', 'error.class': 'class' }, {}, {}]
 
     errorEventAggregator.add(rawErrorEvent)
 

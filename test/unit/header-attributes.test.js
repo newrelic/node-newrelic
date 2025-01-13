@@ -120,8 +120,8 @@ test('#collectRequestHeaders', async (t) => {
       agent.config.allow_all_headers = false
 
       const headers = {
-        'invalid': 'header',
-        'referer': 'valid-referer',
+        invalid: 'header',
+        referer: 'valid-referer',
         'content-type': 'valid-type'
       }
 
@@ -145,8 +145,8 @@ test('#collectRequestHeaders', async (t) => {
       agent.config.allow_all_headers = false
 
       const headers = {
-        'invalid': 'header',
-        'referer': 'valid-referer',
+        invalid: 'header',
+        referer: 'valid-referer',
         'content-type': 'valid-type'
       }
 
@@ -175,8 +175,8 @@ test('#collectRequestHeaders', async (t) => {
       agent.config.allow_all_headers = true
 
       const headers = {
-        'valid': 'header',
-        'referer': 'valid-referer',
+        valid: 'header',
+        referer: 'valid-referer',
         'content-type': 'valid-type',
         'X-filtered-out': 'invalid'
       }
@@ -208,7 +208,7 @@ test('#collectResponseHeaders', async (t) => {
       agent.config.allow_all_headers = false
 
       const headers = {
-        'invalid': 'header',
+        invalid: 'header',
         'content-type': 'valid-type'
       }
 
@@ -230,7 +230,7 @@ test('#collectResponseHeaders', async (t) => {
       agent.config.allow_all_headers = true
 
       const headers = {
-        'valid': 'header',
+        valid: 'header',
         'content-type': 'valid-type',
         'X-filtered-out': 'invalid'
       }

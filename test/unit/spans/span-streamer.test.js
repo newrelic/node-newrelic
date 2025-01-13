@@ -72,7 +72,8 @@ test('SpanStreamer', async (t) => {
     assert.equal(spanStreamer.spans.length, 1, 'one span queued')
 
     /* emit drain event and allow writes */
-    fakeConnection.stream.emit('drain', (fakeConnection.stream.write = () => true))
+    fakeConnection.stream.write = () => true
+    fakeConnection.stream.emit('drain', fakeConnection.stream.write)
 
     assert.equal(spanStreamer.spans.length, 0, 'drained spans')
     assert.equal(
@@ -105,13 +106,14 @@ test('SpanStreamer', async (t) => {
     assert.equal(spanStreamer.spans.length, 1, 'one span queued')
 
     /* emit drain event, allow writes and check for span.trace_id */
+    fakeConnection.stream.write = (span) => {
+      assert.equal(span.trace_id, 'porridge', 'Should have formatted span')
+
+      return true
+    }
     fakeConnection.stream.emit(
       'drain',
-      (fakeConnection.stream.write = (span) => {
-        assert.equal(span.trace_id, 'porridge', 'Should have formatted span')
-
-        return true
-      })
+      fakeConnection.stream.write
     )
 
     assert.equal(spanStreamer.spans.length, 0, 'drained spans')

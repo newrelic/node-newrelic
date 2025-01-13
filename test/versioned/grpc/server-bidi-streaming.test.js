@@ -166,7 +166,7 @@ for (const config of grpcConfigs) {
     try {
       const payload = [{ name: 'server-error' }]
       await makeBidiStreamingRequest({ client, fnName: 'sayErrorBidiStream', payload })
-    } catch (err) {
+    } catch {
       // err tested in client tests
     }
 

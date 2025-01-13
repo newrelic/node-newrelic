@@ -41,6 +41,7 @@ test('SQL trace attributes', async (t) => {
         tx._acceptDistributedTracePayload(payload)
         agent.queries.add(tx.trace.root, 'postgres', 'select pg_sleep(1)', 'FAKE STACK')
         agent.queries.prepareJSON((err, samples) => {
+          assert.ifError(err)
           const sample = samples[0]
           const attributes = sample[sample.length - 1]
           assert.equal(attributes.traceId, tx.traceId)
@@ -87,6 +88,7 @@ test('SQL trace attributes', async (t) => {
     helper.runInTransaction(agent, function (tx) {
       agent.queries.add(tx.trace.root, 'postgres', 'select pg_sleep(1)', 'FAKE STACK')
       agent.queries.prepareJSON((err, samples) => {
+        assert.ifError(err)
         const sample = samples[0]
         const attributes = sample[sample.length - 1]
         assert.equal(attributes.traceId, tx.traceId)

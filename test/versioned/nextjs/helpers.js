@@ -21,7 +21,7 @@ const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 /**
  * Builds a Next.js app
  * @param {sting} dir directory to run next cli in
- * @param {string} [path=app] path to app
+ * @param {string} [path] path to app
  * @returns {Promise}
  *
  */
@@ -46,8 +46,8 @@ helpers.build = function build(dir, path = 'app') {
 /**
  * Bootstraps and starts the Next.js app
  * @param {sting} dir directory to run next cli in
- * @param {string} [path=app] path to app
- * @param {number} [port=3001]
+ * @param {string} [path] path to app
+ * @param {number} [port]
  * @returns {Promise}
  */
 helpers.start = async function start(dir, path = 'app', port = 3001) {
@@ -81,7 +81,7 @@ helpers.start = async function start(dir, path = 'app', port = 3001) {
  * Makes a http GET request to uri specified
  *
  * @param {string} uri make sure to include `/`
- * @param {number} [port=3001]
+ * @param {number} [port]
  * @returns {Promise}
  */
 helpers.makeRequest = function (uri, port = 3001) {

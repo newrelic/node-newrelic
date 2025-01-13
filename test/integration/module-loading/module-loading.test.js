@@ -77,13 +77,11 @@ test('should only log supportability metric for tracking type instrumentation', 
   const PKG = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/knex`
   const PKG_VERSION = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/knex/Version/1`
 
-  // eslint-disable-next-line node/no-extraneous-require
   require('knex')
   const knexOnRequiredMetric = agent.metrics._metrics.unscoped[PKG]
   assert.equal(knexOnRequiredMetric.callCount, 1, `should record ${PKG}`)
   const knexVersionMetric = agent.metrics._metrics.unscoped[PKG_VERSION]
   assert.equal(knexVersionMetric.callCount, 1, `should record ${PKG_VERSION}`)
-  // eslint-disable-next-line node/no-extraneous-require
   const modPath = path.dirname(require.resolve('knex'))
   assert.ok(shimmer.isInstrumented('knex', modPath), 'should mark tracking modules as instrumented')
 })
@@ -160,7 +158,7 @@ test('Should create usage version metric onRequire', (t, end) => {
 test('Should create usage metric onRequire for built-in', (t) => {
   const { agent } = t.nr
   const domainMetric = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/domain`
-  // eslint-disable-next-line node/no-deprecated-api
+  // eslint-disable-next-line n/no-deprecated-api
   require('domain')
 
   const onRequireMetric = agent.metrics._metrics.unscoped[domainMetric]

@@ -142,7 +142,7 @@ test('config formatters', async () => {
       assert.equal(formatters.regex(val, loggerMock), null)
       assert.equal(
         loggerMock.error.args[0][0],
-        `New Relic configurator could not validate regex: [a-z`
+        'New Relic configurator could not validate regex: [a-z'
       )
       assert.match(loggerMock.error.args[1][0], /SyntaxError: Invalid regular expression/)
     })

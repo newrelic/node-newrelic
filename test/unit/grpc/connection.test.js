@@ -28,10 +28,6 @@ const fakeTraceObserverConfig = {
 }
 
 class FakeStreamer extends EventEmitter {
-  constructor() {
-    super()
-  }
-
   emitStatus(status) {
     this.emit('status', status)
   }
@@ -45,8 +41,8 @@ const createMetricAggregatorForTests = () => {
     {
       // runId: RUN_ID,
       apdexT: 0.5,
-      mapper: mapper,
-      normalizer: normalizer
+      mapper,
+      normalizer
     },
     {},
     { add() {} }

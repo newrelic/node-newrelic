@@ -15,6 +15,10 @@ const { assertSegments, match } = require('../../lib/custom-assertions')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const { tspl } = require('@matteo.collina/tspl')
 
+function consumeStreamChunk() {
+  // A no-op function used to consume chunks of a stream.
+}
+
 const requests = {
   ai21: (prompt, modelId) => ({
     body: JSON.stringify({ prompt, temperature: 0.5, maxTokens: 100 }),
@@ -196,7 +200,7 @@ test.afterEach(afterEach)
       const response = await client.send(command)
       for await (const event of response.body) {
         // no-op iteration over the stream in order to exercise the instrumentation
-        event
+        consumeStreamChunk(event)
       }
 
       const events = agent.customEventAggregator.events.toArray()
@@ -240,7 +244,7 @@ test.afterEach(afterEach)
       const [[, feedback]] = recordedEvents.filter(([{ type }]) => type === 'LlmFeedbackMessage')
 
       match(feedback, {
-        id: /[\w\d]{32}/,
+        id: /\w{32}/,
         trace_id: traceId,
         category: 'test-event',
         rating: '5 star',
@@ -299,10 +303,10 @@ test.afterEach(afterEach)
           'http.statusCode': 400,
           'error.message': expectedMsg,
           'error.code': expectedType,
-          'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+          completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         },
         agentAttributes: {
-          spanId: /[\w\d]+/
+          spanId: /\w+/
         }
       })
 
@@ -374,9 +378,9 @@ test.afterEach(afterEach)
   })
 })
 
-test(`cohere embedding streaming works`, async (t) => {
+test('cohere embedding streaming works', async (t) => {
   const { bedrock, client, agent } = t.nr
-  const prompt = `embed text cohere stream`
+  const prompt = 'embed text cohere stream'
   const input = {
     body: JSON.stringify({
       texts: prompt.split(' '),
@@ -393,7 +397,7 @@ test(`cohere embedding streaming works`, async (t) => {
     const response = await client.send(command)
     for await (const event of response.body) {
       // no-op iteration over the stream in order to exercise the instrumentation
-      event
+      consumeStreamChunk(event)
     }
 
     const events = agent.customEventAggregator.events.toArray()
@@ -406,10 +410,10 @@ test(`cohere embedding streaming works`, async (t) => {
   })
 })
 
-test(`ai21: should properly create errors on create completion (streamed)`, async (t) => {
+test('ai21: should properly create errors on create completion (streamed)', async (t) => {
   const { bedrock, client, agent, expectedExternalPath } = t.nr
   const modelId = 'ai21.j2-mid-v1'
-  const prompt = `text ai21 ultimate question error streamed`
+  const prompt = 'text ai21 ultimate question error streamed'
   const input = requests.ai21(prompt, modelId)
 
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
@@ -436,10 +440,10 @@ test(`ai21: should properly create errors on create completion (streamed)`, asyn
         'http.statusCode': 400,
         'error.message': expectedMsg,
         'error.code': expectedType,
-        'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+        completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
       },
       agentAttributes: {
-        spanId: /[\w\d]+/
+        spanId: /\w+/
       }
     })
 
@@ -520,10 +524,10 @@ test(`anthropic-claude-3: should properly create events for chunked messages`, a
   })
 })
 
-test(`models that do not support streaming should be handled`, async (t) => {
+test('models that do not support streaming should be handled', async (t) => {
   const { bedrock, client, agent, expectedExternalPath } = t.nr
   const modelId = 'amazon.titan-embed-text-v1'
-  const prompt = `embed text amazon error streamed`
+  const prompt = 'embed text amazon error streamed'
   const input = requests.amazon(prompt, modelId)
 
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
@@ -550,10 +554,10 @@ test(`models that do not support streaming should be handled`, async (t) => {
         'http.statusCode': 400,
         'error.message': expectedMsg,
         'error.code': expectedType,
-        'completion_id': undefined
+        completion_id: undefined
       },
       agentAttributes: {
-        spanId: /[\w\d]+/
+        spanId: /\w+/
       }
     })
 
@@ -575,10 +579,10 @@ test(`models that do not support streaming should be handled`, async (t) => {
   })
 })
 
-test(`models should properly create errors on stream interruption`, async (t) => {
+test('models should properly create errors on stream interruption', async (t) => {
   const { bedrock, client, agent } = t.nr
   const modelId = 'amazon.titan-text-express-v1'
-  const prompt = `text amazon bad stream`
+  const prompt = 'text amazon bad stream'
   const input = requests.amazon(prompt, modelId)
 
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
@@ -609,7 +613,7 @@ test('should not instrument stream when disabled', async (t) => {
   const modelId = 'amazon.titan-text-express-v1'
   const { bedrock, client, agent } = t.nr
   agent.config.ai_monitoring.streaming.enabled = false
-  const prompt = `text amazon ultimate question streamed`
+  const prompt = 'text amazon ultimate question streamed'
   const input = requests.amazon(prompt, modelId)
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
 
@@ -632,11 +636,11 @@ test('should not instrument stream when disabled', async (t) => {
     assert.deepEqual(
       chunk,
       {
-        'outputText': '42',
-        'index': 0,
-        'totalOutputTextTokenCount': 75,
-        'completionReason': 'endoftext',
-        'inputTextTokenCount': 13,
+        outputText: '42',
+        index: 0,
+        totalOutputTextTokenCount: 75,
+        completionReason: 'endoftext',
+        inputTextTokenCount: 13,
         'amazon-bedrock-invocationMetrics': {
           inputTokenCount: 8,
           outputTokenCount: 4,
@@ -657,7 +661,7 @@ test('should not instrument stream when disabled', async (t) => {
     })
     assert.equal(metrics.callCount > 0, true, 'should set framework metric')
     const supportabilityMetrics = agent.metrics.getOrCreateMetric(
-      `Supportability/Nodejs/ML/Streaming/Disabled`
+      'Supportability/Nodejs/ML/Streaming/Disabled'
     )
     assert.equal(
       supportabilityMetrics.callCount > 0,

@@ -64,7 +64,7 @@ test('Undici request tests', async (t) => {
       headers: {
         'Content-Type': 'application.json'
       },
-      body: Buffer.from(`{"key":"value"}`)
+      body: Buffer.from('{"key":"value"}')
     })
 
     assert.equal(statusCode, 200)
@@ -78,7 +78,7 @@ test('Undici request tests', async (t) => {
         headers: {
           'Content-Type': 'application.json'
         },
-        body: Buffer.from(`{"key":"value"}`)
+        body: Buffer.from('{"key":"value"}')
       })
       assert.equal(statusCode, 200)
 
@@ -181,7 +181,7 @@ test('Undici request tests', async (t) => {
         headers: {
           'Content-Type': 'application.json'
         },
-        body: Buffer.from(`{"key":"value"}`)
+        body: Buffer.from('{"key":"value"}')
       })
       const req2 = undici.request(REQUEST_URL, {
         path: '/put',
@@ -189,7 +189,7 @@ test('Undici request tests', async (t) => {
         headers: {
           'Content-Type': 'application.json'
         },
-        body: Buffer.from(`{"key":"value"}`)
+        body: Buffer.from('{"key":"value"}')
       })
       const [{ statusCode }, { statusCode: statusCode2 }] = await Promise.all([req1, req2])
       assert.equal(statusCode, 200)
@@ -229,7 +229,7 @@ test('Undici request tests', async (t) => {
           abortController.abort()
         }, 100)
         await req
-      } catch (err) {
+      } catch {
         assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
         assert.equal(tx.exceptions.length, 1)
         const expectedErrMsg = semver.gte(pkgVersion, '6.3.0')
@@ -258,7 +258,7 @@ test('Undici request tests', async (t) => {
 
       try {
         await req
-      } catch (error) {
+      } catch {
         assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
           exact: false
         })

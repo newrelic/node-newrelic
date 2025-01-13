@@ -11,7 +11,7 @@ const https = require('https')
 
 test('@aws-sdk/s3-request-presigner functionality', (t, end) => {
   const { version, name } = require('@aws-sdk/s3-request-presigner/package')
-  // eslint-disable-next-line no-console
+
   console.log(`AWS package: ${name} version: ${version}`)
   const agent = helper.instrumentMockedAgent()
   const { S3, ...lib } = require('@aws-sdk/client-s3')

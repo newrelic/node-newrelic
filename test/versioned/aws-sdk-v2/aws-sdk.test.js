@@ -51,7 +51,7 @@ test('aws-sdk', async (t) => {
     const s3 = new AWS.S3({
       apiVersion: '2006-03-01',
       credentials: FAKE_CREDENTIALS,
-      endpoint: endpoint,
+      endpoint,
       // allows using generic endpoint, instead of needing a
       // bucket.endpoint server setup.
       s3ForcePathStyle: true,

@@ -48,7 +48,7 @@ test('DataSender (callback style) talking to fake collector', async (t) => {
 
     const body = JSON.parse(await req.body())
     if (Array.isArray(body) === false || body.length) {
-      validation.body_errors = [`preconnect expects a body of '[]'`]
+      validation.body_errors = ["preconnect expects a body of '[]'"]
     }
 
     const result = {

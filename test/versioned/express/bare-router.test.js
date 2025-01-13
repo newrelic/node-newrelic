@@ -18,7 +18,7 @@ test.afterEach(teardown)
 
 test('Express router introspection', async function (t) {
   const { agent, app, port } = t.nr
-  const plan = tsplan(t, { plan: 11 })
+  const plan = tsplan(t, { plan: 12 })
 
   // need to capture parameters
   agent.config.attributes.enabled = true
@@ -51,6 +51,7 @@ test('Express router introspection', async function (t) {
 
   const url = 'http://localhost:' + port + '/test'
   helper.makeGetRequest(url, { json: true }, function (error, res, body) {
+    plan.ifError(error)
     plan.equal(res.statusCode, 200, 'nothing exploded')
     plan.deepEqual(body, { status: 'ok' }, 'got expected response')
   })

@@ -64,7 +64,7 @@ test('Client Premature Disconnection', { timeout: 3000 }, (t, end) => {
   const request = http.request(
     {
       hostname: 'localhost',
-      port: port,
+      port,
       method: 'POST',
       path: '/test',
       headers: {

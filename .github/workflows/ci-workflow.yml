@@ -247,28 +247,28 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
       - name: Post Unit Test Coverage
-        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673
+        uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: unit-tests-${{ matrix.node-version }}
           flags: unit-tests-${{ matrix.node-version }}
       - name: Post Integration CJS Test Coverage
-        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673
+        uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: integration-tests-cjs-${{ matrix.node-version }}
           flags: integration-tests-cjs-${{ matrix.node-version }}
       - name: Post Integration ESM Test Coverage
-        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673
+        uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: integration-tests-esm-${{ matrix.node-version }}
           flags: integration-tests-esm-${{ matrix.node-version }}
       - name: Post Versioned Test Coverage
-        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673
+        uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}

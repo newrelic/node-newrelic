@@ -6,8 +6,10 @@
 'use strict'
 
 // Create a bad log file.
-const fs = require('fs')
-const testLogPath = __dirname + '/test.log'
+const fs = require('node:fs')
+const path = require('node:path')
+
+const testLogPath = path.join(__dirname, 'test.log')
 const readOnlyMode = 0x100 // => 0400 => r - -
 if (!fs.existsSync(testLogPath)) {
   fs.openSync(testLogPath, 'w', readOnlyMode)

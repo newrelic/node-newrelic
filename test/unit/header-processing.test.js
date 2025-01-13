@@ -21,9 +21,9 @@ test('#getContentLengthFromHeaders', async (t) => {
     // does it ignore other headers?
     assert.equal(
       headerProcessing.getContentLengthFromHeaders({
-        'zip': 'zap',
+        zip: 'zap',
         'Content-Length': 100,
-        'foo': 'bar'
+        foo: 'bar'
       }),
       100
     )
@@ -34,10 +34,10 @@ test('#getContentLengthFromHeaders', async (t) => {
     // replacing
     assert.equal(
       headerProcessing.getContentLengthFromHeaders({
-        'zip': 'zap',
+        zip: 'zap',
         'content-length': 50,
         'Content-Length': 100,
-        'foo': 'bar'
+        foo: 'bar'
       }),
       50
     )

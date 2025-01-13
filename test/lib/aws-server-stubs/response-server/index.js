@@ -73,7 +73,6 @@ function handlePost(req, res) {
     getDataFunction((err, data) => {
       if (err) {
         res.statusCode = 500
-        // eslint-disable-next-line no-console
         console.log(err)
       }
 

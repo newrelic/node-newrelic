@@ -1,11 +1,10 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 /*
  * Copyright 2020 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
-/* eslint-disable no-console */
 
 const fs = require('fs')
 const path = require('path')
@@ -110,7 +109,7 @@ function run(opts) {
 
   function onAppliedRule(rule, newValue, oldValue) {
     appliedRules.push({
-      rule: rule,
+      rule,
       original: oldValue,
       normalized: newValue
     })

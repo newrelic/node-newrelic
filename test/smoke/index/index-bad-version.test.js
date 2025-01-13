@@ -4,15 +4,17 @@
  */
 
 'use strict'
+
 const test = require('node:test')
 const assert = require('node:assert')
+const path = require('node:path')
 const { getTestSecret } = require('../../helpers/secrets')
 const StubApi = require('../../../stub_api')
 
 const license = getTestSecret('TEST_LICENSE')
 const VERSIONS = ['garbage', '4.0.0']
 test('load agent with bad versions should load stub agent', async (t) => {
-  process.env.NEW_RELIC_HOME = __dirname + '/..'
+  process.env.NEW_RELIC_HOME = path.join(__dirname, '..')
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
   process.env.NEW_RELIC_LICENSE_KEY = license
 

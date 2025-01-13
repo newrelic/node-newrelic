@@ -58,7 +58,7 @@ suite.add({
       return function () {
         return fn.apply(this, arguments)
       }
-    }(test.func)) // eslint-disable-line prettier/prettier
+    }(test.func))
     return test
   }
 })

@@ -14,7 +14,7 @@ test('middleware tracking', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
     const agent = helper.loadMockedAgent()
-    const Shim = require(`../../../../lib/shim/webframework-shim`)
+    const Shim = require('../../../../lib/shim/webframework-shim')
     const shim = new Shim(agent, './next-server')
     sinon.stub(shim, 'require')
     sinon.stub(shim, 'setFramework')

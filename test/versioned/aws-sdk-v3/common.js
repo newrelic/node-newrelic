@@ -72,16 +72,16 @@ function checkExternals({ service, operations, tx, end }) {
 
 function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, prompt, resContent }) {
   const baseMsg = {
-    'appName': 'New Relic for Node.js tests',
-    'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
-    'trace_id': tx.traceId,
-    'span_id': tx.trace.root.children[0].id,
+    appName: 'New Relic for Node.js tests',
+    request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    trace_id: tx.traceId,
+    span_id: tx.trace.root.children[0].id,
     'response.model': modelId,
-    'vendor': 'bedrock',
-    'ingest_source': 'Node',
-    'role': 'user',
-    'is_response': false,
-    'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+    vendor: 'bedrock',
+    ingest_source: 'Node',
+    role: 'user',
+    is_response: false,
+    completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
   }
 
   chatMsgs.forEach((msg) => {
@@ -112,22 +112,22 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
 
 function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, numMsgs = 2 }) {
   const expectedChatSummary = {
-    'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
-    'appName': 'New Relic for Node.js tests',
-    'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
+    appName: 'New Relic for Node.js tests',
+    request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'llm.conversation_id': 'convo-id',
-    'trace_id': tx.traceId,
-    'span_id': tx.trace.root.children[0].id,
+    trace_id: tx.traceId,
+    span_id: tx.trace.root.children[0].id,
     'response.model': modelId,
-    'vendor': 'bedrock',
-    'ingest_source': 'Node',
+    vendor: 'bedrock',
+    ingest_source: 'Node',
     'request.model': modelId,
-    'duration': tx.trace.root.children[0].getDurationInMillis(),
+    duration: tx.trace.root.children[0].getDurationInMillis(),
     'response.number_of_messages': error ? 1 : numMsgs,
     'response.choices.finish_reason': error ? undefined : 'endoftext',
     'request.temperature': 0.5,
     'request.max_tokens': 100,
-    'error': error
+    error
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')

@@ -53,7 +53,7 @@ In general, we try to limit adding third-party production dependencies. If one i
 
 ### Coding Style Guidelines/Conventions
 
-We use eslint to enforce certain coding standards. Please see our [.eslintrc](./.eslintrc.js) file for specific rule configuration.
+We use eslint to enforce certain coding standards. Please see our [eslint.config.js](./eslint.config.js) file for specific rule configuration.
 
 ### Commit Guidelines
 

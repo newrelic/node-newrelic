@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const fs = require('node:fs')
+const path = require('node:path')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, match } = require('../../lib/custom-assertions')
@@ -19,7 +20,7 @@ const {
 } = require('../../../lib/metrics/names')
 // have to read and not require because openai does not export the package.json
 const { version: pkgVersion } = JSON.parse(
-  fs.readFileSync(`${__dirname}/node_modules/openai/package.json`)
+  fs.readFileSync(path.join(__dirname, '/node_modules/openai/package.json'))
 )
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
@@ -97,26 +98,26 @@ test('should create an embedding message', (t, end) => {
     assert.equal(events.length, 1, 'should create a chat completion message and summary event')
     const [embedding] = events
     const expectedEmbedding = {
-      'id': /[a-f0-9]{36}/,
-      'appName': 'New Relic for Node.js tests',
-      'request_id': 'c70828b2293314366a76a2b1dcb20688',
-      'trace_id': tx.traceId,
-      'span_id': tx.trace.root.children[0].id,
+      id: /[a-f0-9]{36}/,
+      appName: 'New Relic for Node.js tests',
+      request_id: 'c70828b2293314366a76a2b1dcb20688',
+      trace_id: tx.traceId,
+      span_id: tx.trace.root.children[0].id,
       'response.model': 'text-embedding-ada-002-v2',
-      'vendor': 'openai',
-      'ingest_source': 'Node',
+      vendor: 'openai',
+      ingest_source: 'Node',
       'request.model': 'text-embedding-ada-002',
-      'duration': tx.trace.root.children[0].getDurationInMillis(),
+      duration: tx.trace.root.children[0].getDurationInMillis(),
       'response.organization': 'new-relic-nkmd8b',
-      'token_count': undefined,
+      token_count: undefined,
       'response.headers.llmVersion': '2020-10-01',
       'response.headers.ratelimitLimitRequests': '200',
       'response.headers.ratelimitLimitTokens': '150000',
       'response.headers.ratelimitResetTokens': '2ms',
       'response.headers.ratelimitRemainingTokens': '149994',
       'response.headers.ratelimitRemainingRequests': '197',
-      'input': 'This is an embedding test.',
-      'error': false
+      input: 'This is an embedding test.',
+      error: false
     }
 
     assert.equal(embedding[0].type, 'LlmEmbedding')
@@ -149,8 +150,8 @@ test('embedding invalid payload errors should be tracked', (t, end) => {
         'error.message': /You are not allowed to generate embeddings from this model/,
         'error.code': null,
         'error.param': null,
-        'completion_id': undefined,
-        'embedding_id': /\w{32}/
+        completion_id: undefined,
+        embedding_id: /\w{32}/
       },
       agentAttributes: {
         spanId: /\w+/

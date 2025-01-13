@@ -385,8 +385,7 @@ function testFinallyBehavior(methodName) {
                 name + 'should pass values beyond ' + methodName + ' handler'
               )
               throw new Error('Promise#' + methodName + ' test error')
-            })
-            [methodName](function () {
+            })[methodName](function () {
               plan.equal(arguments.length, 0, name + 'should not receive any parameters')
               plan.ok(1, name + 'should go into ' + methodName + ' handler from rejected promise')
             })
@@ -487,8 +486,7 @@ function testAsCallbackBehavior(methodName) {
             })
             .then(function () {
               plan.ok(0, name + 'should have skipped then after rejection')
-            })
-            [methodName](function (err, result) {
+            })[methodName](function (err, result) {
               const inCallbackTransaction = agent.getTransaction()
               plan.equal(
                 id(startTransaction),
@@ -538,8 +536,7 @@ function testCatchBehavior(methodName) {
           })
             .then(function () {
               throw new Error('Promise#' + methodName + ' test error')
-            })
-            [methodName](function (err) {
+            })[methodName](function (err) {
               plan.ok(err, name + 'should pass error into rejection handler')
               plan.equal(
                 err.message,

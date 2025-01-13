@@ -6,6 +6,7 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
+const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
@@ -52,7 +53,7 @@ test('Elasticsearch instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
     // Determine version. ElasticSearch v7 did not export package, so we have to read the file
     // instead of requiring it, as we can with 8+.
-    const pkg = await readFile(`${__dirname}/node_modules/@elastic/elasticsearch/package.json`)
+    const pkg = await readFile(path.join(__dirname, '/node_modules/@elastic/elasticsearch/package.json'))
     const { version: pkgVersion } = JSON.parse(pkg.toString())
 
     const agent = helper.instrumentMockedAgent()

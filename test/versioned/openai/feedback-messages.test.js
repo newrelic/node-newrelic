@@ -65,7 +65,7 @@ test('can send feedback events', (t, end) => {
       }
       try {
         match(data, {
-          id: /[\w\d]{32}/,
+          id: /\w{32}/,
           trace_id: traceId,
           category: 'test-event',
           rating: '5 star',

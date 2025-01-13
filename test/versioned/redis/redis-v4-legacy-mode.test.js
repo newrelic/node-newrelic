@@ -30,7 +30,6 @@ test('Redis instrumentation', async function (t) {
     await client.v4.flushAll()
 
     await client.v4.select(DB_INDEX)
-    // eslint-disable-next-line new-cap
 
     const METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
       ? agent.config.getHostnameSafe()

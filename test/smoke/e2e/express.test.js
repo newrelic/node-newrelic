@@ -26,7 +26,7 @@ test('Express e2e request smoke test', (t, end) => {
   server.on('message', function incommingMessage(port) {
     const options = {
       hostname: 'localhost',
-      port: port,
+      port,
       path: '/',
       method: 'GET'
     }

@@ -47,9 +47,9 @@ test('Datastore instance metrics collected via the datastore shim', async functi
         // Otherwise use 'default'.
         let port = 'default'
         if (
-          test.hasOwnProperty('unix_socket') ||
-          test.hasOwnProperty('database_path') ||
-          test.hasOwnProperty('port')
+          Object.prototype.hasOwnProperty.call(test, 'unix_socket') ||
+          Object.prototype.hasOwnProperty.call(test, 'database_path') ||
+          Object.prototype.hasOwnProperty.call(test, 'port')
         ) {
           port = test.unix_socket || test.database_path || test.port
         }

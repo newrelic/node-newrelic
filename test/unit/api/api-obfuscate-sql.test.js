@@ -17,7 +17,7 @@ test('Agent API - obfuscateSql', (t, end) => {
     helper.unloadAgent(agent)
   })
 
-  const sql = `select * from foo where a='b' and c=100;`
+  const sql = "select * from foo where a='b' and c=100;"
   const obfuscated = api.obfuscateSql(sql, 'postgres')
   assert.equal(obfuscated, 'select * from foo where a=? and c=?;')
   end()

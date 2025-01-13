@@ -40,7 +40,7 @@ test('eachLimit should limit concurrent async executions', async () => {
     try {
       await access(file)
       return true
-    } catch (err) {
+    } catch {
       return false
     }
   }

@@ -52,6 +52,7 @@ module.exports = function match(actual, expected, { assert = require('node:asser
     if (key in actual) {
       if (typeof expected[key] === 'function') {
         const type = expected[key]
+        // eslint-disable-next-line valid-typeof
         assert.ok(typeof actual[key] === TYPE_MAPPINGS[type.name])
       } else if (expected[key] instanceof RegExp) {
         assert.ok(expected[key].test(actual[key]))
@@ -60,6 +61,8 @@ module.exports = function match(actual, expected, { assert = require('node:asser
       } else {
         assert.equal(actual[key], expected[key])
       }
+    } else {
+      assert.fail(`Missing ${key} in ${JSON.stringify(actual)}`)
     }
   }
 }

@@ -4,6 +4,10 @@
  */
 
 'use strict'
+
+// Some tests in this file need to assert that we handle non-error rejections:
+/* eslint-disable prefer-promise-reject-errors */
+
 const assert = require('node:assert')
 const test = require('node:test')
 const semver = require('semver')
@@ -136,7 +140,7 @@ test('new Promise()', async function (t) {
   await testPromiseContext({
     t,
     factory: function (Promise, name) {
-      return new Promise((resolve) => resolve(name))
+      return Promise.resolve(name)
     }
   })
 })
@@ -288,7 +292,7 @@ test('Promise.coroutine', async function (t) {
   await testPromiseContext({
     t,
     factory: function (Promise, name) {
-      return Promise.coroutine(function* (_name) {
+      return Promise.coroutine(function * (_name) {
         for (let i = 0; i < 10; ++i) {
           yield Promise.delay(5)
         }
@@ -315,7 +319,7 @@ test('Promise.coroutine', async function (t) {
           })
         }, 'should be able to add yield handler')
 
-        return Promise.coroutine(function* (_name) {
+        return Promise.coroutine(function * (_name) {
           for (let i = 0; i < 10; ++i) {
             yield Promise.delay(5)
             ++count
@@ -902,7 +906,7 @@ test('Promise#bind', async function (t) {
   await testPromiseContext({
     t,
     factory: function (Promise, name) {
-      return Promise.resolve(name).bind({ name: name })
+      return Promise.resolve(name).bind({ name })
     }
   })
 

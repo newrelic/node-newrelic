@@ -46,7 +46,7 @@ test('should correctly convert bools when false', async () => {
 })
 
 test('should correctly convert integers', async () => {
-  const intValue = 9999999999999999
+  const intValue = 999999999999999
   const expected = {
     int_value: intValue
   }

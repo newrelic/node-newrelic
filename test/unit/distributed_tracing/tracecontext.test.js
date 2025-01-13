@@ -45,7 +45,7 @@ test('TraceContext', async function (t) {
     await t.test('should accept valid trace context headers', (ctx) => {
       const { traceContext } = ctx.nr
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
-      // eslint-disable-next-line max-len
+
       const tracestate = `33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-${Date.now()}`
 
       const tcd = traceContext.acceptTraceContextPayload(traceparent, tracestate)
@@ -258,7 +258,7 @@ test('TraceContext', async function (t) {
       const { agent, traceContext } = ctx.nr
       agent.config.trusted_account_key = '190'
       const goodTraceStateHeader =
-        /* eslint-disable-next-line max-len */
+
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
       const valid = traceContext._validateAndParseTraceStateHeader(goodTraceStateHeader)
       assert.ok(valid)
@@ -279,7 +279,7 @@ test('TraceContext', async function (t) {
       const { agent, traceContext } = ctx.nr
       agent.config.trusted_account_key = '190'
       const goodTraceStateHeader =
-        /* eslint-disable-next-line max-len */
+
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
       const bufferTraceState = Buffer.from(goodTraceStateHeader, 'utf8')
       const valid = traceContext._validateAndParseTraceStateHeader(bufferTraceState)
@@ -301,7 +301,7 @@ test('TraceContext', async function (t) {
       const { agent, traceContext } = ctx.nr
       agent.config.trusted_account_key = '666'
       const badTraceStateHeader =
-        /* eslint-disable-next-line max-len */
+
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
       const valid = traceContext._validateAndParseTraceStateHeader(badTraceStateHeader)
 
@@ -315,7 +315,7 @@ test('TraceContext', async function (t) {
       const { agent, traceContext } = ctx.nr
       agent.config.trusted_account_key = '190'
       const badTraceStateHeader =
-        /* eslint-disable-next-line max-len */
+
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foobar'
       const valid = traceContext._validateAndParseTraceStateHeader(badTraceStateHeader)
 
@@ -331,7 +331,7 @@ test('TraceContext', async function (t) {
       const { agent, traceContext } = ctx.nr
       agent.config.trusted_account_key = '190'
       const badTimestamp =
-        /* eslint-disable-next-line max-len */
+
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-,234234@foo=bar'
       const valid = traceContext._validateAndParseTraceStateHeader(badTimestamp)
       assert.equal(valid.entryFound, true)
@@ -342,7 +342,7 @@ test('TraceContext', async function (t) {
       const { agent, traceContext } = ctx.nr
       agent.config.trusted_account_key = '190'
       const goodTraceStateHeader =
-        /* eslint-disable-next-line max-len */
+
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05---1563574856827,234234@foo=bar'
       const valid = traceContext._validateAndParseTraceStateHeader(goodTraceStateHeader)
       assert.ok(valid)
@@ -410,7 +410,7 @@ test('TraceContext', async function (t) {
       const acctKey = '190'
       agent.config.trusted_account_key = acctKey
       const duplicateAcctTraceState =
-        /* eslint-disable-next-line max-len */
+
         '42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,190@nr=bar'
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
       const appId = '109354'
@@ -449,7 +449,7 @@ test('TraceContext', async function (t) {
         const acctKey = '190'
         agent.config.trusted_account_key = acctKey
         const duplicateAcctTraceState =
-          /* eslint-disable-next-line max-len */
+
           '190@nr=bar,42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827'
         const valid = traceContext._validateAndParseTraceStateHeader(duplicateAcctTraceState)
 
@@ -697,7 +697,6 @@ test('TraceContext', async function (t) {
 
           assert.equal(supportabilitySpy.callCount, 1)
 
-          // eslint-disable-next-line max-len
           assert.equal(
             supportabilitySpy.firstCall.args[0],
             'TraceContext/TraceState/Accept/Exception'
@@ -956,7 +955,7 @@ test('TraceContext', async function (t) {
         assert.ok(!headers.tracestate)
 
         assert.equal(supportabilitySpy.callCount, 2)
-        // eslint-disable-next-line max-len
+
         assert.equal(
           supportabilitySpy.firstCall.args[0],
           'TraceContext/TraceState/Create/Exception'
@@ -982,7 +981,7 @@ test('TraceContext', async function (t) {
         assert.ok(!headers.tracestate)
 
         assert.equal(supportabilitySpy.callCount, 2)
-        // eslint-disable-next-line max-len
+
         assert.equal(
           supportabilitySpy.firstCall.args[0],
           'TraceContext/TraceState/Create/Exception'
@@ -1009,7 +1008,7 @@ test('TraceContext', async function (t) {
         assert.ok(!headers.tracestate)
 
         assert.equal(supportabilitySpy.callCount, 2)
-        // eslint-disable-next-line max-len
+
         assert.equal(
           supportabilitySpy.firstCall.args[0],
           'TraceContext/TraceState/Create/Exception'

@@ -29,14 +29,14 @@ test('preserves server creation return', (t) => {
   const { agent } = t.nr
 
   const hapi = require('@hapi/hapi')
-  const returned = utils.getServer({ hapi: hapi })
+  const returned = utils.getServer({ hapi })
 
   assert.ok(returned != null, 'Hapi returns from server creation')
 
   const shim = new shims.WebFrameworkShim(agent, 'hapi')
   instrument(agent, hapi, 'hapi', shim)
 
-  const returned2 = utils.getServer({ hapi: hapi })
+  const returned2 = utils.getServer({ hapi })
 
   assert.ok(returned2 != null, 'Server creation returns when instrumented')
 })

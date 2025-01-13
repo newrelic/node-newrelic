@@ -32,7 +32,7 @@ test('MessageShim', async function (t) {
     shim.setLibrary(shim.RABBITMQ)
     ctx.nr.wrappable = {
       name: 'this is a name',
-      bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
+      bar: function barsName(unused, params) { return 'bar' },
       fiz: function fizsName() {
         return 'fiz'
       },
@@ -298,8 +298,8 @@ test('MessageShim', async function (t) {
       const val = {}
       const toWrap = function () {
         segment = shim.getSegment()
-        return new Promise(function (res) {
-          setTimeout(res, DELAY, val)
+        return new Promise(function (resolve) {
+          setTimeout(resolve, DELAY, val)
         })
       }
 
@@ -787,8 +787,8 @@ test('MessageShim', async function (t) {
 
       const wrapped = shim.recordPurgeQueue(function () {
         segment = shim.getSegment()
-        return new Promise(function (res) {
-          setTimeout(res, DELAY, val)
+        return new Promise(function (resolve) {
+          setTimeout(resolve, DELAY, val)
         })
       }, new MessageSpec({ promise: true }))
 

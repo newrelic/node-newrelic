@@ -104,7 +104,7 @@ test('Agent API LLM methods', async (t) => {
       assert.equal(result, undefined)
       assert.equal(loggerMock.warn.callCount, 0)
       assert.equal(event.name, 'LlmFeedbackMessage')
-      assert.match(event.data.id, /[\w\d]{32}/)
+      assert.match(event.data.id, /\w{32}/)
       // remove from object as it was just asserted via regex
       delete event.data.id
       assert.deepEqual(event.data, {
@@ -170,12 +170,12 @@ test('Agent API LLM methods', async (t) => {
       }
       api.withLlmCustomAttributes(
         {
-          'toRename': 'value1',
+          toRename: 'value1',
           'llm.number': 1,
           'llm.boolean': true,
-          'toDelete': () => {},
-          'toDelete2': {},
-          'toDelete3': []
+          toDelete: () => {},
+          toDelete2: {},
+          toDelete3: []
         },
         () => {
           const contextManager = tx._llmContextManager
@@ -205,20 +205,20 @@ test('Agent API LLM methods', async (t) => {
         () => {
           const contextManager = tx._llmContextManager
           const context = contextManager.getStore()
-          assert.equal(context[`llm.step`], '1')
+          assert.equal(context['llm.step'], '1')
           assert.equal(context['llm.path'], 'root')
           assert.equal(context['llm.name'], 'root')
           api.withLlmCustomAttributes({ 'llm.step': '1.1', 'llm.path': 'root/1' }, () => {
             const contextManager2 = tx._llmContextManager
             const context2 = contextManager2.getStore()
-            assert.equal(context2[`llm.step`], '1.1')
+            assert.equal(context2['llm.step'], '1.1')
             assert.equal(context2['llm.path'], 'root/1')
             assert.equal(context2['llm.name'], 'root')
           })
           api.withLlmCustomAttributes({ 'llm.step': '1.2', 'llm.path': 'root/2' }, () => {
             const contextManager3 = tx._llmContextManager
             const context3 = contextManager3.getStore()
-            assert.equal(context3[`llm.step`], '1.2')
+            assert.equal(context3['llm.step'], '1.2')
             assert.equal(context3['llm.path'], 'root/2')
             assert.equal(context3['llm.name'], 'root')
             end()

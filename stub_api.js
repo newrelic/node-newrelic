@@ -9,8 +9,8 @@ const logger = require('./lib/logger.js')
 const RealAPI = require('./api.js')
 const TransactionHandle = require('./lib/transaction/handle')
 
-/* eslint-disable no-eval */
 function stubFunction(name) {
+  // eslint-disable-next-line sonarjs/code-eval, no-eval
   return eval(
     '(function () {return function ' +
       name +
@@ -21,7 +21,6 @@ function stubFunction(name) {
       '}}())'
   )
 }
-/* eslint-enable no-eval */
 
 function Stub() {}
 

@@ -228,7 +228,7 @@ test('should create langchain events for every invoke call with parser that retu
       tx,
       chatMsgs: langChainMessageEvents,
       chatSummary: langChainSummaryEvents[0][1],
-      output: `["212 degrees Fahrenheit is equal to 100 degrees Celsius."]`
+      output: '["212 degrees Fahrenheit is equal to 100 degrees Celsius."]'
     })
 
     tx.end()

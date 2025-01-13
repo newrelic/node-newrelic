@@ -58,7 +58,7 @@ test('TransactionShim', async function (t) {
     ctx.nr.shim = new TransactionShim(agent, 'test-module')
     ctx.nr.wrappable = {
       name: 'this is a name',
-      bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
+      bar: function barsName(unused, params) { return 'bar' },
       fiz: function fizsName() {
         return 'fiz'
       },

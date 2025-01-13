@@ -70,7 +70,6 @@ test('Create Docs PR script', async (t) => {
       const { mockFs, script } = t.nr
       mockFs.readFile.yields(null, JSON.stringify({ entries: [{ version: '1.2.3', changes: [] }] }))
 
-      // eslint-disable-next-line sonarjs/no-duplicate-string
       const func = () => script.getFrontMatter('v2.0.0', 'changelog.json')
       await assert.rejects(func, { message: 'Unable to find 2.0.0 entry in changelog.json' })
     })
@@ -151,13 +150,13 @@ test('Create Docs PR script', async (t) => {
       const expected = [
         '---',
         'subject: Node.js agent',
-        `releaseDate: '2020-04-03'`,
+        "releaseDate: '2020-04-03'",
         'version: 2.0.0',
-        `downloadLink: 'https://www.npmjs.com/package/newrelic'`,
-        `security: ["upgraded a dep"]`,
-        `bugs: ["fixed a bug"]`,
-        `features: ["added new api method"]`,
-        `---`,
+        "downloadLink: 'https://www.npmjs.com/package/newrelic'",
+        'security: ["upgraded a dep"]',
+        'bugs: ["fixed a bug"]',
+        'features: ["added new api method"]',
+        '---',
         '',
         '## Notes',
         '',

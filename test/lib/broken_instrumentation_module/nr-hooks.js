@@ -5,4 +5,4 @@
 
 'use strict'
 
-throw 'boom'
+throw Error('boom')

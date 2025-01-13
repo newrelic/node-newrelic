@@ -19,12 +19,12 @@ async function getServer() {
 
     switch (req.url) {
       case '/json-error': {
-        res.end(`{"invalid":"json"`)
+        res.end('{"invalid":"json"')
         break
       }
 
       case '/no-id': {
-        res.end(`{}`)
+        res.end('{}')
         break
       }
 

@@ -7,9 +7,10 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const path = require('node:path')
 
 test('loading the application via index.js with agent disabled', () => {
-  process.env.NEW_RELIC_HOME = __dirname + '/..'
+  process.env.NEW_RELIC_HOME = path.join(__dirname, '/..')
   process.env.NEW_RELIC_ENABLED = 'false'
   const api = require('../../../index.js')
 

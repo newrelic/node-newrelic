@@ -20,8 +20,9 @@ const connectResponse = [
 /**
  * An extension of core's `https.Server` with utilities specific to the proxy.
  *
- * @extends http.Server
+ * @augments http.Server
  * @typedef {object} ProxyServer
+ * @property
  */
 
 /**
@@ -52,8 +53,8 @@ async function createProxyServer({ privateKey, certificate } = {}) {
    */
   server.proxyUsed = false
 
-  await new Promise((done) => {
-    server.listen(0, '127.0.0.1', done)
+  await new Promise((resolve) => {
+    server.listen(0, '127.0.0.1', resolve)
   })
 
   const connections = []

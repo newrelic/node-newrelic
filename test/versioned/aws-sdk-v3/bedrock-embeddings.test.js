@@ -88,18 +88,18 @@ test.afterEach(afterEach)
       assert.equal(events.length, 1)
       const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
       const expectedEmbedding = {
-        'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
-        'appName': 'New Relic for Node.js tests',
-        'request_id': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
-        'trace_id': tx.traceId,
-        'span_id': tx.trace.root.children[0].id,
+        id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
+        appName: 'New Relic for Node.js tests',
+        request_id: '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
+        trace_id: tx.traceId,
+        span_id: tx.trace.root.children[0].id,
         'response.model': modelId,
-        'vendor': 'bedrock',
-        'ingest_source': 'Node',
+        vendor: 'bedrock',
+        ingest_source: 'Node',
         'request.model': modelId,
-        'duration': tx.trace.root.children[0].getDurationInMillis(),
-        'input': prompt,
-        'error': false
+        duration: tx.trace.root.children[0].getDurationInMillis(),
+        input: prompt,
+        error: false
       }
 
       assert.equal(embedding[0].type, 'LlmEmbedding')
@@ -149,10 +149,10 @@ test.afterEach(afterEach)
           'http.statusCode': 400,
           'error.message': expectedMsg,
           'error.code': expectedType,
-          'embedding_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+          embedding_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         },
         agentAttributes: {
-          spanId: /[\w\d]+/
+          spanId: /\w+/
         }
       })
 
@@ -165,18 +165,18 @@ test.afterEach(afterEach)
       assert.equal(events.length, 1)
       const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
       const expectedEmbedding = {
-        'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
-        'appName': 'New Relic for Node.js tests',
-        'request_id': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
-        'trace_id': tx.traceId,
-        'span_id': tx.trace.root.children[0].id,
+        id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
+        appName: 'New Relic for Node.js tests',
+        request_id: '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
+        trace_id: tx.traceId,
+        span_id: tx.trace.root.children[0].id,
         'response.model': modelId,
-        'vendor': 'bedrock',
-        'ingest_source': 'Node',
+        vendor: 'bedrock',
+        ingest_source: 'Node',
         'request.model': modelId,
-        'duration': tx.trace.root.children[0].getDurationInMillis(),
-        'input': prompt,
-        'error': true
+        duration: tx.trace.root.children[0].getDurationInMillis(),
+        input: prompt,
+        error: true
       }
 
       assert.equal(embedding[0].type, 'LlmEmbedding')

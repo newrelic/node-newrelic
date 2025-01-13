@@ -68,8 +68,8 @@ suite.add({
 suite.add({
   name: 'shim.interceptPromise',
   fn: function () {
-    const p = new Promise(function (res) {
-      res()
+    const p = new Promise(function (resolve) {
+      resolve()
     })
     return shim.interceptPromise(p, function () {})
   }

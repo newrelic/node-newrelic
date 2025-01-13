@@ -43,6 +43,7 @@ module.exports = function runTests(name, clientFactory) {
   /**
    * Deletion of testing table if already exists,
    * then recreation of a testing table
+   * @param pg
    */
   async function postgresSetup(pg) {
     const setupClient = new pg.Client(CON_OBJ)

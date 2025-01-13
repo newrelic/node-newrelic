@@ -161,8 +161,8 @@ test('loggingLabels', async (t) => {
   await t.test('should exclude labels regardless of case', () => {
     const config = {
       labels: {
-        'label1': 'value1',
-        'LABEL2': 'value2',
+        label1: 'value1',
+        LABEL2: 'value2',
         'LABEL2-ALSO': 'value3'
       },
       application_logging: {
@@ -189,8 +189,8 @@ test('loggingLabels', async (t) => {
     () => {
       const config = {
         labels: {
-          'label1': 'value1',
-          'LABEL2': 'value2',
+          label1: 'value1',
+          LABEL2: 'value2',
           'LABEL2-ALSO': 'value3'
         },
         application_logging: {

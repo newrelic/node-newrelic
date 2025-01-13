@@ -141,7 +141,7 @@ test('external requests', async function (t) {
           const segment = agent.tracer.getTransaction().trace.root.children[0]
           assert.equal(
             segment.name,
-            `External/www.google.com/proxy/path`,
+            'External/www.google.com/proxy/path',
             'should name segment as an external service'
           )
           end()

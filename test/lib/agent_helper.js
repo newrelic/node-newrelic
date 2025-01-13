@@ -73,6 +73,7 @@ helper.getTracer = () => _agent?.tracer
  *                      See agent.js for details, but so far this includes
  *                      passing in a config object and the connection stub
  *                      created in this function.
+ * @param setState
  * @returns {Agent} Agent with a stubbed configuration.
  */
 helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
@@ -121,6 +122,8 @@ helper.getAgentApi = function getAgentApi() {
  * @param {String} method The method being invoked on the collector.
  * @param number runID  Agent run ID (optional).
  *
+ * @param runID
+ * @param protocolVersion
  * @returns {String} URL path for the collector.
  */
 helper.generateCollectorPath = function generateCollectorPath(method, runID, protocolVersion) {
@@ -164,9 +167,10 @@ helper.generateAllPaths = (runId) => {
  *  but so far this includes passing in a config object and the connection
  *  stub created in this function.
  *
- * @param {boolean} [setState=true]
+ * @param {boolean} [setState]
  *  Initializes agent's state to 'started', enabling data collection.
  *
+ * @param shimmer
  * @returns {Agent} Agent with a stubbed configuration.
  */
 helper.instrumentMockedAgent = (conf, setState = true, shimmer = require('../../lib/shimmer')) => {
@@ -185,6 +189,7 @@ helper.instrumentMockedAgent = (conf, setState = true, shimmer = require('../../
  * Helper to check if security agent should be loaded
  *
  * @param {Agent} Agent with a stubbed configuration
+ * @param agent
  * @returns {boolean}
  */
 helper.isSecurityAgentEnabled = function isSecurityAgentEnabled(agent) {
@@ -196,6 +201,7 @@ helper.isSecurityAgentEnabled = function isSecurityAgentEnabled(agent) {
  * and requires it and calls start
  *
  * @param {Agent} Agent with a stubbed configuration
+ * @param agent
  */
 helper.maybeLoadSecurityAgent = function maybeLoadSecurityAgent(agent) {
   if (helper.isSecurityAgentEnabled(agent)) {
@@ -210,6 +216,7 @@ helper.maybeLoadSecurityAgent = function maybeLoadSecurityAgent(agent) {
  * files in its require cache so it can be re-loaded
  *
  * @param {Agent} Agent with a stubbed configuration
+ * @param agent
  */
 helper.maybeUnloadSecurityAgent = function maybeUnloadSecurityAgent(agent) {
   if (helper.isSecurityAgentEnabled(agent)) {
@@ -222,6 +229,8 @@ helper.maybeUnloadSecurityAgent = function maybeUnloadSecurityAgent(agent) {
  * is shut down.
  *
  * @param Agent agent The agent to shut down.
+ * @param agent
+ * @param shimmer
  */
 helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
   agent.emit('unload')
@@ -263,7 +272,7 @@ helper.loadTestAgent = (t, conf, setState = true) => {
  *
  * @param {Agent} agent The agent whose tracer should be used to create the
  *                      transaction.
- * @param {string} [type='web'] Indicates the class of the transaction.
+ * @param {string} [type] Indicates the class of the transaction.
  * @param {Function} callback The function to be run within the transaction.
  */
 helper.runInTransaction = (agent, type, callback) => {
@@ -292,6 +301,9 @@ helper.runInTransaction = (agent, type, callback) => {
 /**
  * Proxy for runInTransaction that names the transaction that the
  * callback is executed in
+ * @param agent
+ * @param type
+ * @param callback
  */
 helper.runInNamedTransaction = (agent, type, callback) => {
   if (!callback && typeof type === 'function') {
@@ -315,6 +327,7 @@ helper.runInSegment = (agent, name, callback) => {
  * Select Redis DB index and flush entries in it.
  *
  * @param {redis} [redis]
+ * @param client
  * @param {number} dbIndex
  * @param {function} callback
  *  The operations to be performed while the server is running.
@@ -367,14 +380,12 @@ helper.startServerWithRandomPortRetry = (server, maxAttempts = 5) => {
     // server port not guaranteed to be not in use
     if (e.code === 'EADDRINUSE') {
       if (attempts >= maxAttempts) {
-        // eslint-disable-next-line no-console
         console.log('Exceeded max attempts (%s), bailing out.', maxAttempts)
         throw new Error('Unable to get unused port')
       }
 
       attempts++
 
-      // eslint-disable-next-line no-console
       console.log('Address in use, retrying...')
       setTimeout(() => {
         server.close()
@@ -395,6 +406,7 @@ helper.startServerWithRandomPortRetry = (server, maxAttempts = 5) => {
  * request is made after instrumentation is registered
  * we want to make sure we get the original library and not
  * our instrumented one
+ * @param ca
  */
 helper.getRequestLib = function getRequestLib(ca) {
   const request = ca ? https.request : http.request
@@ -514,6 +526,7 @@ helper.getMetrics = function getMetrics(agent) {
  *
  * @param {object} shim shim lib
  * @param {Function} original callback
+ * @param cb
  */
 helper.checkWrappedCb = function checkWrappedCb(shim, cb) {
   // The wrapped calledback is always the last argument
@@ -596,6 +609,7 @@ helper.getShim = function getShim(pkg) {
  */
 helper.execSync = function execSync({ cwd, script }) {
   try {
+    // eslint-disable-next-line sonarjs/os-command
     cp.execSync(`node ./${script}`, {
       stdio: 'pipe',
       encoding: 'utf8',

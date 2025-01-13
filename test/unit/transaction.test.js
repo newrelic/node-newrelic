@@ -694,7 +694,7 @@ test('Transaction methods', async (t) => {
         initiator: 'cli',
         attributes: {
           'Attr-Test': 'value',
-          'attr2Test': 'value1',
+          attr2Test: 'value1',
           'xTest-Header': 'value2'
         }
       }

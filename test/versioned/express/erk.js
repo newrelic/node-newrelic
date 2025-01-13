@@ -25,7 +25,6 @@ helper.ranomPort(function (port) {
   server.listen(port, function () {
     process.on('message', function (code) {
       helper.makeGetRequest('http://localhost:' + port + '/test/31337', function () {
-        // eslint-disable-next-line no-process-exit
         process.exit(code)
       })
     })

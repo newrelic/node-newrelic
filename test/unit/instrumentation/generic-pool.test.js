@@ -55,33 +55,26 @@ test('agent instrumentation of generic-pool', async function (t) {
       }
       assert.equal(nop.length, 0)
 
-      /* eslint-disable new-cap */
       mockPool.Pool(0).acquire(nop)
-      /* eslint-enable new-cap */
     })
 
     await t.test("must preserve 'callback.length === 1' to keep generic-pool happy", (t, end) => {
-      // eslint-disable-next-line no-unused-vars
       const nop = function (client) {
         end()
       }
       assert.equal(nop.length, 1)
 
-      /* eslint-disable new-cap */
       mockPool.Pool(1).acquire(nop)
-      /* eslint-enable new-cap */
     })
 
     await t.test("must preserve 'callback.length === 2' to keep generic-pool happy", (t, end) => {
-      // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line n/handle-callback-err
       const nop = function (error, client) {
         end()
       }
       assert.equal(nop.length, 2)
 
-      /* eslint-disable new-cap */
       mockPool.Pool(2).acquire(nop)
-      /* eslint-enable new-cap */
     })
   })
 })

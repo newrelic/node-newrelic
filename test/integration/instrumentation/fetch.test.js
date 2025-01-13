@@ -62,7 +62,7 @@ test('fetch', async function (t) {
       headers: {
         'Content-Type': 'application.json'
       },
-      body: Buffer.from(`{"key":"value"}`)
+      body: Buffer.from('{"key":"value"}')
     })
 
     assert.equal(status, 200)
@@ -75,7 +75,7 @@ test('fetch', async function (t) {
         headers: {
           'Content-Type': 'application.json'
         },
-        body: Buffer.from(`{"key":"value"}`)
+        body: Buffer.from('{"key":"value"}')
       })
       assert.equal(status, 200)
 
@@ -132,14 +132,14 @@ test('fetch', async function (t) {
         headers: {
           'Content-Type': 'application.json'
         },
-        body: Buffer.from(`{"key":"value"}`)
+        body: Buffer.from('{"key":"value"}')
       })
       const req2 = fetch(`${REQUEST_URL}/put`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application.json'
         },
-        body: Buffer.from(`{"key":"value"}`)
+        body: Buffer.from('{"key":"value"}')
       })
       const [{ status }, { status: status2 }] = await Promise.all([req1, req2])
       assert.equal(status, 200)
@@ -178,6 +178,7 @@ test('fetch', async function (t) {
         }, 100)
         await req
       } catch (err) {
+        assert.match(err.message, /This operation was aborted/)
         assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
         assert.equal(tx.exceptions.length, 1)
         assert.equal(tx.exceptions[0].error.name, 'AbortError')
@@ -204,6 +205,7 @@ test('fetch', async function (t) {
       try {
         await req
       } catch (error) {
+        assert.match(error.message, /fetch failed/)
         assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
           exact: false
         })

@@ -13,7 +13,7 @@ const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 /**
  * Creates a random string with prefix to be used for testing
- * @param {string} [prefix=test-topic] prefix for random string
+ * @param {string} [prefix] prefix for random string
  * @returns {string} prefix with random id appended
  */
 utils.randomString = (prefix = 'test-topic') => {
@@ -44,7 +44,7 @@ utils.createTopic = async ({ kafka, topic }) => {
  *
  * @param {object} params to function
  * @param {object} params.consumer instance of kafkajs.Kafka.consumer
- * @param {number} [params.maxWait=10000] how long to wait for consumer to join group
+ * @param {number} [params.maxWait] how long to wait for consumer to join group
  * @returns {Promise}
  *
  */
@@ -52,7 +52,7 @@ utils.waitForConsumersToJoinGroup = ({ consumer, maxWait = 10000 }) =>
   new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       consumer.disconnect().then(() => {
-        reject()
+        reject(Error('boom'))
       })
     }, maxWait)
     consumer.on(consumer.events.GROUP_JOIN, (event) => {
@@ -75,6 +75,7 @@ utils.waitForConsumersToJoinGroup = ({ consumer, maxWait = 10000 }) =>
  * @param {object} params.plan assertion library instance with plan support
  * @param {object} params.tx consumer transaction
  * @param {string} params.topic topic name
+ * @param params.clientId
  * @params {string} params.clientId client id
  */
 utils.verifyConsumeTransaction = ({ plan, tx, topic, clientId }) => {

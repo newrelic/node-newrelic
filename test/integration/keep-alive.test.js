@@ -14,7 +14,7 @@ const promiseResolvers = require('../lib/promise-resolvers')
 const RemoteMethod = require('../../lib/collector/remote-method')
 
 test('RemoteMethod makes two requests with one connection', async (t) => {
-  const plan = tspl(t, { plan: 3 })
+  const plan = tspl(t, { plan: 4 })
   const { promise, resolve, reject } = promiseResolvers()
   const cert = fakeCert()
   const serverOpts = { key: cert.privateKey, cert: cert.certificate }
@@ -43,13 +43,14 @@ test('RemoteMethod makes two requests with one connection', async (t) => {
     }
   })
 
-  await new Promise((done) => {
-    server.listen(0, '127.0.0.1', done)
+  await new Promise((resolve) => {
+    server.listen(0, '127.0.0.1', resolve)
   })
 
   const port = server.address().port
   const method = createRemoteMethod(port, cert)
   method.invoke({}, [], (error, res) => {
+    plan.ifError(error)
     plan.equal(res.status, 200, 'first request success')
 
     const method2 = createRemoteMethod(port, cert)
@@ -72,7 +73,7 @@ function createRemoteMethod(port, cert) {
 
   const endpoint = {
     host: '127.0.0.1',
-    port: port
+    port
   }
 
   config.certificates = [cert.certificate]

@@ -28,7 +28,7 @@ test.beforeEach((ctx) => {
               get(key) {
                 assert.equal(key, TRANS_SCOPE)
                 return {
-                  ['llm.conversation_id']: 'conversation-1'
+                  'llm.conversation_id': 'conversation-1'
                 }
               }
             }

@@ -10,7 +10,5 @@ export default function greeter(name) {
 }
 
 if (newrelic.agent) {
-  /* eslint-disable no-console */
   console.log(greeter(newrelic.agent.config.app_name))
-  /* eslint-enable no-console */
 }

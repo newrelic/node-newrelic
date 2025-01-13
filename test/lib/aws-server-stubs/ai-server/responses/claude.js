@@ -60,9 +60,9 @@ responses.set('text claude ultimate question streamed', {
     },
     {
       body: {
-        'completion': '',
-        'stop_reason': 'endoftext',
-        'stop': '\n\nHuman:',
+        completion: '',
+        stop_reason: 'endoftext',
+        stop: '\n\nHuman:',
         'amazon-bedrock-invocationMetrics': {
           inputTokenCount: 8,
           outputTokenCount: 4,

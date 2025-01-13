@@ -10,9 +10,9 @@ const { tspl } = require('@matteo.collina/tspl')
 const { checkTransaction } = require('./helpers')
 const initSharedTests = require('./common-tests')
 
+/* eslint-disable sonarjs/no-globals-shadowing, sonarjs/prefer-promise-shorthand */
 module.exports = async function runTests({ t, agent, Promise, library }) {
   const performTests = initSharedTests({ t, agent, Promise })
-  /* eslint-disable no-shadow, brace-style */
   if (library) {
     await performTests(
       'Library Fullfillment Factories',
@@ -38,13 +38,13 @@ module.exports = async function runTests({ t, agent, Promise, library }) {
   await performTests(
     'New Synchronous',
     function (Promise, val) {
-      return new Promise(function (res) {
-        res(val)
+      return new Promise(function (resolve) {
+        resolve(val)
       })
     },
     function (Promise, err) {
-      return new Promise(function (res, rej) {
-        rej(err)
+      return new Promise(function (resolve, reject) {
+        reject(err)
       })
     }
   )
@@ -52,16 +52,16 @@ module.exports = async function runTests({ t, agent, Promise, library }) {
   await performTests(
     'New Asynchronous',
     function (Promise, val) {
-      return new Promise(function (res) {
+      return new Promise(function (resolve) {
         setTimeout(function () {
-          res(val)
+          resolve(val)
         }, 10)
       })
     },
     function (Promise, err) {
-      return new Promise(function (res, rej) {
+      return new Promise(function (resolve, reject) {
         setTimeout(function () {
-          rej(err)
+          reject(err)
         }, 10)
       })
     }

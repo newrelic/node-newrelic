@@ -80,13 +80,13 @@ test('distributed tracing', async function (t) {
 
             if (outbound.expected) {
               outbound.expected.forEach((key) => {
-                assert.ok(created.d.hasOwnProperty(keyRegex.exec(key)[1]))
+                assert.ok(Object.prototype.hasOwnProperty.call(created.d, keyRegex.exec(key)[1]))
               })
             }
 
             if (outbound.unexpected) {
               outbound.unexpected.forEach((key) => {
-                assert.ok(!created.d.hasOwnProperty(keyRegex.exec(key)[1]))
+                assert.ok(!Object.prototype.hasOwnProperty.call(created.d, keyRegex.exec(key)[1]))
               })
             }
           })

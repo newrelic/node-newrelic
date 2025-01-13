@@ -6,6 +6,7 @@
 'use strict'
 
 const test = require('node:test')
+const path = require('node:path')
 const tspl = require('@matteo.collina/tspl')
 
 const GrpcConnection = require('../../../lib/grpc/connection')
@@ -41,6 +42,7 @@ test('test that connection class reconnects', async (t) => {
    *
    * While the test functions correctly with a valid connection,
    * we ensure proper connection / OK status handling for this case.
+   * @param stream
    */
   const recordSpan = (stream) => {
     serverConnections++
@@ -70,7 +72,7 @@ test('test that connection class reconnects', async (t) => {
     const traceObserverConfig = {
       trace_observer: {
         host: helper.SSL_HOST,
-        port: port
+        port
       }
     }
 
@@ -154,7 +156,7 @@ test('Should reconnect even when data sent back', async (t) => {
     const traceObserverConfig = {
       trace_observer: {
         host: helper.SSL_HOST,
-        port: port
+        port
       }
     }
 
@@ -209,13 +211,13 @@ async function setupSsl() {
 
 function setupServer(t, sslOpts, recordSpan) {
   const packageDefinition = protoLoader.loadSync(
-    __dirname + '/../../../lib/grpc/endpoints/infinite-tracing/v1.proto',
+    path.join(__dirname, '/../../../lib/grpc/endpoints/infinite-tracing/v1.proto'),
     { keepCase: true, longs: String, enums: String, defaults: true, oneofs: true }
   )
   const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
 
   const server = new grpc.Server()
-  server.addService(infiniteTracingService.IngestService.service, { recordSpan: recordSpan })
+  server.addService(infiniteTracingService.IngestService.service, { recordSpan })
 
   const { ca, authPairs } = sslOpts
 
@@ -240,8 +242,8 @@ function createMetricAggregatorForTests() {
   return new MetricAggregator(
     {
       apdexT: 0.5,
-      mapper: mapper,
-      normalizer: normalizer
+      mapper,
+      normalizer
     },
     {},
     { add() {} }

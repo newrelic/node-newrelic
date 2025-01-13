@@ -99,7 +99,7 @@ test('executeBatch - callback style', (t, end) => {
     assert.ok(transaction, 'transaction should be visible')
     assert.equal(tx, transaction, 'we got the same transaction')
 
-    client.batch(insArr, { hints: hints }, (error, ok) => {
+    client.batch(insArr, { hints }, (error, ok) => {
       assert.ifError(error, 'should not get an error')
 
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
@@ -135,7 +135,7 @@ test('executeBatch - promise style', (t, end) => {
     assert.equal(tx, transaction, 'we got the same transaction')
 
     client
-      .batch(insArr, { hints: hints })
+      .batch(insArr, { hints })
       .then(() => {
         client
           .execute(selQuery)
@@ -172,7 +172,7 @@ test('executeBatch - slow query', (t, end) => {
     assert.ok(transaction, 'transaction should be visible')
     assert.equal(tx, transaction, 'We got the same transaction')
 
-    client.batch(insArr, { hints: hints }, (error, ok) => {
+    client.batch(insArr, { hints }, (error, ok) => {
       assert.ifError(error, 'should not get an error')
 
       const slowQuery = `SELECT * FROM ${KS}.${FAM}`
@@ -208,7 +208,7 @@ function checkMetric(agent, scoped) {
   }
 
   for (const expectedMetric in expected) {
-    if (expected.hasOwnProperty(expectedMetric)) {
+    if (Object.prototype.hasOwnProperty.call(expected, expectedMetric)) {
       const count = expected[expectedMetric]
 
       const metric = agentMetrics[scoped ? 'scoped' : 'unscoped'][expectedMetric]

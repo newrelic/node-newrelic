@@ -8,6 +8,7 @@
 const nock = require('nock')
 
 module.exports.mockAWSInfo = function () {
+  // eslint-disable-next-line sonarjs/no-clear-text-protocols
   const awsHost = 'http://169.254.169.254'
   const awsResponses = {
     'instance-type': 'test.type',

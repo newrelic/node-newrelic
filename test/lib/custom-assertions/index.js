@@ -19,7 +19,6 @@ for (const entry of entries) {
     const fn = require(`./${entry.name}`)
     module.exports[fn.name] = fn
   } catch (error) {
-    /* eslint-disable-next-line */
     console.log(`could not load ${entry.name}: ${error.message}`)
     throw error
   }

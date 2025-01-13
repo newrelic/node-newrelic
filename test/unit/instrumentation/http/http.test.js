@@ -123,7 +123,7 @@ test('built-in http module instrumentation', async (t) => {
   })
 
   await t.test('when running a request', async (t) => {
-    t.beforeEach((ctx) => {
+    t.beforeEach(async (ctx) => {
       ctx.nr = {}
       const agent = helper.instrumentMockedAgent()
 
@@ -156,7 +156,7 @@ test('built-in http module instrumentation', async (t) => {
         makeRequest(
           http,
           {
-            port: 8321,
+            port: ctx.nr.externalPort,
             host: 'localhost',
             path: '/status',
             method: 'GET'
@@ -180,40 +180,47 @@ test('built-in http module instrumentation', async (t) => {
       ctx.nr.external = external
       ctx.nr.server = server
 
-      return new Promise((resolve) => {
-        external.listen(8321, 'localhost', function () {
-          server.listen(8123, 'localhost', function () {
+      const ports = await new Promise((resolve) => {
+        external.listen(0, 'localhost', function () {
+          const { port: externalPort } = this.address()
+          server.listen(0, 'localhost', function () {
             // The transaction doesn't get created until after the instrumented
             // server handler fires.
             assert.ok(!agent.getTransaction())
-            resolve()
+            const { port: serverPort } = this.address()
+            resolve({ externalPort, serverPort })
           })
         })
       })
+      ctx.nr.externalPort = ports.externalPort
+      ctx.nr.serverPort = ports.serverPort
     })
 
-    t.afterEach((ctx) => {
+    t.afterEach(async (ctx) => {
       const { agent, external, server } = ctx.nr
-      external.close()
-      server.close()
+      await new Promise((resolve) => {
+        external.close(() => {
+          server.close(resolve)
+        })
+      })
       helper.unloadAgent(agent)
     })
 
     await t.test(
       'when allow_all_headers is false, only collect allowed agent-specified headers',
       (t, end) => {
-        const { agent, http } = t.nr
+        const { agent, http, serverPort } = t.nr
         agent.config.allow_all_headers = false
         makeRequest(
           http,
           {
-            port: 8123,
+            port: serverPort,
             host: 'localhost',
             path: '/path',
             method: 'GET',
             headers: {
-              'invalid': 'header',
-              'referer': 'valid-referer',
+              invalid: 'header',
+              referer: 'valid-referer',
               'content-type': 'valid-type'
             }
           },
@@ -234,7 +241,7 @@ test('built-in http module instrumentation', async (t) => {
     await t.test(
       'when allow_all_headers is true, collect all headers not filtered by `exclude` rules',
       (t, end) => {
-        const { agent, http } = t.nr
+        const { agent, http, serverPort } = t.nr
         agent.config.allow_all_headers = true
         agent.config.attributes.exclude = ['request.headers.x*']
         // have to emit attributes getting updated so all filters get updated
@@ -242,13 +249,13 @@ test('built-in http module instrumentation', async (t) => {
         makeRequest(
           http,
           {
-            port: 8123,
+            port: serverPort,
             host: 'localhost',
             path: '/path',
             method: 'GET',
             headers: {
-              'valid': 'header',
-              'referer': 'valid-referer',
+              valid: 'header',
+              referer: 'valid-referer',
               'content-type': 'valid-type',
               'X-filtered-out': 'invalid'
             }
@@ -277,7 +284,7 @@ test('built-in http module instrumentation', async (t) => {
     await t.test(
       'when url_obfuscation regex pattern is set, obfuscate segment url attributes',
       (t, end) => {
-        const { agent, http } = t.nr
+        const { agent, http, serverPort } = t.nr
         agent.config.url_obfuscation = {
           enabled: true,
           regex: {
@@ -288,7 +295,7 @@ test('built-in http module instrumentation', async (t) => {
         makeRequest(
           http,
           {
-            port: 8123,
+            port: serverPort,
             host: 'localhost',
             path: '/foo4/bar4',
             method: 'GET'
@@ -309,11 +316,11 @@ test('built-in http module instrumentation', async (t) => {
     )
 
     await t.test('request.uri should not contain request params', (t, end) => {
-      const { http } = t.nr
+      const { http, serverPort } = t.nr
       makeRequest(
         http,
         {
-          port: 8123,
+          port: serverPort,
           host: 'localhost',
           path: '/foo5/bar5?region=here&auth=secretString',
           method: 'GET'
@@ -333,19 +340,19 @@ test('built-in http module instrumentation', async (t) => {
     })
 
     await t.test('successful request', (t, end) => {
-      const { agent, http } = t.nr
+      const { agent, http, externalPort, serverPort } = t.nr
       const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
       const userAgent = 'Palm680/RC1'
 
       makeRequest(
         http,
         {
-          port: 8123,
+          port: serverPort,
           host: 'localhost',
           path: '/path',
           method: 'GET',
           headers: {
-            'referer': refererUrl,
+            referer: refererUrl,
             'User-Agent': userAgent
           }
         },
@@ -353,6 +360,7 @@ test('built-in http module instrumentation', async (t) => {
       )
 
       function finish(err, statusCode, body) {
+        assert.ifError(err)
         const { transaction, transaction2 } = t.nr
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         const segment = transaction.baseSegment
@@ -360,7 +368,7 @@ test('built-in http module instrumentation', async (t) => {
         const callStats = agent.metrics.getOrCreateMetric('WebTransaction/NormalizedUri/*')
         const dispatcherStats = agent.metrics.getOrCreateMetric('HttpDispatcher')
         const reqStats = transaction.metrics.getOrCreateMetric(
-          'External/localhost:8321/http',
+          `External/localhost:${externalPort}/http`,
           'WebTransaction/NormalizedUri/*'
         )
 
@@ -392,7 +400,7 @@ test('built-in http module instrumentation', async (t) => {
           1,
           'associates outbound HTTP requests with the inbound transaction'
         )
-        assert.equal(transaction.port, 8123, "set transaction.port to the server's port")
+        assert.equal(transaction.port, serverPort, "set transaction.port to the server's port")
         assert.equal(transaction2.id, transaction.id, 'only create one transaction for the request')
 
         end()
@@ -440,7 +448,7 @@ test('built-in http module instrumentation', async (t) => {
 
       server.on('listening', function () {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers })
+        http.get({ host: 'localhost', port, headers })
       })
 
       helper.startServerWithRandomPortRetry(server)
@@ -465,7 +473,7 @@ test('built-in http module instrumentation', async (t) => {
 
       server.on('listening', function () {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers })
+        http.get({ host: 'localhost', port, headers })
       })
 
       helper.startServerWithRandomPortRetry(server)
@@ -485,7 +493,7 @@ test('built-in http module instrumentation', async (t) => {
 
       server.on('listening', function () {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers })
+        http.get({ host: 'localhost', port, headers })
       })
 
       helper.startServerWithRandomPortRetry(server)
@@ -533,7 +541,7 @@ test('built-in http module instrumentation', async (t) => {
 
       server.on('listening', () => {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers })
+        http.get({ host: 'localhost', port, headers })
       })
 
       helper.startServerWithRandomPortRetry(server)
@@ -572,7 +580,7 @@ test('built-in http module instrumentation', async (t) => {
       server.on('listening', () => {
         const port = server.address().port
 
-        http.get({ host: 'localhost', port: port, headers: headers }, function (res) {
+        http.get({ host: 'localhost', port, headers }, function (res) {
           const data = JSON.parse(
             hashes.deobfuscateNameUsingKey(res.headers['x-newrelic-app-data'], encKey)
           )
@@ -600,7 +608,7 @@ test('built-in http module instrumentation', async (t) => {
 
       server.on('listening', function () {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers }, function (res) {
+        http.get({ host: 'localhost', port, headers }, function (res) {
           const data = JSON.parse(
             hashes.deobfuscateNameUsingKey(res.headers['x-newrelic-app-data'], encKey)
           )
@@ -624,7 +632,7 @@ test('built-in http module instrumentation', async (t) => {
 
       server.on('listening', function () {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers }, function (res) {
+        http.get({ host: 'localhost', port, headers }, function (res) {
           assert.ok(!res.headers['x-newrelic-app-data'])
           res.resume()
           server.close(end)
@@ -646,7 +654,7 @@ test('built-in http module instrumentation', async (t) => {
 
       server.on('listening', function () {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers }, function (res) {
+        http.get({ host: 'localhost', port, headers }, function (res) {
           const data = JSON.parse(
             hashes.deobfuscateNameUsingKey(res.headers['x-newrelic-app-data'], encKey)
           )
@@ -696,13 +704,13 @@ test('built-in http module instrumentation', async (t) => {
       })
 
       const headers = {
-        traceparent: traceparent,
-        tracestate: tracestate
+        traceparent,
+        tracestate
       }
 
       server.on('listening', function () {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers }, function (res) {
+        http.get({ host: 'localhost', port, headers }, function (res) {
           res.resume()
           server.close(end)
         })
@@ -728,12 +736,12 @@ test('built-in http module instrumentation', async (t) => {
       })
 
       const headers = {
-        traceparent: traceparent
+        traceparent
       }
 
       server.on('listening', function () {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers }, function (res) {
+        http.get({ host: 'localhost', port, headers }, function (res) {
           res.resume()
           server.close(end)
         })
@@ -759,13 +767,13 @@ test('built-in http module instrumentation', async (t) => {
       })
 
       const headers = {
-        traceparent: traceparent,
-        tracestate: tracestate
+        traceparent,
+        tracestate
       }
 
       server.on('listening', function () {
         const port = server.address().port
-        http.get({ host: 'localhost', port: port, headers: headers }, function (res) {
+        http.get({ host: 'localhost', port, headers }, function (res) {
           res.resume()
           server.close(end)
         })
@@ -810,7 +818,7 @@ test('built-in http module instrumentation', async (t) => {
         addSegment({ agent }) // Add web segment so everything works properly
 
         const port = server.address().port
-        const req = http.request({ host: 'localhost', port: port }, function (res) {
+        const req = http.request({ host: 'localhost', port }, function (res) {
           assert.equal(req.getHeader(NEWRELIC_ID_HEADER), 'o123')
           res.resume()
           agent.getTransaction().end()
@@ -836,7 +844,7 @@ test('built-in http module instrumentation', async (t) => {
         )
 
         const port = server.address().port
-        const req = http.get({ host: 'localhost', port: port }, function (res) {
+        const req = http.get({ host: 'localhost', port }, function (res) {
           const data = JSON.parse(
             hashes.deobfuscateNameUsingKey(req.getHeader(NEWRELIC_TRANSACTION_HEADER), encKey)
           )
@@ -861,7 +869,7 @@ test('built-in http module instrumentation', async (t) => {
         transaction.tripId = null
 
         const port = server.address().port
-        const req = http.get({ host: 'localhost', port: port }, function (res) {
+        const req = http.get({ host: 'localhost', port }, function (res) {
           const data = JSON.parse(
             hashes.deobfuscateNameUsingKey(req.getHeader(NEWRELIC_TRANSACTION_HEADER), encKey)
           )
@@ -890,7 +898,7 @@ test('built-in http module instrumentation', async (t) => {
         )
 
         const port = server.address().port
-        const req = http.get({ host: 'localhost', port: port }, function (res) {
+        const req = http.get({ host: 'localhost', port }, function (res) {
           const data = JSON.parse(
             hashes.deobfuscateNameUsingKey(req.getHeader(NEWRELIC_TRANSACTION_HEADER), encKey)
           )
@@ -918,7 +926,7 @@ test('built-in http module instrumentation', async (t) => {
 
         const port = server.address().port
         http
-          .get({ host: 'localhost', port: port }, function (res) {
+          .get({ host: 'localhost', port }, function (res) {
             assert.deepEqual(transaction.pathHashes, [pathHash])
             res.resume()
             transaction.end()
@@ -967,7 +975,7 @@ test('built-in http module instrumentation', async (t) => {
 
         const port = server.address().port
         const req = http.request(
-          { host: 'localhost', port: port, headers: { a: 1, b: 2 } },
+          { host: 'localhost', port, headers: { a: 1, b: 2 } },
           function (res) {
             res.resume()
             arrayRequest()
@@ -983,7 +991,7 @@ test('built-in http module instrumentation', async (t) => {
         const req = http.request(
           {
             host: 'localhost',
-            port: port,
+            port,
             headers: [
               ['a', 1],
               ['b', 2]
@@ -1004,7 +1012,7 @@ test('built-in http module instrumentation', async (t) => {
         const req = http.request(
           {
             host: 'localhost',
-            port: port,
+            port,
             headers: { a: 1, b: 2, expect: '100-continue' }
           },
           function (res) {

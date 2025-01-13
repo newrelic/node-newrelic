@@ -77,8 +77,8 @@ test('amazon-dax-client', async (t) => {
           port_path_or_id: 'unknown',
           collection: 'TableDoesNotExist',
           product: 'DynamoDB'
-        }),
-          end()
+        })
+        end()
       })
     })
   })

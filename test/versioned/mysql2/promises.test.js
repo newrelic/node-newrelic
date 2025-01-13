@@ -10,6 +10,7 @@ const fs = require('fs')
 const semver = require('semver')
 const test = require('node:test')
 const assert = require('node:assert')
+const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
@@ -21,7 +22,7 @@ try {
   ;({ version: pkgVersion } = require('mysql2/package'))
 } catch {
   ;({ version: pkgVersion } = JSON.parse(
-    fs.readFileSync(`${__dirname}/node_modules/mysql2/package.json`)
+    fs.readFileSync(path.join(__dirname, '/node_modules/mysql2/package.json'))
   ))
 }
 
@@ -275,7 +276,7 @@ if (semver.satisfies(pkgVersion, '>=2.3.0')) {
 
     // does not work until mysql2 bug is fixed
     // https://github.com/sidorares/node-mysql2/issues/3091
-    if (!semver.satisfies(pkgVersion, '>=3.11.1 <3.12.0')) {
+    if (!semver.satisfies(pkgVersion, '>=3.11.1 <3.13.0')) {
       await t.test('get star', async function (t) {
         const { agent, poolCluster } = t.nr
         const connection = await poolCluster.of('*').getConnection()

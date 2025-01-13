@@ -46,8 +46,10 @@ helpers.logStuff = function logStuff({ logger, helper, agent }) {
  * local log decoration is enabled.  Local log decoration asserts `NR-LINKING` string exists on msg
  *
  * @param {Object} opts
- * @param {boolean} [opts.includeLocalDecorating=false] is local log decoration enabled
- * @param {string} [opts.level=info] level to assert is on message
+ * @param {boolean} [opts.includeLocalDecorating] is local log decoration enabled
+ * @param {string} [opts.level] level to assert is on message
+ * @param opts.logLine
+ * @param opts.hostname
  */
 helpers.originalMsgAssertion = function originalMsgAssertion({
   includeLocalDecorating = false,

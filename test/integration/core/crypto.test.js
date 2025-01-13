@@ -56,7 +56,7 @@ test('sync randomBytes', function (t, end) {
 test('pseudoRandomBytes', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     crypto.pseudoRandomBytes(32, function (err, key) {
       assert.ok(!err, 'should not error')
       assert.ok(key.length, 32)
@@ -68,7 +68,7 @@ test('pseudoRandomBytes', function (t, end) {
 test('sync pseudoRandomBytes', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function (transaction) {
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     const bytes = crypto.pseudoRandomBytes(32)
     assert.ok(bytes instanceof Buffer)
     assert.equal(bytes.length, 32)

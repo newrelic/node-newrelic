@@ -57,6 +57,7 @@ test('Restify capture params introspection', async function (t) {
     server.listen(0, function () {
       port = server.address().port
       helper.makeGetRequest('http://localhost:' + port + '/test', function (error, res, body) {
+        assert.ifError(error)
         assert.equal(res.statusCode, 200, 'nothing exploded')
         assert.deepEqual(body, { status: 'ok' }, 'got expected response')
         end()
@@ -94,6 +95,7 @@ test('Restify capture params introspection', async function (t) {
     server.listen(0, function () {
       port = server.address().port
       helper.makeGetRequest('http://localhost:' + port + '/test/1337', function (error, res, body) {
+        assert.ifError(error)
         assert.equal(res.statusCode, 200, 'nothing exploded')
         assert.deepEqual(body, { status: 'ok' }, 'got expected respose')
         end()
@@ -132,6 +134,7 @@ test('Restify capture params introspection', async function (t) {
       port = server.address().port
       const url = 'http://localhost:' + port + '/test?name=restify'
       helper.makeGetRequest(url, function (error, res, body) {
+        assert.ifError(error)
         assert.equal(res.statusCode, 200, 'nothing exploded')
         assert.deepEqual(body, { status: 'ok' }, 'got expected respose')
         end()
@@ -175,6 +178,7 @@ test('Restify capture params introspection', async function (t) {
       port = server.address().port
       const url = 'http://localhost:' + port + '/test/1337?name=restify'
       helper.makeGetRequest(url, function (error, res, body) {
+        assert.ifError(error)
         assert.equal(res.statusCode, 200, 'nothing exploded')
         assert.deepEqual(body, { status: 'ok' }, 'got expected respose')
         end()

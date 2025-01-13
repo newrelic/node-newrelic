@@ -69,15 +69,13 @@ class Printer {
 
   async finish() {
     if (opts.console) {
-      /* eslint-disable no-console */
       console.log(JSON.stringify(this._tests, null, 2))
-      /* eslint-enable no-console */
     }
     const resultPath = 'benchmark_results'
     const filePrefix = opts.filename ? `${opts.filename}` : 'benchmark'
     try {
       await fs.stat(resultPath)
-    } catch (e) {
+    } catch {
       await fs.mkdir(resultPath)
     }
     const content = JSON.stringify(this._tests, null, 2)
@@ -95,7 +93,7 @@ async function run() {
 
   const resolveGlobs = () => {
     if (!globs.length) {
-      console.error(`There aren't any globs to resolve.`)
+      console.error("There aren't any globs to resolve.")
       return
     }
     const afterGlobbing = (resolved) => {
@@ -127,7 +125,8 @@ async function run() {
       args.unshift('--inspect-brk')
     }
 
-    const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe', silent: true })
+    // eslint-disable-next-line sonarjs/no-os-command-from-path
+    const child = cp.spawn('node', args, { cwd, stdio: 'pipe', silent: true })
 
     child.on('error', (err) => {
       console.error(`Error in child test ${test}`, err)

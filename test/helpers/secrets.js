@@ -7,6 +7,7 @@
 
 /**
  * A helper function to get secrets needed by tests
+ * @param secretName
  */
 function getTestSecret(secretName) {
   const envVar = process.env[secretName] || ''

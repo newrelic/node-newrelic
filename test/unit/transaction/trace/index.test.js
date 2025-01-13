@@ -356,7 +356,7 @@ test('when serializing synchronously', async (t) => {
       const { details } = t.nr
       const json = details.trace.generateJSONSync()
 
-      assert.match(json[4], /^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+      assert.match(json[4], /^[a-zA-Z0-9+/]+={0,2}$/, 'should be base64 encoded')
 
       const data = await codecDecodeAsync(json[4])
       assert.deepEqual(data, details.rootNode)
@@ -439,7 +439,7 @@ test('when serializing asynchronously', async (t) => {
     async (t) => {
       const { details } = t.nr
       const json = await details.trace.generateJSONAsync()
-      assert.match(json[4], /^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+      assert.match(json[4], /^[a-zA-Z0-9+/]+={0,2}$/, 'should be base64 encoded')
 
       const data = await codecDecodeAsync(json[4])
       assert.deepEqual(data, details.rootNode)
@@ -987,7 +987,7 @@ async function makeTrace(agent) {
         {
           'request.uri': '/test?test=value',
           'request.parameters.test': 'value',
-          'nr_exclusive_duration_millis': 8
+          nr_exclusive_duration_millis: 8
         },
         [
           // TODO: ensure that the ordering is correct WRT start time

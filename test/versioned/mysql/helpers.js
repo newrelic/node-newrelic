@@ -9,7 +9,7 @@ const params = require('../../lib/params')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 
 module.exports = async function setupDb(user, db, table, mysql) {
-  const regex = new RegExp(/mysql/)
+  const regex = /mysql/
   await createDb(mysql, user, db)
   await createTable(mysql, user, db, table)
   removeMatchedModules(regex)
@@ -38,8 +38,8 @@ async function createDb(mysql, user, db) {
   await runCommand(client, `CREATE USER ${user}`)
   await runCommand(client, `GRANT ALL ON *.* TO ${user}`)
   await runCommand(client, `CREATE DATABASE IF NOT EXISTS ${db}`)
-  await runCommand(client, `FLUSH PRIVILEGES`)
-  await runCommand(client, `FLUSH TABLES`)
+  await runCommand(client, 'FLUSH PRIVILEGES')
+  await runCommand(client, 'FLUSH TABLES')
   client.end()
 }
 
@@ -47,7 +47,7 @@ async function createTable(mysql, user, db, table) {
   const client = mysql.createConnection({
     host: params.mysql_host,
     port: params.mysql_port,
-    user: user,
+    user,
     database: db
   })
 

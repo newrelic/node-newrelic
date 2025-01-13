@@ -30,7 +30,7 @@ async function makeModuleTests({ moduleName, relativePath, throwsError }, t) {
     ctx.nr.errorThrown = 0
     ctx.nr.agent = helper.instrumentMockedAgent()
     const instrumentationOpts = {
-      moduleName: moduleName,
+      moduleName,
       onRequire: function (shim, module) {
         ctx.nr.instrumentedModule = module
         ++ctx.nr.counter
@@ -686,7 +686,7 @@ test('Should not register when no hooks provided', async (t) => {
 
   const moduleName = 'test name'
   shimmer.registerInstrumentation({
-    moduleName: moduleName
+    moduleName
   })
 
   assert.ok(!shimmer.registeredInstrumentations[moduleName])
@@ -832,7 +832,7 @@ test('Shimmer with logger mock', async (t) => {
       assert.deepEqual(loggerMock.debug.args[0], [
         'Failed to get version for `%s`, reason: %s',
         'bogus',
-        `no tracked items for module 'bogus'`
+        "no tracked items for module 'bogus'"
       ])
     }
   )
@@ -844,7 +844,7 @@ function clearCachedModules(modules) {
       const requirePath = require.resolve(moduleName)
       delete require.cache[requirePath]
       return true
-    } catch (e) {
+    } catch {
       return false
     }
   })

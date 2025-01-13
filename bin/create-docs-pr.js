@@ -33,6 +33,7 @@ program.option('--dry-run', 'executes script but does not commit nor create PR')
 program.option(
   '--repo-path <path',
   'Path to the docs-website fork on local machine',
+  // eslint-disable-next-line sonarjs/publicly-writable-directories
   '/tmp/docs-website'
 )
 program.option(
@@ -242,7 +243,7 @@ function formatReleaseNotes(releaseDate, version, body, frontmatter) {
     'subject: Node.js agent',
     `releaseDate: '${releaseDate}'`,
     `version: ${version.substring(1)}`, // remove the `v` from start of version
-    `downloadLink: 'https://www.npmjs.com/package/newrelic'`,
+    "downloadLink: 'https://www.npmjs.com/package/newrelic'",
     `security: ${frontmatter.security}`,
     `bugs: ${frontmatter.bugfixes}`,
     `features: ${frontmatter.features}`,
@@ -324,7 +325,7 @@ async function createPR(version, branch, dryRun, repoOwner) {
 
   const github = new Github(repoOwner, 'docs-website')
   const title = `chore: add Node.js Agent ${version} Release Notes`
-  const head = repoOwner === `newrelic` ? branch : `${repoOwner}:${branch}`
+  const head = repoOwner === 'newrelic' ? branch : `${repoOwner}:${branch}`
   const body =
     'This is an automated PR generated when the Node.js agent is released. Please merge as soon as possible.'
 

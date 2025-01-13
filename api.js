@@ -905,7 +905,7 @@ API.prototype.startSegment = function startSegment(name, record, handler, callba
   // Create the segment and call the handler.
   const wrappedHandler = this.shim.record(handler, function handlerNamer(shim) {
     return {
-      name: name,
+      name,
       recorder: record ? customRecorder : null,
       callback: callback ? shim.FIRST : null,
       promise: !callback
@@ -1301,6 +1301,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
   }
 
   const tx = this.agent.getTransaction()
+  // eslint-disable-next-line sonarjs/pseudo-random
   const priority = (tx && tx.priority) || Math.random()
   this.agent.customEventAggregator.add([intrinsics, filteredAttributes], priority)
 }
@@ -1326,9 +1327,9 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
   let opts = moduleName
   if (typeof opts === 'string') {
     opts = {
-      moduleName: moduleName,
-      onRequire: onRequire,
-      onError: onError
+      moduleName,
+      onRequire,
+      onError
     }
   }
 
@@ -1391,9 +1392,9 @@ API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onR
   let opts = moduleName
   if (typeof opts === 'string') {
     opts = {
-      moduleName: moduleName,
-      onRequire: onRequire,
-      onError: onError
+      moduleName,
+      onRequire,
+      onError
     }
   }
 
@@ -1428,9 +1429,9 @@ API.prototype.instrumentWebframework = function instrumentWebframework(
   let opts = moduleName
   if (typeof opts === 'string') {
     opts = {
-      moduleName: moduleName,
-      onRequire: onRequire,
-      onError: onError
+      moduleName,
+      onRequire,
+      onError
     }
   }
 
@@ -1461,9 +1462,9 @@ API.prototype.instrumentMessages = function instrumentMessages(moduleName, onReq
   let opts = moduleName
   if (typeof opts === 'string') {
     opts = {
-      moduleName: moduleName,
-      onRequire: onRequire,
-      onError: onError
+      moduleName,
+      onRequire,
+      onError
     }
   }
 

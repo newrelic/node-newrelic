@@ -227,7 +227,7 @@ test('chmod', async function (t) {
 
 // Only exists on Darwin currently, using this check to catch if it
 // appears in other versions too.
-// eslint-disable-next-line node/no-deprecated-api
+// eslint-disable-next-line n/no-deprecated-api
 test('lchmod', { skip: fs.lchmod === undefined }, async function (t) {
   const { agent } = t.nr
   const plan = tspl(t, { plan: 13 })
@@ -236,7 +236,7 @@ test('lchmod', { skip: fs.lchmod === undefined }, async function (t) {
   fs.writeFileSync(name, content)
   plan.equal((fs.statSync(name).mode & 0x1ff).toString(8), '666')
   helper.runInTransaction(agent, function (trans) {
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     fs.lchmod(name, '0777', function (err) {
       plan.equal(err, null, 'should not error')
       plan.equal((fs.statSync(name).mode & 0x1ff).toString(8), '777')
@@ -820,7 +820,7 @@ test('exists', async function (t) {
   fs.writeFileSync(name, content)
 
   helper.runInTransaction(agent, function (trans) {
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     fs.exists(name, function (exists) {
       plan.ok(exists, 'should exist')
       verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'exists' })

@@ -13,7 +13,7 @@ const {
 
 test('@aws-sdk/client-s3 functionality', async (t) => {
   const { version, name } = require('@aws-sdk/client-s3/package')
-  // eslint-disable-next-line no-console
+
   console.log(`AWS package: ${name} version: ${version}`)
   const agent = helper.instrumentMockedAgent()
   const { S3, ...lib } = require('@aws-sdk/client-s3')

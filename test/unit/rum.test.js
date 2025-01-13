@@ -159,10 +159,10 @@ test('the RUM API', async function (t) {
       const timingHeader = api.getBrowserTimingHeader()
       assert.ok(
         timingHeader.startsWith(
-          `<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,`
+          '<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,'
         )
       )
-      assert.ok(timingHeader.endsWith(`}; function() {}</script>`))
+      assert.ok(timingHeader.endsWith('}; function() {}</script>'))
       end()
     })
   })
@@ -174,10 +174,10 @@ test('the RUM API', async function (t) {
       const timingHeader = api.getBrowserTimingHeader({ allowTransactionlessInjection: true })
       assert.ok(
         timingHeader.startsWith(
-          `<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,`
+          '<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,'
         )
       )
-      assert.ok(timingHeader.endsWith(`}; function() {}</script>`))
+      assert.ok(timingHeader.endsWith('}; function() {}</script>'))
     }
   )
 
@@ -190,10 +190,10 @@ test('the RUM API', async function (t) {
         const timingHeader = api.getBrowserTimingHeader({ nonce: '12345' })
         assert.ok(
           timingHeader.startsWith(
-            `<script type=\'text/javascript\' nonce="12345">window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,`
+            '<script type=\'text/javascript\' nonce="12345">window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,'
           )
         )
-        assert.ok(timingHeader.endsWith(`}; function() {}</script>`))
+        assert.ok(timingHeader.endsWith('}; function() {}</script>'))
         end()
       })
     }
@@ -211,7 +211,7 @@ test('the RUM API', async function (t) {
             'window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,'
           )
         )
-        assert.ok(timingHeader.endsWith(`}; function() {}`))
+        assert.ok(timingHeader.endsWith('}; function() {}'))
         end()
       })
     }

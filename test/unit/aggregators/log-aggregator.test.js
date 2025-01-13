@@ -20,7 +20,7 @@ test('Log Aggregator', async (t) => {
     ctx.nr.txReturn = undefined
     ctx.nr.commonAttrs = {
       'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
-      'hostname': 'test-host',
+      hostname: 'test-host',
       'entity.name': 'unit-test',
       'entity.type': 'SERVICE'
     }
@@ -62,12 +62,12 @@ test('Log Aggregator', async (t) => {
     ctx.nr.logEventAggregator = new LogAggregator({ runId: RUN_ID, limit: LIMIT }, ctx.nr.agent)
 
     ctx.nr.log = {
-      'level': 30,
-      'timestamp': '1649689872369',
-      'pid': 4856,
+      level: 30,
+      timestamp: '1649689872369',
+      pid: 4856,
       'trace.id': '2f93639c684a2dd33c28345173d218b8',
       'span.id': 'a136d77f2a5b997b',
-      'message': 'unit test msg'
+      message: 'unit test msg'
     }
   })
 
@@ -116,7 +116,7 @@ test('Log Aggregator', async (t) => {
       return JSON.parse(log2)
     }
     function formatLog2() {
-      return
+
     }
     logEventAggregator.add(log)
     logEventAggregator.add(formatLog)
@@ -135,9 +135,7 @@ test('Log Aggregator', async (t) => {
 
   await t.test('toPayload() should return nothing when log functions return no data', (t) => {
     const { logEventAggregator } = t.nr
-    function formatLog() {
-      return
-    }
+    function formatLog() {}
     logEventAggregator.add(formatLog)
     const payload = logEventAggregator._toPayloadSync()
     assert.equal(payload, undefined)

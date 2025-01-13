@@ -80,7 +80,7 @@ test('should include distributed trace headers when enabled', (t, end) => {
     const dtMeta = server.metadataMap.get(payload[0].name)
     match(
       dtMeta.get('traceparent')[0],
-      /^[\w\d\-]{55}$/,
+      /^[\w-]{55}$/,
       'should have traceparent in server metadata'
     )
     assert.equal(dtMeta.get('newrelic')[0], '', 'should have newrelic in server metadata')

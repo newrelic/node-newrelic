@@ -25,7 +25,7 @@ test('Express router introspection', async function (t) {
   const { agent, app, express, port } = t.nr
   const plan = tsplan(t, { plan: 14 })
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.get('/b/:param2', function (req, res) {
     plan.ok(agent.getTransaction(), 'transaction is available')
 

@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const fs = require('node:fs')
+const path = require('node:path')
 
 const assertSegments = require('../../lib/custom-assertions/assert-segments')
 
@@ -23,7 +24,7 @@ function getPathToRegexpVersion() {
   let pathToRegexVersion
   try {
     ;({ version: pathToRegexVersion } = JSON.parse(
-      fs.readFileSync(`${__dirname}/node_modules/path-to-regexp/package.json`)
+      fs.readFileSync(path.join(__dirname, '/node_modules/path-to-regexp/package.json'))
     ))
   } catch {
     pathToRegexVersion = '6.0.0'
@@ -49,6 +50,7 @@ module.exports = (pkg) => {
      * and handle the differences.
      *
      * See original issue: https://github.com/newrelic/node-newrelic-koa/issues/35
+     * @param mwName
      */
     function getNestedSpanName(mwName) {
       let spanName = `Nodejs/Middleware/Koa/${mwName}/`

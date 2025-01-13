@@ -24,7 +24,7 @@ const selfCert = require('self-cert')
  * subject alternate names.
  *
  * @param {object} params
- * @param {string|null} [params.commonName=null] The subject name for the
+ * @param {string|null} [params.commonName] The subject name for the
  * certificate. This is useful when generating a certificate for remote hosts,
  * e.g. when generating a proxy certificate for staging-collector.newrelic.com.
  *
@@ -38,7 +38,7 @@ module.exports = function fakeCert({ commonName = null } = {}) {
     // certificates.
     bits: 1_024,
     attrs: {
-      commonName: commonName,
+      commonName,
       stateName: 'Georgia',
       locality: 'Atlanta',
       orgName: 'New Relic',

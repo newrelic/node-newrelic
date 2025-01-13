@@ -77,8 +77,12 @@
  *                                  directly under test.  Only used when `exact` is true.
  * @param {object} [deps] Injected dependencies.
  * @param {object} [deps.assert] Assertion library to use.
+ * @param options
+ * @param root0
+ * @param root0.assert
+ * @param options.assert
  */
-module.exports = function assertSegments(
+module.exports = function assertSegments( // eslint-disable-line sonarjs/cognitive-complexity
   parent,
   expected,
   options,
