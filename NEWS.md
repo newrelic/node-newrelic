@@ -26,7 +26,7 @@
 
 #### Miscellaneous chores
 
-* Add rules engine to match OTEL spans ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([3e6f47b](https://github.com/newrelic/node-newrelic/commit/3e6f47b91ae1da9985c8a1fd56cd8550bb092006))
+* Added rules engine to match OTEL spans ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([3e6f47b](https://github.com/newrelic/node-newrelic/commit/3e6f47b91ae1da9985c8a1fd56cd8550bb092006))
 * Updated rules engine to account for fallbacks ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([e969bea](https://github.com/newrelic/node-newrelic/commit/e969beab42252a19b152ed97a487fd169c588551))
 * Updated versioned tests docs ([#2874](https://github.com/newrelic/node-newrelic/pull/2874)) ([73a84d7](https://github.com/newrelic/node-newrelic/commit/73a84d76be655a8cca88a47de177f1dfa4faa6e7))
 
