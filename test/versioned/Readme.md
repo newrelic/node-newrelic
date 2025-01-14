@@ -38,7 +38,12 @@ that are specific to our versioned test runner. The following is a
       "name": "module",
       
       // The minimum agent version that supports the named module.
-      "minAgentVersion": "2.6.0"
+      "minAgentVersion": "2.6.0",
+      
+      // The minimum version of the package that the agent supports.
+      // If this is omitted, it will be calculated from the version ranges
+      // defined in the `tests` block.
+      "minSupported": "1.0.0"
     },
     
     {
@@ -82,6 +87,9 @@ that are specific to our versioned test runner. The following is a
         // The minimum version across all test blocks will be utilized to
         // indicate the minimum supported version of a module by our agent
         // if that module name is listed in the top-level `targets` property.
+        // If a defined target has a `minSupported` attribute defined, that
+        // value will take precedence (i.e. the minimum supported version will
+        // not be calculated).
         //
         // Note: this may also be an object with a special format. See the next
         // example block.
