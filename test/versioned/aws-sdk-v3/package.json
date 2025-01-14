@@ -217,7 +217,7 @@
       },
       "dependencies": {
         "@aws-sdk/client-redshift-data": {
-          "versions": ">=3.726.1",
+          "versions": ">=3.0.0",
           "samples": 2
         }
       },

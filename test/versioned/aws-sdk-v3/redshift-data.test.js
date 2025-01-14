@@ -29,14 +29,17 @@ test('Redshift-data', async (t) => {
       }
     })
 
-    const { RedshiftDataClient, ListSchemasCommand } = require('@aws-sdk/client-redshift-data')
+    const lib = require('@aws-sdk/client-redshift-data')
 
     ctx.nr.redshiftCommands = {
-      ListSchemasCommand: ListSchemasCommand
+      ExecuteStatementCommand: lib.ExecuteStatementCommand,
+      DescribeStatementCommand: lib.DescribeStatementCommand,
+      GetStatementResultCommand: lib.GetStatementResultCommand,
+      ListDatabasesCommand: lib.ListDatabasesCommand
     }
 
     const endpoint = `http://localhost:${server.address().port}`
-    ctx.nr.client = new RedshiftDataClient({
+    ctx.nr.client = new lib.RedshiftDataClient({
       credentials: FAKE_CREDENTIALS,
       endpoint,
       region: 'us-east-1'
@@ -73,8 +76,6 @@ function finish(end, tests, tx) {
   const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
-  // const accountId = tx.agent.config.cloud.aws.account_id
-
   segments.forEach((segment, i) => {
     const operation = tests[i].operation
     assert.equal(
@@ -88,7 +89,7 @@ function finish(end, tests, tx) {
       host: String,
       port_path_or_id: Number,
       product: 'Redshift',
-      // database_name: 'dev',
+      database_name: String,
       collection: String,
       'aws.operation': operation,
       'aws.requestId': String,
@@ -101,17 +102,74 @@ function finish(end, tests, tx) {
 }
 
 function createTests() {
-  const listSchemas = getListSchemas()
+  const insertData = insertDataIntoTable()
+  const selectData = selectDataFromTable()
+  const updateData = updateDataInTable()
+  const deleteData = deleteDataFromTable()
+  const describeSqlStatement = describeStatement()
+  const getSqlStatement = getStatement()
+  const getDatabases = listDatabases()
 
   return [
-    { params: listSchemas, operation: 'ListSchemasCommand', command: 'ListSchemasCommand'},
+    { params: insertData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand'},
+    { params: selectData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand'},
+    { params: updateData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand'},
+    { params: deleteData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand'},
+    { params: describeSqlStatement, operation: 'DescribeStatementCommand', command: 'DescribeStatementCommand'},
+    { params: getSqlStatement, operation: 'GetStatementResultCommand', command: 'GetStatementResultCommand'},
+    { params: getDatabases, operation: 'ListDatabasesCommand', command: 'ListDatabasesCommand'}
   ]
 }
 
-function getListSchemas() {
+const commonParams = {
+  Database: 'dev',
+  DbUser: 'a_user',
+  ClusterIdentifier: 'a_cluster'
+}
+
+function insertDataIntoTable() {
   return {
-      Database: 'dev',
-      DbUser: 'a_user',
-      ClusterIdentifier: 'a_cluster'
-    }
+    ...commonParams,
+    Sql: 'INSERT INTO test_table (id, name) VALUES (1, \'test\')'
+  }
+}
+
+function selectDataFromTable() {
+  return {
+    ...commonParams,
+    Sql: 'SELECT id, name FROM test_table'
+  }
+}
+
+function updateDataInTable() {
+  return {
+    ...commonParams,
+    Sql: 'UPDATE test_table SET name = \'updated\' WHERE id = 1'
+  }
+}
+
+function deleteDataFromTable() {
+  return {
+    ...commonParams,
+    Sql: 'DELETE FROM test_table WHERE id = 1'
+  }
+}
+
+function describeStatement() {
+  return {
+    ...commonParams,
+    Sql: 'DESCRIBE test_table'
+  }
+}
+
+function getStatement() {
+  return {
+    Id: 'a_statement_id'
+  }
+}
+
+function listDatabases() {
+  return {
+    ...commonParams,
+  }
 }
