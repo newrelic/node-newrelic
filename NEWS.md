@@ -1,3 +1,39 @@
+### v12.11.0 (2025-01-14)
+
+#### Features
+
+* Added otel consumer span processing ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([82fe9d5](https://github.com/newrelic/node-newrelic/commit/82fe9d5017d042234472c5d05c2c9c05d8a45091))
+* Added segment and transaction synthesis for http server spans ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([8fa4d05](https://github.com/newrelic/node-newrelic/commit/8fa4d055b27a0494d7021bc3a284f4c4752a3cee))
+* Added segment synthesis for db client otel spans to db trace ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([32dd2f1](https://github.com/newrelic/node-newrelic/commit/32dd2f1509facda94e57c04e7999975eb667f9d8))
+* Added segment synthesis for internal spans ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([e5c66be](https://github.com/newrelic/node-newrelic/commit/e5c66be379a34174d7f383976cebd6c44f99b265))
+* Added segment synthesis for otel producer spans ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([ed2e095](https://github.com/newrelic/node-newrelic/commit/ed2e09599833d98ff31bd05d16df542b75bec356))
+* Added segment synthesizer and provided ability to convert http client otel spans to external http trace segments ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([c71be40](https://github.com/newrelic/node-newrelic/commit/c71be40dd4999909a0c263f5ed7e744b7597baf0))
+* added segment tree to transaction trace ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([0acabf6](https://github.com/newrelic/node-newrelic/commit/0acabf66c9e6c0f8ea76b3d88ca944f72eb65b4a))
+* Removed children from segments. ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([0c55d22](https://github.com/newrelic/node-newrelic/commit/0c55d2221f8f5ed118d017530cf7a237823df6c0))
+* Removed transaction from segment. Introduced a new enterSegment and enterTransaction to make context propagation more clear ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([7078554](https://github.com/newrelic/node-newrelic/commit/7078554a546971d876f41da0823af3d0def33eb2))
+
+#### Bug fixes
+
+* Updated `shim.createSegment` and `shim.handleMqTracingHeaders` to be backwards compatible with the changes to context manager ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([25a71e6](https://github.com/newrelic/node-newrelic/commit/25a71e643e7645dd27f793016a001deef0e2220a))
+
+#### Code refactoring
+
+* Removed class construction on the segment synthesis and ins… ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([e044b40](https://github.com/newrelic/node-newrelic/commit/e044b405f935a85255edd1f128c0be771db94a5f))
+
+#### Documentation
+
+* Updated compatibility report ([#2869](https://github.com/newrelic/node-newrelic/pull/2869)) ([4bde427](https://github.com/newrelic/node-newrelic/commit/4bde427f67aa1e1699e7ab12c4f96e83f70850a6))
+
+#### Miscellaneous chores
+
+* Add rules engine to match OTEL spans ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([3e6f47b](https://github.com/newrelic/node-newrelic/commit/3e6f47b91ae1da9985c8a1fd56cd8550bb092006))
+* Updated rules engine to account for fallbacks ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([e969bea](https://github.com/newrelic/node-newrelic/commit/e969beab42252a19b152ed97a487fd169c588551))
+* Updated versioned tests docs ([#2874](https://github.com/newrelic/node-newrelic/pull/2874)) ([73a84d7](https://github.com/newrelic/node-newrelic/commit/73a84d76be655a8cca88a47de177f1dfa4faa6e7))
+
+#### Tests
+
+* Updated a langchain test to be less rigid on asserting the tracking metric by `@langchain/core` version ([#2876](https://github.com/newrelic/node-newrelic/pull/2876)) ([73985ea](https://github.com/newrelic/node-newrelic/commit/73985ea45634478133a0ac6437b16758cfd775b2))
+
 ### v12.10.0 (2025-01-09)
 
 #### Features
