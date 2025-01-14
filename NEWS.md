@@ -25,7 +25,7 @@
 * Updated compatibility report ([#2869](https://github.com/newrelic/node-newrelic/pull/2869)) ([4bde427](https://github.com/newrelic/node-newrelic/commit/4bde427f67aa1e1699e7ab12c4f96e83f70850a6))
 
 #### Miscellaneous chores
-:
+
 * Added rules engine to match OTEL spans ([#2694](https://github.com/newrelic/node-newrelic/pull/2694)) ([2c93c68](https://github.com/newrelic/node-newrelic/commit/2c93c68b8563a07c450b8bd84d442c5ac18df3d8))
 * Updated rules engine to account for fallbacks ([#2831](https://github.com/newrelic/node-newrelic/pull/2831)) ([19fbdfb](https://github.com/newrelic/node-newrelic/commit/19fbdfb4ec71fc5f6041d4ac8435d69a5f88ae9a))
 * Updated versioned tests docs ([#2874](https://github.com/newrelic/node-newrelic/pull/2874)) ([73a84d7](https://github.com/newrelic/node-newrelic/commit/73a84d76be655a8cca88a47de177f1dfa4faa6e7))
