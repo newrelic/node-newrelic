@@ -85,6 +85,55 @@ test('when loading options via constructor', async (t) => {
   })
 })
 
+test('agent control', async t => {
+  await t.test('loads defaults', () => {
+    const config = Config.initialize({})
+    assert.deepStrictEqual(config.agent_control, {
+      fleet_id: null,
+      health: {
+        delivery_location: null,
+        frequency: 5
+      }
+    })
+  })
+
+  await t.test('loads from env', () => {
+    process.env.NEW_RELIC_AGENT_CONTROL_FLEET_ID = 42
+    process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION = 'file://find/me'
+    process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY = 1
+    const config = Config.initialize({})
+    delete process.env.NEW_RELIC_AGENT_CONTROL_FLEET_ID
+    delete process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION
+    delete process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY
+    assert.deepStrictEqual(config.agent_control, {
+      fleet_id: '42',
+      health: {
+        delivery_location: 'file://find/me',
+        frequency: 1
+      }
+    })
+  })
+
+  await t.test('loads from provided config', () => {
+    const config = Config.initialize({
+      agent_control: {
+        fleet_id: 'from-config',
+        health: {
+          delivery_location: 'file://find/me',
+          frequency: 10
+        }
+      }
+    })
+    assert.deepStrictEqual(config.agent_control, {
+      fleet_id: 'from-config',
+      health: {
+        delivery_location: 'file://find/me',
+        frequency: 10
+      }
+    })
+  })
+})
+
 test('#publicSettings', async (t) => {
   let configuration
 
