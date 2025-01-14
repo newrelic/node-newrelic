@@ -2,15 +2,15 @@
 
 #### Features
 
+* Removed transaction from segment. Introduced a new `enterSegment` and `enterTransaction` to make context propagation more clear ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([7078554](https://github.com/newrelic/node-newrelic/commit/7078554a546971d876f41da0823af3d0def33eb2))
+* Removed children from segments. ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([0c55d22](https://github.com/newrelic/node-newrelic/commit/0c55d2221f8f5ed118d017530cf7a237823df6c0))
+* Added segment tree to transaction trace ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([0acabf6](https://github.com/newrelic/node-newrelic/commit/0acabf66c9e6c0f8ea76b3d88ca944f72eb65b4a))
+* Added segment synthesizer and provided ability to convert http client otel spans to external http trace segments ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([c71be40](https://github.com/newrelic/node-newrelic/commit/c71be40dd4999909a0c263f5ed7e744b7597baf0))
 * Added otel consumer span processing ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([82fe9d5](https://github.com/newrelic/node-newrelic/commit/82fe9d5017d042234472c5d05c2c9c05d8a45091))
 * Added segment and transaction synthesis for http server spans ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([8fa4d05](https://github.com/newrelic/node-newrelic/commit/8fa4d055b27a0494d7021bc3a284f4c4752a3cee))
 * Added segment synthesis for db client otel spans to db trace ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([32dd2f1](https://github.com/newrelic/node-newrelic/commit/32dd2f1509facda94e57c04e7999975eb667f9d8))
 * Added segment synthesis for internal spans ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([e5c66be](https://github.com/newrelic/node-newrelic/commit/e5c66be379a34174d7f383976cebd6c44f99b265))
 * Added segment synthesis for otel producer spans ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([ed2e095](https://github.com/newrelic/node-newrelic/commit/ed2e09599833d98ff31bd05d16df542b75bec356))
-* Added segment synthesizer and provided ability to convert http client otel spans to external http trace segments ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([c71be40](https://github.com/newrelic/node-newrelic/commit/c71be40dd4999909a0c263f5ed7e744b7597baf0))
-* added segment tree to transaction trace ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([0acabf6](https://github.com/newrelic/node-newrelic/commit/0acabf66c9e6c0f8ea76b3d88ca944f72eb65b4a))
-* Removed children from segments. ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([0c55d22](https://github.com/newrelic/node-newrelic/commit/0c55d2221f8f5ed118d017530cf7a237823df6c0))
-* Removed transaction from segment. Introduced a new enterSegment and enterTransaction to make context propagation more clear ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([7078554](https://github.com/newrelic/node-newrelic/commit/7078554a546971d876f41da0823af3d0def33eb2))
 
 #### Bug fixes
 
@@ -18,7 +18,7 @@
 
 #### Code refactoring
 
-* Removed class construction on the segment synthesis and ins… ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([e044b40](https://github.com/newrelic/node-newrelic/commit/e044b405f935a85255edd1f128c0be771db94a5f))
+* Removed class construction on the segment synthesis and instrumentation ([#2873](https://github.com/newrelic/node-newrelic/pull/2873)) ([e044b40](https://github.com/newrelic/node-newrelic/commit/e044b405f935a85255edd1f128c0be771db94a5f))
 
 #### Documentation
 
