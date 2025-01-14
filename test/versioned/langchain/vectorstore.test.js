@@ -16,7 +16,6 @@ const {
   filterLangchainEvents,
   filterLangchainEventsByType
 } = require('./common')
-const { version: pkgVersion } = require('@langchain/core/package.json')
 const { Document } = require('@langchain/core/documents')
 const createOpenAIMockServer = require('../openai/mock-server')
 const params = require('../../lib/params')
@@ -28,6 +27,7 @@ const config = {
   }
 }
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { tspl } = require('@matteo.collina/tspl')
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
@@ -103,20 +103,24 @@ test('should create span on successful vectorstore create', (t, end) => {
   })
 })
 
-test('should increment tracking metric for each langchain vectorstore event', (t, end) => {
+test('should increment tracking metric for each langchain vectorstore event', async (t) => {
+  const plan = tspl(t, { plan: 1 })
   const { agent, vs } = t.nr
 
-  helper.runInTransaction(agent, async (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     await vs.similaritySearch('This is an embedding test.', 1)
 
-    const metrics = agent.metrics.getOrCreateMetric(
-      `Supportability/Nodejs/ML/Langchain/${pkgVersion}`
-    )
-    assert.equal(metrics.callCount > 0, true)
+    // `@langchain/community` and `@langchain/openai` have diverged on the `@langchain/core`
+    // version. Find the right one that has a call count
 
+    for (const metric in agent.metrics._metrics.unscoped) {
+      if (metric.startsWith('Supportability/Nodejs/ML/Langchain')) {
+        plan.equal(agent.metrics._metrics.unscoped[metric].callCount > 0, true)
+      }
+    }
     tx.end()
-    end()
   })
+  await plan.completed
 })
 
 test('should create vectorstore events for every similarity search call with embeddings', (t, end) => {
