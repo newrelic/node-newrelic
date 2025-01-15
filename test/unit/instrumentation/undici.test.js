@@ -27,9 +27,6 @@ test('undici instrumentation', async function (t) {
   const agent = helper.loadMockedAgent()
   agent.config.distributed_tracing.enabled = false
   agent.config.cross_application_tracer.enabled = false
-  agent.config.feature_flag = {
-    undici_async_tracking: true
-  }
   const shim = new TransactionShim(agent, 'undici')
   const loggerMock = require('../mocks/logger')(sandbox)
   const undiciInstrumentation = proxyquire('../../../lib/instrumentation/undici', {
@@ -43,7 +40,6 @@ test('undici instrumentation', async function (t) {
     sandbox.resetHistory()
     agent.config.distributed_tracing.enabled = false
     agent.config.cross_application_tracer.enabled = false
-    agent.config.feature_flag.undici_async_tracking = true
     helper.unloadAgent(agent)
   })
 
@@ -124,84 +120,6 @@ test('undici instrumentation', async function (t) {
           assert.equal(addHeader.callCount, 1)
           assert.equal(addHeader.args[0][0], 'X-NewRelic-Transaction')
           assert.match(addHeader.args[0][1], /^[\w/-]{60,80}={0,2}$/)
-          tx.end()
-          end()
-        })
-      }
-    )
-
-    await t.test(
-      'should get the parent segment executionAsyncResource when it already exists',
-      function (t, end) {
-        helper.runInTransaction(agent, function (tx) {
-          const addHeader = sandbox.stub()
-          const request = { origin: HOST, path: '/foo-2', addHeader }
-          channels.create.publish({ request })
-          const segment = tx.trace.add('another segment')
-          segment.start()
-          shim.setActiveSegment(segment)
-          const request2 = { path: '/path', addHeader, origin: HOST }
-          channels.create.publish({ request: request2 })
-          assert.equal(
-            request[symbols.parentSegment].id,
-            request2[symbols.parentSegment].id,
-            'parent segment should be same'
-          )
-          assert.equal(
-            request[symbols.transaction].id,
-            request2[symbols.transaction].id,
-            'tx should be same'
-          )
-          tx.end()
-          end()
-        })
-      }
-    )
-
-    await t.test(
-      'should get diff parent segment across diff async execution contexts',
-      function (t, end) {
-        helper.runInTransaction(agent, function (tx) {
-          const request = { origin: HOST, path: '/request1', addHeader: sandbox.stub() }
-          channels.create.publish({ request })
-          Promise.resolve('test').then(() => {
-            const segment = tx.trace.add('another segment')
-            segment.start()
-            shim.setActiveSegment(segment)
-            const request2 = { path: '/request2', addHeader: sandbox.stub(), origin: HOST }
-            channels.create.publish({ request: request2 })
-            assert.notEqual(request[symbols.parentSegment], request2[symbols.parentSegment])
-            assert.equal(request[symbols.transaction], request2[symbols.transaction])
-            tx.end()
-            end()
-          })
-        })
-      }
-    )
-
-    await t.test(
-      'should get the parent segment shim when `undici_async_tracking` is false',
-      function (t, end) {
-        agent.config.feature_flag.undici_async_tracking = false
-        helper.runInTransaction(agent, function (tx) {
-          const addHeader = sandbox.stub()
-          const request = { path: '/foo-2', addHeader, origin: HOST }
-          channels.create.publish({ request })
-          const segment = tx.trace.add('another segment')
-          segment.start()
-          shim.setActiveSegment(segment)
-          const request2 = { path: '/path', addHeader, origin: HOST }
-          channels.create.publish({ request: request2 })
-          assert.notEqual(
-            request[symbols.parentSegment].name,
-            request2[symbols.parentSegment].name,
-            'parent segment should not be same'
-          )
-          assert.equal(
-            request[symbols.transaction].id,
-            request2[symbols.transaction].id,
-            'tx should be the same'
-          )
           tx.end()
           end()
         })
