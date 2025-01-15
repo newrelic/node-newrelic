@@ -15,7 +15,7 @@ const repos = [
   {
     name: 'apollo-server',
     repository: 'https://github.com/newrelic/newrelic-node-apollo-server-plugin.git',
-    branch: 'remove-child-segments',
+    branch: 'main',
     additionalFiles: [
       'tests/lib',
     ]
