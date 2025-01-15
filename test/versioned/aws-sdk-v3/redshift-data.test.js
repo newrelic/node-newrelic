@@ -54,9 +54,9 @@ test('Redshift-data', async (t) => {
     const { redshiftCommands, client, agent, tests } = t.nr
     helper.runInTransaction(agent, async function (tx) {
       for (const test of tests) {
-        const CommandClass = redshiftCommands[test.command];
-        const command = new CommandClass(test.params);
-        await client.send(command);
+        const CommandClass = redshiftCommands[test.command]
+        const command = new CommandClass(test.params)
+        await client.send(command)
       }
 
       tx.end()
@@ -111,13 +111,13 @@ function createTests() {
   const getDatabases = listDatabases()
 
   return [
-    { params: insertData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand'},
-    { params: selectData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand'},
-    { params: updateData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand'},
-    { params: deleteData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand'},
-    { params: describeSqlStatement, operation: 'DescribeStatementCommand', command: 'DescribeStatementCommand'},
-    { params: getSqlStatement, operation: 'GetStatementResultCommand', command: 'GetStatementResultCommand'},
-    { params: getDatabases, operation: 'ListDatabasesCommand', command: 'ListDatabasesCommand'}
+    { params: insertData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand' },
+    { params: selectData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand' },
+    { params: updateData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand' },
+    { params: deleteData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand' },
+    { params: describeSqlStatement, operation: 'DescribeStatementCommand', command: 'DescribeStatementCommand' },
+    { params: getSqlStatement, operation: 'GetStatementResultCommand', command: 'GetStatementResultCommand' },
+    { params: getDatabases, operation: 'ListDatabasesCommand', command: 'ListDatabasesCommand' }
   ]
 }
 

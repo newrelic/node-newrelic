@@ -11,7 +11,7 @@
     {"name": "@aws-sdk/smithy-client", "minSupported": "3.47.0", "minAgentVersion": "8.7.1"},
     {"name": "@smithy/smithy-client", "minSupported": "2.0.0", "minAgentVersion": "11.0.0"},
     {"name": "@aws-sdk/client-bedrock-runtime", "minAgentVersion": "11.13.0"},
-    {"name": "@aws-sdk/client-redshift-data", "minAgentVersion": "12.10.0"}
+    {"name": "@aws-sdk/client-redshift-data", "minAgentVersion": "12.11.0"}
   ],
   "version": "0.0.0",
   "private": true,
