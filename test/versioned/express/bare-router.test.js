@@ -18,7 +18,7 @@ test.afterEach(teardown)
 
 test('Express router introspection', async function (t) {
   const { agent, app, port } = t.nr
-  const plan = tsplan(t, { plan: 11 })
+  const plan = tsplan(t, { plan: 12 })
 
   // need to capture parameters
   agent.config.attributes.enabled = true
@@ -35,7 +35,7 @@ test('Express router introspection', async function (t) {
     plan.equal(transaction.verb, 'GET', 'HTTP method is GET')
     plan.ok(transaction.trace, 'transaction has trace')
 
-    const web = transaction.trace.root.children[0]
+    const [web] = transaction.trace.getChildren(transaction.trace.root.id)
     plan.ok(web, 'trace has web segment')
     plan.equal(web.name, transaction.name, 'segment name and transaction name match')
 
@@ -51,6 +51,7 @@ test('Express router introspection', async function (t) {
 
   const url = 'http://localhost:' + port + '/test'
   helper.makeGetRequest(url, { json: true }, function (error, res, body) {
+    plan.ifError(error)
     plan.equal(res.statusCode, 200, 'nothing exploded')
     plan.deepEqual(body, { status: 'ok' }, 'got expected response')
   })

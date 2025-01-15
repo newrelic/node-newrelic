@@ -95,7 +95,8 @@ class Tracker extends Map {
   }
 }
 
-async function* reporter(source) {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+async function * reporter(source) {
   const tracker = new Tracker()
 
   for await (const event of source) {

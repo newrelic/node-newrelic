@@ -25,18 +25,19 @@ function assertLangChainVectorSearch(
   { tx, vectorSearch, responseDocumentSize },
   { assert = require('node:assert') } = {}
 ) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedSearch = {
-    'id': /[a-f0-9]{36}/,
-    'appName': 'New Relic for Node.js tests',
-    'span_id': tx.trace.root.children[0].id,
-    'trace_id': tx.traceId,
+    id: /[a-f0-9]{36}/,
+    appName: 'New Relic for Node.js tests',
+    span_id: segment.id,
+    trace_id: tx.traceId,
     'request.k': 1,
     'request.query': 'This is an embedding test.',
-    'ingest_source': 'Node',
-    'vendor': 'langchain',
-    'virtual_llm': true,
-    ['response.number_of_documents']: responseDocumentSize,
-    'duration': tx.trace.root.children[0].getDurationInMillis()
+    ingest_source: 'Node',
+    vendor: 'langchain',
+    virtual_llm: true,
+    'response.number_of_documents': responseDocumentSize,
+    duration: segment.getDurationInMillis()
   }
 
   assert.equal(vectorSearch[0].type, 'LlmVectorSearch')
@@ -47,16 +48,17 @@ function assertLangChainVectorSearchResult(
   { tx, vectorSearchResult, vectorSearchId },
   { assert = require('node:assert') } = {}
 ) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseSearchResult = {
-    'id': /[a-f0-9]{36}/,
-    'search_id': vectorSearchId,
-    'appName': 'New Relic for Node.js tests',
-    'span_id': tx.trace.root.children[0].id,
-    'trace_id': tx.traceId,
-    'ingest_source': 'Node',
-    'vendor': 'langchain',
+    id: /[a-f0-9]{36}/,
+    search_id: vectorSearchId,
+    appName: 'New Relic for Node.js tests',
+    span_id: segment.id,
+    trace_id: tx.traceId,
+    ingest_source: 'Node',
+    vendor: 'langchain',
     'metadata.id': '2',
-    'virtual_llm': true
+    virtual_llm: true
   }
 
   vectorSearchResult.forEach((search) => {
@@ -78,25 +80,26 @@ function assertLangChainChatCompletionSummary(
   { tx, chatSummary, withCallback },
   { assert = require('node:assert') } = {}
 ) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedSummary = {
-    'id': /[a-f0-9]{36}/,
-    'appName': 'New Relic for Node.js tests',
-    'span_id': tx.trace.root.children[0].id,
-    'trace_id': tx.traceId,
-    'request_id': undefined,
-    'ingest_source': 'Node',
-    'vendor': 'langchain',
+    id: /[a-f0-9]{36}/,
+    appName: 'New Relic for Node.js tests',
+    span_id: segment.id,
+    trace_id: tx.traceId,
+    request_id: undefined,
+    ingest_source: 'Node',
+    vendor: 'langchain',
     'metadata.key': 'value',
     'metadata.hello': 'world',
-    'tags': 'tag1,tag2',
-    'virtual_llm': true,
-    ['response.number_of_messages']: 1,
-    'duration': tx.trace.root.children[0].getDurationInMillis()
+    tags: 'tag1,tag2',
+    virtual_llm: true,
+    'response.number_of_messages': 1,
+    duration: segment.getDurationInMillis()
   }
 
   if (withCallback) {
-    expectedSummary.request_id = /[a-f0-9\-]{36}/
-    expectedSummary.id = /[a-f0-9\-]{36}/
+    expectedSummary.request_id = /[a-f0-9-]{36}/
+    expectedSummary.id = /[a-f0-9-]{36}/
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
@@ -114,10 +117,11 @@ function assertLangChainChatCompletionMessages(
   },
   { assert = require('node:assert') } = {}
 ) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
     id: /[a-f0-9]{36}/,
     appName: 'New Relic for Node.js tests',
-    span_id: tx.trace.root.children[0].id,
+    span_id: segment.id,
     trace_id: tx.traceId,
     ingest_source: 'Node',
     vendor: 'langchain',
@@ -127,8 +131,8 @@ function assertLangChainChatCompletionMessages(
   }
 
   if (withCallback) {
-    baseMsg.request_id = /[a-f0-9\-]{36}/
-    baseMsg.id = /[a-f0-9\-]{36}/
+    baseMsg.request_id = /[a-f0-9-]{36}/
+    baseMsg.id = /[a-f0-9-]{36}/
   }
 
   chatMsgs.forEach((msg) => {

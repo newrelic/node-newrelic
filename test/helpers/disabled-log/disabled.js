@@ -5,9 +5,11 @@
 
 'use strict'
 
+const path = require('node:path')
+
 // Start with a clean slate.
 const fs = require('fs')
-const testLogPath = __dirname + '/test.log'
+const testLogPath = path.join(__dirname, 'test.log')
 if (fs.existsSync(testLogPath)) {
   fs.unlinkSync(testLogPath)
 }

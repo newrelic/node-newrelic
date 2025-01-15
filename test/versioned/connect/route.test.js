@@ -39,7 +39,7 @@ test('should properly name transaction from route name', async (t) => {
     plan.equal(tx.verb, 'GET', 'HTTP method is GET')
     plan.equal(tx.statusCode, 200, 'status code is OK')
     plan.ok(tx.trace, 'transaction has trace')
-    const web = tx.trace.root.children[0]
+    const [web] = tx.trace.getChildren(tx.trace.root.id)
     plan.ok(web, 'trace has web segment')
     plan.equal(web.name, tx.name, 'segment name and transaction name match')
     plan.equal(web.partialName, 'Connect/GET//foo', 'should have partial name for apdex')
@@ -73,7 +73,7 @@ test('should default to `/` when no route is specified', async (t) => {
     plan.equal(tx.verb, 'GET', 'HTTP method is GET')
     plan.equal(tx.statusCode, 200, 'status code is OK')
     plan.ok(tx.trace, 'transaction has trace')
-    const web = tx.trace.root.children[0]
+    const [web] = tx.trace.getChildren(tx.trace.root.id)
     plan.ok(web, 'trace has web segment')
     plan.equal(web.name, tx.name, 'segment name and transaction name match')
     plan.equal(web.partialName, 'Connect/GET//', 'should have partial name for apdex')
@@ -107,6 +107,9 @@ test('should default to `/` when no route is specified', async (t) => {
  * @param {string} params.expectedData expected response data
  * @param {Object} app connect app
  *
+ * @param params.plan
+ * @param params.app
+ * @param params.pkgVersion
  * @returns {http.Server}
  */
 function createServerAndMakeRequest({ url, expectedData, plan, app, pkgVersion }) {

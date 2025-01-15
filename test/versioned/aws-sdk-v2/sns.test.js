@@ -72,10 +72,18 @@ test('SNS', async (t) => {
 function finish(end, tx) {
   const root = tx.trace.root
 
-  const messages = common.checkAWSAttributes(root, common.SNS_PATTERN)
+  const messages = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: root,
+    pattern: common.SNS_PATTERN
+  })
   assert.equal(messages.length, 1, 'should have 1 message broker segment')
 
-  const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
+  const externalSegments = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: root,
+    pattern: common.EXTERN_PATTERN
+  })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   const attrs = messages[0].attributes.get(common.SEGMENT_DESTINATION)
@@ -84,6 +92,6 @@ function finish(end, tx) {
     'aws.requestId': String,
     'aws.service': 'Amazon SNS',
     'aws.region': 'us-east-1'
-  }),
-    end()
+  })
+  end()
 }

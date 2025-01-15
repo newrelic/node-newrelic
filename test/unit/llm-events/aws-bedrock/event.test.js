@@ -28,7 +28,7 @@ test.beforeEach((ctx) => {
               get(key) {
                 assert.equal(key, TRANS_SCOPE)
                 return {
-                  ['llm.conversation_id']: 'conversation-1',
+                  'llm.conversation_id': 'conversation-1',
                   omit: 'me'
                 }
               }
@@ -39,11 +39,11 @@ test.beforeEach((ctx) => {
     }
   }
 
+  ctx.nr.transaction = {
+    traceId: 'trace-1'
+  }
   ctx.nr.segment = {
-    id: 'segment-1',
-    transaction: {
-      traceId: 'trace-1'
-    }
+    id: 'segment-1'
   }
 
   ctx.nr.bedrockResponse = {

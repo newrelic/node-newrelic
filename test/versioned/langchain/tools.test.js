@@ -44,7 +44,9 @@ test('should create span on successful tools create', (t, end) => {
   helper.runInTransaction(agent, async (tx) => {
     const result = await tool.call(input)
     assert.ok(result)
-    assertSegments(tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], { exact: false })
+    assertSegments(tx.trace, tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], {
+      exact: false
+    })
     tx.end()
     end()
   })
@@ -75,22 +77,23 @@ test('should create LlmTool event for every tool.call', (t, end) => {
     assert.equal(events.length, 1, 'should create a LlmTool event')
     const [[{ type }, toolEvent]] = events
     assert.equal(type, 'LlmTool')
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
     match(toolEvent, {
-      'id': /[a-f0-9]{36}/,
-      'appName': 'New Relic for Node.js tests',
-      'span_id': tx.trace.root.children[0].id,
-      'trace_id': tx.traceId,
-      'ingest_source': 'Node',
-      'vendor': 'langchain',
+      id: /[a-f0-9]{36}/,
+      appName: 'New Relic for Node.js tests',
+      span_id: segment.id,
+      trace_id: tx.traceId,
+      ingest_source: 'Node',
+      vendor: 'langchain',
       'metadata.key': 'value',
       'metadata.hello': 'world',
-      'tags': 'tag1,tag2,tag3',
+      tags: 'tag1,tag2,tag3',
       input,
-      'output': tool.fakeData[input],
-      'name': tool.name,
-      'description': tool.description,
-      'duration': tx.trace.root.children[0].getDurationInMillis(),
-      'run_id': undefined
+      output: tool.fakeData[input],
+      name: tool.name,
+      description: tool.description,
+      duration: segment.getDurationInMillis(),
+      run_id: undefined
     })
     tx.end()
     end()

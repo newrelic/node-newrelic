@@ -15,21 +15,21 @@ const shim = s.shim
 let test = null
 
 const testFunctions = {
-  'defineProperty': function testDefProp() {
+  defineProperty: function testDefProp() {
     Object.defineProperty(test.func, 'testProp', {
       value: 4
     })
   },
-  'set': function testAssignment() {
+  set: function testAssignment() {
     test.func.testProp = 4
   },
-  'apply': function testApplication() {
+  apply: function testApplication() {
     return test.func()
   },
-  'construct': function testConstruction() {
+  construct: function testConstruction() {
     return new test.func() //eslint-disable-line
   },
-  'get': function testGet() {
+  get: function testGet() {
     return test.func.testProp
   },
   'get unwrap': function testGetUnwrap() {
@@ -44,7 +44,7 @@ Object.keys(testFunctions).forEach((testName) => {
       test = shared.getTest()
       test.func.testProp = 1
       shim.wrapReturn(test, 'func', function (shim, fn, fnName, ret) {
-        return { ret: ret }
+        return { ret }
       })
       return test
     },

@@ -25,7 +25,7 @@ test('Express router introspection', async function (t) {
   const { agent, app, express, port } = t.nr
   const plan = tsplan(t, { plan: 14 })
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.get('/b/:param2', function (req, res) {
     plan.ok(agent.getTransaction(), 'transaction is available')
 
@@ -46,7 +46,7 @@ test('Express router introspection', async function (t) {
     plan.equal(transaction.verb, 'GET', 'HTTP method is GET')
     plan.ok(transaction.trace, 'transaction has trace')
 
-    const web = transaction.trace.root.children[0]
+    const [web] = transaction.trace.getChildren(transaction.trace.root.id)
     plan.ok(web, 'trace has web segment')
     plan.equal(web.name, transaction.name, 'segment name and transaction name match')
     plan.equal(

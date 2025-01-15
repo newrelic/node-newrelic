@@ -158,7 +158,7 @@ test('getProcessorStats - linux', async (t) => {
       './utilization/common': {
         readProc: readProcFunction
       },
-      'os': {
+      os: {
         platform: platformFunction
       }
     })
@@ -302,7 +302,7 @@ test('getMemoryStats - linux', async (t) => {
       './utilization/common': {
         readProc: readProcFunction
       },
-      'os': {
+      os: {
         platform: platformFunction
       }
     })
@@ -393,7 +393,7 @@ test('systemInfo edge cases', async (t) => {
     './utilization/docker-info': {
       getBootId: (agent, callback) => callback(null)
     },
-    'os': {
+    os: {
       platform: () => 'something weird'
     }
   })
@@ -407,7 +407,7 @@ test('systemInfo edge cases', async (t) => {
 
     return new Promise((resolve) => {
       systemInfo._getProcessorStats = () => {}
-      systemInfo(agentMock, (err, result) => {
+      systemInfo(agentMock, (_, result) => {
         resolve(result)
       })
     })

@@ -12,7 +12,7 @@ const recordDistributedTrace = require('../../../lib/metrics/recorders/distribut
 const Transaction = require('../../../lib/transaction')
 
 const makeSegment = (opts) => {
-  const segment = opts.tx.trace.root.add('placeholder')
+  const segment = opts.tx.trace.add('placeholder')
   segment.setDurationInMillis(opts.duration)
   segment._setExclusiveDurationInMillis(opts.exclusive)
 
@@ -39,9 +39,9 @@ function beforeEach(ctx) {
   })
   // Set the DT required data after config runs, since they'll be cleared when
   // not in serverless_mode
-  ;(agent.config.account_id = '1234'),
-    (agent.config.primary_application_id = '5678'),
-    (agent.config.trusted_account_key = '1234')
+  agent.config.account_id = '1234'
+  agent.config.primary_application_id = '5678'
+  agent.config.trusted_account_key = '1234'
   ctx.nr.tx = new Transaction(agent)
   ctx.nr.agent = agent
 }

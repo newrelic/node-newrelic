@@ -10,7 +10,7 @@ const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 
 test('Restify router introspection', async function (t) {
-  const plan = tspl(t, { plan: 7 })
+  const plan = tspl(t, { plan: 8 })
 
   const agent = helper.instrumentMockedAgent()
   const api = new API(agent)
@@ -66,6 +66,7 @@ test('Restify router introspection', async function (t) {
     const port = server.address().port
     const url = 'http://localhost:' + port + '/polling/31337'
     helper.makeGetRequest(url, function (error, res, body) {
+      plan.ifError(error)
       plan.equal(res.statusCode, 400, 'got expected error')
       plan.deepEqual(body, { status: 'pollpollpoll' }, 'got expected response')
     })

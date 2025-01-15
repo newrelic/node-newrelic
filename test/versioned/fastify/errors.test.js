@@ -32,7 +32,7 @@ test('Test Errors', async (t) => {
 
   fastify.use((req, res, next) => {
     const err = new Error('Not found')
-    // eslint-disable-next-line new-cap
+
     err.status = 404
     next(err)
   })

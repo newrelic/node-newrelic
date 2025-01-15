@@ -58,6 +58,7 @@ test('first two segments are built-in Express middleware', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server })
   assertSegments(
+    transaction.trace,
     rootSegment,
     ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']],
     assertSegmentsOptions
@@ -87,6 +88,7 @@ test('segments for route handler', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server })
   assertSegments(
+    transaction.trace,
     rootSegment,
     ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']],
     assertSegmentsOptions
@@ -104,6 +106,7 @@ test('route function names are in segment names', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server })
   assertSegments(
+    transaction.trace,
     rootSegment,
     ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + 'myHandler']],
     assertSegmentsOptions
@@ -121,6 +124,7 @@ test('middleware mounted on a path should produce correct names', async (t) => {
 
   const { transaction } = await runTest({ agent, server, endpoint: '/test/1' })
   const routeSegment = findSegment(
+    transaction.trace,
     transaction.trace.root,
     NAMES.EXPRESS.MIDDLEWARE + 'handler//test/:id'
   )
@@ -144,6 +148,7 @@ test('each handler in route has its own segment', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Route Path: /test',
@@ -161,7 +166,7 @@ test('each handler in route has its own segment', async (t) => {
 test('segments for routers', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.all('/test', function (req, res) {
     res.end()
   })
@@ -170,6 +175,7 @@ test('segments for routers', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint: '/router1/test' })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Router: /router1',
@@ -188,13 +194,13 @@ test('segments for routers', async (t) => {
 test('two root routers', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
   router1.all('/', function (req, res) {
     res.end()
   })
   app.use('/', router1)
 
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router2 = express.Router()
   router2.all('/test', function (req, res) {
     res.end()
   })
@@ -202,6 +208,7 @@ test('two root routers', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Router: /',
@@ -217,7 +224,7 @@ test('two root routers', async (t) => {
 test('router mounted as a route handler', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
   router1.all('/test', function testHandler(req, res) {
     res.send('test')
   })
@@ -238,6 +245,7 @@ test('router mounted as a route handler', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       `Expressjs/Route Path: ${segmentPath}`,
@@ -259,7 +267,7 @@ test('router mounted as a route handler', async (t) => {
 test('segments for routers', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.all('/test', function (req, res) {
     res.end()
   })
@@ -268,6 +276,7 @@ test('segments for routers', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint: '/router1/test' })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Router: /router1',
@@ -300,6 +309,7 @@ test('segments for sub-app', async (t) => {
     : 'Expressjs/Mounted App: /subapp1'
 
   assertSegments(
+    transaction.trace,
     rootSegment,
     [firstSegment, ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]],
     assertSegmentsOptions
@@ -338,6 +348,7 @@ test('segments for sub-app router', async (t) => {
     : 'Expressjs/Mounted App: /subapp1'
 
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       firstSegment,
@@ -375,6 +386,7 @@ test('segments for wildcard', async (t) => {
     : 'Expressjs/Mounted App: /subapp1'
 
   assertSegments(
+    transaction.trace,
     rootSegment,
     [firstSegment, ['Expressjs/Route Path: /:app', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]],
     assertSegmentsOptions
@@ -390,7 +402,7 @@ test('segments for wildcard', async (t) => {
 test('router with subapp', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   const subapp = express()
   subapp.all('/test', function (req, res) {
     res.end()
@@ -409,6 +421,7 @@ test('router with subapp', async (t) => {
     : 'Expressjs/Mounted App: /subapp1'
 
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Router: /router1',
@@ -432,7 +445,12 @@ test('mounted middleware', async (t) => {
   })
 
   const { rootSegment, transaction } = await runTest({ agent, server })
-  assertSegments(rootSegment, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler//test'], assertSegmentsOptions)
+  assertSegments(
+    transaction.trace,
+    rootSegment,
+    [NAMES.EXPRESS.MIDDLEWARE + 'myHandler//test'],
+    assertSegmentsOptions
+  )
 
   checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler//test'])
 })
@@ -450,6 +468,7 @@ test('error middleware', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Route Path: /test',
@@ -472,7 +491,7 @@ test('error middleware', async (t) => {
 test('error handler in router', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/test', function () {
     throw new Error('some error')
@@ -488,6 +507,7 @@ test('error handler in router', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Router: /router',
@@ -513,8 +533,8 @@ test('error handler in router', async (t) => {
 test('error handler in second router', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   router2.get('/test', function () {
     throw new Error('some error')
@@ -531,6 +551,7 @@ test('error handler in second router', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Router: /router1',
@@ -559,7 +580,7 @@ test('error handler in second router', async (t) => {
 test('error handler outside of router', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/test', function () {
     throw new Error('some error')
@@ -574,6 +595,7 @@ test('error handler outside of router', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Router: /router',
@@ -596,8 +618,8 @@ test('error handler outside of router', async (t) => {
 test('error handler outside of two routers', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   router1.use('/router2', router2)
 
@@ -614,6 +636,7 @@ test('error handler outside of two routers', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [
       'Expressjs/Router: /router1',
@@ -645,6 +668,7 @@ test('when using a route variable', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint: '/a/b' })
   assertSegments(
+    transaction.trace,
     rootSegment,
     ['Expressjs/Route Path: /:foo/:bar', [NAMES.EXPRESS.MIDDLEWARE + 'myHandler']],
     assertSegmentsOptions
@@ -667,6 +691,7 @@ test('when using a string pattern in path', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint: '/abcd' })
   assertSegments(
+    transaction.trace,
     rootSegment,
     [`Expressjs/Route Path: ${path}`, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler']],
     assertSegmentsOptions
@@ -684,6 +709,7 @@ test('when using a regular expression in path', async (t) => {
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint: '/a' })
   assertSegments(
+    transaction.trace,
     rootSegment,
     ['Expressjs/Route Path: /a/', [NAMES.EXPRESS.MIDDLEWARE + 'myHandler']],
     assertSegmentsOptions
@@ -694,7 +720,7 @@ test('when using a regular expression in path', async (t) => {
 
 async function runTest({ agent, server, endpoint = '/test', errors = 0 }) {
   const transaction = await makeRequestAndFinishTransaction({ server, agent, endpoint })
-  const rootSegment = transaction.trace.root.children[0]
+  const [rootSegment] = transaction.trace.getChildren(transaction.trace.root.id)
 
   assert.equal(agent.errors.traceAggregator.errors.length, errors, `should have ${errors} errors`)
   return { rootSegment, transaction }

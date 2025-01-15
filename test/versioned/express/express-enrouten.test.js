@@ -22,7 +22,7 @@ test.afterEach(teardown)
 
 test('Express + express-enrouten compatibility test', { skip: isExpress5() }, async function (t) {
   const { app, port } = t.nr
-  const plan = tsplan(t, { plan: 2 })
+  const plan = tsplan(t, { plan: 4 })
 
   const enrouten = require('express-enrouten')
   app.use(enrouten({ directory: './fixtures' }))
@@ -30,10 +30,12 @@ test('Express + express-enrouten compatibility test', { skip: isExpress5() }, as
   // New Relic + express-enrouten used to have a bug, where any routes after the
   // first one would be lost.
   helper.makeGetRequest('http://localhost:' + port + '/', function (error, res) {
+    plan.ifError(error)
     plan.equal(res.statusCode, 200, 'First Route loaded')
   })
 
   helper.makeGetRequest('http://localhost:' + port + '/foo', function (error, res) {
+    plan.ifError(error)
     plan.equal(res.statusCode, 200, 'Second Route loaded')
   })
   await plan.completed

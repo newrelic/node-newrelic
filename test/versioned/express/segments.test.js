@@ -36,10 +36,11 @@ test('first two segments are built-in Express middlewares', function (t, end) {
     res.end()
   })
 
-  runTest(t, function (segments, transaction) {
+  runTest(t, function (root, transaction) {
     // TODO: check for different HTTP methods
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']],
       assertSegmentsOptions
     )
@@ -59,7 +60,7 @@ test('middleware with child segment gets named correctly', function (t, end) {
     }, 1)
   })
 
-  runTest(t, function (segments, transaction) {
+  runTest(t, function (root, transaction) {
     checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//test'])
 
     end()
@@ -73,9 +74,10 @@ test('segments for route handler', function (t, end) {
     res.end()
   })
 
-  runTest(t, function (segments, transaction) {
+  runTest(t, function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']],
       assertSegmentsOptions
     )
@@ -93,9 +95,10 @@ test('route function names are in segment names', function (t, end) {
     res.end()
   })
 
-  runTest(t, function (segments, transaction) {
+  runTest(t, function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + 'myHandler']],
       assertSegmentsOptions
     )
@@ -113,9 +116,10 @@ test('middleware mounted on a path should produce correct names', function (t, e
     res.send()
   })
 
-  runTest(t, '/test/1', function (segments, transaction) {
+  runTest(t, '/test/1', function (root, transaction) {
     const segment = findSegment(
-      transaction.trace.root,
+      transaction.trace,
+      root,
       NAMES.EXPRESS.MIDDLEWARE + 'handler//test/:id'
     )
     assert.ok(segment)
@@ -139,9 +143,10 @@ test('each handler in route has its own segment', function (t, end) {
     }
   )
 
-  runTest(t, function (segments, transaction) {
+  runTest(t, function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [
         'Expressjs/Route Path: /test',
         [NAMES.EXPRESS.MIDDLEWARE + 'handler1', NAMES.EXPRESS.MIDDLEWARE + 'handler2']
@@ -161,16 +166,17 @@ test('each handler in route has its own segment', function (t, end) {
 test('segments for routers', function (t, end) {
   const { app, express } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.all('/test', function (req, res) {
     res.end()
   })
 
   app.use('/router1', router)
 
-  runTest(t, '/router1/test', function (segments, transaction) {
+  runTest(t, '/router1/test', function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [
         'Expressjs/Router: /router1',
         ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]
@@ -191,21 +197,22 @@ test('segments for routers', function (t, end) {
 test('two root routers', function (t, end) {
   const { app, express } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
   router1.all('/', function (req, res) {
     res.end()
   })
   app.use('/', router1)
 
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router2 = express.Router()
   router2.all('/test', function (req, res) {
     res.end()
   })
   app.use('/', router2)
 
-  runTest(t, '/test', function (segments, transaction) {
+  runTest(t, '/test', function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [
         'Expressjs/Router: /',
         'Expressjs/Router: /',
@@ -223,7 +230,7 @@ test('two root routers', function (t, end) {
 test('router mounted as a route handler', function (t, end) {
   const { app, express, isExpress5 } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
   router1.all('/test', function testHandler(req, res) {
     res.send('test')
   })
@@ -241,9 +248,10 @@ test('router mounted as a route handler', function (t, end) {
   }
   app.get(path, router1)
 
-  runTest(t, '/test', function (segments, transaction) {
+  runTest(t, '/test', function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [
         `Expressjs/Route Path: ${segmentPath}`,
         [
@@ -267,16 +275,17 @@ test('router mounted as a route handler', function (t, end) {
 test('segments for routers', function (t, end) {
   const { app, express } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   router.all('/test', function (req, res) {
     res.end()
   })
 
   app.use('/router1', router)
 
-  runTest(t, '/router1/test', function (segments, transaction) {
+  runTest(t, '/router1/test', function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [
         'Expressjs/Router: /router1',
         ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]
@@ -304,14 +313,15 @@ test('segments for sub-app', function (t, end) {
 
   app.use('/subapp1', subapp)
 
-  runTest(t, '/subapp1/test', function (segments, transaction) {
+  runTest(t, '/subapp1/test', function (root, transaction) {
     // express 5 no longer handles child routers as mounted applications
     const firstSegment = isExpress5
       ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
       : 'Expressjs/Mounted App: /subapp1'
 
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [firstSegment, ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]],
       assertSegmentsOptions
     )
@@ -345,13 +355,14 @@ test('segments for sub-app router', function (t, end) {
 
   app.use('/subapp1', subapp)
 
-  runTest(t, '/subapp1/test', function (segments, transaction) {
+  runTest(t, '/subapp1/test', function (root, transaction) {
     // express 5 no longer handles child routers as mounted applications
     const firstSegment = isExpress5
       ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
       : 'Expressjs/Mounted App: /subapp1'
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [
         firstSegment,
         [
@@ -384,13 +395,14 @@ test('segments for wildcard', function (t, end) {
 
   app.use('/subapp1', subapp)
 
-  runTest(t, '/subapp1/test', function (segments, transaction) {
+  runTest(t, '/subapp1/test', function (root, transaction) {
     // express 5 no longer handles child routers as mounted applications
     const firstSegment = isExpress5
       ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
       : 'Expressjs/Mounted App: /subapp1'
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [firstSegment, ['Expressjs/Route Path: /:app', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]],
       assertSegmentsOptions
     )
@@ -408,7 +420,7 @@ test('segments for wildcard', function (t, end) {
 test('router with subapp', function (t, end) {
   const { app, express, isExpress5 } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
   const subapp = express()
   subapp.all('/test', function (req, res) {
     res.end()
@@ -416,13 +428,14 @@ test('router with subapp', function (t, end) {
   router.use('/subapp1', subapp)
   app.use('/router1', router)
 
-  runTest(t, '/router1/subapp1/test', function (segments, transaction) {
+  runTest(t, '/router1/subapp1/test', function (root, transaction) {
     // express 5 no longer handles child routers as mounted applications
     const subAppSegment = isExpress5
       ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
       : 'Expressjs/Mounted App: /subapp1'
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [
         'Expressjs/Router: /router1',
         [subAppSegment, ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]]
@@ -447,9 +460,10 @@ test('mounted middleware', function (t, end) {
     res.end()
   })
 
-  runTest(t, function (segments, transaction) {
+  runTest(t, function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [NAMES.EXPRESS.MIDDLEWARE + 'myHandler//test'],
       assertSegmentsOptions
     )
@@ -471,9 +485,10 @@ test('error middleware', function (t, end) {
     res.end()
   })
 
-  runTest(t, function (segments, transaction) {
+  runTest(t, function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       [
         'Expressjs/Route Path: /test',
         [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'],
@@ -498,7 +513,7 @@ test('error middleware', function (t, end) {
 test('error handler in router', function (t, end) {
   const { app, express } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/test', function () {
     throw new Error('some error')
@@ -515,12 +530,13 @@ test('error handler in router', function (t, end) {
   runTest(
     t,
     {
-      endpoint: endpoint,
+      endpoint,
       errors: 0
     },
-    function (segments, transaction) {
+    function (root, transaction) {
       assertSegments(
-        transaction.trace.root.children[0],
+        transaction.trace,
+        root,
         [
           'Expressjs/Router: /router',
           [
@@ -549,8 +565,8 @@ test('error handler in router', function (t, end) {
 test('error handler in second router', function (t, end) {
   const { app, express } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   router2.get('/test', function () {
     throw new Error('some error')
@@ -568,12 +584,13 @@ test('error handler in second router', function (t, end) {
   runTest(
     t,
     {
-      endpoint: endpoint,
+      endpoint,
       errors: 0
     },
-    function (segments, transaction) {
+    function (root, transaction) {
       assertSegments(
-        transaction.trace.root.children[0],
+        transaction.trace,
+        root,
         [
           'Expressjs/Router: /router1',
           [
@@ -605,7 +622,7 @@ test('error handler in second router', function (t, end) {
 test('error handler outside of router', function (t, end) {
   const { app, express } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/test', function () {
     throw new Error('some error')
@@ -621,12 +638,13 @@ test('error handler outside of router', function (t, end) {
   runTest(
     t,
     {
-      endpoint: endpoint,
+      endpoint,
       errors: 0
     },
-    function (segments, transaction) {
+    function (root, transaction) {
       assertSegments(
-        transaction.trace.root.children[0],
+        transaction.trace,
+        root,
         [
           'Expressjs/Router: /router',
           ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']],
@@ -652,8 +670,8 @@ test('error handler outside of router', function (t, end) {
 test('error handler outside of two routers', function (t, end) {
   const { app, express } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   router1.use('/router2', router2)
 
@@ -671,12 +689,13 @@ test('error handler outside of two routers', function (t, end) {
   runTest(
     t,
     {
-      endpoint: endpoint,
+      endpoint,
       errors: 0
     },
-    function (segments, transaction) {
+    function (root, transaction) {
       assertSegments(
-        transaction.trace.root.children[0],
+        transaction.trace,
+        root,
         [
           'Expressjs/Router: /router1',
           [
@@ -709,9 +728,10 @@ test('when using a route variable', function (t, end) {
     res.end()
   })
 
-  runTest(t, '/a/b', function (segments, transaction) {
+  runTest(t, '/a/b', function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       ['Expressjs/Route Path: /:foo/:bar', [NAMES.EXPRESS.MIDDLEWARE + 'myHandler']],
       assertSegmentsOptions
     )
@@ -734,9 +754,10 @@ test('when using a string pattern in path', function (t, end) {
     res.end()
   })
 
-  runTest(t, '/abcd', function (segments, transaction) {
+  runTest(t, '/abcd', function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       ['Expressjs/Route Path: ' + path, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler']],
       assertSegmentsOptions
     )
@@ -754,9 +775,10 @@ test('when using a regular expression in path', function (t, end) {
     res.end()
   })
 
-  runTest(t, '/a', function (segments, transaction) {
+  runTest(t, '/a', function (root, transaction) {
     assertSegments(
-      transaction.trace.root.children[0],
+      transaction.trace,
+      root,
       ['Expressjs/Route Path: /a/', [NAMES.EXPRESS.MIDDLEWARE + 'myHandler']],
       assertSegmentsOptions
     )
@@ -785,9 +807,15 @@ for (const enabled of codeLevelMetrics) {
       res.end()
     })
 
-    runTest(t, '/chained', function (segments, transaction) {
-      const routeSegment = findSegment(transaction.trace.root, 'Expressjs/Route Path: /chained')
-      const [mw1Segment, mw2Segment, handlerSegment] = routeSegment.children
+    runTest(t, '/chained', function (root, transaction) {
+      const routeSegment = findSegment(
+        transaction.trace,
+        transaction.trace.root,
+        'Expressjs/Route Path: /chained'
+      )
+      const [mw1Segment, mw2Segment, handlerSegment] = transaction.trace.getChildren(
+        routeSegment.id
+      )
       const defaultPath = 'test/versioned/express/segments.test.js'
       assertCLMAttrs({
         segments: [
@@ -832,11 +860,11 @@ function runTest(t, options, callback) {
   }
 
   agent.on('transactionFinished', function (tx) {
-    const baseSegment = tx.trace.root.children[0]
+    const [baseSegment] = tx.trace.getChildren(tx.trace.root.id)
 
     assert.equal(agent.errors.traceAggregator.errors.length, errors, 'should have errors')
 
-    callback(baseSegment.children, tx)
+    callback(baseSegment, tx)
   })
 
   makeRequest(port, endpoint, function (response) {

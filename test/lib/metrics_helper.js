@@ -10,13 +10,14 @@ const urltils = require('../../lib/util/urltils')
 exports.findSegment = findSegment
 exports.getMetricHostName = getMetricHostName
 
-function findSegment(root, name) {
+function findSegment(trace, root, name) {
+  const children = trace.getChildren(root.id)
   if (root.name === name) {
     return root
-  } else if (root.children && root.children.length) {
-    for (let i = 0; i < root.children.length; i++) {
-      const child = root.children[i]
-      const found = findSegment(child, name)
+  } else if (children.length) {
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i]
+      const found = findSegment(trace, child, name)
       if (found) {
         return found
       }

@@ -21,7 +21,7 @@ const { match } = require('../../lib/custom-assertions')
 function checkEntityLinkingSegments({ operations, tx, end }) {
   const root = tx.trace.root
 
-  const segments = checkAWSAttributes(root, EXTERN_PATTERN)
+  const segments = checkAWSAttributes({ trace: tx.trace, segment: root, pattern: EXTERN_PATTERN })
   const accountId = tx.agent.config.cloud.aws.account_id
   const testFunctionName = 'funcName'
 
@@ -37,7 +37,7 @@ function checkEntityLinkingSegments({ operations, tx, end }) {
       'aws.region': 'us-east-1',
       'aws.service': String,
       'cloud.resource_id': `arn:aws:lambda:${attrs['aws.region']}:${accountId}:function:${testFunctionName}`,
-      'cloud.platform': `aws_lambda`
+      'cloud.platform': 'aws_lambda'
     })
   })
   end()
@@ -47,7 +47,7 @@ function checkNonLinkableSegments({ operations, tx, end }) {
   // When no account ID or ARN is available, make sure not to set cloud resource id or platform
   const root = tx.trace.root
 
-  const segments = checkAWSAttributes(root, EXTERN_PATTERN)
+  const segments = checkAWSAttributes({ trace: tx.trace, segment: root, pattern: EXTERN_PATTERN })
   const accountId = tx.agent.config?.cloud?.aws?.account_id
 
   assert(segments.length > 0, 'should have segments')

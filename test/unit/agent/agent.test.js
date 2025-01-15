@@ -101,11 +101,6 @@ test('when loaded with defaults', async (t) => {
     const { agent } = t.nr
     assert.throws(() => agent.setState('bogus'), /Invalid state bogus/)
   })
-
-  await t.test('has some debugging configuration by default', (t) => {
-    const { agent } = t.nr
-    assert.equal(Object.hasOwn(agent.config, 'debug'), true)
-  })
 })
 
 test('should load naming rules when configured', () => {
@@ -591,7 +586,7 @@ test('when connected', async (t) => {
     })
   })
 
-  function setupAggregators({ enableAggregator: enableAggregator = true, agent, collector }) {
+  function setupAggregators({ enableAggregator = true, agent, collector }) {
     agent.config.application_logging.enabled = enableAggregator
     agent.config.application_logging.forwarding.enabled = enableAggregator
     agent.config.slow_sql.enabled = enableAggregator
@@ -654,8 +649,15 @@ test('when connected', async (t) => {
     agent.logs.add([{ key: 'bar' }])
     const tx = new helper.FakeTransaction(agent, '/path/to/fake')
     tx.metrics = { apdexT: 0 }
-    const segment = new helper.FakeSegment(tx, 2_000)
-    agent.queries.add(segment, 'mysql', 'select * from foo', 'Stack\nFrames')
+    const segment = tx.trace.add('FakeSegment')
+    segment.setDurationInMillis(2000)
+    agent.queries.add({
+      transaction: tx,
+      segment,
+      type: 'mysql',
+      query: 'select * from foo',
+      trace: 'Stack\nFrames'
+    })
     agent.spanEventAggregator.add(segment)
     agent.transactionEventAggregator.add(tx)
     agent.customEventAggregator.add({ key: 'value' })
@@ -693,8 +695,15 @@ test('when connected', async (t) => {
       agent.logs.add([{ key: 'bar' }])
       const tx = new helper.FakeTransaction(agent, '/path/to/fake')
       tx.metrics = { apdexT: 0 }
-      const segment = new helper.FakeSegment(tx, 2_000)
-      agent.queries.add(segment, 'mysql', 'select * from foo', 'Stack\nFrames')
+      const segment = tx.trace.add('FakeSegment')
+      segment.setDurationInMillis(2000)
+      agent.queries.add({
+        transaction: tx,
+        segment,
+        type: 'mysql',
+        query: 'select * from foo',
+        trace: 'Stack\nFrames'
+      })
       agent.spanEventAggregator.add(segment)
       agent.transactionEventAggregator.add(tx)
       agent.customEventAggregator.add({ key: 'value' })

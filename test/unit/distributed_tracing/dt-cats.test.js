@@ -36,7 +36,7 @@ test('distributed tracing', async function (t) {
       agent.config.span_events.enabled = testCase.span_events_enabled
       helper.runInTransaction(agent, (tx) => {
         tx.type = testCase.web_transaction ? 'web' : 'bg'
-        tx.baseSegment = tx.trace.root.add('MyBaseSegment', (segment) => {
+        tx.baseSegment = tx.trace.add('MyBaseSegment', (segment) => {
           recorder(
             tx,
             testCase.web_transaction ? 'Web' : 'Other',
@@ -44,6 +44,7 @@ test('distributed tracing', async function (t) {
             segment.getExclusiveDurationInMillis()
           )
         })
+        agent.tracer.setSegment({ segment: tx.baseSegment })
 
         if (!Array.isArray(testCase.inbound_payloads)) {
           testCase.inbound_payloads = [testCase.inbound_payloads]
@@ -80,13 +81,13 @@ test('distributed tracing', async function (t) {
 
             if (outbound.expected) {
               outbound.expected.forEach((key) => {
-                assert.ok(created.d.hasOwnProperty(keyRegex.exec(key)[1]))
+                assert.ok(Object.prototype.hasOwnProperty.call(created.d, keyRegex.exec(key)[1]))
               })
             }
 
             if (outbound.unexpected) {
               outbound.unexpected.forEach((key) => {
-                assert.ok(!created.d.hasOwnProperty(keyRegex.exec(key)[1]))
+                assert.ok(!Object.prototype.hasOwnProperty.call(created.d, keyRegex.exec(key)[1]))
               })
             }
           })

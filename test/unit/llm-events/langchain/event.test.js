@@ -11,7 +11,8 @@ const LangChainEvent = require('../../../../lib/llm-events/langchain/event')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-  ctx.nr._tx = {
+  ctx.nr.transaction = {
+    traceId: 'trace-1',
     trace: {
       custom: {
         get() {
@@ -19,7 +20,7 @@ test.beforeEach((ctx) => {
             'llm.conversation_id': 'test-conversation',
             'llm.foo': 'bar',
             'llm.bar': 'baz',
-            'customKey': 'customValue'
+            customKey: 'customValue'
           }
         }
       }
@@ -34,16 +35,13 @@ test.beforeEach((ctx) => {
     },
     tracer: {
       getTransaction() {
-        return ctx.nr._tx
+        return ctx.nr.transaction
       }
     }
   }
 
   ctx.nr.segment = {
-    id: 'segment-1',
-    transaction: {
-      traceId: 'trace-1'
-    }
+    id: 'segment-1'
   }
 
   ctx.nr.runId = 'run-1'

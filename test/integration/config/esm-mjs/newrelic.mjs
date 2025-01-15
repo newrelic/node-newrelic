@@ -9,4 +9,3 @@ export const config = {
   app_name: ['esm-test'],
   license_key: 'nonsensical-balderdash'
 }
-

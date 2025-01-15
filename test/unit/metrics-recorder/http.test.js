@@ -12,7 +12,7 @@ const recordWeb = require('../../../lib/metrics/recorders/http')
 const Transaction = require('../../../lib/transaction')
 
 function makeSegment(options) {
-  const segment = options.transaction.trace.root.add('placeholder')
+  const segment = options.transaction.trace.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -28,8 +28,8 @@ function record(options) {
   const transaction = options.transaction
 
   transaction.finalizeNameFromUri(options.url, options.code)
-  segment.markAsWeb(options.url)
-  recordWeb(segment, options.transaction.name)
+  segment.markAsWeb(transaction)
+  recordWeb(segment, options.transaction.name, options.transaction)
 }
 
 function beforeEach(ctx) {
@@ -78,7 +78,8 @@ test('recordWeb when recording web transactions with distributed tracing enabled
     agent.config.distributed_tracing.enabled = true
     agent.config.cross_application_tracer.enabled = true
     agent.config.account_id = '1234'
-    ;(agent.config.primary_application_id = '5677'), (agent.config.trusted_account_key = '1234')
+    agent.config.primary_application_id = '5677'
+    agent.config.trusted_account_key = '1234'
 
     const payload = trans._createDistributedTracePayload().text()
     trans.isDistributedTrace = null
@@ -130,7 +131,8 @@ test('recordWeb when recording web transactions with distributed tracing enabled
     agent.config.distributed_tracing.enabled = true
     agent.config.cross_application_tracer.enabled = true
     agent.config.account_id = '1234'
-    ;(agent.config.primary_application_id = '5677'), (agent.config.trusted_account_key = '1234')
+    agent.config.primary_application_id = '5677'
+    agent.config.trusted_account_key = '1234'
 
     record({
       transaction: trans,

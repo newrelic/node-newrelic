@@ -29,7 +29,6 @@ test('Redis instrumentation', async function (t) {
     await client.flushAll()
 
     await client.select(DB_INDEX)
-    // eslint-disable-next-line new-cap
 
     const METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
       ? agent.config.getHostnameSafe()
@@ -74,16 +73,16 @@ test('Redis instrumentation', async function (t) {
       const trace = transaction.trace
       assert.ok(trace, 'trace should exist')
       assert.ok(trace.root, 'root element should exist')
-      assert.equal(trace.root.children.length, 2, 'there should be only two children of the root')
+      const children = trace.getChildren(trace.root.id)
+      assert.equal(children.length, 2, 'there should be only two children of the root')
 
-      const setSegment = trace.root.children[0]
+      const [setSegment, getSegment] = children
       const setAttributes = setSegment.getAttributes()
       assert.ok(setSegment, 'trace segment for set should exist')
       assert.equal(setSegment.name, 'Datastore/operation/Redis/set', 'should register the set')
       assert.equal(setAttributes.key, '"testkey"', 'should have the set key as a attribute')
-      assert.equal(setSegment.children.length, 0, 'set should have no children')
-
-      const getSegment = trace.root.children[1]
+      const setSegmentChildren = trace.getChildren(setSegment.id)
+      assert.equal(setSegmentChildren.length, 0, 'set should have no children')
       const getAttributes = getSegment.getAttributes()
       assert.ok(getSegment, 'trace segment for get should exist')
 
@@ -148,10 +147,10 @@ test('Redis instrumentation', async function (t) {
     assert.ok(!agent.getTransaction(), 'no transaction should be in play')
     agent.config.attributes.enabled = true
 
-    helper.runInTransaction(agent, async function () {
+    helper.runInTransaction(agent, async function (tx) {
       await client.set('saveme', 'foobar')
 
-      const segment = agent.tracer.getSegment().children[0]
+      const [segment] = tx.trace.getChildren(agent.tracer.getSegment().id)
       assert.equal(segment.getAttributes().key, '"saveme"', 'should have `key` attribute')
       end()
     })
@@ -162,10 +161,10 @@ test('Redis instrumentation', async function (t) {
     assert.ok(!agent.getTransaction(), 'no transaction should be in play')
     agent.config.attributes.enabled = false
 
-    helper.runInTransaction(agent, async function () {
+    helper.runInTransaction(agent, async function (tx) {
       await client.set('saveme', 'foobar')
 
-      const segment = agent.tracer.getSegment().children[0]
+      const [segment] = tx.trace.getChildren(agent.tracer.getSegment().id)
       assert.ok(!segment.getAttributes().key, 'should not have `key` attribute')
       end()
     })
@@ -183,7 +182,7 @@ test('Redis instrumentation', async function (t) {
       await client.set('testkey', 'arglbargle')
 
       const trace = transaction.trace
-      const setSegment = trace.root.children[0]
+      const [setSegment] = trace.getChildren(trace.root.id)
       const attributes = setSegment.getAttributes()
       assert.equal(attributes.host, METRIC_HOST_NAME, 'should have host as attribute')
       assert.equal(
@@ -212,7 +211,7 @@ test('Redis instrumentation', async function (t) {
       const transaction = agent.getTransaction()
       await client.set('testkey', 'arglbargle')
 
-      const setSegment = transaction.trace.root.children[0]
+      const [setSegment] = transaction.trace.getChildren(transaction.trace.root.id)
       const attributes = setSegment.getAttributes()
       assert.equal(attributes.host, undefined, 'should not have host attribute')
       assert.equal(attributes.port_path_or_id, undefined, 'should not have port attribute')
@@ -250,9 +249,9 @@ test('Redis instrumentation', async function (t) {
     })
 
     function verify() {
-      const setSegment1 = transaction.trace.root.children[0]
-      const selectSegment = transaction.trace.root.children[1]
-      const setSegment2 = transaction.trace.root.children[2]
+      const [setSegment1, selectSegment, setSegment2] = transaction.trace.getChildren(
+        transaction.trace.root.id
+      )
 
       assert.equal(
         setSegment1.name,

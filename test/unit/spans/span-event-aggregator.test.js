@@ -60,7 +60,7 @@ test('SpanAggregator', async (t) => {
 
         assert.equal(spanEventAggregator.length, 0)
 
-        spanEventAggregator.addSegment(segment, 'p')
+        spanEventAggregator.addSegment({ segment, transaction: tx, parentId: 'p' })
         assert.equal(spanEventAggregator.length, 1)
 
         const event = spanEventAggregator.getEvents()[0]
@@ -84,7 +84,7 @@ test('SpanAggregator', async (t) => {
         const segment = agent.tracer.getSegment()
         assert.equal(spanEventAggregator.length, 0)
 
-        spanEventAggregator.addSegment(segment)
+        spanEventAggregator.addSegment({ segment, transaction: tx })
         assert.equal(spanEventAggregator.length, 1)
 
         const event = spanEventAggregator.getEvents()[0]
@@ -134,20 +134,20 @@ test('SpanAggregator', async (t) => {
         assert.equal(spanEventAggregator.seen, 0)
 
         // First segment is added regardless of priority.
-        assert.equal(spanEventAggregator.addSegment(segment), true)
+        assert.equal(spanEventAggregator.addSegment({ segment, transaction: tx }), true)
         assert.equal(spanEventAggregator.length, 1)
         assert.equal(spanEventAggregator.seen, 1)
 
         // Higher priority should be added.
         tx.priority = 100
-        assert.equal(spanEventAggregator.addSegment(segment), true)
+        assert.equal(spanEventAggregator.addSegment({ segment, transaction: tx }), true)
         assert.equal(spanEventAggregator.length, 1)
         assert.equal(spanEventAggregator.seen, 2)
         const event1 = spanEventAggregator.getEvents()[0]
 
         // Lower priority should not be added.
         tx.priority = 1
-        assert.equal(spanEventAggregator.addSegment(segment), false)
+        assert.equal(spanEventAggregator.addSegment({ segment, transaction: tx }), false)
         assert.equal(spanEventAggregator.length, 1)
         assert.equal(spanEventAggregator.seen, 3)
         const event2 = spanEventAggregator.getEvents()[0]
@@ -173,7 +173,7 @@ test('SpanAggregator', async (t) => {
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
 
-        spanEventAggregator.addSegment(segment)
+        spanEventAggregator.addSegment({ segment, transaction: tx })
 
         const payload = spanEventAggregator._toPayloadSync()
 
@@ -252,11 +252,11 @@ test('SpanAggregator', async (t) => {
     assert.equal(
       spanEventAggregator.periodMs,
       4000,
-      `should use span_event_harvest_config.report_period_ms`
+      'should use span_event_harvest_config.report_period_ms'
     )
   })
 
-  await t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
+  await t.test("should use 'span_event_harvest_config.harvest_limit' from server", (t) => {
     const { spanEventAggregator } = t.nr
     const fakeConfig = {
       span_event_harvest_config: {
@@ -273,10 +273,10 @@ test('SpanAggregator', async (t) => {
       2000,
       'should use span_event_harvest_config.harvest_limit'
     )
-    assert.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
+    assert.equal(spanEventAggregator._items.limit, 2000, 'should set queue limit')
   })
 
-  await t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
+  await t.test("should use 'span_event_harvest_config.harvest_limit' from server", (t) => {
     const { spanEventAggregator } = t.nr
     const fakeConfig = {
       span_event_harvest_config: {
@@ -293,7 +293,7 @@ test('SpanAggregator', async (t) => {
       2000,
       'should use span_event_harvest_config.harvest_limit'
     )
-    assert.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
+    assert.equal(spanEventAggregator._items.limit, 2000, 'should set queue limit')
   })
 
   await t.test('should use max_samples_stored as-is when no span harvest config', (t) => {

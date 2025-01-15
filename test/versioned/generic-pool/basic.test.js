@@ -53,13 +53,13 @@ test('instantiation', (t) => {
   plan.doesNotThrow(function () {
     const p = pool.createPool({
       create: function () {
-        return new Promise(function (res) {
-          addTask(res, {})
+        return new Promise(function (resolve) {
+          addTask(resolve, {})
         })
       },
       destroy: function () {
-        return new Promise(function (res) {
-          addTask(res)
+        return new Promise(function (resolve) {
+          addTask(resolve)
         })
       }
     })
@@ -72,13 +72,13 @@ test('context maintenance', (t, end) => {
   const p = pool.createPool(
     {
       create: function () {
-        return new Promise(function (res) {
-          addTask(res, {})
+        return new Promise(function (resolve) {
+          addTask(resolve, {})
         })
       },
       destroy: function () {
-        return new Promise(function (res) {
-          addTask(res)
+        return new Promise(function (resolve) {
+          addTask(resolve)
         })
       }
     },

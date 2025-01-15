@@ -7,7 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-// eslint-disable-next-line node/no-unsupported-features/node-builtins
 const inspector = require('inspector')
 const helper = require('../../lib/agent_helper')
 

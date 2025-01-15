@@ -62,7 +62,7 @@ test('fetch', async function (t) {
       headers: {
         'Content-Type': 'application.json'
       },
-      body: Buffer.from(`{"key":"value"}`)
+      body: Buffer.from('{"key":"value"}')
     })
 
     assert.equal(status, 200)
@@ -75,11 +75,11 @@ test('fetch', async function (t) {
         headers: {
           'Content-Type': 'application.json'
         },
-        body: Buffer.from(`{"key":"value"}`)
+        body: Buffer.from('{"key":"value"}')
       })
       assert.equal(status, 200)
 
-      assertSegments(tx.trace.root, [`External/${HOST}/post`], { exact: false })
+      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/post`], { exact: false })
       tx.end()
     })
   })
@@ -88,7 +88,7 @@ test('fetch', async function (t) {
     await helper.runInTransaction(agent, async (tx) => {
       const { status } = await fetch(`${REQUEST_URL}/get?a=b&c=d`)
       assert.equal(status, 200)
-      const segment = metrics.findSegment(tx.trace.root, `External/${HOST}/get`)
+      const segment = metrics.findSegment(tx.trace, tx.trace.root, `External/${HOST}/get`)
       const attrs = segment.getAttributes()
       assert.equal(attrs.url, `${REQUEST_URL}/get`)
       assert.equal(attrs.procedure, 'GET')
@@ -132,19 +132,19 @@ test('fetch', async function (t) {
         headers: {
           'Content-Type': 'application.json'
         },
-        body: Buffer.from(`{"key":"value"}`)
+        body: Buffer.from('{"key":"value"}')
       })
       const req2 = fetch(`${REQUEST_URL}/put`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application.json'
         },
-        body: Buffer.from(`{"key":"value"}`)
+        body: Buffer.from('{"key":"value"}')
       })
       const [{ status }, { status: status2 }] = await Promise.all([req1, req2])
       assert.equal(status, 200)
       assert.equal(status2, 200)
-      assertSegments(tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
+      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
         exact: false
       })
       tx.end()
@@ -159,7 +159,7 @@ test('fetch', async function (t) {
         })
       } catch (err) {
         assert.equal(err.message, 'fetch failed')
-        assertSegments(tx.trace.root, ['External/invalidurl/foo'], { exact: false })
+        assertSegments(tx.trace, tx.trace.root, ['External/invalidurl/foo'], { exact: false })
         assert.equal(tx.exceptions.length, 1)
         tx.end()
       }
@@ -178,7 +178,8 @@ test('fetch', async function (t) {
         }, 100)
         await req
       } catch (err) {
-        assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
+        assert.match(err.message, /This operation was aborted/)
+        assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
         assert.equal(tx.exceptions.length, 1)
         assert.equal(tx.exceptions[0].error.name, 'AbortError')
         tx.end()
@@ -204,11 +205,12 @@ test('fetch', async function (t) {
       try {
         await req
       } catch (error) {
-        assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+        assert.match(error.message, /fetch failed/)
+        assertSegments(transaction.trace, transaction.trace.root, [`External/localhost:${port}/`], {
           exact: false
         })
 
-        const segments = transaction.trace.root.children
+        const segments = transaction.trace.getChildren(transaction.trace.root.id)
         const segment = segments[segments.length - 1]
 
         assert.ok(segment.timer.start, 'should have started')
@@ -223,7 +225,7 @@ test('fetch', async function (t) {
     await helper.runInTransaction(agent, async (tx) => {
       const { status } = await fetch(`${REQUEST_URL}/status/400`)
       assert.equal(status, 400)
-      assertSegments(tx.trace.root, [`External/${HOST}/status/400`], { exact: false })
+      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/status/400`], { exact: false })
       tx.end()
     })
   })

@@ -84,6 +84,7 @@ function makeTest(testCase, vendor, getInfo) {
         // results.
         assert.ok(host.isDone(), 'should have no mocked endpoints')
         getInfo(agent, function getCachedInfo(err, cached) {
+          assert.ifError(err)
           assert.deepEqual(cached, info, 'should have same data cached')
           end()
         })

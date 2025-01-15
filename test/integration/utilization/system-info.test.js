@@ -35,7 +35,7 @@ test('pricing system-info aws', function (t, end) {
   const ecsScope = nock(awsHost).get('/docker').reply(200, { DockerId: 'ecs-container-1' })
   const awsRedirect = nock(awsHost)
   awsRedirect.put('/latest/api/token').reply(200, 'awsToken')
-  // eslint-disable-next-line guard-for-in
+
   for (const awsPath in awsResponses) {
     awsRedirect.get(`/latest/${awsPath}`).reply(200, awsResponses[awsPath])
   }
@@ -55,6 +55,7 @@ test('pricing system-info aws', function (t, end) {
   })
 
   fetchSystemInfo(agent, function fetchSystemInfoCb(err, systemInfo) {
+    assert.ifError(err)
     assert.deepEqual(systemInfo.vendors.aws, {
       instanceType: 'test.type',
       instanceId: 'test.id',
@@ -66,6 +67,7 @@ test('pricing system-info aws', function (t, end) {
     assert.ok(awsRedirect.isDone(), 'should exhaust nock endpoints')
     assert.ok(ecsScope.isDone())
     fetchSystemInfo(agent, function checkCache(err, cachedInfo) {
+      assert.ifError(err)
       assert.deepEqual(cachedInfo.vendors.aws, {
         instanceType: 'test.type',
         instanceId: 'test.id',
@@ -102,6 +104,7 @@ test('pricing system-info azure', function (t, end) {
   })
 
   fetchSystemInfo(agent, function fetchSystemInfoCb(err, systemInfo) {
+    assert.ifError(err)
     assert.deepEqual(systemInfo.vendors.azure, {
       location: 'test.location',
       name: 'test.name',
@@ -112,6 +115,7 @@ test('pricing system-info azure', function (t, end) {
     // This will throw an error if the sys info isn't being cached properly
     assert.ok(azureRedirect.isDone(), 'should exhaust nock endpoints')
     fetchSystemInfo(agent, function checkCache(err, cachedInfo) {
+      assert.ifError(err)
       assert.deepEqual(cachedInfo.vendors.azure, {
         location: 'test.location',
         name: 'test.name',
@@ -150,6 +154,7 @@ test('pricing system-info gcp', function (t, end) {
   })
 
   fetchSystemInfo(agent, function fetchSystemInfoCb(err, systemInfo) {
+    assert.ifError(err)
     const expectedData = {
       id: '3161347020215157123',
       machineType: 'custom-1-1024',
@@ -161,6 +166,7 @@ test('pricing system-info gcp', function (t, end) {
     // This will throw an error if the sys info isn't being cached properly
     assert.ok(gcpRedirect.isDone(), 'should exhaust nock endpoints')
     fetchSystemInfo(agent, function checkCache(err, cachedInfo) {
+      assert.ifError(err)
       assert.deepEqual(cachedInfo.vendors.gcp, expectedData)
       end()
     })
@@ -186,6 +192,7 @@ test('pricing system-info pcf', function (t, end) {
   process.env.MEMORY_LIMIT = '1024m'
 
   fetchSystemInfo(agent, function fetchSystemInfoCb(err, systemInfo) {
+    assert.ifError(err)
     const expectedData = {
       cf_instance_guid: 'b977d090-83db-4bdb-793a-bb77',
       cf_instance_ip: '10.10.147.130',
@@ -223,6 +230,7 @@ test('pricing system-info docker', function (t, end) {
   })
 
   fetchSystemInfoProxy(agent, function fetchSystemInfoCb(err, systemInfo) {
+    assert.ifError(err)
     const expectedData = {
       id: '47cbd16b77c50cbf71401c069cd2189f0e659af17d5a2daca3bddf59d8a870b2'
     }

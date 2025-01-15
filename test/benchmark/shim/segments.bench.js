@@ -31,7 +31,7 @@ suite.add({
   fn: function () {
     const test = shared.getTest()
     shim.record(test, 'func', function (shim, fn, name, args) {
-      return new RecorderSpec({ name: name, args: args })
+      return new RecorderSpec({ name, args })
     })
     return test
   }
@@ -94,7 +94,6 @@ suite.add({
   fn: function () {
     const test = shared.getTest()
     shim.createSegment('foo', test.func, tx.trace.root)
-    tx.trace.root.children = []
     return test
   }
 })

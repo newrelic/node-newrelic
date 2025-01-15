@@ -21,19 +21,20 @@ const oldListeners = {
  * restoring the original listeners upon test completion.
  *
  * @param {object} params
+ * @param params.t
  * @param {TestContext} t A `node:test` context object.
  * @param {function} handler An error handler function that will replace all
  * current listeners.
- * @param {string} [type='uncaughtException'] The kind of uncaught event to
+ * @param {string} [type] The kind of uncaught event to
  * override.
+ * @param params.handler
+ * @param params.type
  * @property {string} EXCEPTION Constant value usable for `type`.
  * @property {string} REJECTION Constant value usable for `type`.
  */
 function tempOverrideUncaught({ t, handler, type = EXCEPTION }) {
   if (!handler) {
-    handler = function uncaughtTestHandler() {
-      t.diagnostic('uncaught handler not defined')
-    }
+    handler = function uncaughtTestHandler() {}
   }
 
   oldListeners[type] = process.listeners(type)

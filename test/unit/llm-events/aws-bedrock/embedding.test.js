@@ -35,7 +35,7 @@ test.beforeEach((ctx) => {
               get(key) {
                 assert.equal(key, TRANS_SCOPE)
                 return {
-                  ['llm.conversation_id']: 'conversation-1'
+                  'llm.conversation_id': 'conversation-1'
                 }
               }
             }
@@ -54,8 +54,10 @@ test.beforeEach((ctx) => {
       'x-amzn-requestid': 'request-1'
     }
   }
+  ctx.nr.transaction = {
+    traceId: 'id'
+  }
   ctx.nr.segment = {
-    transaction: { traceId: 'id' },
     getDurationInMillis() {
       return 1.008
     }

@@ -16,6 +16,7 @@ const Transaction = require('../../../../lib/transaction')
 function beforeEach(ctx) {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent()
+  ctx.nr.agent.config.logging.diagnostics = true
 }
 
 function afterEach(ctx) {
@@ -26,100 +27,71 @@ test('TraceSegment', async (t) => {
   t.beforeEach(beforeEach)
   t.afterEach(afterEach)
 
-  await t.test('should be bound to a Trace', (t) => {
-    const { agent } = t.nr
-    let segment = null
-    const trans = new Transaction(agent)
-    assert.throws(function noTrace() {
-      segment = new TraceSegment(null, 'UnitTest')
-    })
-    assert.equal(segment, null)
-
-    const success = new TraceSegment(trans, 'UnitTest')
-    assert.equal(success.transaction, trans)
-    trans.end()
-  })
-
-  await t.test('should not add new children when marked as opaque', (t) => {
-    const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
-    assert.ok(!segment.opaque)
-    segment.opaque = true
-    segment.add('child')
-    assert.equal(segment.children.length, 0)
-    segment.opaque = false
-    segment.add('child')
-    assert.equal(segment.children.length, 1)
-    trans.end()
-  })
-
-  await t.test('should call an optional callback function', (t, end) => {
-    const { agent } = t.nr
-    const trans = new Transaction(agent)
-    assert.doesNotThrow(function noCallback() {
-      new TraceSegment(trans, 'UnitTest') // eslint-disable-line no-new
-    })
-    const working = new TraceSegment(trans, 'UnitTest', function () {
-      end()
-    })
-    working.end()
-    trans.end()
-  })
-
   await t.test('has a name', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const success = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const success = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root
+    })
     assert.equal(success.name, 'UnitTest')
-  })
-
-  await t.test('is created with no children', (t) => {
-    const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
-    assert.equal(segment.children.length, 0)
   })
 
   await t.test('has a timer', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root
+    })
     assert.ok(segment.timer)
   })
 
   await t.test('does not start its timer on creation', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root
+    })
     assert.equal(segment.timer.isRunning(), false)
   })
 
   await t.test('allows the timer to be updated without ending it', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root
+    })
     segment.start()
     segment.touch()
     assert.equal(segment.timer.isRunning(), true)
     assert.ok(segment.getDurationInMillis() > 0)
   })
 
-  await t.test('accepts a callback that records metrics for this segment', (t, end) => {
-    const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'Test', (insider) => {
-      assert.equal(insider, segment)
-      end()
-    })
-    segment.end()
-    trans.end()
-  })
-
   await t.test('should return the segment id when dt and spans are enabled', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'Test')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      root
+    })
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
     assert.equal(segment.getSpanId(), segment.id)
@@ -128,18 +100,30 @@ test('TraceSegment', async (t) => {
   await t.test('should return null when dt is disabled', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'Test')
+    const root = trans.trace.root
     agent.config.distributed_tracing.enabled = false
     agent.config.span_events.enabled = true
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      root
+    })
     assert.equal(segment.getSpanId(), null)
   })
 
   await t.test('should return null when spans are disabled', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'Test')
+    const root = trans.trace.root
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = false
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      root
+    })
     assert.ok(segment.getSpanId() === null)
   })
 
@@ -147,7 +131,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const trace = trans.trace
-    const segment = new TraceSegment(trans, 'Test')
+    const root = trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      root
+    })
 
     segment.setDurationInMillis(10, 0)
 
@@ -159,51 +149,30 @@ test('TraceSegment', async (t) => {
     }, 10)
   })
 
-  await t.test('properly tracks the number of active or harvested segments', (t, end) => {
-    const { agent } = t.nr
-    assert.equal(agent.activeTransactions, 0)
-    assert.equal(agent.totalActiveSegments, 0)
-    assert.equal(agent.segmentsCreatedInHarvest, 0)
-
-    const tx = new Transaction(agent)
-    assert.equal(agent.totalActiveSegments, 1)
-    assert.equal(agent.segmentsCreatedInHarvest, 1)
-    assert.equal(tx.numSegments, 1)
-    assert.equal(agent.activeTransactions, 1)
-
-    const segment = new TraceSegment(tx, 'Test') // eslint-disable-line no-unused-vars
-    assert.equal(agent.totalActiveSegments, 2)
-    assert.equal(agent.segmentsCreatedInHarvest, 2)
-    assert.equal(tx.numSegments, 2)
-    tx.end()
-
-    assert.equal(agent.activeTransactions, 0)
-
-    setTimeout(function () {
-      assert.equal(agent.totalActiveSegments, 0)
-      assert.equal(agent.segmentsClearedInHarvest, 2)
-
-      agent.forceHarvestAll(() => {
-        assert.equal(agent.totalActiveSegments, 0)
-        assert.equal(agent.segmentsClearedInHarvest, 0)
-        assert.equal(agent.segmentsCreatedInHarvest, 0)
-        end()
-      })
-    }, 10)
-  })
-
   await t.test('toJSON should not modify attributes', (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
-    const segment = new TraceSegment(transaction, 'TestSegment')
-    segment.toJSON()
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'TestSegment',
+      collect: true,
+      root
+    })
+    transaction.trace.toJSON()
     assert.deepEqual(segment.getAttributes(), {})
   })
 
   await t.test('when ended stops its timer', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root
+    })
     segment.end()
     assert.equal(segment.timer.isRunning(), false)
   })
@@ -219,8 +188,9 @@ test('TraceSegment', async (t) => {
 
     trace.end()
 
-    // See documentation on TraceSegment.toJSON for what goes in which field.
-    assert.deepEqual(segment.toJSON(), [
+    // get serialized segment from trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, [
       3,
       17,
       'DB/select/getSome',
@@ -232,13 +202,21 @@ test('TraceSegment', async (t) => {
   await t.test('#finalize should add nr_exclusive_duration_millis attribute', (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
-    const segment = new TraceSegment(transaction, 'TestSegment')
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'TestSegment',
+      collect: true,
+      root,
+      parentId: root.id
+    })
 
+    transaction.trace.segments.add(segment)
     segment._setExclusiveDurationInMillis(1)
 
     assert.deepEqual(segment.getAttributes(), {})
 
-    segment.finalize()
+    segment.finalize(transaction.trace)
 
     assert.equal(segment.getAttributes()['nr_exclusive_duration_millis'], 1)
   })
@@ -248,20 +226,27 @@ test('TraceSegment', async (t) => {
     const segmentName = 'TestSegment'
 
     const transaction = new Transaction(agent)
-    const segment = new TraceSegment(transaction, segmentName)
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: segmentName,
+      collect: true,
+      root,
+      parentId: root.id
+    })
+
+    transaction.trace.segments.add(segment)
 
     // Force truncation
     sinon.stub(segment.timer, 'softEnd').returns(true)
     sinon.stub(segment.timer, 'endsAfter').returns(true)
-
-    const root = transaction.trace.root
 
     // Make root duration calculation predictable
     root.timer.start = 1000
     segment.timer.start = 1001
     segment.overwriteDurationInMillis(3)
 
-    segment.finalize()
+    segment.finalize(transaction.trace)
 
     assert.equal(segment.name, `Truncated/${segmentName}`)
     assert.equal(root.getDurationInMillis(), 4)
@@ -277,11 +262,9 @@ test('with children created from URLs', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
-    const segment = trace.add('UnitTest')
-
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add(url)
+    const webChild = trace.add(url)
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
 
@@ -290,6 +273,7 @@ test('with children created from URLs', async (t) => {
 
     trace.end()
     ctx.nr.webChild = webChild
+    ctx.nr.trace = trace
   })
 
   t.afterEach(afterEach)
@@ -322,13 +306,15 @@ test('with children created from URLs', async (t) => {
   })
 
   await t.test('should serialize the segment with the parameters', (t) => {
-    const { webChild } = t.nr
-    assert.deepEqual(webChild.toJSON(), [
+    const { trace } = t.nr
+    // get serialized segment from trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, [
       0,
       1,
       'WebTransaction/NormalizedUri/*',
       {
-        'nr_exclusive_duration_millis': 1,
+        nr_exclusive_duration_millis: 1,
         'request.parameters.test1': 'value1',
         'request.parameters.test2': true,
         'request.parameters.test3': '50',
@@ -348,8 +334,6 @@ test('with parameters parsed out by framework', async (t) => {
     const trace = transaction.trace
     trace.mer = 6
 
-    const segment = trace.add('UnitTest')
-
     const url = '/test'
     const params = {}
 
@@ -358,7 +342,7 @@ test('with parameters parsed out by framework', async (t) => {
     params[1] = 'another'
     params.test3 = '50'
 
-    const webChild = segment.add(url)
+    const webChild = trace.add(url)
     transaction.trace.attributes.addAttributes(DESTINATIONS.TRANS_SCOPE, params)
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
@@ -395,7 +379,7 @@ test('with parameters parsed out by framework', async (t) => {
   })
 
   await t.test('should serialize the segment with the parameters', (t) => {
-    const { webChild } = t.nr
+    const { trace } = t.nr
     const expected = [
       0,
       1,
@@ -408,7 +392,9 @@ test('with parameters parsed out by framework', async (t) => {
       },
       []
     ]
-    assert.deepEqual(webChild.toJSON(), expected)
+    // get serialized segment from trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, expected)
   })
 })
 
@@ -419,10 +405,9 @@ test('with attributes.enabled set to false', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
-    const segment = new TraceSegment(transaction, 'UnitTest')
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add(url)
+    const webChild = trace.add(url)
     webChild.addAttribute('test', 'non-null value')
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
@@ -430,6 +415,7 @@ test('with attributes.enabled set to false', async (t) => {
     trace.setDurationInMillis(1, 0)
     webChild.setDurationInMillis(1, 0)
     ctx.nr.webChild = webChild
+    ctx.nr.trace = trace
   })
   t.afterEach(afterEach)
 
@@ -444,9 +430,11 @@ test('with attributes.enabled set to false', async (t) => {
   })
 
   await t.test('should serialize the segment without the parameters', (t) => {
-    const { webChild } = t.nr
+    const { trace } = t.nr
     const expected = [0, 1, 'WebTransaction/NormalizedUri/*', {}, []]
-    assert.deepEqual(webChild.toJSON(), expected)
+    // get serialized segment from trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, expected)
   })
 })
 
@@ -463,14 +451,12 @@ test('with attributes.enabled set', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
-    const segment = trace.add('UnitTest')
-
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add(url)
+    const webChild = trace.add(url)
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
-    webChild.markAsWeb(url)
+    webChild.markAsWeb(transaction)
 
     trace.setDurationInMillis(1, 0)
     webChild.setDurationInMillis(1, 0)
@@ -478,6 +464,7 @@ test('with attributes.enabled set', async (t) => {
     ctx.nr.webChild = webChild
 
     trace.end()
+    ctx.nr.trace = trace
   })
   t.afterEach(afterEach)
 
@@ -510,13 +497,15 @@ test('with attributes.enabled set', async (t) => {
   })
 
   await t.test('should serialize the segment with the parameters', (t) => {
-    const { webChild } = t.nr
-    assert.deepEqual(webChild.toJSON(), [
+    const { trace } = t.nr
+    // get the specific segment from serialized trace
+    const serializedSegment = trace.toJSON()[4][0]
+    assert.deepEqual(serializedSegment, [
       0,
       1,
       'WebTransaction/NormalizedUri/*',
       {
-        'nr_exclusive_duration_millis': 1,
+        nr_exclusive_duration_millis: 1,
         'request.parameters.test2': true,
         'request.parameters.test3': '50'
       },
@@ -528,13 +517,18 @@ test('with attributes.enabled set', async (t) => {
 test('when serialized', async (t) => {
   t.beforeEach((ctx) => {
     const agent = helper.loadMockedAgent()
-    const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const transaction = new Transaction(agent)
+    const root = transaction.trace.root
+    const segment = transaction.trace.add('UnitTest')
+
     ctx.nr = {
       agent,
       segment,
-      trans
+      transaction,
+      root
     }
+
+    ctx.nr.agent.config.logging.diagnostics = true
   })
 
   t.afterEach((ctx) => {
@@ -542,9 +536,9 @@ test('when serialized', async (t) => {
   })
 
   await t.test('should create a plain JS array', (t) => {
-    const { segment } = t.nr
+    const { segment, transaction } = t.nr
     segment.end()
-    const js = segment.toJSON()
+    const js = transaction.trace.toJSON()[4][0]
 
     assert.ok(Array.isArray(js))
     assert.equal(typeof js[0], 'number')
@@ -557,20 +551,6 @@ test('when serialized', async (t) => {
     assert.ok(Array.isArray(js[4]))
     assert.equal(js[4].length, 0)
   })
-
-  await t.test('should not cause a stack overflow', { timeout: 30000 }, (t) => {
-    const { segment, trans } = t.nr
-    let parent = segment
-    for (let i = 0; i < 9000; ++i) {
-      const child = new TraceSegment(trans, 'Child ' + i)
-      parent.children.push(child)
-      parent = child
-    }
-
-    assert.doesNotThrow(function () {
-      segment.toJSON()
-    })
-  })
 })
 
 test('getSpanContext', async (t) => {
@@ -581,7 +561,13 @@ test('getSpanContext', async (t) => {
       }
     })
     const transaction = new Transaction(agent)
-    const segment = new TraceSegment(transaction, 'UnitTest')
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root
+    })
     ctx.nr = {
       agent,
       segment,
@@ -605,15 +591,27 @@ test('getSpanContext', async (t) => {
   })
 
   await t.test('should not create a new context when empty and DT disabled', (t) => {
-    const { agent, segment } = t.nr
+    const { agent, transaction } = t.nr
     agent.config.distributed_tracing.enabled = false
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root: transaction.trace.root
+    })
     const spanContext = segment.getSpanContext()
     assert.ok(!spanContext)
   })
 
   await t.test('should not create a new context when empty and Spans disabled', (t) => {
-    const { agent, segment } = t.nr
+    const { agent, transaction } = t.nr
     agent.config.span_events.enabled = false
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root: transaction.trace.root
+    })
     const spanContext = segment.getSpanContext()
     assert.ok(!spanContext)
   })

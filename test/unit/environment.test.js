@@ -242,7 +242,7 @@ test('should not crash when given a file in NODE_PATH', (t, end) => {
   }
 
   const opt = {
-    env: env,
+    env,
     stdio: 'inherit',
     cwd: path.join(__dirname, '..')
   }
@@ -360,6 +360,6 @@ test('when NODE_ENV is "production"', async (t) => {
   assert.equal(
     find(nSettings, 'NODE_ENV'),
     'production',
-    `should save the NODE_ENV value in the environment settings`
+    'should save the NODE_ENV value in the environment settings'
   )
 })

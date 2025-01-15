@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const fs = require('node:fs')
+const path = require('node:path')
 const semver = require('semver')
 
 const { removeModules } = require('../../lib/cache-buster')
@@ -21,7 +22,7 @@ const {
 } = require('../../../lib/metrics/names')
 // have to read and not require because openai does not export the package.json
 const { version: pkgVersion } = JSON.parse(
-  fs.readFileSync(`${__dirname}/node_modules/openai/package.json`)
+  fs.readFileSync(path.join(__dirname, '/node_modules/openai/package.json'))
 )
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const responses = require('./mock-responses')
@@ -65,6 +66,7 @@ test('should create span on successful chat completion create', (t, end) => {
     assert.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
     assertSegments(
+      tx.trace,
       tx.trace.root,
       [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
       { exact: false }
@@ -147,6 +149,7 @@ if (semver.gte(pkgVersion, '4.12.2')) {
       assert.equal(chunk.choices[0].message.content, res)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
         { exact: false }
@@ -292,7 +295,7 @@ if (semver.gte(pkgVersion, '4.12.2')) {
         match(tx.exceptions[0], {
           customAttributes: {
             'error.message': 'Premature close',
-            'completion_id': /\w{32}/
+            completion_id: /\w{32}/
           }
         })
 
@@ -361,6 +364,7 @@ if (semver.gte(pkgVersion, '4.12.2')) {
       assert.equal(events.length, 0)
       // we will still record the external segment but not the chat completion
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['timers.setTimeout', `External/${host}:${port}/chat/completions`],
         { exact: false }
@@ -403,10 +407,10 @@ test('auth errors should be tracked', (t, end) => {
         'error.message': /Incorrect API key provided:/,
         'error.code': 'invalid_api_key',
         'error.param': 'null',
-        'completion_id': /[\w\d]{32}/
+        completion_id: /\w{32}/
       },
       agentAttributes: {
-        spanId: /[\w\d]+/
+        spanId: /\w+/
       }
     })
 
@@ -442,7 +446,7 @@ test('invalid payload errors should be tracked', (t, end) => {
         'error.message': /'bad-role' is not one of/,
         'error.code': null,
         'error.param': null,
-        'completion_id': /\w{32}/
+        completion_id: /\w{32}/
       },
       agentAttributes: {
         spanId: /\w+/

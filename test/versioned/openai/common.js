@@ -16,17 +16,18 @@ function assertChatCompletionMessages(
   { tx, chatMsgs, id, model, reqContent, resContent, tokenUsage },
   { assert = require('node:assert') } = {}
 ) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
-    'appName': 'New Relic for Node.js tests',
-    'request_id': '49dbbffbd3c3f4612aa48def69059aad',
-    'trace_id': tx.traceId,
-    'span_id': tx.trace.root.children[0].id,
+    appName: 'New Relic for Node.js tests',
+    request_id: '49dbbffbd3c3f4612aa48def69059aad',
+    trace_id: tx.traceId,
+    span_id: segment.id,
     'response.model': model,
-    'vendor': 'openai',
-    'ingest_source': 'Node',
-    'role': 'user',
-    'is_response': false,
-    'completion_id': /[a-f0-9]{36}/
+    vendor: 'openai',
+    ingest_source: 'Node',
+    role: 'user',
+    is_response: false,
+    completion_id: /[a-f0-9]{36}/
   }
 
   chatMsgs.forEach((msg) => {
@@ -65,17 +66,18 @@ function assertChatCompletionSummary(
   { tx, model, chatSummary, error = false },
   { assert = require('node:assert') } = {}
 ) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {
-    'id': /[a-f0-9]{36}/,
-    'appName': 'New Relic for Node.js tests',
-    'request_id': '49dbbffbd3c3f4612aa48def69059aad',
-    'trace_id': tx.traceId,
-    'span_id': tx.trace.root.children[0].id,
+    id: /[a-f0-9]{36}/,
+    appName: 'New Relic for Node.js tests',
+    request_id: '49dbbffbd3c3f4612aa48def69059aad',
+    trace_id: tx.traceId,
+    span_id: segment.id,
     'response.model': model,
-    'vendor': 'openai',
-    'ingest_source': 'Node',
+    vendor: 'openai',
+    ingest_source: 'Node',
     'request.model': model,
-    'duration': tx.trace.root.children[0].getDurationInMillis(),
+    duration: segment.getDurationInMillis(),
     'response.organization': 'new-relic-nkmd8b',
     'response.headers.llmVersion': '2020-10-01',
     'response.headers.ratelimitLimitRequests': '200',
@@ -85,7 +87,7 @@ function assertChatCompletionSummary(
     'response.headers.ratelimitRemainingRequests': '199',
     'response.number_of_messages': 3,
     'response.choices.finish_reason': 'stop',
-    'error': error
+    error
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')

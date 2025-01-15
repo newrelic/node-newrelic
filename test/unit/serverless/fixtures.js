@@ -221,13 +221,13 @@ const httpApiGatewayV2EventAlt = {
   rawPath: '/dev/',
   rawQueryString: '',
   headers: {
-    'accept':
+    accept:
       'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'accept-encoding': 'gzip, deflate, br, zstd',
     'accept-language': 'en-US,en;q=0.9',
     'content-length': '0',
-    'host': 'zzz1234567890.execute-api.us-east-2.amazonaws.com',
-    'priority': 'u=0, i',
+    host: 'zzz1234567890.execute-api.us-east-2.amazonaws.com',
+    priority: 'u=0, i',
     'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"macOS"',
@@ -281,11 +281,11 @@ const albEvent = {
     team: 'node agent'
   },
   headers: {
-    'accept': 'application/json;v=4',
+    accept: 'application/json;v=4',
     'content-length': '35',
     'content-type': 'application/json',
-    'header2': 'value1,value2',
-    'host': 'examplehost.example.com',
+    header2: 'value1,value2',
+    host: 'examplehost.example.com',
     'x-amzn-trace-id': 'Root=1-1234567890',
     'x-forwarded-for': '10.10.10.10',
     'x-forwarded-port': '443',
@@ -295,10 +295,10 @@ const albEvent = {
   body: '{"exampleProperty": "exampleValue"}',
   isBase64Encoded: false,
   rawHeaders: {
-    'accept': 'application/json;v=4',
+    accept: 'application/json;v=4',
     'content-length': '35',
     'content-type': 'application/json',
-    'host': 'examplehost.example.com',
+    host: 'examplehost.example.com',
     'x-amzn-trace-id': 'Root=1-1234567890',
     'x-forwarded-for': '10.10.10.10',
     'x-forwarded-port': '443',
@@ -311,7 +311,7 @@ const albEvent = {
 
 // Event used when one Lambda directly invokes another Lambda.
 // https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-retain-records.html#invocation-async-destinations
-const lambaV1InvocationEvent = {
+const lambdaV1InvocationEvent = {
   version: '1.0',
   timestamp: '2019-11-14T18:16:05.568Z',
   requestContext: {
@@ -338,6 +338,60 @@ const lambaV1InvocationEvent = {
   }
 }
 
+// Event sent by API Gateway to an authorizing Lambda function. This should not be classified as a web event.
+// https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-lambda-authorizer-input.html
+// Connection, Host, and Upgrade headers removed due to eslint complaints: it requires
+// enquoting them, while eslint's @stylistic/quote-props requires unquoting.
+const lambdaAuthorizerEvent = {
+  headers: {
+    'content-length': '0',
+    'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
+    'Sec-WebSocket-Key': '[redacted]',
+    'Sec-WebSocket-Version': '13',
+    'X-Amzn-Trace-Id': 'Root=[redacted-traceid]',
+    'X-Forwarded-For': '[redacted-ipaddress]',
+    'X-Forwarded-Port': '443',
+    'X-Forwarded-Proto': 'https'
+  },
+  type: 'REQUEST',
+  methodArn:
+    'arn:aws:execute-api:us-east-1:[redacted-accountid]:[redacted-apiid]/[redacted-stage]/$connect',
+  multiValueHeaders: {
+    'content-length': ['0'],
+    'Sec-WebSocket-Extensions': ['permessage-deflate; client_max_window_bits'],
+    'Sec-WebSocket-Key': ['[redacted]'],
+    'Sec-WebSocket-Version': ['13'],
+    'X-Amzn-Trace-Id': ['Root=[redacted]'],
+    'X-Forwarded-For': ['[redacted-ipaddress]'],
+    'X-Forwarded-Port': ['443'],
+    'X-Forwarded-Proto': ['https']
+  },
+  queryStringParameters: {
+    Auth: 'blaa'
+  },
+  multiValueQueryStringParameters: {
+    Auth: ['blaa']
+  },
+  stageVariables: {},
+  requestContext: {
+    routeKey: '$connect',
+    eventType: 'CONNECT',
+    extendedRequestId: '[redacted]',
+    requestTime: '02/Jan/2025:17:23:00 +0000',
+    messageDirection: 'IN',
+    stage: '[redacted-stage]',
+    connectedAt: 1735838580271,
+    requestTimeEpoch: 1735838580272,
+    identity: {
+      sourceIp: '[redacted-ipaddress]'
+    },
+    requestId: '[redacted]',
+    domainName: '[redacted-apiid].execute-api.us-east-1.amazonaws.com',
+    connectionId: '1234567xABCD=',
+    apiId: '[redacted-apiid]'
+  }
+}
+
 // Event which contains `resource` key and should not be a web event.
 const lambdaEvent = {
   someKey: 'someValue',
@@ -352,6 +406,7 @@ module.exports = {
   httpApiGatewayV2Event,
   httpApiGatewayV2EventAlt,
   albEvent,
-  lambaV1InvocationEvent,
+  lambdaV1InvocationEvent,
+  lambdaAuthorizerEvent,
   lambdaEvent
 }

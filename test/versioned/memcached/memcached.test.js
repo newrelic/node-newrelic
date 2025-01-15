@@ -56,6 +56,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
           transaction.end()
           assertSegments(
+            transaction.trace,
             transaction.trace.root,
             ['Datastore/operation/Memcache/touch'],
             { exact: false },
@@ -91,6 +92,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
           transaction.end()
           assertSegments(
+            transaction.trace,
             transaction.trace.root,
             ['Datastore/operation/Memcache/get', ['Truncated/Callback: <anonymous>']],
             { exact: false },
@@ -126,6 +128,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
           transaction.end()
           assertSegments(
+            transaction.trace,
             transaction.trace.root,
             ['Datastore/operation/Memcache/gets', ['Truncated/Callback: <anonymous>']],
             { exact: false },
@@ -161,6 +164,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
           transaction.end()
           assertSegments(
+            transaction.trace,
             transaction.trace.root,
             ['Datastore/operation/Memcache/get', ['Truncated/Callback: handle']],
             { exact: false },
@@ -196,6 +200,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
           transaction.end()
           assertSegments(
+            transaction.trace,
             transaction.trace.root,
             ['Datastore/operation/Memcache/set', ['Truncated/Callback: <anonymous>']],
             { exact: false },
@@ -234,6 +239,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
             transaction.end()
             assertSegments(
+              transaction.trace,
               transaction.trace.root,
               ['Datastore/operation/Memcache/replace', ['Truncated/Callback: <anonymous>']],
               { exact: false },
@@ -270,6 +276,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
           transaction.end()
           assertSegments(
+            transaction.trace,
             transaction.trace.root,
             ['Datastore/operation/Memcache/add', ['Truncated/Callback: <anonymous>']],
             { exact: false },
@@ -311,6 +318,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
               transaction.end()
               assertSegments(
+                transaction.trace,
                 transaction.trace.root,
                 ['Datastore/operation/Memcache/cas', ['Truncated/Callback: <anonymous>']],
                 { exact: false },
@@ -349,6 +357,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
             plan.ok(agent.getTransaction(), 'transaction should still be visible')
             transaction.end()
             assertSegments(
+              transaction.trace,
               transaction.trace.root,
               ['Datastore/operation/Memcache/append', ['Truncated/Callback: <anonymous>']],
               { exact: false },
@@ -386,6 +395,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
             plan.ok(agent.getTransaction(), 'transaction should still be visible')
             transaction.end()
             assertSegments(
+              transaction.trace,
               transaction.trace.root,
               ['Datastore/operation/Memcache/prepend', ['Truncated/Callback: <anonymous>']],
               { exact: false },
@@ -423,6 +433,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
             plan.ok(agent.getTransaction(), 'transaction should still be visible')
             transaction.end()
             assertSegments(
+              transaction.trace,
               transaction.trace.root,
               ['Datastore/operation/Memcache/delete', ['Truncated/Callback: <anonymous>']],
               { exact: false },
@@ -459,6 +470,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
           transaction.end()
           assertSegments(
+            transaction.trace,
             transaction.trace.root,
             ['Datastore/operation/Memcache/incr', ['Truncated/Callback: <anonymous>']],
             { exact: false },
@@ -494,6 +506,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
           transaction.end()
           assertSegments(
+            transaction.trace,
             transaction.trace.root,
             ['Datastore/operation/Memcache/decr'],
             { exact: false },
@@ -532,6 +545,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
           transaction.end()
           assertSegments(
+            transaction.trace,
             transaction.trace.root,
             ['Datastore/operation/Memcache/version'],
             { exact: false },
@@ -587,7 +601,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
           plan.ok(!err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           plan.equal(segment.getAttributes().key, '"foo"', 'should have the get key as a parameter')
         })
       })
@@ -604,7 +618,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
           plan.ok(!err)
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           plan.ok(!segment.getAttributes().key, 'should not have any attributes')
         })
       })
@@ -620,7 +634,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
           plan.ok(!err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           plan.equal(
             segment.getAttributes().key,
             '["foo","bar"]',
@@ -640,7 +654,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
           plan.ok(!err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           plan.equal(segment.getAttributes().key, '"foo"', 'should have the set key as a parameter')
         })
       })
@@ -677,7 +691,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
           plan.ok(!err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           const attributes = segment.getAttributes()
           plan.equal(
             attributes.host,
@@ -706,7 +720,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
           plan.ok(!err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           const attributes = segment.getAttributes()
           plan.equal(
             attributes.host,
@@ -758,7 +772,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
           plan.ok(!err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           const attributes = segment.getAttributes()
           plan.equal(attributes.host, undefined, 'should not have host instance parameter')
           plan.equal(
@@ -786,7 +800,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
           plan.ok(!err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           const attributes = segment.getAttributes()
           plan.equal(attributes.host, undefined, 'should not have host instance parameter')
           plan.equal(
@@ -854,13 +868,17 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
       helper.runInTransaction(agent, function (transaction) {
         memcached.get('foo', function (err) {
           assert.ok(!err)
-          const firstSegment = agent.tracer.getSegment().parent
+          const firstSegment = transaction.trace.getParent(agent.tracer.getSegment().parentId)
 
           memcached.get('bar', function (err) {
             assert.ok(!err)
             transaction.end()
             checkParams(firstSegment, 'server1', '1111')
-            checkParams(agent.tracer.getSegment().parent, 'server2', '2222')
+            checkParams(
+              transaction.trace.getParent(agent.tracer.getSegment().parentId),
+              'server2',
+              '2222'
+            )
             end()
           })
         })
@@ -872,8 +890,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
       helper.runInTransaction(agent, function (transaction) {
         memcached.getMulti(['foo', 'bar'], function (err) {
           assert.ok(!err)
-          const firstGet = transaction.trace.root.children[0]
-          const secondGet = transaction.trace.root.children[1]
+          const [firstGet, secondGet] = transaction.trace.getChildren(transaction.trace.root.id)
           if (firstGet.getAttributes().host === 'server1') {
             checkParams(firstGet, 'server1', '1111')
             checkParams(secondGet, 'server2', '2222')

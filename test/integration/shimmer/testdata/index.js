@@ -5,7 +5,6 @@
 
 'use strict'
 
-// eslint-disable-next-line node/no-extraneous-require
 const Person = require('person')
 
 module.exports = Person

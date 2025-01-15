@@ -46,9 +46,8 @@ test('#shutdown should force harvest and callback after agent restart', (t, end)
     helper.unloadAgent(agent)
 
     if (!nock.isDone()) {
-      /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
+
       nock.cleanAll()
 
       assert.fail('Failed to hit all expected endpoints.')

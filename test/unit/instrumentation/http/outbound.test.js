@@ -24,7 +24,11 @@ const testSignatures = require('./outbound-utils')
 function addSegment({ agent }) {
   const transaction = agent.getTransaction()
   transaction.type = 'web'
-  transaction.baseSegment = new Segment(transaction, 'base-segment')
+  transaction.baseSegment = new Segment({
+    config: agent.config,
+    name: 'base-segment',
+    root: transaction.trace.root
+  })
 }
 
 test('instrumentOutbound', async (t) => {
@@ -45,7 +49,8 @@ test('instrumentOutbound', async (t) => {
       const req = new events.EventEmitter()
       helper.runInTransaction(agent, function (transaction) {
         instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-        assert.deepEqual(transaction.trace.root.children[0].getAttributes(), {})
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.deepEqual(child.getAttributes(), {})
 
         function makeFakeRequest() {
           req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
@@ -62,7 +67,8 @@ test('instrumentOutbound', async (t) => {
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.deepEqual(transaction.trace.root.children[0].getAttributes(), {
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.deepEqual(child.getAttributes(), {
         procedure: 'GET',
         url: `http://${HOSTNAME}:${PORT}/asdf`
       })
@@ -87,7 +93,8 @@ test('instrumentOutbound', async (t) => {
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.deepEqual(transaction.trace.root.children[0].getAttributes(), {
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.deepEqual(child.getAttributes(), {
         procedure: 'GET',
         url: `http://${HOSTNAME}:${PORT}/***`
       })
@@ -108,7 +115,8 @@ test('instrumentOutbound', async (t) => {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.equal(transaction.trace.root.children[0].name, name)
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(child.name, name)
 
       function makeFakeRequest() {
         req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
@@ -124,13 +132,14 @@ test('instrumentOutbound', async (t) => {
     helper.runInTransaction(agent, function (transaction) {
       agent.config.attributes.enabled = true
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.deepEqual(
-        transaction.trace.root.children[0].attributes.get(DESTINATIONS.SPAN_EVENT),
+        child.attributes.get(DESTINATIONS.SPAN_EVENT),
         {
-          'hostname': HOSTNAME,
-          'port': PORT,
-          'url': `http://${HOSTNAME}:${PORT}/asdf`,
-          'procedure': 'GET',
+          hostname: HOSTNAME,
+          port: PORT,
+          url: `http://${HOSTNAME}:${PORT}/asdf`,
+          procedure: 'GET',
           'request.parameters.a': 'b',
           'request.parameters.another': 'yourself',
           'request.parameters.thing': true,
@@ -171,7 +180,8 @@ test('instrumentOutbound', async (t) => {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.equal(transaction.trace.root.children[0].name, name)
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(child.name, name)
       end()
     })
 
@@ -189,7 +199,8 @@ test('instrumentOutbound', async (t) => {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.equal(transaction.trace.root.children[0].name, name)
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(child.name, name)
     })
 
     function makeFakeRequest() {
@@ -342,8 +353,8 @@ test('should add data from cat header to segment', async (t) => {
 
       const port = server.address().port
       http
-        .get({ host: 'localhost', port: port }, function (res) {
-          const segment = agent.tracer.getTransaction().trace.root.children[0]
+        .get({ host: 'localhost', port }, function (res) {
+          const segment = agent.tracer.getSegment()
 
           assert.equal(segment.catId, '123#456')
           assert.equal(segment.catTransaction, 'abc')
@@ -364,8 +375,8 @@ test('should add data from cat header to segment', async (t) => {
 
       const port = server.address().port
       http
-        .get({ host: 'localhost', port: port }, function (res) {
-          const segment = agent.tracer.getTransaction().trace.root.children[0]
+        .get({ host: 'localhost', port }, function (res) {
+          const segment = agent.tracer.getSegment()
 
           assert.equal(segment.catId, '123#456')
           assert.equal(segment.catTransaction, 'abc')
@@ -469,7 +480,8 @@ test('when working with http.request', async (t) => {
       opts.method = 'POST'
 
       const req = http.request(opts, function (res) {
-        const attributes = transaction.trace.root.children[0].getAttributes()
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        const attributes = child.getAttributes()
         assert.equal(attributes.url, 'http://www.google.com/index.html')
         assert.equal(attributes.procedure, 'POST')
         res.resume()
@@ -513,10 +525,14 @@ test('when working with http.request', async (t) => {
     nock(host).get(path).reply(200, 'Hello from Google')
 
     helper.runInTransaction(agent, (transaction) => {
-      const parentSegment = agent.tracer.createSegment('ParentSegment')
+      const parentSegment = agent.tracer.createSegment({
+        name: 'ParentSegment',
+        parent: transaction.trace.root,
+        transaction
+      })
       parentSegment.opaque = true
 
-      tracer.setSegment(parentSegment) // make the current active segment
+      tracer.setSegment({ transaction, segment: parentSegment }) // make the current active segment
 
       http.get(`${host}${path}`, (res) => {
         const segment = tracer.getSegment()

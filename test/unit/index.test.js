@@ -213,7 +213,7 @@ test('index tests', async (t) => {
 
   function loadIndex(ctx) {
     return proxyquire('../../index', {
-      'worker_threads': ctx.nr.workerThreadsStub,
+      worker_threads: ctx.nr.workerThreadsStub,
       './lib/util/process-version': ctx.nr.processVersionStub,
       './lib/logger': ctx.nr.loggerMock,
       './lib/agent': ctx.nr.MockAgent,

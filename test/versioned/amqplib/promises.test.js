@@ -65,7 +65,7 @@ test('amqplib promise instrumentation', async function (t) {
     const { agent, amqplib } = t.nr
     await helper.runInTransaction(agent, async function (tx) {
       const _conn = await amqplib.connect(amqpUtils.CON_STRING)
-      const [segment] = tx.trace.root.children
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
       assert.equal(segment.name, 'amqplib.connect')
       const attrs = segment.getAttributes()
       assert.equal(attrs.host, 'localhost')
@@ -95,12 +95,12 @@ test('amqplib promise instrumentation', async function (t) {
     await helper.runInTransaction(agent, async function (tx) {
       assert.ok(agent.tracer.getSegment(), 'should start in transaction')
       await channel.assertExchange(amqpUtils.FANOUT_EXCHANGE, 'fanout')
-      amqpUtils.verifyTransaction(tx, 'assertExchange')
+      amqpUtils.verifyTransaction(agent, tx, 'assertExchange')
       const result = await channel.assertQueue('', { exclusive: true })
-      amqpUtils.verifyTransaction(tx, 'assertQueue')
+      amqpUtils.verifyTransaction(agent, tx, 'assertQueue')
       const queueName = result.queue
       await channel.bindQueue(queueName, amqpUtils.FANOUT_EXCHANGE)
-      amqpUtils.verifyTransaction(tx, 'bindQueue')
+      amqpUtils.verifyTransaction(agent, tx, 'bindQueue')
       channel.publish(amqpUtils.FANOUT_EXCHANGE, '', Buffer.from('hello'))
       tx.end()
       amqpUtils.verifyProduce(tx, amqpUtils.FANOUT_EXCHANGE)
@@ -111,12 +111,12 @@ test('amqplib promise instrumentation', async function (t) {
     const { agent, channel } = t.nr
     await helper.runInTransaction(agent, async function (tx) {
       await channel.assertExchange(amqpUtils.DIRECT_EXCHANGE, 'direct')
-      amqpUtils.verifyTransaction(tx, 'assertExchange')
+      amqpUtils.verifyTransaction(agent, tx, 'assertExchange')
       const result = await channel.assertQueue('', { exclusive: true })
-      amqpUtils.verifyTransaction(tx, 'assertQueue')
+      amqpUtils.verifyTransaction(agent, tx, 'assertQueue')
       const queueName = result.queue
       await channel.bindQueue(queueName, amqpUtils.DIRECT_EXCHANGE, 'key1')
-      amqpUtils.verifyTransaction(tx, 'bindQueue')
+      amqpUtils.verifyTransaction(agent, tx, 'bindQueue')
       channel.publish(amqpUtils.DIRECT_EXCHANGE, 'key1', Buffer.from('hello'))
       tx.end()
       amqpUtils.verifyProduce(tx, amqpUtils.DIRECT_EXCHANGE, 'key1')
@@ -128,14 +128,14 @@ test('amqplib promise instrumentation', async function (t) {
 
     await helper.runInTransaction(agent, async function (tx) {
       await channel.assertExchange(amqpUtils.DIRECT_EXCHANGE, 'direct')
-      amqpUtils.verifyTransaction(tx, 'assertExchange')
+      amqpUtils.verifyTransaction(agent, tx, 'assertExchange')
       const result = await channel.assertQueue('', { exclusive: true })
-      amqpUtils.verifyTransaction(tx, 'assertQueue')
+      amqpUtils.verifyTransaction(agent, tx, 'assertQueue')
       const queueName = result.queue
       await channel.bindQueue(queueName, amqpUtils.DIRECT_EXCHANGE, 'key1')
-      amqpUtils.verifyTransaction(tx, 'bindQueue')
+      amqpUtils.verifyTransaction(agent, tx, 'bindQueue')
       await channel.purgeQueue(queueName)
-      amqpUtils.verifyTransaction(tx, 'purgeQueue')
+      amqpUtils.verifyTransaction(agent, tx, 'purgeQueue')
       tx.end()
       amqpUtils.verifyPurge(tx)
     })
@@ -155,7 +155,7 @@ test('amqplib promise instrumentation', async function (t) {
       const body = msg.content.toString('utf8')
       assert.equal(body, 'hello', 'should receive expected body')
 
-      amqpUtils.verifyTransaction(tx, 'get')
+      amqpUtils.verifyTransaction(agent, tx, 'get')
       channel.ack(msg)
       tx.end()
       amqpUtils.verifyGet({
@@ -184,7 +184,7 @@ test('amqplib promise instrumentation', async function (t) {
       const body = msg.content.toString('utf8')
       assert.equal(body, 'hello', 'should receive expected body')
 
-      amqpUtils.verifyTransaction(tx, 'get')
+      amqpUtils.verifyTransaction(agent, tx, 'get')
       channel.ack(msg)
       tx.end()
       amqpUtils.verifyGet({
@@ -223,7 +223,7 @@ test('amqplib promise instrumentation', async function (t) {
     })
     await helper.runInTransaction(agent, async function (tx) {
       publishTx = tx
-      amqpUtils.verifyTransaction(tx, 'consume')
+      amqpUtils.verifyTransaction(agent, tx, 'consume')
       channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
     })
     await promise
@@ -262,7 +262,7 @@ test('amqplib promise instrumentation', async function (t) {
     })
     await helper.runInTransaction(agent, async function (tx) {
       publishTx = tx
-      amqpUtils.verifyTransaction(tx, 'consume')
+      amqpUtils.verifyTransaction(agent, tx, 'consume')
       channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
     })
     await promise

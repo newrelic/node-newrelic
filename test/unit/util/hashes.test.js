@@ -61,7 +61,6 @@ test('getHash', { skip: major > 18 }, async (t) => {
    * When fully disabled, this test can likely be removed.
    * https://nodejs.org/api/deprecations.html#DEP0091
    */
-  /* eslint-disable node/no-deprecated-api */
   await t.test('should not crash when changing the DEFAULT_ENCODING key on crypto', () => {
     const crypto = require('node:crypto')
     const oldEncoding = crypto.DEFAULT_ENCODING

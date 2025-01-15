@@ -136,11 +136,19 @@ test('DynamoDB', async (t) => {
 
 function finish(end, tests, tx) {
   const root = tx.trace.root
-  const segments = common.checkAWSAttributes(root, common.DATASTORE_PATTERN)
+  const segments = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: root,
+    pattern: common.DATASTORE_PATTERN
+  })
 
   assert.equal(segments.length, tests.length, `should have ${tests.length} aws datastore segments`)
 
-  const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
+  const externalSegments = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: root,
+    pattern: common.EXTERN_PATTERN
+  })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   const accountId = tx.agent.config.cloud.aws.account_id
@@ -155,10 +163,10 @@ function finish(end, tests, tx) {
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
     attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
     match(attrs, {
-      'host': String,
-      'port_path_or_id': Number,
-      'product': 'DynamoDB',
-      'collection': String,
+      host: String,
+      port_path_or_id: Number,
+      product: 'DynamoDB',
+      collection: String,
       'aws.operation': operation,
       'aws.requestId': String,
       'aws.region': 'us-east-1',

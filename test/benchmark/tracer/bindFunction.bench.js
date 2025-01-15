@@ -14,10 +14,11 @@ const tracer = helper.getTracer()
 const tx = helper.runInTransaction(s.agent, function (_tx) {
   return _tx
 })
-tracer.setSegment(tx.root)
+tracer.setSegment({ transaction: tx, segment: tx.trace.root })
 
 preOptBind()
-const bound = tracer.bindFunction(shared.getTest().func, tx.root, true)
+const ctx = tracer.getContext()
+const bound = tracer.bindFunction(shared.getTest().func, ctx, true)
 
 setTimeout(function () {
   suite.add({
@@ -28,16 +29,6 @@ setTimeout(function () {
   suite.add({
     name: 'fn and segment',
     fn: twoParamBind
-  })
-
-  suite.add({
-    name: 'just fn',
-    fn: oneParamBind
-  })
-
-  suite.add({
-    name: 'null segment',
-    fn: nullSegmentBind
   })
 
   suite.add({
@@ -57,24 +48,16 @@ setTimeout(function () {
 
 function allParamBind() {
   const test = shared.getTest()
-  test.func = tracer.bindFunction(test.func, tx.root, Math.random() > 0.5)
+  const ctx = tracer.getContext()
+  test.func = tracer.bindFunction(test.func, ctx, Math.random() > 0.5)
 }
 
 function twoParamBind() {
   const test = shared.getTest()
+  // eslint-disable-next-line no-unused-expressions
   Math.random() > 0.5 // rand call so all tests perform same amount of work.
-  test.func = tracer.bindFunction(test.func, tx.root)
-}
-
-function oneParamBind() {
-  const test = shared.getTest()
-  Math.random() > 0.5 // rand call so all tests perform same amount of work.
-  test.func = tracer.bindFunction(test.func)
-}
-
-function nullSegmentBind() {
-  const test = shared.getTest()
-  test.func = tracer.bindFunction(test.func, null, Math.random() > 0.5)
+  const ctx = tracer.getContext()
+  test.func = tracer.bindFunction(test.func, ctx)
 }
 
 function randomBind() {
@@ -83,10 +66,6 @@ function randomBind() {
     allParamBind()
   } else if (n >= 0.5) {
     twoParamBind()
-  } else if (n >= 0.25) {
-    oneParamBind()
-  } else {
-    nullSegmentBind()
   }
 }
 

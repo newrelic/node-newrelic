@@ -47,7 +47,7 @@ function createMiddleware({ ctx, path }) {
           } else {
             resolve()
           }
-        } catch (e) {
+        } catch (err) {
           reject(err)
         }
       }, 20)
@@ -63,7 +63,7 @@ test('WebFrameworkShim', async function (t) {
     shim.setFramework(WebFrameworkShim.RESTIFY)
     ctx.nr.wrappable = {
       name: 'this is a name',
-      bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
+      bar: function barsName(unused, params) { return 'bar' },
       fiz: function fizsName() {
         return 'fiz'
       },
@@ -525,7 +525,7 @@ test('WebFrameworkShim', async function (t) {
           const wrapped = shim.recordMiddleware(
             wrappable.getActiveSegment,
             new MiddlewareSpec({
-              type: type,
+              type,
               route: '/foo/bar'
             })
           )
@@ -558,7 +558,7 @@ test('WebFrameworkShim', async function (t) {
         const wrapped = shim.recordMiddleware(
           wrappable.getActiveSegment,
           new MiddlewareSpec({
-            type: type,
+            type,
             route: '/foo/bar'
           })
         )
@@ -585,7 +585,7 @@ test('WebFrameworkShim', async function (t) {
         const wrapped = shim.recordMiddleware(
           wrappable.getActiveSegment,
           new MiddlewareSpec({
-            type: type,
+            type,
             route: ''
           })
         )
@@ -612,7 +612,7 @@ test('WebFrameworkShim', async function (t) {
         const wrapped = shim.recordMiddleware(
           wrappable.getActiveSegment,
           new MiddlewareSpec({
-            type: type,
+            type,
             route: ['/one', '/two']
           })
         )
@@ -622,31 +622,6 @@ test('WebFrameworkShim', async function (t) {
 
           plan.equal(segment.name, expectedName)
         })
-      }
-    })
-
-    await t.test('should reinstate its own context', function (t, end) {
-      const { agent, req, shim, txInfo, wrappable } = t.nr
-      testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
-
-      function testType(type, expectedName) {
-        const wrapped = shim.recordMiddleware(
-          wrappable.getActiveSegment,
-          new MiddlewareSpec({
-            type: type,
-            route: ''
-          })
-        )
-        const tx = helper.runInTransaction(agent, function (_tx) {
-          return _tx
-        })
-        txInfo.transaction = tx
-        txInfo.segmentStack.push(tx.trace.root)
-
-        const segment = wrapped(req)
-
-        assert.equal(segment.name, expectedName)
-        end()
       }
     })
 
@@ -763,7 +738,7 @@ test('WebFrameworkShim', async function (t) {
     await t.test('should pop the namestate if there was no error', function (t, end) {
       const { agent, req, shim, txInfo } = t.nr
       const wrapped = shim.recordMiddleware(function () {},
-      new MiddlewareSpec({ route: '/foo/bar' }))
+        new MiddlewareSpec({ route: '/foo/bar' }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/')
@@ -1021,7 +996,7 @@ test('WebFrameworkShim', async function (t) {
           assert.equal(tx.nameState.getPath(), '/')
           return new Promise(function (resolve, reject) {
             assert.equal(agent.tracer.getTransaction(), tx)
-            reject()
+            reject(Error('boom'))
           })
         })
       })
@@ -1155,7 +1130,7 @@ test('WebFrameworkShim', async function (t) {
         const wrapped = shim.recordParamware(
           wrappable.getActiveSegment,
           new MiddlewareSpec({
-            type: type,
+            type,
             name: 'foo'
           })
         )

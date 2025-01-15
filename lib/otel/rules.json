@@ -1,0 +1,500 @@
+[
+  {
+    "name": "OtelHttpServer1_23",
+    "type": "server",
+    "matcher": {
+      "required_metric_names": [
+        "http.server.request.duration"
+      ],
+      "metric_assumed_unit": "s",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "server"
+      ],
+      "required_attribute_keys": [
+        "http.request.method"
+      ]
+    },
+    "target": {
+      "target_metrics": [
+        "transaction",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "transactionName",
+          "template": "WebTransaction/server/${http.request.method} ${http.route}"
+        },
+        {
+          "attribute": "transactionType",
+          "template": "Web"
+        },
+        {
+          "attribute": "error.type",
+          "template": "${error.type}"
+        },
+        {
+          "attribute": "metricTimesliceName",
+          "template": "WebTransaction/server/${http.request.method} ${http.route}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "OtelHttpServer1_20",
+    "type": "server",
+    "matcher": {
+      "required_metric_names": [
+        "http.server.duration"
+      ],
+      "metric_assumed_unit": "ms",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "server"
+      ],
+      "required_attribute_keys": [
+        "http.method"
+      ]
+    },
+    "target": {
+      "target_metrics": [
+        "transaction",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "transactionName",
+          "template": "WebTransaction/server/${http.method} ${http.route}"
+        },
+        {
+          "attribute": "transactionType",
+          "template": "Web"
+        },
+        {
+          "attribute": "error.type",
+          "template": "__http_error_status_code_or_null__"
+        },
+        {
+          "attribute": "metricTimesliceName",
+          "template": "WebTransaction/server/${http.method} ${http.route}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "OtelRpcServer1_20",
+    "type": "server",
+    "matcher": {
+      "required_metric_names": [
+        "rpc.server.duration"
+      ],
+      "metric_assumed_unit": "ms",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "server"
+      ],
+      "required_attribute_keys": [
+        "rpc.system"
+      ]
+    },
+    "target": {
+      "target_metrics": [
+        "transaction",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "transactionName",
+          "template": "WebTransaction/server/${rpc.system}/${rpc.service:-unknown}.${rpc.method:-unknown}"
+        },
+        {
+          "attribute": "transactionType",
+          "template": "Web"
+        },
+        {
+          "attribute": "error.type",
+          "template": "__rpc_error_status_code_or_null__"
+        },
+        {
+          "attribute": "metricTimesliceName",
+          "template": "WebTransaction/server/${rpc.system}/${rpc.service:-unknown}.${rpc.method:-unknown}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "FallbackServer",
+    "type": "server",
+    "matcher": {
+      "required_metric_names": [
+        "rpc.server.duration",
+        "http.server.duration",
+        "http.server.request.duration"
+      ],
+      "metric_assumed_unit": "s",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "server"
+      ],
+      "required_attribute_keys": []
+    },
+    "target": {
+      "target_metrics": [
+        "transaction",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "transactionName",
+          "template": "WebTransaction/server/unknown"
+        },
+        {
+          "attribute": "transactionType",
+          "template": "Web"
+        },
+        {
+          "attribute": "error.type",
+          "template": "__null__"
+        },
+        {
+          "attribute": "metricTimesliceName",
+          "template": "WebTransaction/server/unknown"
+        }
+      ]
+    }
+  },
+  {
+    "name": "OtelMessagingConsumer1_24",
+    "type": "consumer",
+    "matcher": {
+      "required_span_kinds": [
+        "consumer"
+      ],
+      "required_attribute_keys": [
+        "messaging.operation"
+      ]
+    },
+    "target": {
+      "target_metrics": [
+        "transaction",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "transactionName",
+          "template": "OtherTransaction/consumer/${messaging.operation:-unknown}/${messaging.destination.template:-${messaging.destination.name:-unknown}}"
+        },
+        {
+          "attribute": "transactionType",
+          "template": "Other"
+        },
+        {
+          "attribute": "error.type",
+          "template": "__null__"
+        },
+        {
+          "attribute": "metricTimesliceName",
+          "template": "OtherTransaction/consumer/${messaging.operation:-unknown}/${messaging.destination.template:-${messaging.destination.name:-unknown}}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "FallbackConsumer",
+    "type": "consumer",
+    "matcher": {
+      "required_span_kinds": [
+        "consumer"
+      ],
+      "required_attribute_keys": []
+    },
+    "target": {
+      "target_metrics": [
+        "transaction",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "transactionName",
+          "template": "OtherTransaction/consumer/unknown"
+        },
+        {
+          "attribute": "transactionType",
+          "template": "Other"
+        },
+        {
+          "attribute": "error.type",
+          "template": "__null__"
+        },
+        {
+          "attribute": "metricTimesliceName",
+          "template": "OtherTransaction/consumer/unknown"
+        }
+      ]
+    }
+  },
+  {
+    "name": "OtelDbClientRedis1_24",
+    "type": "db",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "db.system"
+      ],
+      "attribute_conditions": {
+        "db.system": "redis"
+      }
+    },
+    "target": {
+      "target_metrics": [
+        "database",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "Datastore/statement/${db.system}/${db.sql.table}/${name:-unknown}"
+        },
+        {
+          "attribute": "db.system",
+          "template": "${db.system}"
+        },
+        {
+          "attribute": "db.operation",
+          "template": "${name:-unknown}"
+        },
+        {
+          "attribute": "db.sql.table",
+          "template": "${db.sql.table}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "OtelDbClient1_24",
+    "type": "db",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "db.system"
+      ]
+    },
+    "target": {
+      "target_metrics": [
+        "database",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "Datastore/statement/${db.system}/${db.sql.table}/${db.operation:-unknown}"
+        },
+        {
+          "attribute": "db.system",
+          "template": "${db.system}"
+        },
+        {
+          "attribute": "db.operation",
+          "template": "${db.operation:-unknown}"
+        },
+        {
+          "attribute": "db.sql.table",
+          "template": "${db.sql.table}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "OtelHttpClient1_23",
+    "type": "external",
+    "matcher": {
+      "required_metric_names": [
+        "http.client.request.duration"
+      ],
+      "metric_assumed_unit": "s",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "http.request.method"
+      ]
+    },
+    "target": {
+      "target_metrics": [
+        "external",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "External/${server.address:-unknown}/all"
+        },
+        {
+          "attribute": "server.address",
+          "template": "${server.address:-unknown}"
+        },
+        {
+          "attribute": "external.host",
+          "template": "${server.address:-unknown}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "OtelHttpClient1_20",
+    "type": "external",
+    "matcher": {
+      "required_metric_names": [
+        "http.client.duration"
+      ],
+      "metric_assumed_unit": "ms",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "http.method"
+      ]
+    },
+    "target": {
+      "target_metrics": [
+        "external",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "External/${net.peer.name:-unknown}/all"
+        },
+        {
+          "attribute": "server.address",
+          "template": "${net.peer.name:-unknown}"
+        },
+        {
+          "attribute": "external.host",
+          "template": "${net.peer.name:-unknown}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "OtelRpcClient1_20",
+    "matcher": {
+      "required_metric_names": [
+        "rpc.client.duration"
+      ],
+      "metric_assumed_unit": "ms",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "rpc.system"
+      ]
+    },
+    "target": {
+      "target_metrics": [
+        "external",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "External/${net.peer.name:-unknown}/all"
+        },
+        {
+          "attribute": "server.address",
+          "template": "${net.peer.name:-unknown}"
+        },
+        {
+          "attribute": "external.host",
+          "template": "${net.peer.name:-unknown}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "FallbackClient",
+    "type": "external",
+    "matcher": {
+      "required_metric_names": [
+        "rpc.client.duration",
+        "http.client.duration",
+        "http.client.request.duration"
+      ],
+      "metric_assumed_unit": "s",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": []
+    },
+    "target": {
+      "target_metrics": [
+        "external",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "External/unknown/all"
+        },
+        {
+          "attribute": "server.address",
+          "template": "unknown"
+        },
+        {
+          "attribute": "external.host",
+          "template": "unknown"
+        }
+      ]
+    }
+  },
+  {
+    "name": "FallbackProducer",
+    "type": "producer",
+    "matcher": {
+      "required_span_kinds": [
+        "producer"
+      ],
+      "required_attribute_keys": []
+    },
+    "target": {
+      "target_metrics": [
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "Producer/${name:-unknown}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Fallback",
+    "type": "internal",
+    "matcher": {
+      "required_span_kinds": [
+        "internal"
+      ],
+      "required_attribute_keys": []
+    },
+    "target": {
+      "target_metrics": [
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "Custom/${name:-unknown}"
+        }
+      ]
+    }
+  }
+]

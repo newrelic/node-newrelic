@@ -201,7 +201,7 @@ test('with error', async (t) => {
     next(Error('some error'))
   })
 
-  app.use(function (err, req, res, next) {
+  app.use(function (_, req, res, next) {
     res.status(500).end()
     next()
   })
@@ -216,7 +216,7 @@ test('with error and path-specific error handler', async (t) => {
     throw new Error('some error')
   })
 
-  app.use('/path1', function (err, req, res, next) {
+  app.use('/path1', function (_, req, res, next) {
     res.status(500).end()
     next()
   })
@@ -235,7 +235,7 @@ test('when router error is handled outside of the router', async (t) => {
 
   app.use('/router1', router)
 
-  app.use(function (err, req, res, next) {
+  app.use(function (_, req, res, next) {
     res.status(500).end()
     next()
   })
@@ -277,7 +277,7 @@ test('when using a regular expression in path', async (t) => {
 test('when using router with a route variable', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router()
 
   router.get('/:var2/path1', function (req, res) {
     res.end()
@@ -304,8 +304,8 @@ test('when mounting a subapp using a variable', async (t) => {
 test('using two routers', async (t) => {
   const { agent, app, express, server } = t.nr
 
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   app.use('/:router1', router1)
   router1.use('/:router2', router2)
@@ -324,8 +324,8 @@ test('using two routers', async (t) => {
 
 test('transactions running in parallel should be recorded correctly', async (t) => {
   const { agent, app, express, server } = t.nr
-  const router1 = express.Router() // eslint-disable-line new-cap
-  const router2 = express.Router() // eslint-disable-line new-cap
+  const router1 = express.Router()
+  const router2 = express.Router()
 
   app.use('/:router1', router1)
   router1.use('/:router2', router2)
@@ -353,7 +353,7 @@ test('transactions running in parallel should be recorded correctly', async (t) 
 })
 
 test('names transaction when request is aborted', async (t) => {
-  const plan = tspl(t, { plan: 4 })
+  const plan = tspl(t, { plan: 5 })
   const { agent, app, server } = t.nr
 
   let request = null
@@ -370,8 +370,8 @@ test('names transaction when request is aborted', async (t) => {
   })
 
   const promise = new Promise((resolve) => {
-    // eslint-disable-next-line no-unused-vars
     app.use(function (error, req, res, next) {
+      plan.equal(error.message, 'some error')
       plan.ok(agent.getTransaction() == null, 'no active transaction when responding')
       res.end()
       resolve()
@@ -401,7 +401,8 @@ test('Express transaction names are unaffected by errorware', async (t) => {
   const promise = new Promise((resolve) => {
     transactionHandler = function (tx) {
       const expected = 'WebTransaction/Expressjs/GET//test'
-      plan.equal(tx.trace.root.children[0].name, expected)
+      const [baseSegment] = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(baseSegment.name, expected)
       resolve()
     }
   })

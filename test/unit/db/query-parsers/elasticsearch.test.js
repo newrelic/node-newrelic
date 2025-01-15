@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { parsePath, queryParser } = require('../../../lib/instrumentation/@elastic/elasticsearch')
+const { parsePath, queryParser } = require('../../../../lib/db/query-parsers/elasticsearch')
 const methods = [
   { name: 'GET', expected: 'get' },
   { name: 'PUT', expected: 'create' },
@@ -22,7 +22,7 @@ test('parsePath should behave as expected', async (t) => {
     methods.forEach((m) => {
       const { collection, operation } = parsePath(path, m.name)
       const expectedOp = `index.${m.expected}`
-      assert.equal(collection, 'indexName', `index should be 'indexName'`)
+      assert.equal(collection, 'indexName', "index should be 'indexName'")
       assert.equal(operation, expectedOp, 'operation should include index and method')
     })
   })
@@ -30,9 +30,9 @@ test('parsePath should behave as expected', async (t) => {
     const path = '/indexName/_search'
     methods.forEach((m) => {
       const { collection, operation } = parsePath(path, m.name)
-      const expectedOp = `search`
-      assert.equal(collection, 'indexName', `index should be 'indexName'`)
-      assert.equal(operation, expectedOp, `operation should be 'search'`)
+      const expectedOp = 'search'
+      assert.equal(collection, 'indexName', "index should be 'indexName'")
+      assert.equal(operation, expectedOp, "operation should be 'search'")
     })
   })
   await t.test('search of all indices', async function () {
@@ -43,7 +43,7 @@ test('parsePath should behave as expected', async (t) => {
         return
       }
       const { collection, operation } = parsePath(path, m.name)
-      const expectedOp = `search`
+      const expectedOp = 'search'
       assert.equal(collection, 'any', 'index should be `any`')
       assert.equal(operation, expectedOp, `operation should match ${expectedOp}`)
     })
@@ -53,7 +53,7 @@ test('parsePath should behave as expected', async (t) => {
     methods.forEach((m) => {
       const { collection, operation } = parsePath(path, m.name)
       const expectedOp = `doc.${m.expected}`
-      assert.equal(collection, 'indexName', `index should be 'indexName'`)
+      assert.equal(collection, 'indexName', "index should be 'indexName'")
       assert.equal(operation, expectedOp, `operation should match ${expectedOp}`)
     })
   })
@@ -72,7 +72,7 @@ test('parsePath should behave as expected', async (t) => {
       const path = {}
       methods.forEach((m) => {
         const { collection, operation } = parsePath(path, m.name)
-        const expectedOp = `unknown`
+        const expectedOp = 'unknown'
         assert.equal(collection, 'any', 'index should be `any`')
         assert.equal(operation, expectedOp, `operation should match '${expectedOp}'`)
       })

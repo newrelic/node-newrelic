@@ -8,16 +8,13 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-/* eslint-disable node/no-unpublished-require */
 const Metrics = require('../../../lib/metrics')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 const MetricMapper = require('../../../lib/metrics/mapper')
-// eslint-disable-next-line node/no-extraneous-require
 
 const uninstrumented = require('../../../lib/uninstrumented')
 const helper = require('../../lib/agent_helper')
 const shimmer = require('../../../lib/shimmer')
-/* eslint-enable node/no-unpublished-require */
 
 test('does not mark files with known module names as uninstrumented', (t) => {
   const loaded = []
@@ -62,8 +59,8 @@ test('all instrumented modules should be detected when uninstrumented', (t, end)
       try {
         require(module)
         loaded.push(module)
-      } catch (err) {
-        t.diagnostic('failed to load ' + module)
+      } catch {
+        // silently fail
       }
     }
   })

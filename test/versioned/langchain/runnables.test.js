@@ -228,7 +228,7 @@ test('should create langchain events for every invoke call with parser that retu
       tx,
       chatMsgs: langChainMessageEvents,
       chatSummary: langChainSummaryEvents[0][1],
-      output: `["212 degrees Fahrenheit is equal to 100 degrees Celsius."]`
+      output: '["212 degrees Fahrenheit is equal to 100 degrees Celsius."]'
     })
 
     tx.end()
@@ -358,7 +358,7 @@ test('should create span on successful runnables create', (t, end) => {
     const result = await chain.invoke(input, options)
 
     assert.ok(result)
-    assertSegments(tx.trace.root, ['Llm/chain/Langchain/invoke'], { exact: false })
+    assertSegments(tx.trace, tx.trace.root, ['Llm/chain/Langchain/invoke'], { exact: false })
 
     tx.end()
     end()

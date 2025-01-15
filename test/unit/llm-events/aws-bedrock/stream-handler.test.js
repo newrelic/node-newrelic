@@ -62,8 +62,7 @@ test.beforeEach((ctx) => {
 
   ctx.nr.chunks = [{ foo: 'foo' }]
 
-  /* eslint-disable prettier/prettier */ // It doesn't like the IIFE syntax
-  ctx.nr.stream = (async function* originalStream() {
+  ctx.nr.stream = (async function * originalStream() {
     const encoder = new TextEncoder()
     for (const chunk of ctx.nr.chunks) {
       const json = JSON.stringify(chunk)
@@ -71,7 +70,6 @@ test.beforeEach((ctx) => {
       yield { chunk: { bytes } }
     }
   }())
-  /* eslint-enable prettier/prettier */
 })
 
 test('unrecognized or unhandled model uses original stream', async (t) => {

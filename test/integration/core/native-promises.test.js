@@ -132,9 +132,9 @@ test('AsyncLocalStorage based tracking', async (t) => {
     await helper.runInTransaction(agent, function () {
       let promise = null
       assert.doesNotThrow(function () {
-        promise = new Promise(function (res) {
-          res()
-          res()
+        promise = new Promise(function (resolve) {
+          resolve()
+          resolve()
         })
       })
       return promise
@@ -165,19 +165,19 @@ test('AsyncLocalStorage based tracking', async (t) => {
     const plan = tspl(t, { plan: 5 })
     const { agent, tracer } = t.nr
 
-    helper.runInTransaction(agent, function () {
+    helper.runInTransaction(agent, function (tx) {
       const root = tracer.getSegment()
 
-      const aSeg = agent.tracer.createSegment('A')
-      tracer.setSegment(aSeg)
+      const aSeg = agent.tracer.createSegment({ name: 'A', parent: root, transaction: tx })
+      tracer.setSegment({ segment: aSeg, transaction: tx })
 
       const resA = new TestResource(1)
 
-      const bSeg = agent.tracer.createSegment('B')
-      tracer.setSegment(bSeg)
+      const bSeg = agent.tracer.createSegment({ name: 'B', parent: root, transaction: tx })
+      tracer.setSegment({ segment: bSeg, transaction: tx })
       const resB = new TestResource(2)
 
-      tracer.setSegment(root)
+      tracer.setSegment({ segment: root, transaction: tx })
 
       resA.doStuff(() => {
         plan.equal(
@@ -223,20 +223,20 @@ test('AsyncLocalStorage based tracking', async (t) => {
     helper.runInTransaction(agent, function (txn) {
       plan.ok(txn, 'transaction should not be null')
 
-      const segment = txn.trace.root
+      const ctx = agent.tracer.getContext()
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
           plan.equal(tx ? tx.id : null, txn.id)
         })
-      }, segment)()
+      }, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function executor(resolve) {
         setImmediate(() => {
@@ -273,20 +273,20 @@ test('AsyncLocalStorage based tracking', async (t) => {
     helper.runInTransaction(agent, function (txn) {
       plan.ok(txn, 'transaction should not be null')
 
-      const segment = txn.trace.root
+      const ctx = agent.tracer.getContext()
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
           plan.equal(tx ? tx.id : null, txn.id)
         })
-      }, segment)()
+      }, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function executor(resolve) {
         process.nextTick(() => {
@@ -323,20 +323,20 @@ test('AsyncLocalStorage based tracking', async (t) => {
     helper.runInTransaction(agent, function (txn) {
       plan.ok(txn, 'transaction should not be null')
 
-      const segment = txn.trace.root
+      const ctx = agent.tracer.getContext()
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
           plan.equal(tx ? tx.id : null, txn.id)
         })
-      }, segment)()
+      }, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function executor(resolve) {
         setTimeout(() => {
@@ -373,20 +373,20 @@ test('AsyncLocalStorage based tracking', async (t) => {
     helper.runInTransaction(agent, function (txn) {
       plan.ok(txn, 'transaction should not be null')
 
-      const segment = txn.trace.root
+      const ctx = agent.tracer.getContext()
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
           plan.equal(tx ? tx.id : null, txn.id)
         })
-      }, segment)()
+      }, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function executor(resolve) {
         const ref = setInterval(() => {
@@ -438,15 +438,15 @@ test('AsyncLocalStorage based tracking', async (t) => {
     helper.runInTransaction(agent, function (txn) {
       plan.ok(txn, 'transaction should not be null')
 
-      const segment = txn.trace.root
-      agent.tracer.bindFunction(one, segment)()
+      const ctx = agent.tracer.getContext()
+      agent.tracer.bindFunction(one, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function one() {
         return new Promise(executor).then(() => {
@@ -570,8 +570,8 @@ test('AsyncLocalStorage based tracking', async (t) => {
     async function (t) {
       const plan = tspl(t, { plan: 3 })
       const testMetrics = createHook()
-      await new Promise(function (res) {
-        setTimeout(res, 10)
+      await new Promise(function (resolve) {
+        setTimeout(resolve, 10)
       })
       setImmediate(checkCallMetrics, plan, testMetrics)
       await plan.completed

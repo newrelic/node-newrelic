@@ -207,11 +207,19 @@ test('SNS', async (t) => {
 function finish(end, tx, destName, setLibrarySpy) {
   const root = tx.trace.root
 
-  const messages = common.checkAWSAttributes(root, common.SNS_PATTERN)
+  const messages = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: root,
+    pattern: common.SNS_PATTERN
+  })
   assert.equal(messages.length, 1, 'should have 1 message broker segment')
   assert.ok(messages[0].name.endsWith(destName), 'should have appropriate destination')
 
-  const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
+  const externalSegments = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: root,
+    pattern: common.EXTERN_PATTERN
+  })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   const attrs = messages[0].attributes.get(common.SEGMENT_DESTINATION)
@@ -220,7 +228,7 @@ function finish(end, tx, destName, setLibrarySpy) {
     'aws.requestId': String,
     'aws.service': /sns|SNS/,
     'aws.region': 'us-east-1'
-  }),
-    assert.equal(setLibrarySpy.callCount, 1, 'should only call setLibrary once and not per call')
+  })
+  assert.equal(setLibrarySpy.callCount, 1, 'should only call setLibrary once and not per call')
   end()
 }

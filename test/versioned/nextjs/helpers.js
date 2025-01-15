@@ -17,11 +17,12 @@ const noServerClose = semver.gte(nextPkg.version, '13.4.15')
 // just emit SIGTERM after 14.1.0
 const closeEvent = semver.gte(nextPkg.version, '14.1.0') ? 'SIGTERM' : 'exit'
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { findSegment } = require('../../lib/metrics_helper')
 
 /**
  * Builds a Next.js app
  * @param {sting} dir directory to run next cli in
- * @param {string} [path=app] path to app
+ * @param {string} [path] path to app
  * @returns {Promise}
  *
  */
@@ -46,8 +47,8 @@ helpers.build = function build(dir, path = 'app') {
 /**
  * Bootstraps and starts the Next.js app
  * @param {sting} dir directory to run next cli in
- * @param {string} [path=app] path to app
- * @param {number} [port=3001]
+ * @param {string} [path] path to app
+ * @param {number} [port]
  * @returns {Promise}
  */
 helpers.start = async function start(dir, path = 'app', port = 3001) {
@@ -81,7 +82,7 @@ helpers.start = async function start(dir, path = 'app', port = 3001) {
  * Makes a http GET request to uri specified
  *
  * @param {string} uri make sure to include `/`
- * @param {number} [port=3001]
+ * @param {number} [port]
  * @returns {Promise}
  */
 helpers.makeRequest = function (uri, port = 3001) {
@@ -105,22 +106,6 @@ helpers.registerInstrumentation = function (agent) {
   hooks.forEach(agent.registerInstrumentation)
 }
 
-helpers.findSegmentByName = function (root, name) {
-  if (root.name === name) {
-    return root
-  } else if (root.children && root.children.length) {
-    for (let i = 0; i < root.children.length; i++) {
-      const child = root.children[i]
-      const found = helpers.findSegmentByName(child, name)
-      if (found) {
-        return found
-      }
-    }
-  }
-
-  return null
-}
-
 helpers.getTransactionEventAgentAttributes = function getTransactionEventAgentAttributes(
   transaction
 ) {
@@ -134,7 +119,7 @@ helpers.getTransactionIntrinsicAttributes = function getTransactionIntrinsicAttr
 }
 
 helpers.getSegmentAgentAttributes = function getSegmentAgentAttributes(transaction, name) {
-  const segment = helpers.findSegmentByName(transaction.trace.root, name)
+  const segment = findSegment(transaction.trace, transaction.trace.root, name)
   if (segment) {
     return segment.attributes.get(DESTINATIONS.SPAN_EVENT)
   }
@@ -165,4 +150,10 @@ helpers.setupTransactionHandler = function setupTransactionHandler({
       agent.removeListener('transactionFinished', txHandler)
     })
   })
+}
+
+helpers.getServerSidePropsSegment = function getServerSidePropsSegment(trace) {
+  const [first] = trace.getChildren(trace.root.id)
+  const children = trace.getChildren(first.id)
+  return children.find((segment) => segment.name.includes('getServerSideProps'))
 }

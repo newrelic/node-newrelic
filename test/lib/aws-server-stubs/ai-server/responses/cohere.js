@@ -45,15 +45,15 @@ responses.set('text cohere ultimate question streamed', {
         ':message-type': { type: 'string', value: 'event' }
       },
       body: {
-        'generations': [
+        generations: [
           {
             finish_reason: 'endoftext',
             id: 'f4ca64e7-93ce-4722-bebe-2d383440dedf',
             text: '42'
           }
         ],
-        'id': '1234',
-        'prompt': 'What is the answer to life, the universe, and everything?',
+        id: '1234',
+        prompt: 'What is the answer to life, the universe, and everything?',
         'amazon-bedrock-invocationMetrics': {
           inputTokenCount: 8,
           outputTokenCount: 4,
@@ -98,12 +98,12 @@ responses.set('embed text cohere stream', {
         ':message-type': { type: 'string', value: 'event' }
       },
       body: {
-        'embeddings': [
+        embeddings: [
           [-0.019012451, 0.031707764, -0.053985596, -0.034484863, 0.019058228, -0.008850098],
           [-2.2888184e-4, 0.02166748, -0.009109497, -0.04159546, -0.023513794, -0.007965088]
         ],
-        'id': 'fbd3923c-3071-4ece-8761-6ba78058f747',
-        'texts': ['foo', 'bar'],
+        id: 'fbd3923c-3071-4ece-8761-6ba78058f747',
+        texts: ['foo', 'bar'],
         'amazon-bedrock-invocationMetrics': {
           inputTokenCount: 4,
           outputTokenCount: 8,

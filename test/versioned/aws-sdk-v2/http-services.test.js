@@ -70,7 +70,7 @@ test('AWS HTTP Services', async (t) => {
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.ELB({
         credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint
+        endpoint
       })
       service.addTags(
         {
@@ -99,7 +99,7 @@ test('AWS HTTP Services', async (t) => {
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.ElastiCache({
         credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint
+        endpoint
       })
       service.addTagsToResource(
         {
@@ -125,7 +125,7 @@ test('AWS HTTP Services', async (t) => {
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.Lambda({
         credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint
+        endpoint
       })
       service.addLayerVersionPermission(
         {
@@ -150,7 +150,7 @@ test('AWS HTTP Services', async (t) => {
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.RDS({
         credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint
+        endpoint
       })
       service.addRoleToDBCluster(
         {
@@ -170,7 +170,7 @@ test('AWS HTTP Services', async (t) => {
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.Redshift({
         credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint
+        endpoint
       })
       service.acceptReservedNodeExchange(
         {
@@ -190,7 +190,7 @@ test('AWS HTTP Services', async (t) => {
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.Rekognition({
         credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint
+        endpoint
       })
       service.compareFaces(
         {
@@ -221,7 +221,7 @@ test('AWS HTTP Services', async (t) => {
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.SES({
         credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint
+        endpoint
       })
       service.cloneReceiptRuleSet(
         {
@@ -238,7 +238,11 @@ test('AWS HTTP Services', async (t) => {
 })
 
 function finish(end, service, operation, tx) {
-  const externals = common.checkAWSAttributes(tx.trace.root, common.EXTERN_PATTERN)
+  const externals = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: tx.trace.root,
+    pattern: common.EXTERN_PATTERN
+  })
   if (assert.equal(externals.length, 1, 'should have an aws external')) {
     const attrs = externals[0].attributes.get(common.SEGMENT_DESTINATION)
     match(attrs, {

@@ -23,7 +23,6 @@ function createEmptyResponseServer() {
 
     // sometimes the aws-sdk will obfuscate this error
     // so logging out.
-    // eslint-disable-next-line no-console
     console.log('Unhandled request method: ', req.method)
 
     res.statusCode = 500

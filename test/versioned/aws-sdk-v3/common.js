@@ -17,7 +17,7 @@ const assert = require('node:assert')
 const SEGMENT_DESTINATION = TRANS_SEGMENT
 const helper = require('../../lib/agent_helper')
 
-function checkAWSAttributes(segment, pattern, markedSegments = []) {
+function checkAWSAttributes({ trace, segment, pattern, markedSegments = [] }) {
   const expectedAttrs = {
     'aws.operation': String,
     'aws.service': String,
@@ -30,27 +30,33 @@ function checkAWSAttributes(segment, pattern, markedSegments = []) {
     const attrs = segment.attributes.get(TRANS_SEGMENT)
     match(attrs, expectedAttrs)
   }
-  segment.children.forEach((child) => {
-    checkAWSAttributes(child, pattern, markedSegments)
+  const children = trace.getChildren(segment.id)
+  children.forEach((child) => {
+    checkAWSAttributes({ trace, segment: child, pattern, markedSegments })
   })
 
   return markedSegments
 }
 
-function getMatchingSegments(segment, pattern, markedSegments = []) {
+function getMatchingSegments({ trace, segment, pattern, markedSegments = [] }) {
   if (pattern.test(segment.name)) {
     markedSegments.push(segment)
   }
 
-  segment.children.forEach((child) => {
-    getMatchingSegments(child, pattern, markedSegments)
+  const children = trace.getChildren(segment.id)
+  children.forEach((child) => {
+    getMatchingSegments({ trace, segment: child, pattern, markedSegments })
   })
 
   return markedSegments
 }
 
 function checkExternals({ service, operations, tx, end }) {
-  const externals = checkAWSAttributes(tx.trace.root, EXTERN_PATTERN)
+  const externals = checkAWSAttributes({
+    trace: tx.trace,
+    segment: tx.trace.root,
+    pattern: EXTERN_PATTERN
+  })
   assert.equal(
     externals.length,
     operations.length,
@@ -71,17 +77,18 @@ function checkExternals({ service, operations, tx, end }) {
 }
 
 function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, prompt, resContent }) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
-    'appName': 'New Relic for Node.js tests',
-    'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
-    'trace_id': tx.traceId,
-    'span_id': tx.trace.root.children[0].id,
+    appName: 'New Relic for Node.js tests',
+    request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    trace_id: tx.traceId,
+    span_id: segment.id,
     'response.model': modelId,
-    'vendor': 'bedrock',
-    'ingest_source': 'Node',
-    'role': 'user',
-    'is_response': false,
-    'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+    vendor: 'bedrock',
+    ingest_source: 'Node',
+    role: 'user',
+    is_response: false,
+    completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
   }
 
   chatMsgs.forEach((msg) => {
@@ -111,23 +118,24 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
 }
 
 function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, numMsgs = 2 }) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {
-    'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
-    'appName': 'New Relic for Node.js tests',
-    'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
+    appName: 'New Relic for Node.js tests',
+    request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'llm.conversation_id': 'convo-id',
-    'trace_id': tx.traceId,
-    'span_id': tx.trace.root.children[0].id,
+    trace_id: tx.traceId,
+    span_id: segment.id,
     'response.model': modelId,
-    'vendor': 'bedrock',
-    'ingest_source': 'Node',
+    vendor: 'bedrock',
+    ingest_source: 'Node',
     'request.model': modelId,
-    'duration': tx.trace.root.children[0].getDurationInMillis(),
+    duration: segment.getDurationInMillis(),
     'response.number_of_messages': error ? 1 : numMsgs,
     'response.choices.finish_reason': error ? undefined : 'endoftext',
     'request.temperature': 0.5,
     'request.max_tokens': 100,
-    'error': error
+    error
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')

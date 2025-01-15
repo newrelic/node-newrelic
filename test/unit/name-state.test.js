@@ -51,6 +51,7 @@ test('should delete the name when reset', () => {
 
 test('should handle regex paths', () => {
   const state = new NameState('Nodejs', 'GET', '/', [])
+  // eslint-disable-next-line prefer-regex-literals
   state.appendPath(new RegExp('regex1'))
   state.appendPath('path1')
   state.appendPath(/regex2/)

@@ -2,6 +2,38 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.11.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `shim.createSegment` and `shim.handleMqTracingHeaders` to be backwards compatible with the changes to context manager"
+        ],
+        "features": [
+          "Added otel consumer span processing",
+          "Added segment synthesis for internal spans",
+          "Added segment synthesis for otel producer spans",
+          "Added segment and transaction synthesis for http server spans",
+          "Added segment synthesis for db client otel spans to db trace",
+          "Added segment synthesizer and provided ability to convert http client otel spans to external http trace segments",
+          "Added segment tree to transaction trace",
+          "Removed children from segments.",
+          "Removed transaction from segment. Introduced a new enterSegment and enterTransaction to make context propagation more clear"
+        ]
+      }
+    },
+    {
+      "version": "12.10.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed event matcher to use properties specific to web requests (v1/ALB and v2)"
+        ],
+        "features": [
+          "Added instrumentation for `@opensearch-projects/opensearch` v2.1.0+"
+        ]
+      }
+    },
+    {
       "version": "12.9.0",
       "changes": {
         "security": [],

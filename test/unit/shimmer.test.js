@@ -30,7 +30,7 @@ async function makeModuleTests({ moduleName, relativePath, throwsError }, t) {
     ctx.nr.errorThrown = 0
     ctx.nr.agent = helper.instrumentMockedAgent()
     const instrumentationOpts = {
-      moduleName: moduleName,
+      moduleName,
       onRequire: function (shim, module) {
         ctx.nr.instrumentedModule = module
         ++ctx.nr.counter
@@ -440,13 +440,14 @@ test('shimmer', async function (t) {
             transactions[i] = current
             ids[i] = current.id
 
+            const ctx = agent.tracer.getContext()
             process.nextTick(
               agent.tracer.bindFunction(function bindFunctionCb() {
                 const lookup = agent.getTransaction()
                 plan.equal(lookup, current)
 
                 synchronizer.emit('inner', lookup, i)
-              })
+              }, ctx)
             )
           })
           wrapped()
@@ -479,13 +480,14 @@ test('shimmer', async function (t) {
             transactions[i] = current
             ids[i] = current.id
 
+            const ctx = agent.tracer.getContext()
             setTimeout(
               agent.tracer.bindFunction(function bindFunctionCb() {
                 const lookup = agent.getTransaction()
                 plan.equal(lookup, current)
 
                 synchronizer.emit('inner', lookup, i)
-              }),
+              }, ctx),
               1
             )
           })
@@ -524,6 +526,7 @@ test('shimmer', async function (t) {
             transactions[j] = current
             ids[j] = id
 
+            const ctx = agent.tracer.getContext()
             eventer.on(
               name,
               agent.tracer.bindFunction(function bindFunctionCb() {
@@ -532,7 +535,7 @@ test('shimmer', async function (t) {
                 plan.equal(lookup.id, id)
 
                 eventer.emit('inner', lookup, j)
-              })
+              }, ctx)
             )
 
             eventer.emit(name)
@@ -604,11 +607,12 @@ test('shimmer', async function (t) {
 
               verify(j, 'createTicker', current)
 
+              const ctx = agent.tracer.getContext()
               process.nextTick(
                 agent.tracer.bindFunction(function bindFunctionCb() {
                   verify(j, 'nextTick', current)
                   createTimer(current, j)
-                })
+                }, ctx)
               )
             })
           }
@@ -686,7 +690,7 @@ test('Should not register when no hooks provided', async (t) => {
 
   const moduleName = 'test name'
   shimmer.registerInstrumentation({
-    moduleName: moduleName
+    moduleName
   })
 
   assert.ok(!shimmer.registeredInstrumentations[moduleName])
@@ -832,7 +836,7 @@ test('Shimmer with logger mock', async (t) => {
       assert.deepEqual(loggerMock.debug.args[0], [
         'Failed to get version for `%s`, reason: %s',
         'bogus',
-        `no tracked items for module 'bogus'`
+        "no tracked items for module 'bogus'"
       ])
     }
   )
@@ -844,7 +848,7 @@ function clearCachedModules(modules) {
       const requirePath = require.resolve(moduleName)
       delete require.cache[requirePath]
       return true
-    } catch (e) {
+    } catch {
       return false
     }
   })

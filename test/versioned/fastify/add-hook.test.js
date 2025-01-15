@@ -81,7 +81,7 @@ test('non-error hooks', async (t) => {
     assert.equal(
       'WebFrameworkUri/Fastify/GET//add-hook',
       transaction.getName(),
-      `transaction name matched`
+      'transaction name matched'
     )
     // all the hooks are siblings of the route handler
     // except the AFTER_HANDLER_HOOKS which are children of the route handler
@@ -108,7 +108,7 @@ test('non-error hooks', async (t) => {
         ]
       ]
     }
-    assertSegments(transaction.trace.root, expectedSegments)
+    assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
 
     txPassed = true
   })
@@ -143,7 +143,7 @@ test('error hook', async function errorHookTest(t) {
     assert.equal(
       'WebFrameworkUri/Fastify/GET//error',
       transaction.getName(),
-      `transaction name matched`
+      'transaction name matched'
     )
     // all the hooks are siblings of the route handler
     let expectedSegments
@@ -168,7 +168,7 @@ test('error hook', async function errorHookTest(t) {
       ]
     }
 
-    assertSegments(transaction.trace.root, expectedSegments)
+    assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
 
     txPassed = true
   })

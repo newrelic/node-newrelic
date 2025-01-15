@@ -137,7 +137,7 @@ class ConventionalChangelog {
    * @returns {string} the commit message header with any PR links removed and whitespace trimmed
    */
   removePrLinks(subject) {
-    return subject.replace(/\(\#\d+\)$/, '').trim()
+    return subject.replace(/\(#\d+\)$/, '').trim()
   }
 
   /**
@@ -211,7 +211,7 @@ class ConventionalChangelog {
 
       const markdownFormatter = conventionalChangelogWriter(context, {
         ...config.writerOpts,
-        mainTemplate: mainTemplate,
+        mainTemplate,
         headerPartial: headerTemplate,
         commitPartial: commitTemplate,
         commitGroupsSort: self.rankedGroupSort

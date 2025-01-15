@@ -44,6 +44,7 @@ test('Client Premature Disconnection', { timeout: 3000 }, (t, end) => {
 
   agent.on('transactionFinished', (transaction) => {
     assertSegments(
+      transaction.trace,
       transaction.trace.root,
       [
         'WebTransaction/Expressjs/POST//test',
@@ -64,7 +65,7 @@ test('Client Premature Disconnection', { timeout: 3000 }, (t, end) => {
   const request = http.request(
     {
       hostname: 'localhost',
-      port: port,
+      port,
       method: 'POST',
       path: '/test',
       headers: {

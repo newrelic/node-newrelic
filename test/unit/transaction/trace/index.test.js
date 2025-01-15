@@ -113,13 +113,12 @@ test('Trace', async (t) => {
     const trace = transaction.trace
     const child1 = (transaction.baseSegment = trace.add('test'))
     child1.start()
-    const child2 = child1.add('nested')
+    const child2 = trace.add('nested', null, child1)
     child2.start()
     child1.end()
     child2.end()
     trace.root.end()
     transaction.end()
-    trace.generateSpanEvents()
 
     const events = agent.spanEventAggregator.getEvents()
     const nested = events[0]
@@ -171,7 +170,7 @@ test('Trace', async (t) => {
     const trace = transaction.trace
     const child1 = trace.add('test')
     child1.start()
-    const child2 = child1.add('nested')
+    const child2 = trace.add('nested', null, child1)
     child2.start()
     child1.end()
     child2.end()
@@ -192,35 +191,11 @@ test('Trace', async (t) => {
     const trace = transaction.trace
     const child1 = trace.add('test')
     child1.start()
-    const child2 = child1.add('nested')
+    const child2 = trace.add('nested', null, child1)
     child2.start()
     child1.end()
     child2.end()
     trace.root.end()
-    transaction.end()
-
-    const events = agent.spanEventAggregator.getEvents()
-    assert.equal(events.length, 0)
-  })
-
-  await t.test('should not generate span events on end if transaction is not sampled', (t) => {
-    const { agent } = t.nr
-    agent.config.span_events.enabled = true
-    agent.config.distributed_tracing.enabled = false
-
-    const transaction = new Transaction(agent)
-
-    const trace = transaction.trace
-    const child1 = trace.add('test')
-    child1.start()
-    const child2 = child1.add('nested')
-    child2.start()
-    child1.end()
-    child2.end()
-    trace.root.end()
-
-    transaction.priority = 0
-    transaction.sampled = false
     transaction.end()
 
     const events = agent.spanEventAggregator.getEvents()
@@ -256,8 +231,9 @@ test('Trace', async (t) => {
     transaction.acceptDistributedTraceHeaders('HTTP', headers)
 
     // Create at least one segment
-    const trace = new Trace(transaction)
+    const trace = transaction.trace
     const child = (transaction.baseSegment = trace.add('test'))
+
     child.start()
     child.end()
 
@@ -295,10 +271,11 @@ test('Trace', async (t) => {
     const transaction = new Transaction(agent)
     transaction.sampled = true
 
-    const trace = new Trace(transaction)
+    const trace = transaction.trace
 
     // add a child segment
     const child = (transaction.baseSegment = trace.add('test'))
+
     child.start()
     child.end()
 
@@ -333,7 +310,9 @@ test('when serializing synchronously', async (t) => {
 
   await t.test('should produce a transaction trace in the expected format', async (t) => {
     const { details } = t.nr
+    assert.ok(details.trace.segments)
     const traceJSON = details.trace.generateJSONSync()
+    assert.ok(!details.trace.segments)
     const reconstituted = await codecDecodeAsync(traceJSON[4])
     assert.deepEqual(traceJSON, details.expectedEncoding, 'full trace JSON')
 
@@ -356,7 +335,7 @@ test('when serializing synchronously', async (t) => {
       const { details } = t.nr
       const json = details.trace.generateJSONSync()
 
-      assert.match(json[4], /^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+      assert.match(json[4], /^[a-zA-Z0-9+/]+={0,2}$/, 'should be base64 encoded')
 
       const data = await codecDecodeAsync(json[4])
       assert.deepEqual(data, details.rootNode)
@@ -404,7 +383,9 @@ test('when serializing asynchronously', async (t) => {
 
   await t.test('should produce a transaction trace in the expected format', async (t) => {
     const { details } = t.nr
+    assert.ok(details.trace.segments)
     const traceJSON = await details.trace.generateJSONAsync()
+    assert.ok(!details.trace.segments)
     const reconstituted = await codecDecodeAsync(traceJSON[4])
 
     assert.deepEqual(traceJSON, details.expectedEncoding, 'full trace JSON')
@@ -439,7 +420,7 @@ test('when serializing asynchronously', async (t) => {
     async (t) => {
       const { details } = t.nr
       const json = await details.trace.generateJSONAsync()
-      assert.match(json[4], /^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+      assert.match(json[4], /^[a-zA-Z0-9+/]+={0,2}$/, 'should be base64 encoded')
 
       const data = await codecDecodeAsync(json[4])
       assert.deepEqual(data, details.rootNode)
@@ -503,14 +484,15 @@ test('when inserting segments', async (t) => {
     const { trace } = t.nr
     trace.setDurationInMillis(40, 0)
     const child = trace.add('Custom/Test18/Child1')
+
     child.setDurationInMillis(27, 0)
-    let seg = child.add('UnitTest')
+    let seg = trace.add('UnitTest', null, child)
     seg.setDurationInMillis(9, 1)
-    seg = child.add('UnitTest1')
+    seg = trace.add('UnitTest1', null, child)
     seg.setDurationInMillis(13, 1)
-    seg = child.add('UnitTest2')
+    seg = trace.add('UnitTest2', null, child)
     seg.setDurationInMillis(9, 16)
-    seg = child.add('UnitTest2')
+    seg = trace.add('UnitTest2', null, child)
     seg.setDurationInMillis(14, 16)
     assert.equal(trace.getTotalTimeDurationInMillis(), 48)
   })
@@ -518,15 +500,15 @@ test('when inserting segments', async (t) => {
   await t.test('should report total time on branched traces', (t) => {
     const { trace } = t.nr
     trace.setDurationInMillis(40, 0)
-    const child = trace.add('Custom/Test18/Child1')
+    const child = trace.add('Custom/Test18/Child1', null, trace.root)
     child.setDurationInMillis(27, 0)
-    const seg1 = child.add('UnitTest')
+    const seg1 = trace.add('UnitTest', null, child)
     seg1.setDurationInMillis(9, 1)
-    let seg = child.add('UnitTest1')
+    let seg = trace.add('UnitTest1', null, child)
     seg.setDurationInMillis(13, 1)
-    seg = seg1.add('UnitTest2')
+    seg = trace.add('UnitTest2', null, seg1)
     seg.setDurationInMillis(9, 16)
-    seg = seg1.add('UnitTest2')
+    seg = trace.add('UnitTest2', null, seg1)
     seg.setDurationInMillis(14, 16)
     assert.equal(trace.getTotalTimeDurationInMillis(), 48)
   })
@@ -535,101 +517,122 @@ test('when inserting segments', async (t) => {
     const { trace } = t.nr
     const expectedTrace = [
       0,
-      27,
-      'Root',
-      { nr_exclusive_duration_millis: 3 },
+      40,
+      'ROOT',
+      { nr_exclusive_duration_millis: 10 },
       [
         [
-          1,
-          10,
-          'first',
-          { nr_exclusive_duration_millis: 9 },
-          [[16, 25, 'first-first', { nr_exclusive_duration_millis: 9 }, []]]
-        ],
-        [
-          1,
-          14,
-          'second',
-          { nr_exclusive_duration_millis: 13 },
+          0,
+          27,
+          'Root',
+          { nr_exclusive_duration_millis: 3 },
           [
-            [16, 25, 'second-first', { nr_exclusive_duration_millis: 9 }, []],
-            [16, 25, 'second-second', { nr_exclusive_duration_millis: 9 }, []]
+            [
+              1,
+              10,
+              'first',
+              { nr_exclusive_duration_millis: 9 },
+              [[16, 25, 'first-first', { nr_exclusive_duration_millis: 9 }, []]]
+            ],
+            [
+              1,
+              14,
+              'second',
+              { nr_exclusive_duration_millis: 13 },
+              [
+                [16, 25, 'second-first', { nr_exclusive_duration_millis: 9 }, []],
+                [16, 25, 'second-second', { nr_exclusive_duration_millis: 9 }, []]
+              ]
+            ]
           ]
         ]
       ]
     ]
 
     trace.setDurationInMillis(40, 0)
-    const child = trace.add('Root')
+    const child = trace.add('Root', null, trace.root)
+
     child.setDurationInMillis(27, 0)
-    const seg1 = child.add('first')
+    const seg1 = trace.add('first', null, child)
+
     seg1.setDurationInMillis(9, 1)
-    const seg2 = child.add('second')
+    const seg2 = trace.add('second', null, child)
     seg2.setDurationInMillis(13, 1)
-    let seg = seg1.add('first-first')
+    let seg = trace.add('first-first', null, seg1)
     seg.setDurationInMillis(9, 16)
-    seg = seg1.add('first-second')
+    seg = trace.add('first-second', null, seg1)
     seg.setDurationInMillis(14, 16)
     seg._collect = false
-    seg = seg2.add('second-first')
+    seg = trace.add('second-first', null, seg2)
     seg.setDurationInMillis(9, 16)
-    seg = seg2.add('second-second')
+    seg = trace.add('second-second', null, seg2)
     seg.setDurationInMillis(9, 16)
 
     trace.end()
 
-    assert.deepEqual(child.toJSON(), expectedTrace)
+    assert.deepEqual(trace.toJSON(), expectedTrace)
   })
 
   await t.test('should report the expected trees for branched trees', (t) => {
     const { trace } = t.nr
     const expectedTrace = [
       0,
-      27,
-      'Root',
-      { nr_exclusive_duration_millis: 3 },
+      40,
+      'ROOT',
+      { nr_exclusive_duration_millis: 10 },
       [
         [
-          1,
-          10,
-          'first',
-          { nr_exclusive_duration_millis: 9 },
+          0,
+          27,
+          'Root',
+          { nr_exclusive_duration_millis: 3 },
           [
-            [16, 25, 'first-first', { nr_exclusive_duration_millis: 9 }, []],
-            [16, 30, 'first-second', { nr_exclusive_duration_millis: 14 }, []]
-          ]
-        ],
-        [
-          1,
-          14,
-          'second',
-          { nr_exclusive_duration_millis: 13 },
-          [
-            [16, 25, 'second-first', { nr_exclusive_duration_millis: 9 }, []],
-            [16, 25, 'second-second', { nr_exclusive_duration_millis: 9 }, []]
+            [
+              1,
+              10,
+              'first',
+              { nr_exclusive_duration_millis: 9 },
+              [
+                [16, 25, 'first-first', { nr_exclusive_duration_millis: 9 }, []],
+                [16, 30, 'first-second', { nr_exclusive_duration_millis: 14 }, []]
+              ]
+            ],
+            [
+              1,
+              14,
+              'second',
+              { nr_exclusive_duration_millis: 13 },
+              [
+                [16, 25, 'second-first', { nr_exclusive_duration_millis: 9 }, []],
+                [16, 25, 'second-second', { nr_exclusive_duration_millis: 9 }, []]
+              ]
+            ]
           ]
         ]
       ]
     ]
+
     trace.setDurationInMillis(40, 0)
-    const child = trace.add('Root')
+    const child = trace.add('Root', null, trace.root)
+
     child.setDurationInMillis(27, 0)
-    const seg1 = child.add('first')
+    const seg1 = trace.add('first', null, child)
+
     seg1.setDurationInMillis(9, 1)
-    const seg2 = child.add('second')
+    const seg2 = trace.add('second', null, child)
     seg2.setDurationInMillis(13, 1)
-    let seg = seg1.add('first-first')
+    let seg = trace.add('first-first', null, seg1)
     seg.setDurationInMillis(9, 16)
-    seg = seg1.add('first-second')
+    seg = trace.add('first-second', null, seg1)
     seg.setDurationInMillis(14, 16)
-    seg = seg2.add('second-first')
+    seg = trace.add('second-first', null, seg2)
     seg.setDurationInMillis(9, 16)
-    seg = seg2.add('second-second')
+    seg = trace.add('second-second', null, seg2)
     seg.setDurationInMillis(9, 16)
 
     trace.end()
 
-    assert.deepEqual(child.toJSON(), expectedTrace)
+    assert.deepEqual(trace.toJSON(), expectedTrace)
   })
 
   await t.test('should measure exclusive time vs total time at each level of the graph', (t) => {
@@ -657,10 +660,12 @@ test('when inserting segments', async (t) => {
 
     // add another that starts within the first range but that extends beyond
     const child3 = trace.add('Custom/Test19/Child3')
+
     child3.setDurationInMillis(22, now + 11)
 
     // add a final child that's entirely disjoint
     const child4 = trace.add('Custom/Test19/Child4')
+
     child4.setDurationInMillis(4, now + 35)
 
     assert.equal(trace.getExclusiveDurationInMillis(), 5)
@@ -674,24 +679,25 @@ test('when inserting segments', async (t) => {
 
     // create a long child on its own
     const child1 = trace.add('Custom/Test20/Child1')
+
     child1.setDurationInMillis(33, now)
 
     // add another, short child as a sibling
-    const child2 = child1.add('Custom/Test20/Child2')
+    const child2 = trace.add('Custom/Test20/Child2', null, child1)
     child2.setDurationInMillis(5, now)
 
     // add two disjoint children of the second segment encompassed by the first segment
-    const child3 = child2.add('Custom/Test20/Child3')
+    const child3 = trace.add('Custom/Test20/Child3', null, child2)
     child3.setDurationInMillis(11, now)
 
-    const child4 = child2.add('Custom/Test20/Child3')
+    const child4 = trace.add('Custom/Test20/Child3', null, child2)
     child4.setDurationInMillis(11, now + 16)
 
     assert.equal(trace.getExclusiveDurationInMillis(), 9)
-    assert.equal(child4.getExclusiveDurationInMillis(), 11)
-    assert.equal(child3.getExclusiveDurationInMillis(), 11)
-    assert.equal(child2.getExclusiveDurationInMillis(), 0)
-    assert.equal(child1.getExclusiveDurationInMillis(), 11)
+    assert.equal(child4.getExclusiveDurationInMillis(trace), 11)
+    assert.equal(child3.getExclusiveDurationInMillis(trace), 11)
+    assert.equal(child2.getExclusiveDurationInMillis(trace), 0)
+    assert.equal(child1.getExclusiveDurationInMillis(trace), 11)
   })
 
   await t.test('should accurately sum partially overlapping segments', (t) => {
@@ -737,20 +743,67 @@ test('when inserting segments', async (t) => {
     // They will be tagged as _collect = false after the limit runs out.
     for (let i = 0; i < 950; ++i) {
       const segment = trace.add(i.toString(), noop)
-      if (i < 900) {
+      // root segment is already added
+      if (i < 899) {
         assert.equal(segment._collect, true, `segment ${i} should be collected`)
       } else {
         assert.equal(segment._collect, false, `segment ${i} should not be collected`)
       }
     }
 
-    assert.equal(trace.root.children.length, 950)
+    // 950 + root segment
+    assert.equal(transaction.numSegments, 951)
     assert.equal(transaction._recorders.length, 950)
-    trace.segmentCount = 0
-    trace.root.children = []
-    trace.recorders = []
-
+    trace.end()
     function noop() {}
+  })
+
+  await t.test('should not cause a stack overflow', { timeout: 30000 }, (t) => {
+    const { trace } = t.nr
+    for (let i = 0; i < 9000; ++i) {
+      trace.add(`Child ${i}`)
+    }
+
+    assert.doesNotThrow(function () {
+      trace.toJSON()
+    })
+  })
+
+  await t.test('should get all children for a segment', (t) => {
+    const { trace } = t.nr
+    assert.deepEqual(trace.segments.root.children, [])
+    const segment = trace.add('base')
+    const segment2 = trace.add('1', null, segment)
+    const segment3 = trace.add('2', null, segment)
+    const children = trace.getChildren(segment.id)
+    assert.ok(children.length, 2)
+    assert.deepEqual(children, [segment2, segment3])
+  })
+
+  await t.test('should get all collected children for a segment', (t) => {
+    const { trace } = t.nr
+    const segment = trace.add('base')
+    const segment2 = trace.add('1', null, segment)
+    const segment3 = trace.add('2', null, segment)
+    const segment4 = trace.add('3', null, segment)
+    segment4._collect = false
+    const segment5 = trace.add('4', null, segment)
+    segment5.ignore = true
+    let { children } = trace.getNode(segment.id)
+    children = trace.getCollectedChildren(children)
+    assert.ok(children.length, 2)
+    assert.deepEqual(children[0].segment, segment2)
+    assert.deepEqual(children[0].children, [])
+    assert.deepEqual(children[1].segment, segment3)
+    assert.deepEqual(children[1].children, [])
+  })
+
+  await t.test('should get parent segment for a segment', (t) => {
+    const { trace } = t.nr
+    const segment = trace.add('base')
+    const segment2 = trace.add('1', null, segment)
+    const parent = trace.getParent(segment2.parentId)
+    assert.equal(parent, segment)
   })
 })
 
@@ -925,7 +978,7 @@ function addTwoSegments(transaction) {
   const trace = transaction.trace
   const child1 = (transaction.baseSegment = trace.add('test'))
   child1.start()
-  const child2 = child1.add('nested')
+  const child2 = trace.add('nested', null, child1)
   child2.start()
   child1.end()
   child2.end()
@@ -944,8 +997,6 @@ async function makeTrace(agent) {
   transaction.url = URL
   transaction.verb = 'GET'
 
-  transaction.timer.setDurationInMillis(DURATION)
-
   const trace = transaction.trace
 
   // promisifying `trace.generateJSON` so tests do not have to call done
@@ -955,18 +1006,19 @@ async function makeTrace(agent) {
   assert.ok(start > 0, "root segment's start time")
   trace.setDurationInMillis(DURATION, 0)
 
-  const web = trace.root.add(URL)
+  const web = trace.add(URL)
   transaction.baseSegment = web
   transaction.finalizeNameFromUri(URL, 200)
   // top-level element will share a duration with the quasi-ROOT node
   web.setDurationInMillis(DURATION, 0)
 
-  const db = web.add('Database/statement/AntiSQL/select/getSome')
+  const db = trace.add('Database/statement/AntiSQL/select/getSome', null, web)
   db.setDurationInMillis(14, 3)
 
-  const memcache = web.add('Datastore/operation/Memcache/lookup')
+  const memcache = trace.add('Datastore/operation/Memcache/lookup', null, web)
   memcache.setDurationInMillis(20, 8)
 
+  transaction.timer.setDurationInMillis(DURATION)
   trace.end()
 
   /*
@@ -974,6 +1026,21 @@ async function makeTrace(agent) {
    * outermost version having its scope always set to 'ROOT'. The null bits
    * are parameters, which are optional, and so far, unimplemented for Node.
    */
+  const dbSegment = [
+    3,
+    17,
+    'Database/statement/AntiSQL/select/getSome',
+    { nr_exclusive_duration_millis: 14 },
+    []
+  ]
+  const memcacheSegment = [
+    8,
+    28,
+    'Datastore/operation/Memcache/lookup',
+    { nr_exclusive_duration_millis: 20 },
+    []
+  ]
+
   const rootSegment = [
     0,
     DURATION,
@@ -987,17 +1054,12 @@ async function makeTrace(agent) {
         {
           'request.uri': '/test?test=value',
           'request.parameters.test': 'value',
-          'nr_exclusive_duration_millis': 8
+          nr_exclusive_duration_millis: 8
         },
-        [
-          // TODO: ensure that the ordering is correct WRT start time
-          db.toJSON(),
-          memcache.toJSON()
-        ]
+        [dbSegment, memcacheSegment]
       ]
     ]
   ]
-
   const rootNode = [
     trace.root.timer.start / 1000,
     {},
@@ -1018,7 +1080,6 @@ async function makeTrace(agent) {
   return {
     transaction,
     trace,
-    rootSegment,
     rootNode,
     expectedEncoding: [
       0,

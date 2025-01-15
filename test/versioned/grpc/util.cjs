@@ -5,6 +5,8 @@
 
 'use strict'
 
+const path = require('node:path')
+
 const util = module.exports
 const metricsHelpers = require('../../lib/metrics_helper')
 const protoLoader = require('@grpc/proto-loader')
@@ -36,6 +38,9 @@ function buildExpectedMetrics(port) {
  *
  * @param {Object} params
  * @param {Object} params.agent test agent
+ * @param params.port
+ * @param root1
+ * @param root1.assert
  */
 util.assertMetricsNotExisting = function assertMetricsNotExisting(
   { agent, port },
@@ -55,7 +60,7 @@ util.assertMetricsNotExisting = function assertMetricsNotExisting(
  * @returns {Object} helloworld protobuf pkg
  */
 function loadProtobufApi(grpc) {
-  const PROTO_PATH = `${__dirname}/example.proto`
+  const PROTO_PATH = path.join(__dirname, 'example.proto')
   const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     keepCase: true,
     longs: String,
@@ -99,6 +104,7 @@ util.createServer = async function createServer(grpc) {
  *
  * @param {Object} grpc grpc module
  * @param {Object} proto protobuf API example.proto
+ * @param port
  * @returns {Object} client grpc client for Greeter service
  */
 util.getClient = function getClient(grpc, proto, port) {
@@ -133,8 +139,11 @@ util.getServerTransactionName = function getRPCName(fnName) {
  * @param {Object} params
  * @param {Object} params.tx transaction under test
  * @param {string} params.fnName gRPC method name
- * @param {number} [params.expectedStatusCode=0] expected status code for test
- * @param {string} [params.expectedStatusText=OK] expected status text for test
+ * @param {number} [params.expectedStatusCode] expected status code for test
+ * @param {string} [params.expectedStatusText] expected status text for test
+ * @param params.port
+ * @param root1
+ * @param root1.assert
  */
 util.assertExternalSegment = function assertExternalSegment(
   { tx, fnName, expectedStatusCode = 0, expectedStatusText = 'OK', port },
@@ -142,8 +151,8 @@ util.assertExternalSegment = function assertExternalSegment(
 ) {
   const methodName = util.getRPCName(fnName)
   const segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}:${port}${methodName}`
-  assertSegments(tx.trace.root, [segmentName], { exact: false }, { assert })
-  const segment = metricsHelpers.findSegment(tx.trace.root, segmentName)
+  assertSegments(tx.trace, tx.trace.root, [segmentName], { exact: false }, { assert })
+  const segment = metricsHelpers.findSegment(tx.trace, tx.trace.root, segmentName)
   const attributes = segment.getAttributes()
   assert.equal(
     attributes.url,
@@ -173,7 +182,10 @@ util.assertExternalSegment = function assertExternalSegment(
  * @param {Object} params
  * @param {Object} params.tx transaction under test
  * @param {string} params.fnName gRPC method name
- * @param {number} [params.expectedStatusCode=0] expected status code for test
+ * @param {number} [params.expectedStatusCode] expected status code for test
+ * @param params.transaction
+ * @param root1
+ * @param root1.assert
  */
 util.assertServerTransaction = function assertServerTransaction(
   { transaction, fnName, expectedStatusCode = 0 },
@@ -225,7 +237,7 @@ util.assertDistributedTracing = function assertDistributedTracing(
     clientTransaction.id !== serverTransaction.id,
     'should get different transactions for client and server'
   )
-  match(serverAttributes['request.headers.traceparent'], /^[\w\d\-]{55}$/, { assert })
+  match(serverAttributes['request.headers.traceparent'], /^[\w-]{55}$/, { assert })
   assert.equal(serverAttributes['request.headers.newrelic'], '', 'should have the newrelic header')
   assert.equal(
     clientTransaction.traceId,
@@ -262,6 +274,7 @@ util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload }) {
  * @param {Object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
+ * @param params.endStream
  * @returns {Promise}
  */
 util.makeClientStreamingRequest = function makeClientStreamingRequest({
@@ -350,12 +363,15 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
  * @param {Object} params
  * @param {Object} params.transaction transaction under test
  * @param {Array} params.errors agent errors array
- * @param {boolean} [params.expectErrors=true] flag to indicate if errors will exist
- * @param {boolean} [params.clientError=false] flag to indicate if error is client side
+ * @param {boolean} [params.expectErrors] flag to indicate if errors will exist
+ * @param {boolean} [params.clientError] flag to indicate if error is client side
  * @param {Array} params.agentMetrics agent metrics array
  * @param {string} params.fnName gRPC method name
  * @param {number} params.expectedStatusCode expected status code for test
  * @param {string} params.expectedStatusText expected status text for test
+ * @param params.port
+ * @param root1
+ * @param root1.assert
  */
 util.assertError = function assertError(
   {
@@ -371,8 +387,16 @@ util.assertError = function assertError(
   },
   { assert = require('node:assert') } = {}
 ) {
-  // when testing client the transaction will contain both server and client information. so we need to extract the client error which is always the 2nd
-  const errorLength = expectErrors ? (clientError ? 2 : 1) : 0
+  // when testing client the transaction will contain both server and client
+  // information. so we need to extract the client error which is always the 2nd
+  let errorLength = 0
+  if (expectErrors) {
+    if (clientError) {
+      errorLength = 2
+    } else {
+      errorLength = 1
+    }
+  }
 
   assert.equal(errors.traceAggregator.errors.length, errorLength, `should be ${errorLength} errors`)
 

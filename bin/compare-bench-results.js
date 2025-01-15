@@ -4,7 +4,6 @@
  */
 
 'use strict'
-/* eslint-disable sonarjs/no-duplicate-string, no-console */
 
 const fs = require('fs/promises')
 const { errorAndExit } = require('./utils')
@@ -114,7 +113,7 @@ const reportResults = async (resultFiles) => {
   const resultPath = 'benchmark_results'
   try {
     await fs.stat(resultPath)
-  } catch (e) {
+  } catch {
     await fs.mkdir(resultPath)
   }
   const fileName = `${resultPath}/comparison_${date.getTime()}.md`

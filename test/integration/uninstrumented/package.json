@@ -24,5 +24,8 @@
     "restify": "*",
     "superagent": "*",
     "when": "*"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

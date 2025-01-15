@@ -227,7 +227,7 @@ test('chmod', async function (t) {
 
 // Only exists on Darwin currently, using this check to catch if it
 // appears in other versions too.
-// eslint-disable-next-line node/no-deprecated-api
+// eslint-disable-next-line n/no-deprecated-api
 test('lchmod', { skip: fs.lchmod === undefined }, async function (t) {
   const { agent } = t.nr
   const plan = tspl(t, { plan: 13 })
@@ -236,7 +236,7 @@ test('lchmod', { skip: fs.lchmod === undefined }, async function (t) {
   fs.writeFileSync(name, content)
   plan.equal((fs.statSync(name).mode & 0x1ff).toString(8), '666')
   helper.runInTransaction(agent, function (trans) {
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     fs.lchmod(name, '0777', function (err) {
       plan.equal(err, null, 'should not error')
       plan.equal((fs.statSync(name).mode & 0x1ff).toString(8), '777')
@@ -820,7 +820,7 @@ test('exists', async function (t) {
   fs.writeFileSync(name, content)
 
   helper.runInTransaction(agent, function (trans) {
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     fs.exists(name, function (exists) {
       plan.ok(exists, 'should exist')
       verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'exists' })
@@ -852,7 +852,8 @@ test('read', async function (t) {
       plan.equal(len, 12, 'should read correct number of bytes')
       plan.equal(data.toString('utf8'), content)
       plan.equal(agent.getTransaction(), trans, 'should preserve transaction')
-      plan.equal(trans.trace.root.children.length, 0, 'should not create any segments')
+      const children = trans.trace.getChildren(trans.trace.root.id)
+      plan.equal(children.length, 0, 'should not create any segments')
     })
   })
 
@@ -875,7 +876,8 @@ test('write', async function (t) {
       plan.equal(len, 12, 'should write correct number of bytes')
       plan.equal(fs.readFileSync(name, 'utf8'), content)
       plan.equal(agent.getTransaction(), trans, 'should preserve transaction')
-      plan.equal(trans.trace.root.children.length, 0, 'should not create any segments')
+      const children = trans.trace.getChildren(trans.trace.root.id)
+      plan.equal(children.length, 0, 'should not create any segments')
     })
   })
 
@@ -898,7 +900,8 @@ test('watch (file)', async function (t) {
 
         plan.equal(file, 'watch-file', 'should have correct file name')
         plan.equal(agent.getTransaction(), trans, 'should preserve transaction')
-        plan.equal(trans.trace.root.children.length, 1, 'should not create any segments')
+        const children = trans.trace.getChildren(trans.trace.root.id)
+        plan.equal(children.length, 1, 'should not create any segments')
         watcher.close()
       })
       fs.writeFile(name, content + 'more', function (err) {
@@ -923,7 +926,8 @@ test('watch (dir)', async function (t) {
         plan.equal(ev, 'rename')
         plan.equal(file, 'watch-dir')
         plan.equal(agent.getTransaction(), trans, 'should preserve transaction')
-        plan.equal(trans.trace.root.children.length, 1, 'should not create any segments')
+        const children = trans.trace.getChildren(trans.trace.root.id)
+        plan.equal(children.length, 1, 'should not create any segments')
         watcher.close()
       })
       fs.writeFile(name, content, function (err) {
@@ -951,9 +955,9 @@ test('watch emitter', async function (t) {
         plan.equal(file, 'watch', 'should be for correct directory')
 
         const tx = agent.getTransaction()
-        const root = trans.trace.root
         plan.equal(tx && tx.id, trans.id, 'should preserve transaction')
-        plan.equal(root.children.length, 1, 'should not create any segments')
+        const children = trans.trace.getChildren(trans.trace.root.id)
+        plan.equal(children.length, 1, 'should not create any segments')
 
         watcher.close()
       })
@@ -985,7 +989,8 @@ test('watchFile', async function (t) {
         plan.ok(cur.size > prev.size, 'content modified')
 
         plan.equal(agent.getTransaction(), trans, 'should preserve transaction')
-        plan.equal(trans.trace.root.children.length, 0, 'should not create any segments')
+        const children = trans.trace.getChildren(trans.trace.root.id)
+        plan.equal(children.length, 0, 'should not create any segments')
         fs.unwatchFile(name, onChange)
       }
     })
