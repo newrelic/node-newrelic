@@ -363,8 +363,13 @@ test('sending sql traces', async (t) => {
 
     const expectedSql = 'select pg_sleep(1)'
 
-    agent.queries.add(tx.trace.root, 'postgres', expectedSql, 'FAKE STACK')
-
+    agent.queries.add({
+      transaction: tx,
+      segment: tx.trace.root,
+      type: 'postgres',
+      query: expectedSql,
+      trace: 'FAKE STACK'
+    })
     tx.end()
     agent.once('harvestFinished', () => {
       const rawPayload = findPayload(t.nr.writeLogs)

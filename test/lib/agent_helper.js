@@ -84,14 +84,6 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
   // agent needs a 'real' configuration
   const configurator = require('../../lib/config')
   const config = configurator.createInstance(conf)
-
-  if (!config.debug) {
-    config.debug = {}
-  }
-
-  // adds link to parents node in traces for easier testing
-  config.debug.double_linked_transactions = true
-
   // stub applications
   config.applications = () => ['New Relic for Node.js tests']
 
@@ -319,8 +311,9 @@ helper.runInNamedTransaction = (agent, type, callback) => {
 
 helper.runInSegment = (agent, name, callback) => {
   const tracer = agent.tracer
+  const parent = tracer.getSegment()
 
-  return tracer.addSegment(name, null, null, null, callback)
+  return tracer.addSegment(name, null, parent, null, callback)
 }
 
 /**

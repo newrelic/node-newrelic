@@ -59,7 +59,7 @@ function addTests(name, speccer) {
   suite.add({
     name: name + ' - wrapper (no tx)    ',
     fn: function () {
-      tracer.setSegment(null)
+      tracer.setSegment({ segment: null, transaction: null })
       middleware(getReqd(), {}, noop)
     }
   })
@@ -67,7 +67,7 @@ function addTests(name, speccer) {
   suite.add({
     name: name + ' - wrapper (tx)       ',
     fn: function () {
-      tracer.setSegment(transaction.trace.root)
+      tracer.setSegment({ transaction, segment: transaction.trace.root })
       middleware(getReqd(), {}, noop)
     }
   })

@@ -45,18 +45,20 @@ const req = {
 
 function getExpectedResult(tx, event, type, completionId) {
   const trace = tx.trace.root
+  const [child] = tx.trace.getChildren(trace.id)
+  const spanId = child.id
   let expected = {
     id: event.id,
     appName: 'New Relic for Node.js tests',
     request_id: 'req-id',
     trace_id: tx.traceId,
-    span_id: trace.children[0].id,
+    span_id: spanId,
     'response.model': 'gpt-3.5-turbo-0613',
     vendor: 'openai',
     ingest_source: 'Node'
   }
   const resKeys = {
-    duration: trace.children[0].getDurationInMillis(),
+    duration: child.getDurationInMillis(),
     'request.model': 'gpt-3.5-turbo-0613',
     'response.organization': 'new-relic',
     'response.headers.llmVersion': '1.0.0',

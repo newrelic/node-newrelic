@@ -31,14 +31,12 @@ const distributedTracingConfig = {
 const agent = helper.loadMockedAgent(distributedTracingConfig)
 
 helper.runInTransaction(agent, function (transaction) {
-  const root = transaction.trace.root
-
   // Avoid special casing of root that can result in avoiding
   // bugs deeper in the tree with wide segment trees
-  const child = root.add('child1')
+  const child = transaction.trace.add('child1')
 
   for (let index = 0; index < DANGEROUS_SEGMENT_WIDTH; index++) {
-    child.add('segment: ' + index)
+    transaction.trace.add('segment: ' + index, null, child)
   }
 
   try {

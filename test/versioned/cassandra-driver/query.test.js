@@ -111,11 +111,8 @@ test('executeBatch - callback style', (t, end) => {
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
         assert.equal(value.rows[0][COL], colValArr[0], 'cassandra client should still work')
 
-        assert.equal(
-          transaction.trace.root.children.length,
-          1,
-          'there should be only one child of the root'
-        )
+        const children = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.equal(children.length, 1, 'there should be only one child of the root')
         verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
         transaction.end()
         checkMetric(agent)
@@ -137,17 +134,14 @@ test('executeBatch - promise style', (t, end) => {
     client
       .batch(insArr, { hints })
       .then(() => {
+        assert.ok(agent.getTransaction(), 'transaction still should be visible')
         client
           .execute(selQuery)
           .then((result) => {
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
             assert.equal(result.rows[0][COL], colValArr[0], 'cassandra client should still work')
-
-            assert.equal(
-              transaction.trace.root.children.length,
-              2,
-              'there should be two children of the root'
-            )
+            const children = transaction.trace.getChildren(transaction.trace.root.id)
+            assert.equal(children.length, 2, 'there should be two children of the root')
             verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
             transaction.end()
             checkMetric(agent)
@@ -232,6 +226,7 @@ function verifyTrace(agent, trace, table) {
   assert.ok(trace.root, 'root element should exist')
 
   const setSegment = findSegment(
+    trace,
     trace.root,
     'Datastore/statement/Cassandra/' + table + '/insert/batch'
   )
@@ -241,18 +236,22 @@ function verifyTrace(agent, trace, table) {
   if (setSegment) {
     verifyTraceSegment(agent, setSegment, 'insert/batch')
 
+    const children = trace.getChildren(setSegment.id)
     assert.ok(
-      setSegment.children.length >= 2,
+      children.length >= 2,
       'set should have at least a dns lookup and callback/promise child'
     )
-
-    const getSegment = findSegment(trace.root, 'Datastore/statement/Cassandra/' + table + '/select')
+    const getSegment = findSegment(
+      trace,
+      trace.root,
+      'Datastore/statement/Cassandra/' + table + '/select'
+    )
     assert.ok(getSegment, 'trace segment for select should exist')
 
     if (getSegment) {
+      const getChildren = trace.getChildren(getSegment.id)
       verifyTraceSegment(agent, getSegment, 'select')
-
-      assert.ok(getSegment.children.length >= 1, 'get should have a callback/promise segment')
+      assert.ok(getChildren.length >= 1, 'get should have a callback/promise segment')
       assert.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
     }
   }

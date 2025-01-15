@@ -42,9 +42,9 @@ test('MessageShim', async function (t) {
       },
       sendMessages: function () {},
       withNested: function () {
+        const transaction = agent.tracer.getTransaction()
         const segment = agent.tracer.getSegment()
-        segment.add('ChildSegment')
-
+        transaction.trace.add('ChildSegment', null, segment)
         return segment
       }
     }
@@ -177,11 +177,10 @@ test('MessageShim', async function (t) {
         return new MessageSpec({ destinationName: 'foobar' })
       })
 
-      helper.runInTransaction(agent, function (tx) {
+      helper.runInTransaction(agent, function () {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment()
         assert.notEqual(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
         assert.equal(agent.tracer.getSegment(), startingSegment)
         end()
@@ -327,11 +326,11 @@ test('MessageShim', async function (t) {
 
       helper.runInTransaction(agent, (tx) => {
         const segment = wrappable.withNested()
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
 
-        assert.equal(segment.children.length, 1)
-        const [childSegment] = segment.children
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 1)
+        const [childSegment] = children
         assert.equal(childSegment.name, 'ChildSegment')
         end()
       })
@@ -345,10 +344,10 @@ test('MessageShim', async function (t) {
 
       helper.runInTransaction(agent, (tx) => {
         const segment = wrappable.withNested()
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
 
-        assert.equal(segment.children.length, 0)
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 0)
         end()
       })
     })
@@ -497,11 +496,10 @@ test('MessageShim', async function (t) {
         return new MessageSpec({ destinationName: 'foobar' })
       })
 
-      helper.runInTransaction(agent, function (tx) {
+      helper.runInTransaction(agent, function () {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment()
         assert.notEqual(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
         assert.equal(agent.tracer.getSegment(), startingSegment)
         end()
@@ -526,11 +524,10 @@ test('MessageShim', async function (t) {
         destinationType: shim.EXCHANGE
       })
 
-      helper.runInTransaction(agent, function (tx) {
+      helper.runInTransaction(agent, function () {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment('fizzbang')
         assert.notEqual(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/fizzbang')
         assert.equal(agent.tracer.getSegment(), startingSegment)
         end()
@@ -625,11 +622,11 @@ test('MessageShim', async function (t) {
 
       helper.runInTransaction(agent, function (tx) {
         const segment = wrappable.withNested()
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
 
-        assert.equal(segment.children.length, 1)
-        const [childSegment] = segment.children
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 1)
+        const [childSegment] = children
         assert.equal(childSegment.name, 'ChildSegment')
         end()
       })
@@ -643,9 +640,9 @@ test('MessageShim', async function (t) {
 
       helper.runInTransaction(agent, function (tx) {
         const segment = wrappable.withNested()
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
-        assert.equal(segment.children.length, 0)
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 0)
         end()
       })
     })
@@ -721,11 +718,10 @@ test('MessageShim', async function (t) {
       const { agent, shim, wrappable } = t.nr
       shim.recordPurgeQueue(wrappable, 'getActiveSegment', new MessageSpec({ queue: shim.FIRST }))
 
-      helper.runInTransaction(agent, function (tx) {
+      helper.runInTransaction(agent, function () {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment('foobar')
         assert.notEqual(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'MessageBroker/RabbitMQ/Queue/Purge/Named/foobar')
         assert.equal(agent.tracer.getSegment(), startingSegment)
         end()
@@ -948,7 +944,8 @@ test('MessageShim', async function (t) {
       const parent = wrapped('my.queue', function consumer() {
         const segment = shim.getSegment()
         assert.notEqual(segment.name, 'Callback: consumer')
-        assert.equal(segment.transaction.type, 'message')
+        const transaction = shim.tracer.getTransaction()
+        assert.equal(transaction.type, 'message')
         end()
       })
 
@@ -958,7 +955,7 @@ test('MessageShim', async function (t) {
     await t.test('should end the transaction immediately if not handled', function (t, end) {
       const { shim, wrapped } = t.nr
       wrapped('my.queue', function consumer() {
-        const tx = shim.getSegment().transaction
+        const tx = shim.tracer.getTransaction()
         assert.equal(tx.isActive(), true)
         setTimeout(function () {
           assert.equal(tx.isActive(), false)
@@ -974,7 +971,7 @@ test('MessageShim', async function (t) {
       }
 
       wrapped('my.queue', function consumer() {
-        const tx = shim.getSegment().transaction
+        const tx = shim.tracer.getTransaction()
         assert.equal(tx.isActive(), true)
 
         return new Promise(function (resolve) {
@@ -1017,7 +1014,7 @@ test('MessageShim', async function (t) {
       const api = new API(agent)
 
       wrapped('my.queue', function consumer() {
-        const tx = shim.getSegment().transaction
+        const tx = shim.tracer.getTransaction()
         const handle = api.getTransaction()
 
         assert.equal(tx.isActive(), true)
@@ -1045,8 +1042,7 @@ test('MessageShim', async function (t) {
     await t.test('should add agent attributes (e.g. routing key)', function (t, end) {
       const { shim, wrapped } = t.nr
       wrapped('my.queue', function consumer() {
-        const segment = shim.getSegment()
-        const tx = segment.transaction
+        const tx = shim.tracer.getTransaction()
         const traceParams = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
 
         assert.equal(traceParams['message.routingKey'], 'routing.key')
@@ -1184,7 +1180,7 @@ test('MessageShim', async function (t) {
       }
 
       wrapped('my.queue', function consumer() {
-        const tx = shim.getSegment().transaction
+        const tx = shim.tracer.getTransaction()
 
         assert.equal(tx.incomingCatId, '9876#id')
         assert.equal(tx.referringTransactionGuid, 'trans id')
@@ -1216,11 +1212,12 @@ test('MessageShim', async function (t) {
 
     await t.test('should bind the subscribe callback', function (t, end) {
       const { agent, shim, wrapped } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
+        const { trace } = tx
         const parent = wrapped('my.queue', null, function subCb() {
           const segment = shim.getSegment()
           assert.equal(segment.name, 'Callback: subCb')
-          compareSegments(parent, [segment])
+          compareSegments({ parent, segments: [segment], trace })
           end()
         })
         assert.ok(parent)
@@ -1229,12 +1226,13 @@ test('MessageShim', async function (t) {
 
     await t.test('should still start a new transaction in the consumer', function (t, end) {
       const { agent, shim, wrapped } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const parent = wrapped('my.queue', function consumer() {
+          const childTx = shim.tracer.getTransaction()
           const segment = shim.getSegment()
           assert.notEqual(segment.name, 'Callback: consumer')
-          assert.ok(segment.transaction.id)
-          assert.notEqual(segment.transaction.id, parent.transaction.id)
+          assert.ok(childTx.id)
+          assert.notEqual(tx.id, childTx.id)
           end()
         })
         assert.ok(parent)

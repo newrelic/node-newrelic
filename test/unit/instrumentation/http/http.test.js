@@ -20,7 +20,11 @@ const encKey = 'gringletoes'
 function addSegment({ agent }) {
   const transaction = agent.getTransaction()
   transaction.type = 'web'
-  transaction.baseSegment = new Segment(transaction, 'base-segment')
+  transaction.baseSegment = new Segment({
+    config: agent.config,
+    name: 'base-segment',
+    root: transaction.trace.root
+  })
 }
 
 test('built-in http module instrumentation', async (t) => {

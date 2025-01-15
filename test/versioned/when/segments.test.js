@@ -14,8 +14,14 @@ const helper = require('../../lib/agent_helper')
 
 // simulates a function that returns a promise and has a segment created for itself
 function doSomeWork({ tracer, Promise = global.Promise, segmentName, shouldReject } = {}) {
-  const segment = tracer.createSegment(segmentName)
-  return tracer.bindFunction(actualWork, segment)()
+  const ctx = tracer.getContext()
+  const segment = tracer.createSegment({
+    name: segmentName,
+    parent: ctx.segment,
+    transaction: ctx.transaction
+  })
+  const newCtx = ctx.enterSegment({ segment })
+  return tracer.bindFunction(actualWork, newCtx)()
 
   function actualWork() {
     segment.touch()
@@ -55,9 +61,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', (tx) => {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [
           'doSomeWork',
@@ -70,10 +78,16 @@ test('segments enabled', async (t) => {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork({ tracer, Promise: when.Promise, segmentName: 'doSomeWork' }).then(function () {
-        const childSegment = tracer.createSegment('someChildSegment')
+        const ctx = agent.tracer.getContext()
+        const childSegment = tracer.createSegment({
+          name: 'someChildSegment',
+          parent: ctx.segment,
+          transaction
+        })
+        const newCtx = ctx.enterSegment({ segment: childSegment })
         // touch the segment, so that it is not truncated
         childSegment.touch()
-        tracer.bindFunction(function () {}, childSegment)
+        tracer.bindFunction(function () {}, newCtx)
         process.nextTick(transaction.end.bind(transaction))
       })
     })
@@ -86,8 +100,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
+
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [
           'doWork1',
@@ -113,7 +130,8 @@ test('segments enabled', async (t) => {
           return doSomeWork({ tracer, segmentName: 'doWork2', Promise: when.Promise })
         })
         .then(function secondThen() {
-          const s = tracer.createSegment('secondThen')
+          const ctx = agent.tracer.getContext()
+          const s = tracer.createSegment({ name: 'secondThen', parent: ctx.segment, transaction })
           s.start()
           s.end()
           process.nextTick(transaction.end.bind(transaction))
@@ -128,9 +146,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [
           'doWork1',
@@ -159,9 +179,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['doWork1', ['Promise startSomeWork', ['Promise#catch catchHandler']]],
         {},
@@ -187,9 +209,11 @@ test('segments enabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [
           'doWork1',
@@ -217,12 +241,14 @@ test('segments enabled', async (t) => {
           })
         })
         .then(function secondThen() {
-          const s = tracer.createSegment('secondThen')
+          const ctx = agent.tracer.getContext()
+          const s = tracer.createSegment({ name: 'secondThen', parent: ctx.segment, transaction })
           s.start()
           s.end()
         })
         .catch(function catchHandler() {
-          const s = tracer.createSegment('catchHandler')
+          const ctx = agent.tracer.getContext()
+          const s = tracer.createSegment({ name: 'catchHandler', parent: ctx.segment, transaction })
           s.start()
           s.end()
           process.nextTick(transaction.end.bind(transaction))
@@ -238,9 +264,11 @@ test('segments enabled', async (t) => {
     const { Promise } = when
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 2)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 2)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['Promise startSomeWork', ['Promise#then myThen'], 'doSomeWork'],
         { exact: true },
@@ -254,8 +282,10 @@ test('segments enabled', async (t) => {
         resolve = _resolve
       })
 
-      const segment = tracer.createSegment('doSomeWork')
-      resolve = tracer.bindFunction(resolve, segment)
+      const ctx = agent.tracer.getContext()
+      const segment = tracer.createSegment({ name: 'doSomeWork', parent: ctx.segment, transaction })
+      const newCtx = ctx.enterSegment({ segment })
+      resolve = tracer.bindFunction(resolve, newCtx)
 
       p.then(function myThen() {
         segment.touch()
@@ -291,17 +321,30 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doSomeWork', ['someChildSegment']], {}, { assert: plan })
+      assertSegments(
+        tx.trace,
+        tx.trace.root,
+        ['doSomeWork', ['someChildSegment']],
+        {},
+        { assert: plan }
+      )
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork({ tracer, segmentName: 'doSomeWork', Promise: when.Promise }).then(function () {
-        const childSegment = tracer.createSegment('someChildSegment')
+        const ctx = agent.tracer.getContext()
+        const childSegment = tracer.createSegment({
+          name: 'someChildSegment',
+          parent: ctx.segment,
+          transaction
+        })
+        const newCtx = ctx.enterSegment({ segment: childSegment })
         // touch the segment, so that it is not truncated
         childSegment.touch()
-        tracer.bindFunction(function () {}, childSegment)
+        tracer.bindFunction(function () {}, newCtx)
         process.nextTick(transaction.end.bind(transaction))
       })
     })
@@ -314,9 +357,10 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1'], {}, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doWork1'], {}, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -339,9 +383,10 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1'], {}, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doWork1'], {}, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -362,9 +407,10 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1'], {}, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doWork1'], {}, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -385,9 +431,10 @@ test('segments disabled', async (t) => {
     const { agent, tracer, when } = t.nr
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1', ['doWork2']], {}, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doWork1', ['doWork2']], {}, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -415,9 +462,10 @@ test('segments disabled', async (t) => {
     const { Promise } = when
 
     agent.once('transactionFinished', function (tx) {
-      plan.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
 
-      assertSegments(tx.trace.root, ['doSomeWork'], { exact: true }, { assert: plan })
+      assertSegments(tx.trace, tx.trace.root, ['doSomeWork'], { exact: true }, { assert: plan })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -426,8 +474,10 @@ test('segments disabled', async (t) => {
         resolve = _resolve
       })
 
-      const segment = tracer.createSegment('doSomeWork')
-      resolve = tracer.bindFunction(resolve, segment)
+      const ctx = agent.tracer.getContext()
+      const segment = tracer.createSegment({ name: 'doSomeWork', parent: ctx.segment, transaction })
+      const newCtx = ctx.enterSegment({ segment })
+      resolve = tracer.bindFunction(resolve, newCtx)
 
       p.then(function myThen() {
         segment.touch()

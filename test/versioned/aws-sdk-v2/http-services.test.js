@@ -238,7 +238,11 @@ test('AWS HTTP Services', async (t) => {
 })
 
 function finish(end, service, operation, tx) {
-  const externals = common.checkAWSAttributes(tx.trace.root, common.EXTERN_PATTERN)
+  const externals = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: tx.trace.root,
+    pattern: common.EXTERN_PATTERN
+  })
   if (assert.equal(externals.length, 1, 'should have an aws external')) {
     const attrs = externals[0].attributes.get(common.SEGMENT_DESTINATION)
     match(attrs, {

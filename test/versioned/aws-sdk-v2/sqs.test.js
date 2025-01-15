@@ -154,7 +154,11 @@ function finish({
   const expectedSegmentCount = 3
 
   const root = transaction.trace.root
-  const segments = common.checkAWSAttributes(root, common.SQS_PATTERN)
+  const segments = common.checkAWSAttributes({
+    trace: transaction.trace,
+    segment: root,
+    pattern: common.SQS_PATTERN
+  })
 
   assert.equal(
     segments.length,
@@ -162,7 +166,11 @@ function finish({
     `should have ${expectedSegmentCount} AWS MessageBroker/SQS segments`
   )
 
-  const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
+  const externalSegments = common.checkAWSAttributes({
+    trace: transaction.trace,
+    segment: root,
+    pattern: common.EXTERN_PATTERN
+  })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   const [sendMessage, sendMessageBatch, receiveMessage] = segments

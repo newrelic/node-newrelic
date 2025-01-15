@@ -49,12 +49,12 @@ test.beforeEach((ctx) => {
 
   ctx.nr.content = 'a prompt'
 
+  ctx.nr.transaction = {
+    id: 'tx-1',
+    traceId: 'trace-1'
+  }
   ctx.nr.segment = {
-    id: 'segment-1',
-    transaction: {
-      id: 'tx-1',
-      traceId: 'trace-1'
-    }
+    id: 'segment-1'
   }
 
   ctx.nr.bedrockResponse = {

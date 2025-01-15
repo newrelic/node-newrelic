@@ -66,6 +66,7 @@ test('should create span on successful chat completion create', (t, end) => {
     assert.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
     assertSegments(
+      tx.trace,
       tx.trace.root,
       [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
       { exact: false }
@@ -148,6 +149,7 @@ if (semver.gte(pkgVersion, '4.12.2')) {
       assert.equal(chunk.choices[0].message.content, res)
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
         { exact: false }
@@ -362,6 +364,7 @@ if (semver.gte(pkgVersion, '4.12.2')) {
       assert.equal(events.length, 0)
       // we will still record the external segment but not the chat completion
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['timers.setTimeout', `External/${host}:${port}/chat/completions`],
         { exact: false }

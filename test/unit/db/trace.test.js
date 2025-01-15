@@ -39,7 +39,13 @@ test('SQL trace attributes', async (t) => {
         const payload = tx._createDistributedTracePayload().text()
         tx.isDistributedTrace = null
         tx._acceptDistributedTracePayload(payload)
-        agent.queries.add(tx.trace.root, 'postgres', 'select pg_sleep(1)', 'FAKE STACK')
+        agent.queries.add({
+          transaction: tx,
+          segment: tx.trace.root,
+          type: 'postgres',
+          query: 'select pg_sleep(1)',
+          trace: 'FAKE STACK'
+        })
         agent.queries.prepareJSON((err, samples) => {
           assert.ifError(err)
           const sample = samples[0]
@@ -63,7 +69,13 @@ test('SQL trace attributes', async (t) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, function (tx) {
       const query = 'select pg_sleep(1)'
-      agent.queries.add(tx.trace.root, 'postgres', query, 'FAKE STACK')
+      agent.queries.add({
+        transaction: tx,
+        segment: tx.trace.root,
+        type: 'postgres',
+        query,
+        trace: 'FAKE STACK'
+      })
       const sampleObj = agent.queries.samples.values().next().value
       const sample = agent.queries.prepareJSONSync()[0]
       assert.equal(sample[0], tx.getFullName())
@@ -86,7 +98,13 @@ test('SQL trace attributes', async (t) => {
     agent.config.account_id = 1
     agent.config.simple_compression = true
     helper.runInTransaction(agent, function (tx) {
-      agent.queries.add(tx.trace.root, 'postgres', 'select pg_sleep(1)', 'FAKE STACK')
+      agent.queries.add({
+        transaction: tx,
+        segment: tx.trace.root,
+        type: 'postgres',
+        query: 'select pg_sleep(1)',
+        trace: 'FAKE STACK'
+      })
       agent.queries.prepareJSON((err, samples) => {
         assert.ifError(err)
         const sample = samples[0]

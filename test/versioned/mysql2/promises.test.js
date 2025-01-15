@@ -93,7 +93,7 @@ test('mysql2 promises', { timeout: 30000 }, async (t) => {
       activeTx = agent.getTransaction()
       assert.equal(tx.name, activeTx.name)
 
-      const segment = agent.getTransaction().trace.root.children[2]
+      const [, , segment] = tx.trace.getChildren(tx.trace.root.id)
       const attributes = segment.getAttributes()
       assert.equal(
         attributes.host,
