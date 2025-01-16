@@ -21,18 +21,13 @@ test('Redshift-data', async (t) => {
     })
 
     ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent({
-      cloud: {
-        aws: {
-          account_id: 123456789123
-        }
-      }
-    })
+    ctx.nr.agent = helper.instrumentMockedAgent()
 
     const lib = require('@aws-sdk/client-redshift-data')
 
     ctx.nr.redshiftCommands = {
       ExecuteStatementCommand: lib.ExecuteStatementCommand,
+      BatchExecuteStatementCommand: lib.BatchExecuteStatementCommand,
       DescribeStatementCommand: lib.DescribeStatementCommand,
       GetStatementResultCommand: lib.GetStatementResultCommand,
       ListDatabasesCommand: lib.ListDatabasesCommand
@@ -69,20 +64,29 @@ test('Redshift-data', async (t) => {
 
 function finish(end, tests, tx) {
   const root = tx.trace.root
-  const segments = common.checkAWSAttributes(root, common.DATASTORE_PATTERN)
-
+  const segments = common.checkAWSAttributes({ trace: tx.trace, segment: root, pattern: common.DATASTORE_PATTERN })
   assert.equal(segments.length, tests.length, `should have ${tests.length} aws datastore segments`)
 
-  const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
+  const externalSegments = common.checkAWSAttributes({ trace: tx.trace, segment: root, pattern: common.EXTERN_PATTERN })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   segments.forEach((segment, i) => {
     const operation = tests[i].operation
-    assert.equal(
-      segment.name,
-      `Datastore/operation/Redshift/${operation}`,
-      'should have operation in segment name'
-    )
+
+    if (tests[i].operation === 'ExecuteStatementCommand' || tests[i].operation === 'BatchExecuteStatementCommand') {
+      assert.equal(
+        segment.name,
+        `Datastore/statement/Redshift/${tests[i].tableName}/${tests[i].queryType}`,
+        'should have table name and query type in segment name'
+      )
+    } else {
+      assert.equal(
+        segment.name,
+        `Datastore/operation/Redshift/${operation}`,
+        'should have operation in segment name'
+      )
+    }
+
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
     attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
     match(attrs, {
@@ -90,7 +94,6 @@ function finish(end, tests, tx) {
       port_path_or_id: Number,
       product: 'Redshift',
       database_name: String,
-      collection: String,
       'aws.operation': operation,
       'aws.requestId': String,
       'aws.region': 'us-east-1',
@@ -106,15 +109,17 @@ function createTests() {
   const selectData = selectDataFromTable()
   const updateData = updateDataInTable()
   const deleteData = deleteDataFromTable()
+  const insertBatchData = insertBatchDataIntoTable()
   const describeSqlStatement = describeStatement()
   const getSqlStatement = getStatement()
   const getDatabases = listDatabases()
 
   return [
-    { params: insertData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand' },
-    { params: selectData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand' },
-    { params: updateData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand' },
-    { params: deleteData, operation: 'ExecuteStatementCommand', command: 'ExecuteStatementCommand' },
+    { params: insertData, operation: 'ExecuteStatementCommand', tableName, queryType: 'insert', command: 'ExecuteStatementCommand' },
+    { params: selectData, operation: 'ExecuteStatementCommand', tableName, queryType: 'select', command: 'ExecuteStatementCommand' },
+    { params: updateData, operation: 'ExecuteStatementCommand', tableName, queryType: 'update', command: 'ExecuteStatementCommand' },
+    { params: deleteData, operation: 'ExecuteStatementCommand', tableName, queryType: 'delete', command: 'ExecuteStatementCommand' },
+    { params: insertBatchData, operation: 'BatchExecuteStatementCommand', tableName,  queryType: 'insert', command: 'BatchExecuteStatementCommand' },
     { params: describeSqlStatement, operation: 'DescribeStatementCommand', command: 'DescribeStatementCommand' },
     { params: getSqlStatement, operation: 'GetStatementResultCommand', command: 'GetStatementResultCommand' },
     { params: getDatabases, operation: 'ListDatabasesCommand', command: 'ListDatabasesCommand' }
@@ -127,38 +132,46 @@ const commonParams = {
   ClusterIdentifier: 'a_cluster'
 }
 
+const tableName = 'test_table'
+
 function insertDataIntoTable() {
   return {
     ...commonParams,
-    Sql: 'INSERT INTO test_table (id, name) VALUES (1, \'test\')'
+    Sql: `INSERT INTO ${tableName} (id, name) VALUES (1, \'test\')`
   }
 }
 
 function selectDataFromTable() {
   return {
     ...commonParams,
-    Sql: 'SELECT id, name FROM test_table'
+    Sql: `SELECT id, name FROM ${tableName}`
   }
 }
 
 function updateDataInTable() {
   return {
     ...commonParams,
-    Sql: 'UPDATE test_table SET name = \'updated\' WHERE id = 1'
+    Sql: `UPDATE ${tableName} SET name = \'updated\' WHERE id = 1`
   }
 }
 
 function deleteDataFromTable() {
   return {
     ...commonParams,
-    Sql: 'DELETE FROM test_table WHERE id = 1'
+    Sql: `DELETE FROM ${tableName} WHERE id = 1`
+  }
+}
+
+function insertBatchDataIntoTable() {
+  return {
+    ...commonParams,
+    Sqls: ['INSERT INTO test_table (id, name) VALUES (2, \'test2\')', 'INSERT INTO test_table (id, name) VALUES (3, \'test3\')']
   }
 }
 
 function describeStatement() {
   return {
-    ...commonParams,
-    Sql: 'DESCRIBE test_table'
+    Id: 'a_statement_id'
   }
 }
 
