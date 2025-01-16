@@ -71,9 +71,9 @@ function finish(end, tests, tx) {
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   segments.forEach((segment, i) => {
-    const operation = tests[i].operation
+    const command = tests[i].command
 
-    if (tests[i].operation === 'ExecuteStatementCommand' || tests[i].operation === 'BatchExecuteStatementCommand') {
+    if (tests[i].command === 'ExecuteStatementCommand' || tests[i].command === 'BatchExecuteStatementCommand') {
       assert.equal(
         segment.name,
         `Datastore/statement/Redshift/${tests[i].tableName}/${tests[i].queryType}`,
@@ -82,8 +82,8 @@ function finish(end, tests, tx) {
     } else {
       assert.equal(
         segment.name,
-        `Datastore/operation/Redshift/${operation}`,
-        'should have operation in segment name'
+        `Datastore/operation/Redshift/${command}`,
+        'should have command in segment name'
       )
     }
 
@@ -94,7 +94,7 @@ function finish(end, tests, tx) {
       port_path_or_id: Number,
       product: 'Redshift',
       database_name: String,
-      'aws.operation': operation,
+      'aws.operation': command,
       'aws.requestId': String,
       'aws.region': 'us-east-1',
       'aws.service': 'Redshift Data',
@@ -117,14 +117,14 @@ function createTests() {
   const getDatabases = listDatabases()
 
   return [
-    { params: insertData, operation: 'ExecuteStatementCommand', tableName, queryType: 'insert', command: 'ExecuteStatementCommand' },
-    { params: selectData, operation: 'ExecuteStatementCommand', tableName, queryType: 'select', command: 'ExecuteStatementCommand' },
-    { params: updateData, operation: 'ExecuteStatementCommand', tableName, queryType: 'update', command: 'ExecuteStatementCommand' },
-    { params: deleteData, operation: 'ExecuteStatementCommand', tableName, queryType: 'delete', command: 'ExecuteStatementCommand' },
-    { params: insertBatchData, operation: 'BatchExecuteStatementCommand', tableName,  queryType: 'insert', command: 'BatchExecuteStatementCommand' },
-    { params: describeSqlStatement, operation: 'DescribeStatementCommand', command: 'DescribeStatementCommand' },
-    { params: getSqlStatement, operation: 'GetStatementResultCommand', command: 'GetStatementResultCommand' },
-    { params: getDatabases, operation: 'ListDatabasesCommand', command: 'ListDatabasesCommand' }
+    { params: insertData, tableName, queryType: 'insert', command: 'ExecuteStatementCommand' },
+    { params: selectData, tableName, queryType: 'select', command: 'ExecuteStatementCommand' },
+    { params: updateData, tableName, queryType: 'update', command: 'ExecuteStatementCommand' },
+    { params: deleteData, tableName, queryType: 'delete', command: 'ExecuteStatementCommand' },
+    { params: insertBatchData, tableName, queryType: 'insert', command: 'BatchExecuteStatementCommand' },
+    { params: describeSqlStatement, command: 'DescribeStatementCommand' },
+    { params: getSqlStatement, command: 'GetStatementResultCommand' },
+    { params: getDatabases, command: 'ListDatabasesCommand' }
   ]
 }
 
@@ -139,7 +139,7 @@ const tableName = 'test_table'
 function insertDataIntoTable() {
   return {
     ...commonParams,
-    Sql: `INSERT INTO ${tableName} (id, name) VALUES (1, \'test\')`
+    Sql: `INSERT INTO ${tableName} (id, name) VALUES (1, 'test')`
   }
 }
 
@@ -153,7 +153,7 @@ function selectDataFromTable() {
 function updateDataInTable() {
   return {
     ...commonParams,
-    Sql: `UPDATE ${tableName} SET name = \'updated\' WHERE id = 1`
+    Sql: `UPDATE ${tableName} SET name = 'updated' WHERE id = 1`
   }
 }
 
@@ -179,7 +179,8 @@ function describeStatement() {
 
 function getStatement() {
   return {
-    Id: 'a_statement_id'
+    Id: 'a_statement_id',
+    NextToken: 'a_token'
   }
 }
 
