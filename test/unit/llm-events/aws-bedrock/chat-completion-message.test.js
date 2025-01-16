@@ -56,6 +56,7 @@ test.beforeEach((ctx) => {
   ctx.nr.segment = {
     id: 'segment-1'
   }
+  ctx.nr.role = 'assistant'
 
   ctx.nr.bedrockResponse = {
     headers: {
@@ -71,7 +72,6 @@ test.beforeEach((ctx) => {
 
   ctx.nr.bedrockCommand = {
     id: 'cmd-1',
-    prompt: 'who are you',
     isAi21() {
       return false
     },
@@ -92,12 +92,13 @@ test.beforeEach((ctx) => {
 
 test('create creates a non-response instance', async (t) => {
   t.nr.agent.llm.tokenCountCallback = () => 3
+  t.nr.role = 'user'
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.is_response, false)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.completion_id, 'completion-1')
   assert.equal(event.sequence, 0)
-  assert.equal(event.content, 'who are you')
+  assert.equal(event.content, 'a prompt')
   assert.equal(event.role, 'user')
   assert.match(event.id, /[\w-]{36}/)
   assert.equal(event.token_count, 3)

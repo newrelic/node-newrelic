@@ -50,6 +50,9 @@ test.beforeEach((ctx) => {
   ctx.nr.bedrockCommand = {
     maxTokens: 25,
     temperature: 0.5,
+    prompt: [
+      { role: 'user', content: 'Hello!' }
+    ],
     isAi21() {
       return false
     },
