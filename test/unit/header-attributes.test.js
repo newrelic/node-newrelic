@@ -77,6 +77,23 @@ test('#collectRequestHeaders', async (t) => {
     })
   })
 
+  await t.test('should replace repeating non-word characters', (t, end) => {
+    const { agent } = t.nr
+    agent.config.allow_all_headers = true
+    const headers = {
+      'foo-bar--baz': 'valid-type'
+    }
+
+    helper.runInTransaction(agent, (transaction) => {
+      headerAttributes.collectRequestHeaders(headers, transaction)
+
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_COMMON)
+      assert.equal(attributes['request.headers.fooBarBaz'], 'valid-type')
+      assert.equal(attributes['foo-bar--baz'], undefined)
+      end()
+    })
+  })
+
   await t.test('should lowercase first letter in headers', (t, end) => {
     const { agent } = t.nr
     const headers = {
