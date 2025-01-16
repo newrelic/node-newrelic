@@ -11,19 +11,62 @@ const dns = require('dns')
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify.js')
 
+const resolveMethods = [
+  'resolve',
+  'resolve4',
+  'resolve6',
+  'resolveAny',
+  'resolveCaa',
+  'resolveCname',
+  'resolveMx',
+  'resolveNaptr',
+  'resolveNs',
+  'resolvePtr',
+  'resolveSoa',
+  'resolveSrv',
+  'resolveTxt'
+]
+
 test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.reverse = dns.reverse
+  ctx.nr.origResolves = {}
+
   // wrap dns.reverse to not try to actually execute this function
   dns.reverse = (addr, cb) => {
     cb(undefined, ['localhost'])
   }
+
+  for (const fn of resolveMethods) {
+    ctx.nr.origResolves[fn] = dns[fn]
+  }
+  dns.resolve = (_, cb) => cb(null, ['127.0.0.1'])
+  dns.resolve4 = (_, cb) => cb(null, ['127.0.0.1'])
+  dns.resolve6 = (_, cb) => cb(null, ['::1'])
+  dns.resolveCname = (_, cb) => {
+    const error = Error('boom')
+    error.code = 'ENODATA'
+    cb(error)
+  }
+  dns.resolveMx = (_, cb) => cb(null, ['127.0.0.1'])
+  dns.resolveNs = (_, cb) => cb(null, ['a.iana-servers.net', 'b.iana-servers.net'])
+  dns.resolveTxt = (_, cb) => cb(null, ['one', 'two', 'three'])
+  dns.resolveSrv = (_, cb) => {
+    const error = Error('boom')
+    error.code = 'ENODATA'
+    cb(error)
+  }
+
   ctx.nr.agent = helper.instrumentMockedAgent()
 })
 
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   dns.reverse = ctx.nr.reverse
+
+  for (const fn of resolveMethods) {
+    dns[fn] = ctx.nr.origResolves[fn]
+  }
 })
 
 test('lookup - IPv4', function (t, end) {
@@ -83,7 +126,7 @@ test('resolve6', function (t, end) {
     dns.resolve6('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
-      assert.ok(ips[0].match(/^(([0-9a-f]{1,4})(:|$)){8}/))
+      assert.equal('::1', ips[0])
       verifySegments({ agent, end, name: 'dns.resolve6' })
     })
   })
