@@ -144,11 +144,55 @@ test('fetch', async function (t) {
       const [{ status }, { status: status2 }] = await Promise.all([req1, req2])
       assert.equal(status, 200)
       assert.equal(status2, 200)
-      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
+      const postName = `External/${HOST}/post`
+      const putName = `External/${HOST}/put`
+      const postSegment = metrics.findSegment(tx.trace, tx.trace.root, postName)
+      assert.equal(postSegment.parentId, tx.trace.root.id)
+      const putSegment = metrics.findSegment(tx.trace, tx.trace.root, putName)
+      // parent of put is the post segment because it is still the active one
+      // not ideal, but our instrumentation does not play nice with diagnostic_channel
+      // we're setting the active segment in the `undici:request:create` and restoring
+      // the parent segment in the request end
+      assert.equal(putSegment.parentId, postSegment.id)
+      assertSegments(tx.trace, tx.trace.root, [postSegment, putSegment], {
         exact: false
       })
       tx.end()
     })
+  })
+
+  await t.test('concurrent requests in diff transaction', async () => {
+    const tx1 = helper.runInTransaction(agent, async (tx) => {
+      const { status } = await fetch(`${REQUEST_URL}/post`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application.json'
+        },
+        body: Buffer.from('{"key":"value"}')
+      })
+      assert.equal(status, 200)
+      const postName = `External/${HOST}/post`
+      const postSegment = metrics.findSegment(tx.trace, tx.trace.root, postName)
+      assert.equal(postSegment.parentId, tx.trace.root.id)
+      tx.end()
+    })
+
+    const tx2 = helper.runInTransaction(agent, async(tx) => {
+      const { status } = await fetch(`${REQUEST_URL}/put`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application.json'
+        },
+        body: Buffer.from('{"key":"value"}')
+      })
+      assert.equal(status, 200)
+      const putName = `External/${HOST}/put`
+      const putSegment = metrics.findSegment(tx.trace, tx.trace.root, putName)
+      assert.equal(putSegment.parentId, tx.trace.root.id)
+      tx.end()
+    })
+
+    await Promise.all([tx1, tx2])
   })
 
   await t.test('invalid host', async () => {

@@ -20,12 +20,6 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 * Environment Variable: `NEW_RELIC_FEATURE_FLAG_REVERSE_NAMING_RULES`
 * Description: Naming rules are in forward order by default.  
 
-#### undici_async_tracking
-* Enabled by default: `true`
-* Configuration: `{ feature_flag: { undici_async_tracking: true|false }}`
-* Environment Variable: `NEW_RELIC_FEATURE_FLAG_UNDICI_ASYNC_TRACKING`
-* Description: If you have multiple undici requests being made in parallel, you may find some state issues if requests to an app are made with keep-alive. If so, *disabling* this flag will avoid these state issues, though at the cost of some broken segment nesting.
-
 #### unresolved_promise_cleanup
 * Enabled by default: `true`
 * Configuration: `{ feature_flag: { unresolved_promise_cleanup: true|false }}`
