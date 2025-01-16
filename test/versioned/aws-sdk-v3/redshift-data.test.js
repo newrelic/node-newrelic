@@ -99,6 +99,8 @@ function finish(end, tests, tx) {
       'aws.region': 'us-east-1',
       'aws.service': 'Redshift Data',
     })
+
+    assert(attrs.host, 'should have host')
   })
 
   end()
