@@ -10,7 +10,8 @@
     {"name": "@aws-sdk/lib-dynamodb", "minAgentVersion": "8.7.1"},
     {"name": "@aws-sdk/smithy-client", "minSupported": "3.47.0", "minAgentVersion": "8.7.1"},
     {"name": "@smithy/smithy-client", "minSupported": "2.0.0", "minAgentVersion": "11.0.0"},
-    {"name": "@aws-sdk/client-bedrock-runtime", "minAgentVersion": "11.13.0"}
+    {"name": "@aws-sdk/client-bedrock-runtime", "minAgentVersion": "11.13.0"},
+    {"name": "@aws-sdk/client-redshift-data", "minAgentVersion": "12.12.0"}
   ],
   "version": "0.0.0",
   "private": true,
@@ -208,6 +209,20 @@
         "bedrock-chat-completions.test.js",
         "bedrock-embeddings.test.js",
         "bedrock-negative-tests.test.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=18.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-redshift-data": {
+          "versions": ">=3.474.0",
+          "samples": 2
+        }
+      },
+      "files": [
+        "redshift-data.test.js"
       ]
     }
   ],
