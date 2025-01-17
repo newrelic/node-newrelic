@@ -38,7 +38,7 @@ const claude35 = {
 const claude3 = {
   modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
   body: {
-    messages: [{ content: 'who are you' }]
+    messages: [{ role: 'user', content: 'who are you' }]
   }
 }
 
@@ -114,7 +114,7 @@ test('non-conforming command is handled gracefully', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, '')
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, undefined)
+  assert.deepEqual(cmd.prompt, [])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -125,7 +125,7 @@ test('ai21 minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, ai21.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, ai21.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: ai21.body.prompt }])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -139,7 +139,7 @@ test('ai21 complete command works', async (t) => {
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, payload.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: payload.body.prompt }])
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
@@ -150,7 +150,7 @@ test('claude minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, claude.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: claude.body.prompt }])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -164,7 +164,7 @@ test('claude complete command works', async (t) => {
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, payload.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: payload.body.prompt }])
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
@@ -175,7 +175,7 @@ test('claude3 minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude3.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, claude3.body.messages[0].content)
+  assert.deepEqual(cmd.prompt, claude3.body.messages)
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -189,7 +189,7 @@ test('claude3 complete command works', async (t) => {
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, payload.body.messages[0].content)
+  assert.deepEqual(cmd.prompt, payload.body.messages)
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
@@ -200,7 +200,20 @@ test('claude35 minimal command works with claude 3 api', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude3.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, claude3.body.messages[0].content)
+  assert.deepEqual(cmd.prompt, claude3.body.messages)
+  assert.equal(cmd.temperature, undefined)
+})
+
+test('claude35 malformed payload produces reasonable values', async (t) => {
+  const malformedPayload = structuredClone(claude35)
+  malformedPayload.body = {}
+  t.nr.updatePayload(malformedPayload)
+  const cmd = new BedrockCommand(t.nr.input)
+  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.maxTokens, undefined)
+  assert.equal(cmd.modelId, claude35.modelId)
+  assert.equal(cmd.modelType, 'completion')
+  assert.deepEqual(cmd.prompt, [])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -211,7 +224,7 @@ test('claude35 minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude35.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, 'who are you')
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: 'who are' }, { role: 'assistant', content: 'researching' }, { role: 'user', content: 'you' }])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -225,7 +238,7 @@ test('claude35 complete command works', async (t) => {
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, 'who are you')
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: 'who are' }, { role: 'assistant', content: 'researching' }, { role: 'user', content: 'you' }])
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
@@ -236,7 +249,7 @@ test('cohere minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, cohere.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, cohere.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: cohere.body.prompt }])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -250,7 +263,7 @@ test('cohere complete command works', async (t) => {
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, payload.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: payload.body.prompt }])
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
@@ -261,7 +274,7 @@ test('cohere embed minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, cohereEmbed.modelId)
   assert.equal(cmd.modelType, 'embedding')
-  assert.deepStrictEqual(cmd.prompt, cohereEmbed.body.texts.join(' '))
+  assert.deepStrictEqual(cmd.prompt, [{ role: 'user', content: cohereEmbed.body.texts.join(' ') }])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -272,7 +285,7 @@ test('llama2 minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, llama2.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, llama2.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: llama2.body.prompt }])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -286,7 +299,7 @@ test('llama2 complete command works', async (t) => {
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, payload.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: payload.body.prompt }])
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
@@ -297,7 +310,7 @@ test('llama3 minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, llama3.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, llama3.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: llama3.body.prompt }])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -311,7 +324,7 @@ test('llama3 complete command works', async (t) => {
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, payload.body.prompt)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: payload.body.prompt }])
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
@@ -322,7 +335,7 @@ test('titan minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, titan.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, titan.body.inputText)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: titan.body.inputText }])
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -338,7 +351,7 @@ test('titan complete command works', async (t) => {
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.equal(cmd.prompt, payload.body.inputText)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: payload.body.inputText }])
   assert.equal(cmd.temperature, payload.body.textGenerationConfig.temperature)
 })
 
@@ -349,6 +362,6 @@ test('titan embed minimal command works', async (t) => {
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, titanEmbed.modelId)
   assert.equal(cmd.modelType, 'embedding')
-  assert.equal(cmd.prompt, titanEmbed.body.inputText)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: titanEmbed.body.inputText }])
   assert.equal(cmd.temperature, undefined)
 })

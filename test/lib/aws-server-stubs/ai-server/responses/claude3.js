@@ -34,6 +34,40 @@ responses.set('text claude3 ultimate question', {
   }
 })
 
+responses.set('text claude3 ultimate question chunked', {
+  headers: {
+    'content-type': contentType,
+    'x-amzn-requestid': reqId,
+    'x-amzn-bedrock-invocation-latency': '926',
+    'x-amzn-bedrock-output-token-count': '36',
+    'x-amzn-bedrock-input-token-count': '14'
+  },
+  statusCode: 200,
+  body: {
+    id: 'msg_bdrk_019V7ABaw8ZZZYuRDSTWK7VE',
+    type: 'message',
+    role: 'assistant',
+    model: 'claude-3-haiku-20240307',
+    stop_sequence: null,
+    usage: { input_tokens: 30, output_tokens: 265 },
+    content: [
+      {
+        type: 'text',
+        text: "Here's a nice picture of a 42"
+      },
+      {
+        type: 'image',
+        source: {
+          type: 'base64',
+          media_type: 'image/jpeg',
+          data: 'U2hoLiBUaGlzIGlzbid0IHJlYWxseSBhbiBpbWFnZQ=='
+        }
+      }
+    ],
+    stop_reason: 'endoftext'
+  }
+})
+
 responses.set('text claude3 ultimate question streamed', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
