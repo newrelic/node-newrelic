@@ -217,6 +217,24 @@ test('claude35 malformed payload produces reasonable values', async (t) => {
   assert.equal(cmd.temperature, undefined)
 })
 
+test('claude35 skips a message that is null in `body.messages`', async (t) => {
+  const malformedPayload = structuredClone(claude35)
+  malformedPayload.body.messages = [{ role: 'user', content: 'who are you' }, null]
+  t.nr.updatePayload(malformedPayload)
+  const cmd = new BedrockCommand(t.nr.input)
+  assert.equal(cmd.isClaude3(), true)
+  assert.deepEqual(cmd.prompt, [{ role: 'user', content: 'who are you' }])
+})
+
+test('claude35 handles defaulting prompt to empty array when `body.messages` is null', async (t) => {
+  const malformedPayload = structuredClone(claude35)
+  malformedPayload.body.messages = null
+  t.nr.updatePayload(malformedPayload)
+  const cmd = new BedrockCommand(t.nr.input)
+  assert.equal(cmd.isClaude3(), true)
+  assert.deepEqual(cmd.prompt, [])
+})
+
 test('claude35 minimal command works', async (t) => {
   t.nr.updatePayload(structuredClone(claude35))
   const cmd = new BedrockCommand(t.nr.input)
