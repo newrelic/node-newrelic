@@ -24,8 +24,11 @@ function simpleInterval(method) {
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
+  ctx.nr.accessOrigin = fs.accessSync
   ctx.nr.writeFileOrig = fs.writeFile
   ctx.nr.bigintOrig = process.hrtime.bigint
+
+  fs.accessSync = () => true
 
   let count = 0n
   process.hrtime.bigint = () => {
@@ -57,7 +60,7 @@ test.beforeEach((ctx) => {
 
   ctx.nr.agentConfig = Config.initialize({
     agent_control: {
-      fleet_id: 42,
+      enabled: true,
       health: {
         delivery_location: os.tmpdir(),
         frequency: 1
@@ -67,12 +70,13 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
+  fs.accessSync = ctx.nr.accessOrig
   fs.writeFile = ctx.nr.writeFileOrig
   process.hrtime.bigint = ctx.nr.bigintOrig
 })
 
-test('requires fleet id to be set', (t) => {
-  delete t.nr.agentConfig.agent_control.fleet_id
+test('requires enabled to be true', (t) => {
+  delete t.nr.agentConfig.agent_control.enabled
 
   const reporter = new HealthReporter(t.nr)
   assert.ok(reporter)
@@ -80,7 +84,7 @@ test('requires fleet id to be set', (t) => {
   const {
     logs: { info }
   } = t.nr
-  assert.deepStrictEqual(info, [['new relic control not present, skipping health reporting']])
+  assert.deepStrictEqual(info, [['new relic agent control disabled, skipping health reporting']])
 })
 
 test('requires output directory to be set', (t) => {
@@ -96,6 +100,22 @@ test('requires output directory to be set', (t) => {
   assert.deepStrictEqual(error, [
     ['health check output directory not provided, skipping health reporting']
   ])
+})
+
+test('requires output directory to readable and writable', (t) => {
+  fs.accessSync = () => {
+    throw Error('boom')
+  }
+
+  const reporter = new HealthReporter(t.nr)
+  assert.ok(reporter)
+
+  const {
+    logs: { info, error }
+  } = t.nr
+  assert.equal(info.length, 0, 'should not log any info messages')
+  assert.deepStrictEqual(error[0][0], 'health check output directory not accessible, skipping health reporting')
+  assert.equal(error[0][1].error.message, 'boom')
 })
 
 test('sets default interval', (t) => {
@@ -174,7 +194,7 @@ test('logs error if writing failed', async (t) => {
 })
 
 test('setStatus and stop do nothing if reporter disabled', (t, end) => {
-  delete t.nr.agentConfig.agent_control.fleet_id
+  delete t.nr.agentConfig.agent_control.enabled
   fs.writeFile = () => {
     assert.fail('should not be invoked')
   }

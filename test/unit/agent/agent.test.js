@@ -21,24 +21,24 @@ const CollectorResponse = require('../../../lib/collector/response')
 const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
-process.env.NEW_RELIC_SUPERAGENT_FLEET_ID = 42
-process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION = os.tmpdir()
-process.env.NEW_RELIC_SUPERAGENT_HEALTH_FREQUENCY = 1
+process.env.NEW_RELIC_AGENT_CONTROL_ENABLED = 'true'
+process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION = os.tmpdir()
+process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY = 1
 const HealthReporter = require('#agentlib/health-reporter.js')
 
 test.after(() => {
-  const files = fs.readdirSync(process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION)
+  const files = fs.readdirSync(process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION)
   for (const file of files) {
     if (file.startsWith('health-') !== true) {
       continue
     }
-    fs.rmSync(path.join(process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION, file), {
+    fs.rmSync(path.join(process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION, file), {
       force: true
     })
   }
-  delete process.env.NEW_RELIC_SUPERAGENT_FLEET_ID
-  delete process.env.NEW_RELIC_SUPERAGENT_HEALTH_DELIVERY_LOCATION
-  delete process.env.NEW_RELIC_SUPERAGENT_HEALTH_FREQUENCY
+  delete process.env.NEW_RELIC_AGENT_CONTROL_ENABLED
+  delete process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION
+  delete process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY
 })
 
 const RUN_ID = 1337
@@ -68,6 +68,22 @@ test('should not throw with valid config', () => {
   const config = configurator.initialize({ agent_enabled: false })
   const agent = new Agent(config)
   assert.equal(agent.config.agent_enabled, false)
+})
+
+test('should initialize health reporter', () => {
+  const dest = os.tmpdir()
+  const config = configurator.initialize({
+    agent_enabled: false,
+    agent_control: {
+      enabled: true,
+      health: {
+        delivery_location: dest
+      }
+    }
+  })
+  const agent = new Agent(config)
+  assert.equal(agent.healthReporter.enabled, true)
+  assert.equal(agent.healthReporter.destFile.startsWith(dest), true)
 })
 
 test('when loaded with defaults', async (t) => {
