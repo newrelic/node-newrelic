@@ -1627,6 +1627,20 @@ test('Shim', async function (t) {
       })
     })
 
+    await t.test('should not create a segment', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
+      shim.record(wrappable, 'getActiveSegment', function () {
+        return new RecorderSpec({ name: 'test segment' })
+      })
+
+      helper.runInTransaction(agent, function (tx) {
+        shim.setActiveSegment(null)
+        const segment = wrappable.getActiveSegment()
+        assert.equal(segment, null)
+        end()
+      })
+    })
+
     await t.test('should execute the wrapped function', function (t, end) {
       const { agent, shim } = t.nr
       let executed = false
