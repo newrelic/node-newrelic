@@ -2,7 +2,6 @@
 
 #### Features
 
-* added instrumentation for `@aws-sdk/client-redshift-data` ([#2875](https://github.com/newrelic/node-newrelic/pull/2875)) ([7dceae9](https://github.com/newrelic/node-newrelic/commit/7dceae94f564573df4093a5ceb4792ed6d6af1ba))
 * Added support for Claude 3+ Chat API in Bedrock ([#2870](https://github.com/newrelic/node-newrelic/pull/2870)) ([6a83abf](https://github.com/newrelic/node-newrelic/commit/6a83abf8b1a0cb0f993e9d9285566a09677d7d2e))
 
 #### Bug fixes
@@ -12,13 +11,9 @@
 #### Documentation
 
 * Updated compatibility report ([#2888](https://github.com/newrelic/node-newrelic/pull/2888)) ([dce9deb](https://github.com/newrelic/node-newrelic/commit/dce9debeda6c5ed30c0ed6dbc00f73cf11c8f40f))
-    * Co-authored-by: svetlanabrennan <50715937+svetlanabrennan@users.noreply.github.com>
-* Updated compatibility report ([#2886](https://github.com/newrelic/node-newrelic/pull/2886)) ([acdc034](https://github.com/newrelic/node-newrelic/commit/acdc034f81848081c00c9beaa754ad952902df2b))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
 
 #### Miscellaneous chores
 
-* removed instrumentation for `@aws-sdk/client-redshift-data` ([#2897](https://github.com/newrelic/node-newrelic/pull/2897)) ([661910b](https://github.com/newrelic/node-newrelic/commit/661910bd408c563b2fd6af943fa2353195110da7))
 * Replaced backtracking regex with new algorithm ([#2887](https://github.com/newrelic/node-newrelic/pull/2887)) ([46462d0](https://github.com/newrelic/node-newrelic/commit/46462d00b68c4a4cedd60d46d531b2f31800df98))
 
 #### Tests
