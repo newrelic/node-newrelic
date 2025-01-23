@@ -77,6 +77,35 @@ function checkExternals({ service, operations, tx, end }) {
 }
 
 function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, prompt, resContent }) {
+  chatMsgs.forEach((msg) => {
+    if (msg[1].sequence > 1) {
+      // Streamed responses may have more than two messages.
+      // We only care about the start and end of the conversation.
+      return
+    }
+
+    const isResponse = msg[1].sequence === 1
+    assertChatCompletionMessage({
+      tx,
+      message: msg,
+      expectedId,
+      modelId,
+      expectedContent: isResponse ? resContent : prompt,
+      isResponse,
+      expectedRole: isResponse ? 'assistant' : 'user'
+    })
+  })
+}
+
+function assertChatCompletionMessage({
+  tx,
+  message,
+  expectedId,
+  modelId,
+  expectedContent,
+  isResponse,
+  expectedRole
+}) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
     appName: 'New Relic for Node.js tests',
@@ -91,30 +120,19 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
     completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
   }
 
-  chatMsgs.forEach((msg) => {
-    if (msg[1].sequence > 1) {
-      // Streamed responses may have more than two messages.
-      // We only care about the start and end of the conversation.
-      return
-    }
+  const [messageBase, messageData] = message
 
-    const expectedChatMsg = { ...baseMsg }
-    const id = expectedId ? `${expectedId}-${msg[1].sequence}` : msg[1].id
-    if (msg[1].sequence === 0) {
-      expectedChatMsg.sequence = 0
-      expectedChatMsg.id = id
-      expectedChatMsg.content = prompt
-    } else if (msg[1].sequence === 1) {
-      expectedChatMsg.sequence = 1
-      expectedChatMsg.role = 'assistant'
-      expectedChatMsg.id = id
-      expectedChatMsg.content = resContent
-      expectedChatMsg.is_response = true
-    }
+  const expectedChatMsg = { ...baseMsg }
+  const id = expectedId ? `${expectedId}-${messageData.sequence}` : messageData.id
 
-    assert.equal(msg[0].type, 'LlmChatCompletionMessage')
-    match(msg[1], expectedChatMsg)
-  })
+  expectedChatMsg.sequence = messageData.sequence
+  expectedChatMsg.role = expectedRole
+  expectedChatMsg.id = id
+  expectedChatMsg.content = expectedContent
+  expectedChatMsg.is_response = isResponse
+
+  assert.equal(messageBase.type, 'LlmChatCompletionMessage')
+  match(messageData, expectedChatMsg)
 }
 
 function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, numMsgs = 2 }) {
@@ -162,6 +180,7 @@ module.exports = {
   afterEach,
   assertChatCompletionSummary,
   assertChatCompletionMessages,
+  assertChatCompletionMessage,
   DATASTORE_PATTERN,
   EXTERN_PATTERN,
   SNS_PATTERN,

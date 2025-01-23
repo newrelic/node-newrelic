@@ -46,8 +46,9 @@ test.beforeEach((ctx) => {
   }
 
   ctx.nr.bedrockCommand = {
-    prompt: 'who are you'
   }
+
+  ctx.nr.input = 'who are you'
 
   ctx.nr.bedrockResponse = {
     headers: {

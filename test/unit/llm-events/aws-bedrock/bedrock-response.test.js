@@ -29,6 +29,14 @@ const claude = {
   stop_reason: 'done'
 }
 
+const claude35 = {
+  content: [
+    { type: 'text', text: 'Hello' },
+    { type: 'text', text: 'world' }
+  ],
+  stop_reason: 'done'
+}
+
 const cohere = {
   id: 'cohere-response-1',
   generations: [
@@ -144,6 +152,18 @@ test('claude complete responses work', async (t) => {
   t.nr.updatePayload(structuredClone(claude))
   const res = new BedrockResponse(t.nr)
   assert.deepStrictEqual(res.completions, ['claude-response'])
+  assert.equal(res.finishReason, 'done')
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
+})
+
+test('claude 3.5 complete responses work', async (t) => {
+  t.nr.bedrockCommand.isClaude3 = () => true
+  t.nr.updatePayload(structuredClone(claude35))
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, ['Hello\n\nworld'])
   assert.equal(res.finishReason, 'done')
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
   assert.equal(res.id, undefined)

@@ -27,7 +27,7 @@ version.
 | `@nestjs/cli` | 9.0.0 | 10.4.9 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.1.0 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 6.2.1 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 4.1.1 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 4.1.2 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.5 | 2.0.0 |
 | `apollo-server` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-express` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
@@ -57,7 +57,7 @@ version.
 | `redis` | 3.1.0 | 4.7.0 | 1.31.0 |
 | `restify` | 11.0.0 | 11.1.0 | 2.6.0 |
 | `superagent` | 3.0.0 | 10.1.1 | 4.9.0 |
-| `undici` | 5.0.0 | 7.2.1 | 11.1.0 |
+| `undici` | 5.0.0 | 7.2.3 | 11.1.0 |
 | `when` | 3.7.0 | 3.7.8 | 1.26.2 |
 | `winston` | 3.0.0 | 3.17.0 | 8.11.0 |
 

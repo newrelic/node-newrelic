@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.11.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated undici instrumentation to fix crash with trying to calculate exclusive duration on a segment that no longer exists"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "12.11.0",
       "changes": {
         "security": [],
