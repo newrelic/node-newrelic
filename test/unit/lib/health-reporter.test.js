@@ -26,13 +26,13 @@ test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.accessOrigin = fs.accessSync
   ctx.nr.writeFileOrig = fs.writeFile
-  ctx.nr.bigintOrig = process.hrtime.bigint
+  ctx.nr.nowOrig = Date.now
 
   fs.accessSync = () => true
 
-  let count = 0n
-  process.hrtime.bigint = () => {
-    count += 1n
+  let count = 0
+  Date.now = () => {
+    count += 1
     return count
   }
 
@@ -72,7 +72,7 @@ test.beforeEach((ctx) => {
 test.afterEach((ctx) => {
   fs.accessSync = ctx.nr.accessOrig
   fs.writeFile = ctx.nr.writeFileOrig
-  process.hrtime.bigint = ctx.nr.bigintOrig
+  Date.now = ctx.nr.nowOrig
 })
 
 test('requires enabled to be true', (t) => {
@@ -145,8 +145,8 @@ test('initializes and writes to destination', async (t) => {
         'healthy: true',
         "status: 'Healthy.'",
         'last_error: NR-APM-000',
-        'start_time_unix_nano: 1',
-        'status_time_unix_nano: 2'
+        'start_time_unix_nano: 1000000',
+        'status_time_unix_nano: 2000000'
       ].join('\n')
     )
     plan.deepStrictEqual(options, { encoding: 'utf8' })
@@ -236,8 +236,8 @@ test('stop leaves last error code in place', async (t) => {
         'healthy: false',
         "status: 'HTTP error communicating with New Relic.'",
         'last_error: NR-APM-004',
-        'start_time_unix_nano: 1',
-        'status_time_unix_nano: 3'
+        'start_time_unix_nano: 1000000',
+        'status_time_unix_nano: 3000000'
       ].join('\n')
     )
     callback()
@@ -268,8 +268,8 @@ test('stop sets shutdown status', async (t) => {
         'healthy: true',
         "status: 'Agent has shutdown.'",
         'last_error: NR-APM-099',
-        'start_time_unix_nano: 1',
-        'status_time_unix_nano: 3'
+        'start_time_unix_nano: 1000000',
+        'status_time_unix_nano: 3000000'
       ].join('\n')
     )
     callback()
