@@ -41,7 +41,7 @@ test('ignoring an Express route', async function (t) {
       if (isExpress5 === true) {
         expectedMetrics = 13
       } else {
-        expectedMetrics = 11
+        expectedMetrics = 12
       }
     }
     plan.equal(
