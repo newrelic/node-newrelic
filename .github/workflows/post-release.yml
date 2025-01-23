@@ -65,34 +65,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
           GITHUB_USER: ${{ vars.NODE_AGENT_CI_USER_NAME }}
           GITHUB_EMAIL: ${{ vars.NODE_AGENT_CI_USER_EMAIL }}
-
-  release-tags:
-    runs-on: ubuntu-latest
-    if:
-      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
-      (github.event_name == 'workflow_dispatch')
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-      - run: npm install
-      - run: |
-          git config user.name ${GITHUB_ACTOR}
-          git config user.email gh-actions-${GITHUB_ACTOR}@github.com
-      - id: get_tag
-        run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
-      - name: Create release tags for Lambda and K8s Init Containers
-        run: |
-          RELEASE_TITLE="New Relic Node Agent v${{ steps.get_tag.outputs.latest_tag }}.0"
-          RELEASE_TAG="v${{ steps.get_tag.outputs.latest_tag }}.0_nodejs"
-          RELEASE_NOTES="Automated release for [Node Agent v${{ steps.get_tag.outputs.latest_tag }}](https://github.com/newrelic/node-newrelic/releases/tag/v${{ steps.get_tag.outputs.latest_tag }})"
-          gh auth login --with-token <<< $GH_RELEASE_TOKEN
-          echo "newrelic/newrelic-lambda-layers - Releasing ${RELEASE_TITLE} with tag ${RELEASE_TAG}"
-          gh release create "${RELEASE_TAG}" --title=${RELEASE_TITLE} --repo=newrelic/newrelic-lambda-layers --notes=${RELEASE_NOTES}
-          echo "newrelic/newrelic-agent-init-container - Releasing ${RELEASE_TITLE} with tag ${RELEASE_TAG}"
-          gh release create "${RELEASE_TAG}" --title=${RELEASE_TITLE} --repo=newrelic/newrelic-agent-init-container --notes=${RELEASE_NOTES}
-        env:
-          GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
