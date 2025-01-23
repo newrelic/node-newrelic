@@ -70,8 +70,10 @@ test('should not throw with valid config', () => {
   assert.equal(agent.config.agent_enabled, false)
 })
 
-test('should initialize health reporter', () => {
+test('agent control should initialize health reporter', () => {
+  delete process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION
   const dest = os.tmpdir()
+  process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION = dest
   const config = configurator.initialize({
     agent_enabled: false,
     agent_control: {
@@ -84,6 +86,30 @@ test('should initialize health reporter', () => {
   const agent = new Agent(config)
   assert.equal(agent.healthReporter.enabled, true)
   assert.equal(agent.healthReporter.destFile.startsWith(dest), true)
+})
+
+test('agent control writes to file uri destinations', (t, end) => {
+  delete process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION
+  const dest = 'file://' + os.tmpdir()
+  process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION = dest.replace('file://', '')
+  const config = configurator.initialize({
+    agent_enabled: false,
+    agent_control: {
+      enabled: true,
+      health: {
+        delivery_location: dest
+      }
+    }
+  })
+  const agent = new Agent(config)
+
+  setTimeout(check, 1_500)
+
+  function check() {
+    const data = fs.readFileSync(agent.healthReporter.destFile)
+    assert.equal(data.toString().startsWith('healthy: true'), true, 'should have a healthy report')
+    end()
+  }
 })
 
 test('when loaded with defaults', async (t) => {
