@@ -13,11 +13,11 @@ version.
 | --- | --- | --- | --- |
 | `@apollo/gateway` | 2.3.0 | 2.9.3 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 4.11.3 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.731.1 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.733.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.732.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.731.1 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.733.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.734.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.734.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.734.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.734.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.734.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@elastic/elasticsearch` | 7.16.0 | 8.17.0 | 11.9.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.12.5 | 8.17.0 |
@@ -25,7 +25,7 @@ version.
 | `@koa/router` | 11.0.2 | 13.1.0 | 3.2.0 |
 | `@langchain/core` | 0.1.17 | 0.3.33 | 11.13.0 |
 | `@nestjs/cli` | 9.0.0 | 11.0.2 | 10.1.0 |
-| `@opensearch-project/opensearch` | 2.1.0 | 3.1.0 | 12.10.0 |
+| `@opensearch-project/opensearch` | 2.1.0 | 3.2.0 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 6.2.1 | 11.0.0 |
 | `@smithy/smithy-client` | 2.0.0 | 4.1.2 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.5 | 2.0.0 |
