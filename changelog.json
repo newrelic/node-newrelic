@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.11.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Added defensive code in shim to prevent crashing when checking parent segment"
+        ],
+        "features": [
+          "Added support for Claude 3+ Chat API in Bedrock"
+        ]
+      }
+    },
+    {
       "version": "12.11.1",
       "changes": {
         "security": [],

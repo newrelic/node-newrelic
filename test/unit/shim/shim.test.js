@@ -1609,7 +1609,7 @@ test('Shim', async function (t) {
     })
   })
 
-  await t.test('#record wrapper when called with an inactive transaction', async function (t) {
+  await t.test('#record wrapper should not create a new segment when called with an inactive transaction', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
     await t.test('should not create a segment', function (t, end) {
@@ -1623,6 +1623,22 @@ test('Shim', async function (t) {
         tx.end()
         const segment = wrappable.getActiveSegment()
         assert.equal(segment, startingSegment)
+        end()
+      })
+    })
+
+    await t.test('#record wrapper should not create a new segment when there is no current active segment', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
+      shim.record(wrappable, 'getActiveSegment', function () {
+        return new RecorderSpec({ name: 'test segment' })
+      })
+
+      helper.runInTransaction(agent, function (tx) {
+        shim.setActiveSegment(null)
+        const segment = wrappable.getActiveSegment()
+        assert.equal(segment, null)
+        tx.end()
+        assert.equal(tx.isActive(), false)
         end()
       })
     })
