@@ -1,3 +1,25 @@
+### v12.11.2 (2025-01-23)
+
+#### Features
+
+* Added support for Claude 3+ Chat API in Bedrock ([#2870](https://github.com/newrelic/node-newrelic/pull/2870)) ([6a83abf](https://github.com/newrelic/node-newrelic/commit/6a83abf8b1a0cb0f993e9d9285566a09677d7d2e))
+
+#### Bug fixes
+
+* Added defensive code in shim to prevent crashing when checking parent segment ([#2898](https://github.com/newrelic/node-newrelic/pull/2898)) ([751eb96](https://github.com/newrelic/node-newrelic/commit/751eb9608d7401d1123a0e810eac9dc554127e4e))
+
+#### Documentation
+
+* Updated compatibility report ([#2888](https://github.com/newrelic/node-newrelic/pull/2888)) ([dce9deb](https://github.com/newrelic/node-newrelic/commit/dce9debeda6c5ed30c0ed6dbc00f73cf11c8f40f))
+
+#### Miscellaneous chores
+
+* Replaced backtracking regex with new algorithm ([#2887](https://github.com/newrelic/node-newrelic/pull/2887)) ([46462d0](https://github.com/newrelic/node-newrelic/commit/46462d00b68c4a4cedd60d46d531b2f31800df98))
+
+#### Tests
+
+* Improved test coverage of normalizing claude 3 messages ([#2893](https://github.com/newrelic/node-newrelic/pull/2893)) ([cc65763](https://github.com/newrelic/node-newrelic/commit/cc657633b81daf4b372e5715e696ed3c23ecb678))
+
 ### v12.11.1 (2025-01-16)
 
 #### Bug fixes
