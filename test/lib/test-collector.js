@@ -136,7 +136,7 @@ class Collector {
     return {
       host: this.host,
       port: this.port,
-      license_key: 'testing',
+      license_key: 'testing1234567890',
       certificates: [this.cert]
     }
   }

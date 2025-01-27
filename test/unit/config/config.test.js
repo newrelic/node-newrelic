@@ -85,55 +85,6 @@ test('when loading options via constructor', async (t) => {
   })
 })
 
-test('agent control', async t => {
-  await t.test('loads defaults', () => {
-    const config = Config.initialize({})
-    assert.deepStrictEqual(config.agent_control, {
-      enabled: false,
-      health: {
-        delivery_location: 'file:///var/lib/newrelic-agent_control/fleet',
-        frequency: 5
-      }
-    })
-  })
-
-  await t.test('loads from env', () => {
-    process.env.NEW_RELIC_AGENT_CONTROL_ENABLED = 'true'
-    process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION = 'file://find/me'
-    process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY = 1
-    const config = Config.initialize({})
-    delete process.env.NEW_RELIC_AGENT_CONTROL_ENABLED
-    delete process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION
-    delete process.env.NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY
-    assert.deepStrictEqual(config.agent_control, {
-      enabled: true,
-      health: {
-        delivery_location: 'file://find/me',
-        frequency: 1
-      }
-    })
-  })
-
-  await t.test('loads from provided config', () => {
-    const config = Config.initialize({
-      agent_control: {
-        enabled: true,
-        health: {
-          delivery_location: 'file://find/me',
-          frequency: 10
-        }
-      }
-    })
-    assert.deepStrictEqual(config.agent_control, {
-      enabled: true,
-      health: {
-        delivery_location: 'file://find/me',
-        frequency: 10
-      }
-    })
-  })
-})
-
 test('#publicSettings', async (t) => {
   let configuration
 

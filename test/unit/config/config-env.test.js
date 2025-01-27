@@ -885,3 +885,21 @@ test('when overriding configuration values via environment variables', async (t)
     })
   }
 })
+
+test('loads agent control settings from env', (t, end) => {
+  const env = {
+    NEW_RELIC_AGENT_CONTROL_ENABLED: 'true',
+    NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION: 'file://find/me',
+    NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY: 1
+  }
+  idempotentEnv(env, config => {
+    assert.deepStrictEqual(config.agent_control, {
+      enabled: true,
+      health: {
+        delivery_location: 'file://find/me',
+        frequency: 1
+      }
+    })
+    end()
+  })
+})

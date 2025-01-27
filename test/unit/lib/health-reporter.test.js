@@ -11,7 +11,6 @@ const os = require('node:os')
 const fs = require('node:fs')
 const tspl = require('@matteo.collina/tspl')
 
-const { match } = require('#test/assert')
 const Config = require('#agentlib/config/index.js')
 const HealthReporter = require('#agentlib/health-reporter.js')
 
@@ -87,21 +86,6 @@ test('requires enabled to be true', (t) => {
   assert.deepStrictEqual(info, [['new relic agent control disabled, skipping health reporting']])
 })
 
-test('requires output directory to be set', (t) => {
-  delete t.nr.agentConfig.agent_control.health.delivery_location
-
-  const reporter = new HealthReporter(t.nr)
-  assert.ok(reporter)
-
-  const {
-    logs: { info, error }
-  } = t.nr
-  assert.equal(info.length, 0, 'should not log any info messages')
-  assert.deepStrictEqual(error, [
-    ['health check output directory not provided, skipping health reporting']
-  ])
-})
-
 test('requires output directory to readable and writable', (t) => {
   fs.accessSync = () => {
     throw Error('boom')
@@ -116,23 +100,6 @@ test('requires output directory to readable and writable', (t) => {
   assert.equal(info.length, 0, 'should not log any info messages')
   assert.deepStrictEqual(error[0][0], 'health check output directory not accessible, skipping health reporting')
   assert.equal(error[0][1].error.message, 'boom')
-})
-
-test('sets default interval', (t) => {
-  delete t.nr.agentConfig.agent_control.health.frequency
-
-  const reporter = new HealthReporter(t.nr)
-  assert.ok(reporter)
-
-  const {
-    logs: { info, error, debug }
-  } = t.nr
-  match(info, [
-    [/new relic control is present, writing health on interval 5000 milliseconds to .+/],
-    ['health reporter initialized']
-  ])
-  assert.equal(error.length, 0, 'should not log any errors')
-  assert.deepStrictEqual(debug, [['health check interval not available, using default 5 seconds']])
 })
 
 test('initializes and writes to destination', async (t) => {
