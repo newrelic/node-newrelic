@@ -42,23 +42,6 @@ test('should require configuration passed to constructor', () => {
   assert.throws(() => new Agent())
 })
 
-// test('should update health reporter if configuration is bad', (t, end) => {
-//   const setStatus = HealthReporter.prototype.setStatus
-//   t.after(() => {
-//     HealthReporter.prototype.setStatus = setStatus
-//   })
-//
-//   HealthReporter.prototype.setStatus = (status) => {
-//     assert.equal(status, HealthReporter.STATUS_CONFIG_PARSE_FAILURE)
-//     end()
-//   }
-//
-//   try {
-//     const _ = new Agent()
-//     assert.ok(_, 'should not be hit, just satisfying linter')
-//   } catch {}
-// })
-
 test('should not throw with valid config', () => {
   const config = configurator.initialize({ agent_enabled: false })
   const agent = new Agent(config)
