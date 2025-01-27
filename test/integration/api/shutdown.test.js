@@ -11,7 +11,7 @@ const nock = require('nock')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 // This key is hardcoded in the agent helper
-const EXPECTED_LICENSE_KEY = 'license key here'
+const EXPECTED_LICENSE_KEY = 'test1234567890'
 const TEST_DOMAIN = 'test-collector.newrelic.com'
 const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`
 

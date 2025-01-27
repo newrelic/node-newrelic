@@ -7,7 +7,7 @@
 
 exports.config = {
   app_name: ['New Relic for Node.js tests'],
-  license_key: 'license key here',
+  license_key: 'test1234567890',
   logging: {
     level: 'trace',
     filepath: '../../../newrelic_agent.log'

@@ -30,7 +30,7 @@ test('ServerlessCollector API', async (t) => {
     const baseAgentConfig = {
       serverless_mode: { enabled: true },
       app_name: ['TEST'],
-      license_key: 'license key here'
+      license_key: 'test1234567890'
     }
     const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
       config: { run_id: RUN_ID }
@@ -220,7 +220,7 @@ test('ServerlessCollector with output to custom pipe', async (t) => {
     const baseAgentConfig = {
       serverless_mode: { enabled: true },
       app_name: ['TEST'],
-      license_key: 'license key here',
+      license_key: 'test1234567890',
       NEWRELIC_PIPE_PATH: ctx.nr.destPath
     }
     const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {

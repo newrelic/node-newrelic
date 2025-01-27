@@ -15,7 +15,7 @@ const TEST_DOMAIN = 'test-collector.newrelic.com'
 const RUN_ID = 'runId'
 
 const DEFAULT_CONFIG = {
-  license_key: 'license key here',
+  license_key: 'test1234567890',
   host: TEST_DOMAIN,
   security_policies_token: 'AAAA-TEST-TOKE-NNN',
   plugins: {

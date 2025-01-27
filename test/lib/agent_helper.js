@@ -123,7 +123,7 @@ helper.generateCollectorPath = function generateCollectorPath(method, runID, pro
   let fragment =
     '/agent_listener/invoke_raw_method?' +
     `marshal_format=json&protocol_version=${protocolVersion}&` +
-    `license_key=license%20key%20here&method=${method}`
+    `license_key=test1234567890&method=${method}`
 
   if (runID) {
     fragment += '&run_id=' + runID

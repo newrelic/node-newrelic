@@ -260,7 +260,7 @@ test('when posting to collector', async (t) => {
     ctx.nr.config = new Config({
       ssl: true,
       run_id: RUN_ID,
-      license_key: 'license key here'
+      license_key: 'test1234567890'
     })
     ctx.nr.endpoint = { host: collector.host, port: collector.port }
 
@@ -602,7 +602,7 @@ test('record data usage supportability metrics', async (t) => {
     ctx.nr.collector = collector
     await collector.listen()
 
-    ctx.nr.config = new Config({ license_key: 'license key here' })
+    ctx.nr.config = new Config({ license_key: 'test1234567890' })
     ctx.nr.endpoint = { host: collector.host, port: collector.port }
 
     ctx.nr.agent = helper.instrumentMockedAgent(collector.agentConfig)

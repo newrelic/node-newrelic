@@ -39,7 +39,7 @@ test('New Relic response code handling', async (t) => {
         const connecting = false
         const started = false
         const agent = helper.loadMockedAgent({
-          license_key: 'license key here',
+          license_key: 'test1234567890',
           apdex_t: Number.MIN_VALUE, // force transaction traces
           host: TEST_DOMAIN,
           plugins: {
