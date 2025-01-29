@@ -12,6 +12,7 @@ const helper = require('../../lib/agent_helper')
 const { TransactionSpec } = require('../../../lib/shim/specs')
 const TransactionShim = require('../../../lib/shim/transaction-shim')
 const notRunningStates = ['stopped', 'stopping', 'errored']
+const sinon = require('sinon')
 
 /**
  * Creates CAT headers to be used in handleMqTracingHeaders
@@ -220,15 +221,16 @@ test('TransactionShim', async function (t) {
 
     await t.test('should not create a nested transaction when `spec.nest` is false', function (t) {
       const { shim } = t.nr
+      sinon.stub(shim.logger, 'trace')
       let webTx = null
       let bgTx = null
       let webCalled = false
       let bgCalled = false
-      const bg = shim.bindCreateTransaction(function () {
+      const bg = shim.bindCreateTransaction(function bgTxFn() {
         bgCalled = true
         bgTx = shim.tracer.getTransaction()
       }, new TransactionSpec({ type: shim.BG }))
-      const web = shim.bindCreateTransaction(function () {
+      const web = shim.bindCreateTransaction(function webTxFn() {
         webCalled = true
         webTx = shim.tracer.getTransaction()
         bg()
@@ -237,7 +239,51 @@ test('TransactionShim', async function (t) {
       web()
       assert.equal(webCalled, true)
       assert.equal(bgCalled, true)
-      assert.equal(webTx, bgTx)
+      assert.equal(webTx.id, bgTx.id)
+      assert.deepEqual(shim.logger.trace.args, [
+        ['Wrapping nodule itself (%s).', 'bgTxFn'],
+        ['Wrapping nodule itself (%s).', 'webTxFn'],
+        ['Creating new %s transaction for %s', 'web', 'webTxFn'],
+        ['Applying segment %s', 'ROOT'],
+        [
+          'Transaction %s exists, not creating new transaction %s for %s',
+          bgTx.id,
+          'bg',
+          'bgTxFn'
+        ]
+      ])
+    })
+
+    await t.test('should create a new transaction when `spec.nest` is false and current transaction is not active', function (t) {
+      const { shim } = t.nr
+      sinon.stub(shim.logger, 'trace')
+      let webTx = null
+      let bgTx = null
+      let webCalled = false
+      let bgCalled = false
+      const bg = shim.bindCreateTransaction(function bgTxFn() {
+        bgCalled = true
+        bgTx = shim.tracer.getTransaction()
+      }, new TransactionSpec({ type: shim.BG }))
+      const web = shim.bindCreateTransaction(function webTxFn() {
+        webCalled = true
+        webTx = shim.tracer.getTransaction()
+        webTx.end()
+        bg()
+      }, new TransactionSpec({ type: shim.WEB }))
+
+      web()
+      assert.equal(webCalled, true)
+      assert.equal(bgCalled, true)
+      assert.notEqual(webTx.id, bgTx.id)
+      assert.deepEqual(shim.logger.trace.args, [
+        ['Wrapping nodule itself (%s).', 'bgTxFn'],
+        ['Wrapping nodule itself (%s).', 'webTxFn'],
+        ['Creating new %s transaction for %s', 'web', 'webTxFn'],
+        ['Applying segment %s', 'ROOT'],
+        ['Creating new %s transaction for %s', 'bg', 'bgTxFn'],
+        ['Applying segment %s', 'ROOT']
+      ])
     })
 
     for (const agentState of notRunningStates) {
@@ -317,6 +363,25 @@ test('TransactionShim', async function (t) {
           assert.notEqual(tx1, tx2, `tx ${i} should noassert.equal tx ${j}`)
         }
       }
+    })
+
+    await t.test('should not nest transaction if first transaction is inactive and same type', function (t) {
+      const { shim } = t.nr
+      const transactions = []
+      const web = shim.bindCreateTransaction(function (cb) {
+        const tx = shim.tracer.getTransaction()
+        transactions.push(tx)
+        tx.end()
+        if (cb) {
+          cb()
+        }
+      }, new TransactionSpec({ type: shim.WEB, nest: true }))
+
+      const web2 = shim.bindCreateTransaction(function () {
+        transactions.push(shim.tracer.getTransaction())
+      }, new TransactionSpec({ type: shim.WEB, nest: true }))
+      web(web2)
+      assert.notEqual(transactions[0].id, transactions[1].id)
     })
 
     for (const agentState of notRunningStates) {
