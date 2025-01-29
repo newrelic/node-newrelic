@@ -8,7 +8,6 @@
 #### Documentation
 
 * Updated compatibility report ([#2902](https://github.com/newrelic/node-newrelic/pull/2902)) ([cb16516](https://github.com/newrelic/node-newrelic/commit/cb16516e90a3dc2cefb98e6131a7243412aefbfc))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
 
 #### Miscellaneous chores
 
