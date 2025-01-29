@@ -158,4 +158,21 @@ module.exports = async function runTests({ t, agent, Promise, library }) {
     })
     await plan.completed
   })
+
+  await t.test('does not propagate context when transaction ends prematurely', async function (t) {
+    const plan = tspl(t, { plan: 2 })
+
+    helper.runInTransaction(agent, function transactionWrapper(transaction) {
+      transaction.end()
+      Promise.resolve(0)
+        .then(function step1() {
+          plan.equal(agent.getTransaction(), null)
+          return 1
+        })
+        .then(function rejector(val) {
+          plan.equal(val, 1)
+        })
+    })
+    await plan.completed
+  })
 }

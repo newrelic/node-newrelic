@@ -469,6 +469,22 @@ test('PromiseShim', async (t) => {
         })
       })
     })
+
+    await t.test('should not link context through to thenned callbacks when transaction ends before Promise calls', (t, end) => {
+      const { agent, shim, TestPromise } = t.nr
+      shim.setClass(TestPromise)
+      shim.wrapCast(TestPromise, 'resolve')
+      shim.wrapThen(TestPromise.prototype, 'then')
+
+      helper.runInTransaction(agent, (tx) => {
+        tx.end()
+        TestPromise.resolve().then(() => {
+          assert.equal(agent.getTransaction(), null)
+          assert.equal(shim.getActiveSegment(), null)
+          end()
+        })
+      })
+    })
   })
 
   await t.test('#wrapThen', async (t) => {
@@ -514,6 +530,21 @@ test('PromiseShim', async (t) => {
       helper.runInTransaction(agent, (tx) => {
         TestPromise.resolve().then(() => {
           sameTransaction(agent.getTransaction(), tx)
+          end()
+        })
+      })
+    })
+
+    await t.test('should not link context through to thenned callbacks when transaction ends before Promise calls', (t, end) => {
+      const { agent, shim, TestPromise } = t.nr
+      shim.setClass(TestPromise)
+      shim.wrapThen(TestPromise.prototype, 'then')
+
+      helper.runInTransaction(agent, (tx) => {
+        tx.end()
+        TestPromise.resolve().then(() => {
+          assert.equal(agent.getTransaction(), null)
+          assert.equal(shim.getActiveSegment(), null)
           end()
         })
       })
@@ -579,6 +610,21 @@ test('PromiseShim', async (t) => {
       helper.runInTransaction(agent, (tx) => {
         TestPromise.reject().catch(() => {
           sameTransaction(agent.getTransaction(), tx)
+          end()
+        })
+      })
+    })
+
+    await t.test('should not link context through to thenned callbacks when transaction ends before promise calls', (t, end) => {
+      const { agent, shim, TestPromise } = t.nr
+      shim.setClass(TestPromise)
+      shim.wrapCatch(TestPromise.prototype, 'catch')
+
+      helper.runInTransaction(agent, (tx) => {
+        tx.end()
+        TestPromise.reject().catch(() => {
+          assert.equal(agent.getTransaction(), null)
+          assert.equal(shim.getActiveSegment(), null)
           end()
         })
       })
