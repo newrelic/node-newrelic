@@ -10,6 +10,8 @@ const assert = require('node:assert')
 const path = require('path')
 
 const Config = require('../../../lib/config')
+const proxyquire = require('proxyquire')
+const sinon = require('sinon')
 
 test('with default properties', async (t) => {
   let configuration = null
@@ -314,5 +316,41 @@ test('with default properties', async (t) => {
     assert.equal(configuration.instrumentation.express.enabled, true)
     assert.equal(configuration.instrumentation['@prisma/client'].enabled, true)
     assert.equal(configuration.instrumentation.npmlog.enabled, true)
+  })
+})
+
+test('with undefined as default', async (t) => {
+  let configuration = null
+
+  const mockConfig = {
+    agent_control: {
+      health: {
+        delivery_location: {
+          default: undefined
+        }
+      }
+    }
+  }
+
+  const Config = proxyquire('../../../lib/config/index', {
+    './default': {
+      defaultConfig: sinon.stub().returns(mockConfig)
+    }
+  })
+
+  configuration = Config.initialize({
+    agent_control: {
+      enabled: true,
+      health: {
+        delivery_location: 'file://find/me',
+        frequency: 10
+      }
+    }
+  })
+
+  assert.strictEqual(configuration.agent_control.health.delivery_location.default, undefined)
+
+  await t.test('should have nest item as find me', () => {
+    assert.equal(configuration.agent_control.health.delivery_location, 'file://find/me')
   })
 })
