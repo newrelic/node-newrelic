@@ -7,7 +7,7 @@
 
 exports.config = {
   app_name: ['elasticsearch test'],
-  license_key: 'license key here',
+  license_key: 'test1234567890',
   utilization: {
     detect_aws: false,
     detect_pcf: false,

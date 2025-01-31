@@ -15,7 +15,7 @@ test('the RUM API', async function (t) {
   t.beforeEach(function (ctx) {
     ctx.nr = {}
     const agent = helper.loadMockedAgent({
-      license_key: 'license key here',
+      license_key: 'test1234567890',
       browser_monitoring: {
         attributes: {
           enabled: true,

@@ -316,3 +316,35 @@ test('with default properties', async (t) => {
     assert.equal(configuration.instrumentation.npmlog.enabled, true)
   })
 })
+
+test('agent control', async t => {
+  await t.test('loads defaults', () => {
+    const config = Config.initialize({})
+    assert.deepStrictEqual(config.agent_control, {
+      enabled: false,
+      health: {
+        delivery_location: 'file:///newrelic/apm/health',
+        frequency: 5
+      }
+    })
+  })
+
+  await t.test('loads agent control settings from provided config', () => {
+    const config = Config.initialize({
+      agent_control: {
+        enabled: true,
+        health: {
+          delivery_location: 'file://find/me',
+          frequency: 10
+        }
+      }
+    })
+    assert.deepStrictEqual(config.agent_control, {
+      enabled: true,
+      health: {
+        delivery_location: 'file://find/me',
+        frequency: 10
+      }
+    })
+  })
+})

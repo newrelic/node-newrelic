@@ -41,7 +41,7 @@ test('Connect calls re-generate harvest limits from original config values', (t,
   nockRequest('connect').reply(200, { return_value: { agent_run_id: RUN_ID, ...serverHarvest } })
   nockRequest('agent_settings', RUN_ID).reply(200, { return_value: [] })
   const agent = helper.loadMockedAgent({
-    license_key: 'license key here',
+    license_key: 'test1234567890',
     host: TEST_DOMAIN,
     application_logging: {
       enabled: true

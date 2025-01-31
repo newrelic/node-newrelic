@@ -7,5 +7,5 @@
 
 exports.config = {
   app_name: ['My Application'],
-  license_key: 'license key here'
+  license_key: 'test1234567890'
 }
