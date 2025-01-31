@@ -11,7 +11,6 @@ const path = require('path')
 
 const Config = require('../../../lib/config')
 const proxyquire = require('proxyquire')
-const sinon = require('sinon')
 
 test('with default properties', async (t) => {
   let configuration = null
@@ -320,37 +319,33 @@ test('with default properties', async (t) => {
 })
 
 test('with undefined as default', async (t) => {
-  let configuration = null
-
   const mockConfig = {
-    agent_control: {
-      health: {
-        delivery_location: {
+    fake_key: {
+      another_layer: {
+        fake_nested_key: {
           default: undefined
         }
       }
     }
   }
 
-  const Config = proxyquire('../../../lib/config/index', {
-    './default': {
-      defaultConfig: sinon.stub().returns(mockConfig)
-    }
+  const defaults = require('../../../lib/config/default')
+  const orig = defaults.definition
+  defaults.definition = function stub() {
+    const configDefaults = orig.apply(this, arguments)
+    return { ...configDefaults, ...mockConfig }
+  }
+  const Config = proxyquire('../../../lib/config', {
+    './default': defaults
   })
 
-  configuration = Config.initialize({
-    agent_control: {
-      enabled: true,
-      health: {
-        delivery_location: 'file://find/me',
-        frequency: 10
+  const configuration = Config.initialize({
+    fake_key: {
+      another_layer: {
+        fake_nested_key: 'fake-value'
       }
     }
   })
 
-  assert.strictEqual(configuration.agent_control.health.delivery_location.default, undefined)
-
-  await t.test('should have nest item as find me', () => {
-    assert.equal(configuration.agent_control.health.delivery_location, 'file://find/me')
-  })
+  assert.equal(configuration.fake_key.another_layer.fake_nested_key, 'fake-value')
 })
