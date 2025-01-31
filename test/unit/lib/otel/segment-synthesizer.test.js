@@ -226,7 +226,7 @@ test('should create internal custom segment', (t, end) => {
     })
     const { segment, transaction } = synthesizer.synthesize(span)
     assert.equal(tx.id, transaction.id)
-    assert.equal(segment.name, 'Custom/doer-of-stuff')
+    assert.equal(segment.name, 'doer-of-stuff')
     assert.equal(segment.parentId, tx.trace.root.id)
     tx.end()
     end()

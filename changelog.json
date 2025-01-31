@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.11.3",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed transaction-shim to properly create new transactions when the existing transaction is not active",
+          "Fixed issue with `bluebird` and `when` instrumentation where checking active context crashed when transaction prematurely ends"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "12.11.2",
       "changes": {
         "security": [],
