@@ -1,3 +1,22 @@
+### v12.11.3 (2025-01-29)
+
+#### Bug fixes
+
+* Fixed issue with `bluebird` and `when` instrumentation where checking active context crashed when transaction prematurely ends ([#2909](https://github.com/newrelic/node-newrelic/pull/2909)) ([4a30d5c](https://github.com/newrelic/node-newrelic/commit/4a30d5c5082e963cca3664f2ed152017f6360d21))
+* Fixed transaction-shim to properly create new transactions when the existing transaction is not active ([#2912](https://github.com/newrelic/node-newrelic/pull/2912)) ([3ad8c59](https://github.com/newrelic/node-newrelic/commit/3ad8c59e15e037a366ddf6803729b61ecfa701f3))
+
+#### Documentation
+
+* Updated compatibility report ([#2902](https://github.com/newrelic/node-newrelic/pull/2902)) ([cb16516](https://github.com/newrelic/node-newrelic/commit/cb16516e90a3dc2cefb98e6131a7243412aefbfc))
+
+#### Miscellaneous chores
+
+* Updated lint rule suppression comment ([#2895](https://github.com/newrelic/node-newrelic/pull/2895)) ([559dc98](https://github.com/newrelic/node-newrelic/commit/559dc98e18c8ba8280b73779780f3efc1c946ed7))
+
+#### Continuous integration
+
+* Move init container release from lambda to GHA ([#2848](https://github.com/newrelic/node-newrelic/pull/2848)) ([8d8608d](https://github.com/newrelic/node-newrelic/commit/8d8608d1089cafaeb8c17354034c96fe1b49597a))
+
 ### v12.11.2 (2025-01-23)
 
 #### Features
