@@ -9,17 +9,13 @@ on:
 jobs:
   release-tags:
     runs-on: ubuntu-latest
+    if:
+      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch')
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-      - run: npm install
-      - run: |
-          git config user.name ${GITHUB_ACTOR}
-          git config user.email gh-actions-${GITHUB_ACTOR}@github.com
       - id: get_tag
         run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
       - name: Create release tags for Lambda and K8s Init Containers
