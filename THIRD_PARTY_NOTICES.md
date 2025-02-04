@@ -511,7 +511,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.2.0](https://github.com/newrelic/csec-node-agent/tree/v2.2.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.2.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.3.0](https://github.com/newrelic/csec-node-agent/tree/v2.3.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.3.0/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -2035,7 +2035,7 @@ IN THE SOFTWARE.
 
 ### require-in-the-middle
 
-This product includes source derived from [require-in-the-middle](https://github.com/elastic/require-in-the-middle) ([v7.4.0](https://github.com/elastic/require-in-the-middle/tree/v7.4.0)), distributed under the [MIT License](https://github.com/elastic/require-in-the-middle/blob/v7.4.0/LICENSE):
+This product includes source derived from [require-in-the-middle](https://github.com/elastic/require-in-the-middle) ([v7.5.0](https://github.com/elastic/require-in-the-middle/tree/v7.5.0)), distributed under the [MIT License](https://github.com/elastic/require-in-the-middle/blob/v7.5.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2065,7 +2065,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.6.3](https://github.com/npm/node-semver/tree/v7.6.3)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.6.3/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.0](https://github.com/npm/node-semver/tree/v7.7.0)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.0/LICENSE):
 
 ```
 The ISC License
@@ -2121,7 +2121,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.726.1](https://github.com/aws/aws-sdk-js-v3/tree/v3.726.1)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.726.1/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.740.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.740.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.740.0/LICENSE):
 
 ```
                                 Apache License
@@ -2330,7 +2330,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.726.1](https://github.com/aws/aws-sdk-js-v3/tree/v3.726.1)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.726.1/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.740.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.740.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.740.0/LICENSE):
 
 ```
                                 Apache License
@@ -4158,7 +4158,7 @@ SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.6.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.6.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.6.1/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.6.3](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.6.3)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.6.3/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -4190,7 +4190,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.18.0](https://github.com/eslint/eslint/tree/v9.18.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.18.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.19.0](https://github.com/eslint/eslint/tree/v9.19.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.19.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
