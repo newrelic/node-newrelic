@@ -1,3 +1,27 @@
+### v12.12.0 (2025-02-05)
+
+#### Features
+
+* Added health check support for upcoming feature ([#2841](https://github.com/newrelic/node-newrelic/pull/2841)) ([4c8bf13](https://github.com/newrelic/node-newrelic/commit/4c8bf13f124ea09fac750d7368c78a4c9cdc760e))
+* Added opentelemetry bridge instrumentation that adds a context manager, and processor to handle synthesizing segments and time slice metrics. ([#2906](https://github.com/newrelic/node-newrelic/pull/2906)) ([d2e8a9e](https://github.com/newrelic/node-newrelic/commit/d2e8a9e369d91494fdcbc14f06916a88e4801ae1))
+
+#### Bug fixes
+
+* Updated default config to accept `undefined` as default value ([#2917](https://github.com/newrelic/node-newrelic/pull/2917)) ([e049442](https://github.com/newrelic/node-newrelic/commit/e04944207956fd02ea161ab8c46ea96761160bd0))
+
+#### Documentation
+
+* Updated compatibility report ([#2914](https://github.com/newrelic/node-newrelic/pull/2914)) ([acd0c90](https://github.com/newrelic/node-newrelic/commit/acd0c904adb9a69928ed1a6513a67bb297dba8ee))
+
+#### Miscellaneous chores
+
+* Added regex note to sql obfuscator ([#2911](https://github.com/newrelic/node-newrelic/pull/2911)) ([1533111](https://github.com/newrelic/node-newrelic/commit/1533111e416c50b0c61ad086d3d86ae30f70532a))
+* **deps:** Updated @newrelic/security-agent to v2.3.0 ([#2918](https://github.com/newrelic/node-newrelic/pull/2918)) ([ed89f38](https://github.com/newrelic/node-newrelic/commit/ed89f387efe2c5c3175250684bf4987ed29d7747))
+
+#### Continuous integration
+
+* Optimized the lambda layers and k8s init containers post release workflow ([#2915](https://github.com/newrelic/node-newrelic/pull/2915)) ([4be1099](https://github.com/newrelic/node-newrelic/commit/4be10997d9059daeb626cf6ba9ebf954fb1fe500))
+
 ### v12.11.3 (2025-01-29)
 
 #### Bug fixes
