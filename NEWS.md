@@ -2,7 +2,7 @@
 
 #### Features
 
-* Added New Relic Control health check ([#2841](https://github.com/newrelic/node-newrelic/pull/2841)) ([4c8bf13](https://github.com/newrelic/node-newrelic/commit/4c8bf13f124ea09fac750d7368c78a4c9cdc760e))
+* Added health check support for upcoming feature ([#2841](https://github.com/newrelic/node-newrelic/pull/2841)) ([4c8bf13](https://github.com/newrelic/node-newrelic/commit/4c8bf13f124ea09fac750d7368c78a4c9cdc760e))
 * Added opentelemetry bridge instrumentation that adds a context manager, and processor to handle synthesizing segments and time slice metrics. ([#2906](https://github.com/newrelic/node-newrelic/pull/2906)) ([d2e8a9e](https://github.com/newrelic/node-newrelic/commit/d2e8a9e369d91494fdcbc14f06916a88e4801ae1))
 
 #### Bug fixes
