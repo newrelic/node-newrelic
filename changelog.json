@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.12.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated default config to accept `undefined` as default value"
+        ],
+        "features": [
+          "Added New Relic Control health check",
+          "Added opentelemetry bridge instrumentation that adds a context manager, and processor to handle synthesizing segments and time slice metrics."
+        ]
+      }
+    },
+    {
       "version": "12.11.3",
       "changes": {
         "security": [],
