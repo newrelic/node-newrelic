@@ -145,11 +145,10 @@ test('should create rpc segment', (t) => {
   const { synthesizer, tracer } = t.nr
   const span = createRpcServerSpan({ tracer })
   const { segment, transaction } = synthesizer.synthesize(span)
-  const expectedName = 'WebTransaction/WebFrameworkUri/grpc/TestService.findUser'
+  const expectedName = 'TestService/findUser'
   assert.equal(segment.name, expectedName)
   assert.equal(segment.parentId, segment.root.id)
   assert.ok(transaction)
-  assert.equal(transaction.name, expectedName)
   const segmentAttrs = segment.getAttributes()
   assert.equal(segmentAttrs.component, 'grpc')
   assert.equal(transaction.url, expectedName)
@@ -163,11 +162,9 @@ test('should create http server segment', (t) => {
   const { synthesizer, tracer } = t.nr
   const span = createHttpServerSpan({ tracer })
   const { segment, transaction } = synthesizer.synthesize(span)
-  const expectedName = 'WebTransaction/Nodejs/PUT//user/:id'
-  assert.equal(segment.name, expectedName)
+  assert.equal(segment.name, '/user/1')
   assert.equal(segment.parentId, segment.root.id)
   assert.ok(transaction)
-  assert.equal(transaction.name, expectedName)
   assert.equal(transaction.url, '/user/1')
   assert.equal(transaction.baseSegment.name, segment.name)
   const attrs = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
@@ -180,12 +177,15 @@ test('should create base http server segment', (t) => {
   const { synthesizer, tracer } = t.nr
   const span = createBaseHttpSpan({ tracer })
   const { segment, transaction } = synthesizer.synthesize(span)
-  const expectedName = 'WebTransaction/NormalizedUri/*'
-  assert.equal(segment.name, expectedName)
+  assert.equal(segment.name, '/Unknown')
   assert.equal(segment.parentId, segment.root.id)
-  assert.equal(transaction.baseSegment.name, segment.name)
   assert.ok(transaction)
-  assert.equal(transaction.name, expectedName)
+  assert.equal(transaction.url, '/Unknown')
+  assert.equal(transaction.baseSegment.name, segment.name)
+  const attrs = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+  assert.equal(attrs['request.uri'], '/Unknown')
+  assert.ok(!attrs['request.method'])
+  assert.ok(transaction)
 })
 
 test('should create topic producer segment', (t, end) => {
