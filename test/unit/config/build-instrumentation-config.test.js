@@ -17,4 +17,11 @@ test('should default the instrumentation stanza', () => {
   pkgNames.forEach((pkg) => {
     assert.deepEqual(pkgs[pkg], { enabled: { formatter: boolean, default: true } })
   })
+
+  assert.deepEqual(pkgs.undici, { enabled: { formatter: boolean, default: true } })
+  const coreLibraries = require('../../../lib/core-instrumentation')
+  const corePkgs = Object.keys(coreLibraries)
+  corePkgs.forEach((pkg) => {
+    assert.deepEqual(pkgs[pkg], { enabled: { formatter: boolean, default: true } })
+  })
 })
