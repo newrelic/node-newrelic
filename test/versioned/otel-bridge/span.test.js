@@ -236,8 +236,18 @@ test('http metrics are bridged correctly', (t, end) => {
     assert.equal(attrs.nr_exclusive_duration_millis, duration)
 
     const unscopedMetrics = tx.metrics.unscoped
-    assert.equal(unscopedMetrics.WebTransaction.callCount, 1)
-    assert.equal(unscopedMetrics[segment.name].callCount, 1)
+    const expectedMetrics = [
+      'HttpDispatcher',
+      'WebTransaction',
+      'WebTransactionTotalTime',
+      'WebTransactionTotalTime/null',
+      segment.name
+    ]
+    for (const expectedMetric of expectedMetrics) {
+      assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
+    }
+    assert.equal(unscopedMetrics.Apdex.apdexT, 0.1)
+    assert.equal(unscopedMetrics['Apdex/null'].apdexT, 0.1)
 
     end()
   })
