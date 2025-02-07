@@ -4,27 +4,33 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
-const helper = require('../../lib/agent_helper')
 const otel = require('@opentelemetry/api')
 const { hrTimeToMilliseconds } = require('@opentelemetry/core')
+
+const helper = require('../../lib/agent_helper')
 const { otelSynthesis } = require('../../../lib/symbols')
+
 const {
+  ATTR_DB_NAME,
+  ATTR_DB_STATEMENT,
+  ATTR_DB_SYSTEM,
+  ATTR_HTTP_HOST,
+  ATTR_HTTP_METHOD,
+  ATTR_HTTP_REQUEST_METHOD,
+  ATTR_HTTP_ROUTE,
+  ATTR_NET_PEER_NAME,
+  ATTR_NET_PEER_PORT,
+  ATTR_RPC_METHOD,
+  ATTR_RPC_SERVICE,
+  ATTR_RPC_SYSTEM,
+  ATTR_SERVER_ADDRESS,
   ATTR_URL_PATH,
   ATTR_URL_SCHEME,
-  ATTR_HTTP_REQUEST_METHOD,
-  ATTR_SERVER_ADDRESS,
-  ATTR_HTTP_ROUTE,
-  SEMATTRS_HTTP_HOST,
-  SEMATTRS_HTTP_METHOD,
-  SEMATTRS_DB_NAME,
-  SEMATTRS_DB_STATEMENT,
-  SEMATTRS_DB_SYSTEM,
-  SEMATTRS_NET_PEER_PORT,
-  SEMATTRS_NET_PEER_NAME,
-  DbSystemValues
-} = require('@opentelemetry/semantic-conventions')
+  DB_SYSTEM_VALUES
+} = require('../../../lib/otel/constants.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
@@ -99,7 +105,7 @@ test('Otel http external span test', (t, end) => {
   const { agent, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'http-external-test'
-    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes: { [SEMATTRS_HTTP_HOST]: 'newrelic.com', [SEMATTRS_HTTP_METHOD]: 'GET' } }, (span) => {
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes: { [ATTR_HTTP_HOST]: 'newrelic.com', [ATTR_HTTP_METHOD]: 'GET' } }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'External/newrelic.com')
       span.end()
@@ -121,11 +127,11 @@ test('Otel http external span test', (t, end) => {
 test('Otel db client span statement test', (t, end) => {
   const { agent, tracer } = t.nr
   const attributes = {
-    [SEMATTRS_DB_NAME]: 'test-db',
-    [SEMATTRS_DB_SYSTEM]: 'postgresql',
-    [SEMATTRS_DB_STATEMENT]: "select foo from test where foo = 'bar';",
-    [SEMATTRS_NET_PEER_PORT]: 5436,
-    [SEMATTRS_NET_PEER_NAME]: '127.0.0.1'
+    [ATTR_DB_NAME]: 'test-db',
+    [ATTR_DB_SYSTEM]: 'postgresql',
+    [ATTR_DB_STATEMENT]: "select foo from test where foo = 'bar';",
+    [ATTR_NET_PEER_PORT]: 5436,
+    [ATTR_NET_PEER_NAME]: '127.0.0.1'
   }
   const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
   helper.runInTransaction(agent, (tx) => {
@@ -166,10 +172,10 @@ test('Otel db client span statement test', (t, end) => {
 test('Otel db client span operation test', (t, end) => {
   const { agent, tracer } = t.nr
   const attributes = {
-    [SEMATTRS_DB_SYSTEM]: DbSystemValues.REDIS,
-    [SEMATTRS_DB_STATEMENT]: 'hset has random random',
-    [SEMATTRS_NET_PEER_PORT]: 5436,
-    [SEMATTRS_NET_PEER_NAME]: '127.0.0.1'
+    [ATTR_DB_SYSTEM]: DB_SYSTEM_VALUES.REDIS,
+    [ATTR_DB_STATEMENT]: 'hset has random random',
+    [ATTR_NET_PEER_PORT]: 5436,
+    [ATTR_NET_PEER_NAME]: '127.0.0.1'
   }
   const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
   helper.runInTransaction(agent, (tx) => {
@@ -239,6 +245,56 @@ test('http metrics are bridged correctly', (t, end) => {
     const expectedMetrics = [
       'HttpDispatcher',
       'WebTransaction',
+      'WebTransactionTotalTime',
+      'WebTransactionTotalTime/null',
+      segment.name
+    ]
+    for (const expectedMetric of expectedMetrics) {
+      assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
+    }
+    assert.equal(unscopedMetrics.Apdex.apdexT, 0.1)
+    assert.equal(unscopedMetrics['Apdex/null'].apdexT, 0.1)
+
+    end()
+  })
+})
+
+test('rpc server metrics are bridged correctly', (t, end) => {
+  const { agent, tracer } = t.nr
+
+  // Required span attributes for incoming HTTP server spans as defined by:
+  // https://opentelemetry.io/docs/specs/semconv/rpc/rpc-spans/#client-attributes
+  const attributes = {
+    [ATTR_RPC_SYSTEM]: 'foo',
+    [ATTR_RPC_METHOD]: 'getData',
+    [ATTR_RPC_SERVICE]: 'test.service',
+    [ATTR_SERVER_ADDRESS]: 'newrelic.com',
+    [ATTR_URL_PATH]: '/foo/bar'
+  }
+
+  tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
+    const tx = agent.getTransaction()
+    const segment = agent.tracer.getSegment()
+    assert.equal(segment.name, 'WebTransaction/WebFrameworkUri/foo/test.service.getData')
+    span.end()
+
+    const duration = hrTimeToMilliseconds(span.duration)
+    assert.equal(duration, segment.getDurationInMillis())
+    tx.end()
+
+    const attrs = segment.getAttributes()
+    assert.equal(attrs.host, 'newrelic.com')
+    assert.equal(attrs['rpc.system'], 'foo')
+    assert.equal(attrs['rpc.method'], 'getData')
+    assert.equal(attrs['rpc.service'], 'test.service')
+    assert.equal(attrs['url.path'], '/foo/bar')
+    assert.equal(attrs.nr_exclusive_duration_millis, duration)
+
+    const unscopedMetrics = tx.metrics.unscoped
+    const expectedMetrics = [
+      'HttpDispatcher',
+      'WebTransaction',
+      'WebTransaction/WebFrameworkUri/foo/test.service.getData',
       'WebTransactionTotalTime',
       'WebTransactionTotalTime/null',
       segment.name
