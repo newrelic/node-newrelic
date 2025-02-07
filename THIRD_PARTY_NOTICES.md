@@ -93,7 +93,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.12.5](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.12.5)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.12.5/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.12.6](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.12.6)), distributed under the [Apache-2.0 License](undefined):
 
 ```
                                  Apache License
@@ -511,7 +511,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.3.0](https://github.com/newrelic/csec-node-agent/tree/v2.3.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.3.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.3.1](https://github.com/newrelic/csec-node-agent/tree/v2.3.1)), distributed under the [UNKNOWN License](undefined):
 
 ```
 ## New Relic Software License v1.0
@@ -1393,7 +1393,7 @@ This product includes source derived from [@opentelemetry/sdk-trace-base](https:
 
 ### @opentelemetry/semantic-conventions
 
-This product includes source derived from [@opentelemetry/semantic-conventions](https://github.com/open-telemetry/opentelemetry-js) ([v1.28.0](https://github.com/open-telemetry/opentelemetry-js/tree/v1.28.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v1.28.0/LICENSE):
+This product includes source derived from [@opentelemetry/semantic-conventions](https://github.com/open-telemetry/opentelemetry-js) ([v1.29.0](https://github.com/open-telemetry/opentelemetry-js/tree/v1.29.0)), distributed under the [Apache-2.0 License](undefined):
 
 ```
                                  Apache License
@@ -1691,7 +1691,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.12.0](https://github.com/nodejs/import-in-the-middle/tree/v1.12.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.12.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.13.0](https://github.com/nodejs/import-in-the-middle/tree/v1.13.0)), distributed under the [Apache-2.0 License](undefined):
 
 ```
                                  Apache License
@@ -2035,13 +2035,14 @@ IN THE SOFTWARE.
 
 ### require-in-the-middle
 
-This product includes source derived from [require-in-the-middle](https://github.com/elastic/require-in-the-middle) ([v7.5.0](https://github.com/elastic/require-in-the-middle/tree/v7.5.0)), distributed under the [MIT License](https://github.com/elastic/require-in-the-middle/blob/v7.5.0/LICENSE):
+This product includes source derived from [require-in-the-middle](https://github.com/nodejs/require-in-the-middle) ([v7.5.1](https://github.com/nodejs/require-in-the-middle/tree/v7.5.1)), distributed under the [MIT License](undefined):
 
 ```
 The MIT License (MIT)
 
 Copyright (c) 2016-2019, Thomas Watson Steen
-Copyright (c) 2019-2023, Elasticsearch B.V.
+Copyright (c) 2019-2025, Elasticsearch B.V.
+Copyright (c) 2025+, require-in-the-middle contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2065,7 +2066,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.0](https://github.com/npm/node-semver/tree/v7.7.0)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.0/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.1](https://github.com/npm/node-semver/tree/v7.7.1)), distributed under the [ISC License](undefined):
 
 ```
 The ISC License
@@ -2121,7 +2122,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.740.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.740.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.740.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.743.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.743.0)), distributed under the [Apache-2.0 License](undefined):
 
 ```
                                 Apache License
@@ -2330,7 +2331,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.740.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.740.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.740.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.743.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.743.0)), distributed under the [Apache-2.0 License](undefined):
 
 ```
                                 Apache License
