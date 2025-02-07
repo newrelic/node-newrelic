@@ -10,7 +10,21 @@ const helper = require('../../lib/agent_helper')
 const otel = require('@opentelemetry/api')
 const { hrTimeToMilliseconds } = require('@opentelemetry/core')
 const { otelSynthesis } = require('../../../lib/symbols')
-const { SEMATTRS_HTTP_HOST, SEMATTRS_HTTP_METHOD, SEMATTRS_DB_NAME, SEMATTRS_DB_STATEMENT, SEMATTRS_DB_SYSTEM, SEMATTRS_NET_PEER_PORT, SEMATTRS_NET_PEER_NAME, DbSystemValues } = require('@opentelemetry/semantic-conventions')
+const {
+  ATTR_URL_PATH,
+  ATTR_URL_SCHEME,
+  ATTR_HTTP_REQUEST_METHOD,
+  ATTR_SERVER_ADDRESS,
+  ATTR_HTTP_ROUTE,
+  SEMATTRS_HTTP_HOST,
+  SEMATTRS_HTTP_METHOD,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_STATEMENT,
+  SEMATTRS_DB_SYSTEM,
+  SEMATTRS_NET_PEER_PORT,
+  SEMATTRS_NET_PEER_NAME,
+  DbSystemValues
+} = require('@opentelemetry/semantic-conventions')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
@@ -187,5 +201,44 @@ test('Otel db client span operation test', (t, end) => {
 
       end()
     })
+  })
+})
+
+test('http metrics are bridged correctly', (t, end) => {
+  const { agent, tracer } = t.nr
+
+  // Required span attributes for incoming HTTP server spans as defined by:
+  // https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-server-semantic-conventions
+  const attributes = {
+    [ATTR_URL_SCHEME]: 'http',
+    [ATTR_SERVER_ADDRESS]: 'newrelic.com',
+    [ATTR_HTTP_REQUEST_METHOD]: 'GET',
+    [ATTR_URL_PATH]: '/foo/bar',
+    [ATTR_HTTP_ROUTE]: '/foo/:param'
+  }
+
+  tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
+    const tx = agent.getTransaction()
+    const segment = agent.tracer.getSegment()
+    assert.equal(segment.name, 'WebTransaction/Nodejs/GET//foo/:param')
+    span.end()
+
+    const duration = hrTimeToMilliseconds(span.duration)
+    assert.equal(duration, segment.getDurationInMillis())
+    tx.end()
+
+    const attrs = segment.getAttributes()
+    assert.equal(attrs.host, 'newrelic.com')
+    assert.equal(attrs['http.request.method'], 'GET')
+    assert.equal(attrs['http.route'], '/foo/:param')
+    assert.equal(attrs['url.path'], '/foo/bar')
+    assert.equal(attrs['url.scheme'], 'http')
+    assert.equal(attrs.nr_exclusive_duration_millis, duration)
+
+    const unscopedMetrics = tx.metrics.unscoped
+    assert.equal(unscopedMetrics.WebTransaction.callCount, 1)
+    assert.equal(unscopedMetrics[segment.name].callCount, 1)
+
+    end()
   })
 })
