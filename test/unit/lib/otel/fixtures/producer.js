@@ -4,28 +4,30 @@
  */
 
 'use strict'
-const {
-  MessagingDestinationKindValues,
-  SEMATTRS_MESSAGING_SYSTEM,
-  SEMATTRS_MESSAGING_DESTINATION,
-  SEMATTRS_MESSAGING_DESTINATION_KIND
-} = require('@opentelemetry/semantic-conventions')
+
 const { SpanKind } = require('@opentelemetry/api')
 const createSpan = require('./span')
 
+const {
+  ATTR_MESSAGING_DESTINATION,
+  ATTR_MESSAGING_DESTINATION_KIND,
+  ATTR_MESSAGING_SYSTEM,
+  MESSAGING_SYSTEM_KIND_VALUES
+} = require('#agentlib/otel/constants.js')
+
 function createTopicProducerSpan({ parentId, tracer, tx, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.PRODUCER, parentId, tracer, tx })
-  span.setAttribute(SEMATTRS_MESSAGING_SYSTEM, 'messaging-lib')
-  span.setAttribute(SEMATTRS_MESSAGING_DESTINATION_KIND, MessagingDestinationKindValues.TOPIC)
-  span.setAttribute(SEMATTRS_MESSAGING_DESTINATION, 'test-topic')
+  span.setAttribute(ATTR_MESSAGING_SYSTEM, 'messaging-lib')
+  span.setAttribute(ATTR_MESSAGING_DESTINATION_KIND, MESSAGING_SYSTEM_KIND_VALUES.TOPIC)
+  span.setAttribute(ATTR_MESSAGING_DESTINATION, 'test-topic')
   return span
 }
 
 function createQueueProducerSpan({ parentId, tracer, tx, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.PRODUCER, parentId, tracer, tx })
-  span.setAttribute(SEMATTRS_MESSAGING_SYSTEM, 'messaging-lib')
-  span.setAttribute(SEMATTRS_MESSAGING_DESTINATION_KIND, MessagingDestinationKindValues.QUEUE)
-  span.setAttribute(SEMATTRS_MESSAGING_DESTINATION, 'test-queue')
+  span.setAttribute(ATTR_MESSAGING_SYSTEM, 'messaging-lib')
+  span.setAttribute(ATTR_MESSAGING_DESTINATION_KIND, MESSAGING_SYSTEM_KIND_VALUES.QUEUE)
+  span.setAttribute(ATTR_MESSAGING_DESTINATION, 'test-queue')
   return span
 }
 
