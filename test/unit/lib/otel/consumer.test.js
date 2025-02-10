@@ -13,10 +13,10 @@ const assert = require('node:assert')
 const { BasicTracerProvider } = require('@opentelemetry/sdk-trace-base')
 const { SpanKind } = require('@opentelemetry/api')
 const {
-  SEMATTRS_MESSAGING_SYSTEM,
-  SEMATTRS_MESSAGING_DESTINATION,
-  SEMATTRS_MESSAGING_DESTINATION_KIND
-} = require('@opentelemetry/semantic-conventions')
+  ATTR_MESSAGING_DESTINATION,
+  ATTR_MESSAGING_DESTINATION_KIND,
+  ATTR_MESSAGING_SYSTEM,
+} = require('#agentlib/otel/constants.js')
 
 const { DESTINATIONS } = require('../../../../lib/transaction')
 const helper = require('../../../lib/agent_helper')
@@ -51,9 +51,9 @@ test('should create consumer segment from otel span', (t) => {
   const { synth, tracer } = t.nr
   const span = createSpan({ tracer, kind: SpanKind.CONSUMER })
   span.setAttribute('messaging.operation', 'receive')
-  span.setAttribute(SEMATTRS_MESSAGING_SYSTEM, 'msgqueuer')
-  span.setAttribute(SEMATTRS_MESSAGING_DESTINATION, 'dest1')
-  span.setAttribute(SEMATTRS_MESSAGING_DESTINATION_KIND, 'topic1')
+  span.setAttribute(ATTR_MESSAGING_SYSTEM, 'msgqueuer')
+  span.setAttribute(ATTR_MESSAGING_DESTINATION, 'dest1')
+  span.setAttribute(ATTR_MESSAGING_DESTINATION_KIND, 'topic1')
 
   const expectedName = 'OtherTransaction/Message/msgqueuer/topic1/Named/dest1'
   const { segment, transaction } = synth.synthesize(span)

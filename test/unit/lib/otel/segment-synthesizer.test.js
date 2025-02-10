@@ -25,7 +25,7 @@ const {
   createTopicProducerSpan,
   createQueueProducerSpan
 } = require('./fixtures')
-const { SEMATTRS_DB_SYSTEM } = require('@opentelemetry/semantic-conventions')
+const { ATTR_DB_SYSTEM } = require('#agentlib/otel/constants.js')
 const { SpanKind } = require('@opentelemetry/api')
 const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 
@@ -130,7 +130,7 @@ test('should log table and operation as unknown when the db.system, db.sql.table
   const { agent, synthesizer, parentId, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
     const span = createSpan({ name: 'test-span', kind: SpanKind.CLIENT, parentId, tx, tracer })
-    span.setAttribute(SEMATTRS_DB_SYSTEM, 'test-db')
+    span.setAttribute(ATTR_DB_SYSTEM, 'test-db')
 
     const { segment, transaction } = synthesizer.synthesize(span)
     assert.equal(tx.id, transaction.id)
