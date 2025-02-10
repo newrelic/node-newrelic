@@ -245,6 +245,7 @@ test('http metrics are bridged correctly', (t, end) => {
     const expectedMetrics = [
       'HttpDispatcher',
       'WebTransaction',
+      'WebTransaction/Nodejs/GET//foo/:param',
       'WebTransactionTotalTime',
       'WebTransactionTotalTime/null',
       segment.name
@@ -295,6 +296,50 @@ test('rpc server metrics are bridged correctly', (t, end) => {
       'HttpDispatcher',
       'WebTransaction',
       'WebTransaction/WebFrameworkUri/foo/test.service.getData',
+      'WebTransactionTotalTime',
+      'WebTransactionTotalTime/null',
+      segment.name
+    ]
+    for (const expectedMetric of expectedMetrics) {
+      assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
+    }
+    assert.equal(unscopedMetrics.Apdex.apdexT, 0.1)
+    assert.equal(unscopedMetrics['Apdex/null'].apdexT, 0.1)
+
+    end()
+  })
+})
+
+test('fallback metrics are bridged correctly', (t, end) => {
+  const { agent, tracer } = t.nr
+
+  const attributes = {
+    [ATTR_URL_SCHEME]: 'gopher',
+    [ATTR_SERVER_ADDRESS]: 'newrelic.com',
+    [ATTR_URL_PATH]: '/foo/bar',
+  }
+
+  tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
+    const tx = agent.getTransaction()
+    const segment = agent.tracer.getSegment()
+    assert.equal(segment.name, 'WebTransaction/NormalizedUri/*')
+    span.end()
+
+    const duration = hrTimeToMilliseconds(span.duration)
+    assert.equal(duration, segment.getDurationInMillis())
+    tx.end()
+
+    const attrs = segment.getAttributes()
+    assert.equal(attrs.host, 'newrelic.com')
+    assert.equal(attrs['url.path'], '/foo/bar')
+    assert.equal(attrs['url.scheme'], 'gopher')
+    assert.equal(attrs.nr_exclusive_duration_millis, duration)
+
+    const unscopedMetrics = tx.metrics.unscoped
+    const expectedMetrics = [
+      'HttpDispatcher',
+      'WebTransaction',
+      'WebTransaction/NormalizedUri/*',
       'WebTransactionTotalTime',
       'WebTransactionTotalTime/null',
       segment.name
