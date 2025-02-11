@@ -17,10 +17,13 @@ const {
   ATTR_DB_NAME,
   ATTR_DB_STATEMENT,
   ATTR_DB_SYSTEM,
+  ATTR_GRPC_STATUS_CODE,
   ATTR_HTTP_HOST,
   ATTR_HTTP_METHOD,
-  ATTR_HTTP_REQUEST_METHOD,
+  ATTR_HTTP_URL,
   ATTR_HTTP_ROUTE,
+  ATTR_HTTP_STATUS_CODE,
+  ATTR_HTTP_STATUS_TEXT,
   ATTR_MESSAGING_DESTINATION,
   ATTR_MESSAGING_DESTINATION_KIND,
   ATTR_MESSAGING_SYSTEM,
@@ -30,6 +33,7 @@ const {
   ATTR_RPC_SERVICE,
   ATTR_RPC_SYSTEM,
   ATTR_SERVER_ADDRESS,
+  ATTR_SERVER_PORT,
   ATTR_URL_PATH,
   ATTR_URL_SCHEME,
   DB_SYSTEM_VALUES,
@@ -220,45 +224,49 @@ test('http metrics are bridged correctly', (t, end) => {
   // Required span attributes for incoming HTTP server spans as defined by:
   // https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-server-semantic-conventions
   const attributes = {
+    [ATTR_HTTP_URL]: 'http://newrelic.com/foo/bar',
     [ATTR_URL_SCHEME]: 'http',
     [ATTR_SERVER_ADDRESS]: 'newrelic.com',
-    [ATTR_HTTP_REQUEST_METHOD]: 'GET',
+    [ATTR_SERVER_PORT]: 80,
+    [ATTR_HTTP_METHOD]: 'GET',
     [ATTR_URL_PATH]: '/foo/bar',
     [ATTR_HTTP_ROUTE]: '/foo/:param'
   }
 
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
     const tx = agent.getTransaction()
-    const segment = agent.tracer.getSegment()
-    assert.equal(segment.name, 'WebTransaction/Nodejs/GET//foo/:param')
+    span.setAttribute(ATTR_HTTP_STATUS_CODE, 200)
+    span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
     span.end()
+    const segment = agent.tracer.getSegment()
+    assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//GET/foo/:param')
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
-    tx.end()
 
     const attrs = segment.getAttributes()
     assert.equal(attrs.host, 'newrelic.com')
-    assert.equal(attrs['http.request.method'], 'GET')
+    assert.equal(attrs.port, 80)
+    assert.equal(attrs['request.method'], 'GET')
     assert.equal(attrs['http.route'], '/foo/:param')
     assert.equal(attrs['url.path'], '/foo/bar')
     assert.equal(attrs['url.scheme'], 'http')
-    assert.equal(attrs.nr_exclusive_duration_millis, duration)
+    assert.equal(attrs['http.statusCode'], 200)
+    assert.equal(attrs['http.statusText'], 'OK')
 
     const unscopedMetrics = tx.metrics.unscoped
     const expectedMetrics = [
       'HttpDispatcher',
       'WebTransaction',
-      'WebTransaction/Nodejs/GET//foo/:param',
       'WebTransactionTotalTime',
-      'WebTransactionTotalTime/null',
+      'WebTransactionTotalTime/WebFrameworkUri//GET/foo/:param',
       segment.name
     ]
     for (const expectedMetric of expectedMetrics) {
       assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
     }
     assert.equal(unscopedMetrics.Apdex.apdexT, 0.1)
-    assert.equal(unscopedMetrics['Apdex/null'].apdexT, 0.1)
+    assert.equal(unscopedMetrics['Apdex/WebFrameworkUri//GET/foo/:param'].apdexT, 0.1)
 
     end()
   })
@@ -278,37 +286,39 @@ test('rpc server metrics are bridged correctly', (t, end) => {
   }
 
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
+    span.setAttribute(ATTR_GRPC_STATUS_CODE, 0)
     const tx = agent.getTransaction()
-    const segment = agent.tracer.getSegment()
-    assert.equal(segment.name, 'WebTransaction/WebFrameworkUri/foo/test.service.getData')
     span.end()
+    const segment = agent.tracer.getSegment()
+    assert.equal(segment.name, 'WebTransaction/WebFrameworkUri/foo/test.service/getData')
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
-    tx.end()
 
     const attrs = segment.getAttributes()
-    assert.equal(attrs.host, 'newrelic.com')
+    assert.equal(attrs['server.address'], 'newrelic.com')
     assert.equal(attrs['rpc.system'], 'foo')
+    assert.equal(attrs.component, 'foo')
     assert.equal(attrs['rpc.method'], 'getData')
     assert.equal(attrs['rpc.service'], 'test.service')
     assert.equal(attrs['url.path'], '/foo/bar')
-    assert.equal(attrs.nr_exclusive_duration_millis, duration)
+    assert.equal(attrs['request.method'], 'getData')
+    assert.equal(attrs['request.uri'], 'test.service/getData')
+    assert.equal(attrs['response.status'], 0)
 
     const unscopedMetrics = tx.metrics.unscoped
     const expectedMetrics = [
       'HttpDispatcher',
       'WebTransaction',
-      'WebTransaction/WebFrameworkUri/foo/test.service.getData',
       'WebTransactionTotalTime',
-      'WebTransactionTotalTime/null',
+      'WebTransactionTotalTime/WebFrameworkUri/foo/test.service/getData',
       segment.name
     ]
     for (const expectedMetric of expectedMetrics) {
       assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
     }
     assert.equal(unscopedMetrics.Apdex.apdexT, 0.1)
-    assert.equal(unscopedMetrics['Apdex/null'].apdexT, 0.1)
+    assert.equal(unscopedMetrics['Apdex/WebFrameworkUri/foo/test.service/getData'].apdexT, 0.1)
 
     end()
   })
@@ -319,22 +329,24 @@ test('fallback metrics are bridged correctly', (t, end) => {
 
   const attributes = {
     [ATTR_URL_SCHEME]: 'gopher',
-    [ATTR_SERVER_ADDRESS]: 'newrelic.com',
+    [ATTR_SERVER_ADDRESS]: '127.0.0.1',
+    [ATTR_SERVER_PORT]: 3000,
     [ATTR_URL_PATH]: '/foo/bar',
   }
 
+  const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
     const tx = agent.getTransaction()
-    const segment = agent.tracer.getSegment()
-    assert.equal(segment.name, 'WebTransaction/NormalizedUri/*')
     span.end()
+    const segment = agent.tracer.getSegment()
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
-    tx.end()
+    assert.equal(segment.name, 'WebTransaction/NormalizedUri/*')
 
     const attrs = segment.getAttributes()
-    assert.equal(attrs.host, 'newrelic.com')
+    assert.equal(attrs.host, expectedHost)
+    assert.equal(attrs.port, 3000)
     assert.equal(attrs['url.path'], '/foo/bar')
     assert.equal(attrs['url.scheme'], 'gopher')
     assert.equal(attrs.nr_exclusive_duration_millis, duration)
@@ -343,16 +355,15 @@ test('fallback metrics are bridged correctly', (t, end) => {
     const expectedMetrics = [
       'HttpDispatcher',
       'WebTransaction',
-      'WebTransaction/NormalizedUri/*',
       'WebTransactionTotalTime',
-      'WebTransactionTotalTime/null',
+      'WebTransactionTotalTime/NormalizedUri/*',
       segment.name
     ]
     for (const expectedMetric of expectedMetrics) {
       assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
     }
     assert.equal(unscopedMetrics.Apdex.apdexT, 0.1)
-    assert.equal(unscopedMetrics['Apdex/null'].apdexT, 0.1)
+    assert.equal(unscopedMetrics['Apdex/NormalizedUri/*'].apdexT, 0.1)
 
     end()
   })
