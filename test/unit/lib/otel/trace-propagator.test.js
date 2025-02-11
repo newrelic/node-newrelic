@@ -6,9 +6,9 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
-const helper = require('../../../lib/agent_helper')
+const helper = require('#testlib/agent_helper.js')
 const otel = require('@opentelemetry/api')
-const NewRelicTracePropagator = require('../../../../lib/otel/trace-propagator')
+const NewRelicTracePropagator = require('#agentlib/otel/trace-propagator.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({

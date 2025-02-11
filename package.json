@@ -196,6 +196,7 @@
   },
   "imports": {
     "#agentlib/*.js": "./lib/*.js",
+    "#testlib/*.js": "./test/lib/*.js",
     "#test/assert": "./test/lib/custom-assertions/index.js"
   },
   "dependencies": {
