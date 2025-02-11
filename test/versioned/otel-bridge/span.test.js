@@ -366,8 +366,8 @@ test('Otel producer span test', (t, end) => {
     [ATTR_MESSAGING_DESTINATION]: 'test-queue'
   }
   helper.runInTransaction(agent, (tx) => {
-    tx.name = 'db-test'
-    tracer.startActiveSpan('db-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
+    tx.name = 'prod-test'
+    tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'MessageBroker/messaging-lib/queue/Produce/Named/test-queue')
       span.end()
