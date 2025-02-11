@@ -60,7 +60,7 @@ test('should create consumer segment from otel span', (t) => {
   assert.equal(segment.name, expectedName)
   assert.equal(segment.parentId, segment.root.id)
   assert.equal(transaction.name, expectedName)
-  assert.equal(transaction.type, 'bg')
+  assert.equal(transaction.type, 'message')
   assert.equal(transaction.baseSegment, segment)
   assert.equal(
     transaction.trace.attributes.get(DESTINATIONS.TRANS_SCOPE)['message.queueName'],
