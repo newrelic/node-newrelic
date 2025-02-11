@@ -21,6 +21,9 @@ const {
   ATTR_HTTP_METHOD,
   ATTR_HTTP_REQUEST_METHOD,
   ATTR_HTTP_ROUTE,
+  ATTR_MESSAGING_DESTINATION,
+  ATTR_MESSAGING_DESTINATION_KIND,
+  ATTR_MESSAGING_SYSTEM,
   ATTR_NET_PEER_NAME,
   ATTR_NET_PEER_PORT,
   ATTR_RPC_METHOD,
@@ -29,7 +32,8 @@ const {
   ATTR_SERVER_ADDRESS,
   ATTR_URL_PATH,
   ATTR_URL_SCHEME,
-  DB_SYSTEM_VALUES
+  DB_SYSTEM_VALUES,
+  MESSAGING_SYSTEM_KIND_VALUES
 } = require('../../../lib/otel/constants.js')
 
 test.beforeEach((ctx) => {
@@ -351,5 +355,31 @@ test('fallback metrics are bridged correctly', (t, end) => {
     assert.equal(unscopedMetrics['Apdex/null'].apdexT, 0.1)
 
     end()
+  })
+})
+
+test('Otel producer span test', (t, end) => {
+  const { agent, tracer } = t.nr
+  const attributes = {
+    [ATTR_MESSAGING_SYSTEM]: 'messaging-lib',
+    [ATTR_MESSAGING_DESTINATION_KIND]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
+    [ATTR_MESSAGING_DESTINATION]: 'test-queue'
+  }
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'prod-test'
+    tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
+      const segment = agent.tracer.getSegment()
+      assert.equal(segment.name, 'MessageBroker/messaging-lib/queue/Produce/Named/test-queue')
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+      const metrics = tx.metrics.scoped[tx.name]
+      assert.equal(metrics['MessageBroker/messaging-lib/queue/Produce/Named/test-queue'].callCount, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+      assert.equal(unscopedMetrics['MessageBroker/messaging-lib/queue/Produce/Named/test-queue'].callCount, 1)
+
+      end()
+    })
   })
 })
