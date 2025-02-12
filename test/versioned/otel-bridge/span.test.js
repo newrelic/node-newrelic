@@ -385,7 +385,7 @@ test('Otel producer span test', (t, end) => {
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'prod-test'
 
-    const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
+    const expectedHost = agent.config.getHostnameSafe('localhost')
     tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'MessageBroker/messaging-lib/queue/Produce/Named/test-queue')
