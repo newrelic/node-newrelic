@@ -24,8 +24,10 @@ const {
   ATTR_HTTP_ROUTE,
   ATTR_HTTP_STATUS_CODE,
   ATTR_HTTP_STATUS_TEXT,
+  ATTR_MESSAGING_MESSAGE_CONVERSATION_ID,
   ATTR_MESSAGING_DESTINATION,
   ATTR_MESSAGING_DESTINATION_KIND,
+  ATTR_MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY,
   ATTR_MESSAGING_SYSTEM,
   ATTR_NET_PEER_NAME,
   ATTR_NET_PEER_PORT,
@@ -374,10 +376,16 @@ test('Otel producer span test', (t, end) => {
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'messaging-lib',
     [ATTR_MESSAGING_DESTINATION_KIND]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
-    [ATTR_MESSAGING_DESTINATION]: 'test-queue'
+    [ATTR_MESSAGING_DESTINATION]: 'test-queue',
+    [ATTR_SERVER_ADDRESS]: 'localhost',
+    [ATTR_SERVER_PORT]: 5672,
+    [ATTR_MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY]: 'myKey',
+    [ATTR_MESSAGING_MESSAGE_CONVERSATION_ID]: 'MyConversationId'
   }
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'prod-test'
+
+    const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
     tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'MessageBroker/messaging-lib/queue/Produce/Named/test-queue')
@@ -390,33 +398,14 @@ test('Otel producer span test', (t, end) => {
       const unscopedMetrics = tx.metrics.unscoped
       assert.equal(unscopedMetrics['MessageBroker/messaging-lib/queue/Produce/Named/test-queue'].callCount, 1)
 
-      end()
-    })
-  })
-})
-
-test('Otel producer span attributes test', (t, end) => {
-  const { agent, tracer } = t.nr
-  const attributes = {
-    [ATTR_MESSAGING_SYSTEM]: 'rabbit-mq',
-    [ATTR_MESSAGING_DESTINATION_KIND]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
-    [ATTR_MESSAGING_DESTINATION]: 'test-queue',
-    [ATTR_SERVER_ADDRESS]: 'localhost',
-    [ATTR_SERVER_PORT]: 5672
-  }
-  helper.runInTransaction(agent, (tx) => {
-    tx.name = 'prod-test'
-    const expectedHost = agent.config.getHostnameSafe('localhost')
-    tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
-      const segment = agent.tracer.getSegment()
-      assert.equal(segment.name, 'MessageBroker/rabbit-mq/queue/Produce/Named/test-queue')
-      span.end()
-      const duration = hrTimeToMilliseconds(span.duration)
-      assert.equal(duration, segment.getDurationInMillis())
-      tx.end()
       const attrs = segment.getAttributes()
       assert.equal(attrs.host, expectedHost)
       assert.equal(attrs.port, 5672)
+      assert.equal(attrs.correlation_id, 'MyConversationId')
+      assert.equal(attrs.routing_key, 'myKey')
+      assert.equal(attrs[ATTR_MESSAGING_SYSTEM], 'messaging-lib')
+      assert.equal(attrs[ATTR_MESSAGING_DESTINATION], 'test-queue')
+      assert.equal(attrs[ATTR_MESSAGING_DESTINATION_KIND], MESSAGING_SYSTEM_KIND_VALUES.QUEUE)
       end()
     })
   })
