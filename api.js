@@ -1542,7 +1542,7 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
 
   const segment = this.agent.tracer.getSegment()
   const transaction = this.agent.tracer.getTransaction()
-  if (!(segment || transaction)) {
+  if (!segment || !transaction) {
     logger.debug('No transaction found when calling API#getTraceMetadata')
   } else if (!this.agent.config.distributed_tracing.enabled) {
     logger.debug('Distributed tracing disabled when calling API#getTraceMetadata')
