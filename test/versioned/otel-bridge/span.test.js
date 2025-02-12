@@ -394,3 +394,30 @@ test('Otel producer span test', (t, end) => {
     })
   })
 })
+
+test('Otel producer span attributes test', (t, end) => {
+  const { agent, tracer } = t.nr
+  const attributes = {
+    [ATTR_MESSAGING_SYSTEM]: 'rabbit-mq',
+    [ATTR_MESSAGING_DESTINATION_KIND]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
+    [ATTR_MESSAGING_DESTINATION]: 'test-queue',
+    [ATTR_SERVER_ADDRESS]: 'localhost',
+    [ATTR_SERVER_PORT]: 5672
+  }
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'prod-test'
+    const expectedHost = agent.config.getHostnameSafe('localhost')
+    tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
+      const segment = agent.tracer.getSegment()
+      assert.equal(segment.name, 'MessageBroker/rabbit-mq/queue/Produce/Named/test-queue')
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+      const attrs = segment.getAttributes()
+      assert.equal(attrs.host, expectedHost)
+      assert.equal(attrs.port, 5672)
+      end()
+    })
+  })
+})
