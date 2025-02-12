@@ -71,4 +71,22 @@ test('Agent API - trace metadata', async (t) => {
       end()
     })
   })
+
+  await t.test('should not include transaction when not in active transaction', (t) => {
+    const { api } = t.nr
+    const metadata = api.getTraceMetadata()
+    assert.deepEqual(metadata, {})
+  })
+
+  await t.test('should not include spanId when in active active transaction but not active segment', (t, end) => {
+    const { api, agent } = t.nr
+
+    helper.runInTransaction(agent, function (txn) {
+      agent.tracer.setSegment({ segment: null })
+      const metadata = api.getTraceMetadata()
+      assert.equal(metadata.traceId, txn.traceId)
+      assert.ok(!metadata.spanId)
+      end()
+    })
+  })
 })
