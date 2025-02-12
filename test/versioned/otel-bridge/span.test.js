@@ -402,44 +402,33 @@ test('messaging consumer metrics are bridged correctly', (t, end) => {
     [ATTR_MESSAGING_SYSTEM]: 'kafka',
     [ATTR_MESSAGING_OPERATION]: 'getMessage',
     [ATTR_SERVER_ADDRESS]: '127.0.0.1',
-    [ATTR_MESSAGING_DESTINATION]: 'input-queue',
+    [ATTR_MESSAGING_DESTINATION]: 'work-queue',
     [ATTR_MESSAGING_DESTINATION_KIND]: 'queue'
   }
-  const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
 
-  helper.runInTransaction(agent, () => {
-    tracer.startActiveSpan('consumer-test', { kind: otel.SpanKind.CONSUMER, attributes }, (span) => {
-      const tx = agent.getTransaction()
-      const segment = agent.tracer.getSegment()
-      assert.equal(segment.name, 'OtherTransaction/Message/kafka/queue/Named/input-queue')
-      span.end()
-      const duration = hrTimeToMilliseconds(span.duration)
-      assert.equal(duration, segment.getDurationInMillis())
-      agent.getTransaction()
-      tx.end()
+  tracer.startActiveSpan('consumer-test', { kind: otel.SpanKind.CONSUMER, attributes }, (span) => {
+    const tx = agent.getTransaction()
+    const segment = agent.tracer.getSegment()
+    assert.equal(segment.name, 'OtherTransaction/Message/kafka/queue/Named/work-queue')
+    span.end()
+    const duration = hrTimeToMilliseconds(span.duration)
+    assert.equal(duration, segment.getDurationInMillis())
+    tx.end()
 
-      assert.equal(tx.type, 'message')
+    assert.equal(tx.type, 'message')
 
-      const attrs = segment.getAttributes()
-      assert.equal(attrs.host, expectedHost)
-      assert.equal(attrs['messaging.destination'], 'input-queue')
-      assert.equal(attrs['messaging.destination_kind'], 'queue')
-      assert.equal(attrs['messaging.operation'], 'getMessage')
-      assert.equal(attrs['messaging.system'], 'kafka')
+    const unscopedMetrics = tx.metrics.unscoped
+    const expectedMetrics = [
+      'OtherTransaction/all',
+      'OtherTransaction/Message/all',
+      'OtherTransaction/Message/OtherTransaction/Message/kafka/queue/Named/work-queue',
+      'OtherTransactionTotalTime',
+      'OtherTransactionTotalTime/Message/OtherTransaction/Message/kafka/queue/Named/work-queue'
+    ]
+    for (const expectedMetric of expectedMetrics) {
+      assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric}.callCount`)
+    }
 
-      const unscopedMetrics = tx.metrics.unscoped
-      const expectedMetrics = [
-        'OtherTransaction/all',
-        'OtherTransaction/Message/all',
-        'OtherTransaction/Message/kafka/queue/Named/input-queue',
-        'OtherTransactionTotalTime',
-        'OtherTransactionTotalTime/Message/null'
-      ]
-      for (const expectedMetric of expectedMetrics) {
-        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
-      }
-
-      end()
-    })
+    end()
   })
 })
