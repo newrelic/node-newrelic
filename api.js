@@ -1537,18 +1537,24 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
     NAMES.SUPPORTABILITY.API + '/getTraceMetadata'
   )
   metric.incrementCallCount()
-
   const metadata = {}
 
-  const segment = this.agent.tracer.getSegment()
+  if (this.agent.config.distributed_tracing.enabled === false) {
+    return metadata
+  }
+
   const transaction = this.agent.tracer.getTransaction()
-  if (!(segment || transaction)) {
+  if (!transaction) {
     logger.debug('No transaction found when calling API#getTraceMetadata')
-  } else if (!this.agent.config.distributed_tracing.enabled) {
-    logger.debug('Distributed tracing disabled when calling API#getTraceMetadata')
   } else {
     metadata.traceId = transaction.traceId
+  }
 
+  const segment = this.agent.tracer.getSegment()
+
+  if (!segment) {
+    logger.debug('No segment found when calling API#getTraceMetadata')
+  } else {
     const spanId = segment.getSpanId()
     if (spanId) {
       metadata.spanId = spanId
