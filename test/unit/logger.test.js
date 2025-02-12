@@ -9,16 +9,35 @@ const test = require('node:test')
 const assert = require('node:assert')
 const path = require('node:path')
 const cp = require('node:child_process')
+const { Transform } = require('stream')
 
 const tempRemoveListeners = require('../lib/temp-remove-listeners')
+function expectEntry(entry, msg, level, component) {
+  assert.equal(entry.hostname, 'my-host')
+  assert.equal(entry.name, 'test-logger')
+  assert.equal(entry.pid, process.pid)
+  assert.equal(entry.v, 0)
+  assert.equal(entry.level, level)
+  assert.equal(entry.msg, msg)
+  if (component) {
+    assert.equal(entry.component, component)
+  }
+}
 
 const Logger = require('../../lib/util/logger')
+function addResult(ctx, data, encoding, done) {
+  ctx.nr.results = ctx.nr.results.concat(
+    data.toString().split('\n').filter(Boolean).map(JSON.parse)
+  )
+  done()
+}
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.logger = new Logger({
     name: 'newrelic',
     level: 'trace',
+    hostname: 'my-host',
     enabled: true,
     configured: true
   })
@@ -87,6 +106,41 @@ test('should flush logs when configured', (t) => {
   })
 
   assert.ok(logger.logQueue.length === 0, 'should have 0 logs in the queue')
+})
+
+test('should properly format logs and child logs when flushing', (t, end) => {
+  const { logger } = t.nr
+  t.nr.results = []
+  logger.pipe(new Transform({
+    transform: addResult.bind(this, t)
+  }))
+  logger.options.configured = false
+  const child = logger.child({ component: 'test-child' })
+  logger.trace('trace')
+  logger.info('%d: %s', 1, 'a')
+  logger.info('123', '4', '5')
+  child.info('child-info')
+  const e = new Error()
+  e.name = 'Testing'
+  e.message = 'Test message'
+  child.trace(e, 'Test error')
+  logger.configure({
+    level: 'trace',
+    enabled: true,
+    name: 'test-logger'
+  })
+  child.error('Test error %d %s', 1, 'sub')
+  process.nextTick(() => {
+    const { results } = t.nr
+    assert.equal(results.length, 6)
+    expectEntry(results[0], '{"name":"Testing","message":"Test message"} Test error', 10, 'test-child')
+    expectEntry(results[1], 'child-info', 30, 'test-child')
+    expectEntry(results[2], '123 4 5', 30)
+    expectEntry(results[3], '1: a', 30)
+    expectEntry(results[4], 'trace', 10)
+    expectEntry(results[5], 'Test error 1 sub', 50)
+    end()
+  })
 })
 
 test('should fallback to default logging config when config is invalid', (t, end) => {
