@@ -9,11 +9,11 @@
           "Fixed `api.getTraceMetadata` to handle when there is an active transaction but not active segment"
         ],
         "features": [
-          "Propagate agent root context when opentelemetry `ROOT_CONTEXT` is passed in to trace propagator. Added logic to handle properly naming and ending transactions for server spans.",
-          "Added producer timeslice metrics from otel",
-          "Added http timeslice metrics from otel",
-          "Provided ability to disable instrumentation for core Node.js libraries",
-          "Added timeslice metrics recorders for synthesized db segments"
+          "Propagate agent root context when opentelemetry `ROOT_CONTEXT` is passed in to trace propagator.", 
+          "Added timeslice metrics for synthesized producer segments",
+          "Added timeslice metrics for synthesized server segments",
+          "Added timeslice metrics for synthesized database segments",
+          "Provided ability to disable instrumentation for core Node.js libraries"
         ]
       }
     },

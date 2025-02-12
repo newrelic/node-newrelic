@@ -2,10 +2,11 @@
 
 #### Features
 
-* Added http timeslice metrics from otel ([#2924](https://github.com/newrelic/node-newrelic/pull/2924)) ([f404585](https://github.com/newrelic/node-newrelic/commit/f4045855a1cdbfb74e3217daf8bfa125aa6fe2e4))
-* Added producer timeslice metrics from otel ([#2939](https://github.com/newrelic/node-newrelic/pull/2939)) ([6832637](https://github.com/newrelic/node-newrelic/commit/68326377dcd23b574abae7c323ff93bc05c525ed))
-* Added timeslice metrics recorders for synthesized db segments ([#2922](https://github.com/newrelic/node-newrelic/pull/2922)) ([8606f78](https://github.com/newrelic/node-newrelic/commit/8606f789772b7651d0c46ad50dad3a1da74e5e9c))
-* Propagate agent root context when opentelemetry `ROOT_CONTEXT` is passed in to trace propagator. Added logic to handle properly naming and ending transactions for server spans. ([#2940](https://github.com/newrelic/node-newrelic/pull/2940)) ([b85111c](https://github.com/newrelic/node-newrelic/commit/b85111c46797dfbf399faf973e7a3e0ea6bbdc28))
+* Added timeslice metrics for synthesized server segments ([#2924](https://github.com/newrelic/node-newrelic/pull/2924)) ([f404585](https://github.com/newrelic/node-newrelic/commit/f4045855a1cdbfb74e3217daf8bfa125aa6fe2e4))
+* Added timeslice metrics for synthesized producer segments ([#2939](https://github.com/newrelic/node-newrelic/pull/2939)) ([6832637](https://github.com/newrelic/node-newrelic/commit/68326377dcd23b574abae7c323ff93bc05c525ed))
+* Added timeslice metrics for synthesized database segments ([#2922](https://github.com/newrelic/node-newrelic/pull/2922)) ([8606f78](https://github.com/newrelic/node-newrelic/commit/8606f789772b7651d0c46ad50dad3a1da74e5e9c))
+* Propagate agent root context when opentelemetry `ROOT_CONTEXT` is passed in to trace propagator.([#2940](https://github.com/newrelic/node-newrelic/pull/2940)) ([b85111c](https://github.com/newrelic/node-newrelic/commit/b85111c46797dfbf399faf973e7a3e0ea6bbdc28)) 
+  * Added logic to handle properly naming and ending transactions for server spans. 
 * Provided ability to disable instrumentation for core Node.js libraries ([#2927](https://github.com/newrelic/node-newrelic/pull/2927)) ([2d232f1](https://github.com/newrelic/node-newrelic/commit/2d232f16c167e5f84b7b7898a6c5410d9cece55e))
 
 #### Bug fixes
@@ -15,7 +16,6 @@
 #### Documentation
 
 * Updated compatibility report ([#2920](https://github.com/newrelic/node-newrelic/pull/2920)) ([c7ae8be](https://github.com/newrelic/node-newrelic/commit/c7ae8befafa4c91fab6804cd95e20f5a93546ea4))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 
 #### Miscellaneous chores
 
