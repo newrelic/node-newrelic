@@ -20,14 +20,15 @@ const {
   ATTR_GRPC_STATUS_CODE,
   ATTR_HTTP_HOST,
   ATTR_HTTP_METHOD,
-  ATTR_HTTP_URL,
   ATTR_HTTP_ROUTE,
   ATTR_HTTP_STATUS_CODE,
   ATTR_HTTP_STATUS_TEXT,
-  ATTR_MESSAGING_MESSAGE_CONVERSATION_ID,
+  ATTR_HTTP_URL,
   ATTR_MESSAGING_DESTINATION,
   ATTR_MESSAGING_DESTINATION_KIND,
-  ATTR_MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY,
+  ATTR_MESSAGING_MESSAGE_CONVERSATION_ID,
+  ATTR_MESSAGING_OPERATION,
+ ATTR_MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY,
   ATTR_MESSAGING_SYSTEM,
   ATTR_NET_PEER_NAME,
   ATTR_NET_PEER_PORT,
@@ -408,5 +409,41 @@ test('Otel producer span test', (t, end) => {
       assert.equal(attrs[ATTR_MESSAGING_DESTINATION_KIND], MESSAGING_SYSTEM_KIND_VALUES.QUEUE)
       end()
     })
+  })
+})
+
+test('messaging consumer metrics are bridged correctly', (t, end) => {
+  const { agent, tracer } = t.nr
+  const attributes = {
+    [ATTR_MESSAGING_SYSTEM]: 'kafka',
+    [ATTR_MESSAGING_OPERATION]: 'getMessage',
+    [ATTR_SERVER_ADDRESS]: '127.0.0.1',
+    [ATTR_MESSAGING_DESTINATION]: 'work-queue',
+    [ATTR_MESSAGING_DESTINATION_KIND]: 'queue'
+  }
+
+  tracer.startActiveSpan('consumer-test', { kind: otel.SpanKind.CONSUMER, attributes }, (span) => {
+    const tx = agent.getTransaction()
+    const segment = agent.tracer.getSegment()
+    span.end()
+    const duration = hrTimeToMilliseconds(span.duration)
+    assert.equal(duration, segment.getDurationInMillis())
+    tx.end()
+
+    assert.equal(segment.name, 'OtherTransaction/Message/kafka/queue/Named/work-queue')
+    assert.equal(tx.type, 'message')
+
+    const unscopedMetrics = tx.metrics.unscoped
+    const expectedMetrics = [
+      'OtherTransaction/all',
+      'OtherTransaction/Message/all',
+      'OtherTransaction/Message/kafka/queue/Named/work-queue',
+      'OtherTransactionTotalTime'
+    ]
+    for (const expectedMetric of expectedMetrics) {
+      assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric}.callCount`)
+    }
+
+    end()
   })
 })

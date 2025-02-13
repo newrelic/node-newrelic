@@ -2,6 +2,22 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.13.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed `api.getTraceMetadata` to handle when there is an active transaction but not active segment"
+        ],
+        "features": [
+          "Propagate agent root context when opentelemetry `ROOT_CONTEXT` is passed in to trace propagator.", 
+          "Added timeslice metrics for synthesized producer segments",
+          "Added timeslice metrics for synthesized server segments",
+          "Added timeslice metrics for synthesized database segments",
+          "Provided ability to disable instrumentation for core Node.js libraries"
+        ]
+      }
+    },
+    {
       "version": "12.12.0",
       "changes": {
         "security": [],
