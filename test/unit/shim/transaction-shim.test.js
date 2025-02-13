@@ -662,7 +662,7 @@ test('TransactionShim', async function (t) {
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
 
-          assert.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
+          assert.equal(outboundHeaders.traceparent, `00-${tx.traceId}-${segment.id}-01`)
           assert.ok(outboundHeaders.tracestate.endsWith(tracestate))
           end()
         })

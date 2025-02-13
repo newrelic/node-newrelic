@@ -11,6 +11,7 @@ const API = require('../../../api')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const hashes = require('../../../lib/util/hashes')
 const helper = require('../../lib/agent_helper')
+const { findSegment } = require('#testlib/metrics_helper.js')
 const MessageShim = require('../../../lib/shim/message-shim')
 const { MessageSpec, MessageSubscribeSpec } = require('../../../lib/shim/specs')
 const {
@@ -369,6 +370,27 @@ test('MessageShim', async function (t) {
       })
     })
 
+    await t.test('should insert DT request headers', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
+      agent.config.cross_application_tracer.enabled = false
+      agent.config.distributed_tracing.enabled = true
+      const headers = {}
+      shim.recordProduce(wrappable, 'getActiveSegment', function () {
+        return new MessageSpec({ headers })
+      })
+
+      helper.runInTransaction(agent, function (tx) {
+        wrappable.getActiveSegment()
+        const segment = findSegment(tx.trace, tx.trace.root, 'MessageBroker/RabbitMQ/Exchange/Produce/Temp')
+        const [version, traceId, parentSpanId, sampledFlag] = headers.traceparent.split('-')
+        assert.equal(version, '00')
+        assert.equal(traceId, tx.traceId)
+        assert.equal(parentSpanId, segment.id)
+        assert.equal(sampledFlag, '01')
+        end()
+      })
+    })
+
     await t.test('should insert distributed trace headers in all messages', async function (t) {
       const plan = tspl(t, { plan: 1 })
       const { agent, shim, wrappable } = t.nr
@@ -393,26 +415,27 @@ test('MessageShim', async function (t) {
       )
 
       let called = 0
-      agent.on('transactionFinished', () => {
+      agent.on('transactionFinished', (tx) => {
         called++
+        const segment = findSegment(tx.trace, tx.trace.root, 'MessageBroker/RabbitMQ/Exchange/Produce/Temp')
         match(messages, [
           {
             headers: {
               newrelic: '',
-              traceparent: /^00-/
+              traceparent: `00-${tx.traceId}-${segment.id}-01`
             }
           },
           {
             headers: {
               newrelic: '',
-              traceparent: /^00-/,
+              traceparent: `00-${tx.traceId}-${segment.id}-01`,
               foo: 'foo'
             }
           },
           {
             headers: {
               newrelic: '',
-              traceparent: /^00-/
+              traceparent: `00-${tx.traceId}-${segment.id}-01`
             }
           }
         ])

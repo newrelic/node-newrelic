@@ -565,9 +565,15 @@ test('when working with http.request', async (t) => {
     nock(host)
       .get(path)
       .reply(200, function () {
+        const { transaction, segment } = agent.tracer.getContext()
+        assert.equal(segment.name, 'External/www.google.com')
         headers = this.req.headers
         assert.ok(headers.traceparent, 'traceparent header')
-        assert.equal(headers.traceparent.split('-').length, 4)
+        const [version, traceId, parentSpanId, sampledFlag] = headers.traceparent.split('-')
+        assert.equal(version, '00')
+        assert.equal(traceId, transaction.traceId)
+        assert.equal(parentSpanId, segment.id)
+        assert.equal(sampledFlag, '01')
         assert.ok(headers.tracestate, 'tracestate header')
         assert.ok(!headers.tracestate.includes('null'))
         assert.ok(!headers.tracestate.includes('true'))
