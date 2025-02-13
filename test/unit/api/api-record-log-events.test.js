@@ -156,6 +156,23 @@ test('Agent API - recordCustomEvent', async (t) => {
     assert.equal(apiMetric.callCount, 1, 'and one API call was counted anyway')
     end()
   })
+
+  await t.test('it works with large JSON log messages', (t, end) => {
+    const { agent, api } = t.nr
+    const json = JSON.stringify({
+      message: message.repeat(100),
+      nested: {
+        prop1: 123,
+        prop2: 'a string',
+      },
+      array: Array.from({ length: 1000 }, (_, i) => 'item number ' + i),
+      nonPrimitive: new Date(),
+    })
+    api.recordLogEvent({ message: json })
+    const logEvent = popTopLogMessage(agent)
+    assert.equal(logEvent.message, json)
+    end()
+  })
 })
 
 test('does not collect logs when high security mode is on', (_t, end) => {

@@ -513,7 +513,6 @@ API.prototype.recordLogEvent = function recordLogEvent(logEvent = {}) {
     )
     return
   }
-  logEvent.message = applicationLogging.truncate(logEvent.message)
 
   if (!logEvent.level) {
     logger.debug('no log level set, setting it to UNKNOWN')
