@@ -409,21 +409,20 @@ test('messaging consumer metrics are bridged correctly', (t, end) => {
   tracer.startActiveSpan('consumer-test', { kind: otel.SpanKind.CONSUMER, attributes }, (span) => {
     const tx = agent.getTransaction()
     const segment = agent.tracer.getSegment()
-    assert.equal(segment.name, 'OtherTransaction/Message/kafka/queue/Named/work-queue')
     span.end()
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
     tx.end()
 
+    assert.equal(segment.name, 'OtherTransaction/Message/kafka/queue/Named/work-queue')
     assert.equal(tx.type, 'message')
 
     const unscopedMetrics = tx.metrics.unscoped
     const expectedMetrics = [
       'OtherTransaction/all',
       'OtherTransaction/Message/all',
-      'OtherTransaction/Message/OtherTransaction/Message/kafka/queue/Named/work-queue',
-      'OtherTransactionTotalTime',
-      'OtherTransactionTotalTime/Message/OtherTransaction/Message/kafka/queue/Named/work-queue'
+      'OtherTransaction/Message/kafka/queue/Named/work-queue',
+      'OtherTransactionTotalTime'
     ]
     for (const expectedMetric of expectedMetrics) {
       assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric}.callCount`)

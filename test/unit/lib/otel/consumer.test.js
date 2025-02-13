@@ -57,15 +57,14 @@ test('should create consumer segment from otel span', (t) => {
 
   const expectedName = 'OtherTransaction/Message/msgqueuer/topic1/Named/dest1'
   const { segment, transaction } = synth.synthesize(span)
+  transaction.end()
   assert.equal(segment.name, expectedName)
   assert.equal(segment.parentId, segment.root.id)
-  assert.equal(transaction.name.endsWith(expectedName), true)
+  assert.equal(transaction.name, expectedName)
   assert.equal(transaction.type, 'message')
   assert.equal(transaction.baseSegment, segment)
   assert.equal(
     transaction.trace.attributes.get(DESTINATIONS.TRANS_SCOPE)['message.queueName'],
     'dest1'
   )
-
-  transaction.end()
 })
