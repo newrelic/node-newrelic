@@ -27,6 +27,13 @@ function createServer() {
       const status = parts[parts.length - 1]
       res.writeHead(status)
       res.end()
+    } else if (req.url.includes('/headers')) {
+      const data = JSON.stringify(req.headers)
+      res.writeHead(200, {
+        'Content-Length': data.length,
+        'Content-Type': 'application/json'
+      })
+      res.end(data)
     } else {
       res.writeHead(200)
       res.end('ok')
@@ -98,6 +105,21 @@ test('fetch', async function (t) {
       assert.equal(spanAttrs['request.parameters.a'], 'b')
       assert.equal(spanAttrs['request.parameters.c'], 'd')
 
+      tx.end()
+    })
+  })
+
+  await t.test('should add proper traceparent to outgoing headers', async () => {
+    await helper.runInTransaction(agent, async (tx) => {
+      const body = await fetch(`${REQUEST_URL}/headers`)
+      assert.equal(body.status, 200)
+      const segment = metrics.findSegment(tx.trace, tx.trace.root, `External/${HOST}/headers`)
+      const { traceparent } = await body.json()
+      const [version, traceId, parentSpan, sampledFlag] = traceparent.split('-')
+      assert.equal(version, '00')
+      assert.equal(traceId, tx.traceId)
+      assert.equal(parentSpan, segment.id)
+      assert.equal(sampledFlag, '01')
       tx.end()
     })
   })

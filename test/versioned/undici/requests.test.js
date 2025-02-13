@@ -33,6 +33,13 @@ function createServer() {
       const statusCode = parts[parts.length - 1]
       res.writeHead(statusCode)
       res.end()
+    } else if (req.url.includes('/headers')) {
+      const data = JSON.stringify(req.headers)
+      res.writeHead(200, {
+        'Content-Length': data.length,
+        'Content-Type': 'application/json'
+      })
+      res.end(data)
     } else {
       res.writeHead(200)
       res.end('ok')
@@ -141,6 +148,24 @@ test('Undici request tests', async (t) => {
       assert.equal(spanAttrs['request.parameters.c'], 'd')
       assert.equal(spanAttrs.hostname, 'localhost')
       assert.equal(spanAttrs.port, `${PORT}`)
+      tx.end()
+    })
+  })
+
+  await t.test('should add proper traceparent to outgoing headers', async () => {
+    await helper.runInTransaction(agent, async (tx) => {
+      const { statusCode, body } = await undici.request(REQUEST_URL, {
+        path: '/headers',
+        method: 'GET'
+      })
+      assert.equal(statusCode, 200)
+      const segment = metrics.findSegment(tx.trace, tx.trace.root, `External/${HOST}/headers`)
+      const { traceparent } = await body.json()
+      const [version, traceId, parentSpan, sampledFlag] = traceparent.split('-')
+      assert.equal(version, '00')
+      assert.equal(traceId, tx.traceId)
+      assert.equal(parentSpan, segment.id)
+      assert.equal(sampledFlag, '01')
       tx.end()
     })
   })
