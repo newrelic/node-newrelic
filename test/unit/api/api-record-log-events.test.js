@@ -165,7 +165,7 @@ test('Agent API - recordCustomEvent', async (t) => {
         prop1: 123,
         prop2: 'a string',
       },
-      array: Array.from({ length: 1000 }, i => 'item number ' + i),
+      array: Array.from({ length: 1000 }, (_, i) => 'item number ' + i),
       nonPrimitive: new Date(),
     })
     api.recordLogEvent({ message: json })
