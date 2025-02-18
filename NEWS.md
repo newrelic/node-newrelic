@@ -2,8 +2,8 @@
 
 #### Features
 
-* Added attribute reconciliation for message producer spans ([#2942](https://github.com/newrelic/node-newrelic/pull/2942)) ([a9ba396](https://github.com/newrelic/node-newrelic/commit/a9ba39613c78b89c047ca35a218c2eedbb01e3d2))
 * Added support for region-prefixed Bedrock models ([#2947](https://github.com/newrelic/node-newrelic/pull/2947)) ([6acf535](https://github.com/newrelic/node-newrelic/commit/6acf5354d1e7f6786da88c0078699e82a714551d))
+* Added attribute reconciliation for message producer spans ([#2942](https://github.com/newrelic/node-newrelic/pull/2942)) ([a9ba396](https://github.com/newrelic/node-newrelic/commit/a9ba39613c78b89c047ca35a218c2eedbb01e3d2))
 * Added timeslice metrics for synthesized consumer segments ([#2938](https://github.com/newrelic/node-newrelic/pull/2938)) ([acfe953](https://github.com/newrelic/node-newrelic/commit/acfe953cf7a656fafb69104384c72f94ddc13000))
 
 #### Bug fixes
