@@ -40,7 +40,9 @@ const {
   ATTR_URL_PATH,
   ATTR_URL_SCHEME,
   DB_SYSTEM_VALUES,
-  MESSAGING_SYSTEM_KIND_VALUES
+  MESSAGING_SYSTEM_KIND_VALUES,
+  ATTR_HTTP_REQUEST_METHOD,
+  ATTR_URL_QUERY
 } = require('../../../lib/otel/constants.js')
 
 test.beforeEach((ctx) => {
@@ -130,6 +132,32 @@ test('Otel http external span test', (t, end) => {
       assert.equal(unscopedMetrics['External/newrelic.com/all'].callCount, 1)
       assert.equal(unscopedMetrics['External/all'].callCount, 1)
       assert.equal(unscopedMetrics['External/allWeb'].callCount, 1)
+      end()
+    })
+  })
+})
+
+test('Reconcile Otel http external span attributes', (t, end) => {
+
+  const attributes = {
+    [ATTR_SERVER_ADDRESS]: 'newrelic.com',
+    [ATTR_HTTP_REQUEST_METHOD]: 'GET',
+    [ATTR_SERVER_PORT]: '8080',
+    [ATTR_URL_PATH]: '/search',
+    [ATTR_URL_QUERY]: 'q=OpenTelemetry',
+    [ATTR_URL_SCHEME]: 'https',
+  }
+
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'http-external-test'
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes}, (span) => {
+      const segment = agent.tracer.getSegment()
+      // assert.equal(segment.name, 'External/newrelic.com')
+      span.end()
+      // const duration = hrTimeToMilliseconds(span.duration)
+      // assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
       end()
     })
   })
