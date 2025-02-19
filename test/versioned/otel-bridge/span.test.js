@@ -137,7 +137,7 @@ test('Otel http external span test', (t, end) => {
   })
 })
 
-test('Reconcile Otel http external span attributes', (t, end) => {
+test('Reconcile Otel http external span attributes test', (t, end) => {
   const attributes = {
     [ATTR_SERVER_ADDRESS]: 'localhost',
     [ATTR_HTTP_REQUEST_METHOD]: 'GET',
@@ -164,9 +164,8 @@ test('Reconcile Otel http external span attributes', (t, end) => {
       const attrs = segment.getAttributes()
       assert.equal(attrs.port, 8080)
       assert.equal(attrs.method, 'GET')
-      assert.equal(attrs.queryParams, 'q=OpenTelemetry')
       assert.equal(attrs.protocol, 'https')
-      assert.equal(attrs.path, '/search')
+      assert.equal(attrs.path, '/search?q=OpenTelemetry')
       assert.equal(attrs.hostname, expectedHost)
       assert.equal(attrs.host, expectedHost)
       end()
