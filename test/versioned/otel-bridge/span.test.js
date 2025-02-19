@@ -20,6 +20,7 @@ const {
   ATTR_GRPC_STATUS_CODE,
   ATTR_HTTP_HOST,
   ATTR_HTTP_METHOD,
+  ATTR_HTTP_REQUEST_METHOD,
   ATTR_HTTP_ROUTE,
   ATTR_HTTP_STATUS_CODE,
   ATTR_HTTP_STATUS_TEXT,
@@ -38,11 +39,10 @@ const {
   ATTR_SERVER_ADDRESS,
   ATTR_SERVER_PORT,
   ATTR_URL_PATH,
+  ATTR_URL_QUERY,
   ATTR_URL_SCHEME,
   DB_SYSTEM_VALUES,
-  MESSAGING_SYSTEM_KIND_VALUES,
-  ATTR_HTTP_REQUEST_METHOD,
-  ATTR_URL_QUERY
+  MESSAGING_SYSTEM_KIND_VALUES
 } = require('../../../lib/otel/constants.js')
 
 test.beforeEach((ctx) => {
@@ -138,26 +138,37 @@ test('Otel http external span test', (t, end) => {
 })
 
 test('Reconcile Otel http external span attributes', (t, end) => {
-
   const attributes = {
-    [ATTR_SERVER_ADDRESS]: 'newrelic.com',
+    [ATTR_SERVER_ADDRESS]: 'localhost',
     [ATTR_HTTP_REQUEST_METHOD]: 'GET',
-    [ATTR_SERVER_PORT]: '8080',
+    [ATTR_SERVER_PORT]: 8080,
     [ATTR_URL_PATH]: '/search',
     [ATTR_URL_QUERY]: 'q=OpenTelemetry',
     [ATTR_URL_SCHEME]: 'https',
+    [ATTR_HTTP_HOST]: 'localhost'
   }
 
   const { agent, tracer } = t.nr
+  const expectedHost = agent.config.getHostnameSafe('localhost')
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'http-external-test'
-    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes}, (span) => {
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
-      // assert.equal(segment.name, 'External/newrelic.com')
+      assert.equal(segment.name, 'External/localhost')
       span.end()
-      // const duration = hrTimeToMilliseconds(span.duration)
-      // assert.equal(duration, segment.getDurationInMillis())
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+
       tx.end()
+
+      const attrs = segment.getAttributes()
+      assert.equal(attrs.port, 8080)
+      assert.equal(attrs.method, 'GET')
+      assert.equal(attrs.queryParams, 'q=OpenTelemetry')
+      assert.equal(attrs.protocol, 'https')
+      assert.equal(attrs.path, '/search')
+      assert.equal(attrs.hostname, expectedHost)
+      assert.equal(attrs.host, expectedHost)
       end()
     })
   })
