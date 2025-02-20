@@ -288,6 +288,26 @@ test('Undici request tests', async (t) => {
     })
   })
 
+  await t.test('should not log error when `feature_flag.undici_error_tracking` is false', async (t) => {
+    agent.config.feature_flag.undici_error_tracking = false
+    t.after(() => {
+      agent.config.feature_flag.undici_error_tracking = true
+    })
+    await helper.runInTransaction(agent, async (tx) => {
+      try {
+        await undici.request('https://invalidurl', {
+          path: '/foo',
+          method: 'GET'
+        })
+      } catch (err) {
+        assert.ok(err)
+        assertSegments(tx.trace, tx.trace.root, ['External/invalidurl/foo'], { exact: false })
+        assert.equal(tx.exceptions.length, 0)
+        tx.end()
+      }
+    })
+  })
+
   await t.test('should add errors to transaction when external segment exists', async () => {
     const abortController = new AbortController()
     await helper.runInTransaction(agent, async (tx) => {
@@ -423,34 +443,6 @@ test('Undici request tests', async (t) => {
           end()
         }
       )
-    })
-  })
-})
-
-test('Undici error reporting tests', async (t) => {
-  const agent = helper.instrumentMockedAgent({
-    feature_flag: {
-      undici_error_tracking: false
-    }
-  })
-  const undici = require('undici')
-
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
-
-  await t.test('should not report undici errors', async () => {
-    await helper.runInTransaction(agent, async (tx) => {
-      try {
-        await undici.request('https://invalidurl', {
-          path: '/foo',
-          method: 'GET'
-        })
-      } catch (e) {
-        assert.equal(e.message, 'getaddrinfo ENOTFOUND invalidurl')
-      }
-
-      assert.equal(tx.exceptions.length, 0)
     })
   })
 })
