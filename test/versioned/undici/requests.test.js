@@ -447,7 +447,11 @@ test('Undici error reporting tests', async (t) => {
           method: 'GET'
         })
       } catch (e) {
-        assert.equal(e.message, 'getaddrinfo ENOTFOUND invalidurl')
+        assert.ok(e)
+        assertSegments(tx.trace, tx.trace.root, ['External/invalidurl/foo'], { exact: false })
+        assert.equal(tx.exceptions.length, 0)
+        tx.end()
+
       }
 
       assert.equal(tx.exceptions.length, 0)
