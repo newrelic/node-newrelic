@@ -312,6 +312,26 @@ test('Undici request tests', async (t) => {
     })
   })
 
+  await t.test('should not log error when `feature_flag.undici_error_tracking` is false', async (t) => {
+    agent.config.feature_flag.undici_error_tracking = false
+    t.after(() => {
+      agent.config.feature_flag.undici_error_tracking = true
+    })
+    await helper.runInTransaction(agent, async (tx) => {
+      try {
+        await undici.request('https://invalidurl', {
+          path: '/foo',
+          method: 'GET'
+        })
+      } catch (err) {
+        assert.ok(err)
+        assertSegments(tx.trace, tx.trace.root, ['External/invalidurl/foo'], { exact: false })
+        assert.equal(tx.exceptions.length, 0)
+        tx.end()
+      }
+    })
+  })
+
   await t.test('segments should end on error', async () => {
     const socketEndServer = http.createServer(function badHandler(req) {
       req.socket.end()

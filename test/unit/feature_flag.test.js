@@ -41,7 +41,8 @@ const used = [
   'undici_async_tracking',
   'aws_bedrock_instrumentation',
   'langchain_instrumentation',
-  'kafkajs_instrumentation'
+  'kafkajs_instrumentation',
+  'undici_error_tracking'
 ]
 
 test.beforeEach((ctx) => {
