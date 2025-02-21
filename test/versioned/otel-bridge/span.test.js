@@ -22,7 +22,7 @@ const {
   ATTR_HTTP_METHOD,
   ATTR_HTTP_REQUEST_METHOD,
   ATTR_HTTP_ROUTE,
-  ATTR_HTTP_STATUS_CODE,
+  ATTR_HTTP_RESP_STATUS_CODE,
   ATTR_HTTP_STATUS_TEXT,
   ATTR_HTTP_URL,
   ATTR_MESSAGING_DESTINATION,
@@ -42,7 +42,8 @@ const {
   ATTR_URL_QUERY,
   ATTR_URL_SCHEME,
   DB_SYSTEM_VALUES,
-  MESSAGING_SYSTEM_KIND_VALUES
+  MESSAGING_SYSTEM_KIND_VALUES,
+  ATTR_HTTP_TARGET
 } = require('../../../lib/otel/constants.js')
 
 test.beforeEach((ctx) => {
@@ -137,37 +138,75 @@ test('Otel http external span test', (t, end) => {
   })
 })
 
-test('Reconcile Otel http external span attributes test', (t, end) => {
+test('Reconcile Otel undici external span attributes test', (t, end) => {
   const attributes = {
-    [ATTR_SERVER_ADDRESS]: 'localhost',
+    [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
     [ATTR_HTTP_REQUEST_METHOD]: 'GET',
     [ATTR_SERVER_PORT]: 8080,
     [ATTR_URL_PATH]: '/search',
-    [ATTR_URL_QUERY]: 'q=OpenTelemetry',
+    [ATTR_URL_QUERY]: 'q=test',
     [ATTR_URL_SCHEME]: 'https',
-    [ATTR_HTTP_HOST]: 'localhost'
+    [ATTR_HTTP_HOST]: 'www.newrelic.com',
+    [ATTR_HTTP_URL]: 'https://www.newrelic.com/search?q=test'
   }
 
   const { agent, tracer } = t.nr
-  const expectedHost = agent.config.getHostnameSafe('localhost')
   helper.runInTransaction(agent, (tx) => {
-    tx.name = 'http-external-test'
-    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+    tx.name = 'undici-external-test'
+    tracer.startActiveSpan('unidic-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+      span.setAttribute(ATTR_HTTP_RESP_STATUS_CODE, 200)
       const segment = agent.tracer.getSegment()
-      assert.equal(segment.name, 'External/localhost')
+      assert.equal(segment.name, 'External/www.newrelic.com')
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
-
       tx.end()
 
       const attrs = segment.getAttributes()
-      assert.equal(attrs.port, 8080)
-      assert.equal(attrs.method, 'GET')
-      assert.equal(attrs.protocol, 'https')
-      assert.equal(attrs.path, '/search?q=OpenTelemetry')
-      assert.equal(attrs.hostname, expectedHost)
-      assert.equal(attrs.host, expectedHost)
+      assert.equal(attrs.procedure, attributes[ATTR_HTTP_REQUEST_METHOD])
+      assert.equal(attrs.protocol, attrs[ATTR_URL_SCHEME])
+      // attributes.url shouldn't include the query
+      assert.equal(attrs.url, `${attributes[ATTR_URL_SCHEME]}://${attributes[ATTR_SERVER_ADDRESS]}${attributes[ATTR_URL_PATH]}`)
+      assert.equal(attrs['http.statusCode'], 200)
+      assert.equal(attrs.hostname, attributes[ATTR_SERVER_ADDRESS])
+      assert.equal(attrs.port, attributes[ATTR_SERVER_PORT])
+      end()
+    })
+  })
+})
+
+test('Reconcile Otel http external span attributes test', (t, end) => {
+  const attributes = {
+    [ATTR_NET_PEER_NAME]: 'www.newrelic.com',
+    [ATTR_HTTP_METHOD]: 'GET',
+    [ATTR_NET_PEER_PORT]: 8080,
+    [ATTR_HTTP_TARGET]: '/search?q=test',
+    [ATTR_URL_QUERY]: 'q=test',
+    [ATTR_HTTP_HOST]: 'www.newrelic.com',
+    [ATTR_HTTP_URL]: 'https://www.newrelic.com/search?q=test'
+  }
+
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'http-external-test'
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+      span.setAttribute(ATTR_HTTP_RESP_STATUS_CODE, 200)
+      span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
+      const segment = agent.tracer.getSegment()
+      assert.equal(segment.name, 'External/www.newrelic.com')
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+
+      const attrs = segment.getAttributes()
+      assert.equal(attrs.procedure, attributes[ATTR_HTTP_METHOD])
+      // attributes.url shouldn't include the query
+      assert.equal(attrs.url, `https://${attributes[ATTR_NET_PEER_NAME]}/search`)
+      assert.equal(attrs['http.statusCode'], 200)
+      assert.equal(attrs['http.statusText'], 'OK')
+      assert.equal(attrs.hostname, attributes[ATTR_NET_PEER_NAME])
+      assert.equal(attrs.port, attributes[ATTR_NET_PEER_PORT])
       end()
     })
   })
@@ -276,7 +315,7 @@ test('http metrics are bridged correctly', (t, end) => {
 
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
     const tx = agent.getTransaction()
-    span.setAttribute(ATTR_HTTP_STATUS_CODE, 200)
+    span.setAttribute(ATTR_HTTP_RESP_STATUS_CODE, 200)
     span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
     span.end()
     const segment = agent.tracer.getSegment()
