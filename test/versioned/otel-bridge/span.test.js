@@ -416,6 +416,7 @@ test('Otel producer span test', (t, end) => {
 
 test('messaging consumer metrics are bridged correctly', (t, end) => {
   const { agent, tracer } = t.nr
+  const expectedHost = agent.config.getHostnameSafe('localhost')
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'kafka',
     [ATTR_MESSAGING_OPERATION]: 'getMessage',
@@ -450,7 +451,7 @@ test('messaging consumer metrics are bridged correctly', (t, end) => {
 
     // Verify that required reconciled attributes are present:
     let attrs = tx.baseSegment.getAttributes()
-    assert.equal(attrs.host, '127.0.0.1')
+    assert.equal(attrs.host, expectedHost)
     assert.equal(attrs.port, '1234')
     attrs = tx.trace.attributes.get(DESTINATIONS.TRANS_COMMON)
     assert.equal(attrs['message.queueName'], 'work-queue')
@@ -462,6 +463,7 @@ test('messaging consumer metrics are bridged correctly', (t, end) => {
 
 test('messaging consumer skips high security attributes', (t, end) => {
   const { agent, tracer } = t.nr
+  const expectedHost = agent.config.getHostnameSafe('localhost')
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'kafka',
     [ATTR_MESSAGING_OPERATION]: 'getMessage',
@@ -476,11 +478,10 @@ test('messaging consumer skips high security attributes', (t, end) => {
   tracer.startActiveSpan('consumer-test', { kind: otel.SpanKind.CONSUMER, attributes }, (span) => {
     const tx = agent.getTransaction()
     span.end()
-    tx.end()
 
     // Verify that required reconciled attributes are present:
     let attrs = tx.baseSegment.getAttributes()
-    assert.equal(attrs.host, '127.0.0.1')
+    assert.equal(attrs.host, expectedHost)
     assert.equal(attrs.port, '1234')
     attrs = tx.trace.attributes.get(DESTINATIONS.TRANS_COMMON)
     assert.equal(attrs['message.queueName'], undefined)
