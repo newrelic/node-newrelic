@@ -39,3 +39,9 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 * Environment Variable: `NEW_RELIC_FEATURE_FLAG_OTEL_INSTRUMENTATION`
 * Description: Enables the creation of Transaction Trace segments and time slices metrics from opentelemetry spans. This will help drive New Relic UI experience for opentelemetry spans. 
 * **WARNING**: This is not feature complete and is not intended to be enabled yet.
+
+#### undici_error_tracking
+* Enabled by default: `true`
+* Configuration: `{ feature_flag: { undici_error_tracking: true|false }}`
+* Environment Variable: `NEW_RELIC_FEATURE_FLAG_UNDICI_ERROR_TRACKING`
+* Description: Enables the creation of errors when a request with undici fails. To disable tracking errors with undici, set the value to `false`.

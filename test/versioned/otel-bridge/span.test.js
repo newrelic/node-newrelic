@@ -14,6 +14,7 @@ const helper = require('../../lib/agent_helper')
 const { otelSynthesis } = require('../../../lib/symbols')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
+const { DESTINATIONS } = require('../../../lib/transaction')
 const {
   ATTR_DB_NAME,
   ATTR_DB_STATEMENT,
@@ -28,6 +29,7 @@ const {
   ATTR_HTTP_URL,
   ATTR_MESSAGING_DESTINATION,
   ATTR_MESSAGING_DESTINATION_KIND,
+  ATTR_MESSAGING_DESTINATION_NAME,
   ATTR_MESSAGING_MESSAGE_CONVERSATION_ID,
   ATTR_MESSAGING_OPERATION,
   ATTR_MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY,
@@ -492,12 +494,15 @@ test('Otel producer span test', (t, end) => {
 
 test('messaging consumer metrics are bridged correctly', (t, end) => {
   const { agent, tracer } = t.nr
+  const expectedHost = agent.config.getHostnameSafe('localhost')
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'kafka',
     [ATTR_MESSAGING_OPERATION]: 'getMessage',
     [ATTR_SERVER_ADDRESS]: '127.0.0.1',
+    [ATTR_SERVER_PORT]: '1234',
     [ATTR_MESSAGING_DESTINATION]: 'work-queue',
-    [ATTR_MESSAGING_DESTINATION_KIND]: 'queue'
+    [ATTR_MESSAGING_DESTINATION_KIND]: 'queue',
+    [ATTR_MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY]: 'test-key'
   }
 
   tracer.startActiveSpan('consumer-test', { kind: otel.SpanKind.CONSUMER, attributes }, (span) => {
@@ -521,6 +526,44 @@ test('messaging consumer metrics are bridged correctly', (t, end) => {
     for (const expectedMetric of expectedMetrics) {
       assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric}.callCount`)
     }
+
+    // Verify that required reconciled attributes are present:
+    let attrs = tx.baseSegment.getAttributes()
+    assert.equal(attrs.host, expectedHost)
+    assert.equal(attrs.port, '1234')
+    attrs = tx.trace.attributes.get(DESTINATIONS.TRANS_COMMON)
+    assert.equal(attrs['message.queueName'], 'work-queue')
+    assert.equal(attrs['message.routingKey'], 'test-key')
+
+    end()
+  })
+})
+
+test('messaging consumer skips high security attributes', (t, end) => {
+  const { agent, tracer } = t.nr
+  const expectedHost = agent.config.getHostnameSafe('localhost')
+  const attributes = {
+    [ATTR_MESSAGING_SYSTEM]: 'kafka',
+    [ATTR_MESSAGING_OPERATION]: 'getMessage',
+    [ATTR_SERVER_ADDRESS]: '127.0.0.1',
+    [ATTR_SERVER_PORT]: '1234',
+    [ATTR_MESSAGING_DESTINATION_KIND]: 'queue',
+    [ATTR_MESSAGING_DESTINATION_NAME]: 'test-queue',
+    [ATTR_MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY]: 'test-key'
+  }
+  agent.config.high_security = true
+
+  tracer.startActiveSpan('consumer-test', { kind: otel.SpanKind.CONSUMER, attributes }, (span) => {
+    const tx = agent.getTransaction()
+    span.end()
+
+    // Verify that required reconciled attributes are present:
+    let attrs = tx.baseSegment.getAttributes()
+    assert.equal(attrs.host, expectedHost)
+    assert.equal(attrs.port, '1234')
+    attrs = tx.trace.attributes.get(DESTINATIONS.TRANS_COMMON)
+    assert.equal(attrs['message.queueName'], undefined)
+    assert.equal(attrs['message.routingKey'], undefined)
 
     end()
   })

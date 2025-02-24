@@ -2,6 +2,22 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.14.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed undici/fetch instrumentation to properly assign the parent-id portion of the `traceparent` header on outgoing requests to the active http external span id",
+          "Updated `api.recordLogEvent` to no longer truncate the message key in log event",
+          "Fixed queueing of logs from child loggers"
+        ],
+        "features": [
+          "Added attribute reconciliation for message producer spans",
+          "Added timeslice metrics for synthesized consumer segments",
+          "Added support for region-prefixed Bedrock models"
+        ]
+      }
+    },
+    {
       "version": "12.13.0",
       "changes": {
         "security": [],
@@ -9,7 +25,7 @@
           "Fixed `api.getTraceMetadata` to handle when there is an active transaction but not active segment"
         ],
         "features": [
-          "Propagate agent root context when opentelemetry `ROOT_CONTEXT` is passed in to trace propagator.", 
+          "Propagate agent root context when opentelemetry `ROOT_CONTEXT` is passed in to trace propagator.",
           "Added timeslice metrics for synthesized producer segments",
           "Added timeslice metrics for synthesized server segments",
           "Added timeslice metrics for synthesized database segments",
