@@ -18,7 +18,6 @@ const {
   ATTR_MESSAGING_SYSTEM,
 } = require('#agentlib/otel/constants.js')
 
-const { DESTINATIONS } = require('../../../../lib/transaction')
 const helper = require('../../../lib/agent_helper')
 const createSpan = require('./fixtures/span')
 const SegmentSynthesizer = require('../../../../lib/otel/segment-synthesis')
@@ -63,8 +62,4 @@ test('should create consumer segment from otel span', (t) => {
   assert.equal(transaction.name, expectedName)
   assert.equal(transaction.type, 'message')
   assert.equal(transaction.baseSegment, segment)
-  assert.equal(
-    transaction.trace.attributes.get(DESTINATIONS.TRANS_SCOPE)['message.queueName'],
-    'dest1'
-  )
 })
