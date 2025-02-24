@@ -12,6 +12,7 @@ const { hrTimeToMilliseconds } = require('@opentelemetry/core')
 
 const helper = require('../../lib/agent_helper')
 const { otelSynthesis } = require('../../../lib/symbols')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 const {
   ATTR_DB_NAME,
@@ -118,7 +119,7 @@ test('Otel http external span test', (t, end) => {
   const { agent, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'http-external-test'
-    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes: { [ATTR_HTTP_HOST]: 'newrelic.com', [ATTR_HTTP_METHOD]: 'GET' } }, (span) => {
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes: { [ATTR_HTTP_HOST]: 'newrelic.com', [ATTR_NET_PEER_NAME]: 'newrelic.com', [ATTR_HTTP_METHOD]: 'GET' } }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'External/newrelic.com')
       span.end()
@@ -137,7 +138,7 @@ test('Otel http external span test', (t, end) => {
   })
 })
 
-test('Reconcile Otel http external span spec compliant attributes test', (t, end) => {
+test('Reconcile Otel http external span attributes test', (t, end) => {
   const attributes = {
     [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
     [ATTR_HTTP_REQUEST_METHOD]: 'GET',
@@ -162,14 +163,14 @@ test('Reconcile Otel http external span spec compliant attributes test', (t, end
       tx.end()
 
       const attrs = segment.getAttributes()
-      const spanAttrs = span.attributes
+      const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
       assert.equal(attrs.procedure, attributes[ATTR_HTTP_REQUEST_METHOD])
       assert.equal(attrs['url.scheme'], attrs[ATTR_URL_SCHEME])
       // attributes.url shouldn't include the query
-      assert.equal(attrs.url, `${attributes[ATTR_URL_SCHEME]}://${attributes[ATTR_SERVER_ADDRESS]}${attributes[ATTR_URL_PATH]}`)
-      assert.equal(spanAttrs['http.statusCode'], 200)
-      assert.equal(spanAttrs.hostname, attributes[ATTR_SERVER_ADDRESS])
-      assert.equal(spanAttrs.port, attributes[ATTR_SERVER_PORT])
+      assert.equal(attrs.url, `https://${attributes[ATTR_SERVER_ADDRESS]}/search`)
+      assert.equal(spanAttributes['http.statusCode'], 200)
+      assert.equal(spanAttributes.hostname, attributes[ATTR_SERVER_ADDRESS])
+      assert.equal(spanAttributes.port, attributes[ATTR_SERVER_PORT])
       end()
     })
   })
@@ -199,14 +200,14 @@ test('Reconcile Otel http external span legacy attributes test', (t, end) => {
       tx.end()
 
       const attrs = segment.getAttributes()
-      const spanAttrs = span.attributes
+      const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
       assert.equal(attrs.procedure, attributes[ATTR_HTTP_METHOD])
       // attributes.url shouldn't include the query
       assert.equal(attrs.url, `https://${attributes[ATTR_NET_PEER_NAME]}/search`)
-      assert.equal(spanAttrs['http.statusCode'], 200)
-      assert.equal(spanAttrs['http.statusText'], 'OK')
-      assert.equal(spanAttrs.hostname, attributes[ATTR_NET_PEER_NAME])
-      assert.equal(spanAttrs.port, attributes[ATTR_NET_PEER_PORT])
+      assert.equal(spanAttributes['http.statusCode'], 200)
+      assert.equal(spanAttributes['http.statusText'], 'OK')
+      assert.equal(spanAttributes.hostname, attributes[ATTR_NET_PEER_NAME])
+      assert.equal(spanAttributes.port, attributes[ATTR_NET_PEER_PORT])
       end()
     })
   })
