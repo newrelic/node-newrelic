@@ -25,6 +25,7 @@ const {
   ATTR_HTTP_REQUEST_METHOD,
   ATTR_HTTP_RESP_STATUS_CODE,
   ATTR_HTTP_ROUTE,
+  ATTR_HTTP_STATUS_CODE,
   ATTR_HTTP_STATUS_TEXT,
   ATTR_HTTP_URL,
   ATTR_MESSAGING_DESTINATION,
@@ -68,7 +69,7 @@ test.afterEach((ctx) => {
   otel.diag.disable()
 })
 
-test('Otel internal and NR span tests', (t, end) => {
+test('mix internal and NR span tests', (t, end) => {
   const { agent, api, tracer } = t.nr
   function main(mainSegment) {
     tracer.startActiveSpan('hi', (span) => {
@@ -117,7 +118,7 @@ test('Otel internal and NR span tests', (t, end) => {
   })
 })
 
-test('Otel http external span test', (t, end) => {
+test('client span(http) is bridge accordingly', (t, end) => {
   const { agent, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'http-external-test'
@@ -140,7 +141,7 @@ test('Otel http external span test', (t, end) => {
   })
 })
 
-test('Reconcile Otel http external span attributes test', (t, end) => {
+test('Http external span is bridged accordingly', (t, end) => {
   const attributes = {
     [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
     [ATTR_HTTP_REQUEST_METHOD]: 'GET',
@@ -178,7 +179,7 @@ test('Reconcile Otel http external span attributes test', (t, end) => {
   })
 })
 
-test('Reconcile Otel http external span legacy attributes test', (t, end) => {
+test('Http external span is bridged accordingly(legacy attributes test)', (t, end) => {
   const attributes = {
     [ATTR_NET_PEER_NAME]: 'www.newrelic.com',
     [ATTR_HTTP_METHOD]: 'GET',
@@ -215,7 +216,7 @@ test('Reconcile Otel http external span legacy attributes test', (t, end) => {
   })
 })
 
-test('Otel db client span statement test', (t, end) => {
+test('client span(db) is bridge accordingly(statement test)', (t, end) => {
   const { agent, tracer } = t.nr
   const attributes = {
     [ATTR_DB_NAME]: 'test-db',
@@ -260,7 +261,7 @@ test('Otel db client span statement test', (t, end) => {
   })
 })
 
-test('Otel db client span operation test', (t, end) => {
+test('client span(db) is bridged accordingly(operation test)', (t, end) => {
   const { agent, tracer } = t.nr
   const attributes = {
     [ATTR_DB_SYSTEM]: DB_SYSTEM_VALUES.REDIS,
@@ -301,7 +302,7 @@ test('Otel db client span operation test', (t, end) => {
   })
 })
 
-test('http metrics are bridged correctly', (t, end) => {
+test('server span is bridged accordingly', (t, end) => {
   const { agent, tracer } = t.nr
 
   // Required span attributes for incoming HTTP server spans as defined by:
@@ -321,6 +322,7 @@ test('http metrics are bridged correctly', (t, end) => {
     span.setAttribute(ATTR_HTTP_RESP_STATUS_CODE, 200)
     span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
     span.end()
+    assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
     assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//GET/foo/:param')
 
@@ -355,7 +357,7 @@ test('http metrics are bridged correctly', (t, end) => {
   })
 })
 
-test('rpc server metrics are bridged correctly', (t, end) => {
+test('server span(rpc) is bridged accordingly', (t, end) => {
   const { agent, tracer } = t.nr
 
   // Required span attributes for incoming HTTP server spans as defined by:
@@ -372,6 +374,7 @@ test('rpc server metrics are bridged correctly', (t, end) => {
     span.setAttribute(ATTR_GRPC_STATUS_CODE, 0)
     const tx = agent.getTransaction()
     span.end()
+    assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
     assert.equal(segment.name, 'WebTransaction/WebFrameworkUri/foo/test.service/getData')
 
@@ -407,7 +410,7 @@ test('rpc server metrics are bridged correctly', (t, end) => {
   })
 })
 
-test('fallback metrics are bridged correctly', (t, end) => {
+test('server span(fallback) is bridged accordingly', (t, end) => {
   const { agent, tracer } = t.nr
 
   const attributes = {
@@ -421,6 +424,7 @@ test('fallback metrics are bridged correctly', (t, end) => {
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
     const tx = agent.getTransaction()
     span.end()
+    assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
 
     const duration = hrTimeToMilliseconds(span.duration)
@@ -452,7 +456,7 @@ test('fallback metrics are bridged correctly', (t, end) => {
   })
 })
 
-test('Otel producer span test', (t, end) => {
+test('producer span is bridged accordingly', (t, end) => {
   const { agent, tracer } = t.nr
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'messaging-lib',
@@ -492,7 +496,7 @@ test('Otel producer span test', (t, end) => {
   })
 })
 
-test('messaging consumer metrics are bridged correctly', (t, end) => {
+test('consumer span is bridged correctly', (t, end) => {
   const { agent, tracer } = t.nr
   const expectedHost = agent.config.getHostnameSafe('localhost')
   const attributes = {
@@ -507,11 +511,11 @@ test('messaging consumer metrics are bridged correctly', (t, end) => {
 
   tracer.startActiveSpan('consumer-test', { kind: otel.SpanKind.CONSUMER, attributes }, (span) => {
     const tx = agent.getTransaction()
+    assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
     span.end()
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
-    tx.end()
 
     assert.equal(segment.name, 'OtherTransaction/Message/kafka/queue/Named/work-queue')
     assert.equal(tx.type, 'message')
@@ -568,3 +572,119 @@ test('messaging consumer skips high security attributes', (t, end) => {
     end()
   })
 })
+
+test('consumer span accepts upstream traceparent/tracestate correctly', (t, end) => {
+  const { agent, tracer } = t.nr
+
+  const attributes = {
+    [ATTR_MESSAGING_SYSTEM]: 'kafka',
+    [ATTR_MESSAGING_OPERATION]: 'getMessage',
+    [ATTR_SERVER_ADDRESS]: '127.0.0.1',
+    [ATTR_MESSAGING_DESTINATION]: 'work-queue',
+    [ATTR_MESSAGING_DESTINATION_KIND]: 'queue'
+  }
+
+  const { ctx, traceId, spanId } = setupDtHeaders(agent)
+  tracer.startActiveSpan('consumer-test', { kind: otel.SpanKind.CONSUMER, attributes }, ctx, (span) => {
+    const tx = agent.getTransaction()
+    span.end()
+    assertDtAttrs({ tx, traceId, spanId, transportType: 'kafka' })
+    end()
+  })
+})
+
+test('server span accepts upstream traceparent/tracestate correctly', (t, end) => {
+  const { agent, tracer } = t.nr
+
+  // Required span attributes for incoming HTTP server spans as defined by:
+  // https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-server-semantic-conventions
+  const attributes = {
+    [ATTR_HTTP_URL]: 'http://newrelic.com/foo/bar',
+    [ATTR_URL_SCHEME]: 'http',
+    [ATTR_SERVER_ADDRESS]: 'newrelic.com',
+    [ATTR_SERVER_PORT]: 80,
+    [ATTR_HTTP_METHOD]: 'GET',
+    [ATTR_URL_PATH]: '/foo/bar',
+    [ATTR_HTTP_ROUTE]: '/foo/:param'
+  }
+
+  const { ctx, traceId, spanId } = setupDtHeaders(agent)
+  tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, ctx, (span) => {
+    const tx = agent.getTransaction()
+    span.setAttribute(ATTR_HTTP_STATUS_CODE, 200)
+    span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
+    span.end()
+    assertDtAttrs({ tx, traceId, spanId, transportType: 'HTTPS' })
+
+    const unscopedMetrics = tx.metrics.unscoped
+    const expectedMetrics = [
+      'DurationByCaller/App/1/2827902/HTTPS/all',
+      'DurationByCaller/App/1/2827902/HTTPS/allWeb',
+      'TransportDuration/App/1/2827902/HTTPS/all',
+      'TransportDuration/App/1/2827902/HTTPS/allWeb',
+    ]
+    for (const expectedMetric of expectedMetrics) {
+      assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
+    }
+    end()
+  })
+})
+
+test('server span should not accept upstream traceparent/tracestate if distributed tracing is disabled', (t, end) => {
+  const { agent, tracer } = t.nr
+  agent.config.distributed_tracing.enabled = false
+
+  // Required span attributes for incoming HTTP server spans as defined by:
+  // https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-server-semantic-conventions
+  const attributes = {
+    [ATTR_HTTP_URL]: 'http://newrelic.com/foo/bar',
+    [ATTR_URL_SCHEME]: 'http',
+    [ATTR_SERVER_ADDRESS]: 'newrelic.com',
+    [ATTR_SERVER_PORT]: 80,
+    [ATTR_HTTP_METHOD]: 'GET',
+    [ATTR_URL_PATH]: '/foo/bar',
+    [ATTR_HTTP_ROUTE]: '/foo/:param'
+  }
+
+  const { ctx } = setupDtHeaders(agent)
+  tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, ctx, (span) => {
+    const tx = agent.getTransaction()
+    span.setAttribute(ATTR_HTTP_STATUS_CODE, 200)
+    span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
+    span.end()
+    assert.ok(!tx.isDistributedTrace)
+    end()
+  })
+})
+
+function setupDtHeaders(agent) {
+  agent.config.trusted_account_key = 1
+  agent.config.primary_application_id = 2
+  agent.config.account_id = 1
+  const spanId = '00f067aa0ba902b7'
+  const traceId = '00015f9f95352ad550284c27c5d3084c'
+  const traceparent = `00-${traceId}-${spanId}-01`
+  const tracestate = `1@nr=0-0-1-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-${Date.now()}`
+
+  const headers = {
+    traceparent,
+    tracestate
+  }
+  const ctx = otel.propagation.extract(otel.ROOT_CONTEXT, headers)
+  return { ctx, traceId, spanId }
+}
+
+function assertDtAttrs({ tx, traceId, spanId, transportType }) {
+  assert.equal(tx.acceptedDistributedTrace, true)
+  assert.equal(tx.isDistributedTrace, true)
+  assert.equal(tx.traceId, traceId)
+  assert.equal(tx.parentSpanId, spanId)
+  assert.ok(tx.parentTransportDuration >= 0)
+  assert.equal(tx.parentTransportType, transportType)
+  assert.equal(tx.parentType, 'App')
+  assert.equal(tx.parentAcct, '1')
+  assert.equal(tx.parentApp, '2827902')
+  assert.equal(tx.parentId, 'e8b91a159289ff74')
+  assert.equal(tx.sampled, true)
+  assert.ok(tx.priority)
+}

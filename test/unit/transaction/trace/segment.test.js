@@ -7,11 +7,12 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
-const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 const sinon = require('sinon')
-const helper = require('../../../lib/agent_helper')
-const TraceSegment = require('../../../../lib/transaction/trace/segment')
-const Transaction = require('../../../../lib/transaction')
+const helper = require('#testlib/agent_helper.js')
+const TraceSegment = require('#agentlib/transaction/trace/segment.js')
+const Transaction = require('#agentlib/transaction/index.js')
+const hashes = require('#agentlib/util/hashes.js')
 
 function beforeEach(ctx) {
   ctx.nr = {}
@@ -80,6 +81,21 @@ test('TraceSegment', async (t) => {
     segment.touch()
     assert.equal(segment.timer.isRunning(), true)
     assert.ok(segment.getDurationInMillis() > 0)
+  })
+
+  await t.test('uses id passed in instead of unique id', (t) => {
+    const { agent } = t.nr
+    const trans = new Transaction(agent)
+    const root = trans.trace.root
+    const id = hashes.makeId()
+    const segment = new TraceSegment({
+      id,
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root
+    })
+    assert.equal(segment.id, id)
   })
 
   await t.test('should return the segment id when dt and spans are enabled', (t) => {

@@ -6,9 +6,10 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
-const helper = require('../../lib/agent_helper')
-const Segment = require('../../../lib/transaction/trace/segment')
-const Transaction = require('../../../lib/transaction')
+const helper = require('#testlib/agent_helper.js')
+const Segment = require('#agentlib/transaction/trace/segment.js')
+const Transaction = require('#agentlib/transaction/index.js')
+const hashes = require('#agentlib/util/hashes.js')
 
 const notRunningStates = ['stopped', 'stopping', 'errored']
 function beforeEach(ctx) {
@@ -243,6 +244,19 @@ test('Tracer', async function (t) {
       assert.equal(segment2.id, segment.id)
       assert.equal(segment3.id, segment.id)
       assert.equal(tx.trace.segments.root.children.length, 1)
+      tx.end()
+    })
+  })
+
+  await t.test('#createSegment', async (t) => {
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+    await t.test('should assign segment id if passed in', (t) => {
+      const { agent, tracer } = t.nr
+      const tx = new Transaction(agent)
+      const id = hashes.makeId()
+      const segment = tracer.createSegment({ id, name: 'Test', parent: tx.trace.root, transaction: tx })
+      assert.equal(segment.id, id)
       tx.end()
     })
   })
