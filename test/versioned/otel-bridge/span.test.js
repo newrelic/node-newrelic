@@ -67,9 +67,10 @@ test.afterEach((ctx) => {
 
 test('mix internal and NR span tests', (t, end) => {
   const { agent, api, tracer } = t.nr
-  function main(mainSegment) {
+  function main(mainSegment, tx) {
     tracer.startActiveSpan('hi', (span) => {
       const segment = agent.tracer.getSegment()
+      assert.equal(tx.traceId, span.spanContext().traceId)
       assert.equal(segment.name, span.name)
       assert.equal(segment.parentId, mainSegment.id)
       span.end()
@@ -81,6 +82,7 @@ test('mix internal and NR span tests', (t, end) => {
       const parentSegment = agent.tracer.getSegment()
       tracer.startActiveSpan('bye', (span) => {
         const segment = agent.tracer.getSegment()
+        assert.equal(tx.traceId, span.spanContext().traceId)
         assert.equal(segment.name, span.name)
         assert.equal(segment.parentId, parentSegment.id)
         span.end()
@@ -93,7 +95,8 @@ test('mix internal and NR span tests', (t, end) => {
     tx.name = 'otel-example-tx'
     tracer.startActiveSpan('main', (span) => {
       const segment = agent.tracer.getSegment()
-      main(segment)
+      assert.equal(tx.traceId, span.spanContext().traceId)
+      main(segment, tx)
       span.end()
       assert.equal(span[otelSynthesis], undefined)
       assert.equal(segment.name, span.name)
@@ -121,6 +124,7 @@ test('client span(http) is bridge accordingly', (t, end) => {
     tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes: { [ATTR_HTTP_HOST]: 'newrelic.com', [ATTR_HTTP_METHOD]: 'GET' } }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'External/newrelic.com')
+      assert.equal(tx.traceId, span.spanContext().traceId)
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
@@ -152,6 +156,7 @@ test('client span(db) is bridge accordingly(statement test)', (t, end) => {
     tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'Datastore/statement/postgresql/test/select')
+      assert.equal(tx.traceId, span.spanContext().traceId)
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
@@ -196,6 +201,7 @@ test('client span(db) is bridged accordingly(operation test)', (t, end) => {
     tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'Datastore/operation/redis/hset')
+      assert.equal(tx.traceId, span.spanContext().traceId)
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
@@ -240,6 +246,7 @@ test('server span is bridged accordingly', (t, end) => {
 
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
     const tx = agent.getTransaction()
+    assert.equal(tx.traceId, span.spanContext().traceId)
     span.setAttribute(ATTR_HTTP_STATUS_CODE, 200)
     span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
     span.end()
@@ -294,6 +301,7 @@ test('server span(rpc) is bridged accordingly', (t, end) => {
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
     span.setAttribute(ATTR_GRPC_STATUS_CODE, 0)
     const tx = agent.getTransaction()
+    assert.equal(tx.traceId, span.spanContext().traceId)
     span.end()
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
@@ -344,6 +352,7 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
   const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
     const tx = agent.getTransaction()
+    assert.equal(tx.traceId, span.spanContext().traceId)
     span.end()
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
@@ -394,6 +403,7 @@ test('producer span is bridged accordingly', (t, end) => {
     const expectedHost = agent.config.getHostnameSafe('localhost')
     tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
+      assert.equal(tx.traceId, span.spanContext().traceId)
       assert.equal(segment.name, 'MessageBroker/messaging-lib/queue/Produce/Named/test-queue')
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
@@ -434,6 +444,7 @@ test('consumer span is bridged correctly', (t, end) => {
     const tx = agent.getTransaction()
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
+    assert.equal(tx.traceId, span.spanContext().traceId)
     span.end()
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
