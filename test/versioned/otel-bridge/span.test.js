@@ -12,7 +12,7 @@ const { hrTimeToMilliseconds } = require('@opentelemetry/core')
 
 const helper = require('../../lib/agent_helper')
 const { otelSynthesis } = require('../../../lib/symbols')
-const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { DESTINATIONS: ATTR_DESTINATION } = require('../../../lib/config/attribute-filter')
 
 const { DESTINATIONS } = require('../../../lib/transaction')
 const {
@@ -165,7 +165,7 @@ test('Reconcile Otel http external span attributes test', (t, end) => {
       tx.end()
 
       const attrs = segment.getAttributes()
-      const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+      const spanAttributes = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
       assert.equal(attrs.procedure, attributes[ATTR_HTTP_REQUEST_METHOD])
       assert.equal(attrs['url.scheme'], attrs[ATTR_URL_SCHEME])
       // attributes.url shouldn't include the query
@@ -202,7 +202,7 @@ test('Reconcile Otel http external span legacy attributes test', (t, end) => {
       tx.end()
 
       const attrs = segment.getAttributes()
-      const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+      const spanAttributes = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
       assert.equal(attrs.procedure, attributes[ATTR_HTTP_METHOD])
       // attributes.url shouldn't include the query
       assert.equal(attrs.url, `https://${attributes[ATTR_NET_PEER_NAME]}/search`)
