@@ -7,8 +7,8 @@
 const { ROOT_CONTEXT, TraceFlags } = require('@opentelemetry/api')
 const { Span } = require('@opentelemetry/sdk-trace-base')
 
-module.exports = function createSpan({ parentId, tracer, tx, kind, name }) {
-  const spanContext = {
+module.exports = function createSpan({ parentId, tracer, tx, kind, name, spanContext }) {
+  spanContext = spanContext || {
     traceId: tx?.traceId,
     spanId: tx?.trace?.root?.id,
     traceFlags: TraceFlags.SAMPLED
