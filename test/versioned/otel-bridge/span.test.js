@@ -23,7 +23,7 @@ const {
   ATTR_HTTP_HOST,
   ATTR_HTTP_METHOD,
   ATTR_HTTP_REQUEST_METHOD,
-  ATTR_HTTP_RESP_STATUS_CODE,
+  ATTR_HTTP_RES_STATUS_CODE,
   ATTR_HTTP_ROUTE,
   ATTR_HTTP_STATUS_CODE,
   ATTR_HTTP_STATUS_TEXT,
@@ -157,7 +157,7 @@ test('Http external span is bridged accordingly', (t, end) => {
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'undici-external-test'
     tracer.startActiveSpan('unidic-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
-      span.setAttribute(ATTR_HTTP_RESP_STATUS_CODE, 200)
+      span.setAttribute(ATTR_HTTP_RES_STATUS_CODE, 200)
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'External/www.newrelic.com')
       span.end()
@@ -193,7 +193,7 @@ test('Http external span is bridged accordingly(legacy attributes test)', (t, en
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'http-external-test'
     tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
-      span.setAttribute(ATTR_HTTP_RESP_STATUS_CODE, 200)
+      span.setAttribute(ATTR_HTTP_RES_STATUS_CODE, 200)
       span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'External/www.newrelic.com')
@@ -319,7 +319,7 @@ test('server span is bridged accordingly', (t, end) => {
 
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
     const tx = agent.getTransaction()
-    span.setAttribute(ATTR_HTTP_RESP_STATUS_CODE, 200)
+    span.setAttribute(ATTR_HTTP_RES_STATUS_CODE, 200)
     span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
     span.end()
     assert.ok(!tx.isDistributedTrace)
