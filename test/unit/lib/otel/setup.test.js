@@ -49,3 +49,10 @@ test('should not create provider when `feature_flag.opentelemetry_bridge` is fal
   assert.equal(provider, null)
   assert.equal(loggerMock.warn.args[0][0], '`feature_flag.opentelemetry_bridge` is not enabled, skipping setup of opentelemetry-bridge')
 })
+
+test('should assign span key to agent', (t) => {
+  const { agent, loggerMock } = t.nr
+  agent.config.feature_flag.opentelemetry_bridge = true
+  otelSetup(agent, loggerMock)
+  assert.ok(agent.otelSpanKey)
+})
