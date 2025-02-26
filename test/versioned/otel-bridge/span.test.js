@@ -20,6 +20,7 @@ const {
   ATTR_DB_STATEMENT,
   ATTR_DB_SYSTEM,
   ATTR_GRPC_STATUS_CODE,
+  ATTR_FULL_URL,
   ATTR_HTTP_HOST,
   ATTR_HTTP_METHOD,
   ATTR_HTTP_REQUEST_METHOD,
@@ -150,7 +151,7 @@ test('Http external span is bridged accordingly', (t, end) => {
     [ATTR_URL_QUERY]: 'q=test',
     [ATTR_URL_SCHEME]: 'https',
     [ATTR_HTTP_HOST]: 'www.newrelic.com',
-    [ATTR_HTTP_URL]: 'https://www.newrelic.com/search?q=test'
+    [ATTR_FULL_URL]: 'https://www.newrelic.com:8080/search?q=test'
   }
 
   const { agent, tracer } = t.nr
@@ -159,7 +160,7 @@ test('Http external span is bridged accordingly', (t, end) => {
     tracer.startActiveSpan('unidic-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
       span.setAttribute(ATTR_HTTP_RES_STATUS_CODE, 200)
       const segment = agent.tracer.getSegment()
-      assert.equal(segment.name, 'External/www.newrelic.com')
+      assert.equal(segment.name, 'External/www.newrelic.com/search')
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
@@ -170,10 +171,11 @@ test('Http external span is bridged accordingly', (t, end) => {
       assert.equal(attrs.procedure, attributes[ATTR_HTTP_REQUEST_METHOD])
       assert.equal(attrs['url.scheme'], attrs[ATTR_URL_SCHEME])
       // attributes.url shouldn't include the query
-      assert.equal(attrs.url, `https://${attributes[ATTR_SERVER_ADDRESS]}/search`)
+      assert.equal(attrs.url, `https://${attributes[ATTR_SERVER_ADDRESS]}:8080/search`)
       assert.equal(spanAttributes['http.statusCode'], 200)
       assert.equal(spanAttributes.hostname, attributes[ATTR_SERVER_ADDRESS])
       assert.equal(spanAttributes.port, attributes[ATTR_SERVER_PORT])
+      assert.equal(spanAttributes['request.parameters.q'], 'test')
       end()
     })
   })
@@ -186,7 +188,7 @@ test('Http external span is bridged accordingly(legacy attributes test)', (t, en
     [ATTR_NET_PEER_PORT]: 8080,
     [ATTR_URL_QUERY]: 'q=test',
     [ATTR_HTTP_HOST]: 'www.newrelic.com',
-    [ATTR_HTTP_URL]: 'https://www.newrelic.com/search?q=test'
+    [ATTR_HTTP_URL]: 'https://www.newrelic.com:8080/search?q=test'
   }
 
   const { agent, tracer } = t.nr
@@ -196,7 +198,7 @@ test('Http external span is bridged accordingly(legacy attributes test)', (t, en
       span.setAttribute(ATTR_HTTP_RES_STATUS_CODE, 200)
       span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
       const segment = agent.tracer.getSegment()
-      assert.equal(segment.name, 'External/www.newrelic.com')
+      assert.equal(segment.name, 'External/www.newrelic.com/search')
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
@@ -206,11 +208,12 @@ test('Http external span is bridged accordingly(legacy attributes test)', (t, en
       const spanAttributes = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
       assert.equal(attrs.procedure, attributes[ATTR_HTTP_METHOD])
       // attributes.url shouldn't include the query
-      assert.equal(attrs.url, `https://${attributes[ATTR_NET_PEER_NAME]}/search`)
+      assert.equal(attrs.url, `https://${attributes[ATTR_NET_PEER_NAME]}:8080/search`)
       assert.equal(spanAttributes['http.statusCode'], 200)
       assert.equal(spanAttributes['http.statusText'], 'OK')
       assert.equal(spanAttributes.hostname, attributes[ATTR_NET_PEER_NAME])
       assert.equal(spanAttributes.port, attributes[ATTR_NET_PEER_PORT])
+      assert.equal(spanAttributes['request.parameters.q'], 'test')
       end()
     })
   })
