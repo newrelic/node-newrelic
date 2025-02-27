@@ -8,7 +8,8 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const os = require('node:os')
-const { setTimeout } = require('node:timers/promises')
+const { Writable } = require('node:stream')
+const tspl = require('@matteo.collina/tspl')
 
 const helper = require('#testlib/agent_helper.js')
 const AwsLambda = require('#agentlib/serverless/aws-lambda.js')
@@ -16,10 +17,6 @@ const lambdaSampleEvents = require('./lambda-sample-events')
 const {
   DESTINATIONS: ATTR_DEST
 } = require('#agentlib/transaction/index.js')
-const {
-  createAwsLambdaApiServer,
-  createAwsResponseStream
-} = require('#testlib/aws-server-stubs/lambda-streaming-response.js')
 
 const validStreamMetaData = {
   statusCode: 200,
@@ -54,11 +51,7 @@ test.beforeEach(async (ctx) => {
     serverless_mode: { enabled: true }
   })
 
-  const { server, hostname, port } = await createAwsLambdaApiServer()
-  const {
-    request: responseStream
-  } = createAwsResponseStream({ hostname, port })
-  ctx.nr.server = server
+  const { request: responseStream } = createAwsResponseStream()
   ctx.nr.responseStream = responseStream
 
   process.env.NEWRELIC_PIPE_PATH = os.devNull
@@ -79,10 +72,51 @@ test.beforeEach(async (ctx) => {
   }
 })
 
-test.afterEach((ctx) => {
+test.afterEach(async (ctx) => {
   helper.unloadAgent(ctx.nr.agent)
-  ctx.nr.server.close()
+  if (ctx.nr.responseStream.writableFinished !== true) {
+    ctx.nr.responseStream.destroy()
+  }
 })
+
+/**
+ * Creates a writable stream that simulates the stream actions AWS's Lambda
+ * runtime expects when working with streamable handlers.
+ *
+ * @returns {Writable}
+ */
+function createAwsResponseStream() {
+  let responseDoneResolve
+  let responseDoneReject
+  const responseDonePromise = new Promise((resolve, reject) => {
+    responseDoneResolve = resolve
+    responseDoneReject = reject
+  })
+
+  let result = ''
+  const stream = new Writable({
+    write(chunk, encoding, callback) {
+      result += chunk
+      callback()
+    }
+  })
+
+  stream.setContentType = function () {}
+
+  stream.on('error', (error) => {
+    if (responseDoneReject) responseDoneReject(error)
+  })
+
+  stream.on('end', () => {
+    responseDoneResolve(result)
+  })
+
+  return {
+    request: stream,
+    headersDone: Promise.resolve(),
+    responseDone: responseDonePromise
+  }
+}
 
 /**
  * Decorate the provided AWS Lambda handler in the manner AWS Lambda expects
@@ -109,9 +143,12 @@ function decorateHandler(handler) {
 function writeToResponseStream(chunks, stream, delay) {
   const writes = []
   for (const chunk of chunks) {
-    const promise = setTimeout(() => {
-      stream.write(chunk)
-    }, delay)
+    const promise = new Promise(resolve => {
+      setTimeout(() => {
+        stream.write(chunk)
+        resolve()
+      }, delay)
+    })
     writes.push(promise)
   }
   return Promise.all(writes)
@@ -129,6 +166,10 @@ class HttpResponseStream {
     originalStream.setContentType('application/vnd.awslambda.http-integration-response')
     const streamMeta = JSON.stringify(prelude)
     originalStream._onBeforeFirstWrite = (write) => {
+      // If we finish writing all of the required unit tests, and this assert
+      // never gets triggered, then there is no reason to have this
+      // `HttpResponseStream` thing.
+      assert.fail('_onBeforeFirstWrite')
       write(streamMeta)
       write(new Uint8Array(0))
     }
@@ -143,25 +184,23 @@ test('should return original handler if not a function', (t) => {
   assert.equal(newHandler, handler)
 })
 
-test('should pick up on the arn', function (t) {
+test('should pick up on the arn', async (t) => {
   const { agent, awsLambda, event, responseStream, context } = t.nr
   assert.equal(agent.collector.metadata.arn, null)
 
-  const handler = decorateHandler(() => {})
+  const handler = decorateHandler(async () => {})
   const patched = awsLambda.patchLambdaHandler(handler)
-  patched(event, responseStream, context)
+  await patched(event, responseStream, context)
   assert.equal(agent.collector.metadata.arn, context.invokedFunctionArn)
 })
 
 test('when invoked with API Gateway Lambda proxy event', async (t) => {
   helper.unloadAgent(t.nr.agent)
-  t.beforeEach(async () => {
-    t.nr.server.close()
-  })
 
   await t.test(
     'should not create web transaction for custom direct invocation payload',
-    (t, end) => {
+    async (t) => {
+      const plan = tspl(t, { plan: 8 })
       const { agent, awsLambda, responseStream, context } = t.nr
       agent.on('transactionFinished', confirmAgentAttribute)
 
@@ -178,34 +217,35 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
         await writeToResponseStream(chunks, responseStream, 500)
 
         const transaction = agent.tracer.getTransaction()
-        assert.ok(transaction)
-        assert.equal(transaction.type, 'bg')
-        assert.equal(transaction.getFullName(), expectedBgTransactionName)
-        assert.equal(transaction.isActive(), true)
+        plan.ok(transaction)
+        plan.equal(transaction.type, 'bg')
+        plan.equal(transaction.getFullName(), expectedBgTransactionName)
+        plan.equal(transaction.isActive(), true)
         responseStream.end()
         return validResponse
       })
 
       const wrappedHandler = awsLambda.patchLambdaHandler(handler)
-      wrappedHandler(nonApiGatewayProxyEvent, responseStream, context)
+      await wrappedHandler(nonApiGatewayProxyEvent, responseStream, context)
+
+      await plan
 
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
         const segment = transaction.baseSegment
         const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
-        assert.equal(agentAttributes['request.method'], undefined)
-        assert.equal(agentAttributes['request.uri'], undefined)
+        plan.equal(agentAttributes['request.method'], undefined)
+        plan.equal(agentAttributes['request.uri'], undefined)
 
-        assert.equal(spanAttributes['request.method'], undefined)
-        assert.equal(spanAttributes['request.uri'], undefined)
-
-        end()
+        plan.equal(spanAttributes['request.method'], undefined)
+        plan.equal(spanAttributes['request.uri'], undefined)
       }
     }
   )
 
-  await t.test('should create web transaction', (t, end) => {
+  await t.test('should create web transaction', async (t) => {
+    const plan = tspl(t, { plan: 8 })
     const { agent, awsLambda, responseStream, context } = t.nr
     agent.on('transactionFinished', confirmAgentAttribute)
 
@@ -218,45 +258,43 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
 
       const transaction = agent.tracer.getTransaction()
 
-      assert.ok(transaction)
-      assert.equal(transaction.type, 'web')
-      assert.equal(transaction.getFullName(), expectedWebTransactionName)
-      assert.equal(transaction.isActive(), true)
+      plan.ok(transaction)
+      plan.equal(transaction.type, 'web')
+      plan.equal(transaction.getFullName(), expectedWebTransactionName)
+      plan.equal(transaction.isActive(), true)
       responseStream.end()
       return validResponse
     })
 
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+    await plan
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
       const segment = transaction.baseSegment
       const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
-      assert.equal(agentAttributes['request.method'], 'GET')
-      assert.equal(agentAttributes['request.uri'], '/test/hello')
+      plan.equal(agentAttributes['request.method'], 'GET')
+      plan.equal(agentAttributes['request.uri'], '/test/hello')
 
-      assert.equal(spanAttributes['request.method'], 'GET')
-      assert.equal(spanAttributes['request.uri'], '/test/hello')
-
-      end()
+      plan.equal(spanAttributes['request.method'], 'GET')
+      plan.equal(spanAttributes['request.uri'], '/test/hello')
     }
   })
 
   await t.test(
     'should set w3c tracecontext on transaction if present on request header',
-    (t, end) => {
+    async (t) => {
+      const plan = tspl(t, { plan: 2 })
       const { agent, awsLambda, responseStream, context } = t.nr
       const expectedTraceId = '4bf92f3577b34da6a3ce929d0e0e4736'
       const traceparent = `00-${expectedTraceId}-00f067aa0ba902b7-00`
 
       // transaction finished event passes back transaction,
       // so can't pass `done` in or will look like errored.
-      agent.on('transactionFinished', () => {
-        end()
-      })
+      agent.on('transactionFinished', () => {})
 
       agent.config.distributed_tracing.enabled = true
 
@@ -276,28 +314,28 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
         const traceParentFields = headers.traceparent.split('-')
         const [version, traceId] = traceParentFields
 
-        assert.equal(version, '00')
-        assert.equal(traceId, expectedTraceId)
+        plan.equal(version, '00')
+        plan.equal(traceId, expectedTraceId)
 
         responseStream.end()
         return validResponse
       })
 
       const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+      await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-      wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+      await plan
     }
   )
 
   await t.test(
     'should add w3c tracecontext to transaction if not present on request header',
-    (t, end) => {
+    async (t) => {
+      const plan = tspl(t, { plan: 2 })
       const { agent, awsLambda, responseStream, context } = t.nr
       // transaction finished event passes back transaction,
       // so can't pass `done` in or will look like errored.
-      agent.on('transactionFinished', () => {
-        end()
-      })
+      agent.on('transactionFinished', () => {})
 
       agent.config.account_id = 'AccountId1'
       agent.config.primary_application_id = 'AppId1'
@@ -316,19 +354,21 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
         const headers = {}
         transaction.insertDistributedTraceHeaders(headers)
 
-        assert.ok(headers.traceparent)
-        assert.ok(headers.tracestate)
+        plan.ok(headers.traceparent)
+        plan.ok(headers.tracestate)
         responseStream.end()
         return validResponse
       })
 
       const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+      await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-      wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+      await plan
     }
   )
 
-  await t.test('should capture request parameters', (t, end) => {
+  await t.test('should capture request parameters', async (t) => {
+    const plan = tspl(t, { plan: 2 })
     const { agent, awsLambda, responseStream, context } = t.nr
     agent.on('transactionFinished', confirmAgentAttribute)
 
@@ -347,19 +387,20 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     })
 
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
-    wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+
+    await plan
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      assert.equal(agentAttributes['request.parameters.name'], 'me')
-      assert.equal(agentAttributes['request.parameters.team'], 'node agent')
-
-      end()
+      plan.equal(agentAttributes['request.parameters.name'], 'me')
+      plan.equal(agentAttributes['request.parameters.team'], 'node agent')
     }
   })
 
-  await t.test('should capture request parameters in Span Attributes', (t, end) => {
+  await t.test('should capture request parameters in Span Attributes', async (t) => {
+    const plan = tspl(t, { plan: 2 })
     const { agent, awsLambda, responseStream, context } = t.nr
     agent.on('transactionFinished', confirmAgentAttribute)
 
@@ -378,21 +419,21 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     })
 
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+    await plan
 
     function confirmAgentAttribute(transaction) {
       const segment = transaction.baseSegment
       const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
-      assert.equal(spanAttributes['request.parameters.name'], 'me')
-      assert.equal(spanAttributes['request.parameters.team'], 'node agent')
-
-      end()
+      plan.equal(spanAttributes['request.parameters.name'], 'me')
+      plan.equal(spanAttributes['request.parameters.team'], 'node agent')
     }
   })
 
-  await t.test('should capture request headers', (t, end) => {
+  await t.test('should capture request headers', async (t) => {
+    const plan = tspl(t, { plan: 13 })
     const { agent, awsLambda, responseStream, context } = t.nr
     agent.on('transactionFinished', confirmAgentAttribute)
 
@@ -407,46 +448,46 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     })
 
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+    await plan
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      assert.equal(
+      plan.equal(
         agentAttributes['request.headers.accept'],
         'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       )
-      assert.equal(
+      plan.equal(
         agentAttributes['request.headers.acceptEncoding'],
         'gzip, deflate, lzma, sdch, br'
       )
-      assert.equal(agentAttributes['request.headers.acceptLanguage'], 'en-US,en;q=0.8')
-      assert.equal(agentAttributes['request.headers.cloudFrontForwardedProto'], 'https')
-      assert.equal(agentAttributes['request.headers.cloudFrontIsDesktopViewer'], 'true')
-      assert.equal(agentAttributes['request.headers.cloudFrontIsMobileViewer'], 'false')
-      assert.equal(agentAttributes['request.headers.cloudFrontIsSmartTVViewer'], 'false')
-      assert.equal(agentAttributes['request.headers.cloudFrontIsTabletViewer'], 'false')
-      assert.equal(agentAttributes['request.headers.cloudFrontViewerCountry'], 'US')
-      assert.equal(
+      plan.equal(agentAttributes['request.headers.acceptLanguage'], 'en-US,en;q=0.8')
+      plan.equal(agentAttributes['request.headers.cloudFrontForwardedProto'], 'https')
+      plan.equal(agentAttributes['request.headers.cloudFrontIsDesktopViewer'], 'true')
+      plan.equal(agentAttributes['request.headers.cloudFrontIsMobileViewer'], 'false')
+      plan.equal(agentAttributes['request.headers.cloudFrontIsSmartTVViewer'], 'false')
+      plan.equal(agentAttributes['request.headers.cloudFrontIsTabletViewer'], 'false')
+      plan.equal(agentAttributes['request.headers.cloudFrontViewerCountry'], 'US')
+      plan.equal(
         agentAttributes['request.headers.host'],
         'wt6mne2s9k.execute-api.us-west-2.amazonaws.com'
       )
-      assert.equal(agentAttributes['request.headers.upgradeInsecureRequests'], '1')
-      assert.equal(
+      plan.equal(agentAttributes['request.headers.upgradeInsecureRequests'], '1')
+      plan.equal(
         agentAttributes['request.headers.userAgent'],
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
       )
-      assert.equal(
+      plan.equal(
         agentAttributes['request.headers.via'],
         '1.1 fb7cca60f0ecd82ce07790c9c5eef16c.cloudfront.net (CloudFront)'
       )
-
-      end()
     }
   })
 
-  await t.test('should filter request headers by `exclude` rules', (t, end) => {
+  await t.test('should filter request headers by `exclude` rules', async (t) => {
+    const plan = tspl(t, { plan: 12 })
     const { agent, awsLambda, responseStream, context } = t.nr
     agent.on('transactionFinished', confirmAgentAttribute)
 
@@ -455,37 +496,37 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const handler = decorateHandler(async (event, responseStream, context) => {
       responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['filter by exclude 1', 'filter by exclude 2', 'filter by exclude 3']
-      const stream = await writeToResponseStream(chunks, responseStream, 500)
-      stream.end()
+      await writeToResponseStream(chunks, responseStream, 500)
+      responseStream.end()
       return validResponse
     })
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+    await plan
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      assert.equal('request.headers.X-Amz-Cf-Id' in agentAttributes, false)
-      assert.equal('request.headers.X-Forwarded-For' in agentAttributes, false)
-      assert.equal('request.headers.X-Forwarded-Port' in agentAttributes, false)
-      assert.equal('request.headers.X-Forwarded-Proto' in agentAttributes, false)
+      plan.equal('request.headers.X-Amz-Cf-Id' in agentAttributes, false)
+      plan.equal('request.headers.X-Forwarded-For' in agentAttributes, false)
+      plan.equal('request.headers.X-Forwarded-Port' in agentAttributes, false)
+      plan.equal('request.headers.X-Forwarded-Proto' in agentAttributes, false)
 
-      assert.equal('request.headers.xAmzCfId' in agentAttributes, false)
-      assert.equal('request.headers.xForwardedFor' in agentAttributes, false)
-      assert.equal('request.headers.xForwardedPort' in agentAttributes, false)
-      assert.equal('request.headers.xForwardedProto' in agentAttributes, false)
+      plan.equal('request.headers.xAmzCfId' in agentAttributes, false)
+      plan.equal('request.headers.xForwardedFor' in agentAttributes, false)
+      plan.equal('request.headers.xForwardedPort' in agentAttributes, false)
+      plan.equal('request.headers.xForwardedProto' in agentAttributes, false)
 
-      assert.equal('request.headers.XAmzCfId' in agentAttributes, false)
-      assert.equal('request.headers.XForwardedFor' in agentAttributes, false)
-      assert.equal('request.headers.XForwardedPort' in agentAttributes, false)
-      assert.equal('request.headers.XForwardedProto' in agentAttributes, false)
-
-      end()
+      plan.equal('request.headers.XAmzCfId' in agentAttributes, false)
+      plan.equal('request.headers.XForwardedFor' in agentAttributes, false)
+      plan.equal('request.headers.XForwardedPort' in agentAttributes, false)
+      plan.equal('request.headers.XForwardedProto' in agentAttributes, false)
     }
   })
 
-  await t.test('should capture status code', (t, end) => {
+  await t.test('should capture status code', async (t) => {
+    const plan = tspl(t, { plan: 2 })
     const { agent, awsLambda, responseStream, context } = t.nr
     agent.on('transactionFinished', confirmAgentAttribute)
 
@@ -498,19 +539,19 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       responseStream.end()
       return validResponse
     })
-    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
-    wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+
+    await plan
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
       const segment = transaction.baseSegment
       const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
-      assert.equal(agentAttributes['http.statusCode'], '200')
-      assert.equal(spanAttributes['http.statusCode'], '200')
-
-      end()
+      plan.equal(agentAttributes['http.statusCode'], '200')
+      plan.equal(spanAttributes['http.statusCode'], '200')
     }
   })
 })
