@@ -72,3 +72,28 @@ test('should remove otelSynthesis symbol when it exists on value', () => {
   const otelData = newCtx.getValue(key)
   assert.deepEqual(otelData, { test: 'value' })
 })
+
+test('should add transaction and trace root to otel ctx', (t) => {
+  const { agent } = t.nr
+  const ctx = otel.context.active()
+  const transaction = { agent, traceId: 'traceId', trace: { root: { id: 'segmentId' } } }
+  const newContext = ctx.enterTransaction(transaction)
+  const fakeSpan = newContext.getValue(agent.otelSpanKey)
+  assert.deepEqual(fakeSpan, {
+    segment: transaction.trace.root,
+    transaction
+  })
+})
+
+test('should add segment to otel ctx', (t) => {
+  const { agent } = t.nr
+  const ctx = otel.context.active()
+  ctx._transaction = { agent, traceId: 'traceId' }
+  const segment = { id: 'segmentId' }
+  const newContext = ctx.enterSegment({ segment })
+  const fakeSpan = newContext.getValue(agent.otelSpanKey)
+  assert.deepEqual(fakeSpan, {
+    segment,
+    transaction: newContext.transaction
+  })
+})
