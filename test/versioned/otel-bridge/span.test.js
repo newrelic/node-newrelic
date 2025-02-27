@@ -359,7 +359,7 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
-    assert.equal(segment.name, 'WebTransaction/NormalizedUri/*')
+    assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//unknown')
 
     const attrs = segment.getAttributes()
     assert.equal(attrs.host, expectedHost)
@@ -373,14 +373,14 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
       'HttpDispatcher',
       'WebTransaction',
       'WebTransactionTotalTime',
-      'WebTransactionTotalTime/NormalizedUri/*',
+      'WebTransactionTotalTime/WebFrameworkUri//unknown',
       segment.name
     ]
     for (const expectedMetric of expectedMetrics) {
       assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
     }
     assert.equal(unscopedMetrics.Apdex.apdexT, 0.1)
-    assert.equal(unscopedMetrics['Apdex/NormalizedUri/*'].apdexT, 0.1)
+    assert.equal(unscopedMetrics['Apdex/WebFrameworkUri//unknown'].apdexT, 0.1)
 
     end()
   })
