@@ -27,9 +27,14 @@ const {
 } = require('./fixtures')
 const {
   ATTR_DB_SYSTEM,
+  ATTR_FULL_URL,
+  ATTR_HTTP_REQUEST_METHOD,
   ATTR_MESSAGING_DESTINATION,
   ATTR_MESSAGING_DESTINATION_KIND,
-  ATTR_MESSAGING_SYSTEM
+  ATTR_MESSAGING_SYSTEM,
+  ATTR_SERVER_ADDRESS,
+  ATTR_SERVER_PORT,
+  ATTR_URL_QUERY,
 } = require('#agentlib/otel/constants.js')
 const { SpanKind, TraceFlags } = require('@opentelemetry/api')
 const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
@@ -56,13 +61,31 @@ test.afterEach((ctx) => {
 
 test('should create http external segment from otel http client span', (t, end) => {
   const { agent, synthesizer, parentId, tracer } = t.nr
+
+  const attributes = {
+    [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
+    [ATTR_HTTP_REQUEST_METHOD]: 'GET',
+    [ATTR_SERVER_PORT]: 8080,
+    [ATTR_URL_QUERY]: 'q=test',
+    [ATTR_FULL_URL]: 'https://www.newrelic.com:8080/search?q=test'
+  }
+
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tx, parentId, tracer })
+    span.setAttribute('http.url', attributes[ATTR_FULL_URL])
+    span.setAttribute('url.query', attributes[ATTR_URL_QUERY])
     const { segment, transaction } = synthesizer.synthesize(span)
+    const attrs = segment.getAttributes()
+    const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
     assert.equal(tx.id, transaction.id)
     assert.equal(segment.id, span.spanContext().spanId)
-    assert.equal(segment.name, 'External/newrelic.com')
+    assert.equal(segment.name, 'External/newrelic.com/search')
     assert.equal(segment.parentId, tx.trace.root.id)
+    assert.equal(attrs.procedure, attributes[ATTR_HTTP_REQUEST_METHOD])
+    assert.equal(attrs.url, 'https://www.newrelic.com:8080/search')
+    assert.equal(spanAttributes.hostname, attributes[ATTR_SERVER_ADDRESS])
+    assert.equal(spanAttributes.port, attributes[ATTR_SERVER_PORT])
+    assert.equal(spanAttributes['request.parameters.q'], 'test')
     tx.end()
     end()
   })
