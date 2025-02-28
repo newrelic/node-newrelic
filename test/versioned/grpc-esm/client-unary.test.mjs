@@ -38,6 +38,8 @@ const client = getClient(grpc, proto, port)
 
 test.afterEach(() => {
   agent.errors.traceAggregator.clear()
+  agent.transactionSampler._reset()
+  agent.spanEventAggregator.clear()
   agent.metrics.clear()
 })
 
@@ -101,6 +103,9 @@ test('should not include distributed trace headers when not in transaction', asy
 
 test('should not include distributed trace headers when distributed_tracing.enabled is set to false', (t, end) => {
   agent.config.distributed_tracing.enabled = false
+  t.after(() => {
+    agent.config.distributed_tracing.enabled = true
+  })
   helper.runInTransaction(agent, 'dt-test', async (tx) => {
     const payload = { name: 'dt disabled' }
     await makeUnaryRequest({ client, payload, fnName: 'sayHello' })
@@ -132,7 +137,8 @@ for (const config of grpcConfigs) {
   test(testName, (t, end) => {
     const expectedStatusText = ERR_MSG
     const expectedStatusCode = ERR_CODE
-    agent.config.grpc.record_errors = config.should
+    agent.config.grpc.record_errors = config.record_errors
+    agent.config.grpc.ignore_status_codes = config.ignore_status_codes
 
     function transactionFinished(transaction) {
       if (transaction.name === 'clientTransaction') {

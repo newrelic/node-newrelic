@@ -8,7 +8,7 @@
 const assert = require('node:assert')
 
 const { routesToTest, makeRequest } = require('./common')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 
 module.exports = async function runTests(t, getExpectedSegments) {
@@ -44,6 +44,27 @@ module.exports = async function runTests(t, getExpectedSegments) {
         }
 
         assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
+        const flattenedSegments = expectedSegments[1].reduce((segments, segment) => {
+          if (Array.isArray(segment)) {
+            segments.push(...segment.map((s) => {
+              return {
+                name: s,
+                kind: 'internal'
+              }
+            }))
+          } else {
+            segments.push({ name: segment, kind: 'internal' })
+          }
+
+          return segments
+        }, [])
+        assertSpanKind({
+          agent,
+          segments: [
+            { name: expectedSegments[0], kind: 'server' },
+            ...flattenedSegments
+          ]
+        })
       })
 
       await fastify.listen({ port: 0 })

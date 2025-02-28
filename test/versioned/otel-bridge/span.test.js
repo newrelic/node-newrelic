@@ -49,6 +49,7 @@ const {
   DB_SYSTEM_VALUES,
   MESSAGING_SYSTEM_KIND_VALUES
 } = require('../../../lib/otel/constants.js')
+const { assertSpanKind } = require('../../lib/custom-assertions')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
@@ -109,6 +110,15 @@ test('mix internal and NR span tests', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: 'main', kind: 'internal' },
+          { name: 'hi', kind: 'internal' },
+          { name: 'bye', kind: 'internal' },
+          { name: 'agentSegment', kind: 'internal' }
+        ]
+      })
       const metrics = tx.metrics.scoped[tx.name]
       assert.equal(metrics['Custom/main'].callCount, 1)
       assert.equal(metrics['Custom/hi'].callCount, 1)
@@ -134,6 +144,12 @@ test('client span(http) is bridge accordingly', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
       const metrics = tx.metrics.scoped[tx.name]
       assert.equal(metrics['External/newrelic.com/http'].callCount, 1)
       const unscopedMetrics = tx.metrics.unscoped
@@ -170,6 +186,12 @@ test('Http external span is bridged accordingly', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
 
       const attrs = segment.getAttributes()
       const spanAttributes = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
@@ -209,6 +231,12 @@ test('Http external span is bridged accordingly(legacy attributes test)', (t, en
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
 
       const attrs = segment.getAttributes()
       const spanAttributes = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
@@ -245,6 +273,12 @@ test('client span(db) is bridge accordingly(statement test)', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
       const attrs = segment.getAttributes()
       assert.equal(attrs.host, expectedHost)
       assert.equal(attrs.product, 'postgresql')
@@ -290,6 +324,12 @@ test('client span(db) is bridged accordingly(operation test)', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
       const attrs = segment.getAttributes()
       assert.equal(attrs.host, expectedHost)
       assert.equal(attrs.product, 'redis')
@@ -337,6 +377,12 @@ test('server span is bridged accordingly', (t, end) => {
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
     assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//GET/foo/:param')
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: tx.name, kind: 'server' }
+      ]
+    })
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
@@ -390,6 +436,12 @@ test('server span(rpc) is bridged accordingly', (t, end) => {
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
     assert.equal(segment.name, 'WebTransaction/WebFrameworkUri/foo/test.service/getData')
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: tx.name, kind: 'server' }
+      ]
+    })
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
@@ -439,6 +491,12 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
     assert.equal(tx.traceId, span.spanContext().traceId)
     span.end()
     assert.ok(!tx.isDistributedTrace)
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: tx.name, kind: 'server' }
+      ]
+    })
     const segment = agent.tracer.getSegment()
 
     const duration = hrTimeToMilliseconds(span.duration)
@@ -493,6 +551,12 @@ test('producer span is bridged accordingly', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'producer' }
+        ]
+      })
       const metrics = tx.metrics.scoped[tx.name]
       assert.equal(metrics['MessageBroker/messaging-lib/queue/Produce/Named/test-queue'].callCount, 1)
       const unscopedMetrics = tx.metrics.unscoped
@@ -530,6 +594,12 @@ test('consumer span is bridged correctly', (t, end) => {
     const segment = agent.tracer.getSegment()
     assert.equal(tx.traceId, span.spanContext().traceId)
     span.end()
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: tx.name, kind: 'consumer' }
+      ]
+    })
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
 

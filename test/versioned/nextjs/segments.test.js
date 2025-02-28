@@ -17,18 +17,20 @@ const {
   isMiddlewareInstrumentationSupported
 } = require('../../../lib/instrumentation/nextjs/utils')
 const agentHelper = require('../../lib/agent_helper')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 function getChildSegments(uri) {
   const segments = [
     {
-      name: `${SEGMENT_PREFIX}${uri}`
+      name: `${SEGMENT_PREFIX}${uri}`,
+      kind: 'internal'
     }
   ]
 
   if (isMiddlewareInstrumentationSupported(nextPkg.version)) {
     segments.unshift({
-      name: `${MW_PREFIX}/middleware`
+      name: `${MW_PREFIX}/middleware`,
+      kind: 'internal'
     })
   }
 
@@ -61,13 +63,16 @@ test('Next.js', async (t) => {
     const [tx] = await txPromise
 
     assert.equal(res.statusCode, 200)
+    const children = getChildSegments(URI)
     const expectedSegments = [
       {
         name: `${TRANSACTION_PREFX}${URI}`,
-        children: getChildSegments(URI)
+        kind: 'server',
+        children
       }
     ]
     assertSegments(tx.trace, tx.trace.root, expectedSegments, { exact: false })
+    assertSpanKind({ agent, segments: [expectedSegments[0], ...children] })
   })
 
   await t.test('should properly name getServerSideProps segments on dynamic pages', async (t) => {
@@ -80,13 +85,16 @@ test('Next.js', async (t) => {
 
     assert.equal(res.statusCode, 200)
     const [tx] = await txPromise
+    const children = getChildSegments(EXPECTED_URI)
     const expectedSegments = [
       {
         name: `${TRANSACTION_PREFX}${EXPECTED_URI}`,
-        children: getChildSegments(EXPECTED_URI)
+        kind: 'server',
+        children
       }
     ]
     assertSegments(tx.trace, tx.trace.root, expectedSegments, { exact: false })
+    assertSpanKind({ agent, segments: [expectedSegments[0], ...children] })
   })
 
   await t.test(
@@ -104,19 +112,23 @@ test('Next.js', async (t) => {
       const [tx] = await txPromise
       const expectedSegments = [
         {
-          name: `${TRANSACTION_PREFX}${EXPECTED_URI}`
+          name: `${TRANSACTION_PREFX}${EXPECTED_URI}`,
+          kind: 'server'
         }
       ]
+      const segments = [expectedSegments[0]]
 
       if (semver.gte(nextPkg.version, '12.2.0')) {
-        expectedSegments[0].children = [
-          {
-            name: `${MW_PREFIX}/middleware`
-          }
-        ]
+        const segment = {
+          name: `${MW_PREFIX}/middleware`,
+          kind: 'internal'
+        }
+        expectedSegments[0].children = [segment]
+        segments.push(segment)
       }
 
       assertSegments(tx.trace, tx.trace.root, expectedSegments, { exact: false })
+      assertSpanKind({ agent, segments })
     }
   )
 })

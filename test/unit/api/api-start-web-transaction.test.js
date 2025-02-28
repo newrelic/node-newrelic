@@ -8,7 +8,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
-const { assertCLMAttrs } = require('../../lib/custom-assertions')
+const { assertCLMAttrs, assertSpanKind } = require('../../lib/custom-assertions')
 function nested({ api }) {
   api.startWebTransaction('nested', function nestedHandler() {})
 }
@@ -70,6 +70,7 @@ test('Agent API - startWebTransaction', async (t) => {
     })
 
     assert.ok(!transaction.isActive())
+    assertSpanKind({ agent, segments: [{ name: transaction.name, kind: 'server' }] })
     end()
   })
 

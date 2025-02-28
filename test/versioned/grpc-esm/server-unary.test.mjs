@@ -43,6 +43,8 @@ const client = getClient(grpc, proto, port)
 
 test.afterEach(() => {
   agent.errors.traceAggregator.clear()
+  agent.transactionSampler._reset()
+  agent.spanEventAggregator.clear()
   agent.metrics.clear()
 })
 
@@ -142,9 +144,11 @@ test('should not add DT headers when `distributed_tracing` is disabled', async (
         serverTransaction = tx
       }
     })
+    agent.config.distributed_tracing.enabled = true
   })
 
   agent.config.distributed_tracing.enabled = false
+
   await helper.runInTransaction(agent, 'web', async (tx) => {
     clientTransaction = tx
     clientTransaction.name = 'clientTransaction'

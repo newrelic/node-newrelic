@@ -8,7 +8,7 @@ const assert = require('node:assert')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const params = require('../../lib/params')
 const metrics = require('../../lib/metrics_helper')
-const { assertMetrics, assertSegments } = require('./../../lib/custom-assertions')
+const { assertMetrics, assertSegments, assertSpanKind } = require('./../../lib/custom-assertions')
 
 const CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
 exports.CON_STRING = CON_STRING
@@ -142,6 +142,14 @@ function verifyConsumeTransaction(tx, exchange, queue, routingKey) {
     queue,
     'should have queue name transaction parameter'
   )
+  if (tx.agent.config.distributed_tracing.enabled) {
+    assertSpanKind({
+      agent: tx.agent,
+      segments: [
+        { name: tx.name, kind: 'consumer' }
+      ]
+    })
+  }
 }
 
 function verifySendToQueue(tx) {
@@ -242,6 +250,13 @@ function verifyGet({ tx, exchangeName, routingKey, queue, assertAttr }) {
     assert.equal(attributes.port, params.rabbitmq_port, 'should have port on segment')
     assert.equal(attributes.routing_key, routingKey, 'should have routing key on get')
   }
+  assertSpanKind({
+    agent: tx.agent,
+    segments: [
+      { name: produceName, kind: 'producer' },
+      { name: consumeName, kind: 'producer' },
+    ]
+  })
 }
 
 function verifyPurge(tx) {
