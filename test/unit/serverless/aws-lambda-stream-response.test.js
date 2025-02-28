@@ -12,6 +12,8 @@ const { Writable } = require('node:stream')
 const tspl = require('@matteo.collina/tspl')
 
 const helper = require('#testlib/agent_helper.js')
+const tempRemoveListeners = require('../../lib/temp-remove-listeners')
+const tempOverrideUncaught = require('../../lib/temp-override-uncaught')
 const AwsLambda = require('#agentlib/serverless/aws-lambda.js')
 const lambdaSampleEvents = require('./lambda-sample-events')
 const {
@@ -39,7 +41,17 @@ const functionName = 'testNameStreaming'
 const expectedTransactionName = groupName + '/' + functionName
 const expectedBgTransactionName = 'OtherTransaction/' + expectedTransactionName
 const expectedWebTransactionName = 'WebTransaction/' + expectedTransactionName
-// const errorMessage = 'sad day'
+const errorMessage = 'sad day'
+// Attribute key names:
+const REQ_ID = 'aws.requestId'
+const LAMBDA_ARN = 'aws.lambda.arn'
+const COLDSTART = 'aws.lambda.coldStart'
+const EVENTSOURCE_ARN = 'aws.lambda.eventSource.arn'
+const EVENTSOURCE_TYPE = 'aws.lambda.eventSource.eventType'
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
+}
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
@@ -214,7 +226,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       const handler = decorateHandler(async (event, responseStream, context) => {
         responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
         const chunks = ['first', 'second', 'third', 'fourth']
-        await writeToResponseStream(chunks, responseStream, 500)
+        await writeToResponseStream(chunks, responseStream, 100)
 
         const transaction = agent.tracer.getTransaction()
         plan.ok(transaction)
@@ -254,7 +266,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const handler = decorateHandler(async (event, responseStream, context) => {
       responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['fifth', 'sixth', 'seventh', 'eighth']
-      await writeToResponseStream(chunks, responseStream, 500)
+      await writeToResponseStream(chunks, responseStream, 100)
 
       const transaction = agent.tracer.getTransaction()
 
@@ -304,7 +316,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       const handler = decorateHandler(async (event, responseStream, context) => {
         responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
         const chunks = ['tracecontext first', 'tracecontext second', 'tracecontext third', 'tracecontext fourth']
-        await writeToResponseStream(chunks, responseStream, 500)
+        await writeToResponseStream(chunks, responseStream, 100)
 
         const transaction = agent.tracer.getTransaction()
 
@@ -347,7 +359,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       const handler = decorateHandler(async (event, responseStream, context) => {
         responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
         const chunks = ['1 add traceContext', '2 add traceContext', '3 add traceContext']
-        await writeToResponseStream(chunks, responseStream, 500)
+        await writeToResponseStream(chunks, responseStream, 100)
 
         const transaction = agent.tracer.getTransaction()
 
@@ -381,7 +393,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const handler = decorateHandler(async (event, responseStream, context) => {
       responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['capturing req params 1', 'capturing req params 2', 'capturing req params 3']
-      await writeToResponseStream(chunks, responseStream, 500)
+      await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
       return validResponse
     })
@@ -413,7 +425,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const handler = decorateHandler(async (event, responseStream, context) => {
       responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['params in spans 1', 'params in spans 2', 'params in spans 3']
-      await writeToResponseStream(chunks, responseStream, 500)
+      await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
       return validResponse
     })
@@ -442,7 +454,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const handler = decorateHandler(async (event, responseStream, context) => {
       responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['capture headers 1', 'capture headers 2', 'capture headers 3']
-      await writeToResponseStream(chunks, responseStream, 500)
+      await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
       return validResponse
     })
@@ -496,7 +508,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const handler = decorateHandler(async (event, responseStream, context) => {
       responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['filter by exclude 1', 'filter by exclude 2', 'filter by exclude 3']
-      await writeToResponseStream(chunks, responseStream, 500)
+      await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
       return validResponse
     })
@@ -535,7 +547,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const handler = decorateHandler(async (event, responseStream, context) => {
       responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['capture statusCode 1', 'capture statusCode 2', 'capture statusCode 3']
-      await writeToResponseStream(chunks, responseStream, 500)
+      await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
       return validResponse
     })
@@ -554,4 +566,1269 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       plan.equal(spanAttributes['http.statusCode'], '200')
     }
   })
+
+  await t.test('should capture response status code in async lambda', async (t) => {
+    const plan = tspl(t, { plan: 2 })
+    const { agent, awsLambda, responseStream, context } = t.nr
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+    const handler = decorateHandler(async (event, responseStream) => {
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['capture statusCode 1', 'capture statusCode 2', 'capture statusCode 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
+      return validResponse
+    })
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+
+    await plan
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+      plan.equal(agentAttributes['http.statusCode'], '200')
+      plan.equal(spanAttributes['http.statusCode'], '200')
+    }
+  })
+
+  /// started here
+  await t.test('should capture response headers', async (t) => {
+    const plan = tspl(t, { plan: 1 })
+    const { agent, awsLambda, responseStream, context } = t.nr
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['step 1', 'step 2', 'step 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
+      return validResponse
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+
+    await plan
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+      plan.equal(agentAttributes['response.headers.responseHeader'], 'NewRelic-Test-Header')
+    }
+  })
+
+  await t.test('should work when responding without headers', async (t) => {
+    const plan = tspl(t, { plan: 1 })
+    const { agent, awsLambda, responseStream, context } = t.nr
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      responseStream = HttpResponseStream.from(responseStream, { statusCode: 200 })
+      const chunks = ['no headers 1', 'no headers 2', 'no headers 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+
+    await plan
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+      plan.equal(agentAttributes['http.statusCode'], '200')
+    }
+  })
+
+  await t.test('should detect event type', async (t) => {
+    const plan = tspl(t, { plan: 1 })
+    const { agent, awsLambda, responseStream, context } = t.nr
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['step 1', 'step 2', 'step 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
+      return validResponse
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+
+    await plan
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+      plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'apiGateway')
+    }
+  })
+
+  await t.test('should collect event source meta data', async (t) => {
+    const plan = tspl(t, { plan: 6 })
+    const { agent, awsLambda, responseStream, context } = t.nr
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['step 1', 'step 2', 'step 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
+      return validResponse
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+
+    await plan
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+      plan.equal(agentAttributes['aws.lambda.eventSource.accountId'], '123456789012')
+      plan.equal(agentAttributes['aws.lambda.eventSource.apiId'], 'wt6mne2s9k')
+      plan.equal(agentAttributes['aws.lambda.eventSource.resourceId'], 'us4z18')
+      plan.equal(agentAttributes['aws.lambda.eventSource.resourcePath'], '/{proxy+}')
+      plan.equal(agentAttributes['aws.lambda.eventSource.stage'], 'test')
+
+      plan.equal(spanAttributes['aws.lambda.eventSource.accountId'], '123456789012')
+      plan.equal(spanAttributes['aws.lambda.eventSource.apiId'], 'wt6mne2s9k')
+      plan.equal(spanAttributes['aws.lambda.eventSource.resourceId'], 'us4z18')
+      plan.equal(spanAttributes['aws.lambda.eventSource.resourcePath'], '/{proxy+}')
+      plan.equal(spanAttributes['aws.lambda.eventSource.stage'], 'test')
+    }
+  })
+
+  await t.test('should record standard web metrics', async (t) => {
+    const plan = tspl(t, { plan: 17 })
+    const { agent, awsLambda, responseStream, context } = t.nr
+    agent.on('harvestStarted', confirmMetrics)
+
+    const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['step 1', 'step 2', 'step 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
+      return validResponse
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
+
+    await plan
+
+    function confirmMetrics() {
+      const unscopedMetrics = getMetrics(agent).unscoped
+      plan.ok(unscopedMetrics)
+
+      plan.ok(unscopedMetrics.HttpDispatcher)
+      plan.equal(unscopedMetrics.HttpDispatcher.callCount, 1)
+
+      plan.ok(unscopedMetrics.Apdex)
+      plan.equal(unscopedMetrics.Apdex.satisfying, 1)
+
+      const transactionApdex = 'Apdex/' + expectedTransactionName
+      plan.ok(unscopedMetrics[transactionApdex])
+      plan.equal(unscopedMetrics[transactionApdex].satisfying, 1)
+
+      plan.ok(unscopedMetrics.WebTransaction)
+      plan.equal(unscopedMetrics.WebTransaction.callCount, 1)
+
+      plan.ok(unscopedMetrics[expectedWebTransactionName])
+      plan.equal(unscopedMetrics[expectedWebTransactionName].callCount, 1)
+
+      plan.ok(unscopedMetrics.WebTransactionTotalTime)
+      plan.equal(unscopedMetrics.WebTransactionTotalTime.callCount, 1)
+
+      const transactionWebTotalTime = 'WebTransactionTotalTime/' + expectedTransactionName
+      plan.ok(unscopedMetrics[transactionWebTotalTime])
+      plan.equal(unscopedMetrics[transactionWebTotalTime].callCount, 1)
+    }
+  })
+})
+
+test('should create a segment for handler', async (t) => {
+  const plan = tspl(t, { plan: 2 })
+  const { awsLambda, event, responseStream, context } = t.nr
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    const segment = awsLambda.shim.getSegment()
+    plan.notEqual(segment, null)
+    plan.equal(segment.name, functionName)
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+})
+
+test('should capture cold start boolean on first invocation', async (t) => {
+  const plan = tspl(t, { plan: 1 })
+  const { agent, awsLambda, event, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmColdStart)
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+
+  await plan
+
+  function confirmColdStart(transaction) {
+    const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+    plan.equal(attributes['aws.lambda.coldStart'], true)
+  }
+})
+
+test('should not include cold start on subsequent invocations', async (t) => {
+  const plan = tspl(t, { plan: 2 })
+  const { agent, awsLambda, event, responseStream, context } = t.nr
+  let transactionNum = 1
+
+  agent.on('transactionFinished', confirmNoAdditionalColdStart)
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmNoAdditionalColdStart(transaction) {
+    if (transactionNum > 1) {
+      const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+      plan.equal('aws.lambda.coldStart' in attributes, false)
+      plan.equal('aws.lambda.coldStart' in spanAttributes, false)
+    }
+
+    transactionNum++
+  }
+})
+
+test('should capture AWS agent attributes and send to correct dests', async (t) => {
+  const plan = tspl(t, { plan: 15 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttributes)
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  const stubEvt = {
+    Records: [{ eventSourceARN: 'stub:eventsource:arn' }]
+  }
+
+  await wrappedHandler(stubEvt, responseStream, context)
+  await plan
+
+  function confirmAgentAttributes(transaction) {
+    // verify attributes exist in correct destinations
+    const txTrace = _verifyDestinations(transaction)
+
+    // now verify actual values
+    plan.equal(txTrace[REQ_ID], context.awsRequestId)
+    plan.equal(txTrace[LAMBDA_ARN], context.invokedFunctionArn)
+    plan.equal(txTrace[COLDSTART], true)
+  }
+
+  function _verifyDestinations(tx) {
+    const txTrace = tx.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const errEvent = tx.trace.attributes.get(ATTR_DEST.ERROR_EVENT)
+    const txEvent = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+    const all = [REQ_ID, LAMBDA_ARN, COLDSTART, EVENTSOURCE_ARN]
+
+    all.forEach((key) => {
+      plan.notEqual(txTrace[key], undefined)
+      plan.notEqual(errEvent[key], undefined)
+      plan.notEqual(txEvent[key], undefined)
+    })
+
+    return txTrace
+  }
+})
+
+test('should not add attributes from empty event', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent, awsLambda, event, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(EVENTSOURCE_ARN in agentAttributes, false)
+    plan.equal(EVENTSOURCE_TYPE in agentAttributes, false)
+    plan.equal(EVENTSOURCE_ARN in spanAttributes, false)
+    plan.equal(EVENTSOURCE_TYPE in spanAttributes, false)
+  }
+})
+
+/// TODO: spanAttributes[EVENTSOURCE_ARN] is undefined, while agentAttributes[EVENTSOURCE_ARN] is set
+test('should capture kinesis data stream event source arn', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.kinesisDataStreamEvent
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(agentAttributes[EVENTSOURCE_ARN], 'kinesis:eventsourcearn')
+    plan.equal(spanAttributes[EVENTSOURCE_ARN], 'kinesis:eventsourcearn')
+    plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'kinesis')
+    plan.equal(spanAttributes[EVENTSOURCE_TYPE], 'kinesis')
+  }
+})
+
+test('should capture S3 PUT event source arn attribute', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.s3PutEvent
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(agentAttributes[EVENTSOURCE_ARN], 'bucketarn')
+    plan.equal(agentAttributes[EVENTSOURCE_TYPE], 's3')
+
+    plan.equal(spanAttributes[EVENTSOURCE_ARN], 'bucketarn')
+    plan.equal(spanAttributes[EVENTSOURCE_TYPE], 's3')
+  }
+})
+
+test('should capture SNS event source arn attribute', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.snsEvent
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(agentAttributes[EVENTSOURCE_ARN], 'eventsubscriptionarn')
+    plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'sns')
+
+    plan.equal(spanAttributes[EVENTSOURCE_ARN], 'eventsubscriptionarn')
+    plan.equal(spanAttributes[EVENTSOURCE_TYPE], 'sns')
+  }
+})
+
+test('should capture DynamoDB Update event source attribute', async (t) => {
+  const plan = tspl(t, { plan: 2 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.dynamoDbUpdateEvent
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(agentAttributes[EVENTSOURCE_ARN], 'dynamodb:eventsourcearn')
+    plan.equal(spanAttributes[EVENTSOURCE_ARN], 'dynamodb:eventsourcearn')
+  }
+})
+
+test('should capture CodeCommit event source attribute', async (t) => {
+  const plan = tspl(t, { plan: 2 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.codeCommitEvent
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(
+      agentAttributes[EVENTSOURCE_ARN],
+      'arn:aws:codecommit:us-west-2:123456789012:my-repo'
+    )
+    plan.equal(
+      spanAttributes[EVENTSOURCE_ARN],
+      'arn:aws:codecommit:us-west-2:123456789012:my-repo'
+    )
+  }
+})
+
+test('should not capture unknown event source attribute', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.cloudFrontEvent
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(agentAttributes[EVENTSOURCE_ARN], undefined)
+    plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'cloudFront')
+    plan.equal(spanAttributes[EVENTSOURCE_ARN], undefined)
+    plan.equal(spanAttributes[EVENTSOURCE_TYPE], 'cloudFront')
+  }
+})
+
+test('should capture Kinesis Data Firehose event source attribute', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.kinesisDataFirehoseEvent
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(agentAttributes[EVENTSOURCE_ARN], 'aws:lambda:events')
+    plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'firehose')
+
+    plan.equal(spanAttributes[EVENTSOURCE_ARN], 'aws:lambda:events')
+    plan.equal(spanAttributes[EVENTSOURCE_TYPE], 'firehose')
+  }
+})
+
+test('should capture ALB event type', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.albEvent
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(
+      agentAttributes[EVENTSOURCE_ARN],
+      'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a'
+    )
+
+    plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'alb')
+
+    plan.equal(
+      spanAttributes[EVENTSOURCE_ARN],
+      'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a'
+    )
+
+    plan.equal(spanAttributes[EVENTSOURCE_TYPE], 'alb')
+  }
+})
+
+test('should capture CloudWatch Scheduled event type', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.cloudwatchScheduled
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(
+      agentAttributes[EVENTSOURCE_ARN],
+      'arn:aws:events:us-west-2:123456789012:rule/ExampleRule'
+    )
+    plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'cloudWatch_scheduled')
+
+    plan.equal(
+      spanAttributes[EVENTSOURCE_ARN],
+      'arn:aws:events:us-west-2:123456789012:rule/ExampleRule'
+    )
+    plan.equal(spanAttributes[EVENTSOURCE_TYPE], 'cloudWatch_scheduled')
+  }
+})
+
+test('should capture SES event type', async (t) => {
+  const plan = tspl(t, { plan: 2 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  const event = lambdaSampleEvents.sesEvent
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'ses')
+    plan.equal(spanAttributes[EVENTSOURCE_TYPE], 'ses')
+  }
+})
+
+test('should capture ALB event type with multi value parameters', async (t) => {
+  const plan = tspl(t, { plan: 7 })
+  const { agent, awsLambda, responseStream, context } = t.nr
+  agent.on('transactionFinished', confirmAgentAttribute)
+
+  agent.config.attributes.enabled = true
+  agent.config.attributes.include = ['request.parameters.*']
+  agent.config.emit('attributes.include')
+
+  const event = lambdaSampleEvents.albEventWithMultiValueParameters
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
+  }
+  )
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmAgentAttribute(transaction) {
+    const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+    const segment = transaction.agent.tracer.getSegment()
+    const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+    plan.equal(
+      agentAttributes[EVENTSOURCE_ARN],
+      'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a'
+    )
+
+    plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'alb')
+
+    plan.equal(agentAttributes['request.method'], 'GET')
+
+    // validate that multi value query string parameters are normalized to comma seperated strings
+    plan.equal(agentAttributes['request.parameters.query'], '1234ABCD,other')
+
+    plan.equal(
+      spanAttributes[EVENTSOURCE_ARN],
+      'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a'
+    )
+
+    plan.equal(spanAttributes[EVENTSOURCE_TYPE], 'alb')
+
+    // validate that multi value headers are normalized to comma seperated strings
+    plan.equal(
+      spanAttributes['request.headers.setCookie'],
+      'cookie-name=cookie-value;Domain=myweb.com;Secure;HttpOnly,cookie-name=cookie-other-value'
+    )
+  }
+})
+
+test('when context.done used', async (t) => {
+  helper.unloadAgent(t.nr.agent)
+
+  await t.test('should end appropriately', async (t) => {
+    const plan = tspl(t, { plan: 6 })
+    const { agent, awsLambda, event, responseStream, context } = t.nr
+    let transaction
+
+    context.done = confirmEndStream
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      transaction = agent.tracer.getTransaction()
+      context.done(null, 'worked')
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(event, responseStream, context)
+    await plan
+
+    function confirmEndStream() {
+      plan.equal(transaction.isActive(), false)
+
+      const currentTransaction = agent.tracer.getTransaction()
+      plan.equal(currentTransaction, null)
+    }
+  })
+
+  await t.test('should notice errors', async (t) => {
+    const plan = tspl(t, { plan: 4 })
+    const { agent, awsLambda, error, event, responseStream, context } = t.nr
+    agent.on('harvestStarted', function confirmErrorCapture() {
+      plan.equal(agent.errors.traceAggregator.errors.length, 1)
+      const noticedError = agent.errors.traceAggregator.errors[0]
+      plan.equal(noticedError[1], expectedBgTransactionName)
+      plan.equal(noticedError[2], errorMessage)
+      plan.equal(noticedError[3], 'SyntaxError')
+    })
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      context.done(error, 'failed')
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(event, responseStream, context)
+    await plan
+  })
+
+  await t.test('should notice string errors', async (t) => {
+    const plan = tspl(t, { plan: 5 })
+    const { agent, awsLambda, event, responseStream, context } = t.nr
+    agent.on('harvestStarted', function confirmErrorCapture() {
+      plan.equal(agent.errors.traceAggregator.errors.length, 1)
+      const noticedError = agent.errors.traceAggregator.errors[0]
+      plan.equal(noticedError[1], expectedBgTransactionName)
+      plan.equal(noticedError[2], 'failed')
+      plan.equal(noticedError[3], 'Error')
+
+      const data = noticedError[4]
+      plan.ok(data.stack_trace)
+    })
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      const error = new Error('ouch')
+      context.done(error, 'failed')
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(event, responseStream, context)
+    await plan
+  })
+})
+
+test('when context.succeed used', async (t) => {
+  helper.unloadAgent(t.nr.agent)
+
+  await t.test('should end appropriately', async (t) => {
+    const plan = tspl(t, { plan: 2 })
+    const { agent, awsLambda, event, responseStream, context } = t.nr
+    let transaction
+
+    context.succeed = function confirmEndCallback() {
+      plan.equal(transaction.isActive(), false)
+
+      const currentTransaction = agent.tracer.getTransaction()
+      plan.equal(currentTransaction, null)
+    }
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      transaction = agent.tracer.getTransaction()
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['step 1', 'step 2', 'step 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
+      context.succeed('worked')
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(event, responseStream, context)
+    await plan
+  })
+})
+
+test('when context.fail used', async (t) => {
+  helper.unloadAgent(t.nr.agent)
+
+  await t.test('should end appropriately', async (t) => {
+    const plan = tspl(t, { plan: 2 })
+    const { agent, awsLambda, event, responseStream, context } = t.nr
+    let transaction
+
+    context.fail = function confirmEndCallback() {
+      plan.equal(transaction.isActive(), false)
+
+      const currentTransaction = agent.tracer.getTransaction()
+      plan.equal(currentTransaction, null)
+    }
+
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
+      transaction = agent.tracer.getTransaction()
+      context.fail()
+    })
+
+    await wrappedHandler(event, responseStream, context)
+    await plan
+  })
+
+  await t.test('should notice errors', async (t) => {
+    const plan = tspl(t, { plan: 4 })
+    const { agent, awsLambda, error, event, responseStream, context } = t.nr
+    agent.on('harvestStarted', function confirmErrorCapture() {
+      plan.equal(agent.errors.traceAggregator.errors.length, 1)
+      const noticedError = agent.errors.traceAggregator.errors[0]
+      plan.equal(noticedError[1], expectedBgTransactionName)
+      plan.equal(noticedError[2], errorMessage)
+      plan.equal(noticedError[3], 'SyntaxError')
+    })
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      context.fail(error)
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(event, responseStream, context)
+    await plan
+  })
+
+  await t.test('should notice string errors', async (t) => {
+    const plan = tspl(t, { plan: 5 })
+    const { agent, awsLambda, event, responseStream, context } = t.nr
+    agent.on('harvestStarted', function confirmErrorCapture() {
+      plan.equal(agent.errors.traceAggregator.errors.length, 1)
+      const noticedError = agent.errors.traceAggregator.errors[0]
+      plan.equal(noticedError[1], expectedBgTransactionName)
+      plan.equal(noticedError[2], 'failed')
+      plan.equal(noticedError[3], 'Error')
+
+      const data = noticedError[4]
+      plan.ok(data.stack_trace)
+    })
+
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      context.fail('failed')
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    await wrappedHandler(event, responseStream, context)
+    await plan
+  })
+})
+
+test('should create a transaction for handler', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent, awsLambda, event, responseStream, context } = t.nr
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    const transaction = agent.tracer.getTransaction()
+    plan.ok(transaction)
+    plan.equal(transaction.type, 'bg')
+    plan.equal(transaction.getFullName(), expectedBgTransactionName)
+    plan.ok(transaction.isActive())
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+})
+
+test('should end transactions on a beforeExit event on process', async (t) => {
+  const plan = tspl(t, { plan: 5 })
+  const { agent, awsLambda, event, responseStream, context } = t.nr
+  tempRemoveListeners({ t, emitter: process, event: 'beforeExit' })
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    const transaction = agent.tracer.getTransaction()
+
+    plan.ok(transaction)
+    plan.equal(transaction.type, 'bg')
+    plan.equal(transaction.getFullName(), expectedBgTransactionName)
+    plan.ok(transaction.isActive())
+
+    process.emit('beforeExit')
+
+    plan.equal(transaction.isActive(), false)
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+})
+
+test('should end transactions after the returned promise resolves', async (t) => {
+  const plan = tspl(t, { plan: 6 })
+  const { agent, awsLambda, event, responseStream, context } = t.nr
+  let transaction
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    transaction = agent.tracer.getTransaction()
+    return new Promise((resolve) => {
+      plan.ok(transaction)
+      plan.equal(transaction.type, 'bg')
+      plan.equal(transaction.getFullName(), expectedBgTransactionName)
+      plan.ok(transaction.isActive())
+
+      return resolve('hello')
+    })
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+    .then((value) => {
+      plan.equal(value, 'hello')
+      plan.equal(transaction.isActive(), false)
+    })
+    .catch((err) => {
+      t.throw(err)
+    })
+  await plan
+})
+
+test('should record error event when func is async and promise is rejected', async (t) => {
+  const plan = tspl(t, { plan: 10 })
+  const { agent, awsLambda, error, event, responseStream, context } = t.nr
+  agent.on('harvestStarted', confirmErrorCapture)
+
+  let transaction
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    transaction = agent.tracer.getTransaction()
+    return new Promise((resolve, reject) => {
+      plan.ok(transaction)
+      plan.equal(transaction.type, 'bg')
+      plan.equal(transaction.getFullName(), expectedBgTransactionName)
+      plan.ok(transaction.isActive())
+
+      reject(error)
+    })
+  })
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+    .then(() => {
+      t.throw(Error('wrapped handler should fail and go to catch block'))
+    })
+    .catch((err) => {
+      plan.equal(err, error)
+      plan.equal(transaction.isActive(), false)
+    })
+  await plan
+
+  function confirmErrorCapture() {
+    const errors = agent.errors.traceAggregator.errors
+    plan.equal(errors.length, 1)
+
+    const noticedError = errors[0]
+    const [, transactionName, message, type] = noticedError
+    plan.equal(transactionName, expectedBgTransactionName)
+    plan.equal(message, errorMessage)
+    plan.equal(type, 'SyntaxError')
+  }
+})
+
+test('should record error event when func is async and error is thrown', async (t) => {
+  const plan = tspl(t, { plan: 10 })
+  const { agent, awsLambda, error, event, responseStream, context } = t.nr
+  agent.on('harvestStarted', function confirmErrorCapture() {
+    const errors = agent.errors.traceAggregator.errors
+    plan.equal(errors.length, 1)
+
+    const noticedError = errors[0]
+    const [, transactionName, message, type] = noticedError
+    plan.equal(transactionName, expectedBgTransactionName)
+    plan.equal(message, errorMessage)
+    plan.equal(type, 'SyntaxError')
+  })
+
+  let transaction
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    transaction = agent.tracer.getTransaction()
+    return new Promise(() => {
+      plan.ok(transaction)
+      plan.equal(transaction.type, 'bg')
+      plan.equal(transaction.getFullName(), expectedBgTransactionName)
+      plan.ok(transaction.isActive())
+
+      throw error
+    })
+  })
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+    .then(() => {
+      t.throw(Error('wrapped handler should fail and go to catch block'))
+    })
+    .catch((err) => {
+      plan.equal(err, error)
+      plan.equal(transaction.isActive(), false)
+    })
+  await plan
+})
+
+test(
+  'should record error event when func is async an UnhandledPromiseRejection is thrown',
+  async (t) => {
+    const plan = tspl(t, { plan: 68 })
+    const { agent, awsLambda, error, event, responseStream, context } = t.nr
+    agent.on('harvestStarted', function confirmErrorCapture() {
+      const errors = agent.errors.traceAggregator.errors
+      plan.equal(errors.length, 1)
+
+      const noticedError = errors[0]
+      const [, transactionName, message, type] = noticedError
+      plan.equal(transactionName, expectedBgTransactionName)
+      plan.equal(message, errorMessage)
+      plan.equal(type, 'SyntaxError')
+    })
+
+    let transaction
+    const handler = decorateHandler(async (event, responseStream, context) => {
+      transaction = agent.tracer.getTransaction()
+      // We need this promise to evaluate out-of-band in order to test the
+      // correct scenario.
+      // eslint-disable-next-line no-new
+      new Promise(() => {
+        plan.ok(transaction)
+        plan.equal(transaction.type, 'bg')
+        plan.equal(transaction.getFullName(), expectedBgTransactionName)
+        plan.ok(transaction.isActive())
+
+        throw error
+      })
+
+      await new Promise((resolve) => setTimeout(resolve, 1))
+    })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+    tempOverrideUncaught({
+      t,
+      type: tempOverrideUncaught.REJECTION,
+      handler(err) {
+        plan.equal(err, error)
+        plan.equal(transaction.isActive(), false)
+      }
+    })
+
+    await wrappedHandler(event, responseStream, context)
+    await plan
+  }
+)
+
+test('should record error event when error is thrown', async (t) => {
+  const plan = tspl(t, { plan: 8 })
+  const { agent, awsLambda, error, event, responseStream, context } = t.nr
+
+  agent.on('harvestStarted', function confirmErrorCapture() {
+    const errors = agent.errors.traceAggregator.errors
+    plan.equal(errors.length, 1)
+
+    const noticedError = errors[0]
+    const [, transactionName, message, type] = noticedError
+    plan.equal(transactionName, expectedBgTransactionName)
+    plan.equal(message, errorMessage)
+    plan.equal(type, 'SyntaxError')
+  })
+
+  const handler = decorateHandler((event, responseStream, context) => {
+    const transaction = agent.tracer.getTransaction()
+    plan.ok(transaction)
+    plan.equal(transaction.type, 'bg')
+    plan.equal(transaction.getFullName(), expectedBgTransactionName)
+    plan.ok(transaction.isActive())
+
+    throw error
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  try {
+    await wrappedHandler(event, responseStream, context)
+  } catch (error) {
+    if (error.name !== 'SyntaxError') {
+      throw error
+    }
+  }
+  await plan.completed
+})
+
+test('should not end transactions twice', async (t) => {
+  const plan = tspl(t, { plan: 7 })
+  const { agent, awsLambda, event, responseStream, context } = t.nr
+  let transaction
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    transaction = agent.tracer.getTransaction()
+    let called = false
+    const oldEnd = transaction.end
+    transaction.end = function wrappedEnd() {
+      if (called) {
+        throw new Error('called end on the same transaction twice')
+      }
+      called = true
+      return oldEnd.apply(transaction, arguments)
+    }
+    return new Promise((resolve) => {
+      plan.ok(transaction)
+      plan.equal(transaction.type, 'bg')
+      plan.equal(transaction.getFullName(), expectedBgTransactionName)
+      plan.ok(transaction.isActive())
+
+      // cb()
+
+      plan.equal(transaction.isActive(), false)
+      return resolve('hello')
+    })
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+    .then((value) => {
+      plan.equal(value, 'hello')
+      plan.equal(transaction.isActive(), false)
+    })
+    .catch((err) => {
+      t.throw(err)
+    })
+  await plan
+})
+
+test('should record standard background metrics', async (t) => {
+  const plan = tspl(t, { plan: 9 })
+  const { agent, awsLambda, event, responseStream, context } = t.nr
+  agent.on('harvestStarted', confirmMetrics)
+
+  const handler = decorateHandler(async (event, responseStream, context) => {
+    return 'worked'
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await plan
+
+  function confirmMetrics() {
+    const unscopedMetrics = getMetrics(agent).unscoped
+    plan.ok(unscopedMetrics)
+
+    const otherTransactionAllName = 'OtherTransaction/all'
+    const otherTransactionAllMetric = unscopedMetrics[otherTransactionAllName]
+    plan.ok(otherTransactionAllMetric)
+    plan.equal(otherTransactionAllMetric.callCount, 1)
+
+    const bgTransactionNameMetric = unscopedMetrics[expectedBgTransactionName]
+    plan.ok(bgTransactionNameMetric)
+    plan.equal(bgTransactionNameMetric.callCount, 1)
+
+    const otherTransactionTotalTimeMetric = unscopedMetrics.OtherTransactionTotalTime
+    plan.ok(otherTransactionTotalTimeMetric)
+    plan.equal(otherTransactionAllMetric.callCount, 1)
+
+    const otherTotalTimeBgTransactionName = 'OtherTransactionTotalTime/' + expectedTransactionName
+    const otherTotalTimeBgTransactionNameMetric = unscopedMetrics[otherTotalTimeBgTransactionName]
+    plan.ok(otherTotalTimeBgTransactionNameMetric)
+    plan.equal(otherTotalTimeBgTransactionNameMetric.callCount, 1)
+  }
 })
