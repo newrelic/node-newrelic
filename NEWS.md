@@ -2,9 +2,9 @@
 
 #### Features
 
+* Allowed undici error reporting to be disabled with feature flag `undici_error_tracking` ([#2956](https://github.com/newrelic/node-newrelic/pull/2956)) ([6278107](https://github.com/newrelic/node-newrelic/commit/6278107727678c8b45769190c6972c33057067e5))
 * Added ability to propagate traceparent and tracestate on incoming server/consumer spans and outgoing client http and producer spans ([#2958](https://github.com/newrelic/node-newrelic/pull/2958)) ([258ad7d](https://github.com/newrelic/node-newrelic/commit/258ad7de7751df59cf6d68334e342f751bb3a934))
 * Added server span transaction naming fallback to the url.path ([#2966](https://github.com/newrelic/node-newrelic/pull/2966)) ([770bf6f](https://github.com/newrelic/node-newrelic/commit/770bf6fd6ce26642e3fe08b2c1557dd826270516))
-* Allowed undici error reporting to be disabled with feature flag `undici_error_tracking` ([#2956](https://github.com/newrelic/node-newrelic/pull/2956)) ([6278107](https://github.com/newrelic/node-newrelic/commit/6278107727678c8b45769190c6972c33057067e5))
     * Thanks for your contribution @Voziv :tada:
 * Updated Context class to ensure bi-directional context propagation with opentelemetry bridge ([#2962](https://github.com/newrelic/node-newrelic/pull/2962)) ([dfeec5a](https://github.com/newrelic/node-newrelic/commit/dfeec5a0443723e7f799db4b9ea7bf4aed5b3bcc))
 
@@ -15,7 +15,6 @@
 #### Documentation
 
 * Updated compatibility report ([#2973](https://github.com/newrelic/node-newrelic/pull/2973)) ([7106c81](https://github.com/newrelic/node-newrelic/commit/7106c818b7add3220d256646cd816dee64efb80a))
-* Updated compatibility report ([#2953](https://github.com/newrelic/node-newrelic/pull/2953)) ([98d29fe](https://github.com/newrelic/node-newrelic/commit/98d29fe968be31ac7cadf3f487bcf021fce82652))
 
 #### Miscellaneous chores
 
