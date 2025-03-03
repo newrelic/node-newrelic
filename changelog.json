@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.15.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added server span transaction naming fallback to the url.path",
+          "Updated Context class to ensure bi-directional context propagation with opentelemetry bridge",
+          "Added ability to propagate traceparent and tracestate on incoming server/consumer spans and outgoing client http and producer spans",
+          "Allowed undici error reporting to be disabled with feature flag `undici_error_tracking`"
+        ]
+      }
+    },
+    {
       "version": "12.14.0",
       "changes": {
         "security": [],
