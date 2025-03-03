@@ -15,7 +15,6 @@
 #### Documentation
 
 * Updated compatibility report ([#2973](https://github.com/newrelic/node-newrelic/pull/2973)) ([7106c81](https://github.com/newrelic/node-newrelic/commit/7106c818b7add3220d256646cd816dee64efb80a))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 * Updated compatibility report ([#2953](https://github.com/newrelic/node-newrelic/pull/2953)) ([98d29fe](https://github.com/newrelic/node-newrelic/commit/98d29fe968be31ac7cadf3f487bcf021fce82652))
 
 #### Miscellaneous chores
