@@ -587,9 +587,10 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
 
     await plan
 
+    // eslint-disable-next-line sonarjs/no-identical-functions
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-      const segment = transaction.agent.tracer.getSegment()
+      const segment = transaction.baseSegment
       const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       plan.equal(agentAttributes['http.statusCode'], '200')
@@ -682,7 +683,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
   })
 
   await t.test('should collect event source meta data', async (t) => {
-    const plan = tspl(t, { plan: 6 })
+    const plan = tspl(t, { plan: 10 })
     const { agent, awsLambda, responseStream, context } = t.nr
     agent.on('transactionFinished', confirmAgentAttribute)
 
@@ -704,7 +705,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-      const segment = transaction.agent.tracer.getSegment()
+      const segment = transaction.baseSegment
       const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       plan.equal(agentAttributes['aws.lambda.eventSource.accountId'], '123456789012')
@@ -722,7 +723,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
   })
 
   await t.test('should record standard web metrics', async (t) => {
-    const plan = tspl(t, { plan: 17 })
+    const plan = tspl(t, { plan: 15 })
     const { agent, awsLambda, responseStream, context } = t.nr
     agent.on('harvestStarted', confirmMetrics)
 
@@ -731,7 +732,8 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const handler = decorateHandler(async (event, responseStream, context) => {
       responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
-      await writeToResponseStream(chunks, responseStream, 100)
+      // delay set to 10ms here so that Apdex is "satisfying" instead of "tolerating"
+      await writeToResponseStream(chunks, responseStream, 10)
       responseStream.end()
       return validResponse
     })
@@ -843,7 +845,7 @@ test('should not include cold start on subsequent invocations', async (t) => {
   function confirmNoAdditionalColdStart(transaction) {
     if (transactionNum > 1) {
       const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-      const segment = transaction.agent.tracer.getSegment()
+      const segment = transaction.baseSegment
       const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
       plan.equal('aws.lambda.coldStart' in attributes, false)
       plan.equal('aws.lambda.coldStart' in spanAttributes, false)
@@ -924,7 +926,7 @@ test('should not add attributes from empty event', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(EVENTSOURCE_ARN in agentAttributes, false)
@@ -934,7 +936,6 @@ test('should not add attributes from empty event', async (t) => {
   }
 })
 
-/// TODO: spanAttributes[EVENTSOURCE_ARN] is undefined, while agentAttributes[EVENTSOURCE_ARN] is set
 test('should capture kinesis data stream event source arn', async (t) => {
   const plan = tspl(t, { plan: 4 })
   const { agent, awsLambda, responseStream, context } = t.nr
@@ -956,7 +957,7 @@ test('should capture kinesis data stream event source arn', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(agentAttributes[EVENTSOURCE_ARN], 'kinesis:eventsourcearn')
@@ -989,7 +990,7 @@ test('should capture S3 PUT event source arn attribute', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(agentAttributes[EVENTSOURCE_ARN], 'bucketarn')
@@ -1023,7 +1024,7 @@ test('should capture SNS event source arn attribute', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(agentAttributes[EVENTSOURCE_ARN], 'eventsubscriptionarn')
@@ -1057,7 +1058,7 @@ test('should capture DynamoDB Update event source attribute', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(agentAttributes[EVENTSOURCE_ARN], 'dynamodb:eventsourcearn')
@@ -1088,7 +1089,7 @@ test('should capture CodeCommit event source attribute', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(
@@ -1125,7 +1126,7 @@ test('should not capture unknown event source attribute', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(agentAttributes[EVENTSOURCE_ARN], undefined)
@@ -1158,7 +1159,7 @@ test('should capture Kinesis Data Firehose event source attribute', async (t) =>
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(agentAttributes[EVENTSOURCE_ARN], 'aws:lambda:events')
@@ -1192,7 +1193,7 @@ test('should capture ALB event type', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(
@@ -1234,7 +1235,7 @@ test('should capture CloudWatch Scheduled event type', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(
@@ -1274,7 +1275,7 @@ test('should capture SES event type', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(agentAttributes[EVENTSOURCE_TYPE], 'ses')
@@ -1309,7 +1310,7 @@ test('should capture ALB event type with multi value parameters', async (t) => {
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = transaction.baseSegment
     const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
     plan.equal(
@@ -1343,7 +1344,7 @@ test('when context.done used', async (t) => {
   helper.unloadAgent(t.nr.agent)
 
   await t.test('should end appropriately', async (t) => {
-    const plan = tspl(t, { plan: 6 })
+    const plan = tspl(t, { plan: 2 })
     const { agent, awsLambda, event, responseStream, context } = t.nr
     let transaction
 
