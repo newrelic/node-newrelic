@@ -584,8 +584,8 @@ test('dynamodb span has correct cloud.resource_id', (t, end) => {
     [ATTR_DB_NAME]: 'test-db',
     [ATTR_DB_SYSTEM]: DB_SYSTEM_VALUES.DYNAMODB,
     [ATTR_DB_STATEMENT]: 'select foo from test-table where foo = "bar"',
-    ['aws.region']: 'us-east-1',
-    ['aws.dynamodb.table_names']: 'test-table' 
+    'aws.region': 'us-east-1',
+    'aws.dynamodb.table_names': 'test-table'
   }
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'db-test'

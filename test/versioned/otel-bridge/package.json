@@ -12,11 +12,13 @@
       },
       "files": [
         "span.test.js",
-        "aws-lambda.test.js"
+        "aws-lambda.test.js",
+        "aws-sqs.test.js"
       ]
     }
   ],
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.750.0"
+    "@aws-sdk/client-lambda": "^3.750.0",
+    "@aws-sdk/client-sqs": "^3.758.0"
   }
 }
