@@ -75,7 +75,7 @@ test.beforeEach(async (ctx) => {
   ctx.nr.context = {
     done() {},
     success() {},
-    // fail() {},
+    fail() {},
     functionName,
     functionVersion: 'test_version',
     invokedFunctionArn: 'arn:test:function',
@@ -1494,7 +1494,7 @@ test('when context.fail used', async (t) => {
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
-      context.fail(error)
+      return context.fail(error)
     })
 
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
@@ -1522,7 +1522,7 @@ test('when context.fail used', async (t) => {
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
-      context.fail('failed')
+      return context.fail('failed')
     })
 
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
