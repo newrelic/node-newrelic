@@ -6,7 +6,14 @@
 'use strict'
 
 /**
- * Gets all spans created during transaction and iterates over to assert the span kind.
+ * Gets all spans created during transaction and iterates over to assert the span kind
+ * for each segment in the transaction matches the provided expected `segments`.
+ *
+ * @example
+ * assertSpanKind({
+ *   agent,
+ *   segments: [{ name: 'expectedSegment', kind: 'server' }]
+ * })
  *
  * @param {object} params to function
  * @param {Agent} params.agent instance of agent
