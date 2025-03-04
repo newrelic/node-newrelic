@@ -262,16 +262,16 @@ test('client span(db) is bridge accordingly(statement test)', (t, end) => {
       assert.equal(metrics['Datastore/statement/postgresql/test/select'].callCount, 1)
       const unscopedMetrics = tx.metrics.unscoped
         ;[
-          'Datastore/all',
-          'Datastore/allWeb',
-          'Datastore/postgresql/all',
-          'Datastore/postgresql/allWeb',
-          'Datastore/operation/postgresql/select',
-          'Datastore/statement/postgresql/test/select',
+        'Datastore/all',
+        'Datastore/allWeb',
+        'Datastore/postgresql/all',
+        'Datastore/postgresql/allWeb',
+        'Datastore/operation/postgresql/select',
+        'Datastore/statement/postgresql/test/select',
           `Datastore/instance/postgresql/${expectedHost}/5436`
-        ].forEach((expectedMetric) => {
-          assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
-        })
+      ].forEach((expectedMetric) => {
+        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
+      })
 
       end()
     })
@@ -305,15 +305,15 @@ test('client span(db) is bridged accordingly(operation test)', (t, end) => {
       assert.equal(metrics['Datastore/operation/redis/hset'].callCount, 1)
       const unscopedMetrics = tx.metrics.unscoped
         ;[
-          'Datastore/all',
-          'Datastore/allWeb',
-          'Datastore/redis/all',
-          'Datastore/redis/allWeb',
-          'Datastore/operation/redis/hset',
+        'Datastore/all',
+        'Datastore/allWeb',
+        'Datastore/redis/all',
+        'Datastore/redis/allWeb',
+        'Datastore/operation/redis/hset',
           `Datastore/instance/redis/${expectedHost}/5436`
-        ].forEach((expectedMetric) => {
-          assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
-        })
+      ].forEach((expectedMetric) => {
+        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
+      })
 
       end()
     })
@@ -686,8 +686,8 @@ test('aws dynamodb span has correct entity linking attributes', (t, end) => {
     [ATTR_DB_NAME]: 'test-db',
     [ATTR_DB_SYSTEM]: DB_SYSTEM_VALUES.DYNAMODB,
     [ATTR_DB_STATEMENT]: 'select foo from test-table where foo = "bar"',
-    ['aws.region']: 'us-east-1',
-    ['aws.dynamodb.table_names']: ['test-table']
+    'aws.region': 'us-east-1',
+    'aws.dynamodb.table_names': ['test-table']
   }
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'db-test'
@@ -709,9 +709,9 @@ test('aws lambda span has correct entity linking attributes', (t, end) => {
   const { agent, tracer } = t.nr
   // see: https://github.com/open-telemetry/opentelemetry-specification/blob/v1.7.0/specification/trace/semantic_conventions/faas.md#example "Span A"
   const attributes = {
-    ['faas.invoked_name']: 'test-function',
+    'faas.invoked_name': 'test-function',
     [ATTR_FAAS_INVOKED_PROVIDER]: 'aws',
-    ['faas.invoked_region']: 'us-east-1'
+    'faas.invoked_region': 'us-east-1'
   }
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'lambda-test'
@@ -736,7 +736,7 @@ test('aws sqs span has correct entity linking attributes', (t, end) => {
     [ATTR_MESSAGING_SYSTEM]: 'aws.sqs',
     [ATTR_MESSAGING_DESTINATION_KIND]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
     [ATTR_MESSAGING_DESTINATION]: 'test-queue',
-    ['aws.region']: 'us-east-1'
+    'aws.region': 'us-east-1'
   }
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'sqs-test'
@@ -747,7 +747,7 @@ test('aws sqs span has correct entity linking attributes', (t, end) => {
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
       const attrs = segment.getAttributes()
-      assert.equal(attrs['cloud.account.id'], agent.config.cloud.aws.account_id) 
+      assert.equal(attrs['cloud.account.id'], agent.config.cloud.aws.account_id)
       assert.equal(attrs['cloud.region'], 'us-east-1')
       assert.equal(attrs['messaging.destination.name'], 'test-queue')
       assert.equal(attrs['messaging.system'], 'aws_sqs')
