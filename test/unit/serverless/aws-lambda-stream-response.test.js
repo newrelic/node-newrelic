@@ -243,7 +243,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       const wrappedHandler = awsLambda.patchLambdaHandler(handler)
       await wrappedHandler(nonApiGatewayProxyEvent, responseStream, context)
 
-      await plan
+      await plan.completed
 
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -284,7 +284,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -339,7 +339,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       const wrappedHandler = awsLambda.patchLambdaHandler(handler)
       await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-      await plan
+      await plan.completed
     }
   )
 
@@ -378,7 +378,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       const wrappedHandler = awsLambda.patchLambdaHandler(handler)
       await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-      await plan
+      await plan.completed
     }
   )
 
@@ -404,7 +404,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -436,7 +436,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const segment = transaction.baseSegment
@@ -465,7 +465,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -518,7 +518,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -558,7 +558,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -588,7 +588,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
 
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     // eslint-disable-next-line sonarjs/no-identical-functions
     function confirmAgentAttribute(transaction) {
@@ -621,7 +621,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
 
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -648,7 +648,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
 
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -676,7 +676,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
 
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -704,7 +704,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
 
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -745,7 +745,7 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
 
     await wrappedHandler(apiGatewayProxyEvent, responseStream, context)
 
-    await plan
+    await plan.completed
 
     function confirmMetrics() {
       const unscopedMetrics = getMetrics(agent).unscoped
@@ -795,7 +795,7 @@ test('should create a segment for handler', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 })
 
 test('should capture cold start boolean on first invocation', async (t) => {
@@ -816,7 +816,7 @@ test('should capture cold start boolean on first invocation', async (t) => {
 
   await wrappedHandler(event, responseStream, context)
 
-  await plan
+  await plan.completed
 
   function confirmColdStart(transaction) {
     const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -843,7 +843,7 @@ test('should not include cold start on subsequent invocations', async (t) => {
 
   await wrappedHandler(event, responseStream, context)
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmNoAdditionalColdStart(transaction) {
     if (transactionNum > 1) {
@@ -879,7 +879,7 @@ test('should capture AWS agent attributes and send to correct dests', async (t) 
   }
 
   await wrappedHandler(stubEvt, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttributes(transaction) {
     // verify attributes exist in correct destinations
@@ -925,7 +925,7 @@ test('should not add attributes from empty event', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -956,7 +956,7 @@ test('should capture kinesis data stream event source arn', async (t) => {
 
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -989,7 +989,7 @@ test('should capture S3 PUT event source arn attribute', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1023,7 +1023,7 @@ test('should capture SNS event source arn attribute', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1057,7 +1057,7 @@ test('should capture DynamoDB Update event source attribute', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1088,7 +1088,7 @@ test('should capture CodeCommit event source attribute', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1125,7 +1125,7 @@ test('should not capture unknown event source attribute', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1158,7 +1158,7 @@ test('should capture Kinesis Data Firehose event source attribute', async (t) =>
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1192,7 +1192,7 @@ test('should capture ALB event type', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1234,7 +1234,7 @@ test('should capture CloudWatch Scheduled event type', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1274,7 +1274,7 @@ test('should capture SES event type', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1309,7 +1309,7 @@ test('should capture ALB event type with multi value parameters', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmAgentAttribute(transaction) {
     const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
@@ -1361,7 +1361,7 @@ test('when context.done used', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
     await wrappedHandler(event, responseStream, context)
-    await plan
+    await plan.completed
 
     function confirmEndStream() {
       plan.equal(transaction.isActive(), false)
@@ -1389,7 +1389,7 @@ test('when context.done used', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
     await wrappedHandler(event, responseStream, context)
-    await plan
+    await plan.completed
   })
 
   await t.test('should notice string errors', async (t) => {
@@ -1413,7 +1413,7 @@ test('when context.done used', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
     await wrappedHandler(event, responseStream, context)
-    await plan
+    await plan.completed
   })
 })
 
@@ -1444,7 +1444,7 @@ test('when context.succeed used', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
     await wrappedHandler(event, responseStream, context)
-    await plan
+    await plan.completed
   })
 })
 
@@ -1475,7 +1475,7 @@ test('when context.fail used', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
     await wrappedHandler(event, responseStream, context)
-    await plan
+    await plan.completed
   })
 
   await t.test('should notice errors', async (t) => {
@@ -1500,7 +1500,7 @@ test('when context.fail used', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
     await wrappedHandler(event, responseStream, context)
-    await plan
+    await plan.completed
   })
 
   await t.test('should notice string errors', async (t) => {
@@ -1528,7 +1528,7 @@ test('when context.fail used', async (t) => {
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
     await wrappedHandler(event, responseStream, context)
-    await plan
+    await plan.completed
   })
 })
 
@@ -1550,7 +1550,7 @@ test('should create a transaction for handler', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 })
 
 test('should end transactions on a beforeExit event on process', async (t) => {
@@ -1577,7 +1577,7 @@ test('should end transactions on a beforeExit event on process', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 })
 
 test('should end transactions after the returned promise resolves', async (t) => {
@@ -1611,7 +1611,7 @@ test('should end transactions after the returned promise resolves', async (t) =>
     .catch((err) => {
       t.throw(err)
     })
-  await plan
+  await plan.completed
 })
 
 test('should record error event when func is async and promise is rejected', async (t) => {
@@ -1645,7 +1645,7 @@ test('should record error event when func is async and promise is rejected', asy
       plan.equal(err, error)
       plan.equal(transaction.isActive(), false)
     })
-  await plan
+  await plan.completed
 
   function confirmErrorCapture() {
     const errors = agent.errors.traceAggregator.errors
@@ -1699,7 +1699,7 @@ test('should record error event when func is async and error is thrown', async (
       plan.equal(err, error)
       plan.equal(transaction.isActive(), false)
     })
-  await plan
+  await plan.completed
 })
 
 test(
@@ -1752,7 +1752,7 @@ test(
     })
 
     await wrappedHandler(event, responseStream, context)
-    await plan
+    await plan.completed
   }
 )
 
@@ -1836,7 +1836,7 @@ test('should not end transactions twice', async (t) => {
       plan.equal(value, 'hello')
       plan.equal(transaction.isActive(), false)
     })
-  await plan
+  await plan.completed
 })
 
 test('should record standard background metrics', async (t) => {
@@ -1855,7 +1855,7 @@ test('should record standard background metrics', async (t) => {
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
   await wrappedHandler(event, responseStream, context)
-  await plan
+  await plan.completed
 
   function confirmMetrics() {
     const unscopedMetrics = getMetrics(agent).unscoped
