@@ -992,6 +992,7 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
       transaction: tx,
       parent
     })
+    tx.baseSegment.spanKind = 'server'
     const newContext = context.enterSegment({ transaction: tx, segment: tx.baseSegment })
     tx.baseSegment.start()
 
@@ -1101,6 +1102,7 @@ function startBackgroundTransaction(name, group, handle) {
       parent
     })
     const newContext = context.enterSegment({ transaction: tx, segment: tx.baseSegment })
+    tx.baseSegment.spanKind = 'server'
     tx.baseSegment.partialName = group
     tx.baseSegment.start()
 

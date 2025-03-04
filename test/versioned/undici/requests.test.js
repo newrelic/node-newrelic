@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const helper = require('../../lib/agent_helper')
 const metrics = require('../../lib/metrics_helper')
@@ -89,8 +89,10 @@ test('Undici request tests', async (t) => {
       })
       assert.equal(statusCode, 200)
 
-      assertSegments(tx.trace, tx.trace.root, [`External/${HOST}/post`], { exact: false })
+      const name = `External/${HOST}/post`
+      assertSegments(tx.trace, tx.trace.root, [name], { exact: false })
       tx.end()
+      assertSpanKind({ agent, segments: [{ name, kind: 'client' }] })
     })
   })
 

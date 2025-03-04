@@ -12,7 +12,7 @@ const path = require('node:path')
 const semver = require('semver')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, match } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
 const createOpenAIMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
@@ -65,14 +65,22 @@ test('should create span on successful chat completion create', (t, end) => {
     assert.equal(results.headers, undefined, 'should remove response headers from user result')
     assert.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
+    const name = `External/${host}:${port}/chat/completions`
     assertSegments(
       tx.trace,
       tx.trace.root,
-      [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+      [OPENAI.COMPLETION, [name]],
       { exact: false }
     )
 
     tx.end()
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: OPENAI.COMPLETION, kind: 'internal' },
+        { name, kind: 'client' }
+      ]
+    })
     end()
   })
 })

@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const {
   assertLangChainVectorSearch,
   assertLangChainVectorSearchResult,
@@ -99,6 +99,7 @@ test('should create span on successful vectorstore create', (t, end) => {
       exact: false
     })
     tx.end()
+    assertSpanKind({ agent, segments: [{ name: 'Llm/vectorstore/Langchain/similaritySearch', kind: 'internal' }] })
     end()
   })
 })

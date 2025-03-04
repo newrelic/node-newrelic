@@ -5,7 +5,7 @@
 
 'use strict'
 
-const { assertMetrics } = require('../../lib/custom-assertions')
+const { assertMetrics, assertSpanKind } = require('../../lib/custom-assertions')
 const { makeId } = require('../../../lib/util/hashes')
 const utils = module.exports
 const metrics = require('../../lib/metrics_helper')
@@ -98,6 +98,13 @@ utils.verifyConsumeTransaction = ({ plan, tx, topic, clientId }) => {
   plan.equal(tx.getFullName(), expectedName)
   const consume = metrics.findSegment(tx.trace, tx.trace.root, expectedName)
   plan.equal(consume, tx.baseSegment)
+  assertSpanKind({
+    agent: tx.agent,
+    segments: [
+      { name: expectedName, kind: 'consumer' }
+    ],
+    assert: plan
+  })
 
   const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_SCOPE)
   plan.ok(attributes['kafka.consume.byteCount'], 'should have byteCount')

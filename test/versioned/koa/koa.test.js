@@ -10,7 +10,7 @@ const http = require('node:http')
 const tspl = require('@matteo.collina/tspl')
 
 const { removeModules } = require('../../lib/cache-buster')
-const assertSegments = require('../../lib/custom-assertions/assert-segments')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 
 test.beforeEach((ctx) => {
@@ -65,6 +65,14 @@ function checkSegments(plan, tx) {
     {},
     { assert: plan }
   )
+  assertSpanKind({
+    agent: tx.agent,
+    segments: [
+      { name: tx.name, kind: 'server' },
+      { name: 'Nodejs/Middleware/Koa/one', kind: 'internal' },
+      { name: 'Nodejs/Middleware/Koa/two', kind: 'internal' }
+    ]
+  })
 }
 
 test('Should name after koa framework and verb when body set', async (t) => {

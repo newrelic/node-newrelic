@@ -93,7 +93,7 @@ test('fromSegment()', async (t) => {
         assert.ok(span.intrinsics.duration >= 0.03 && span.intrinsics.duration <= 0.3)
 
         // Generic should not have 'span.kind' or 'component'
-        assert.equal(span.intrinsics['span.kind'], null)
+        assert.equal(span.intrinsics['span.kind'], 'internal')
         assert.equal(span.intrinsics.component, null)
 
         assert.ok(span.customAttributes)

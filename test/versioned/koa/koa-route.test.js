@@ -10,7 +10,7 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { run } = require('./utils')
-const assertSegments = require('../../lib/custom-assertions/assert-segments')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 
 test.beforeEach((ctx) => {
@@ -44,6 +44,13 @@ test('should name and produce segments for koa-route middleware', (t, end) => {
       'WebTransaction/WebFrameworkUri/Koa/GET//resource',
       'transaction should be named after the middleware responsible for responding'
     )
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: 'WebTransaction/WebFrameworkUri/Koa/GET//resource', kind: 'server' },
+        { name: 'Nodejs/Middleware/Koa/firstMiddleware//resource', kind: 'internal' }
+      ]
+    })
     end()
   })
   run({ path: '/resource', context: t.nr })
