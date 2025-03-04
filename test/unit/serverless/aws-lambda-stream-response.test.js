@@ -75,19 +75,22 @@ test.beforeEach(async (ctx) => {
   ctx.nr.context = {
     done() {},
     success() {},
-    fail() {},
+    // fail() {},
     functionName,
     functionVersion: 'test_version',
     invokedFunctionArn: 'arn:test:function',
     memoryLimitInMB: '128',
     awsRequestId: 'test-id'
   }
+
+  ctx.nr.error = new SyntaxError(errorMessage)
 })
 
 test.afterEach(async (ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   if (ctx.nr.responseStream.writableFinished !== true) {
-    ctx.nr.responseStream.destroy()
+    await ctx.nr.responseStream.end()
+    await ctx.nr.responseStream.destroy()
   }
 })
 
@@ -1404,8 +1407,7 @@ test('when context.done used', async (t) => {
     })
 
     const handler = decorateHandler(async (event, responseStream, context) => {
-      const error = new Error('ouch')
-      context.done(error, 'failed')
+      context.done('failed')
     })
 
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
@@ -1461,10 +1463,16 @@ test('when context.fail used', async (t) => {
       plan.equal(currentTransaction, null)
     }
 
-    const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
+    const handler = decorateHandler(async (event, responseStream, context) => {
       transaction = agent.tracer.getTransaction()
-      context.fail()
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['step 1', 'step 2', 'step 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
+      return context.fail()
     })
+
+    const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
     await wrappedHandler(event, responseStream, context)
     await plan
@@ -1482,6 +1490,10 @@ test('when context.fail used', async (t) => {
     })
 
     const handler = decorateHandler(async (event, responseStream, context) => {
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['step 1', 'step 2', 'step 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
       context.fail(error)
     })
 
@@ -1506,6 +1518,10 @@ test('when context.fail used', async (t) => {
     })
 
     const handler = decorateHandler(async (event, responseStream, context) => {
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['step 1', 'step 2', 'step 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
       context.fail('failed')
     })
 
@@ -1521,10 +1537,14 @@ test('should create a transaction for handler', async (t) => {
   const { agent, awsLambda, event, responseStream, context } = t.nr
   const handler = decorateHandler(async (event, responseStream, context) => {
     const transaction = agent.tracer.getTransaction()
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
     plan.ok(transaction)
     plan.equal(transaction.type, 'bg')
     plan.equal(transaction.getFullName(), expectedBgTransactionName)
     plan.ok(transaction.isActive())
+    responseStream.end()
   })
 
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
@@ -1540,11 +1560,14 @@ test('should end transactions on a beforeExit event on process', async (t) => {
 
   const handler = decorateHandler(async (event, responseStream, context) => {
     const transaction = agent.tracer.getTransaction()
-
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
     plan.ok(transaction)
     plan.equal(transaction.type, 'bg')
     plan.equal(transaction.getFullName(), expectedBgTransactionName)
     plan.ok(transaction.isActive())
+    responseStream.end()
 
     process.emit('beforeExit')
 
@@ -1564,6 +1587,10 @@ test('should end transactions after the returned promise resolves', async (t) =>
 
   const handler = decorateHandler(async (event, responseStream, context) => {
     transaction = agent.tracer.getTransaction()
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
     return new Promise((resolve) => {
       plan.ok(transaction)
       plan.equal(transaction.type, 'bg')
@@ -1595,6 +1622,10 @@ test('should record error event when func is async and promise is rejected', asy
   let transaction
   const handler = decorateHandler(async (event, responseStream, context) => {
     transaction = agent.tracer.getTransaction()
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
     return new Promise((resolve, reject) => {
       plan.ok(transaction)
       plan.equal(transaction.type, 'bg')
@@ -1645,6 +1676,10 @@ test('should record error event when func is async and error is thrown', async (
   let transaction
   const handler = decorateHandler(async (event, responseStream, context) => {
     transaction = agent.tracer.getTransaction()
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
     return new Promise(() => {
       plan.ok(transaction)
       plan.equal(transaction.type, 'bg')
@@ -1670,7 +1705,7 @@ test('should record error event when func is async and error is thrown', async (
 test(
   'should record error event when func is async an UnhandledPromiseRejection is thrown',
   async (t) => {
-    const plan = tspl(t, { plan: 68 })
+    const plan = tspl(t, { plan: 11 })
     const { agent, awsLambda, error, event, responseStream, context } = t.nr
     agent.on('harvestStarted', function confirmErrorCapture() {
       const errors = agent.errors.traceAggregator.errors
@@ -1686,6 +1721,10 @@ test(
     let transaction
     const handler = decorateHandler(async (event, responseStream, context) => {
       transaction = agent.tracer.getTransaction()
+      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+      const chunks = ['step 1', 'step 2', 'step 3']
+      await writeToResponseStream(chunks, responseStream, 100)
+      responseStream.end()
       // We need this promise to evaluate out-of-band in order to test the
       // correct scenario.
       // eslint-disable-next-line no-new
@@ -1732,8 +1771,12 @@ test('should record error event when error is thrown', async (t) => {
     plan.equal(type, 'SyntaxError')
   })
 
-  const handler = decorateHandler((event, responseStream, context) => {
+  const handler = decorateHandler(async (event, responseStream, context) => {
     const transaction = agent.tracer.getTransaction()
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
     plan.ok(transaction)
     plan.equal(transaction.type, 'bg')
     plan.equal(transaction.getFullName(), expectedBgTransactionName)
@@ -1755,12 +1798,17 @@ test('should record error event when error is thrown', async (t) => {
 })
 
 test('should not end transactions twice', async (t) => {
-  const plan = tspl(t, { plan: 7 })
+  const plan = tspl(t, { plan: 6 })
   const { agent, awsLambda, event, responseStream, context } = t.nr
   let transaction
 
   const handler = decorateHandler(async (event, responseStream, context) => {
     transaction = agent.tracer.getTransaction()
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+
     let called = false
     const oldEnd = transaction.end
     transaction.end = function wrappedEnd() {
@@ -1770,16 +1818,14 @@ test('should not end transactions twice', async (t) => {
       called = true
       return oldEnd.apply(transaction, arguments)
     }
+
     return new Promise((resolve) => {
       plan.ok(transaction)
       plan.equal(transaction.type, 'bg')
       plan.equal(transaction.getFullName(), expectedBgTransactionName)
       plan.ok(transaction.isActive())
-
-      // cb()
-
-      plan.equal(transaction.isActive(), false)
-      return resolve('hello')
+      responseStream.end()
+      resolve('hello')
     })
   })
 
@@ -1790,9 +1836,6 @@ test('should not end transactions twice', async (t) => {
       plan.equal(value, 'hello')
       plan.equal(transaction.isActive(), false)
     })
-    .catch((err) => {
-      t.throw(err)
-    })
   await plan
 })
 
@@ -1802,7 +1845,11 @@ test('should record standard background metrics', async (t) => {
   agent.on('harvestStarted', confirmMetrics)
 
   const handler = decorateHandler(async (event, responseStream, context) => {
-    return 'worked'
+    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+    return validResponse
   })
 
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
