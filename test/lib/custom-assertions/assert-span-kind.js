@@ -28,7 +28,7 @@ module.exports = function assertSpanKind({ agent, segments, assert = require('no
       if (!span) {
         assert.fail(`Could not find span: ${segment.name}`)
       }
-      assert.equal(span.intrinsics['span.kind'], segment.kind)
+      assert.equal(span.intrinsics['span.kind'], segment.kind, `${segment.name} span kind differs. expected: ${segment.kind}, got: ${span.intrinsics['span.kind']}`)
     })
   } else {
     assert.fail('Custom assertion must either pass in an array of span kinds or a collection of segment names to span kind')
