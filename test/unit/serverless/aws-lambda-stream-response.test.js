@@ -1559,9 +1559,13 @@ test('should create a transaction for handler', async (t) => {
 })
 
 test('should end transactions on a beforeExit event on process', async (t) => {
-  const plan = tspl(t, { plan: 5 })
+  const plan = tspl(t, { plan: 6 })
   const { agent, awsLambda, event, responseStream, context } = t.nr
   tempRemoveListeners({ t, emitter: process, event: 'beforeExit' })
+
+  agent.on('harvestStarted', () => {
+    plan.ok(1)
+  })
 
   const handler = decorateHandler(async (event, responseStream) => {
     const transaction = agent.tracer.getTransaction()
@@ -1705,19 +1709,15 @@ test(
     const { agent, awsLambda, error, event, responseStream, context } = t.nr
     // this and a few other tests harvest more than once.
     // since we are using plan based testing im only asserting the first harvest
-    let harvested = false
     agent.on('harvestStarted', function confirmErrorCapture() {
-      if (!harvested) {
-        const errors = agent.errors.traceAggregator.errors
-        plan.equal(errors.length, 1)
+      const errors = agent.errors.traceAggregator.errors
+      plan.equal(errors.length, 1)
 
-        const noticedError = errors[0]
-        const [, transactionName, message, type] = noticedError
-        plan.equal(transactionName, expectedBgTransactionName)
-        plan.equal(message, errorMessage)
-        plan.equal(type, 'SyntaxError')
-      }
-      harvested = true
+      const noticedError = errors[0]
+      const [, transactionName, message, type] = noticedError
+      plan.equal(transactionName, expectedBgTransactionName)
+      plan.equal(message, errorMessage)
+      plan.equal(type, 'SyntaxError')
     })
 
     let transaction
