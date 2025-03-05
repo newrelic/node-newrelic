@@ -44,20 +44,7 @@ module.exports = async function runTests(t, getExpectedSegments) {
         }
 
         assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
-        const flattenedSegments = expectedSegments[1].reduce((segments, segment) => {
-          if (Array.isArray(segment)) {
-            segments.push(...segment.map((s) => {
-              return {
-                name: s,
-                kind: 'internal'
-              }
-            }))
-          } else {
-            segments.push({ name: segment, kind: 'internal' })
-          }
-
-          return segments
-        }, [])
+        const [,...flattenedSegments] = expectedSegments.flat(3).map((name) => ({ name, kind: 'internal' }))
         assertSpanKind({
           agent,
           segments: [
