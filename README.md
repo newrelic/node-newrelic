@@ -186,7 +186,7 @@ These are the steps to work on core agent features, with more detail below:
     $ cd node-newrelic
     ```
 
-1. Install the project's dependencies:
+2. Install the project's dependencies:
 
     ```sh
     $ npm install
