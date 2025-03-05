@@ -32,7 +32,7 @@ const validStreamMetaData = {
 const validResponse = {
   isBase64Encoded: false,
   statusCode: 200,
-  headers: { responseHeader: 'headerValue' },
+  headers: { responseHeader: 'NewRelic-Test-Header' },
   body: 'a valid response string'
 }
 
@@ -642,6 +642,11 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       const chunks = ['no headers 1', 'no headers 2', 'no headers 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
+      return {
+        isBase64Encoded: false,
+        statusCode: 200,
+        body: 'a valid response string'
+      }
     })
 
     const wrappedHandler = awsLambda.patchLambdaHandler(handler)
@@ -1603,14 +1608,9 @@ test('should end transactions after the returned promise resolves', async (t) =>
 
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
-  await wrappedHandler(event, responseStream, context)
-    .then((value) => {
-      plan.equal(value, 'hello')
-      plan.equal(transaction.isActive(), false)
-    })
-    .catch((err) => {
-      t.throw(err)
-    })
+  const value = await wrappedHandler(event, responseStream, context)
+  plan.equal(value, 'hello')
+  plan.equal(transaction.isActive(), false)
   await plan.completed
 })
 
@@ -1637,14 +1637,12 @@ test('should record error event when func is async and promise is rejected', asy
   })
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
-  await wrappedHandler(event, responseStream, context)
-    .then(() => {
-      t.throw(Error('wrapped handler should fail and go to catch block'))
-    })
-    .catch((err) => {
-      plan.equal(err, error)
-      plan.equal(transaction.isActive(), false)
-    })
+  try {
+    await wrappedHandler(event, responseStream, context)
+  } catch (err) {
+    plan.equal(err, error)
+    plan.equal(transaction.isActive(), false)
+  }
   await plan.completed
 
   function confirmErrorCapture() {
@@ -1691,31 +1689,35 @@ test('should record error event when func is async and error is thrown', async (
   })
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
-  await wrappedHandler(event, responseStream, context)
-    .then(() => {
-      t.throw(Error('wrapped handler should fail and go to catch block'))
-    })
-    .catch((err) => {
-      plan.equal(err, error)
-      plan.equal(transaction.isActive(), false)
-    })
+  try {
+    await wrappedHandler(event, responseStream, context)
+  } catch (err) {
+    plan.equal(err, error)
+    plan.equal(transaction.isActive(), false)
+  }
   await plan.completed
 })
 
 test(
   'should record error event when func is async an UnhandledPromiseRejection is thrown',
   async (t) => {
-    const plan = tspl(t, { plan: 11 })
+    const plan = tspl(t, { plan: 10 })
     const { agent, awsLambda, error, event, responseStream, context } = t.nr
+    // this and a few other tests harvest more than once.
+    // since we are using plan based testing im only asserting the first harvest
+    let harvested = false
     agent.on('harvestStarted', function confirmErrorCapture() {
-      const errors = agent.errors.traceAggregator.errors
-      plan.equal(errors.length, 1)
+      if (!harvested) {
+        const errors = agent.errors.traceAggregator.errors
+        plan.equal(errors.length, 1)
 
-      const noticedError = errors[0]
-      const [, transactionName, message, type] = noticedError
-      plan.equal(transactionName, expectedBgTransactionName)
-      plan.equal(message, errorMessage)
-      plan.equal(type, 'SyntaxError')
+        const noticedError = errors[0]
+        const [, transactionName, message, type] = noticedError
+        plan.equal(transactionName, expectedBgTransactionName)
+        plan.equal(message, errorMessage)
+        plan.equal(type, 'SyntaxError')
+      }
+      harvested = true
     })
 
     let transaction
@@ -1831,11 +1833,9 @@ test('should not end transactions twice', async (t) => {
 
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
-  await wrappedHandler(event, responseStream, context)
-    .then((value) => {
-      plan.equal(value, 'hello')
-      plan.equal(transaction.isActive(), false)
-    })
+  const value = await wrappedHandler(event, responseStream, context)
+  plan.equal(value, 'hello')
+  plan.equal(transaction.isActive(), false)
   await plan.completed
 })
 
