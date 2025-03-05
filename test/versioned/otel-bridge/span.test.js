@@ -673,6 +673,38 @@ test('server span should not accept upstream traceparent/tracestate if distribut
   })
 })
 
+test('Span errors are handled and added on transaction', (t, end) => {
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'http-external-test'
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
+      span.status.code = 2
+
+      const errorEvent = {
+        name: 'exception',
+        attributes: {
+          'exception.message': 'Simulated error',
+          'exception.stacktrace': 'Error stack trace'
+        }
+      }
+      span.addEvent('exception', errorEvent.attributes)
+
+      span.end()
+      tx.end()
+
+      assert.equal(span.events[0].name, 'exception')
+      assert.equal(span.events[0].attributes['exception.message'], 'Simulated error')
+      assert.equal(span.events[0].attributes['exception.stacktrace'], 'Error stack trace')
+
+      const errors = agent.errors.traceAggregator.errors
+      assert.equal(errors.length, 1)
+      assert.equal(errors[0][2], 'Simulated error')
+      assert.equal(errors[0][3], 'Error')
+      end()
+    })
+  })
+})
+
 function setupDtHeaders(agent) {
   agent.config.trusted_account_key = 1
   agent.config.primary_application_id = 2
