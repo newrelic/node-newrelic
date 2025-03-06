@@ -47,7 +47,8 @@ const {
   ATTR_URL_QUERY,
   ATTR_URL_SCHEME,
   DB_SYSTEM_VALUES,
-  MESSAGING_SYSTEM_KIND_VALUES
+  MESSAGING_SYSTEM_KIND_VALUES,
+  SPAN_STATUS_CODE
 } = require('../../../lib/otel/constants.js')
 const { assertSpanKind } = require('../../lib/custom-assertions')
 
@@ -740,6 +741,70 @@ test('server span should not accept upstream traceparent/tracestate if distribut
     span.end()
     assert.ok(!tx.isDistributedTrace)
     end()
+  })
+})
+
+test('Span errors are handled and added on transaction', (t, end) => {
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'http-external-test'
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
+      span.status.code = SPAN_STATUS_CODE.ERROR
+
+      const errorEvent = {
+        name: 'exception',
+        attributes: {
+          'exception.message': 'Simulated error',
+          'exception.stacktrace': 'Error stack trace'
+        }
+      }
+      span.addEvent('exception', errorEvent.attributes)
+
+      span.end()
+      tx.end()
+
+      assert.equal(span.events[0].name, 'exception')
+      assert.equal(span.events[0].attributes['exception.message'], 'Simulated error')
+      assert.equal(span.events[0].attributes['exception.stacktrace'], 'Error stack trace')
+
+      const errorEvents = agent.errors.eventAggregator.getEvents()
+      assert.equal(errorEvents.length, 1)
+      assert.equal(errorEvents[0][0]['error.message'], 'Simulated error')
+      assert.equal(errorEvents[0][0]['error.class'], 'Error')
+      assert.equal(errorEvents[0][0]['type'], 'TransactionError')
+      end()
+    })
+  })
+})
+
+test('Span errors are not added on transaction when span status code is not error', (t, end) => {
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'http-external-test'
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
+      span.status.code = SPAN_STATUS_CODE.OK
+
+      const errorEvent = {
+        name: 'exception',
+        attributes: {
+          'exception.message': 'Simulated error',
+          'exception.stacktrace': 'Error stack trace'
+        }
+      }
+      span.addEvent('exception', errorEvent.attributes)
+
+      span.end()
+      tx.end()
+
+      assert.equal(span.events[0].name, 'exception')
+      assert.equal(span.events[0].attributes['exception.message'], 'Simulated error')
+      assert.equal(span.events[0].attributes['exception.stacktrace'], 'Error stack trace')
+
+      // no transaction errors
+      const errorEvents = agent.errors.eventAggregator.getEvents()
+      assert.equal(errorEvents.length, 0)
+      end()
+    })
   })
 })
 
