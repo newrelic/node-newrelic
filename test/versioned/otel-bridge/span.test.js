@@ -696,10 +696,11 @@ test('Span errors are handled and added on transaction', (t, end) => {
       assert.equal(span.events[0].attributes['exception.message'], 'Simulated error')
       assert.equal(span.events[0].attributes['exception.stacktrace'], 'Error stack trace')
 
-      const errors = agent.errors.traceAggregator.errors
-      assert.equal(errors.length, 1)
-      assert.equal(errors[0][2], 'Simulated error')
-      assert.equal(errors[0][3], 'Error')
+      const errorEvents = agent.errors.eventAggregator.getEvents()
+      assert.equal(errorEvents.length, 1)
+      assert.equal(errorEvents[0][0]['error.message'], 'Simulated error')
+      assert.equal(errorEvents[0][0]['error.class'], 'Error')
+      assert.equal(errorEvents[0][0]['type'], 'TransactionError')
       end()
     })
   })
