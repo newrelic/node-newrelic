@@ -1698,11 +1698,6 @@ test('Errors', async (t) => {
       assert(spanId, segment.id)
       transaction.end()
     })
-  })
-
-  await t.test('error events', async (t) => {
-    t.beforeEach(beforeEach)
-    t.afterEach(afterEach)
 
     await t.test('should omit the error message when in high security mode', (t) => {
       const { agent } = t.nr
