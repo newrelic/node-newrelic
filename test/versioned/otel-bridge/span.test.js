@@ -733,14 +733,14 @@ test('aws sqs span has correct entity linking attributes', (t, end) => {
   const { agent, tracer } = t.nr
   // see: https://github.com/open-telemetry/opentelemetry-js-contrib/blob/b520d048465d9b3dfdf275976010c989d2a78a2c/plugins/node/opentelemetry-instrumentation-aws-sdk/src/services/sqs.ts#L62
   const attributes = {
-    [ATTR_MESSAGING_SYSTEM]: 'aws.sqs',
+    'rpc.service': 'AmazonSQS',
     [ATTR_MESSAGING_DESTINATION_KIND]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
     [ATTR_MESSAGING_DESTINATION]: 'test-queue',
     'aws.region': 'us-east-1'
   }
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'sqs-test'
-    tracer.startActiveSpan('sqs-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+    tracer.startActiveSpan('sqs-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
