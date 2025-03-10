@@ -9,9 +9,7 @@ const test = require('node:test')
 const http = require('node:http')
 
 const helper = require('../../lib/agent_helper')
-const assertClmAttrs = require('../../lib/custom-assertions/assert-clm-attrs')
-const assertMetrics = require('../../lib/custom-assertions/assert-metrics')
-const assertSegments = require('../../lib/custom-assertions/assert-segments')
+const { assertCLMAttrs, assertMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const utils = require('./hapi-utils')
 
 const NAMES = require('../../../lib/metrics/names')
@@ -81,6 +79,13 @@ test('route handler is recorded as middleware', (t, end) => {
   runTest(agent, server, function (baseSegment, transaction) {
     checkMetrics(transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
     assertSegments(transaction.trace, baseSegment, [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: 'WebTransaction/Hapi/GET//test', kind: 'server' },
+        { name: NAMES.HAPI.MIDDLEWARE + 'myHandler//test', kind: 'internal' }
+      ]
+    })
     end()
   })
 })
@@ -191,7 +196,7 @@ for (const clmEnabled of [true, false]) {
 
     runTest(agent, server, function (baseSegment, transaction) {
       const [onRequestSegment, handlerSegment] = transaction.trace.getChildren(baseSegment.id)
-      assertClmAttrs({
+      assertCLMAttrs({
         segments: [
           {
             segment: onRequestSegment,
@@ -232,7 +237,7 @@ for (const clmEnabled of [true, false]) {
 
     runTest(agent, server, function (baseSegment, transaction) {
       const [customHandlerSegment] = transaction.trace.getChildren(baseSegment.id)
-      assertClmAttrs({
+      assertCLMAttrs({
         segments: [
           {
             segment: customHandlerSegment,
@@ -270,7 +275,7 @@ for (const clmEnabled of [true, false]) {
     server.register(plugin).then(() => {
       runTest(agent, server, function (baseSegment, transaction) {
         const [pluginHandlerSegment] = transaction.trace.getChildren(baseSegment.id)
-        assertClmAttrs({
+        assertCLMAttrs({
           segments: [
             {
               segment: pluginHandlerSegment,

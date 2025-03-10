@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
@@ -359,8 +359,8 @@ test('should create span on successful runnables create', (t, end) => {
 
     assert.ok(result)
     assertSegments(tx.trace, tx.trace.root, ['Llm/chain/Langchain/invoke'], { exact: false })
-
     tx.end()
+    assertSpanKind({ agent, segments: [{ name: 'Llm/chain/Langchain/invoke', kind: 'internal' }] })
     end()
   })
 })

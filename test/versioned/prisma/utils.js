@@ -28,7 +28,7 @@ const raw = `${PRISMA.STATEMENT}User/select`
 utils.raw = raw
 const rawUpdate = `${PRISMA.STATEMENT}User/update`
 utils.rawUpdate = rawUpdate
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 /**
  * Asserts all the expected datastore metrics for a given query
@@ -60,6 +60,13 @@ function verifyTraces(agent, transaction) {
   assert.ok(trace.root, 'root element should exist')
 
   assertSegments(trace, trace.root, [findMany, update, update, findMany], { exact: true })
+  assertSpanKind({
+    agent,
+    segments: [
+      { name: findMany, kind: 'client' },
+      { name: update, kind: 'client' }
+    ]
+  })
   const findManySegment = findSegment(trace, trace.root, findMany)
   assert.ok(findManySegment.timer.hrDuration, 'findMany segment should have ended')
   const updateSegment = findSegment(trace, trace.root, update)

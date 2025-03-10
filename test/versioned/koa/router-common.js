@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const fs = require('node:fs')
 const path = require('node:path')
 
-const assertSegments = require('../../lib/custom-assertions/assert-segments')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 /**
  * koa-router and @koa/router updated how they defined wildcard routing
@@ -113,6 +113,15 @@ module.exports = (pkg) => {
             'WebTransaction/WebFrameworkUri/Koa/GET//:first',
             'transaction should be named after the matched path'
           )
+          assertSpanKind({
+            agent,
+            segments: [
+              { name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first', kind: 'server' },
+              { name: 'Koa/Router: /', kind: 'internal' },
+              { name: 'Nodejs/Middleware/Koa/firstMiddleware//:first', kind: 'internal' },
+              { name: 'Nodejs/Middleware/Koa/secondMiddleware//:first', kind: 'internal' },
+            ]
+          })
           end()
         })
         run({ context: t.nr })

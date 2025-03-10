@@ -14,7 +14,7 @@ const serverImpl = require('./grpc-server.cjs')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 
-const { assertMetrics, assertSegments, match } = require('../../lib/custom-assertions')
+const { assertMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 
 const SERVER_ADDR = '0.0.0.0'
 const CLIENT_ADDR = 'localhost'
@@ -152,6 +152,7 @@ util.assertExternalSegment = function assertExternalSegment(
   const methodName = util.getRPCName(fnName)
   const segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}:${port}${methodName}`
   assertSegments(tx.trace, tx.trace.root, [segmentName], { exact: false }, { assert })
+  assertSpanKind({ agent: tx.agent, segments: [{ name: segmentName, kind: 'client' }], assert })
   const segment = metricsHelpers.findSegment(tx.trace, tx.trace.root, segmentName)
   const attributes = segment.getAttributes()
   assert.equal(
@@ -210,6 +211,7 @@ util.assertServerTransaction = function assertServerTransaction(
     `should have server method ${expectedMethod}`
   )
   assert.equal(attributes['request.uri'], expectedUri, `should have server uri ${expectedUri}`)
+  assertSpanKind({ agent: transaction.agent, segments: [{ name: transaction.name, kind: 'server' }], assert })
 }
 
 util.assertServerMetrics = function assertServerMetrics(

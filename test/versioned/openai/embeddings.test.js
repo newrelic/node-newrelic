@@ -11,7 +11,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, match } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const createOpenAIMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
 
@@ -62,16 +62,23 @@ test('should create span on successful embedding create', (t, end) => {
     assert.equal(results.headers, undefined, 'should remove response headers from user result')
     assert.equal(results.model, 'text-embedding-ada-002-v2')
 
+    const name = `External/${host}:${port}/embeddings`
     assertSegments(
       tx.trace,
       tx.trace.root,
-      [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]],
+      [OPENAI.EMBEDDING, [name]],
       {
         exact: false
       }
     )
-
     tx.end()
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: OPENAI.EMBEDDING, kind: 'internal' },
+        { name, kind: 'client' }
+      ]
+    })
     end()
   })
 })

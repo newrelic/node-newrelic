@@ -11,7 +11,7 @@ const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const { getMetricHostName } = require('../../lib/metrics_helper')
 const { tspl } = require('@matteo.collina/tspl')
-const { assertMetrics, assertSegments } = require('../../lib/custom-assertions')
+const { assertMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 /**
  * Flushes memcached to start clean
@@ -47,7 +47,7 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
     await t.test('touch()', async function (t) {
       const { agent, memcached } = t.nr
-      const plan = tspl(t, { plan: 11 })
+      const plan = tspl(t, { plan: 12 })
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
         memcached.touch('foo', 1, function (err) {
@@ -62,6 +62,13 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
             { exact: false },
             { assert: plan }
           )
+          assertSpanKind({
+            agent,
+            segments: [
+              { name: 'Datastore/operation/Memcache/touch', kind: 'client' }
+            ],
+            assert: plan
+          })
 
           assertMetrics(
             transaction.metrics,

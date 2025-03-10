@@ -48,8 +48,10 @@ const {
   ATTR_URL_QUERY,
   ATTR_URL_SCHEME,
   DB_SYSTEM_VALUES,
-  MESSAGING_SYSTEM_KIND_VALUES
+  MESSAGING_SYSTEM_KIND_VALUES,
+  SPAN_STATUS_CODE
 } = require('../../../lib/otel/constants.js')
+const { assertSpanKind } = require('../../lib/custom-assertions')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
@@ -116,6 +118,15 @@ test('mix internal and NR span tests', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: 'main', kind: 'internal' },
+          { name: 'hi', kind: 'internal' },
+          { name: 'bye', kind: 'internal' },
+          { name: 'agentSegment', kind: 'internal' }
+        ]
+      })
       const metrics = tx.metrics.scoped[tx.name]
       assert.equal(metrics['Custom/main'].callCount, 1)
       assert.equal(metrics['Custom/hi'].callCount, 1)
@@ -141,6 +152,12 @@ test('client span(http) is bridge accordingly', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
       const metrics = tx.metrics.scoped[tx.name]
       assert.equal(metrics['External/newrelic.com/http'].callCount, 1)
       const unscopedMetrics = tx.metrics.unscoped
@@ -177,6 +194,12 @@ test('Http external span is bridged accordingly', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
 
       const attrs = segment.getAttributes()
       const spanAttributes = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
@@ -216,6 +239,12 @@ test('Http external span is bridged accordingly(legacy attributes test)', (t, en
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
 
       const attrs = segment.getAttributes()
       const spanAttributes = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
@@ -252,6 +281,12 @@ test('client span(db) is bridge accordingly(statement test)', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
       const attrs = segment.getAttributes()
       assert.equal(attrs.host, expectedHost)
       assert.equal(attrs.product, 'postgresql')
@@ -297,6 +332,12 @@ test('client span(db) is bridged accordingly(operation test)', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
       const attrs = segment.getAttributes()
       assert.equal(attrs.host, expectedHost)
       assert.equal(attrs.product, 'redis')
@@ -344,6 +385,12 @@ test('server span is bridged accordingly', (t, end) => {
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
     assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//GET/foo/:param')
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: tx.name, kind: 'server' }
+      ]
+    })
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
@@ -397,6 +444,12 @@ test('server span(rpc) is bridged accordingly', (t, end) => {
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
     assert.equal(segment.name, 'WebTransaction/WebFrameworkUri/foo/test.service/getData')
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: tx.name, kind: 'server' }
+      ]
+    })
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
@@ -446,6 +499,12 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
     assert.equal(tx.traceId, span.spanContext().traceId)
     span.end()
     assert.ok(!tx.isDistributedTrace)
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: tx.name, kind: 'server' }
+      ]
+    })
     const segment = agent.tracer.getSegment()
 
     const duration = hrTimeToMilliseconds(span.duration)
@@ -500,6 +559,12 @@ test('producer span is bridged accordingly', (t, end) => {
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'producer' }
+        ]
+      })
       const metrics = tx.metrics.scoped[tx.name]
       assert.equal(metrics['MessageBroker/messaging-lib/queue/Produce/Named/test-queue'].callCount, 1)
       const unscopedMetrics = tx.metrics.unscoped
@@ -537,6 +602,12 @@ test('consumer span is bridged correctly', (t, end) => {
     const segment = agent.tracer.getSegment()
     assert.equal(tx.traceId, span.spanContext().traceId)
     span.end()
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: tx.name, kind: 'consumer' }
+      ]
+    })
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
 
@@ -680,6 +751,70 @@ test('server span should not accept upstream traceparent/tracestate if distribut
   })
 })
 
+test('Span errors are handled and added on transaction', (t, end) => {
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'http-external-test'
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
+      span.status.code = SPAN_STATUS_CODE.ERROR
+
+      const errorEvent = {
+        name: 'exception',
+        attributes: {
+          'exception.message': 'Simulated error',
+          'exception.stacktrace': 'Error stack trace'
+        }
+      }
+      span.addEvent('exception', errorEvent.attributes)
+
+      span.end()
+      tx.end()
+
+      assert.equal(span.events[0].name, 'exception')
+      assert.equal(span.events[0].attributes['exception.message'], 'Simulated error')
+      assert.equal(span.events[0].attributes['exception.stacktrace'], 'Error stack trace')
+
+      const errorEvents = agent.errors.eventAggregator.getEvents()
+      assert.equal(errorEvents.length, 1)
+      assert.equal(errorEvents[0][0]['error.message'], 'Simulated error')
+      assert.equal(errorEvents[0][0]['error.class'], 'Error')
+      assert.equal(errorEvents[0][0]['type'], 'TransactionError')
+      end()
+    })
+  })
+})
+
+test('Span errors are not added on transaction when span status code is not error', (t, end) => {
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'http-external-test'
+    tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
+      span.status.code = SPAN_STATUS_CODE.OK
+
+      const errorEvent = {
+        name: 'exception',
+        attributes: {
+          'exception.message': 'Simulated error',
+          'exception.stacktrace': 'Error stack trace'
+        }
+      }
+      span.addEvent('exception', errorEvent.attributes)
+
+      span.end()
+      tx.end()
+
+      assert.equal(span.events[0].name, 'exception')
+      assert.equal(span.events[0].attributes['exception.message'], 'Simulated error')
+      assert.equal(span.events[0].attributes['exception.stacktrace'], 'Error stack trace')
+
+      // no transaction errors
+      const errorEvents = agent.errors.eventAggregator.getEvents()
+      assert.equal(errorEvents.length, 0)
+      end()
+    })
+  })
+})
+
 test('aws dynamodb span has correct entity linking attributes', (t, end) => {
   const { agent, tracer } = t.nr
   const attributes = {
@@ -699,8 +834,6 @@ test('aws dynamodb span has correct entity linking attributes', (t, end) => {
       tx.end()
       const attrs = segment.getAttributes()
       assert.equal(attrs['cloud.resource_id'], 'arn:aws:dynamodb:us-east-1:123456789123:table/test-table')
-
-      end()
     })
   })
 })
@@ -751,7 +884,6 @@ test('aws sqs span has correct entity linking attributes', (t, end) => {
       assert.equal(attrs['cloud.region'], 'us-east-1')
       assert.equal(attrs['messaging.destination.name'], 'test-queue')
       assert.equal(attrs['messaging.system'], 'aws_sqs')
-      end()
     })
   })
 })
