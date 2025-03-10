@@ -138,10 +138,14 @@ function createAwsResponseStream() {
  * streaming capable handlers to be decorated.
  *
  * @param {function} handler The user's Lambda application entry point
+ * @param {object} options An object which optionally may contain a highWaterMark key
  * @returns {function} The same function, decorated with a symbol to indicate response streaming
  */
-function decorateHandler(handler) {
+function decorateHandler(handler, options) {
   handler[Symbol.for('aws.lambda.runtime.handler.streaming')] = 'response'
+  if (typeof options?.highWaterMark === 'number') {
+    handler[Symbol.for('aws.lambda.runtime.handler.highWaterMark')] = options.highWaterMark
+  }
   return handler
 }
 
@@ -197,6 +201,24 @@ test('should return original handler if not a function', (t) => {
   const newHandler = t.nr.awsLambda.patchLambdaHandler(handler)
 
   assert.equal(newHandler, handler)
+})
+
+test('should preserve streaming symbols after wrapping', async (t) => {
+  const { agent, awsLambda } = t.nr
+  assert.equal(agent.collector.metadata.arn, null)
+
+  const handler = decorateHandler(async () => {})
+  const patched = awsLambda.patchLambdaHandler(handler)
+  assert.ok(patched[Symbol.for('aws.lambda.runtime.handler.streaming')])
+})
+
+test('should preserve streaming highWaterMark symbol after wrapping, if defined', async (t) => {
+  const { agent, awsLambda } = t.nr
+  assert.equal(agent.collector.metadata.arn, null)
+
+  const handler = decorateHandler(async () => {}, { highWaterMark: 8000 })
+  const patched = awsLambda.patchLambdaHandler(handler)
+  assert.ok(patched[Symbol.for('aws.lambda.runtime.handler.highWaterMark')])
 })
 
 test('should pick up on the arn', async (t) => {
