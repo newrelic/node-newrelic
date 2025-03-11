@@ -4,14 +4,16 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
-const Agent = require('../../lib/agent')
-const configurator = require('../../lib/config')
-const sampler = require('../../lib/sampler')
 const sinon = require('sinon')
-const numCpus = require('os').cpus().length
-const NAMES = require('../../lib/metrics/names')
+const Agent = require('#agentlib/agent.js')
+const configurator = require('#agentlib/config/index.js')
+const sampler = require('#agentlib/system-metrics-sampler.js')
+
+const numCpus = require('node:os').cpus().length
+const NAMES = require('#agentlib/metrics/names.js')
 
 test('environmental sampler', async function (t) {
   t.beforeEach(function (ctx) {
