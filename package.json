@@ -260,7 +260,7 @@
     "should": "*",
     "sinon": "^4.5.0",
     "superagent": "^9.0.1",
-    "tap": "^18.0.0",
+    "tap": "^20.0.0",
     "temp": "^0.8.1"
   },
   "repository": {
