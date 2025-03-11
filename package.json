@@ -240,7 +240,7 @@
     "eslint": "^9.0.0",
     "eslint-plugin-disable": "^2.0.1",
     "eslint-plugin-jsdoc": "^48.0.5",
-    "eslint-plugin-sonarjs": "^0.18.0",
+    "eslint-plugin-sonarjs": "^0.25.1",
     "express": "*",
     "git-raw-commits": "^2.0.11",
     "glob": "^9.0.0",
