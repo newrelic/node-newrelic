@@ -122,8 +122,8 @@ test('helper functions', () => {
 
 test('distributed tracing trace context', async (t) => {
   const testCases = require('../../lib/cross_agent_tests/distributed_tracing/trace_context.json')
-  for (const [i] of testCases.entries()) {
-    await runTestCase(testCases[i], t)
+  for (const testCase of testCases) {
+    await runTestCase(testCase, t)
   }
 })
 
@@ -190,8 +190,7 @@ const testExpectedFixtureKeys = function (thingWithKeys, expectedKeys) {
   if (!Array.isArray(actualKeys)) {
     actualKeys = Object.keys(thingWithKeys)
   }
-  for (const [i] of actualKeys.entries()) {
-    const key = actualKeys[i]
+  for (const key of actualKeys) {
     assert.ok(expectedKeys.indexOf(key) !== -1, 'key [' + key + '] should be expected?')
   }
 }
@@ -282,8 +281,7 @@ async function runTestCase(testCase, parentTest) {
     ])
 
     if (testCase.outbound_payloads) {
-      for (const [i] of testCase.outbound_payloads.entries()) {
-        const outboundPayload = testCase.outbound_payloads[i]
+      for (const outboundPayload of testCase.outbound_payloads) {
         testExpectedFixtureKeys(outboundPayload, [
           'exact',
           'expected',
@@ -311,8 +309,7 @@ async function runTestCase(testCase, parentTest) {
       testExpectedFixtureKeys(testCase.intrinsics.target_events, expectedEvents)
 
       // test the top level keys of each event
-      for (const [i] of testCase.intrinsics.target_events.entries()) {
-        const event = testCase.intrinsics.target_events[i]
+      for (const event of testCase.intrinsics.target_events) {
         const eventTestConfig = testCase.intrinsics[event]
 
         // a few tests list an expected event, but no data for that event
@@ -363,9 +360,7 @@ async function runTestCase(testCase, parentTest) {
         }
       }
 
-      for (const [key] of testCase.inbound_headers.entries()) {
-        const inboundHeader = testCase.inbound_headers[key]
-
+      for (const inboundHeader of testCase.inbound_headers.values()) {
         transaction.acceptDistributedTraceHeaders(testCase.transport_type, inboundHeader)
 
         // Generate outbound payloads
