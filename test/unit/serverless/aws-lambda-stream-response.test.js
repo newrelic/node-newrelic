@@ -221,6 +221,16 @@ test('should preserve streaming highWaterMark symbol after wrapping, if defined'
   assert.ok(patched[Symbol.for('aws.lambda.runtime.handler.highWaterMark')])
 })
 
+test('should preserve any symbol set on the handler function', async (t) => {
+  const { agent, awsLambda } = t.nr
+  assert.equal(agent.collector.metadata.arn, null)
+
+  const handler = decorateHandler(async () => {})
+  handler[Symbol.for('aws.lambda.runtime.handler.newSymbol')] = 'mySymbolValue'
+  const patched = awsLambda.patchLambdaHandler(handler)
+  assert.ok(patched[Symbol.for('aws.lambda.runtime.handler.newSymbol')])
+})
+
 test('should pick up on the arn', async (t) => {
   const { agent, awsLambda, event, responseStream, context } = t.nr
   assert.equal(agent.collector.metadata.arn, null)
