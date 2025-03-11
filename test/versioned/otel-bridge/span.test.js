@@ -20,6 +20,7 @@ const {
   ATTR_DB_STATEMENT,
   ATTR_DB_SYSTEM,
   ATTR_GRPC_STATUS_CODE,
+  ATTR_FAAS_INVOKED_PROVIDER,
   ATTR_FULL_URL,
   ATTR_HTTP_HOST,
   ATTR_HTTP_METHOD,
@@ -56,6 +57,12 @@ test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
     feature_flag: {
       opentelemetry_bridge: true
+    },
+    // for AWS entity linking tests
+    cloud: {
+      aws: {
+        account_id: 123456789123
+      }
     }
   })
   const api = helper.getAgentApi()
@@ -289,14 +296,14 @@ test('client span(db) is bridge accordingly(statement test)', (t, end) => {
       const metrics = tx.metrics.scoped[tx.name]
       assert.equal(metrics['Datastore/statement/postgresql/test/select'].callCount, 1)
       const unscopedMetrics = tx.metrics.unscoped
-      ;[
+        ;[
         'Datastore/all',
         'Datastore/allWeb',
         'Datastore/postgresql/all',
         'Datastore/postgresql/allWeb',
         'Datastore/operation/postgresql/select',
         'Datastore/statement/postgresql/test/select',
-        `Datastore/instance/postgresql/${expectedHost}/5436`
+          `Datastore/instance/postgresql/${expectedHost}/5436`
       ].forEach((expectedMetric) => {
         assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
       })
@@ -338,13 +345,13 @@ test('client span(db) is bridged accordingly(operation test)', (t, end) => {
       const metrics = tx.metrics.scoped[tx.name]
       assert.equal(metrics['Datastore/operation/redis/hset'].callCount, 1)
       const unscopedMetrics = tx.metrics.unscoped
-      ;[
+        ;[
         'Datastore/all',
         'Datastore/allWeb',
         'Datastore/redis/all',
         'Datastore/redis/allWeb',
         'Datastore/operation/redis/hset',
-        `Datastore/instance/redis/${expectedHost}/5436`
+          `Datastore/instance/redis/${expectedHost}/5436`
       ].forEach((expectedMetric) => {
         assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
       })
@@ -803,6 +810,81 @@ test('Span errors are not added on transaction when span status code is not erro
       // no transaction errors
       const errorEvents = agent.errors.eventAggregator.getEvents()
       assert.equal(errorEvents.length, 0)
+      end()
+    })
+  })
+})
+
+test('aws dynamodb span has correct entity linking attributes', (t, end) => {
+  const { agent, tracer } = t.nr
+  const attributes = {
+    [ATTR_DB_NAME]: 'test-db',
+    [ATTR_DB_SYSTEM]: DB_SYSTEM_VALUES.DYNAMODB,
+    [ATTR_DB_STATEMENT]: 'select foo from test-table where foo = "bar"',
+    'aws.region': 'us-east-1',
+    'aws.dynamodb.table_names': ['test-table']
+  }
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'db-test'
+    tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+      const segment = agent.tracer.getSegment()
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+      const attrs = segment.getAttributes()
+      assert.equal(attrs['cloud.resource_id'], 'arn:aws:dynamodb:us-east-1:123456789123:table/test-table')
+      end()
+    })
+  })
+})
+
+test('aws lambda span has correct entity linking attributes', (t, end) => {
+  const { agent, tracer } = t.nr
+  // see: https://github.com/open-telemetry/opentelemetry-specification/blob/v1.7.0/specification/trace/semantic_conventions/faas.md#example "Span A"
+  const attributes = {
+    'faas.invoked_name': 'test-function',
+    [ATTR_FAAS_INVOKED_PROVIDER]: 'aws',
+    'faas.invoked_region': 'us-east-1'
+  }
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'lambda-test'
+    tracer.startActiveSpan('lambda-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+      const segment = agent.tracer.getSegment()
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+      const attrs = segment.getAttributes()
+      assert.equal(attrs['cloud.resource_id'], 'arn:aws:lambda:us-east-1:123456789123:function:test-function')
+      assert.equal(attrs['cloud.platform'], 'aws_lambda')
+      end()
+    })
+  })
+})
+
+test('aws sqs span has correct entity linking attributes', (t, end) => {
+  const { agent, tracer } = t.nr
+  // see: https://github.com/open-telemetry/opentelemetry-js-contrib/blob/b520d048465d9b3dfdf275976010c989d2a78a2c/plugins/node/opentelemetry-instrumentation-aws-sdk/src/services/sqs.ts#L62
+  const attributes = {
+    'rpc.service': 'sqs',
+    [ATTR_MESSAGING_DESTINATION_KIND]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
+    [ATTR_MESSAGING_DESTINATION]: 'test-queue',
+    'aws.region': 'us-east-1'
+  }
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'sqs-test'
+    tracer.startActiveSpan('sqs-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
+      const segment = agent.tracer.getSegment()
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+      const attrs = segment.getAttributes()
+      assert.equal(attrs['cloud.account.id'], agent.config.cloud.aws.account_id)
+      assert.equal(attrs['cloud.region'], 'us-east-1')
+      assert.equal(attrs['messaging.destination.name'], 'test-queue')
+      assert.equal(attrs['messaging.system'], 'aws_sqs')
       end()
     })
   })
