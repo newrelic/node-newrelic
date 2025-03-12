@@ -29,8 +29,8 @@ test('GCP PubSub API', async (t) => {
     })
 
     await t.test('publish message', async (ctx) => {
-        const { pubsub } = ctx.nr
-        helper.runInTransaction(ctx, async (tx) => {
+        const { agent, pubsub } = ctx.nr
+        helper.runInTransaction(agent, async (tx) => {
             const topic = pubsub.topic('my-topic')
             const message = Buffer.from('Hello, world!')
             const messageId = await topic.publish(message)
@@ -40,8 +40,8 @@ test('GCP PubSub API', async (t) => {
     })
 
     await t.test('pull messages', async (ctx) => {
-        const { pubsub } = ctx.nr
-        helper.runInTransaction(ctx, async (tx) => {
+        const { agent, pubsub } = ctx.nr
+        helper.runInTransaction(agent, async (tx) => {
             const subscription = pubsub.subscription('my-subscription')
             const [messages] = await subscription.pull()
             assert.ok(messages)
