@@ -8,7 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const os = require('node:os')
-const util = require('node:util')
 const { Writable } = require('node:stream')
 const tspl = require('@matteo.collina/tspl')
 
@@ -247,13 +246,12 @@ test('should set close/error listeners on the stream', async (t) => {
   assert.equal(agent.collector.metadata.arn, null)
 
   const handler = decorateHandler(async (event, responseStream) => {
-    const endListeners = util.inspect(responseStream.listeners('end'))
-    const errorListeners = util.inspect(responseStream.listeners('error'))
-    const listenerString = '[ [Function (anonymous)], [Function (anonymous)] ]'
-    assert.ok(endListeners.length > 0)
-    assert.ok(errorListeners.length > 0)
-    assert.equal(endListeners, listenerString, 'the stream should have a listener for stream end')
-    assert.equal(errorListeners, listenerString, 'the stream should have a listener for errors')
+    const endListeners = responseStream.listeners('end')
+    const errorListeners = responseStream.listeners('error')
+    assert.ok(endListeners.length === 2)
+    assert.ok(errorListeners.length === 2)
+    assert.ok(endListeners[1].toString().indexOf('txnEnder') > -1, 'the agent should set a transaction ender on stream end')
+    assert.ok(errorListeners[1].toString().indexOf('shim') > -1, 'the agent should listen for stream errors')
   })
   const patched = awsLambda.patchLambdaHandler(handler)
   await patched(event, responseStream, context)
