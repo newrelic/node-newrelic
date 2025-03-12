@@ -20,14 +20,6 @@ const {
   DESTINATIONS: ATTR_DEST
 } = require('#agentlib/transaction/index.js')
 
-const validStreamMetaData = {
-  statusCode: 200,
-  headers: {
-    'Content-Type': 'text/html',
-    'X-Custom-Header': 'NewRelic-Test-Header'
-  }
-}
-
 // Used by API Gateway response tests
 const validResponse = {
   isBase64Encoded: false,
@@ -173,29 +165,6 @@ function writeToResponseStream(chunks, stream, delay) {
   return Promise.all(writes)
 }
 
-/**
- * AWS Lambda streaming responses have a specific structure. This class
- * replicates the internal tooling that AWS uses to construct said structure
- * when writing responses to the stream.
- *
- * @see https://github.com/aws/aws-lambda-nodejs-runtime-interface-client/blob/db6a30da32934bcde91da248db30b60b17b891c4/src/HttpResponseStream.js
- */
-class HttpResponseStream {
-  static from(originalStream, prelude) {
-    originalStream.setContentType('application/vnd.awslambda.http-integration-response')
-    const streamMeta = JSON.stringify(prelude)
-    originalStream._onBeforeFirstWrite = (write) => {
-      // If we finish writing all of the required unit tests, and this assert
-      // never gets triggered, then there is no reason to have this
-      // `HttpResponseStream` thing.
-      assert.fail('_onBeforeFirstWrite')
-      write(streamMeta)
-      write(new Uint8Array(0))
-    }
-    return originalStream
-  }
-}
-
 test('should return original handler if not a function', (t) => {
   const handler = {}
   const newHandler = t.nr.awsLambda.patchLambdaHandler(handler)
@@ -275,7 +244,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       }
 
       const handler = decorateHandler(async (event, responseStream) => {
-        responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
         const chunks = ['first', 'second', 'third', 'fourth']
         await writeToResponseStream(chunks, responseStream, 100)
 
@@ -315,7 +283,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['fifth', 'sixth', 'seventh', 'eighth']
       await writeToResponseStream(chunks, responseStream, 100)
 
@@ -365,7 +332,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       apiGatewayProxyEvent.headers.traceparent = traceparent
 
       const handler = decorateHandler(async (event, responseStream) => {
-        responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
         const chunks = ['tracecontext first', 'tracecontext second', 'tracecontext third', 'tracecontext fourth']
         await writeToResponseStream(chunks, responseStream, 100)
 
@@ -408,7 +374,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
       const handler = decorateHandler(async (event, responseStream) => {
-        responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
         const chunks = ['1 add traceContext', '2 add traceContext', '3 add traceContext']
         await writeToResponseStream(chunks, responseStream, 100)
 
@@ -442,7 +407,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['capturing req params 1', 'capturing req params 2', 'capturing req params 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -474,7 +438,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['params in spans 1', 'params in spans 2', 'params in spans 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -503,7 +466,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['capture headers 1', 'capture headers 2', 'capture headers 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -557,7 +519,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['filter by exclude 1', 'filter by exclude 2', 'filter by exclude 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -596,7 +557,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['capture statusCode 1', 'capture statusCode 2', 'capture statusCode 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -626,7 +586,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['capture statusCode 1', 'capture statusCode 2', 'capture statusCode 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -658,7 +617,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -686,7 +644,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, { statusCode: 200 })
       const chunks = ['no headers 1', 'no headers 2', 'no headers 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -718,7 +675,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -746,7 +702,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -786,7 +741,6 @@ test('when invoked with API Gateway Lambda proxy event', async (t) => {
     const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
     const handler = decorateHandler(async (event, responseStream) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
       // delay set to 10ms here so that Apdex is "satisfying" instead of "tolerating"
       await writeToResponseStream(chunks, responseStream, 10)
@@ -837,7 +791,6 @@ test('should create a segment for handler', async (t) => {
     const segment = awsLambda.shim.getSegment()
     plan.notEqual(segment, null)
     plan.equal(segment.name, functionName)
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -857,7 +810,6 @@ test('should capture cold start boolean on first invocation', async (t) => {
   agent.on('transactionFinished', confirmColdStart)
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -885,7 +837,6 @@ test('should not include cold start on subsequent invocations', async (t) => {
   agent.on('transactionFinished', confirmNoAdditionalColdStart)
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -917,7 +868,6 @@ test('should capture AWS agent attributes and send to correct dests', async (t) 
   agent.on('transactionFinished', confirmAgentAttributes)
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -967,7 +917,6 @@ test('should not add attributes from empty event', async (t) => {
   agent.on('transactionFinished', confirmAgentAttribute)
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1000,7 +949,6 @@ test('should capture kinesis data stream event source arn', async (t) => {
   const event = lambdaSampleEvents.kinesisDataStreamEvent
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1031,7 +979,6 @@ test('should capture S3 PUT event source arn attribute', async (t) => {
   const event = lambdaSampleEvents.s3PutEvent
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1065,7 +1012,6 @@ test('should capture SNS event source arn attribute', async (t) => {
   const event = lambdaSampleEvents.snsEvent
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1099,7 +1045,6 @@ test('should capture DynamoDB Update event source attribute', async (t) => {
   const event = lambdaSampleEvents.dynamoDbUpdateEvent
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1130,7 +1075,6 @@ test('should capture CodeCommit event source attribute', async (t) => {
   const event = lambdaSampleEvents.codeCommitEvent
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1167,7 +1111,6 @@ test('should not capture unknown event source attribute', async (t) => {
   const event = lambdaSampleEvents.cloudFrontEvent
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1200,7 +1143,6 @@ test('should capture Kinesis Data Firehose event source attribute', async (t) =>
   const event = lambdaSampleEvents.kinesisDataFirehoseEvent
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1234,7 +1176,6 @@ test('should capture ALB event type', async (t) => {
   const event = lambdaSampleEvents.albEvent
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1276,7 +1217,6 @@ test('should capture CloudWatch Scheduled event type', async (t) => {
   const event = lambdaSampleEvents.cloudwatchScheduled
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1316,7 +1256,6 @@ test('should capture SES event type', async (t) => {
   const event = lambdaSampleEvents.sesEvent
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1351,7 +1290,6 @@ test('should capture ALB event type with multi value parameters', async (t) => {
   const event = lambdaSampleEvents.albEventWithMultiValueParameters
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1487,7 +1425,6 @@ test('when context.succeed used', async (t) => {
 
     const handler = decorateHandler(async (event, responseStream, context) => {
       transaction = agent.tracer.getTransaction()
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -1518,7 +1455,6 @@ test('when context.fail used', async (t) => {
 
     const handler = decorateHandler(async (event, responseStream, context) => {
       transaction = agent.tracer.getTransaction()
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -1543,7 +1479,6 @@ test('when context.fail used', async (t) => {
     })
 
     const handler = decorateHandler(async (event, responseStream, context) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -1571,7 +1506,6 @@ test('when context.fail used', async (t) => {
     })
 
     const handler = decorateHandler(async (event, responseStream, context) => {
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -1590,7 +1524,6 @@ test('should create a transaction for handler', async (t) => {
   const { agent, awsLambda, event, responseStream, context } = t.nr
   const handler = decorateHandler(async (event, responseStream) => {
     const transaction = agent.tracer.getTransaction()
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     plan.ok(transaction)
@@ -1617,7 +1550,6 @@ test('should end transactions on a beforeExit event on process', async (t) => {
 
   const handler = decorateHandler(async (event, responseStream) => {
     const transaction = agent.tracer.getTransaction()
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     plan.ok(transaction)
@@ -1644,7 +1576,6 @@ test('should end transactions after the returned promise resolves', async (t) =>
 
   const handler = decorateHandler(async (event, responseStream) => {
     transaction = agent.tracer.getTransaction()
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1674,7 +1605,6 @@ test('should record error event when func is async and promise is rejected', asy
   let transaction
   const handler = decorateHandler(async (event, responseStream) => {
     transaction = agent.tracer.getTransaction()
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1726,7 +1656,6 @@ test('should record error event when func is async and error is thrown', async (
   let transaction
   const handler = decorateHandler(async (event, responseStream) => {
     transaction = agent.tracer.getTransaction()
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1771,7 +1700,6 @@ test(
     let transaction
     const handler = decorateHandler(async (event, responseStream) => {
       transaction = agent.tracer.getTransaction()
-      responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
       const chunks = ['step 1', 'step 2', 'step 3']
       await writeToResponseStream(chunks, responseStream, 100)
       responseStream.end()
@@ -1823,7 +1751,6 @@ test('should record error event when error is thrown', async (t) => {
 
   const handler = decorateHandler(async (event, responseStream) => {
     const transaction = agent.tracer.getTransaction()
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1854,7 +1781,6 @@ test('should not end transactions twice', async (t) => {
 
   const handler = decorateHandler(async (event, responseStream) => {
     transaction = agent.tracer.getTransaction()
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
@@ -1893,7 +1819,6 @@ test('should record standard background metrics', async (t) => {
   agent.on('harvestStarted', confirmMetrics)
 
   const handler = decorateHandler(async (event, responseStream) => {
-    responseStream = HttpResponseStream.from(responseStream, validStreamMetaData)
     const chunks = ['step 1', 'step 2', 'step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
