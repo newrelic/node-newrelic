@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const os = require('node:os')
+const sinon = require('sinon')
 
 const { tspl } = require('@matteo.collina/tspl')
 const helper = require('../../lib/agent_helper')
@@ -91,9 +92,14 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
   await t.test('should pick up on the arn', function (t) {
     const { agent, awsLambda, stubEvent, stubContext, stubCallback } = t.nr
+    const spy = sinon.spy(agent, 'recordSupportability')
+    t.after(() => {
+      spy.restore()
+    })
     assert.equal(agent.collector.metadata.arn, null)
     awsLambda.patchLambdaHandler(() => {})(stubEvent, stubContext, stubCallback)
     assert.equal(agent.collector.metadata.arn, stubContext.invokedFunctionArn)
+    assert.equal(agent.recordSupportability.callCount, 0)
   })
 
   await t.test('when invoked with API Gateway Lambda proxy event', async (t) => {
