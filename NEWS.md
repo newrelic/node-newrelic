@@ -4,7 +4,6 @@
 
 * Added support for response streaming Lambda functions ([#2981](https://github.com/newrelic/node-newrelic/pull/2981)) ([61dbbf9](https://github.com/newrelic/node-newrelic/commit/61dbbf9b4a6cf69f5378387fc9c17c31671e9da4))
 * Added AWS entity linking segment attributes for otel bridge ([#2978](https://github.com/newrelic/node-newrelic/pull/2978)) ([6bf1ccc](https://github.com/newrelic/node-newrelic/commit/6bf1ccc657a955b4064a7a3a473bf24948d4ff56))
-
 * Added error handling on transactions for otel spans ([#2985](https://github.com/newrelic/node-newrelic/pull/2985)) ([4e61e09](https://github.com/newrelic/node-newrelic/commit/4e61e0935394744345c39f6b581ee86e66d0f82c))
 
 #### Code refactoring
