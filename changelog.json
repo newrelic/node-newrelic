@@ -8,8 +8,8 @@
         "bugfixes": [],
         "features": [
           "Added support for response streaming Lambda functions",
-          "AWS entity linking segment attributes",
-          "Error handling on transactions for otel spans"
+          "Added AWS entity linking segment attributes",
+          "Added error handling on transactions for otel spans"
         ]
       }
     },

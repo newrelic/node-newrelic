@@ -3,8 +3,8 @@
 #### Features
 
 * Added support for response streaming Lambda functions ([#2981](https://github.com/newrelic/node-newrelic/pull/2981)) ([61dbbf9](https://github.com/newrelic/node-newrelic/commit/61dbbf9b4a6cf69f5378387fc9c17c31671e9da4))
-* AWS entity linking segment attributes ([#2978](https://github.com/newrelic/node-newrelic/pull/2978)) ([6bf1ccc](https://github.com/newrelic/node-newrelic/commit/6bf1ccc657a955b4064a7a3a473bf24948d4ff56))
-* Error handling on transactions for otel spans ([#2985](https://github.com/newrelic/node-newrelic/pull/2985)) ([4e61e09](https://github.com/newrelic/node-newrelic/commit/4e61e0935394744345c39f6b581ee86e66d0f82c))
+* Added AWS entity linking segment attributes ([#2978](https://github.com/newrelic/node-newrelic/pull/2978)) ([6bf1ccc](https://github.com/newrelic/node-newrelic/commit/6bf1ccc657a955b4064a7a3a473bf24948d4ff56))
+* Added error handling on transactions for otel spans ([#2985](https://github.com/newrelic/node-newrelic/pull/2985)) ([4e61e09](https://github.com/newrelic/node-newrelic/commit/4e61e0935394744345c39f6b581ee86e66d0f82c))
 
 #### Code refactoring
 
@@ -13,11 +13,8 @@
 #### Documentation
 
 * Updated compatibility report ([#2988](https://github.com/newrelic/node-newrelic/pull/2988)) ([ed17a6d](https://github.com/newrelic/node-newrelic/commit/ed17a6df1152a8e54cb8c8570fec0015990a4247))
-    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
 * Updated compatibility report ([#2980](https://github.com/newrelic/node-newrelic/pull/2980)) ([06b7884](https://github.com/newrelic/node-newrelic/commit/06b7884e3fbe868fae152ec07ab59086f04a6bc8))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 * Updated compatibility report ([#2977](https://github.com/newrelic/node-newrelic/pull/2977)) ([cb3e758](https://github.com/newrelic/node-newrelic/commit/cb3e7581a9eb9e12e1738b69010e0700c4abc19f))
-    * Co-authored-by: svetlanabrennan <50715937+svetlanabrennan@users.noreply.github.com>
 
 #### Miscellaneous chores
 
