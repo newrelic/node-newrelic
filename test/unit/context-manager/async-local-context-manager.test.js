@@ -88,7 +88,7 @@ test('runInContext()', async (t) => {
   })
 
   await t.test('should restore previous context on exception', () => {
-    const contextManager = new AsyncLocalContextManager({})
+    const contextManager = new AsyncLocalContextManager()
 
     const context = contextManager.getContext()
     const previousContext = context.enterSegment({ segment: 'previous', transaction: 'tx' })
@@ -109,7 +109,7 @@ test('runInContext()', async (t) => {
   })
 
   await t.test('should apply `cbThis` arg to execution', (t, end) => {
-    const contextManager = new AsyncLocalContextManager({})
+    const contextManager = new AsyncLocalContextManager()
 
     const context = contextManager.getContext()
     const expectedThis = () => {}
@@ -123,7 +123,7 @@ test('runInContext()', async (t) => {
   })
 
   await t.test('should apply args array to execution', (t, end) => {
-    const contextManager = new AsyncLocalContextManager({})
+    const contextManager = new AsyncLocalContextManager()
 
     const context = contextManager.getContext()
     const expectedArg1 = 'first arg'
@@ -140,7 +140,7 @@ test('runInContext()', async (t) => {
   })
 
   await t.test('should apply arguments construct to execution', (t, end) => {
-    const contextManager = new AsyncLocalContextManager({})
+    const contextManager = new AsyncLocalContextManager()
     const context = contextManager.getContext()
     const expectedArg1 = 'first arg'
     const expectedArg2 = 'second arg'

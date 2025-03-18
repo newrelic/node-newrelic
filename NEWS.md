@@ -1,3 +1,123 @@
+### v12.16.0 (2025-03-17)
+
+#### Features
+
+* Added support for response streaming Lambda functions ([#2981](https://github.com/newrelic/node-newrelic/pull/2981)) ([61dbbf9](https://github.com/newrelic/node-newrelic/commit/61dbbf9b4a6cf69f5378387fc9c17c31671e9da4))
+* Added AWS entity linking segment attributes for otel bridge ([#2978](https://github.com/newrelic/node-newrelic/pull/2978)) ([6bf1ccc](https://github.com/newrelic/node-newrelic/commit/6bf1ccc657a955b4064a7a3a473bf24948d4ff56))
+* Added error handling on transactions for otel spans ([#2985](https://github.com/newrelic/node-newrelic/pull/2985)) ([4e61e09](https://github.com/newrelic/node-newrelic/commit/4e61e0935394744345c39f6b581ee86e66d0f82c))
+
+#### Code refactoring
+
+* Updated span event generation to assign the appropriate `span.kind` based on the segment name ([#2976](https://github.com/newrelic/node-newrelic/pull/2976)) ([697b17e](https://github.com/newrelic/node-newrelic/commit/697b17e0553111aa494d08bc33eb7043cdfa8ca6))
+
+#### Documentation
+
+* Updated compatibility report ([#2988](https://github.com/newrelic/node-newrelic/pull/2988)) ([ed17a6d](https://github.com/newrelic/node-newrelic/commit/ed17a6df1152a8e54cb8c8570fec0015990a4247)
+
+#### Miscellaneous chores
+
+* Clarified supported next.js middleware versions in docs ([#2984](https://github.com/newrelic/node-newrelic/pull/2984)) ([15cb454](https://github.com/newrelic/node-newrelic/commit/15cb454f9cc38ccc22089d62aaeea54713159aa7))
+* Clarified system metrics sampler naming ([#2987](https://github.com/newrelic/node-newrelic/pull/2987)) ([8647d43](https://github.com/newrelic/node-newrelic/commit/8647d43f097d6d3d68a372824d9feb325604be96))
+* Refactored loops to be simpler ([#2990](https://github.com/newrelic/node-newrelic/pull/2990)) ([79fb8e9](https://github.com/newrelic/node-newrelic/commit/79fb8e90802954b617c1c00aecc866aa065aee12))
+* Removed unused transaction method ([#2986](https://github.com/newrelic/node-newrelic/pull/2986)) ([cb4e2f7](https://github.com/newrelic/node-newrelic/commit/cb4e2f7a8b84adb6d744a2083b083c92e306fbd5))
+* Reverted restriction in NestJS versioned tests ([#2979](https://github.com/newrelic/node-newrelic/pull/2979)) ([ffddcab](https://github.com/newrelic/node-newrelic/commit/ffddcab6d77bfc10c0df9cbfa724bc1c8f5fb251))
+
+#### Tests
+
+* Fixed fastify assertions around span kind while running security agent ([#2983](https://github.com/newrelic/node-newrelic/pull/2983)) ([c641645](https://github.com/newrelic/node-newrelic/commit/c6416451f1fa6126b7dfd59f6b9267f9d2188ad0))
+
+### v12.15.0 (2025-03-03)
+
+#### Features
+
+* Allowed undici error reporting to be disabled with feature flag `undici_error_tracking` ([#2956](https://github.com/newrelic/node-newrelic/pull/2956)) ([6278107](https://github.com/newrelic/node-newrelic/commit/6278107727678c8b45769190c6972c33057067e5))
+     * Thanks for your contribution @Voziv :tada:
+* Added ability to propagate traceparent and tracestate on incoming server/consumer spans and outgoing client http and producer spans ([#2958](https://github.com/newrelic/node-newrelic/pull/2958)) ([258ad7d](https://github.com/newrelic/node-newrelic/commit/258ad7de7751df59cf6d68334e342f751bb3a934))
+* Added server span transaction naming fallback to the url.path ([#2966](https://github.com/newrelic/node-newrelic/pull/2966)) ([770bf6f](https://github.com/newrelic/node-newrelic/commit/770bf6fd6ce26642e3fe08b2c1557dd826270516))
+* Updated Context class to ensure bi-directional context propagation with opentelemetry bridge ([#2962](https://github.com/newrelic/node-newrelic/pull/2962)) ([dfeec5a](https://github.com/newrelic/node-newrelic/commit/dfeec5a0443723e7f799db4b9ea7bf4aed5b3bcc))
+
+#### Code refactoring
+
+* Separated context classes for agent in standard and opentelemetry bridge mode ([#2967](https://github.com/newrelic/node-newrelic/pull/2967)) ([d11c071](https://github.com/newrelic/node-newrelic/commit/d11c071be2504ef442e5aa19fed769ca7a20ceb5))
+
+#### Documentation
+
+* Updated compatibility report ([#2973](https://github.com/newrelic/node-newrelic/pull/2973)) ([7106c81](https://github.com/newrelic/node-newrelic/commit/7106c818b7add3220d256646cd816dee64efb80a))
+
+#### Miscellaneous chores
+
+* Added consumer attribute reconciliation ([#2957](https://github.com/newrelic/node-newrelic/pull/2957)) ([8943672](https://github.com/newrelic/node-newrelic/commit/894367239e5e8050da0a38347b81d7186cac0a1f))
+* Added http external span attributes ([#2955](https://github.com/newrelic/node-newrelic/pull/2955)) ([ef697a5](https://github.com/newrelic/node-newrelic/commit/ef697a505ee23f5c2fb2bbe306e90561e66d75c1))
+* Limit nestjs to enable successful CI ([#2972](https://github.com/newrelic/node-newrelic/pull/2972)) ([e9699cf](https://github.com/newrelic/node-newrelic/commit/e9699cf31ff758ff79f44c470bc5f11630117f1c))
+* Refactored otel attribute reconciling ([#2964](https://github.com/newrelic/node-newrelic/pull/2964)) ([1b5ed2c](https://github.com/newrelic/node-newrelic/commit/1b5ed2c2f7c78cb413603124757b9b1c3412ab0a))
+
+### v12.14.0 (2025-02-18)
+
+#### Features
+
+* Added support for region-prefixed Bedrock models ([#2947](https://github.com/newrelic/node-newrelic/pull/2947)) ([6acf535](https://github.com/newrelic/node-newrelic/commit/6acf5354d1e7f6786da88c0078699e82a714551d))
+* Added attribute reconciliation for message producer spans ([#2942](https://github.com/newrelic/node-newrelic/pull/2942)) ([a9ba396](https://github.com/newrelic/node-newrelic/commit/a9ba39613c78b89c047ca35a218c2eedbb01e3d2))
+* Added timeslice metrics for synthesized consumer segments ([#2938](https://github.com/newrelic/node-newrelic/pull/2938)) ([acfe953](https://github.com/newrelic/node-newrelic/commit/acfe953cf7a656fafb69104384c72f94ddc13000))
+
+#### Bug fixes
+
+* Fixed queueing of logs from child loggers ([#2945](https://github.com/newrelic/node-newrelic/pull/2945)) ([888cfe8](https://github.com/newrelic/node-newrelic/commit/888cfe84a1ffaf0287682cc9099a2fa762f7a37f))
+* Fixed undici/fetch instrumentation to properly assign the parent-id portion of the `traceparent` header on outgoing requests to the active http external span id ([#2951](https://github.com/newrelic/node-newrelic/pull/2951)) ([bc714cf](https://github.com/newrelic/node-newrelic/commit/bc714cfa8fe6754abf25eb556b8f804c9982f986))
+* Updated `api.recordLogEvent` to no longer truncate the message key in log event ([#2949](https://github.com/newrelic/node-newrelic/pull/2949)) ([8dd557b](https://github.com/newrelic/node-newrelic/commit/8dd557b4dfca2505b7e9f7f030ab094a6ae8019a))
+    * Thanks for your contribution @rChaoz 🎉 
+
+#### Documentation
+
+* Updated compatibility report ([#2948](https://github.com/newrelic/node-newrelic/pull/2948)) ([8e32ed7](https://github.com/newrelic/node-newrelic/commit/8e32ed7d7bc456a0693485e7bdef955c25ead29a))
+
+### v12.13.0 (2025-02-12)
+
+#### Features
+
+* Added timeslice metrics for synthesized server segments ([#2924](https://github.com/newrelic/node-newrelic/pull/2924)) ([f404585](https://github.com/newrelic/node-newrelic/commit/f4045855a1cdbfb74e3217daf8bfa125aa6fe2e4))
+* Added timeslice metrics for synthesized producer segments ([#2939](https://github.com/newrelic/node-newrelic/pull/2939)) ([6832637](https://github.com/newrelic/node-newrelic/commit/68326377dcd23b574abae7c323ff93bc05c525ed))
+* Added timeslice metrics for synthesized database segments ([#2922](https://github.com/newrelic/node-newrelic/pull/2922)) ([8606f78](https://github.com/newrelic/node-newrelic/commit/8606f789772b7651d0c46ad50dad3a1da74e5e9c))
+* Propagate agent root context when opentelemetry `ROOT_CONTEXT` is passed in to trace propagator.([#2940](https://github.com/newrelic/node-newrelic/pull/2940)) ([b85111c](https://github.com/newrelic/node-newrelic/commit/b85111c46797dfbf399faf973e7a3e0ea6bbdc28)) 
+  * Added logic to handle properly naming and ending transactions for server spans. 
+* Provided ability to disable instrumentation for core Node.js libraries ([#2927](https://github.com/newrelic/node-newrelic/pull/2927)) ([2d232f1](https://github.com/newrelic/node-newrelic/commit/2d232f16c167e5f84b7b7898a6c5410d9cece55e))
+
+#### Bug fixes
+
+* Fixed `api.getTraceMetadata` to handle when there is an active transaction but not active segment ([#2944](https://github.com/newrelic/node-newrelic/pull/2944)) ([6db3b4d](https://github.com/newrelic/node-newrelic/commit/6db3b4d53a077a9738dd72d46e1ba1cee0d6af3f))
+
+#### Documentation
+
+* Updated compatibility report ([#2920](https://github.com/newrelic/node-newrelic/pull/2920)) ([c7ae8be](https://github.com/newrelic/node-newrelic/commit/c7ae8befafa4c91fab6804cd95e20f5a93546ea4))
+
+#### Miscellaneous chores
+
+* Localized OTEL attribute constants ([#2928](https://github.com/newrelic/node-newrelic/pull/2928)) ([965c41b](https://github.com/newrelic/node-newrelic/commit/965c41b3e64805ac14ae4dd36120b018ec5899f4))
+* Updated import-in-the-middle version ([#2923](https://github.com/newrelic/node-newrelic/pull/2923)) ([aa2781f](https://github.com/newrelic/node-newrelic/commit/aa2781fd9c7bed08d590e33682729a92f21f43a5))
+
+### v12.12.0 (2025-02-05)
+
+#### Features
+
+* Added health check support for upcoming feature ([#2841](https://github.com/newrelic/node-newrelic/pull/2841)) ([4c8bf13](https://github.com/newrelic/node-newrelic/commit/4c8bf13f124ea09fac750d7368c78a4c9cdc760e))
+* Added opentelemetry bridge instrumentation that adds a context manager, and processor to handle synthesizing segments and time slice metrics. ([#2906](https://github.com/newrelic/node-newrelic/pull/2906)) ([d2e8a9e](https://github.com/newrelic/node-newrelic/commit/d2e8a9e369d91494fdcbc14f06916a88e4801ae1))
+
+#### Bug fixes
+
+* Updated default config to accept `undefined` as default value ([#2917](https://github.com/newrelic/node-newrelic/pull/2917)) ([e049442](https://github.com/newrelic/node-newrelic/commit/e04944207956fd02ea161ab8c46ea96761160bd0))
+
+#### Documentation
+
+* Updated compatibility report ([#2914](https://github.com/newrelic/node-newrelic/pull/2914)) ([acd0c90](https://github.com/newrelic/node-newrelic/commit/acd0c904adb9a69928ed1a6513a67bb297dba8ee))
+
+#### Miscellaneous chores
+
+* Added regex note to sql obfuscator ([#2911](https://github.com/newrelic/node-newrelic/pull/2911)) ([1533111](https://github.com/newrelic/node-newrelic/commit/1533111e416c50b0c61ad086d3d86ae30f70532a))
+* **deps:** Updated @newrelic/security-agent to v2.3.0 ([#2918](https://github.com/newrelic/node-newrelic/pull/2918)) ([ed89f38](https://github.com/newrelic/node-newrelic/commit/ed89f387efe2c5c3175250684bf4987ed29d7747))
+
+#### Continuous integration
+
+* Optimized the lambda layers and k8s init containers post release workflow ([#2915](https://github.com/newrelic/node-newrelic/pull/2915)) ([4be1099](https://github.com/newrelic/node-newrelic/commit/4be10997d9059daeb626cf6ba9ebf954fb1fe500))
+
 ### v12.11.3 (2025-01-29)
 
 #### Bug fixes

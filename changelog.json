@@ -2,6 +2,76 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.16.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added support for response streaming Lambda functions",
+          "Added AWS entity linking segment attributes for otel bridge",
+          "Added error handling on transactions for otel spans"
+        ]
+      }
+    },
+    {
+      "version": "12.15.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added server span transaction naming fallback to the url.path",
+          "Updated Context class to ensure bi-directional context propagation with opentelemetry bridge",
+          "Added ability to propagate traceparent and tracestate on incoming server/consumer spans and outgoing client http and producer spans",
+          "Allowed undici error reporting to be disabled with feature flag `undici_error_tracking`"
+        ]
+      }
+    },
+    {
+      "version": "12.14.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed undici/fetch instrumentation to properly assign the parent-id portion of the `traceparent` header on outgoing requests to the active http external span id",
+          "Updated `api.recordLogEvent` to no longer truncate the message key in log event",
+          "Fixed queueing of logs from child loggers"
+        ],
+        "features": [
+          "Added attribute reconciliation for message producer spans",
+          "Added timeslice metrics for synthesized consumer segments",
+          "Added support for region-prefixed Bedrock models"
+        ]
+      }
+    },
+    {
+      "version": "12.13.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed `api.getTraceMetadata` to handle when there is an active transaction but not active segment"
+        ],
+        "features": [
+          "Propagate agent root context when opentelemetry `ROOT_CONTEXT` is passed in to trace propagator.",
+          "Added timeslice metrics for synthesized producer segments",
+          "Added timeslice metrics for synthesized server segments",
+          "Added timeslice metrics for synthesized database segments",
+          "Provided ability to disable instrumentation for core Node.js libraries"
+        ]
+      }
+    },
+    {
+      "version": "12.12.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated default config to accept `undefined` as default value"
+        ],
+        "features": [
+          "Added health check support for upcoming feature",
+          "Added opentelemetry bridge instrumentation that adds a context manager, and processor to handle synthesizing segments and time slice metrics."
+        ]
+      }
+    },
+    {
       "version": "12.11.3",
       "changes": {
         "security": [],

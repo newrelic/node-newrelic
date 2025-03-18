@@ -874,14 +874,38 @@ test('when overriding configuration values via environment variables', async (t)
       const env = {
         NEW_RELIC_INSTRUMENTATION_IOREDIS_ENABLED: 'false',
         'NEW_RELIC_INSTRUMENTATION_@GRPC/GRPC-JS_ENABLED': 'false',
-        NEW_RELIC_INSTRUMENTATION_KNEX_ENABLED: 'false'
+        NEW_RELIC_INSTRUMENTATION_KNEX_ENABLED: 'false',
+        NEW_RELIC_INSTRUMENTATION_HTTP_ENABLED: 'false',
+        NEW_RELIC_INSTRUMENTATION_UNDICI_ENABLED: 'false',
+        NEW_RELIC_INSTRUMENTATION_DOMAIN_ENABLED: 'false',
       }
       idempotentEnv(env, (config) => {
         assert.equal(config.instrumentation.ioredis.enabled, false)
         assert.equal(config.instrumentation['@grpc/grpc-js'].enabled, false)
         assert.equal(config.instrumentation.knex.enabled, false)
+        assert.equal(config.instrumentation.http.enabled, false)
+        assert.equal(config.instrumentation.undici.enabled, false)
+        assert.equal(config.instrumentation.domain.enabled, false)
         end()
       })
     })
   }
+})
+
+test('loads agent control settings from env', (t, end) => {
+  const env = {
+    NEW_RELIC_AGENT_CONTROL_ENABLED: 'true',
+    NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION: 'file://find/me',
+    NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY: 1
+  }
+  idempotentEnv(env, config => {
+    assert.deepStrictEqual(config.agent_control, {
+      enabled: true,
+      health: {
+        delivery_location: 'file://find/me',
+        frequency: 1
+      }
+    })
+    end()
+  })
 })

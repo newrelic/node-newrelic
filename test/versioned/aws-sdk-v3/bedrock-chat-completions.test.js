@@ -106,7 +106,9 @@ test.afterEach(afterEach)
   { modelId: 'ai21.j2-ultra-v1', resKey: 'ai21' },
   { modelId: 'amazon.titan-text-express-v1', resKey: 'amazon' },
   { modelId: 'anthropic.claude-v2', resKey: 'claude' },
+  { modelId: 'us.anthropic.claude-v2', resKey: 'claude' },
   { modelId: 'anthropic.claude-3-haiku-20240307-v1:0', resKey: 'claude3' },
+  { modelId: 'us.anthropic.claude-3-haiku-20240307-v1:0', resKey: 'claude3' },
   { modelId: 'cohere.command-text-v14', resKey: 'cohere' },
   { modelId: 'meta.llama2-13b-chat-v1', resKey: 'llama' },
   { modelId: 'meta.llama3-8b-instruct-v1:0', resKey: 'llama' }
@@ -484,6 +486,82 @@ test('ai21: should properly create errors on create completion (streamed)', asyn
 test('anthropic-claude-3: should properly create events for chunked messages', async (t) => {
   const { bedrock, client, agent } = t.nr
   const modelId = 'anthropic.claude-3-5-sonnet-20240620-v1:0'
+  const prompt = 'text claude3 ultimate question chunked'
+  const promptFollowUp = 'And please include an image in the response'
+  const input = requests.claude3Chunked(
+    [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: prompt
+          }
+        ]
+      },
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: promptFollowUp
+          }
+        ]
+      }
+    ],
+    modelId
+  )
+
+  const command = new bedrock.InvokeModelCommand(input)
+
+  const api = helper.getAgentApi()
+  await helper.runInTransaction(agent, async (tx) => {
+    api.addCustomAttribute('llm.conversation_id', 'convo-id')
+    await client.send(command)
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 4)
+    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+    const chatMsgs = events
+      .filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      .sort(([, a], [, b]) => a.sequence - b.sequence)
+
+    assertChatCompletionMessage({
+      tx,
+      message: chatMsgs[0],
+      modelId,
+      expectedContent: prompt,
+      isResponse: false,
+      expectedRole: 'user'
+    })
+
+    assertChatCompletionMessage({
+      tx,
+      message: chatMsgs[1],
+      modelId,
+      expectedContent: promptFollowUp,
+      isResponse: false,
+      expectedRole: 'user'
+    })
+
+    // Note the <image> placeholder for the image chunk
+    assertChatCompletionMessage({
+      tx,
+      message: chatMsgs[2],
+      modelId,
+      expectedContent: "Here's a nice picture of a 42\n\n<image>",
+      isResponse: true,
+      expectedRole: 'assistant'
+    })
+
+    assertChatCompletionSummary({ tx, modelId, chatSummary, numMsgs: 3 })
+    tx.end()
+  })
+})
+
+test('region specific anthropic-claude-3: should properly create events for chunked messages', async (t) => {
+  const { bedrock, client, agent } = t.nr
+  const modelId = 'us.anthropic.claude-3-5-sonnet-20240620-v1:0'
   const prompt = 'text claude3 ultimate question chunked'
   const promptFollowUp = 'And please include an image in the response'
   const input = requests.claude3Chunked(

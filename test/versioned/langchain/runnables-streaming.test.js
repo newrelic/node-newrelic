@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, match } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
@@ -408,8 +408,8 @@ test('streaming enabled', async (t) => {
       }
 
       assertSegments(tx.trace, tx.trace.root, ['Llm/chain/Langchain/stream'], { exact: false })
-
       tx.end()
+      assertSpanKind({ agent, segments: [{ name: 'Llm/chain/Langchain/stream', kind: 'internal' }] })
       end()
     })
   })

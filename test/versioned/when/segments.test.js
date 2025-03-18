@@ -9,7 +9,7 @@ const test = require('node:test')
 const tspl = require('@matteo.collina/tspl')
 
 const { removeModules } = require('../../lib/cache-buster')
-const assertSegments = require('../../lib/custom-assertions/assert-segments')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 
 // simulates a function that returns a promise and has a segment created for itself
@@ -74,6 +74,15 @@ test('segments enabled', async (t) => {
         {},
         { assert: plan }
       )
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: 'doSomeWork', kind: 'internal' },
+          { name: 'Promise startSomeWork', kind: 'internal' },
+          { name: 'Promise#then <anonymous>', kind: 'internal' },
+          { name: 'someChildSegment', kind: 'internal' }
+        ]
+      })
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {

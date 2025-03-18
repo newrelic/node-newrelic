@@ -9,7 +9,7 @@ const test = require('node:test')
 const { makeRequest, setup, teardown } = require('./utils')
 const NAMES = require('../../../lib/metrics/names')
 const { findSegment } = require('../../lib/metrics_helper')
-const { assertMetrics, assertSegments, assertCLMAttrs } = require('../../lib/custom-assertions')
+const { assertMetrics, assertSegments, assertCLMAttrs, assertSpanKind } = require('../../lib/custom-assertions')
 
 const assertSegmentsOptions = {
   exact: true,
@@ -153,6 +153,15 @@ test('each handler in route has its own segment', function (t, end) {
       ],
       assertSegmentsOptions
     )
+    assertSpanKind({
+      agent: transaction.agent,
+      segments: [
+        { name: transaction.name, kind: 'server' },
+        { name: 'Expressjs/Route Path: /test', kind: 'internal' },
+        { name: NAMES.EXPRESS.MIDDLEWARE + 'handler1', kind: 'internal' },
+        { name: NAMES.EXPRESS.MIDDLEWARE + 'handler2', kind: 'internal' },
+      ]
+    })
 
     checkMetrics(transaction.metrics, [
       NAMES.EXPRESS.MIDDLEWARE + 'handler1//test',

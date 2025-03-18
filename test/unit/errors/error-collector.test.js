@@ -21,6 +21,7 @@ const API = require('../../../api')
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const NAMES = require('../../../lib/metrics/names')
 const http = require('http')
+const Segment = require('#agentlib/transaction/trace/segment.js')
 
 function createTransaction(agent, code, isWeb) {
   if (typeof isWeb === 'undefined') {
@@ -1678,6 +1679,25 @@ test('Errors', async (t) => {
   await t.test('error events', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
+
+    await t.test('should use passed in segment', (t) => {
+      const { agent, errors } = t.nr
+      const transaction = createTransaction(agent, 500)
+      const err = new Error('some error')
+      const segment = new Segment({
+        config: transaction.agent.config,
+        name: 'Test segment name',
+        root: transaction.trace.root
+      })
+      errors.add(transaction, err, null, segment)
+      const exceptions = transaction.exceptions[0]
+      assert.equal(exceptions.error, err)
+
+      // spanId is the segment id of the exception
+      const spanId = exceptions.agentAttributes['spanId']
+      assert(spanId, segment.id)
+      transaction.end()
+    })
 
     await t.test('should omit the error message when in high security mode', (t) => {
       const { agent } = t.nr

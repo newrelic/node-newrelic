@@ -117,6 +117,44 @@ test('handles claude streams', async (t) => {
   assert.equal(br.statusCode, 200)
 })
 
+test('handles region specific claude streams', async (t) => {
+  t.nr.passThroughParams.bedrockCommand.isClaude = () => true
+  t.nr.chunks = [
+    { completion: '1', stop_reason: null },
+    { completion: '2', stop_reason: 'done', ...t.nr.metrics }
+  ]
+  const handler = new StreamHandler(t.nr)
+
+  assert.equal(handler.generator.name, 'handleClaude')
+  for await (const event of handler.generator()) {
+    assert.equal(event.chunk.bytes.constructor, Uint8Array)
+  }
+  assert.deepStrictEqual(handler.response, {
+    response: {
+      headers: {
+        'x-amzn-requestid': 'aws-req-1'
+      },
+      statusCode: 200
+    },
+    output: {
+      body: new TextEncoder().encode(JSON.stringify({ completion: '12', stop_reason: 'done' }))
+    }
+  })
+
+  const bc = new BedrockCommand({
+    modelId: 'us.anthropic.claude-v1',
+    body: JSON.stringify({
+      prompt: 'prompt',
+      maxTokens: 5
+    })
+  })
+  const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
+  assert.equal(br.completions.length, 1)
+  assert.equal(br.finishReason, 'done')
+  assert.equal(br.requestId, 'aws-req-1')
+  assert.equal(br.statusCode, 200)
+})
+
 test('handles claude3streams', async (t) => {
   t.nr.passThroughParams.bedrockCommand.isClaude3 = () => true
   t.nr.chunks = [
@@ -139,6 +177,40 @@ test('handles claude3streams', async (t) => {
 
   const bc = new BedrockCommand({
     modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
+    body: JSON.stringify({
+      messages: [{ content: 'prompt' }],
+      maxTokens: 5
+    })
+  })
+  const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
+  assert.equal(br.completions.length, 1)
+  assert.equal(br.finishReason, 'done')
+  assert.equal(br.requestId, 'aws-req-1')
+  assert.equal(br.statusCode, 200)
+})
+
+test('handles region specific claude3streams', async (t) => {
+  t.nr.passThroughParams.bedrockCommand.isClaude3 = () => true
+  t.nr.chunks = [
+    { type: 'content_block_delta', delta: { type: 'text_delta', text: '42' } },
+    { type: 'message_delta', delta: { stop_reason: 'done' } },
+    { type: 'message_stop', ...t.nr.metrics }
+  ]
+  const handler = new StreamHandler(t.nr)
+
+  assert.equal(handler.generator.name, 'handleClaude3')
+  for await (const event of handler.generator()) {
+    assert.equal(event.chunk.bytes.constructor, Uint8Array)
+  }
+  const foundBody = JSON.parse(new TextDecoder().decode(handler.response.output.body))
+  assert.deepStrictEqual(foundBody, {
+    completions: ['42'],
+    stop_reason: 'done',
+    type: 'message_stop'
+  })
+
+  const bc = new BedrockCommand({
+    modelId: 'us.anthropic.claude-3-haiku-20240307-v1:0',
     body: JSON.stringify({
       messages: [{ content: 'prompt' }],
       maxTokens: 5

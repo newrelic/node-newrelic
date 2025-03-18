@@ -7,15 +7,34 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const tspl = require('@matteo.collina/tspl')
 const Collector = require('../../lib/test-collector')
 
 const sinon = require('sinon')
 const helper = require('../../lib/agent_helper')
-const sampler = require('../../../lib/sampler')
+const systemMetricsSampler = require('#agentlib/system-metrics-sampler.js')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const Transaction = require('../../../lib/transaction')
 const CollectorResponse = require('../../../lib/collector/response')
+
+const fs = require('node:fs')
+const os = require('node:os')
+const path = require('node:path')
+const healthDeliveryLocation = os.tmpdir()
+const HealthReporter = require('#agentlib/health-reporter.js')
+
+test.after(() => {
+  const files = fs.readdirSync(healthDeliveryLocation)
+  for (const file of files) {
+    if (file.startsWith('health-') !== true) {
+      continue
+    }
+    fs.rmSync(path.join(healthDeliveryLocation, file), {
+      force: true
+    })
+  }
+})
 
 const RUN_ID = 1337
 
@@ -23,10 +42,66 @@ test('should require configuration passed to constructor', () => {
   assert.throws(() => new Agent())
 })
 
-test('should not throw with valid config', () => {
-  const config = configurator.initialize({ agent_enabled: false })
+test('should not throw with valid config', (t, end) => {
+  const config = configurator.initialize({
+    agent_enabled: false,
+    agent_control: {
+      enabled: true,
+      health: {
+        delivery_location: healthDeliveryLocation,
+        frequency: 1
+      }
+    }
+  })
   const agent = new Agent(config)
   assert.equal(agent.config.agent_enabled, false)
+
+  agent.start(() => setTimeout(check, 1_500))
+
+  function check() {
+    const data = fs.readFileSync(agent.healthReporter.destFile)
+    assert.equal(data.toString().includes('NR-APM-008'), true, 'should have disabled error')
+    end()
+  }
+})
+
+test('agent control should initialize health reporter', () => {
+  const config = configurator.initialize({
+    agent_enabled: false,
+    agent_control: {
+      enabled: true,
+      health: {
+        delivery_location: healthDeliveryLocation
+      }
+    }
+  })
+  const agent = new Agent(config)
+  assert.equal(agent.healthReporter.enabled, true)
+  assert.equal(agent.healthReporter.destFile.startsWith(healthDeliveryLocation), true)
+})
+
+test('agent control writes to file uri destinations', (t, end) => {
+  const dest = `file://${healthDeliveryLocation}`
+  const config = configurator.initialize({
+    agent_enabled: false,
+    agent_control: {
+      enabled: true,
+      health: {
+        delivery_location: dest,
+        frequency: 1
+      }
+    }
+  })
+  const agent = new Agent(config)
+
+  setTimeout(check, 1_500)
+
+  function check() {
+    const data = fs.readFileSync(agent.healthReporter.destFile)
+    // Since the agent wasn't started, it's in a "healthy" state.
+    assert.equal(data.toString().startsWith('healthy: true'), true, 'should have a healthy report')
+    end()
+  }
 })
 
 test('when loaded with defaults', async (t) => {
@@ -251,7 +326,19 @@ test('when starting', async (t) => {
     ctx.nr.collector = collector
     await collector.listen()
 
-    ctx.nr.agent = helper.loadMockedAgent(collector.agentConfig, false)
+    const config = Object.assign(
+      {
+        agent_control: {
+          enabled: true,
+          health: {
+            delivery_location: healthDeliveryLocation,
+            frequency: 1
+          }
+        }
+      },
+      collector.agentConfig
+    )
+    ctx.nr.agent = helper.loadMockedAgent(config, false)
   })
 
   t.afterEach((ctx) => {
@@ -293,6 +380,24 @@ test('when starting', async (t) => {
     })
   })
 
+  test('should update the agent control status if disabled', (t, end) => {
+    const { agent } = t.nr
+
+    agent.config.agent_enabled = false
+    agent.start(() => {
+      assert.equal(agent._state, 'stopped')
+    })
+    setTimeout(check, 1_500)
+
+    function check() {
+      const report = fs.readFileSync(agent.healthReporter.destFile).toString()
+      assert.equal(report.startsWith('healthy: false'), true, 'should have a unhealthy report')
+      assert.equal(report.includes("status: 'Agent is disabled via configuration."), true)
+      assert.equal(report.includes('last_error: NR-APM-008'), true)
+      end()
+    }
+  })
+
   await t.test('should error when no license key is included', (t, end) => {
     const { agent } = t.nr
     agent.config.license_key = undefined
@@ -303,6 +408,29 @@ test('when starting', async (t) => {
       assert.equal(error.message, 'Not starting without license key!')
       end()
     })
+  })
+
+  await t.test('should error when no license key is included, and update health', async (t) => {
+    const plan = tspl(t, { plan: 2 })
+    const { agent } = t.nr
+    const setStatus = HealthReporter.prototype.setStatus
+    t.after(() => {
+      HealthReporter.prototype.setStatus = setStatus
+    })
+
+    HealthReporter.prototype.setStatus = (status) => {
+      plan.equal(status, HealthReporter.STATUS_LICENSE_KEY_MISSING)
+    }
+
+    agent.config.license_key = undefined
+    agent.collector.connect = function () {
+      plan.fail('should not be called')
+    }
+    agent.start((error) => {
+      plan.equal(error.message, 'Not starting without license key!')
+    })
+
+    await plan.completed
   })
 
   await t.test('should call connect when using proxy', (t, end) => {
@@ -324,16 +452,27 @@ test('when starting', async (t) => {
     agent.start(() => {})
   })
 
-  await t.test('should error when connection fails', (t, end) => {
+  await t.test('should error when connection fails', async (t) => {
+    const plan = tspl(t, { plan: 2 })
     const { agent } = t.nr
     const expected = Error('boom')
+    const setStatus = HealthReporter.prototype.setStatus
+    t.after(() => {
+      HealthReporter.prototype.setStatus = setStatus
+    })
+
+    HealthReporter.prototype.setStatus = (status) => {
+      plan.equal(status, HealthReporter.STATUS_CONNECT_ERROR)
+    }
+
     agent.collector.connect = function (callback) {
       callback(expected)
     }
     agent.start((error) => {
-      assert.equal(error, expected)
-      end()
+      plan.equal(error, expected)
     })
+
+    await plan.completed
   })
 
   await t.test('should harvest at connect when metrics are already there', (t, end) => {
@@ -451,15 +590,35 @@ test('when stopping', async (t) => {
 
   await t.test('should stop sampler', (t) => {
     const { agent } = t.nr
-    sampler.start(agent)
+    systemMetricsSampler.start(agent)
     agent.collector.shutdown = () => {}
     agent.stop(() => {})
-    assert.equal(sampler.state, 'stopped')
+    assert.equal(systemMetricsSampler.state, 'stopped')
+  })
+
+  await t.test('should stop health reporter', async (t) => {
+    const plan = tspl(t, { plan: 1 })
+    const setStatus = HealthReporter.prototype.setStatus
+
+    t.after(() => {
+      HealthReporter.prototype.setStatus = setStatus
+    })
+
+    HealthReporter.prototype.setStatus = (status) => {
+      plan.equal(status, HealthReporter.STATUS_AGENT_SHUTDOWN)
+    }
+
+    const { agent } = t.nr
+    systemMetricsSampler.start(agent)
+    agent.collector.shutdown = () => {}
+    agent.stop(() => {})
+
+    await plan.completed
   })
 
   await t.test('should change state to "stopping"', (t) => {
     const { agent } = t.nr
-    sampler.start(agent)
+    systemMetricsSampler.start(agent)
     agent.collector.shutdown = () => {}
     agent.stop(() => {})
     assert.equal(agent._state, 'stopping')

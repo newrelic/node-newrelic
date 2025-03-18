@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules, removeMatchedModules } = require('../../lib/cache-buster')
-const { assertSegments, match } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const helper = require('../../lib/agent_helper')
 
@@ -48,6 +48,7 @@ test('should create span on successful tools create', (t, end) => {
       exact: false
     })
     tx.end()
+    assertSpanKind({ agent, segments: [{ name: 'Llm/tool/Langchain/node-agent-test-tool', kind: 'internal' }] })
     end()
   })
 })

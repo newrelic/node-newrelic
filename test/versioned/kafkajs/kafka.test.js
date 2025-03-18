@@ -9,7 +9,7 @@ const test = require('node:test')
 const tspl = require('@matteo.collina/tspl')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, match } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 const utils = require('./utils')
@@ -55,7 +55,7 @@ test.afterEach(async (ctx) => {
 })
 
 test('send records correctly', async (t) => {
-  const plan = tspl(t, { plan: 8 })
+  const plan = tspl(t, { plan: 9 })
   const { agent, consumer, producer, topic } = t.nr
   const message = 'test message'
   const expectedName = 'produce-tx'
@@ -80,6 +80,7 @@ test('send records correctly', async (t) => {
         `MessageBroker/Kafka/Nodes/${broker}/Produce/${topic}`
       )
       plan.equal(produceTrackingMetric.callCount, 1)
+      assertSpanKind({ agent, segments: [{ name, kind: 'producer' }], assert: plan })
     }
   })
 
@@ -182,7 +183,7 @@ test('send passes along DT headers', async (t) => {
 })
 
 test('sendBatch records correctly', async (t) => {
-  const plan = tspl(t, { plan: 9 })
+  const plan = tspl(t, { plan: 10 })
   const { agent, consumer, producer, topic } = t.nr
   const message = 'test message'
   const expectedName = 'produce-tx'
@@ -209,6 +210,7 @@ test('sendBatch records correctly', async (t) => {
         `MessageBroker/Kafka/Nodes/${broker}/Produce/${topic}`
       )
       plan.equal(produceTrackingMetric.callCount, 1)
+      assertSpanKind({ agent, segments: [{ name, kind: 'producer' }], assert: plan })
     }
   })
 
@@ -251,7 +253,7 @@ test('sendBatch records correctly', async (t) => {
 })
 
 test('consume outside of a transaction', async (t) => {
-  const plan = tspl(t, { plan: 16 })
+  const plan = tspl(t, { plan: 17 })
   const { agent, consumer, producer, topic, clientId } = t.nr
   const message = 'test message'
 
@@ -293,7 +295,7 @@ test('consume outside of a transaction', async (t) => {
 })
 
 test('consume inside of a transaction', async (t) => {
-  const plan = tspl(t, { plan: 44 })
+  const plan = tspl(t, { plan: 49 })
   const { agent, consumer, producer, topic, clientId } = t.nr
   const expectedName = 'testing-tx-consume'
 
@@ -319,6 +321,14 @@ test('consume inside of a transaction', async (t) => {
       }
 
       if (txCount === messages.length + 1) {
+        assertSpanKind({
+          agent,
+          segments: [
+            { name: `${SEGMENT_PREFIX}subscribe`, kind: 'internal' },
+            { name: `${SEGMENT_PREFIX}run`, kind: 'internal' },
+          ],
+          assert: plan
+        })
         resolve()
       }
     })
@@ -354,7 +364,7 @@ test('consume inside of a transaction', async (t) => {
 })
 
 test('consume batch inside of a transaction', async (t) => {
-  const plan = tspl(t, { plan: 10 })
+  const plan = tspl(t, { plan: 12 })
   const { agent, consumer, producer, topic } = t.nr
   const expectedName = 'testing-tx-consume'
 
@@ -369,6 +379,14 @@ test('consume batch inside of a transaction', async (t) => {
         { exact: false },
         { assert: plan }
       )
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: `${SEGMENT_PREFIX}subscribe`, kind: 'internal' },
+          { name: `${SEGMENT_PREFIX}run`, kind: 'internal' },
+        ],
+        assert: plan
+      })
       resolve()
     })
   })

@@ -85,13 +85,13 @@ test('fromSegment()', async (t) => {
         assert.deepEqual(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
         assert.deepEqual(span._intrinsicAttributes.name, { [STRING_TYPE]: 'timers.setTimeout' })
         assert.deepEqual(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
+        assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'internal' })
 
         assert.ok(span._intrinsicAttributes.duration)
         assert.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
 
         // Generic should not have 'span.kind' or 'component'
         const hasIntrinsic = Object.hasOwnProperty.bind(span._intrinsicAttributes)
-        assert.ok(!hasIntrinsic('span.kind'))
         assert.ok(!hasIntrinsic('component'))
 
         const customAttributes = span._customAttributes

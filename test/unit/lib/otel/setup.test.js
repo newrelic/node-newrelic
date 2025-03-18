@@ -10,6 +10,7 @@ const assert = require('node:assert')
 const helper = require('../../../lib/agent_helper')
 const mockLogger = require('../../mocks/logger')
 const otelSetup = require('../../../../lib/otel/setup')
+const otel = require('@opentelemetry/api')
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
@@ -27,10 +28,10 @@ test.afterEach((ctx) => {
 test('should create consumer segment from otel span', (t) => {
   const { agent, loggerMock } = t.nr
   agent.config.feature_flag.opentelemetry_bridge = true
-  const provider = otelSetup(agent, loggerMock)
-  assert.ok(provider)
-  assert.equal(provider.resource.attributes['service.name'], 'New Relic for Node.js tests')
-  assert.equal(provider._config.spanLimits.attributeValueLengthLimit, 4095)
+  otelSetup(agent, loggerMock)
+  const tracer = otel.trace.getTracer('test')
+  assert.equal(tracer.resource.attributes['service.name'], 'New Relic for Node.js tests')
+  assert.equal(tracer._spanLimits.attributeValueLengthLimit, 4095)
 })
 
 test('should create supportability metric on successful setup of opentelemetry bridge', (t) => {
@@ -47,4 +48,11 @@ test('should not create provider when `feature_flag.opentelemetry_bridge` is fal
   const provider = otelSetup(agent, loggerMock)
   assert.equal(provider, null)
   assert.equal(loggerMock.warn.args[0][0], '`feature_flag.opentelemetry_bridge` is not enabled, skipping setup of opentelemetry-bridge')
+})
+
+test('should assign span key to agent', (t) => {
+  const { agent, loggerMock } = t.nr
+  agent.config.feature_flag.opentelemetry_bridge = true
+  otelSetup(agent, loggerMock)
+  assert.ok(agent.otelSpanKey)
 })

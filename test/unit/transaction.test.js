@@ -7,14 +7,14 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const helper = require('../lib/agent_helper')
+const helper = require('#testlib/agent_helper.js')
 const API = require('../../api')
-const AttributeFilter = require('../../lib/config/attribute-filter')
-const Metrics = require('../../lib/metrics')
-const Trace = require('../../lib/transaction/trace')
-const Transaction = require('../../lib/transaction')
-const Segment = require('../../lib/transaction/trace/segment')
-const hashes = require('../../lib/util/hashes')
+const AttributeFilter = require('#agentlib/config/attribute-filter.js')
+const Metrics = require('#agentlib/metrics/index.js')
+const Trace = require('#agentlib/transaction/trace/index.js')
+const Transaction = require('#agentlib/transaction/index.js')
+const Segment = require('#agentlib/transaction/trace/segment.js')
+const hashes = require('#agentlib/util/hashes.js')
 const sinon = require('sinon')
 
 test('Transaction unit tests', async (t) => {
@@ -230,6 +230,13 @@ test('Transaction unit tests', async (t) => {
     txn._setApdex('Apdex/TestController/key', 1200, 667)
     const metric = txn.metrics.getMetric('Apdex/TestController/key')
     assert.ok(!metric)
+  })
+
+  await t.test('should use traceId if passed in when creating transaction', (t) => {
+    const { agent } = t.nr
+    const traceId = hashes.makeId()
+    const tx = new Transaction(agent, traceId)
+    assert.equal(tx.traceId, traceId)
   })
 })
 
@@ -1545,6 +1552,31 @@ test('insertDistributedTraceHeaders', async (t) => {
 
     assert.equal(typeof txn.priority, 'number')
     assert.equal(typeof txn.sampled, 'boolean')
+  })
+
+  await t.test('should build traceparent from spanContext', (t) => {
+    const { agent } = t.nr
+    const trustedAccountKey = '123'
+
+    agent.config.account_id = 'AccountId1'
+    agent.config.primary_application_id = 'Application1'
+    agent.config.distributed_tracing.enabled = true
+    agent.config.trusted_account_key = trustedAccountKey
+    agent.config.span_events.enabled = true
+    const txn = new Transaction(agent)
+    const traceId = hashes.makeId()
+    const spanId = hashes.makeId()
+    const spanContext = {
+      traceId,
+      spanId,
+      traceFlags: 1
+
+    }
+    const headers = {}
+    txn.insertDistributedTraceHeaders(headers, spanContext)
+    assert.equal(headers.traceparent, `00-${traceId}-${spanId}-01`)
+    const { tracestate } = headers
+    assert.ok(tracestate.startsWith(`${trustedAccountKey}@nr=0-0-AccountId1-Application1-${spanId}-${txn.id}`))
   })
 })
 
