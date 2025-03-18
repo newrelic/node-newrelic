@@ -7,14 +7,12 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-const {
-    DESTINATIONS: { TRANS_SEGMENT }
-} = require('../../../lib/config/attribute-filter')
-const { match } = require('../../lib/custom-assertions')
 const otel = require('@opentelemetry/api')
-const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node')
-const { detectResourcesSync } = require('@opentelemetry/resources');
-const { gcpDetector } = require('@opentelemetry/resource-detector-gcp')
+const {
+    ATTR_MESSAGING_DESTINATION_NAME,
+    ATTR_MESSAGING_OPERATION_NAME,
+    ATTR_MESSAGING_SYSTEM
+} = require('../../../lib/otel/constants.js')
 
 test.beforeEach(async (ctx) => {
     ctx.nr = {}
@@ -23,21 +21,16 @@ test.beforeEach(async (ctx) => {
             opentelemetry_bridge: true
         }
     })
-    const lib = require('@google-cloud/pubsub')
-    ctx.nr.lib = lib
 
     // Assumes Google Cloud credentials are set up
     // via https://cloud.google.com/pubsub/docs/publish-receive-messages-client-library#node.js
-    ctx.nr.publisher = new lib.PubSub()
-    ctx.nr.subscriber = new lib.PubSub()
+    const lib = require('@google-cloud/pubsub')
+    const PubSub = lib.PubSub
+    ctx.nr.publisher = new PubSub({ enableOpenTelemetryTracing: true })
+    ctx.nr.subscriber = new PubSub({ enableOpenTelemetryTracing: true })
 
-    // https://github.com/open-telemetry/opentelemetry-js-contrib/blob/main/detectors/node/opentelemetry-resource-detector-gcp/README.md
-    // TODO: try to get otel spans to work with gcp
-    const resource = detectResourcesSync({
-        detectors: [gcpDetector],
-    })
-    const tracerProvider = new NodeTracerProvider({ resource });
-    ctx.nr.tracer = tracerProvider.getTracer('default')
+    ctx.nr.api = helper.getAgentApi()
+    ctx.nr.tracer = otel.trace.getTracer('pubsub-test')
 })
 
 test.afterEach((ctx) => {
@@ -51,69 +44,52 @@ test.afterEach((ctx) => {
 
 test('publish message and then pull', (ctx, end) => {
     const { agent, lib, publisher, subscriber, tracer } = ctx.nr
+
+    // Create a topic, then publish a message to it
     const topicName = 'my-topic'
-    const data = 'Hello, world!'
+    const topic = publisher.topic(topicName)
     helper.runInTransaction(agent, async (tx) => {
         tx.name = 'publish-message'
-        // https://github.com/open-telemetry/opentelemetry-js-contrib/blob/8e087550ad990732e51c1a2aeae7ba8abe7ecbe6/detectors/node/opentelemetry-resource-detector-gcp/src/detectors/GcpDetector.ts#L75
-        // const otel = lib.openTelemetry // TODO: do I use this otel?
-        tracer.startActiveSpan('publish message', { kind: otel.SpanKind.PRODUCER }, async (span) => {
-            const topic = publisher.topic(topicName)
-            assert.ok(topic)
-            const messageId = await topic.publishMessage({ data: Buffer.from(data) })
-            assert.ok(messageId)
+        // https://opentelemetry.io/docs/specs/semconv/messaging/gcp-pubsub/
+        const attributes = {
+            [ATTR_MESSAGING_SYSTEM]: 'gcp_pubsub',
+            [ATTR_MESSAGING_OPERATION_NAME]: 'send',
+            [ATTR_MESSAGING_DESTINATION_NAME]: topicName,
+        }
+        tracer.startActiveSpan(tx.name, { kind: otel.SpanKind.PRODUCER, attributes }, async (span) => {
+            await topic.publishMessage({ data: Buffer.from('Hello, world!') })
             const segment = agent.tracer.getSegment()
+            assert.equal(tx.traceId, span.spanContext().traceId)
+            assert.equal(segment.name, 'MessageBroker/gcp_pubsub/Unknown/Produce/Named/Unknown') //TODO: should this be unknown?
             span.end()
             tx.end()
-            finish(tx)
-            end()
+            assert.equal(span.attributes['messaging.system'], 'gcp_pubsub')
+            assert.equal(span.attributes['messaging.destination.name'], topicName)
         })
     })
 
-    // const subscriptionName = 'my-sub'
-    // await helper.runInTransaction(agent, async (tx) => {
-    //     const subscription = subscriber.subscription(subscriptionName)
-    //     assert.ok(subscription)
-    //     const messageHandler = message => {
-    //         message.ack()
-    //     }
-    //     subscription.on('message', messageHandler)
-    //     setTimeout(() => {
-    //         subscription.removeListener('message', messageHandler)
-    //         tx.end()
-    //         console.log(tx.trace.root)
-    //         finish({ transaction: tx })
-    //     }, 1000)
-    // })
+    // Pull the message from the subscription
+    const subscriptionName = 'my-sub'
+    const subscription = subscriber.subscription(subscriptionName)
+    helper.runInTransaction(agent, async (tx) => {
+        tx.name = 'pull-message'
+        // https://opentelemetry.io/docs/specs/semconv/messaging/gcp-pubsub/
+        const attributes = {
+            [ATTR_MESSAGING_SYSTEM]: 'gcp_pubsub',
+            [ATTR_MESSAGING_OPERATION_NAME]: 'receive',
+            [ATTR_MESSAGING_DESTINATION_NAME]: topicName,
+        }
+        tracer.startActiveSpan(tx.name, { kind: otel.SpanKind.CONSUMER, attributes }, async (span) => {
+            const messageHandler = message => {
+                message.ack()
+                subscription.removeListener('message', messageHandler)
+                span.end()
+                tx.end()
+                assert.equal(span.attributes['messaging.system'], 'gcp_pubsub')
+                assert.equal(span.attributes['messaging.destination.name'], topicName)
+                end()
+            }
+            subscription.on('message', messageHandler)
+        })
+    })
 })
-
-function finish(transaction) {
-    const expectedSegmentCount = 2
-    const root = transaction.trace.root
-    const segments = checkGCPAttributes({
-        trace: transaction.trace,
-        segment: root,
-        pattern: /.*/ // TODO: replace with proper pattern
-    })
-}
-
-function checkGCPAttributes({ trace, segment, pattern, markedSegments = [] }) {
-    const expectedAttrs = {
-        'messaging.system': String,
-        'cloud.region': String,
-        'cloud.account.id': String,
-        'messaging.destination.name': String
-    }
-
-    if (pattern.test(segment.name)) {
-        markedSegments.push(segment)
-        const attrs = segment.attributes.get(TRANS_SEGMENT)
-        match(attrs, expectedAttrs)
-    }
-    const children = trace.getChildren(segment.id)
-    children.forEach((child) => {
-        checkGCPAttributes({ trace, segment: child, pattern, markedSegments })
-    })
-
-    return markedSegments
-}
