@@ -10,20 +10,17 @@ const helper = require('../../lib/agent_helper')
 const otel = require('@opentelemetry/api')
 const {
   ATTR_MESSAGING_DESTINATION_NAME,
-  ATTR_MESSAGING_OPERATION_NAME,
   ATTR_MESSAGING_SYSTEM,
-  ATTR_MESSAGING_DESTINATION_KIND,
-  MESSAGING_SYSTEM_KIND_VALUES,
 } = require('../../../lib/otel/constants.js')
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent({
     feature_flag: {
-      opentelemetry_bridge: true
-    }
+      opentelemetry_bridge: true,
+    },
   })
-
+  ctx.nr.lib = require('@google-cloud/pubsub')
   ctx.nr.api = helper.getAgentApi()
   ctx.nr.tracer = otel.trace.getTracer('pubsub-test')
 })
@@ -46,14 +43,12 @@ test('publish message', (ctx, end) => {
     // https://opentelemetry.io/docs/specs/semconv/messaging/gcp-pubsub/
     const attributes = {
       [ATTR_MESSAGING_SYSTEM]: 'gcp_pubsub',
-      [ATTR_MESSAGING_DESTINATION_KIND]: MESSAGING_SYSTEM_KIND_VALUES.TOPIC, // TODO: gcp pubsub doesn't actually set this
       [ATTR_MESSAGING_DESTINATION_NAME]: 'my-topic',
-      [ATTR_MESSAGING_OPERATION_NAME]: 'send',
     }
     tracer.startActiveSpan(tx.name, { kind: otel.SpanKind.PRODUCER, attributes }, async (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(tx.traceId, span.spanContext().traceId)
-      assert.equal(segment.name, 'MessageBroker/gcp_pubsub/topic/Produce/Named/my-topic')
+      assert.equal(segment.name, 'MessageBroker/gcp_pubsub/Unknown/Produce/Named/my-topic') // TODO: 'Unknown' will be replaced with 'topic' once we incorportate otel semconvs 1.31.0
       span.end()
       tx.end()
       assert.equal(span.attributes[ATTR_MESSAGING_SYSTEM], 'gcp_pubsub')
@@ -62,3 +57,5 @@ test('publish message', (ctx, end) => {
     })
   })
 })
+
+// TODO: subscriber test(s)
