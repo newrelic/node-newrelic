@@ -21,7 +21,7 @@ const exec = util.promisify(require('child_process').exec)
 test('should gracefully handle ESM imports', async (t) => {
   await t.test('when requiring newrelic.js in ESM app', async () => {
     const { stdout, stderr } = await exec('node index.mjs', { cwd: path.join(__dirname, 'esm-js') })
-    if (semver.gte(process.version, '22.12.0')) {
+    if (semver.satisfies(process.version, '>=20.19.0 <22 || >=22.12.0')) {
       match(stdout, 'Hello esm-test')
     } else {
       match(stderr, 'ERR_REQUIRE_ESM', 'should mention ERR_REQUIRE_ESM in error message')
@@ -30,7 +30,7 @@ test('should gracefully handle ESM imports', async (t) => {
 
   await t.test('when requiring newrelic.mjs in ESM app', async () => {
     const { stdout, stderr } = await exec('node index.mjs', { cwd: path.join(__dirname, 'esm-mjs') })
-    if (semver.gte(process.version, '22.12.0')) {
+    if (semver.satisfies(process.version, '>=20.19.0 <22 || >=22.12.0')) {
       match(stdout, 'Hello esm-test')
     } else {
       match(stderr, 'ERR_REQUIRE_ESM', 'should mention ERR_REQUIRE_ESM in error message')
