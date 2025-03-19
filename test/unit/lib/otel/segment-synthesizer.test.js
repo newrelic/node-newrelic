@@ -30,7 +30,6 @@ const {
   ATTR_FULL_URL,
   ATTR_HTTP_REQUEST_METHOD,
   ATTR_MESSAGING_DESTINATION,
-  ATTR_MESSAGING_DESTINATION_KIND,
   ATTR_MESSAGING_SYSTEM,
   ATTR_SERVER_ADDRESS,
   ATTR_SERVER_PORT,
@@ -192,12 +191,9 @@ test('should create rpc segment', (t) => {
   assert.equal(segment.parentId, segment.root.id)
   assert.ok(transaction)
   assert.equal(transaction.traceId, span.spanContext().traceId)
-  const segmentAttrs = segment.getAttributes()
-  assert.equal(segmentAttrs.component, 'grpc')
   assert.equal(transaction.url, expectedName)
   assert.equal(transaction.baseSegment.name, segment.name)
   const attrs = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-  assert.equal(attrs['request.method'], 'findUser')
   assert.equal(attrs['request.uri'], expectedName)
 })
 
@@ -218,7 +214,6 @@ test('should create http server segment', (t) => {
   assert.equal(transaction.url, '/user/1')
   assert.equal(transaction.baseSegment.name, segment.name)
   const attrs = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-  assert.equal(attrs['request.method'], 'PUT')
   assert.equal(attrs['request.uri'], '/user/1')
   transaction.end()
 })
@@ -304,9 +299,8 @@ test('should create consumer segment from otel span', (t) => {
   span.setAttribute('messaging.operation', 'receive')
   span.setAttribute(ATTR_MESSAGING_SYSTEM, 'msgqueuer')
   span.setAttribute(ATTR_MESSAGING_DESTINATION, 'dest1')
-  span.setAttribute(ATTR_MESSAGING_DESTINATION_KIND, 'topic1')
 
-  const expectedName = 'OtherTransaction/Message/msgqueuer/topic1/Named/dest1'
+  const expectedName = 'OtherTransaction/Message/msgqueuer/receive/Named/dest1'
   const { segment, transaction } = synthesizer.synthesize(span)
   transaction.end()
   assert.equal(segment.name, expectedName)
