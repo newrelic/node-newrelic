@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.16.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added support for response streaming Lambda functions",
+          "Added AWS entity linking segment attributes for otel bridge",
+          "Added error handling on transactions for otel spans"
+        ]
+      }
+    },
+    {
       "version": "12.15.0",
       "changes": {
         "security": [],

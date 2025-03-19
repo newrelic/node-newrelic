@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const os = require('node:os')
+const sinon = require('sinon')
 
 const { tspl } = require('@matteo.collina/tspl')
 const helper = require('../../lib/agent_helper')
@@ -91,9 +92,14 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
   await t.test('should pick up on the arn', function (t) {
     const { agent, awsLambda, stubEvent, stubContext, stubCallback } = t.nr
+    const spy = sinon.spy(agent, 'recordSupportability')
+    t.after(() => {
+      spy.restore()
+    })
     assert.equal(agent.collector.metadata.arn, null)
     awsLambda.patchLambdaHandler(() => {})(stubEvent, stubContext, stubCallback)
     assert.equal(agent.collector.metadata.arn, stubContext.invokedFunctionArn)
+    assert.equal(agent.recordSupportability.callCount, 0)
   })
 
   await t.test('when invoked with API Gateway Lambda proxy event', async (t) => {
@@ -1266,25 +1272,29 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
     wrappedHandler(stubEvent, stubContext, stubCallback)
   })
 
-  await t.test('should end transactions on a beforeExit event on process', (t, end) => {
+  await t.test('should end transactions on a beforeExit event on process', async (t) => {
     const { agent, awsLambda, stubEvent, stubContext, stubCallback } = t.nr
+    const plan = tspl(t, { plan: 6 })
     tempRemoveListeners({ t, emitter: process, event: 'beforeExit' })
+    agent.on('harvestStarted', () => {
+      plan.ok(1)
+    })
 
     const wrappedHandler = awsLambda.patchLambdaHandler(() => {
       const transaction = agent.tracer.getTransaction()
 
-      assert.ok(transaction)
-      assert.equal(transaction.type, 'bg')
-      assert.equal(transaction.getFullName(), expectedBgTransactionName)
-      assert.ok(transaction.isActive())
+      plan.ok(transaction)
+      plan.equal(transaction.type, 'bg')
+      plan.equal(transaction.getFullName(), expectedBgTransactionName)
+      plan.ok(transaction.isActive())
 
       process.emit('beforeExit')
 
-      assert.equal(transaction.isActive(), false)
-      end()
+      plan.equal(transaction.isActive(), false)
     })
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
+    await plan.completed
   })
 
   await t.test('should end transactions after the returned promise resolves', (t, end) => {
@@ -1354,42 +1364,41 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
     }
   })
 
-  await t.test('should record error event when func is async and error is thrown', (t, end) => {
+  await t.test('should record error event when func is async and error is thrown', async (t) => {
     const { agent, awsLambda, error, stubEvent, stubContext, stubCallback } = t.nr
+    const plan = tspl(t, { plan: 10 })
     agent.on('harvestStarted', function confirmErrorCapture() {
       const errors = agent.errors.traceAggregator.errors
-      assert.equal(errors.length, 1)
+      plan.equal(errors.length, 1)
 
       const noticedError = errors[0]
       const [, transactionName, message, type] = noticedError
-      assert.equal(transactionName, expectedBgTransactionName)
-      assert.equal(message, errorMessage)
-      assert.equal(type, 'SyntaxError')
+      plan.equal(transactionName, expectedBgTransactionName)
+      plan.equal(message, errorMessage)
+      plan.equal(type, 'SyntaxError')
     })
 
     let transaction
     const wrappedHandler = awsLambda.patchLambdaHandler(() => {
       transaction = agent.tracer.getTransaction()
       return new Promise(() => {
-        assert.ok(transaction)
-        assert.equal(transaction.type, 'bg')
-        assert.equal(transaction.getFullName(), expectedBgTransactionName)
-        assert.ok(transaction.isActive())
+        plan.ok(transaction)
+        plan.equal(transaction.type, 'bg')
+        plan.equal(transaction.getFullName(), expectedBgTransactionName)
+        plan.ok(transaction.isActive())
 
         throw error
       })
     })
 
-    wrappedHandler(stubEvent, stubContext, stubCallback)
-      .then(() => {
-        end(Error('wrapped handler should fail and go to catch block'))
-      })
-      .catch((err) => {
-        assert.equal(err, error)
-        assert.equal(transaction.isActive(), false)
+    try {
+      await wrappedHandler(stubEvent, stubContext, stubCallback)
+    } catch (err) {
+      plan.equal(err, error)
+      plan.equal(transaction.isActive(), false)
+    }
 
-        end()
-      })
+    await plan.completed
   })
 
   await t.test(
