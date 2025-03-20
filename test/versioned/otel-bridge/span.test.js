@@ -108,10 +108,13 @@ test('mix internal and NR span tests', (t, end) => {
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'otel-example-tx'
     tracer.startActiveSpan('main', (span) => {
+      span.setAttribute('custom-key', 'custom-value')
       const segment = agent.tracer.getSegment()
       assert.equal(tx.traceId, span.spanContext().traceId)
       main(segment, tx)
       span.end()
+      const attrs = segment.getAttributes()
+      assert.equal(attrs['custom-key'], 'custom-value')
       assert.equal(span[otelSynthesis], undefined)
       assert.equal(segment.name, span.name)
       assert.equal(segment.parentId, tx.trace.root.id)
@@ -128,13 +131,13 @@ test('mix internal and NR span tests', (t, end) => {
         ]
       })
       const metrics = tx.metrics.scoped[tx.name]
-      assert.equal(metrics['Custom/main'].callCount, 1)
-      assert.equal(metrics['Custom/hi'].callCount, 1)
-      assert.equal(metrics['Custom/bye'].callCount, 1)
+      assert.equal(metrics['main'].callCount, 1)
+      assert.equal(metrics['hi'].callCount, 1)
+      assert.equal(metrics['bye'].callCount, 1)
       const unscopedMetrics = tx.metrics.unscoped
-      assert.equal(unscopedMetrics['Custom/main'].callCount, 1)
-      assert.equal(unscopedMetrics['Custom/hi'].callCount, 1)
-      assert.equal(unscopedMetrics['Custom/bye'].callCount, 1)
+      assert.equal(unscopedMetrics['main'].callCount, 1)
+      assert.equal(unscopedMetrics['hi'].callCount, 1)
+      assert.equal(unscopedMetrics['bye'].callCount, 1)
       end()
     })
   })
