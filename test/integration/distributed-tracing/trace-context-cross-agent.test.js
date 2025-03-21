@@ -10,18 +10,11 @@ const assert = require('node:assert')
 
 const { TYPES } = require('../../../lib/transaction')
 const API = require('../../../api')
+const Traceparent = require('#agentlib/w3c/traceparent.js')
+const Tracestate = require('#agentlib/w3c/tracestate.js')
 const helper = require('../../lib/agent_helper')
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
 const recordSupportability = require('../../../lib/agent').prototype.recordSupportability
-
-const camelCaseToSnakeCase = function (object) {
-  const newObject = {}
-  for (const [key, value] of Object.entries(object)) {
-    const newKey = key.replace(/[A-Z]/g, ' $&').replace(' ', '_').toLowerCase()
-    newObject[newKey] = value
-  }
-  return newObject
-}
 
 const getDescendantValue = function (object, descendants) {
   const arrayDescendants = descendants.split('.')
@@ -39,7 +32,7 @@ function hasNestedProperty(object, descendants) {
   for (let i = 0; i < arrayDescendants.length; i++) {
     const property = arrayDescendants[i]
 
-    if (!currentItem || !Object.prototype.hasOwnProperty.call(currentItem, property)) {
+    if (!currentItem || currentItem[property] == null) {
       return false
     }
 
@@ -50,7 +43,16 @@ function hasNestedProperty(object, descendants) {
 }
 
 const testExact = function (object, fixture) {
-  for (const [descendants, fixtureValue] of Object.entries(fixture)) {
+  for (let [descendants, fixtureValue] of Object.entries(fixture)) {
+    if (descendants === 'tracestate.parent_type') {
+      // The fixture data has the original source value, an integer, as the
+      // value to check for. Our Transaction expects a string value. Instead
+      // of mutating the `Tracestate` object after it is created in the test,
+      // we re-define the fixture value in-place.
+      // eslint-disable-next-line sonarjs/updated-loop-counter
+      fixtureValue = 'App'
+    }
+
     const valueToTest = getDescendantValue(object, descendants)
     assert.deepEqual(
       valueToTest,
@@ -86,7 +88,7 @@ const testNotEqual = function (object, fixture) {
 }
 
 const testVendor = function (object, vendors) {
-  assert.deepStrictEqual(object.tracestate.vendors, vendors, 'do vendors match?')
+  assert.deepStrictEqual(object.tracestate.vendors ?? [], vendors, 'do vendors match?')
 }
 
 // Tests a few of the helper functions we wrote for this test suite.
@@ -376,12 +378,8 @@ async function runTestCase(testCase, parentTest) {
         }
 
         const insertedTraceContextTraces = outboundHeaders.map((headers) => {
-          // Find the first/leftmost list-member, parse out intrinsics and tenant id
-          const listMembers = headers.tracestate.split(',')
-          const nrTraceState = listMembers.splice(0, 1)[0] // removes the NR tracestate
-          const [tenantString, nrTracestateEntry] = nrTraceState.split('=')
-          const tenantId = tenantString.split('@')[0]
-          const intrinsics = transaction.traceContext._parseIntrinsics(nrTracestateEntry)
+          const tracestate = Tracestate.fromHeader({ header: headers.tracestate, agent })
+          const intrinsics = tracestate.intrinsics
 
           // _parseIntrinsics returns null for absent items, remove them
           Object.keys(intrinsics).forEach((k) => {
@@ -390,49 +388,11 @@ async function runTestCase(testCase, parentTest) {
             }
           })
 
-          // Get a list of vendor strings from the tracestate after removing the
-          // NR list-member
-          const vendors = listMembers.map((m) => m.split('=')[0])
-
-          // Found entry for the correct trust key / tenantId
-          // So manually setting for now
-          intrinsics.tenantId = tenantId
-          intrinsics.vendors = vendors
-
           // get payload for how we represent it internally to how tests want it
           const outboundPayload = {
-            traceparent: transaction.traceContext._validateAndParseTraceParentHeader(
-              headers.traceparent
-            ),
-            tracestate: intrinsics
+            traceparent: Traceparent.fromHeader(headers.traceparent),
+            tracestate
           }
-
-          const normalizeAgentDataToCrossAgentTestData = function (data) {
-            data = camelCaseToSnakeCase(data)
-            if (data.flags) {
-              data.trace_flags = data.flags
-              delete data.flags
-            }
-
-            data.parent_account_id = data.account_id
-            delete data.account_id
-
-            data.parent_application_id = data.app_id
-            delete data.app_id
-
-            if (data.sampled) {
-              data.sampled = data.sampled ? true : false
-            }
-
-            return data
-          }
-
-          outboundPayload.tracestate = normalizeAgentDataToCrossAgentTestData(
-            outboundPayload.tracestate
-          )
-          outboundPayload.traceparent = normalizeAgentDataToCrossAgentTestData(
-            outboundPayload.traceparent
-          )
 
           if (headers.newrelic) {
             const rawPayload = Buffer.from(headers.newrelic, 'base64').toString('utf-8')
