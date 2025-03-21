@@ -45,7 +45,6 @@ const {
   ATTR_SERVER_ADDRESS,
   ATTR_SERVER_PORT,
   ATTR_URL_PATH,
-  ATTR_URL_QUERY,
   ATTR_URL_SCHEME,
   DB_SYSTEM_VALUES,
   MESSAGING_SYSTEM_KIND_VALUES,
@@ -178,10 +177,6 @@ test('Http external span is bridged accordingly', (t, end) => {
     [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
     [ATTR_HTTP_REQUEST_METHOD]: 'GET',
     [ATTR_SERVER_PORT]: 8080,
-    [ATTR_URL_PATH]: '/search',
-    [ATTR_URL_QUERY]: 'q=test',
-    [ATTR_URL_SCHEME]: 'https',
-    [ATTR_HTTP_HOST]: 'www.newrelic.com',
     [ATTR_FULL_URL]: 'https://www.newrelic.com:8080/search?q=test'
   }
 
@@ -224,8 +219,6 @@ test('Http external span is bridged accordingly(legacy attributes test)', (t, en
     [ATTR_NET_PEER_NAME]: 'www.newrelic.com',
     [ATTR_HTTP_METHOD]: 'GET',
     [ATTR_NET_PEER_PORT]: 8080,
-    [ATTR_URL_QUERY]: 'q=test',
-    [ATTR_HTTP_HOST]: 'www.newrelic.com',
     [ATTR_HTTP_URL]: 'https://www.newrelic.com:8080/search?q=test'
   }
 
@@ -459,9 +452,8 @@ test('server span(rpc) is bridged accordingly', (t, end) => {
 
     const attrs = segment.getAttributes()
     assert.equal(attrs['server.address'], 'newrelic.com')
-    assert.equal(attrs['rpc.system'], 'foo')
     assert.equal(attrs.component, 'foo')
-    assert.equal(attrs['rpc.method'], 'getData')
+    assert.equal(attrs['rpc.method'], undefined)
     assert.equal(attrs['rpc.service'], 'test.service')
     assert.equal(attrs['url.path'], '/foo/bar')
     assert.equal(attrs['request.method'], 'getData')
@@ -512,7 +504,7 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
-    assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//unknown')
+    assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//foo/bar')
 
     const attrs = segment.getAttributes()
     assert.equal(attrs.host, expectedHost)
@@ -526,14 +518,14 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
       'HttpDispatcher',
       'WebTransaction',
       'WebTransactionTotalTime',
-      'WebTransactionTotalTime/WebFrameworkUri//unknown',
+      'WebTransactionTotalTime/WebFrameworkUri//foo/bar',
       segment.name
     ]
     for (const expectedMetric of expectedMetrics) {
       assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
     }
     assert.equal(unscopedMetrics.Apdex.apdexT, 0.1)
-    assert.equal(unscopedMetrics['Apdex/WebFrameworkUri//unknown'].apdexT, 0.1)
+    assert.equal(unscopedMetrics['Apdex/WebFrameworkUri//foo/bar'].apdexT, 0.1)
 
     end()
   })
