@@ -89,7 +89,24 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
 
   _agent = new Agent(config)
   _agent.__created = new Error('Only one agent at a time! This one was created at:')
-  _agent.recordSupportability = () => {} // Stub supportabilities.
+  _agent.__mocks = {
+    supportability: new Map()
+  }
+  _agent.recordSupportability = (key) => { // Stub supportabilities.
+    if (!_agent) {
+      // It's possible that a test has finished before this method is invoked,
+      // and that the post test clean up will have unloaded the agent. In that
+      // case, we don't have an agent instance any longer and just need to
+      // bail out.
+      return
+    }
+    const val = _agent.__mocks.supportability.get(key)
+    if (val) {
+      _agent.__mocks.supportability.set(key, val + 1)
+    } else {
+      _agent.__mocks.supportability.set(key, 1)
+    }
+  }
 
   if (setState) {
     _agent.setState('started')
