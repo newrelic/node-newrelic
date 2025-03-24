@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.16.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed `tracer.transactionNestProxy` to create a new transaction if there is no transaction or transaction is not active"
+        ],
+        "features": [
+          "Assign all attributes on internal spans to segment"
+        ]
+      }
+    },
+    {
       "version": "12.16.0",
       "changes": {
         "security": [],
