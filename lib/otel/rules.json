@@ -164,43 +164,6 @@
     }
   },
   {
-    "name": "OtelMessagingConsumer1_25",
-    "type": "consumer",
-    "matcher": {
-      "required_span_kinds": [
-        "consumer"
-      ],
-      "required_attribute_keys": [
-        "messaging.system",
-        "messaging.destination.name"
-      ]
-    },
-    "target": {
-      "target_metrics": [
-        "transaction",
-        "blame"
-      ],
-      "attribute_mappings": [
-        {
-          "attribute": "transactionName",
-          "template": "OtherTransaction/consumer/${messaging.system}/${messaging.destination.name}"
-        },
-        {
-          "attribute": "transactionType",
-          "template": "Other"
-        },
-        {
-          "attribute": "error.type",
-          "template": "__null__"
-        },
-        {
-          "attribute": "metricTimesliceName",
-          "template": "OtherTransaction/consumer/${messaging.system}/${messaging.destination.name}"
-        }
-      ]
-    }
-  },
-  {
     "name": "OtelMessagingConsumer1_24",
     "type": "consumer",
     "matcher": {
