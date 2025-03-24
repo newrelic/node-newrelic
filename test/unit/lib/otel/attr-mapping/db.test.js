@@ -1,3 +1,8 @@
+/*
+ * Copyright 2025 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 const { getMapping, dbMapper } = require('#agentlib/otel/attr-mapping/db.js')
 const AttributeReconciler = require('#agentlib/otel/attr-reconciler.js')
@@ -5,7 +10,7 @@ const helper = require('#testlib/agent_helper.js')
 const sinon = require('sinon')
 const test = require('node:test')
 const assert = require('node:assert')
-const { 
+const {
   ATTR_NETWORK_PEER_PORT,
   ATTR_NET_PEER_NAME,
   ATTR_SERVER_ADDRESS,
@@ -26,9 +31,9 @@ test.afterEach((ctx) => {
 })
 
 test('port', () => {
-  const span = { 
+  const span = {
     attributes: {
-      [ATTR_NET_PEER_PORT]: 3618 
+      [ATTR_NET_PEER_PORT]: 3618
     }
   }
   const { value } = getMapping({ key: 'port', span })
@@ -36,9 +41,9 @@ test('port', () => {
 })
 
 test('server', () => {
-  const span = { 
+  const span = {
     attributes: {
-      [ATTR_NET_PEER_NAME]: 'db-host' 
+      [ATTR_NET_PEER_NAME]: 'db-host'
     }
   }
   const { value } = getMapping({ key: 'server', span })
