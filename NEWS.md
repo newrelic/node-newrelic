@@ -11,7 +11,6 @@
 #### Documentation
 
 * Updated compatibility report ([#2993](https://github.com/newrelic/node-newrelic/pull/2993)) ([cdfa042](https://github.com/newrelic/node-newrelic/commit/cdfa042325a7636e84a7b19a34874b20915dac63))
-    * Co-authored-by: mrickard <11327+mrickard@users.noreply.github.com>
 
 #### Tests
 
