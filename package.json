@@ -189,7 +189,7 @@
     "versioned": "npm run checkout-external-versioned && npm run prepare-test && time ./bin/run-versioned-tests.sh",
     "versioned:security": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned",
     "versioned:security:major": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned:major",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "bin": {
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
