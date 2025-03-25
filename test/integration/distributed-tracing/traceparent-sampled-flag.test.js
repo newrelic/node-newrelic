@@ -105,7 +105,7 @@ test('remote_parent_sampled: default', async t => {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, null)
+    assert.equal(tx.sampled, true)
     assert.equal(tx.priority, null)
   }
 })
@@ -130,7 +130,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, null)
+    assert.equal(tx.sampled, true)
     assert.equal(tx.priority, null)
   }
 })
@@ -180,7 +180,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (fla
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, null)
+    assert.equal(tx.sampled, true)
     assert.equal(tx.priority, null)
   }
 })
@@ -230,7 +230,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag t
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, null)
+    assert.equal(tx.sampled, true)
     assert.equal(tx.priority, null)
   }
 })

@@ -409,8 +409,8 @@ async function runTestCase(testCase, parentTest) {
         // These tests assume setting a transport type even when there are not valid
         // trace headers. This is slightly inconsistent with the spec. Given DT
         // (NR format) does not include transport when there is no trace AND the
-        // attribute parent.transportType is only populated when a valid payload recieved,
-        // we are keeping our implementation conistent for now.
+        // attribute parent.transportType is only populated when a valid payload received,
+        // we are keeping our implementation consistent for now.
         const removeTransportTests = [
           'missing_traceparent',
           'missing_traceparent_and_tracestate',
