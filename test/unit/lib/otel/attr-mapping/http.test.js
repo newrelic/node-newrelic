@@ -4,7 +4,7 @@
  */
 
 'use strict'
-const { getMapping, clientMapper, rpcMapper, serverMapper } = require('#agentlib/otel/attr-mapping/http.js')
+const { httpAttr, clientMapper, rpcMapper, serverMapper } = require('#agentlib/otel/attr-mapping/http.js')
 const AttributeReconciler = require('#agentlib/otel/attr-reconciler.js')
 const helper = require('#testlib/agent_helper.js')
 const sinon = require('sinon')
@@ -49,7 +49,7 @@ test('clientHost', () => {
       [ATTR_NET_PEER_NAME]: 'example.com'
     }
   }
-  const { value } = getMapping({ key: 'clientHost', span })
+  const value = httpAttr({ key: 'clientHost', span })
   assert.deepEqual(value, 'example.com')
 })
 
@@ -59,7 +59,7 @@ test('clientPort', () => {
       [ATTR_NET_PEER_PORT]: 8080
     }
   }
-  const { value } = getMapping({ key: 'clientPort', span })
+  const value = httpAttr({ key: 'clientPort', span })
   assert.deepEqual(value, 8080)
 })
 
@@ -69,7 +69,7 @@ test('clientUrl', () => {
       [ATTR_HTTP_URL]: 'http://foobar.com/path?foo=bar&baz=bat'
     }
   }
-  const { value } = getMapping({ key: 'clientUrl', span })
+  const value = httpAttr({ key: 'clientUrl', span })
   assert.deepEqual(value, 'http://foobar.com/path?foo=bar&baz=bat')
 })
 
@@ -79,7 +79,7 @@ test('host', () => {
       [ATTR_NET_HOST_NAME]: 'example.com'
     }
   }
-  const { value } = getMapping({ key: 'host', span })
+  const value = httpAttr({ key: 'host', span })
   assert.deepEqual(value, 'example.com')
 })
 
@@ -89,7 +89,7 @@ test('method', () => {
       [ATTR_HTTP_METHOD]: 'GET'
     }
   }
-  const { value } = getMapping({ key: 'method', span })
+  const value = httpAttr({ key: 'method', span })
   assert.deepEqual(value, 'GET')
 })
 
@@ -99,7 +99,7 @@ test('port', () => {
       [ATTR_NET_HOST_PORT]: 8080
     }
   }
-  const { value } = getMapping({ key: 'port', span })
+  const value = httpAttr({ key: 'port', span })
   assert.deepEqual(value, 8080)
 })
 
@@ -109,7 +109,7 @@ test('statusCode', () => {
       [ATTR_HTTP_STATUS_CODE]: 200
     }
   }
-  const { value } = getMapping({ key: 'statusCode', span })
+  const value = httpAttr({ key: 'statusCode', span })
   assert.deepEqual(value, 200)
 })
 
@@ -119,19 +119,19 @@ test('url', () => {
       [ATTR_HTTP_URL]: 'https://www.server:port/path?q=p'
     }
   }
-  let { value } = getMapping({ key: 'url', span })
+  let value = httpAttr({ key: 'url', span })
   assert.equal(value, 'https://www.server:port/path?q=p')
   delete span.attributes[ATTR_HTTP_URL]
-  ;({ value } = getMapping({ key: 'url', span }))
+  value = httpAttr({ key: 'url', span })
   assert.equal(value, 'https://unknown/unknown')
   span.attributes[ATTR_URL_SCHEME] = 'http'
   span.attributes[ATTR_SERVER_ADDRESS] = 'www.example.com'
   span.attributes[ATTR_URL_PATH] = '/path'
-  ;({ value } = getMapping({ key: 'url', span }))
+  value = httpAttr({ key: 'url', span })
   assert.equal(value, 'http://www.example.com/path')
   span.attributes[ATTR_SERVER_PORT] = 8080
   span.attributes[ATTR_URL_QUERY] = '?q=value&foo=bar'
-  ;({ value } = getMapping({ key: 'url', span }))
+  value = httpAttr({ key: 'url', span })
   assert.equal(value, 'http://www.example.com:8080/path?q=value&foo=bar')
 })
 

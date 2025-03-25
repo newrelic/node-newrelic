@@ -4,7 +4,7 @@
  */
 
 'use strict'
-const { getMapping, consumerMapper, producerMapper } = require('#agentlib/otel/attr-mapping/messaging.js')
+const { msgAttr, consumerMapper, producerMapper } = require('#agentlib/otel/attr-mapping/messaging.js')
 const AttributeReconciler = require('#agentlib/otel/attr-reconciler.js')
 const helper = require('#testlib/agent_helper.js')
 const sinon = require('sinon')
@@ -36,7 +36,7 @@ test('destination', () => {
       [ATTR_MESSAGING_DESTINATION]: 'TestQueue'
     }
   }
-  const { value } = getMapping({ key: 'destination', span })
+  const value = msgAttr({ key: 'destination', span })
   assert.deepEqual(value, 'TestQueue')
 })
 
@@ -46,7 +46,7 @@ test('operation', () => {
       [ATTR_MESSAGING_DESTINATION_KIND]: 'topic'
     }
   }
-  const { value } = getMapping({ key: 'operation', span })
+  const value = msgAttr({ key: 'operation', span })
   assert.deepEqual(value, 'topic')
 })
 

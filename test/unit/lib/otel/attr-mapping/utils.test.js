@@ -4,7 +4,7 @@
  */
 
 'use strict'
-const { abstractMapper, attributesMapper } = require('#agentlib/otel/attr-mapping/utils.js')
+const createMapper = require('#agentlib/otel/attr-mapping/utils.js')
 const test = require('node:test')
 const assert = require('node:assert')
 
@@ -13,99 +13,117 @@ test.beforeEach((ctx) => {
   ctx.nr.span = {
     attributes: {
       key: 'value',
-      legacyKey: 'legacyValue'
+      legacyKey: 'legacyValue',
+      anotherKey: 'test',
+      onlyAttrs: 'attrs',
+      malformed: true
     }
   }
-
-  ctx.nr.attrs = ['key', 'legacyKey']
   ctx.nr.fn = () => {}
-  ctx.nr.mappings = {
+
+  const mappings = {
     key: {
-      attrs: ['key'],
+      attrs: ['key', 'legacyKey'],
       mapping() {
         return ctx.nr.fn
       }
     },
     anotherKey: {
-      attrs: ['anotherKey', 'legacyKey'],
-      attrMapper({ span }) {
+      attrs({ span }) {
         return span
       }
     },
     onlyAttrs: {
       attrs: ['onlyAttrs']
+    },
+    noFunc: {
+      mapping: true
+    },
+    malformed: {
+      attrs: ['test'],
+      mapping: () => false
+    },
+    onlyFunc: {
+      mapping() {
+        return ctx.nr.fn
+      }
     }
   }
+  const { getAttr, attributesMapper } = createMapper(mappings)
+  ctx.nr.attrFn = getAttr
+  ctx.nr.mapper = attributesMapper
 })
 
-test('should return value if span is passed into abstractMapper', (t) => {
-  const { span, fn, attrs } = t.nr
-  const { value, mapping } = abstractMapper({ span, fn, attrs })
+test('should return value if span is passed into getAttr', (t) => {
+  const { span, attrFn } = t.nr
+  const value = attrFn({ key: 'key', span })
   assert.equal(value, 'value')
-  assert.deepEqual(mapping, {})
 })
 
 test('should not return value if attr is not found in attributes', (t) => {
-  const { attrs } = t.nr
+  const { attrFn } = t.nr
   const span = {
     attributes: {
       test: 'value'
     }
   }
-  const { value, mapping } = abstractMapper({ span, attrs })
+  const value = attrFn({ key: 'key', span })
   assert.equal(value, undefined)
-  assert.deepEqual(mapping, {})
+})
+
+test('should not return value if no span is present', (t) => {
+  const { attrFn } = t.nr
+  const value = attrFn({ key: 'test' })
+  assert.equal(value, undefined)
+})
+
+test('should not return value if canonical key does not exist', (t) => {
+  const { attrFn, span } = t.nr
+  const value = attrFn({ key: 'bogus', span })
+  assert.equal(value, undefined)
+})
+
+test('should return value if attrs is a function', (t) => {
+  const { attrFn, span } = t.nr
+  const value = attrFn({ key: 'anotherKey', span })
+  assert.deepEqual(value, span)
 })
 
 test('should return mapping if fn is passed into abstractMapper with no span', (t) => {
-  const { fn, attrs } = t.nr
-  const { value, mapping } = abstractMapper({ fn, attrs })
-  assert.equal(value, undefined)
+  const { fn, mapper } = t.nr
+  const mapping = mapper({ key: 'key' })
   assert.deepEqual(mapping, {
     key: fn,
     legacyKey: fn
   })
 })
 
-test('should return empty mapping and value when fn nor span are passed into abstractMapper', () => {
-  const { value, mapping } = abstractMapper()
-  assert.equal(value, undefined)
+test('should return empty mapping and value when fn nor span are passed into abstractMapper', (t) => {
+  const { mapper } = t.nr
+  const mapping = mapper()
   assert.deepEqual(mapping, {})
 })
 
-test('should return undefined mapper when a key does not exist on mapper', () => {
-  const mapper = attributesMapper.bind({})
-  const ret = mapper()
-  assert.equal(ret, undefined)
-})
-
-test('should return value when span passed into attrMapper', (t) => {
-  const { mappings, span } = t.nr
-  const mapper = attributesMapper.bind(mappings)
-  const { value, mapping } = mapper({ span, key: 'key' })
-  assert.equal(value, 'value')
+test('should return empty mapping when a key does not exist on mapper', (t) => {
+  const { mapper } = t.nr
+  const mapping = mapper({ key: 'anotherKey' })
   assert.deepEqual(mapping, {})
 })
 
-test('should return mapping when span is not passed into attrMapper', (t) => {
-  const { mappings, fn } = t.nr
-  const mapper = attributesMapper.bind(mappings)
-  const { value, mapping } = mapper({ key: 'key' })
-  assert.equal(value, undefined)
-  assert.deepEqual(mapping, { key: fn })
-})
-
-test('should return undefined mapping when span is not passed into attrMapper and no mapping exist for given key', (t) => {
-  const { mappings } = t.nr
-  const mapper = attributesMapper.bind(mappings)
-  const { value, mapping } = mapper({ key: 'onlyAttrs' })
-  assert.equal(value, undefined)
+test('should return empty mapping when the mapper is not a function', (t) => {
+  const { mapper } = t.nr
+  const mapping = mapper({ key: 'malformed' })
   assert.deepEqual(mapping, {})
 })
 
-test('should run attrMapper when exists for a given key', (t) => {
-  const { mappings, span } = t.nr
-  const mapper = attributesMapper.bind(mappings)
-  const { value } = mapper({ key: 'anotherKey', span })
-  assert.deepEqual(value, span)
+test('should return empty mapping when the mapping is not a function', (t) => {
+  const { mapper } = t.nr
+  const mapping = mapper({ key: 'noFunc' })
+  assert.deepEqual(mapping, {})
+})
+
+test('should return empty mapping when no attrs are present but there is a mapping function', (t) => {
+  const { mapper } = t.nr
+  const mapping = mapper({ key: 'onlyFunc' })
+  assert.deepEqual(mapping, {})
 })

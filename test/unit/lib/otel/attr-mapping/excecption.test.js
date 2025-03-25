@@ -4,7 +4,7 @@
  */
 
 'use strict'
-const { getMapping } = require('#agentlib/otel/attr-mapping/exceptions.js')
+const { exceptionAttr } = require('#agentlib/otel/attr-mapping/exceptions.js')
 const test = require('node:test')
 const assert = require('node:assert')
 const {
@@ -17,6 +17,6 @@ test('msg', () => {
       [EXCEPTION_TYPE]: 'Error'
     }
   }
-  const { value } = getMapping({ key: 'msg', span })
+  const value = exceptionAttr({ key: 'msg', span })
   assert.deepEqual(value, 'Error')
 })

@@ -4,7 +4,7 @@
  */
 
 'use strict'
-const { getMapping } = require('#agentlib/otel/attr-mapping/faas.js')
+const { faasAttr } = require('#agentlib/otel/attr-mapping/faas.js')
 const test = require('node:test')
 const assert = require('node:assert')
 const {
@@ -17,6 +17,6 @@ test('region', () => {
       [ATTR_AWS_REGION]: 'us-east-1'
     }
   }
-  const { value } = getMapping({ key: 'region', span })
+  const value = faasAttr({ key: 'region', span })
   assert.deepEqual(value, 'us-east-1')
 })

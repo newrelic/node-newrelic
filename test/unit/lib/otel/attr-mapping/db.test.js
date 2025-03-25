@@ -4,7 +4,7 @@
  */
 
 'use strict'
-const { getMapping, dbMapper } = require('#agentlib/otel/attr-mapping/db.js')
+const { dbAttr, dbMapper } = require('#agentlib/otel/attr-mapping/db.js')
 const AttributeReconciler = require('#agentlib/otel/attr-reconciler.js')
 const helper = require('#testlib/agent_helper.js')
 const sinon = require('sinon')
@@ -36,7 +36,7 @@ test('port', () => {
       [ATTR_NET_PEER_PORT]: 3618
     }
   }
-  const { value } = getMapping({ key: 'port', span })
+  const value = dbAttr({ key: 'port', span })
   assert.deepEqual(value, 3618)
 })
 
@@ -46,7 +46,7 @@ test('server', () => {
       [ATTR_NET_PEER_NAME]: 'db-host'
     }
   }
-  const { value } = getMapping({ key: 'server', span })
+  const value = dbAttr({ key: 'server', span })
   assert.deepEqual(value, 'db-host')
 })
 
