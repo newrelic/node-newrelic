@@ -189,7 +189,7 @@
     "versioned": "npm run checkout-external-versioned && npm run prepare-test && time ./bin/run-versioned-tests.sh",
     "versioned:security": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned",
     "versioned:security:major": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned:major",
-    "prepare": "husky"
+    "prepare": "husky install"
   },
   "bin": {
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
@@ -252,7 +252,7 @@
     "git-raw-commits": "^2.0.11",
     "glob": "^7.1.2",
     "got": "^11.8.5",
-    "husky": "^6.0.0",
+    "husky": ">=6.0.0 <9.0.0",
     "jsdoc": "^4.0.0",
     "koa": "^2.15.3",
     "koa-route": "^4.0.1",
