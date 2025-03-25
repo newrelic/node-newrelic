@@ -264,7 +264,8 @@
     "self-cert": "^2.0.0",
     "should": "*",
     "sinon": "^5.1.1",
-    "superagent": "^9.0.1"
+    "superagent": "^9.0.1",
+    "undici": "^6.21.2"
   },
   "repository": {
     "type": "git",

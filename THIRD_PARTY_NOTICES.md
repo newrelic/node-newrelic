@@ -1,6 +1,6 @@
 # Third Party Notices
 
-The New Relic Node Agent uses source code from third party libraries which carry
+The newrelic uses source code from third party libraries which carry
 their own copyright notices and license terms. These notices are provided
 below.
 
@@ -8,7 +8,7 @@ In the event that a required notice is missing or incorrect, please notify us
 by e-mailing [open-source@newrelic.com](mailto:open-source@newrelic.com).
 
 For any licenses that require the disclosure of source
-code, the source code can be found at [https://github.com/newrelic/node-newrelic](https://github.com/newrelic/node-newrelic).
+code, the source code can be found at [github](github).
 
 ## Content
 
@@ -75,6 +75,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [should](#should)
 * [sinon](#sinon)
 * [superagent](#superagent)
+* [undici](#undici)
 
 **[optionalDependencies](#optionalDependencies)**
 
@@ -91,7 +92,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.13.0](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.13.0)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.13.0/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.12.4](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.12.4)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.12.4/LICENSE):
 
 ```
                                  Apache License
@@ -509,7 +510,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.3.2](https://github.com/newrelic/csec-node-agent/tree/v2.3.2)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.3.2/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.3.1](https://github.com/newrelic/csec-node-agent/tree/v2.3.1)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.3.1/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -764,7 +765,7 @@ This product includes source derived from [@opentelemetry/api](https://github.co
 
 ### @opentelemetry/core
 
-This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.0/LICENSE):
+This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v1.30.1](https://github.com/open-telemetry/opentelemetry-js/tree/v1.30.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v1.30.1/LICENSE):
 
 ```
                                  Apache License
@@ -973,7 +974,7 @@ This product includes source derived from [@opentelemetry/core](https://github.c
 
 ### @opentelemetry/sdk-trace-base
 
-This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v1.30.1](https://github.com/open-telemetry/opentelemetry-js/tree/v1.30.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v1.30.1/LICENSE):
 
 ```
                                  Apache License
@@ -1271,7 +1272,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.13.1](https://github.com/nodejs/import-in-the-middle/tree/v1.13.1)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.13.1/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.13.0](https://github.com/nodejs/import-in-the-middle/tree/v1.13.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.13.0/LICENSE):
 
 ```
                                  Apache License
@@ -1615,14 +1616,13 @@ IN THE SOFTWARE.
 
 ### require-in-the-middle
 
-This product includes source derived from [require-in-the-middle](https://github.com/nodejs/require-in-the-middle) ([v7.5.2](https://github.com/nodejs/require-in-the-middle/tree/v7.5.2)), distributed under the [MIT License](https://github.com/nodejs/require-in-the-middle/blob/v7.5.2/LICENSE):
+This product includes source derived from [require-in-the-middle](https://github.com/elastic/require-in-the-middle) ([v7.4.0](https://github.com/elastic/require-in-the-middle/tree/v7.4.0)), distributed under the [MIT License](https://github.com/elastic/require-in-the-middle/blob/v7.4.0/LICENSE):
 
 ```
 The MIT License (MIT)
 
 Copyright (c) 2016-2019, Thomas Watson Steen
-Copyright (c) 2019-2025, Elasticsearch B.V.
-Copyright (c) 2025+, require-in-the-middle contributors
+Copyright (c) 2019-2023, Elasticsearch B.V.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1646,7 +1646,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.1](https://github.com/npm/node-semver/tree/v7.7.1)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.1/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.6.3](https://github.com/npm/node-semver/tree/v7.6.3)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.6.3/LICENSE):
 
 ```
 The ISC License
@@ -1702,7 +1702,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.758.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.758.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.758.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.714.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.714.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.714.0/LICENSE):
 
 ```
                                 Apache License
@@ -1911,7 +1911,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.758.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.758.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.758.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.714.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.714.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.714.0/LICENSE):
 
 ```
                                 Apache License
@@ -3739,7 +3739,7 @@ SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.6.8](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.6.8)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.6.8/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.6.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.6.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.6.1/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -3771,7 +3771,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.22.0](https://github.com/eslint/eslint/tree/v9.22.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.22.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.17.0](https://github.com/eslint/eslint/tree/v9.17.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.17.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -4089,7 +4089,7 @@ THE SOFTWARE.
 
 ### koa
 
-This product includes source derived from [koa](https://github.com/koajs/koa) ([v2.16.0](https://github.com/koajs/koa/tree/v2.16.0)), distributed under the [MIT License](https://github.com/koajs/koa/blob/v2.16.0/LICENSE):
+This product includes source derived from [koa](https://github.com/koajs/koa) ([v2.15.3](https://github.com/koajs/koa/tree/v2.15.3)), distributed under the [MIT License](https://github.com/koajs/koa/blob/v2.15.3/LICENSE):
 
 ```
 (The MIT License)
@@ -4533,6 +4533,35 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+```
+
+### undici
+
+This product includes source derived from [undici](https://github.com/nodejs/undici) ([v6.21.2](https://github.com/nodejs/undici/tree/v6.21.2)), distributed under the [MIT License](https://github.com/nodejs/undici/blob/v6.21.2/LICENSE):
+
+```
+MIT License
+
+Copyright (c) Matteo Collina and Undici contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ```
 

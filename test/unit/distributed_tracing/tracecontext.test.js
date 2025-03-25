@@ -45,36 +45,36 @@ test('TraceContext', async function (t) {
     t.afterEach(afterEach)
 
     await t.test('should accept valid trace context headers', (ctx) => {
-      const { traceContext } = ctx.nr
+      const { traceContext, transaction } = ctx.nr
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
 
       const tracestate = `33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-${Date.now()}`
 
       const tcd = traceContext.acceptTraceContextPayload(traceparent, tracestate)
-      assert.equal(tcd.acceptedTraceparent, true)
-      assert.equal(tcd.acceptedTracestate, true)
-      assert.equal(tcd.traceId, '00015f9f95352ad550284c27c5d3084c')
-      assert.equal(tcd.parentSpanId, '00f067aa0ba902b7')
-      assert.equal(tcd.parentType, 'App')
-      assert.equal(tcd.accountId, '33')
-      assert.equal(tcd.appId, '2827902')
-      assert.equal(tcd.transactionId, 'e8b91a159289ff74')
-      assert.equal(tcd.sampled, true)
-      assert.equal(tcd.priority, 1.23456)
-      assert.ok(tcd.transportDuration < 10)
-      assert.ok(tcd.transportDuration >= 0)
+      assert.equal(Object.prototype.toString.call(tcd.traceparent), '[object Traceparent]')
+      assert.equal(Object.prototype.toString.call(tcd.tracestate), '[object Tracestate]')
+      assert.equal(tcd.traceparent.traceId, '00015f9f95352ad550284c27c5d3084c')
+      assert.equal(tcd.traceparent.parentId, '00f067aa0ba902b7')
+      assert.equal(tcd.tracestate.parentType, 'App')
+      assert.equal(tcd.tracestate.parentAccountId, '33')
+      assert.equal(tcd.tracestate.parentAppId, '2827902')
+      assert.equal(tcd.tracestate.transactionId, 'e8b91a159289ff74')
+      assert.equal(tcd.tracestate.sampled, true)
+      assert.equal(tcd.tracestate.priority, 1.23456)
+      assert.ok(transaction.parentTransportDuration < 10)
+      assert.ok(transaction.parentTransportDuration >= 0)
     })
 
     await t.test('should not accept an empty traceparent header', (ctx) => {
       const { traceContext } = ctx.nr
       const tcd = traceContext.acceptTraceContextPayload(null, '')
-      assert.equal(tcd.acceptedTraceparent, false)
+      assert.equal(tcd.traceparent, undefined)
     })
 
     await t.test('should not accept an invalid traceparent header', (ctx) => {
       const { traceContext } = ctx.nr
       const tcd = traceContext.acceptTraceContextPayload('invalid', '')
-      assert.equal(tcd.acceptedTraceparent, false)
+      assert.equal(tcd.traceparent, undefined)
     })
 
     await t.test('should not accept an invalid tracestate header', (ctx) => {
@@ -86,8 +86,8 @@ test('TraceContext', async function (t) {
       assert.equal(supportabilitySpy.callCount, 2)
       assert.equal(supportabilitySpy.secondCall.args[0], 'TraceContext/TraceState/Parse/Exception')
 
-      assert.equal(tcd.acceptedTraceparent, true)
-      assert.equal(tcd.acceptedTracestate, false)
+      assert.ok(tcd.traceparent)
+      assert.equal(tcd.tracestate, undefined)
     })
 
     await t.test('should accept traceparent when tracestate missing', (ctx, end) => {
