@@ -15,16 +15,16 @@ const {
   MESSAGING_SYSTEM_KIND_VALUES
 } = require('#agentlib/otel/constants.js')
 
-function createTopicProducerSpan({ parentId, tracer, tx, name = 'test-span' }) {
-  const span = createSpan({ name, kind: SpanKind.PRODUCER, parentId, tracer, tx })
+function createTopicProducerSpan({ tracer, name = 'test-span' }) {
+  const span = createSpan({ name, kind: SpanKind.PRODUCER, tracer })
   span.setAttribute(ATTR_MESSAGING_SYSTEM, 'messaging-lib')
   span.setAttribute(ATTR_MESSAGING_DESTINATION_KIND, MESSAGING_SYSTEM_KIND_VALUES.TOPIC)
   span.setAttribute(ATTR_MESSAGING_DESTINATION, 'test-topic')
   return span
 }
 
-function createQueueProducerSpan({ parentId, tracer, tx, name = 'test-span' }) {
-  const span = createSpan({ name, kind: SpanKind.PRODUCER, parentId, tracer, tx })
+function createQueueProducerSpan({ tracer, name = 'test-span' }) {
+  const span = createSpan({ name, kind: SpanKind.PRODUCER, tracer })
   span.setAttribute(ATTR_MESSAGING_SYSTEM, 'messaging-lib')
   span.setAttribute(ATTR_MESSAGING_DESTINATION_KIND, MESSAGING_SYSTEM_KIND_VALUES.QUEUE)
   span.setAttribute(ATTR_MESSAGING_DESTINATION, 'test-queue')

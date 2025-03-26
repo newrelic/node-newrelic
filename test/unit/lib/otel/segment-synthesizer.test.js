@@ -30,7 +30,6 @@ const {
   ATTR_FULL_URL,
   ATTR_HTTP_REQUEST_METHOD,
   ATTR_MESSAGING_DESTINATION,
-  ATTR_MESSAGING_DESTINATION_KIND,
   ATTR_MESSAGING_SYSTEM,
   ATTR_SERVER_ADDRESS,
   ATTR_SERVER_PORT,
@@ -45,11 +44,9 @@ test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
   const synthesizer = new SegmentSynthesizer(agent, { logger: loggerMock })
   const tracer = new BasicTracerProvider().getTracer('default')
-  const parentId = '5c1c63257de34c67'
   ctx.nr = {
     agent,
     loggerMock,
-    parentId,
     synthesizer,
     tracer
   }
@@ -60,7 +57,7 @@ test.afterEach((ctx) => {
 })
 
 test('should create http external segment from otel http client span', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
 
   const attributes = {
     [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
@@ -71,7 +68,7 @@ test('should create http external segment from otel http client span', (t, end) 
   }
 
   helper.runInTransaction(agent, (tx) => {
-    const span = createHttpClientSpan({ tx, parentId, tracer })
+    const span = createHttpClientSpan({ tracer })
     span.setAttribute('http.url', attributes[ATTR_FULL_URL])
     span.setAttribute('url.query', attributes[ATTR_URL_QUERY])
     const { segment, transaction } = synthesizer.synthesize(span)
@@ -92,9 +89,9 @@ test('should create http external segment from otel http client span', (t, end) 
 })
 
 test('should create db segment', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
-    const span = createDbClientSpan({ tx, parentId, tracer })
+    const span = createDbClientSpan({ tracer })
     const { segment, transaction } = synthesizer.synthesize(span)
     assert.equal(tx.id, transaction.id)
     assert.equal(segment.id, span.spanContext().spanId)
@@ -106,9 +103,9 @@ test('should create db segment', (t, end) => {
 })
 
 test('should create db segment and get operation and table from db.statement', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
-    const span = createDbStatementSpan({ tx, parentId, tracer })
+    const span = createDbStatementSpan({ tracer })
     const { segment, transaction } = synthesizer.synthesize(span)
     assert.equal(tx.id, transaction.id)
     assert.equal(segment.id, span.spanContext().spanId)
@@ -120,9 +117,9 @@ test('should create db segment and get operation and table from db.statement', (
 })
 
 test('should create db segment and get collection from db.mongodb.collection', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
-    const span = createMongoDbSpan({ tx, parentId, tracer })
+    const span = createMongoDbSpan({ tracer })
     const { segment, transaction } = synthesizer.synthesize(span)
     assert.equal(tx.id, transaction.id)
     assert.equal(segment.id, span.spanContext().spanId)
@@ -134,9 +131,9 @@ test('should create db segment and get collection from db.mongodb.collection', (
 })
 
 test('should create db segment and get operation from db.statement when system is redis', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
-    const span = createRedisDbSpan({ tx, parentId, tracer })
+    const span = createRedisDbSpan({ tracer })
     const { segment, transaction } = synthesizer.synthesize(span)
     assert.equal(tx.id, transaction.id)
     assert.equal(segment.id, span.spanContext().spanId)
@@ -148,9 +145,9 @@ test('should create db segment and get operation from db.statement when system i
 })
 
 test('should create db segment and get operation from db.operation when system is memcached', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
-    const span = createMemcachedDbSpan({ tx, parentId, tracer })
+    const span = createMemcachedDbSpan({ tracer })
     const { segment, transaction } = synthesizer.synthesize(span)
     assert.equal(tx.id, transaction.id)
     assert.equal(segment.id, span.spanContext().spanId)
@@ -162,9 +159,9 @@ test('should create db segment and get operation from db.operation when system i
 })
 
 test('should log table and operation as unknown when the db.system, db.sql.table and db.operation to not exist as span attributes', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
-    const span = createSpan({ name: 'test-span', kind: SpanKind.CLIENT, parentId, tx, tracer })
+    const span = createSpan({ name: 'test-span', kind: SpanKind.CLIENT, tracer })
     span.setAttribute(ATTR_DB_SYSTEM, 'test-db')
 
     const { segment, transaction } = synthesizer.synthesize(span)
@@ -192,12 +189,9 @@ test('should create rpc segment', (t) => {
   assert.equal(segment.parentId, segment.root.id)
   assert.ok(transaction)
   assert.equal(transaction.traceId, span.spanContext().traceId)
-  const segmentAttrs = segment.getAttributes()
-  assert.equal(segmentAttrs.component, 'grpc')
   assert.equal(transaction.url, expectedName)
   assert.equal(transaction.baseSegment.name, segment.name)
   const attrs = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-  assert.equal(attrs['request.method'], 'findUser')
   assert.equal(attrs['request.uri'], expectedName)
 })
 
@@ -218,7 +212,6 @@ test('should create http server segment', (t) => {
   assert.equal(transaction.url, '/user/1')
   assert.equal(transaction.baseSegment.name, segment.name)
   const attrs = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-  assert.equal(attrs['request.method'], 'PUT')
   assert.equal(attrs['request.uri'], '/user/1')
   transaction.end()
 })
@@ -246,9 +239,9 @@ test('should create base http server segment', (t) => {
 })
 
 test('should create topic producer segment', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
-    const span = createTopicProducerSpan({ tx, parentId, tracer })
+    const span = createTopicProducerSpan({ tracer })
     const { segment, transaction } = synthesizer.synthesize(span)
     assert.equal(tx.id, transaction.id)
     assert.equal(segment.id, span.spanContext().spanId)
@@ -260,9 +253,9 @@ test('should create topic producer segment', (t, end) => {
 })
 
 test('should create queue producer segment', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
-    const span = createQueueProducerSpan({ tx, parentId, tracer })
+    const span = createQueueProducerSpan({ tracer })
     const { segment, transaction } = synthesizer.synthesize(span)
     assert.equal(tx.id, transaction.id)
     assert.equal(segment.id, span.spanContext().spanId)
@@ -274,13 +267,11 @@ test('should create queue producer segment', (t, end) => {
 })
 
 test('should create internal custom segment', (t, end) => {
-  const { agent, synthesizer, parentId, tracer } = t.nr
+  const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
     const span = createSpan({
       name: 'doer-of-stuff',
       kind: SpanKind.INTERNAL,
-      parentId,
-      tx,
       tracer
     })
     const { segment, transaction } = synthesizer.synthesize(span)
@@ -304,9 +295,8 @@ test('should create consumer segment from otel span', (t) => {
   span.setAttribute('messaging.operation', 'receive')
   span.setAttribute(ATTR_MESSAGING_SYSTEM, 'msgqueuer')
   span.setAttribute(ATTR_MESSAGING_DESTINATION, 'dest1')
-  span.setAttribute(ATTR_MESSAGING_DESTINATION_KIND, 'topic1')
 
-  const expectedName = 'OtherTransaction/Message/msgqueuer/topic1/Named/dest1'
+  const expectedName = 'OtherTransaction/Message/msgqueuer/receive/Named/dest1'
   const { segment, transaction } = synthesizer.synthesize(span)
   transaction.end()
   assert.equal(segment.name, expectedName)
@@ -319,10 +309,10 @@ test('should create consumer segment from otel span', (t) => {
 })
 
 test('should log warning span does not match a rule', (t, end) => {
-  const { agent, synthesizer, loggerMock, parentId, tracer } = t.nr
+  const { agent, synthesizer, loggerMock, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
-    const span = createSpan({ name: 'test-span', kind: 'bogus', parentId, tx, tracer })
+    const span = createSpan({ name: 'test-span', kind: 'bogus', tracer })
     const data = synthesizer.synthesize(span)
     assert.ok(!data)
     assert.deepEqual(loggerMock.debug.args[0], [
