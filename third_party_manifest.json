@@ -1,7 +1,7 @@
 {
   "lastUpdated": "Wed Mar 26 2025 09:02:10 GMT-0400 (Eastern Daylight Time)",
-  "projectName": "newrelic",
-  "projectUrl": "github",
+  "projectName": "New Relic Node Agent",
+  "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "includeDev": true,
   "dependencies": {
