@@ -31,7 +31,7 @@ To use New Relic's Node.js agent entails these three steps, which are described 
 
 3. Now, add your New Relic license key and application/service name to that file:
 
-```js
+    ```js
     /* File: newrelic.js */
     'use strict'
     /**
@@ -45,29 +45,28 @@ To use New Relic's Node.js agent entails these three steps, which are described 
       license_key: 'your new relic license key',
       /* ... rest of configuration .. */
     }
-```
+    ```
 
 4. Finally, run your program with the `newrelic` module loaded first by using node's `-r/--require` flag.
 
-```
- $ node -r newrelic your-program.js
-```
+    ```sh
+    $ node -r newrelic your-program.js
+    ```
 
-If you cannot control how your program is run, you can load the `newrelic` module _before any other module_ in your program.
+    If you cannot control how your program is run, you can load the `newrelic` module _before any other module_ in your program.
 
-```js
+    ```js
     const newrelic = require('newrelic')
 
     /* ... the rest of your program ... */
-```
+    ```
 
 ## Next.js instrumentation
 **Note**: The minimum supported Next.js version is [12.0.9](https://github.com/vercel/next.js/releases/tag/v12.0.9).  If you are using Next.js middleware the minimum supported version is [12.2.0](https://github.com/vercel/next.js/releases/tag/v12.2.0).
 
-The New Relic Node.js agent provides instrumentation for Next.js  The instrumentation provides telemetry for server-side rendering via [getServerSideProps](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props), [middleware](https://nextjs.org/docs/middleware), and New Relic transaction naming for both page and server requests. It does not provide any instrumentation for actions occurring during build or in client-side code.  If you want telemetry data on actions occurring on the client (browser), you can [inject the browser agent](./documentation/nextjs/faqs/browser-agent.md).
+The New Relic Node.js agent provides instrumentation for Next.js  The instrumentation provides telemetry for server-side rendering via [`getServerSideProps`](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props), [middleware](https://nextjs.org/docs/middleware) (limited to Next.js versions [12.2.0](https://github.com/vercel/next.js/releases/tag/v12.2.0) - [13.4.12](https://github.com/vercel/next.js/releases/tag/v13.4.12)), and New Relic transaction naming for both page and server requests. It does not provide any instrumentation for actions occurring during build or in client-side code.  If you want telemetry data on actions occurring on the client (browser), you can [inject the browser agent](./documentation/nextjs/faqs/browser-agent.md).
 
 Here are documents for more in-depth explanations about [transaction naming](./documentation/nextjs/transactions.md), and [segments/spans](./documentation/nextjs/segments-and-spans.md).
-
 
 ### Setup
 Typically you are running a Next.js app with the `next` cli and you must load the agent via `NODE_OPTIONS`:
@@ -102,15 +101,15 @@ The New Relic Node.js agent includes ***_experimental_*** support for ES Modules
 
  1. If you rely on a configuration file to run the agent, you must rename the file from `newrelic.js` to `newrelic.cjs` so it can be properly loaded.  All the contents of the configuration file will behave the same once you rename. See [CommonJS modules in ESM](https://nodejs.org/api/modules.html#enabling) for more details.
 
-```sh
-$ mv newrelic.js newrelic.cjs
-```
+    ```sh
+    $ mv newrelic.js newrelic.cjs
+    ```
 
  2. To use the newrelic ESM loader, start your program with node and use the `--experimental-loader` flag and a path to the loader file, like this:
 
-```sh
-$ node --experimental-loader newrelic/esm-loader.mjs -r newrelic your-program.js
-```
+    ```sh
+    $ node --experimental-loader newrelic/esm-loader.mjs -r newrelic your-program.js
+    ```
 
 **Note**: Unlike the CommonJS methods listed above, there are no alternatives to running the agent without the `--experimental-loader` flag.
 
@@ -122,11 +121,11 @@ The agent supports adding your own custom instrumentation to ES module applicati
 import newrelic from 'newrelic'
 newrelic.instrument({ moduleName: 'parse-json', isEsm: true }, function wrap(shim, parseJson, moduleName) {
   shim.wrap(parseJson.default, function wrapParseJson(shim, orig) {
-      return function wrappedParseJson() {
-          const result = orig.apply(this, arguments)
-          result.instrumented = true
-          return true
-      }
+    return function wrappedParseJson() {
+      const result = orig.apply(this, arguments)
+      result.instrumented = true
+      return true
+    }
   })
 })
 ```
@@ -151,11 +150,11 @@ For more information on getting started, [check the Node.js docs](https://docs.n
 
 There are modules that can be installed and configured to accompany the Node.js agent:
 
- * [@newrelic/apollo-server-plugin](https://github.com/newrelic/newrelic-node-apollo-server-plugin): New Relic's official Apollo Server plugin for use with the Node.js agent.
+ * [`@newrelic/apollo-server-plugin`](https://github.com/newrelic/newrelic-node-apollo-server-plugin): New Relic's official Apollo Server plugin for use with the Node.js agent.
 
 There are modules included within the Node.js agent to add more instrumentation for 3rd party modules:
 
- * [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics): Provides hooks into the native v8 layer of Node.js to provide metrics to the Node.js agent.
+ * [`@newrelic/native-metrics`](https://github.com/newrelic/node-native-metrics): Provides hooks into the native v8 layer of Node.js to provide metrics to the Node.js agent.
 
 ## Usage
 
@@ -164,10 +163,10 @@ There are modules included within the Node.js agent to add more instrumentation 
 The `newrelic` module returns an object with the Node.js agent's API methods attached.
 
 ```js
-    const newrelic = require('newrelic')
+const newrelic = require('newrelic')
 
-    /* ... */
-    newrelic.addCustomAttribute('some-attribute', 'some-value')
+/* ... */
+newrelic.addCustomAttribute('some-attribute', 'some-value')
 ```
 
 You can read more about using the API over on the [New Relic documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/guide-using-nodejs-agent-api) site.
@@ -182,12 +181,16 @@ These are the steps to work on core agent features, with more detail below:
 
 1. [Fork](https://github.com/newrelic/node-newrelic/fork) and clone this GitHub repository:
 
+    ```sh
     $ git clone git@github.com:your-user-name/node-newrelic.git
     $ cd node-newrelic
+    ```
 
 2. Install the project's dependencies:
 
+    ```sh
     $ npm install
+    ```
 
 Then you're all set to start programming.
 
@@ -199,11 +202,13 @@ Then you're all set to start programming.
 
 Available test suites include:
 
-    $ npm run unit
-    $ npm run integration
-    $ npm run versioned
-    $ npm run lint
-    $ npm run smoke
+  ```sh
+  $ npm run unit
+  $ npm run integration
+  $ npm run versioned
+  $ npm run lint
+  $ npm run smoke
+  ```
 
 ## Further Reading
 

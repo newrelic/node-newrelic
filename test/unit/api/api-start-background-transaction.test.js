@@ -270,4 +270,28 @@ test('Agent API - startBackgroundTransaction', async (t) => {
       )
     })
   )
+
+  await t.test('should allow nesting startBackgroundTransaction', function(t, end) {
+    const { api, tracer } = t.nr
+    let called = false
+    function bg() {
+      if (!called) {
+        called = true
+        setTimeout(() => {
+          wrap('second')
+        }, 10)
+      } else {
+        end()
+      }
+    }
+
+    function wrap(name) {
+      api.startBackgroundTransaction(name, () => {
+        const tx = tracer.getTransaction()
+        assert.ok(tx._partialName, `Nodejs/${name}`)
+        bg()
+      })
+    }
+    wrap('first')
+  })
 })

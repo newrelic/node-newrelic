@@ -1,3 +1,49 @@
+### v12.16.1 (2025-03-24)
+
+#### Features
+
+* Assign all attributes on internal spans to segment ([#3000](https://github.com/newrelic/node-newrelic/pull/3000)) ([5403018](https://github.com/newrelic/node-newrelic/commit/54030185ba5630099b76182a52c629276af4d93e))
+
+#### Bug fixes
+
+* Fixed `tracer.transactionNestProxy` to create a new transaction if there is no transaction or transaction is not active ([#3007](https://github.com/newrelic/node-newrelic/pull/3007)) ([ced9e22](https://github.com/newrelic/node-newrelic/commit/ced9e22a23ddeed860c1fd88f0afb10bb94343cb))
+
+#### Documentation
+
+* Updated compatibility report ([#2993](https://github.com/newrelic/node-newrelic/pull/2993)) ([cdfa042](https://github.com/newrelic/node-newrelic/commit/cdfa042325a7636e84a7b19a34874b20915dac63))
+
+#### Tests
+
+* Fixed handling require esm for >20.19.0+ ([#3002](https://github.com/newrelic/node-newrelic/pull/3002)) ([b808e00](https://github.com/newrelic/node-newrelic/commit/b808e00c399d3c924eeeb19f9c6b9fba4695a720))
+
+### v12.16.0 (2025-03-17)
+
+#### Features
+
+* Added support for response streaming Lambda functions ([#2981](https://github.com/newrelic/node-newrelic/pull/2981)) ([61dbbf9](https://github.com/newrelic/node-newrelic/commit/61dbbf9b4a6cf69f5378387fc9c17c31671e9da4))
+* Added AWS entity linking segment attributes for otel bridge ([#2978](https://github.com/newrelic/node-newrelic/pull/2978)) ([6bf1ccc](https://github.com/newrelic/node-newrelic/commit/6bf1ccc657a955b4064a7a3a473bf24948d4ff56))
+* Added error handling on transactions for otel spans ([#2985](https://github.com/newrelic/node-newrelic/pull/2985)) ([4e61e09](https://github.com/newrelic/node-newrelic/commit/4e61e0935394744345c39f6b581ee86e66d0f82c))
+
+#### Code refactoring
+
+* Updated span event generation to assign the appropriate `span.kind` based on the segment name ([#2976](https://github.com/newrelic/node-newrelic/pull/2976)) ([697b17e](https://github.com/newrelic/node-newrelic/commit/697b17e0553111aa494d08bc33eb7043cdfa8ca6))
+
+#### Documentation
+
+* Updated compatibility report ([#2988](https://github.com/newrelic/node-newrelic/pull/2988)) ([ed17a6d](https://github.com/newrelic/node-newrelic/commit/ed17a6df1152a8e54cb8c8570fec0015990a4247)
+
+#### Miscellaneous chores
+
+* Clarified supported next.js middleware versions in docs ([#2984](https://github.com/newrelic/node-newrelic/pull/2984)) ([15cb454](https://github.com/newrelic/node-newrelic/commit/15cb454f9cc38ccc22089d62aaeea54713159aa7))
+* Clarified system metrics sampler naming ([#2987](https://github.com/newrelic/node-newrelic/pull/2987)) ([8647d43](https://github.com/newrelic/node-newrelic/commit/8647d43f097d6d3d68a372824d9feb325604be96))
+* Refactored loops to be simpler ([#2990](https://github.com/newrelic/node-newrelic/pull/2990)) ([79fb8e9](https://github.com/newrelic/node-newrelic/commit/79fb8e90802954b617c1c00aecc866aa065aee12))
+* Removed unused transaction method ([#2986](https://github.com/newrelic/node-newrelic/pull/2986)) ([cb4e2f7](https://github.com/newrelic/node-newrelic/commit/cb4e2f7a8b84adb6d744a2083b083c92e306fbd5))
+* Reverted restriction in NestJS versioned tests ([#2979](https://github.com/newrelic/node-newrelic/pull/2979)) ([ffddcab](https://github.com/newrelic/node-newrelic/commit/ffddcab6d77bfc10c0df9cbfa724bc1c8f5fb251))
+
+#### Tests
+
+* Fixed fastify assertions around span kind while running security agent ([#2983](https://github.com/newrelic/node-newrelic/pull/2983)) ([c641645](https://github.com/newrelic/node-newrelic/commit/c6416451f1fa6126b7dfd59f6b9267f9d2188ad0))
+
 ### v12.15.0 (2025-03-03)
 
 #### Features
