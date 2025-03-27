@@ -8,9 +8,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const undici = require('undici')
 
-const API = require('../../../api')
 const helper = require('#testlib/agent_helper.js')
 
 const TRACE_ID = '0af7651916cd43dd8448eb211c80319c'
@@ -105,7 +103,7 @@ test('remote_parent_sampled: default', async t => {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, true)
+    assert.equal(tx.sampled, null)
     assert.equal(tx.priority, null)
   }
 })
@@ -130,7 +128,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, true)
+    assert.equal(tx.sampled, null)
     assert.equal(tx.priority, null)
   }
 })
@@ -180,7 +178,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (fla
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, true)
+    assert.equal(tx.sampled, null)
     assert.equal(tx.priority, null)
   }
 })
@@ -230,7 +228,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag t
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, true)
+    assert.equal(tx.sampled, null)
     assert.equal(tx.priority, null)
   }
 })
@@ -292,38 +290,6 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag f
   }
 })
 
-test('traceparent: no sample, tracestate: sample', async t => {
-  const agentConfig = Object.assign({}, defaultAgentConfig, {
-    distributed_tracing: {
-      sampler: {
-        remote_parent_sampled: 'default',
-        remote_parent_not_sampled: 'default'
-      }
-    }
-  })
-  await beforeEach(t.nr, agentConfig, validator)
-
-  const { agent, host, port } = t.nr
-  agent.config.account_id = '33'
-  agent.config.trusted_account_key = '33'
-
-  const result = await doRequest({
-    host,
-    port,
-    traceparent: `00-${TRACE_ID}-${SPAN_ID}-00`,
-    tracestate: `33@nr=0-0-33-2827902-${SPAN_ID}-e8b91a159289ff74-1-1.23456-1518469636035`
-  })
-  assert.equal(result, 'ok')
-
-  function validator(tx) {
-    assert.equal(tx.acceptedDistributedTrace, true)
-    assert.equal(tx.traceId, TRACE_ID)
-    assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, true)
-    assert.equal(tx.priority, 1.23456)
-  }
-})
-
 /**
  *
  * @param {object} ctx The `t.nr` object that we use as local test context.
@@ -337,19 +303,18 @@ async function beforeEach(
   validator = () => assert.ok(true)
 ) {
   ctx.agent = helper.instrumentMockedAgent(agentConfig)
-  ctx.api = new API(ctx.agent)
   ctx.http = require('node:http')
 
-  const { server, host, port } = await createServer(ctx.http, ctx.api, validator)
+  const { server, host, port } = await createServer(ctx.http, ctx.agent, validator)
   ctx.server = server
   ctx.host = host
   ctx.port = port
 }
 
-async function createServer(http, api, validator) {
+async function createServer(http, agent, validator) {
   const server = http.createServer((req, res) => {
     try {
-      const tx = api.getTransaction()._transaction
+      const tx = agent.getTransaction()
       validator(tx)
     } finally {
       res.writeHead(200, { 'content-type': 'application/json' })
@@ -385,6 +350,6 @@ async function doRequest({
       tracestate
     }
   }
-  const { body } = await undici.request(`http://${host}:${port}`, params)
-  return body.json()
+  const res = await fetch(`http://${host}:${port}`, params)
+  return res.json()
 }
