@@ -16,6 +16,7 @@ test('getVendors', async function (t) {
     ctx.nr.agent.config.utilization = {
       detect_aws: true,
       detect_azure: true,
+      detect_azurefunction: true,
       detect_gcp: true,
       detect_docker: true,
       detect_kubernetes: true,
@@ -31,6 +32,7 @@ test('getVendors', async function (t) {
     const { agent } = ctx.nr
     let awsCalled = false
     let azureCalled = false
+    let azureFunctionCalled = false
     let gcpCalled = false
     let dockerCalled = false
     let ecsCalled = false
@@ -44,6 +46,10 @@ test('getVendors', async function (t) {
       },
       './azure-info': function (agentArg, cb) {
         azureCalled = true
+        cb()
+      },
+      './azurefunction-info': function (agentArg, cb) {
+        azureFunctionCalled = true
         cb()
       },
       './gcp-info': function (agentArg, cb) {
@@ -74,6 +80,7 @@ test('getVendors', async function (t) {
       assert.ifError(err)
       assert.ok(awsCalled)
       assert.ok(azureCalled)
+      assert.ok(azureFunctionCalled)
       assert.ok(gcpCalled)
       assert.ok(dockerCalled)
       assert.ok(ecsCalled)
