@@ -478,14 +478,6 @@ test('utilization facts', async (t) => {
               break
             }
 
-            case 'azurefunction': {
-              payload = {
-                faasAppName: undefined,
-                cloudRegion: undefined
-              }
-              break
-            }
-
             case 'gcp': {
               payload = {
                 id: tCase.input_gcp_id,
