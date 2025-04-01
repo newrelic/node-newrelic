@@ -4,22 +4,26 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
-const http = require('http')
-const url = require('url')
-const events = require('events')
+const http = require('node:http')
+const url = require('node:url')
+const events = require('node:events')
+const nock = require('nock')
+
+const Tracestate = require('#agentlib/w3c/tracestate.js')
 const helper = require('../../../lib/agent_helper')
-const NAMES = require('../../../../lib/metrics/names')
 const instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
 const hashes = require('../../../../lib/util/hashes')
-const nock = require('nock')
 const Segment = require('../../../../lib/transaction/trace/segment')
-const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 const symbols = require('../../../../lib/symbols')
+const testSignatures = require('./outbound-utils')
+
+const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
+const NAMES = require('../../../../lib/metrics/names')
 const HOSTNAME = 'localhost'
 const PORT = 8890
-const testSignatures = require('./outbound-utils')
 
 function addSegment({ agent }) {
   const transaction = agent.getTransaction()
@@ -585,9 +589,8 @@ test('when working with http.request', async (t) => {
       http.get(`${host}${path}`, (res) => {
         res.resume()
         transaction.end()
-        const tc = transaction.traceContext
-        const valid = tc._validateAndParseTraceStateHeader(headers.tracestate)
-        assert.ok(valid.entryValid)
+        const valid = Tracestate.fromHeader({ header: headers.tracestate, agent })
+        assert.ok(valid.intrinsics)
         end()
       })
     })
@@ -620,9 +623,8 @@ test('when working with http.request', async (t) => {
       http.get(`${host}${path}`, (res) => {
         res.resume()
         transaction.end()
-        const tc = transaction.traceContext
-        const valid = tc._validateAndParseTraceStateHeader(headers.tracestate)
-        assert.equal(valid.entryValid, true)
+        const valid = Tracestate.fromHeader({ header: headers.tracestate, agent })
+        assert.ok(valid.intrinsics)
         end()
       })
     })

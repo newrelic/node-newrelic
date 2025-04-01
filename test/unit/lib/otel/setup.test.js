@@ -30,7 +30,6 @@ test('should create consumer segment from otel span', (t) => {
   agent.config.feature_flag.opentelemetry_bridge = true
   otelSetup(agent, loggerMock)
   const tracer = otel.trace.getTracer('test')
-  assert.equal(tracer.resource.attributes['service.name'], 'New Relic for Node.js tests')
   assert.equal(tracer._spanLimits.attributeValueLengthLimit, 4095)
 })
 

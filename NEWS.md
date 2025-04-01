@@ -1,3 +1,21 @@
+### v12.16.1 (2025-03-24)
+
+#### Features
+
+* Assign all attributes on internal spans to segment ([#3000](https://github.com/newrelic/node-newrelic/pull/3000)) ([5403018](https://github.com/newrelic/node-newrelic/commit/54030185ba5630099b76182a52c629276af4d93e))
+
+#### Bug fixes
+
+* Fixed `tracer.transactionNestProxy` to create a new transaction if there is no transaction or transaction is not active ([#3007](https://github.com/newrelic/node-newrelic/pull/3007)) ([ced9e22](https://github.com/newrelic/node-newrelic/commit/ced9e22a23ddeed860c1fd88f0afb10bb94343cb))
+
+#### Documentation
+
+* Updated compatibility report ([#2993](https://github.com/newrelic/node-newrelic/pull/2993)) ([cdfa042](https://github.com/newrelic/node-newrelic/commit/cdfa042325a7636e84a7b19a34874b20915dac63))
+
+#### Tests
+
+* Fixed handling require esm for >20.19.0+ ([#3002](https://github.com/newrelic/node-newrelic/pull/3002)) ([b808e00](https://github.com/newrelic/node-newrelic/commit/b808e00c399d3c924eeeb19f9c6b9fba4695a720))
+
 ### v12.16.0 (2025-03-17)
 
 #### Features

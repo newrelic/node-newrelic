@@ -1564,7 +1564,7 @@ test('insertDistributedTraceHeaders', async (t) => {
     agent.config.trusted_account_key = trustedAccountKey
     agent.config.span_events.enabled = true
     const txn = new Transaction(agent)
-    const traceId = hashes.makeId()
+    const traceId = hashes.makeId(32)
     const spanId = hashes.makeId()
     const spanContext = {
       traceId,

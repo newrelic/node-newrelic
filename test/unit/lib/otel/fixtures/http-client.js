@@ -13,8 +13,8 @@ const {
   ATTR_HTTP_METHOD
 } = require('#agentlib/otel/constants.js')
 
-module.exports = function createHttpClientSpan({ parentId, tracer, tx }) {
-  const span = createSpan({ name: 'test-span', kind: SpanKind.CLIENT, parentId, tracer, tx })
+module.exports = function createHttpClientSpan({ tracer }) {
+  const span = createSpan({ name: 'test-span', kind: SpanKind.CLIENT, tracer })
   span.setAttribute(ATTR_HTTP_METHOD, 'GET')
   span.setAttribute(ATTR_SERVER_ADDRESS, 'newrelic.com')
   return span
