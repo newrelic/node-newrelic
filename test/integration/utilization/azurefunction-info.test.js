@@ -6,9 +6,9 @@
 'use strict'
 
 const test = require('node:test')
-const assert = require('assert')
-const helper = require('../../lib/agent_helper')
-const fetchAzureFunctionInfo = require('../../../lib/utilization/azurefunction-info')
+const assert = require('node:assert')
+const helper = require('#testlib/agent_helper.js')
+const fetchAzureFunctionInfo = require('#agentlib/utilization/azurefunction-info.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent({
@@ -38,12 +38,16 @@ test('should return null if detect_azurefunction is disabled', (ctx, end) => {
   })
 })
 
-test('should return null if required environment variables are missing', (ctx, end) => {
+test('should increment error metric if required environment variables are missing', (ctx, end) => {
   const agent = ctx.nr.agent
+  const azureErrorMetric = agent.metrics.getOrCreateMetric('Supportability/utilization/azure/error')
+
+  const initialCallCount = azureErrorMetric.callCount
 
   fetchAzureFunctionInfo(agent, (err, result) => {
     assert.strictEqual(err, null)
     assert.strictEqual(result, null)
+    assert.strictEqual(azureErrorMetric.callCount, initialCallCount + 1)
     end()
   })
 })
