@@ -14,6 +14,7 @@ const { EventEmitter } = require('events')
 const Transaction = require('../../lib/transaction')
 const symbols = require('../../lib/symbols')
 const InstrumentationTracker = require('../../lib/instrumentation-tracker')
+const Stack = require('./stack')
 const { removeModules } = require('./cache-buster')
 const http = require('http')
 const https = require('https')
@@ -89,8 +90,9 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
 
   _agent = new Agent(config)
   _agent.__created = new Error('Only one agent at a time! This one was created at:')
-  _agent.__mocks = {
-    supportability: new Map()
+  _agent.__testData = {
+    supportability: new Map(),
+    transactions: new Stack()
   }
   _agent.recordSupportability = (key) => { // Stub supportabilities.
     if (!_agent) {
@@ -100,13 +102,23 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
       // bail out.
       return
     }
-    const val = _agent.__mocks.supportability.get(key)
+    const val = _agent.__testData.supportability.get(key)
     if (val) {
-      _agent.__mocks.supportability.set(key, val + 1)
+      _agent.__testData.supportability.set(key, val + 1)
     } else {
-      _agent.__mocks.supportability.set(key, 1)
+      _agent.__testData.supportability.set(key, 1)
     }
   }
+
+  const txFinished = Agent.prototype._transactionFinished
+  Agent.prototype._transactionFinished = (tx) => {
+    _agent.__testData.transactions.add(tx)
+    txFinished.call(_agent, tx)
+  }
+  // In order for our replacement to actually work, we need to re-register the
+  // internal listener for the transaction finished event.
+  _agent.removeAllListeners('transactionFinished')
+  _agent.on('transactionFinished', Agent.prototype._transactionFinished.bind(_agent))
 
   if (setState) {
     _agent.setState('started')
