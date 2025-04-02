@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.17.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Azure Function utilization",
+          "Support honoring W3C `traceparent` sampled flag"
+        ]
+      }
+    },
+    {
       "version": "12.16.1",
       "changes": {
         "security": [],
