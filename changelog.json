@@ -8,7 +8,7 @@
         "bugfixes": [],
         "features": [
           "Azure Function utilization",
-          "Support honoring W3C traceparent sampled flag"
+          "Support honoring W3C `traceparent` sampled flag"
         ]
       }
     },

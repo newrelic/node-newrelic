@@ -3,7 +3,17 @@
 #### Features
 
 * Azure Function utilization ([#3017](https://github.com/newrelic/node-newrelic/pull/3017)) ([80ab93e](https://github.com/newrelic/node-newrelic/commit/80ab93ee5599800a823e3828f9730d5421b460c2))
-* Support honoring W3C traceparent sampled flag ([#3009](https://github.com/newrelic/node-newrelic/pull/3009)) ([d903413](https://github.com/newrelic/node-newrelic/commit/d903413a6216dae2cde3e6b6366c3a390d4ed4cd))
+* Support honoring W3C `traceparent` sampled flag ([#3009](https://github.com/newrelic/node-newrelic/pull/3009)) ([d903413](https://github.com/newrelic/node-newrelic/commit/d903413a6216dae2cde3e6b6366c3a390d4ed4cd))
+  * By default the agent will not honor the `traceparent` sampled flag.
+  * To control how sampling works with `traceparent` set the following in config: 
+    * `distributed_tracing.sampler.remote_parent_sampled`(when the traceparent sampled flag is `01`) 
+        * `always_on`: the agent will sample spans
+        * `always_off`: the agent will not sample spans
+        * `default`: the agent will rely on existing priority sampling to make its decisions
+    * `distributed_tracing.sampler.remote_parent_not_sampled`(when the traceparent sampled flag is `00`)
+        * `always_on`: the agent will sample spans
+        * `always_off`: the agent will not sample spans
+        * `default`: the agent will rely on existing priority sampling to make its decisions
 
 #### Code refactoring
 
@@ -15,7 +25,7 @@
 
 #### Tests
 
-* pin openai to 4.90.0 to work with @langchain/openai ([#3019](https://github.com/newrelic/node-newrelic/pull/3019)) ([eaa3db0](https://github.com/newrelic/node-newrelic/commit/eaa3db0a556a19c44a05926dc339ea7bcbc9cebd))
+* Pinned `openai@4.90.0` to work with `@langchain/openai` ([#3019](https://github.com/newrelic/node-newrelic/pull/3019)) ([eaa3db0](https://github.com/newrelic/node-newrelic/commit/eaa3db0a556a19c44a05926dc339ea7bcbc9cebd))
 
 ### v12.16.1 (2025-03-24)
 
