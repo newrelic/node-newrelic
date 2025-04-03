@@ -266,7 +266,9 @@ helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
   agent.harvester.stop()
 
   // Restore intercepted methods.
-  Agent.prototype._transactionFinished = _agent[Symbol.for('origTxFinished')]
+  if (_agent) {
+    Agent.prototype._transactionFinished = _agent[Symbol.for('origTxFinished')]
+  }
 
   if (agent === _agent) {
     _agent = null
