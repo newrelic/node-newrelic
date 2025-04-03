@@ -351,3 +351,34 @@ test('handles queue time headers', async (t) => {
   const transTime = tx.queueTime
   assert.equal(transTime > 0, true)
 })
+
+test('set cold start attribute correctly', async (t) => {
+  bootstrapModule({ t })
+  const { agent, initialize, mockApi, shim } = t.nr
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  const handler = async function () {
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+  const options = { handler }
+
+  // First request should have faas.coldStart set.
+  mockApi.app.get('a-test', options)
+  let response = await mockApi.httpRequest('get')
+  assert.equal(response.body, 'ok')
+  let tx = agent.__testData.transactions.elements.shift()
+  assert.ok(tx)
+  let attributes = tx.baseSegment.attributes.get(DESTS.SPAN_EVENT)
+  assert.equal(attributes['faas.coldStart'], true)
+
+  // Second request should not have faas.coldStart set.
+  response = await mockApi.httpRequest('get')
+  assert.equal(response.body, 'ok')
+  tx = agent.__testData.transactions.elements.shift()
+  assert.ok(tx)
+  attributes = tx.baseSegment.attributes.get(DESTS.SPAN_EVENT)
+  assert.equal(attributes['faas.coldStart'], undefined)
+})
