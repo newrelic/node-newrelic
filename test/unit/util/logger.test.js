@@ -78,6 +78,17 @@ test('logger', async function (t) {
     })
   })
 
+  await t.test('should embed data under a key', function (t, end) {
+    const { logger } = t.nr
+    logger.info({ data: { foo: 'bar' } }, 'hello world')
+    process.nextTick(() => {
+      const { results } = t.nr
+      assert.equal(results.length, 1)
+      expectEntry(results[0], 'hello world', 30, ['data', ...DEFAULT_KEYS])
+      end()
+    })
+  })
+
   await t.test('should support prepended extras from Error objects', function (t, end) {
     const { logger } = t.nr
     const error = new Error('error1')
