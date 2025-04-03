@@ -9,6 +9,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const { once } = require('node:events')
 
 const helper = require('#testlib/agent_helper.js')
 const { removeMatchedModules } = require('#testlib/cache-buster.js')
@@ -242,11 +243,13 @@ test('instruments all HTTP methods', async (t) => {
   const methods = ['http', 'get', 'put', 'post', 'patch', 'deleteRequest']
 
   for (const method of methods) {
+    const txFinished = once(agent, 'transactionFinished')
+
     mockApi.app[method]('a-test', options)
     const response = await mockApi.httpRequest(method)
     assert.equal(response.body, 'ok')
 
-    const tx = agent.__testData.transactions.elements.shift()
+    const [tx] = await txFinished
     assert.ok(tx)
 
     const attributes = tx.baseSegment.attributes.get(DESTS.SPAN_EVENT)
@@ -303,11 +306,12 @@ test('handles distributed tracing information', async (t) => {
   }
   const options = { handler }
 
+  const txFinished = once(agent, 'transactionFinished')
   mockApi.app.get('a-test', options)
   const response = await mockApi.httpRequest('get')
   assert.equal(response.body, 'ok')
 
-  const tx = agent.__testData.transactions.elements.shift()
+  const [tx] = await txFinished
   assert.ok(tx)
 
   const metrics = tx.metrics.unscoped
@@ -341,11 +345,12 @@ test('handles queue time headers', async (t) => {
   }
   const options = { handler }
 
+  const txFinished = once(agent, 'transactionFinished')
   mockApi.app.get('a-test', options)
   const response = await mockApi.httpRequest('get')
   assert.equal(response.body, 'ok')
 
-  const tx = agent.__testData.transactions.elements.shift()
+  const [tx] = await txFinished
   assert.ok(tx)
 
   const transTime = tx.queueTime
@@ -366,20 +371,22 @@ test('set cold start attribute correctly', async (t) => {
   const options = { handler }
 
   // First request should have faas.coldStart set.
+  let txFinished = once(agent, 'transactionFinished')
   mockApi.app.get('a-test', options)
   let response = await mockApi.httpRequest('get')
   assert.equal(response.body, 'ok')
-  let tx = agent.__testData.transactions.elements.shift()
+  const [tx] = await txFinished
   assert.ok(tx)
   let attributes = tx.baseSegment.attributes.get(DESTS.SPAN_EVENT)
   assert.equal(attributes['faas.coldStart'], true)
 
   // Second request should not have faas.coldStart set.
+  txFinished = once(agent, 'transactionFinished')
   response = await mockApi.httpRequest('get')
   assert.equal(response.body, 'ok')
-  tx = agent.__testData.transactions.elements.shift()
-  assert.ok(tx)
-  attributes = tx.baseSegment.attributes.get(DESTS.SPAN_EVENT)
+  const [tx2] = await txFinished
+  assert.ok(tx2)
+  attributes = tx2.baseSegment.attributes.get(DESTS.SPAN_EVENT)
   assert.equal(attributes['faas.coldStart'], undefined)
 })
 
@@ -395,9 +402,10 @@ test('recognizes handler as second parameter instead of options', async (t) => {
     return response
   }
 
+  const txFinished = once(agent, 'transactionFinished')
   mockApi.app.get('a-test', handler)
   const response = await mockApi.httpRequest('get')
   assert.equal(response.body, 'ok')
-  const tx = agent.__testData.transactions.elements.shift()
+  const [tx] = await txFinished
   assert.ok(tx)
 })

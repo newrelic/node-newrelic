@@ -110,17 +110,6 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
     }
   }
 
-  const txFinished = Agent.prototype._transactionFinished
-  _agent[Symbol.for('origTxFinished')] = txFinished
-  Agent.prototype._transactionFinished = (tx) => {
-    _agent.__testData.transactions.add(tx)
-    txFinished.call(_agent, tx)
-  }
-  // In order for our replacement to actually work, we need to re-register the
-  // internal listener for the transaction finished event.
-  _agent.removeAllListeners('transactionFinished')
-  _agent.on('transactionFinished', Agent.prototype._transactionFinished.bind(_agent))
-
   if (setState) {
     _agent.setState('started')
   }
@@ -264,11 +253,6 @@ helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
 
   // Stop future harvesting by aggregators.
   agent.harvester.stop()
-
-  // Restore intercepted methods.
-  if (_agent) {
-    Agent.prototype._transactionFinished = _agent[Symbol.for('origTxFinished')]
-  }
 
   if (agent === _agent) {
     _agent = null
