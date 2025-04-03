@@ -57,6 +57,8 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
     httpHandlers: {},
     httpRequest(method) {
       method = method.toUpperCase()
+      if (method === 'HTTP') method = 'GET'
+      if (method === 'DELETEREQUEST') method = 'DELETE'
       if (Object.hasOwn(mockApi.httpHandlers, method) === false) {
         throw Error(`no handler registered for method: ${method}`)
       }
@@ -210,24 +212,25 @@ test('wraps expected methods', t => {
   }
 })
 
-test('instruments HTTP GET', (t, end) => {
+test('instruments all HTTP methods', async (t) => {
   bootstrapModule({ t })
   const { agent, initialize, mockApi, shim } = t.nr
   initialize(agent, mockApi, MODULE_NAME, shim)
 
-  const handler = async function(request) {
+  const handler = async function (request) {
     assert.equal(request.url, 'http://example.com')
     return 'ok'
   }
   const options = { handler }
+  const methods = ['http', 'get', 'put', 'post', 'patch', 'deleteRequest']
 
-  mockApi.app.http('a-test', options)
-  mockApi.httpRequest('get').then(response => {
+  for (const method of methods) {
+    mockApi.app[method]('a-test', options)
+    const response = await mockApi.httpRequest(method)
     assert.equal(response, 'ok')
 
-    const transactions = agent.__testData.transactions.elements
-    assert.equal(transactions.length, 1)
-    const tx = transactions[0]
+    const tx = agent.__testData.transactions.elements.shift()
+    assert.ok(tx)
 
     let attributes = tx.trace.attributes.get(DESTS.TRANS_EVENT)
     assert.equal(attributes['request.uri'], '/')
@@ -240,7 +243,5 @@ test('instruments HTTP GET', (t, end) => {
       attributes['cloud.resource_id'],
       '/subscriptions/b999997b-cb91-49e0-b922-c9188372bdba/resourceGroups/test-group/providers/Microsoft.Web/sites/test-site/functions/test-func'
     )
-
-    end()
-  })
+  }
 })
