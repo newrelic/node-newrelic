@@ -5,6 +5,8 @@
 
 'use strict'
 
+/* eslint-disable sonarjs/no-identical-functions */
+
 const test = require('node:test')
 const assert = require('node:assert')
 
@@ -12,8 +14,11 @@ const helper = require('#testlib/agent_helper.js')
 const { removeMatchedModules } = require('#testlib/cache-buster.js')
 const GenericShim = require('#agentlib/shim/shim.js')
 const Transaction = require('#agentlib/transaction/index.js')
+
 const { DESTINATIONS: DESTS } = require('#agentlib/transaction/index.js')
 const MODULE_NAME = 'azure-functions'
+const TRACE_ID = '0af7651916cd43dd8448eb211c80319c'
+const SPAN_ID = 'b9c7c989f97918e1'
 
 const basicHttpRequest = {
   url: 'http://example.com',
@@ -21,6 +26,15 @@ const basicHttpRequest = {
   headers: {
     foo: 'bar'
   }
+}
+
+// See https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-node?tabs=javascript%2Cwindows%2Cazure-cli&pivots=nodejs-model-v4#http-response
+class AzureFunctionHttpResponse {
+  body
+  jsonBody // Should be a serializable object
+  status // e.g. 200
+  headers // key-value hash
+  cookies // array of cookie strings
 }
 
 test.beforeEach(ctx => {
@@ -219,7 +233,10 @@ test('instruments all HTTP methods', async (t) => {
 
   const handler = async function (request) {
     assert.equal(request.url, 'http://example.com')
-    return 'ok'
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
   }
   const options = { handler }
   const methods = ['http', 'get', 'put', 'post', 'patch', 'deleteRequest']
@@ -227,15 +244,12 @@ test('instruments all HTTP methods', async (t) => {
   for (const method of methods) {
     mockApi.app[method]('a-test', options)
     const response = await mockApi.httpRequest(method)
-    assert.equal(response, 'ok')
+    assert.equal(response.body, 'ok')
 
     const tx = agent.__testData.transactions.elements.shift()
     assert.ok(tx)
 
-    let attributes = tx.trace.attributes.get(DESTS.TRANS_EVENT)
-    assert.equal(attributes['request.uri'], '/')
-
-    attributes = tx.trace.attributes.get(DESTS.TRANS_COMMON)
+    const attributes = tx.baseSegment.attributes.get(DESTS.SPAN_EVENT)
     assert.equal(attributes['faas.invocation_id'], 'test-123')
     assert.equal(attributes['faas.name'], 'test-func')
     assert.equal(attributes['faas.trigger'], 'http')
@@ -243,5 +257,97 @@ test('instruments all HTTP methods', async (t) => {
       attributes['cloud.resource_id'],
       '/subscriptions/b999997b-cb91-49e0-b922-c9188372bdba/resourceGroups/test-group/providers/Microsoft.Web/sites/test-site/functions/test-func'
     )
+
+    let expected = method.toUpperCase()
+    if (method === 'http') expected = 'GET'
+    if (method === 'deleteRequest') expected = 'DELETE'
+    assert.equal(attributes['request.method'], expected)
+    assert.equal(attributes['request.uri'], '/')
+    assert.equal(attributes['http.statusCode'], 200)
+
+    const metrics = tx.metrics.unscoped
+    const expectedMetrics = [
+      'HttpDispatcher',
+      'WebTransaction',
+      'WebTransaction/AzureFunction/test-func',
+      'WebTransactionTotalTime',
+      'WebTransactionTotalTime/AzureFunction/test-func'
+    ]
+    for (const expectedMetric of expectedMetrics) {
+      assert.equal(metrics[expectedMetric].callCount, 1)
+    }
+    assert.equal(metrics.Apdex.apdexT, 0.1)
+    assert.equal(metrics['Apdex/AzureFunction/test-func'].apdexT, 0.1)
   }
+})
+
+test('handles distributed tracing information', async (t) => {
+  const clientRequest = structuredClone(basicHttpRequest)
+  clientRequest.headers = {
+    traceparent: `00-${TRACE_ID}-${SPAN_ID}-00`,
+    tracestate: `33@nr=0-0-33-2827902-${SPAN_ID}-e8b91a159289ff74-1-1.23456-1518469636035`
+  }
+
+  bootstrapModule({ t, request: clientRequest })
+  const { agent, initialize, mockApi, shim } = t.nr
+  agent.config.distributed_tracing.enabled = true
+  agent.config.account_id = '33'
+  agent.config.trusted_account_key = '33'
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  const handler = async function () {
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+  const options = { handler }
+
+  mockApi.app.get('a-test', options)
+  const response = await mockApi.httpRequest('get')
+  assert.equal(response.body, 'ok')
+
+  const tx = agent.__testData.transactions.elements.shift()
+  assert.ok(tx)
+
+  const metrics = tx.metrics.unscoped
+  const expectedMetrics = [
+    'DurationByCaller/App/33/2827902/HTTP/all',
+    'DurationByCaller/App/33/2827902/HTTP/allWeb',
+    'TransportDuration/App/33/2827902/HTTP/all',
+    'TransportDuration/App/33/2827902/HTTP/allWeb'
+  ]
+  for (const expectedMetric of expectedMetrics) {
+    assert.equal(metrics[expectedMetric].callCount, 1)
+  }
+})
+
+test('handles queue time headers', async (t) => {
+  const clientRequest = structuredClone(basicHttpRequest)
+  const now = Date.now()
+  clientRequest.headers = {
+    'x-request-start': `t=${now - 10}`
+  }
+
+  bootstrapModule({ t, request: clientRequest })
+  const { agent, initialize, mockApi, shim } = t.nr
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  const handler = async function () {
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+  const options = { handler }
+
+  mockApi.app.get('a-test', options)
+  const response = await mockApi.httpRequest('get')
+  assert.equal(response.body, 'ok')
+
+  const tx = agent.__testData.transactions.elements.shift()
+  assert.ok(tx)
+
+  const transTime = tx.queueTime
+  assert.equal(transTime > 0, true)
 })
