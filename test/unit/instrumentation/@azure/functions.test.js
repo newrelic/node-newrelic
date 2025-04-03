@@ -92,7 +92,7 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
         mockApi.httpHandlers.GET = options.handler
       },
       get(name, options) {
-        mockApi.httpHandlers.GET = options.handler
+        mockApi.httpHandlers.GET = options.handler ?? options
       },
       put(name, options) {
         mockApi.httpHandlers.PUT = options.handler
@@ -381,4 +381,23 @@ test('set cold start attribute correctly', async (t) => {
   assert.ok(tx)
   attributes = tx.baseSegment.attributes.get(DESTS.SPAN_EVENT)
   assert.equal(attributes['faas.coldStart'], undefined)
+})
+
+test('recognizes handler as second parameter instead of options', async (t) => {
+  bootstrapModule({ t })
+  const { agent, initialize, mockApi, shim } = t.nr
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  const handler = async function () {
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+
+  mockApi.app.get('a-test', handler)
+  const response = await mockApi.httpRequest('get')
+  assert.equal(response.body, 'ok')
+  const tx = agent.__testData.transactions.elements.shift()
+  assert.ok(tx)
 })
