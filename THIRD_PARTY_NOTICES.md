@@ -1,3 +1,4 @@
+
 # Third Party Notices
 
 The New Relic Node Agent uses source code from third party libraries which carry
@@ -85,7 +86,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 **[Additional Licenses](#additional-licenses)**
 
 * [Symantec](#Symantec)
-
 
 ## dependencies
 
@@ -1695,7 +1695,6 @@ SOFTWARE.
 
 
 ```
-
 
 ## devDependencies
 
@@ -4535,7 +4534,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-
 ## optionalDependencies
 
 ### @contrast/fn-inspect
@@ -5052,10 +5050,9 @@ otherwise to any obligation.
 Root Certificate License Agreement v3.0 (January 2014)
 ```
 
------
+---
 
 Portions copyright Node.js contributors. Depending on your existing libraries and package management settings,
 your systems may call externally maintained libraries in addition to those listed above.
 See [here](https://nodejs.org/en/docs/meta/topics/dependencies/) and [here](https://github.com/nodejs/node/blob/v4.3.1/LICENSE)
 for additional details regarding externally maintained libraries and certain related licenses and notices.
-

@@ -38,6 +38,16 @@ test('consumer does not match fallback rule', () => {
   assert.equal(rule.name, 'OtelMessagingConsumer1_24')
 })
 
+test('consumer matches fallback rule', () => {
+  const engine = new RulesEngine()
+  const span = tracer.startSpan('test-span', { kind: SpanKind.CONSUMER }, ROOT_CONTEXT)
+  span.end()
+
+  const rule = engine.test(span)
+  assert.notEqual(rule, undefined)
+  assert.equal(rule.name, 'FallbackConsumer')
+})
+
 test('fallback server rule is met', () => {
   const engine = new RulesEngine()
   const span = tracer.startSpan('test-span', { kind: SpanKind.SERVER }, ROOT_CONTEXT)
