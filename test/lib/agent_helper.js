@@ -89,7 +89,7 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
 
   _agent = new Agent(config)
   _agent.__created = new Error('Only one agent at a time! This one was created at:')
-  _agent.__testData = {
+  _agent.__mocks = {
     supportability: new Map()
   }
   _agent.recordSupportability = (key) => { // Stub supportabilities.
@@ -100,11 +100,11 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
       // bail out.
       return
     }
-    const val = _agent.__testData.supportability.get(key)
+    const val = _agent.__mocks.supportability.get(key)
     if (val) {
-      _agent.__testData.supportability.set(key, val + 1)
+      _agent.__mocks.supportability.set(key, val + 1)
     } else {
-      _agent.__testData.supportability.set(key, 1)
+      _agent.__mocks.supportability.set(key, 1)
     }
   }
 

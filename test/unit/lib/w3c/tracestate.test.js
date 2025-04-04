@@ -44,7 +44,7 @@ test('instances from header values', async t => {
     assert.ok(tracestate)
     assert.equal(tracestate.toString(), expected)
     assert.deepStrictEqual(tracestate.vendors, ['congo', 'rojo'])
-    assert.equal(agent.__testData.supportability.get('TraceContext/TraceState/NoNrEntry'), 1)
+    assert.equal(agent.__mocks.supportability.get('TraceContext/TraceState/NoNrEntry'), 1)
   })
 
   await t.test('records logs when no nr tracestate present', t => {
@@ -65,7 +65,7 @@ test('instances from header values', async t => {
       'Missing trusted_account_key. ',
       'This may occur if a trace is received prior to the agent fully starting.'
     ].join(''))
-    assert.equal(agent.__testData.supportability.get('TraceContext/TraceState/Accept/Exception'), 1)
+    assert.equal(agent.__mocks.supportability.get('TraceContext/TraceState/Accept/Exception'), 1)
   })
 
   await t.test('throws for bad list members', t => {
@@ -77,7 +77,7 @@ test('instances from header values', async t => {
     const expected = /list member is not in parseable format/
     assert.throws(() => Tracestate.fromHeader({ header: 'foo=', agent, logger }), expected)
     assert.equal(recordedMsg, 'Unable to parse tracestate list members.')
-    assert.equal(agent.__testData.supportability.get('TraceContext/TraceState/Parse/Exception/ListMember'), 1)
+    assert.equal(agent.__mocks.supportability.get('TraceContext/TraceState/Parse/Exception/ListMember'), 1)
   })
 
   await t.test('should pass a valid tracestate header', (t) => {
@@ -107,7 +107,7 @@ test('instances from header values', async t => {
       '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
     const valid = Tracestate.fromHeader({ header: badTraceStateHeader, agent })
 
-    assert.equal(agent.__testData.supportability.get('TraceContext/TraceState/NoNrEntry'), 1)
+    assert.equal(agent.__mocks.supportability.get('TraceContext/TraceState/NoNrEntry'), 1)
     assert.equal(valid.intrinsics, undefined)
   })
 
