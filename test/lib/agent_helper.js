@@ -14,7 +14,6 @@ const { EventEmitter } = require('events')
 const Transaction = require('../../lib/transaction')
 const symbols = require('../../lib/symbols')
 const InstrumentationTracker = require('../../lib/instrumentation-tracker')
-const Stack = require('./stack')
 const { removeModules } = require('./cache-buster')
 const http = require('http')
 const https = require('https')
@@ -91,8 +90,7 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
   _agent = new Agent(config)
   _agent.__created = new Error('Only one agent at a time! This one was created at:')
   _agent.__testData = {
-    supportability: new Map(),
-    transactions: new Stack()
+    supportability: new Map()
   }
   _agent.recordSupportability = (key) => { // Stub supportabilities.
     if (!_agent) {
