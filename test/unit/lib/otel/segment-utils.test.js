@@ -9,6 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 const helper = require('#testlib/agent_helper.js')
+const hashes = require('#agentlib/util/hashes.js')
 const { propagateTraceContext } = require('#agentlib/otel/segments/utils.js')
 
 test.beforeEach((ctx) => {
@@ -18,7 +19,9 @@ test.beforeEach((ctx) => {
   }
   ctx.nr = {
     agent,
-    transaction
+    transaction,
+    traceId: hashes.makeId(32),
+    parentId: hashes.makeId()
   }
 })
 
@@ -27,12 +30,12 @@ test.afterEach((ctx) => {
 })
 
 test('should accept traceparent when span has parentSpanId', (t) => {
-  const { transaction } = t.nr
+  const { transaction, parentId, traceId } = t.nr
   const otelSpan = {
-    parentSpanId: 'parentId',
+    parentSpanId: parentId,
     spanContext() {
       return {
-        traceId: 'traceId',
+        traceId,
         traceFlags: 1,
         traceState: { state: 'state' }
       }
@@ -41,17 +44,17 @@ test('should accept traceparent when span has parentSpanId', (t) => {
   propagateTraceContext({ transaction, otelSpan, transport: 'transport' })
   assert.equal(transaction.acceptTraceContextPayload.callCount, 1)
   assert.deepEqual(transaction.acceptTraceContextPayload.args[0], [
-    '00-traceId-parentId-01', 'state', 'transport'
+    `00-${traceId}-${parentId}-01`, 'state', 'transport'
   ])
 })
 
 test('should accept traceparent when span has parentSpanContext.spanId', (t) => {
-  const { transaction } = t.nr
+  const { transaction, parentId, traceId } = t.nr
   const otelSpan = {
-    parentSpanContext: { spanId: 'parentId' },
+    parentSpanContext: { spanId: parentId },
     spanContext() {
       return {
-        traceId: 'traceId',
+        traceId,
         traceFlags: 1,
         traceState: { state: 'state' }
       }
@@ -60,7 +63,7 @@ test('should accept traceparent when span has parentSpanContext.spanId', (t) => 
   propagateTraceContext({ transaction, otelSpan, transport: 'transport' })
   assert.equal(transaction.acceptTraceContextPayload.callCount, 1)
   assert.deepEqual(transaction.acceptTraceContextPayload.args[0], [
-    '00-traceId-parentId-01', 'state', 'transport'
+    `00-${traceId}-${parentId}-01`, 'state', 'transport'
   ])
 })
 
