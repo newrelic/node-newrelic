@@ -194,7 +194,7 @@ test('instruments all HTTP methods', async (t) => {
       'WebTransactionTotalTime/AzureFunction/test-func'
     ]
     for (const expectedMetric of expectedMetrics) {
-      assert.equal(metrics[expectedMetric].callCount, 1)
+      assert.equal(metrics[expectedMetric]?.callCount, 1, `callCount for ${expectedMetric} should be 1`)
     }
     assert.equal(metrics.Apdex.apdexT, 0.1)
     assert.equal(metrics['Apdex/AzureFunction/test-func'].apdexT, 0.1)
