@@ -1,0 +1,19 @@
+{
+  "name": "azure-functions-tests",
+  "targets": [{ "name": "@azure/functions", "minAgentVersion": "12.18.0" }],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "@azure/functions": ">=4.7.0"
+      },
+      "files": [
+        "http.test.js"
+      ]
+    }
+  ]
+}
