@@ -102,17 +102,27 @@ test('mapTriggerType maps recognized keys', t => {
   bootstrapModule({ t })
   const { mapTriggerType } = t.nr.initialize.internals
   const testData = [
-    ['httpTrigger', 'http'],
-    ['timerTrigger', 'timer'],
+    ['blobTrigger', 'datasource'],
     ['cosmosDBTrigger', 'datasource'],
-    ['sqlTrigger', 'datasource'],
-    ['mysqlTrigger', 'datasource'],
-    ['queueTrigger', 'pubsub'],
-    ['serviceBusTrigger', 'pubsub'],
-    ['eventHubTrigger', 'pubsub'],
+    ['daprBindingTrigger', 'datasource'],
+    ['daprServiceInvocationTrigger', 'other'],
+    ['daprTopicTrigger', 'pubsub'],
     ['eventGridTrigger', 'pubsub'],
+    ['eventHubTrigger', 'pubsub'],
+    ['httpTrigger', 'http'],
+    ['kafkaTrigger', 'pubsub'],
+    ['mysqlTrigger', 'datasource'],
+    ['not-recognized', 'other'],
+    ['queueTrigger', 'datasource'],
+    ['rabbitMQTrigger', 'pubsub'],
+    ['redisListTrigger', 'pubsub'],
+    ['redisPubSubTrigger', 'pubsub'],
+    ['redisStreamTrigger', 'pubsub'],
+    ['serviceBusTrigger', 'pubsub'],
+    ['signalRTrigger', 'pubsub'],
+    ['sqlTrigger', 'datasource'],
+    ['timerTrigger', 'timer'],
     ['webPubSubTrigger', 'pubsub'],
-    ['not-recognized', 'other']
   ]
 
   for (const [input, expected] of testData) {
