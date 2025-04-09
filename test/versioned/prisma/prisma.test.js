@@ -12,6 +12,8 @@ const { verify, verifySlowQueries, findMany, raw, rawUpdate } = require('./utils
 const { initPrismaApp, getPostgresUrl } = require('./setup')
 const { upsertUsers } = require('./app')
 
+process._rawDebug('!!! debugging')
+
 test('Basic run through prisma functionality', { timeout: 30 * 1000 }, async (t) => {
   t.before(async () => {
     await initPrismaApp()
