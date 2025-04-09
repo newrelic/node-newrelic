@@ -24,6 +24,16 @@ EXTERNAL_MODE="${EXTERNAL_MODE:-include}"
 # Known values are "simple", "pretty", and "quiet".
 OUTPUT_MODE="${OUTPUT_MODE:-pretty}"
 
+# TARGET_PATTERNS may be a comma separated list of glob like patterns
+# that will narrow which versioned tests are actually run. For example,
+# if you only want to run the "prisma" versioned tests, then do:
+#     export TARGET_PATTERNS=prisma
+#     npm run versioned:major
+TARGET_PATTERNS="${TARGET_PATTERNS}"
+if [ ! -z "${TARGET_PATTERNS}" ]; then
+  TARGET_PATTERNS="--pattern ${TARGET_PATTERNS}"
+fi
+
 MATRIX_COUNT_ONLY=${MATRIX_COUNT_ONLY:-0}
 if [[ ${MATRIX_COUNT_ONLY} -ne 0 ]]; then
   MATRIX_COUNT="--matrix-count"
@@ -108,4 +118,14 @@ then
 fi
 export NR_LOADER=./esm-loader.mjs
 
-time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE $MATRIX_COUNT --print $OUTPUT_MODE -i 100 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
+time $C8 ./node_modules/.bin/versioned-tests \
+  $VERSIONED_MODE \
+  $MATRIX_COUNT \
+  --print $OUTPUT_MODE \
+  -i 100 \
+  --all \
+  --strict \
+  --samples $SAMPLES \
+  $JOBS_ARGS \
+  ${TARGET_PATTERNS} \
+  ${directories[@]}

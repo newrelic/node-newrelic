@@ -1,6 +1,11 @@
 {
   "name": "prisma-tests",
-  "targets": [{"name":"@prisma/client","minAgentVersion":"11.0.0"}],
+  "targets": [
+    {
+      "name": "@prisma/client",
+      "minAgentVersion": "11.0.0"
+    }
+  ],
   "version": "0.0.0",
   "private": true,
   "engines": {
@@ -22,5 +27,9 @@
   "prisma": {
     "schema": "./prisma/schema.prisma",
     "seed": "node ./prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "prisma": "^6.6.0"
   }
 }

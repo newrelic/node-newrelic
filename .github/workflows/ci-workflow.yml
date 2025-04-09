@@ -185,6 +185,7 @@ jobs:
         # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
         JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
         C8_REPORTER: lcovonly
+        TARGET_PATTERNS: prisma
     - name: Archive Versioned Test Coverage
       uses: actions/upload-artifact@v4
       with:
