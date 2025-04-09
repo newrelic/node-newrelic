@@ -23,11 +23,6 @@ async function initPrismaApp() {
   const infoOut = await exec('npm info @prisma/client version')
   const clientVersion = infoOut.stdout.trim()
   await exec(`npm install prisma@${clientVersion}`)
-
-  const npmlsOut = await exec('npm ls')
-  process._rawDebug('!!! npmlsOut:\n', npmlsOut.stdout)
-  const lsOut = await exec('ls -alrR node_modules')
-  process._rawDebug('!!! lsOut:\n', lsOut.stdout)
   await exec('node ./node_modules/prisma/build/index.js generate')
   await exec('node ./node_modules/prisma/build/index.js migrate reset --force')
   delete process.env.DATABASE_URL
