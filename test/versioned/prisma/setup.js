@@ -20,8 +20,10 @@ function getPostgresUrl() {
 }
 async function initPrismaApp() {
   process.env.DATABASE_URL = getPostgresUrl()
-  await exec('npm ls')
-  await exec('ls -alr .')
+  const npmlsOut = await exec('npm ls')
+  process._rawDebug('!!! npmlsOut:', JSON.stringify(npmlsOut, null, 2))
+  const lsOut = await exec('ls -alr .')
+  process._rawDebug('!!! lsOut:', JSON.stringify(lsOut, null, 2))
   await exec('node ./node_modules/prisma/build/index.js generate')
   await exec('node ./node_modules/prisma/build/index.js migrate reset --force')
   delete process.env.DATABASE_URL
