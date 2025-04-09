@@ -213,6 +213,7 @@
     "json-bigint": "^1.0.0",
     "json-stringify-safe": "^5.0.0",
     "module-details-from-path": "^1.0.3",
+    "prisma": "^6.6.0",
     "readable-stream": "^3.6.1",
     "require-in-the-middle": "^7.4.0",
     "semver": "^7.5.2",
