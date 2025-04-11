@@ -420,20 +420,6 @@ test('fromSegment()', async (t) => {
 
       assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.DATASTORE })
       assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
-      assert.ok(!span._intrinsicAttributes['force-capture-trace'])
-
-      end()
-    })
-  })
-
-  await t.test('should add force-capture-trace to span when `config.infinite_tracing.span_events.force_capture_trace` is true', (t, end) => {
-    const { agent } = t.nr
-    agent.config.infinite_tracing.span_events.force_capture_trace = true
-    helper.runInTransaction(agent, (transaction) => {
-      const segment = transaction.trace.add('TestSegment')
-      const span = StreamingSpanEvent.fromSegment(segment, transaction)
-      assert.equal(span._intrinsicAttributes['force-capture-trace'].bool_value, true)
-      transaction.end()
       end()
     })
   })
