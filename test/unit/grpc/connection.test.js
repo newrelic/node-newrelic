@@ -29,6 +29,9 @@ const fakeTraceObserverConfig = {
 
 class FakeStreamer extends EventEmitter {
   emitStatus(status) {
+    if (status.code !== 0) {
+      this.emit('error', status)
+    }
     this.emit('status', status)
   }
 }
@@ -344,6 +347,9 @@ test('grpc stream event handling', async (t) => {
       )
 
       assert.equal(metric.callCount, 1, 'incremented metric')
+
+      const resErrorMetric = metrics.getOrCreateMetric(NAMES.INFINITE_TRACING.SPAN_RESPONSE_ERROR)
+      assert.equal(resErrorMetric.callCount, 1)
     }
   )
 })

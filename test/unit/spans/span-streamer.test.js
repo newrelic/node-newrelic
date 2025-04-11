@@ -6,7 +6,6 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
-const sinon = require('sinon')
 const SpanStreamerEvent = require('../../../lib/spans/streaming-span-event.js')
 const METRIC_NAMES = require('../../../lib/metrics/names')
 const { createFakeConnection, createMetricAggregator } = require('./span-streamer-helpers')
@@ -25,7 +24,7 @@ test('SpanStreamer', async (t) => {
       createMetricAggregator(),
       2
     )
-    fakeConnection.connectSpans()
+    ctx.nr.spanStreamer.connect()
     ctx.nr.fakeConnection = fakeConnection
   })
 
@@ -36,17 +35,46 @@ test('SpanStreamer', async (t) => {
     }
   })
 
-  await t.test((t) => {
+  await t.test('should create streamer instance', (t) => {
     const { spanStreamer } = t.nr
     assert.ok(spanStreamer, 'instantiated the object')
   })
 
   await t.test('Should increment SEEN metric on write', (t) => {
     const { spanStreamer } = t.nr
-    const metricsSpy = sinon.spy(spanStreamer._metrics, 'getOrCreateMetric')
     spanStreamer.write(fakeSpan)
+    const metrics = spanStreamer._metrics
+    assert.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SEEN).callCount,
+      1,
+      'SEEN metric incremented'
+    )
+  })
 
-    assert.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SEEN), 'SEEN metric')
+  await t.test('Should increment DROPPED metric when queue size is full', (t) => {
+    const { spanStreamer } = t.nr
+    spanStreamer.queue_size = 1
+    spanStreamer._writable = false
+    assert.equal(spanStreamer.spans.length, 0, 'no spans queued')
+    spanStreamer.write(fakeSpan)
+    spanStreamer.write(fakeSpan)
+    assert.equal(spanStreamer.spans.length, 1, 'no spans queued')
+    const metrics = spanStreamer._metrics
+    assert.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SEEN).callCount,
+      2,
+      'SEEN metric incremented'
+    )
+    assert.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.DROPPED).callCount,
+      1,
+      'DROPPED metric incremented'
+    )
+    assert.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.DROPPED).callCount,
+      1,
+      'SENT metric incremented'
+    )
   })
 
   await t.test('Should add span to queue on backpressure', (t) => {
@@ -60,7 +88,7 @@ test('SpanStreamer', async (t) => {
 
   await t.test('Should drain span queue on stream drain event', (t) => {
     const { fakeConnection, spanStreamer } = t.nr
-    /* simulate backpressure */
+    // simulate backpressure
     fakeConnection.stream.write = () => false
     spanStreamer.queue_size = 1
     const metrics = spanStreamer._metrics
@@ -71,7 +99,7 @@ test('SpanStreamer', async (t) => {
 
     assert.equal(spanStreamer.spans.length, 1, 'one span queued')
 
-    /* emit drain event and allow writes */
+    // emit drain event and allow writes
     fakeConnection.stream.write = () => true
     fakeConnection.stream.emit('drain', fakeConnection.stream.write)
 
@@ -87,11 +115,16 @@ test('SpanStreamer', async (t) => {
       2,
       'SENT metric incremented'
     )
+    assert.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SEEN).callCount,
+      2,
+      'SEEN metric incremented'
+    )
   })
 
   await t.test('Should properly format spans sent from the queue', (t) => {
     const { fakeConnection, spanStreamer } = t.nr
-    /* simulate backpressure */
+    // simulate backpressure
     fakeConnection.stream.write = () => false
     spanStreamer.queue_size = 1
     const metrics = spanStreamer._metrics
@@ -105,7 +138,7 @@ test('SpanStreamer', async (t) => {
 
     assert.equal(spanStreamer.spans.length, 1, 'one span queued')
 
-    /* emit drain event, allow writes and check for span.trace_id */
+    // emit drain event, allow writes and check for span.trace_id
     fakeConnection.stream.write = (span) => {
       assert.equal(span.trace_id, 'porridge', 'Should have formatted span')
 
@@ -128,5 +161,23 @@ test('SpanStreamer', async (t) => {
       2,
       'SENT metric incremented'
     )
+  })
+
+  await t.test('should set _writable to false and stream to null on disconnected', (t) => {
+    const { spanStreamer } = t.nr
+    assert.ok(spanStreamer.stream)
+    assert.equal(spanStreamer._writable, true)
+    spanStreamer.disconnect()
+    assert.ok(!spanStreamer.stream)
+    assert.equal(spanStreamer._writable, false)
+  })
+
+  await t.test('should streamer metrics', (t) => {
+    const { spanStreamer } = t.nr
+    spanStreamer.createMetrics()
+    const queueCapacity = spanStreamer._metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.QUEUE_CAPACITY)
+    const queueSize = spanStreamer._metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.QUEUE_SIZE)
+    assert.equal(queueSize.total, 0)
+    assert.equal(queueCapacity.total, 2)
   })
 })

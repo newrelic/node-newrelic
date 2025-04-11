@@ -21,6 +21,7 @@ test('BatchSpanStreamer', async (t) => {
       'fake-license-key',
       fakeConnection,
       createMetricAggregator(),
+      2,
       2
     )
     fakeConnection.connectSpans()
@@ -37,14 +38,6 @@ test('BatchSpanStreamer', async (t) => {
   await t.test('should create a spanStreamer instance', (t) => {
     const { spanStreamer } = t.nr
     assert.ok(spanStreamer, 'instantiated the object')
-  })
-
-  await t.test('should setup flush queue for every 5 seconds on connect', (t) => {
-    const { fakeConnection, spanStreamer } = t.nr
-    assert.ok(spanStreamer.sendTimer)
-    assert.ok(!spanStreamer.sendTimer._destroyed)
-    fakeConnection.disconnect()
-    assert.ok(spanStreamer.sendTimer._destroyed)
   })
 
   await t.test('Should increment SEEN metric on write', (t) => {
@@ -68,9 +61,10 @@ test('BatchSpanStreamer', async (t) => {
 
   await t.test('Should drain span queue on stream drain event', (t) => {
     const { fakeConnection, spanStreamer } = t.nr
-    /* simulate backpressure */
+    // simulate backpressure
     fakeConnection.stream.write = () => false
     spanStreamer.queue_size = 1
+    spanStreamer.batchSize = 1
     const metrics = spanStreamer._metrics
 
     assert.equal(spanStreamer.spans.length, 0, 'no spans queued')
@@ -83,7 +77,7 @@ test('BatchSpanStreamer', async (t) => {
 
     assert.equal(spanStreamer.spans.length, 1, 'one span queued')
 
-    /* emit drain event and allow writes */
+    // emit drain event and allow writes
     fakeConnection.stream.write = () => true
     spanStreamer.stream.emit('drain', fakeConnection.stream.write)
 
@@ -103,9 +97,10 @@ test('BatchSpanStreamer', async (t) => {
 
   await t.test('Should properly format spans sent from the queue', (t) => {
     const { fakeConnection, spanStreamer } = t.nr
-    /* simulate backpressure */
+    // simulate backpressure
     fakeConnection.stream.write = () => false
     spanStreamer.queue_size = 1
+    spanStreamer.batchSize = 1
     const metrics = spanStreamer._metrics
 
     assert.equal(spanStreamer.spans.length, 0, 'no spans queued')
@@ -144,6 +139,7 @@ test('BatchSpanStreamer', async (t) => {
   await t.test('should send a batch if it exceeds queue', (t, end) => {
     const { fakeConnection, spanStreamer } = t.nr
     const metrics = spanStreamer._metrics
+    spanStreamer.batchSize = 2
 
     let i = 0
     fakeConnection.stream.write = ({ spans }) => {
@@ -195,14 +191,15 @@ test('BatchSpanStreamer', async (t) => {
     )
   })
 
-  await t.test('should send in appropriate batch sizes', (t) => {
+  await t.test('should send in appropriate batch sizes', (t, end) => {
     const { fakeConnection, spanStreamer } = t.nr
     // this will simulate n full batches and the last batch being 1/3 full
-    const SPANS = 10000
+    const SPANS = 9999
     const BATCH = 750
     const metrics = spanStreamer._metrics
     spanStreamer.batchSize = BATCH
     spanStreamer.queue_size = SPANS
+    spanStreamer.queueInterval = 50
     let i = 0
     fakeConnection.stream.write = ({ spans }) => {
       if (i === 13) {
@@ -218,10 +215,16 @@ test('BatchSpanStreamer', async (t) => {
     spans.forEach((span) => {
       spanStreamer.write(span)
     })
-    assert.equal(
-      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
-      SPANS,
-      `SENT metric incremented to ${SPANS}`
-    )
+
+    setTimeout(() => {
+      // send last span to affect the flush based on queueInterval
+      spanStreamer.write(new SpanStreamerEvent('trace_id', {}, {}))
+      assert.equal(
+        metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
+        SPANS + 1,
+        `SENT metric incremented to ${SPANS + 1}`
+      )
+      end()
+    }, spanStreamer.queueInterval)
   })
 })
