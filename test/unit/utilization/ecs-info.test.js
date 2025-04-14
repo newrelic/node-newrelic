@@ -55,6 +55,9 @@ test.beforeEach(async (ctx) => {
   ctx.nr.logger = {
     debug(...args) {
       ctx.nr.logs.push(args)
+    },
+    trace(...args) {
+      ctx.nr.logs.push(args)
     }
   }
 
