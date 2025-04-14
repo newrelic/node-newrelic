@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.18.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated span streamer to properly retry failed batches and handle flushing batch queue every 5 seconds"
+        ],
+        "features": [
+          "Support Azure functions background trigger types",
+          "Support Azure functions HTTP trigger type"
+        ]
+      }
+    },
+    {
       "version": "12.17.0",
       "changes": {
         "security": [],
