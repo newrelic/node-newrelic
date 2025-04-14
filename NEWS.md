@@ -1,3 +1,27 @@
+### v12.18.0 (2025-04-14)
+
+#### Features
+
+* Support Azure functions background trigger types ([#3028](https://github.com/newrelic/node-newrelic/pull/3028)) ([3bf17b0](https://github.com/newrelic/node-newrelic/commit/3bf17b03abaa713c1f9ad544c54c24a6374359c2))
+* Support Azure functions HTTP trigger type ([#3021](https://github.com/newrelic/node-newrelic/pull/3021)) ([90d894b](https://github.com/newrelic/node-newrelic/commit/90d894bf1eb4a48f4b7f314ae22eef2cc76c32b9))
+
+#### Bug fixes
+
+* Updated span streamer to properly retry failed batches and handle flushing batch queue every 5 seconds ([#3033](https://github.com/newrelic/node-newrelic/pull/3033)) ([7db0e7c](https://github.com/newrelic/node-newrelic/commit/7db0e7ca929d54858addd5255b46507f82333045))
+
+#### Code refactoring
+
+* Update otel bridge rules synthesizer to properly handle consumer kind rules ([#3003](https://github.com/newrelic/node-newrelic/pull/3003)) ([3295dd1](https://github.com/newrelic/node-newrelic/commit/3295dd12bbebb708f3eeca2ad32fbc157a892fec))
+
+#### Documentation
+
+* Updated compatibility report ([#3020](https://github.com/newrelic/node-newrelic/pull/3020)) ([ce32b67](https://github.com/newrelic/node-newrelic/commit/ce32b6754383b6b1fe95d1d37759810b4caaf34c))
+
+#### Miscellaneous chores
+
+* Fixed prisma CI issues ([#3031](https://github.com/newrelic/node-newrelic/pull/3031)) ([1349cae](https://github.com/newrelic/node-newrelic/commit/1349cae4d87941e4f55dffc2445c90e73d823bbc))
+* Improved logging within utilization detection ([#3034](https://github.com/newrelic/node-newrelic/pull/3034)) ([b47bd46](https://github.com/newrelic/node-newrelic/commit/b47bd46ad144723ac62192eb9cc474ddd1fce98d))
+
 ### v12.17.0 (2025-04-02)
 
 #### Features
