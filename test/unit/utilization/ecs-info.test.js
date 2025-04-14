@@ -53,8 +53,11 @@ test.beforeEach(async (ctx) => {
 
   ctx.nr.logs = []
   ctx.nr.logger = {
-    debug(msg) {
-      ctx.nr.logs.push(msg)
+    debug(...args) {
+      ctx.nr.logs.push(args)
+    },
+    trace(...args) {
+      ctx.nr.logs.push(args)
     }
   }
 
@@ -70,6 +73,7 @@ test.afterEach((ctx) => {
 })
 
 test('returns null if utilization is disabled', (t, end) => {
+  const { logger } = t.nr
   const agent = {
     config: {
       utilization: false
@@ -78,8 +82,11 @@ test('returns null if utilization is disabled', (t, end) => {
   fetchEcsInfo(agent, (error, data) => {
     assert.equal(error, null)
     assert.equal(data, null)
+    assert.deepStrictEqual(t.nr.logs, [
+      [{ utilization: 'ecs' }, 'Skipping ECS due to being disabled via config.']
+    ])
     end()
-  })
+  }, { logger })
 })
 
 test('returns null if error encountered', (t, end) => {
@@ -110,7 +117,7 @@ test('skips if not in ecs container', (ctx, end) => {
 
   function callback(err, data) {
     assert.ifError(err)
-    assert.deepEqual(logs, ['ECS API not available, omitting ECS container id info'])
+    assert.deepEqual(logs, [[{ utilization: 'ecs' }, 'ECS API not available, omitting ECS container id info']])
     assert.equal(data, null)
     assert.equal(
       agent.metrics._metrics.unscoped['Supportability/utilization/ecs/container_id/error']
@@ -130,7 +137,7 @@ test('records request error', (ctx, end) => {
 
   function callback(err, data) {
     assert.ifError(err)
-    assert.deepEqual(logs, ['Failed to query ECS endpoint, omitting boot info'])
+    assert.deepEqual(logs, [[{ utilization: 'ecs' }, 'Failed to query ECS endpoint, omitting boot info']])
     assert.equal(data, null)
     assert.equal(
       agent.metrics._metrics.unscoped['Supportability/utilization/ecs/container_id/error']
@@ -152,7 +159,7 @@ test('records json parsing error', (ctx, end) => {
     assert.ifError(err)
     assert.equal(logs.length, 1)
     assert.equal(
-      logs[0].startsWith('Failed to process ECS API response, omitting boot info:'),
+      logs[0][1].startsWith('Failed to process ECS API response, omitting boot info:'),
       true
     )
     assert.equal(data, null)
@@ -174,7 +181,7 @@ test('records error for no id in response', (ctx, end) => {
 
   function callback(err, data) {
     assert.ifError(err)
-    assert.deepEqual(logs, ['Failed to find DockerId in response, omitting boot info'])
+    assert.deepEqual(logs, [[{ utilization: 'ecs' }, 'Failed to find DockerId in response, omitting boot info']])
     assert.equal(data, null)
     assert.equal(
       agent.metrics._metrics.unscoped['Supportability/utilization/ecs/container_id/error']
