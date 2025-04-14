@@ -105,6 +105,23 @@ test('logger', async function (t) {
     })
   })
 
+  await t.test('should serialize error objects in extras', function (t, end) {
+    const { logger } = t.nr
+    const error = new Error('error1')
+    assert.ok(error.message)
+    assert.ok(error.stack)
+
+    logger.info({ foo: 'foo', error }, 'log message')
+    process.nextTick(function () {
+      const { results } = t.nr
+      const [log1] = results
+      assert.equal(log1.foo, 'foo')
+      assert.equal(log1.error.message, error.message)
+      assert.equal(log1.error.stack, error.stack)
+      end()
+    })
+  })
+
   await t.test('should only log expected levels', function (t, end) {
     const { logger } = t.nr
     logger.trace('trace')
