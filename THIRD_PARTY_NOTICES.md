@@ -1,4 +1,3 @@
-
 # Third Party Notices
 
 The New Relic Node Agent uses source code from third party libraries which carry
@@ -87,11 +86,12 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 * [Symantec](#Symantec)
 
+
 ## dependencies
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.12.4](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.12.4)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.12.4/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.13.2](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.13.2)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.13.2/LICENSE):
 
 ```
                                  Apache License
@@ -509,7 +509,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.3.1](https://github.com/newrelic/csec-node-agent/tree/v2.3.1)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.3.1/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.4.0](https://github.com/newrelic/csec-node-agent/tree/v2.4.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.4.0/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -1271,7 +1271,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.13.0](https://github.com/nodejs/import-in-the-middle/tree/v1.13.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.13.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.13.1](https://github.com/nodejs/import-in-the-middle/tree/v1.13.1)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.13.1/LICENSE):
 
 ```
                                  Apache License
@@ -1615,7 +1615,7 @@ IN THE SOFTWARE.
 
 ### require-in-the-middle
 
-This product includes source derived from [require-in-the-middle](https://github.com/elastic/require-in-the-middle) ([v7.4.0](https://github.com/elastic/require-in-the-middle/tree/v7.4.0)), distributed under the [MIT License](https://github.com/elastic/require-in-the-middle/blob/v7.4.0/LICENSE):
+This product includes source derived from [require-in-the-middle](https://github.com/elastic/require-in-the-middle) ([v7.5.0](https://github.com/elastic/require-in-the-middle/tree/v7.5.0)), distributed under the [MIT License](https://github.com/elastic/require-in-the-middle/blob/v7.5.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -1696,11 +1696,12 @@ SOFTWARE.
 
 ```
 
+
 ## devDependencies
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.714.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.714.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.714.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.726.1](https://github.com/aws/aws-sdk-js-v3/tree/v3.726.1)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.726.1/LICENSE):
 
 ```
                                 Apache License
@@ -1909,7 +1910,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.714.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.714.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.714.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.726.1](https://github.com/aws/aws-sdk-js-v3/tree/v3.726.1)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.726.1/LICENSE):
 
 ```
                                 Apache License
@@ -3769,7 +3770,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.17.0](https://github.com/eslint/eslint/tree/v9.17.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.17.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.18.0](https://github.com/eslint/eslint/tree/v9.18.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.18.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -4534,6 +4535,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
+
 ## optionalDependencies
 
 ### @contrast/fn-inspect
@@ -5050,9 +5052,10 @@ otherwise to any obligation.
 Root Certificate License Agreement v3.0 (January 2014)
 ```
 
----
+-----
 
 Portions copyright Node.js contributors. Depending on your existing libraries and package management settings,
 your systems may call externally maintained libraries in addition to those listed above.
 See [here](https://nodejs.org/en/docs/meta/topics/dependencies/) and [here](https://github.com/nodejs/node/blob/v4.3.1/LICENSE)
 for additional details regarding externally maintained libraries and certain related licenses and notices.
+

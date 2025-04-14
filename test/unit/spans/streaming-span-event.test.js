@@ -420,7 +420,6 @@ test('fromSegment()', async (t) => {
 
       assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.DATASTORE })
       assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
-
       end()
     })
   })
