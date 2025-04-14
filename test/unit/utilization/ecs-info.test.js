@@ -70,6 +70,7 @@ test.afterEach((ctx) => {
 })
 
 test('returns null if utilization is disabled', (t, end) => {
+  const { logger } = t.nr
   const agent = {
     config: {
       utilization: false
@@ -78,8 +79,11 @@ test('returns null if utilization is disabled', (t, end) => {
   fetchEcsInfo(agent, (error, data) => {
     assert.equal(error, null)
     assert.equal(data, null)
+    assert.deepStrictEqual(t.nr.logs, [
+      [{ utilization: 'ecs' }, 'Platform is not a flavor of linux, omitting boot info']
+    ])
     end()
-  })
+  }, { logger })
 })
 
 test('returns null if error encountered', (t, end) => {
