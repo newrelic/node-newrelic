@@ -80,7 +80,7 @@ test('returns null if utilization is disabled', (t, end) => {
     assert.equal(error, null)
     assert.equal(data, null)
     assert.deepStrictEqual(t.nr.logs, [
-      [{ utilization: 'ecs' }, 'Platform is not a flavor of linux, omitting boot info']
+      [{ utilization: 'ecs' }, 'Skipping ECS due to being disabled via config.']
     ])
     end()
   }, { logger })
