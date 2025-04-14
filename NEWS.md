@@ -16,7 +16,6 @@
 #### Documentation
 
 * Updated compatibility report ([#3020](https://github.com/newrelic/node-newrelic/pull/3020)) ([ce32b67](https://github.com/newrelic/node-newrelic/commit/ce32b6754383b6b1fe95d1d37759810b4caaf34c))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
 
 #### Miscellaneous chores
 
