@@ -14,6 +14,8 @@ const { upsertUsers } = require('./app')
 
 const timeout = 30 * 1_000
 
+// test
+
 test.before(async () => {
   await initPrismaApp()
 })
