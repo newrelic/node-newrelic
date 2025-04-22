@@ -19,6 +19,15 @@ test.beforeEach((ctx) => {
     }
   })
   ctx.nr = { agent }
+  ctx.nr.carrier = {}
+  ctx.nr.setter = {
+    set(carrier, header, value) {
+      carrier[header] = value
+    }
+  }
+  ctx.nr.getter = {
+    get: (carrier, key) => carrier[key]
+  }
 })
 
 test.afterEach((ctx) => {
@@ -30,7 +39,7 @@ test('should set traceparent and tracestate on outgoing headers when otel root c
   t.after(() => {
     otel.trace.getSpanContext.restore()
   })
-  const { agent } = t.nr
+  const { agent, carrier, setter } = t.nr
   agent.config.trusted_account_key = 1
   agent.config.primary_application_id = 2
   agent.config.account_id = 1
@@ -42,8 +51,7 @@ test('should set traceparent and tracestate on outgoing headers when otel root c
       traceFlags: otel.TraceFlags.SAMPLED
     }))
 
-    const carrier = {}
-    propagation.inject(otel.ROOT_CONTEXT, carrier)
+    propagation.inject(otel.ROOT_CONTEXT, carrier, setter)
     assert.equal(carrier.traceparent, `00-${tx.traceId}-${tx.trace.root.id}-01`)
     assert.equal(tx.isDistributedTrace, true)
     assert.ok(carrier.tracestate.startsWith(`1@nr=0-0-1-2-${tx.trace.root.id}-${tx.id}-1`))
@@ -52,12 +60,11 @@ test('should set traceparent and tracestate on outgoing headers when otel root c
 })
 
 test('should not set traceparent and tracestate on outgoing headers when distributed tracing is disabled', (t) => {
-  const { agent } = t.nr
+  const { agent, carrier, setter } = t.nr
   agent.config.distributed_tracing.enabled = false
   const propagation = new NewRelicTracePropagator(agent)
   helper.runInTransaction(agent, (tx) => {
-    const carrier = {}
-    propagation.inject(otel.ROOT_CONTEXT, carrier)
+    propagation.inject(otel.ROOT_CONTEXT, carrier, setter)
     assert.deepEqual(carrier, {})
     assert.ok(!tx.isDistributedTrace)
     tx.end()
@@ -69,17 +76,16 @@ test('should not set traceparent/tracestate on outgoing headers when span contex
   t.after(() => {
     otel.trace.getSpanContext.restore()
   })
-  const { agent } = t.nr
+  const { agent, carrier, setter } = t.nr
   const propagation = new NewRelicTracePropagator(agent)
   otel.trace.getSpanContext.returns(null)
-  const carrier = {}
-  propagation.inject(otel.ROOT_CONTEXT, carrier)
+  propagation.inject(otel.ROOT_CONTEXT, carrier, setter)
   assert.deepEqual(carrier, {})
 })
 
 test('should return agent context when root context is passed in', async (t) => {
   const plan = tspl(t, { plan: 8 })
-  const { agent } = t.nr
+  const { agent, getter, carrier } = t.nr
   sinon.stub(otel.trace, 'setSpanContext')
   t.after(() => {
     otel.trace.setSpanContext.restore()
@@ -99,13 +105,8 @@ test('should return agent context when root context is passed in', async (t) => 
     return context
   })
 
-  const carrier = {
-    traceparent,
-    tracestate
-  }
-  const getter = {
-    get: (carrier, key) => carrier[key]
-  }
+  carrier.traceparent = traceparent
+  carrier.tracestate = tracestate
   const ctx = propagation.extract(otel.ROOT_CONTEXT, carrier, getter)
   plan.equal(ctx.transaction, undefined)
   plan.equal(ctx.segment, undefined)
@@ -115,7 +116,7 @@ test('should return agent context when root context is passed in', async (t) => 
 
 test('should pick first traceparent if header is an array of values', async (t) => {
   const plan = tspl(t, { plan: 8 })
-  const { agent } = t.nr
+  const { agent, carrier, getter } = t.nr
   sinon.stub(otel.trace, 'setSpanContext')
   t.after(() => {
     otel.trace.setSpanContext.restore()
@@ -135,13 +136,8 @@ test('should pick first traceparent if header is an array of values', async (t) 
     return context
   })
 
-  const carrier = {
-    traceparent: [traceparent, '00-0000dafdadf-adadfdasfdas-01'],
-    tracestate
-  }
-  const getter = {
-    get: (carrier, key) => carrier[key]
-  }
+  carrier.traceparent = [traceparent, '00-0000dafdadf-adadfdasfdas-01']
+  carrier.tracestate = tracestate
   const ctx = propagation.extract(otel.ROOT_CONTEXT, carrier, getter)
   plan.equal(ctx.transaction, undefined)
   plan.equal(ctx.segment, undefined)
@@ -169,16 +165,10 @@ test('should not propagate if traceparent if it is not a string', async (t) => {
   t.after(() => {
     spy.restore()
   })
-  const { agent } = t.nr
+  const { agent, carrier, getter } = t.nr
   const propagation = new NewRelicTracePropagator(agent)
   const traceparent = true
-
-  const carrier = {
-    traceparent
-  }
-  const getter = {
-    get: (carrier, key) => carrier[key]
-  }
+  carrier.traceparent = traceparent
   const ctx = propagation.extract(otel.ROOT_CONTEXT, carrier, getter)
   assert.equal(ctx.transaction, undefined)
   assert.equal(ctx.segment, undefined)
@@ -191,16 +181,10 @@ test('should not propagate traceparent when it is malformed', (t) => {
   t.after(() => {
     spy.restore()
   })
-  const { agent } = t.nr
+  const { agent, carrier, getter } = t.nr
   const propagation = new NewRelicTracePropagator(agent)
   const traceparent = '00-garbage'
-
-  const carrier = {
-    traceparent
-  }
-  const getter = {
-    get: (carrier, key) => carrier[key]
-  }
+  carrier.traceparent = traceparent
   const ctx = propagation.extract(otel.ROOT_CONTEXT, carrier, getter)
   assert.equal(ctx.transaction, undefined)
   assert.equal(ctx.segment, undefined)
@@ -213,16 +197,10 @@ test('should not propagate traceparent when it contains extra fields', (t) => {
   t.after(() => {
     spy.restore()
   })
-  const { agent } = t.nr
+  const { agent, carrier, getter } = t.nr
   const propagation = new NewRelicTracePropagator(agent)
   const traceparent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01-extra'
-
-  const carrier = {
-    traceparent
-  }
-  const getter = {
-    get: (carrier, key) => carrier[key]
-  }
+  carrier.traceparent = traceparent
   const ctx = propagation.extract(otel.ROOT_CONTEXT, carrier, getter)
   assert.equal(ctx.transaction, undefined)
   assert.equal(ctx.segment, undefined)
@@ -235,13 +213,9 @@ test('should not propagate traceparent when it does not exist', (t) => {
   t.after(() => {
     spy.restore()
   })
-  const { agent } = t.nr
+  const { agent, carrier, getter } = t.nr
   const propagation = new NewRelicTracePropagator(agent)
 
-  const carrier = {}
-  const getter = {
-    get: (carrier, key) => carrier[key]
-  }
   const ctx = propagation.extract(otel.ROOT_CONTEXT, carrier, getter)
   assert.equal(ctx.transaction, undefined)
   assert.equal(ctx.segment, undefined)
@@ -251,7 +225,7 @@ test('should not propagate traceparent when it does not exist', (t) => {
 
 test('should handle multiple tracestate values', async (t) => {
   const plan = tspl(t, { plan: 8 })
-  const { agent } = t.nr
+  const { agent, carrier, getter } = t.nr
   sinon.stub(otel.trace, 'setSpanContext')
   t.after(() => {
     otel.trace.setSpanContext.restore()
@@ -271,13 +245,8 @@ test('should handle multiple tracestate values', async (t) => {
     return context
   })
 
-  const carrier = {
-    traceparent,
-    tracestate
-  }
-  const getter = {
-    get: (carrier, key) => carrier[key]
-  }
+  carrier.traceparent = traceparent
+  carrier.tracestate = tracestate
   const ctx = propagation.extract(otel.ROOT_CONTEXT, carrier, getter)
   plan.equal(ctx.transaction, undefined)
   plan.equal(ctx.segment, undefined)
@@ -287,7 +256,7 @@ test('should handle multiple tracestate values', async (t) => {
 
 test('should not set tracestate if it is not a string', async (t) => {
   const plan = tspl(t, { plan: 4 })
-  const { agent } = t.nr
+  const { agent, carrier, getter } = t.nr
   sinon.stub(otel.trace, 'setSpanContext')
   t.after(() => {
     otel.trace.setSpanContext.restore()
@@ -302,14 +271,8 @@ test('should not set tracestate if it is not a string', async (t) => {
     plan.equal(spanContext.traceState.state, undefined)
     return context
   })
-
-  const carrier = {
-    traceparent,
-    tracestate
-  }
-  const getter = {
-    get: (carrier, key) => carrier[key]
-  }
+  carrier.traceparent = traceparent
+  carrier.tracestate = tracestate
   const ctx = propagation.extract(otel.ROOT_CONTEXT, carrier, getter)
   plan.equal(ctx.transaction, undefined)
   plan.equal(ctx.segment, undefined)
