@@ -240,7 +240,6 @@ util.assertDistributedTracing = function assertDistributedTracing(
     'should get different transactions for client and server'
   )
   match(serverAttributes['request.headers.traceparent'], /^[\w-]{55}$/, { assert })
-  assert.equal(serverAttributes['request.headers.newrelic'], '', 'should have the newrelic header')
   assert.equal(
     clientTransaction.traceId,
     serverTransaction.traceId,

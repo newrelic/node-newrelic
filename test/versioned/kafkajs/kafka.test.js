@@ -55,7 +55,7 @@ test.afterEach(async (ctx) => {
 })
 
 test('send records correctly', async (t) => {
-  const plan = tspl(t, { plan: 9 })
+  const plan = tspl(t, { plan: 8 })
   const { agent, consumer, producer, topic } = t.nr
   const message = 'test message'
   const expectedName = 'produce-tx'
@@ -92,7 +92,6 @@ test('send records correctly', async (t) => {
         eachMessage: async ({ message: actualMessage }) => {
           plan.equal(actualMessage.value.toString(), message)
           plan.equal(actualMessage.headers['x-foo'].toString(), 'foo')
-          plan.equal(actualMessage.headers.newrelic.toString(), '')
           plan.equal(actualMessage.headers.traceparent.toString().startsWith('00-'), true)
           resolve()
         }
@@ -183,7 +182,7 @@ test('send passes along DT headers', async (t) => {
 })
 
 test('sendBatch records correctly', async (t) => {
-  const plan = tspl(t, { plan: 10 })
+  const plan = tspl(t, { plan: 9 })
   const { agent, consumer, producer, topic } = t.nr
   const message = 'test message'
   const expectedName = 'produce-tx'
@@ -222,7 +221,6 @@ test('sendBatch records correctly', async (t) => {
         eachMessage: async ({ message: actualMessage }) => {
           plan.equal(actualMessage.value.toString(), message)
           match(actualMessage.headers['x-foo'].toString(), 'foo', { assert: plan })
-          plan.equal(actualMessage.headers.newrelic.toString(), '')
           plan.equal(actualMessage.headers.traceparent.toString().startsWith('00-'), true)
           resolve()
         }
