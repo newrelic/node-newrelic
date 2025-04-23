@@ -101,10 +101,9 @@ test('undici instrumentation', async function (t) {
       helper.runInTransaction(agent, function (tx) {
         const addHeader = sandbox.stub()
         channels.create.publish({ request: { origin: HOST, path: '/foo-2', addHeader } })
-        assert.equal(addHeader.callCount, 2)
+        assert.equal(addHeader.callCount, 1)
         assert.equal(addHeader.args[0][0], 'traceparent')
         assert.match(addHeader.args[0][1], /^[\w-]{55}$/)
-        assert.deepEqual(addHeader.args[1], ['newrelic', ''])
         tx.end()
         end()
       })
