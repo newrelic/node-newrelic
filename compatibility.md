@@ -11,20 +11,20 @@ version.
 
 | Package name | Minimum supported version | Latest supported version | Introduced in* |
 | --- | --- | --- | --- |
-| `@apollo/gateway` | 2.3.0 | 2.10.1 | `@newrelic/apollo-server-plugin@1.0.0` |
+| `@apollo/gateway` | 2.3.0 | 2.10.2 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 4.12.0 | `@newrelic/apollo-server-plugin@2.1.0` |
 | `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.787.0 | 11.13.0 |
 | `@aws-sdk/client-dynamodb` | 3.0.0 | 3.788.0 | 8.7.1 |
 | `@aws-sdk/client-sns` | 3.0.0 | 3.787.0 | 8.7.1 |
 | `@aws-sdk/client-sqs` | 3.0.0 | 3.787.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.788.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.789.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.7.0 | 12.18.0 |
-| `@elastic/elasticsearch` | 7.16.0 | 8.17.1 | 11.9.0 |
+| `@elastic/elasticsearch` | 7.16.0 | 9.0.0 | 11.9.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.13.3 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.0 | 9.0.0 |
 | `@koa/router` | 11.0.2 | 13.1.0 | 3.2.0 |
-| `@langchain/core` | 0.1.17 | 0.3.44 | 11.13.0 |
+| `@langchain/core` | 0.1.17 | 0.3.46 | 11.13.0 |
 | `@nestjs/cli` | 9.0.0 | 11.0.6 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 6.6.0 | 11.0.0 |
@@ -38,7 +38,7 @@ version.
 | `cassandra-driver` | 3.4.0 | 4.8.0 | 1.7.1 |
 | `connect` | 3.0.0 | 3.7.0 | 2.6.0 |
 | `express` | 4.6.0 | 5.1.0 | 2.6.0 |
-| `fastify` | 2.0.0 | 5.3.0 | 8.5.0 |
+| `fastify` | 2.0.0 | 5.3.2 | 8.5.0 |
 | `generic-pool` | 3.0.0 | 3.9.0 | 0.9.0 |
 | `ioredis` | 4.0.0 | 5.6.1 | 1.26.2 |
 | `kafkajs` | 2.0.0 | 2.2.4 | 11.19.0 |
@@ -46,12 +46,12 @@ version.
 | `koa-route` | 3.0.0 | 4.0.1 | 3.2.0 |
 | `koa-router` | 11.0.2 | 13.0.1 | 3.2.0 |
 | `memcached` | 2.2.0 | 2.2.2 | 1.26.2 |
-| `mongodb` | 4.1.4 | 6.15.0 | 1.32.0 |
+| `mongodb` | 4.1.4 | 6.16.0 | 1.32.0 |
 | `mysql` | 2.2.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.14.0 | 1.32.0 |
-| `next` | 13.4.19 | 15.3.0 | 12.0.0 |
-| `openai` | 4.0.0 | 4.94.0 | 11.13.0 |
-| `pg` | 8.2.0 | 8.14.1 | 9.0.0 |
+| `next` | 13.4.19 | 15.3.1 | 12.0.0 |
+| `openai` | 4.0.0 | 4.95.1 | 11.13.0 |
+| `pg` | 8.2.0 | 8.15.1 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.3.0 | 9.0.0 |
 | `pino` | 7.0.0 | 9.6.0 | 8.11.0 |
 | `q` | 1.3.0 | 1.5.1 | 1.26.2 |
