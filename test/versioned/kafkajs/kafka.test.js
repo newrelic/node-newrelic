@@ -66,6 +66,8 @@ test('send records correctly', async (t) => {
       const segment = tx.agent.tracer.getSegment()
       const children = tx.trace.getChildren(segment.id)
 
+      const segments = children.map((s) => s.name)
+      console.log(segments)
       const foundSegment = children.find((s) => s.name.endsWith(topic))
       plan.equal(foundSegment.name, name)
 
