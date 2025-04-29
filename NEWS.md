@@ -18,10 +18,6 @@
 * Skipped regressions in pg-native versioned tests ([#3053](https://github.com/newrelic/node-newrelic/pull/3053)) ([6ce3670](https://github.com/newrelic/node-newrelic/commit/6ce36706adc2e17a80b759b51c23807d617ad04f))
 * Updated elasticsearch image for versioned tests ([#3038](https://github.com/newrelic/node-newrelic/pull/3038)) ([3d73f9f](https://github.com/newrelic/node-newrelic/commit/3d73f9faffd45d2d1465210d168822494439c577))
 
-#### Continuous integration
-
-* Pinned pg-native to below 3.4.0 ([#3049](https://github.com/newrelic/node-newrelic/pull/3049)) ([8a5c4a4](https://github.com/newrelic/node-newrelic/commit/8a5c4a4cea6c536b22621e2c51dcfc2647899779))
-
 ### v12.18.0 (2025-04-14)
 
 #### Features
