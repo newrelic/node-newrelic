@@ -20,6 +20,11 @@ const broker = `${params.kafka_host}:${params.kafka_port}`
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent({
+    instrumentation: {
+      timers: {
+        enabled: false
+      }
+    },
     feature_flag: {
       kafkajs_instrumentation: true
     }
@@ -64,11 +69,8 @@ test('send records correctly', async (t) => {
     if (tx.name === expectedName) {
       const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
       const segment = tx.agent.tracer.getSegment()
-      console.log(segment.name)
       const children = tx.trace.getChildren(segment.id)
 
-      const segments = children.map((s) => s.name)
-      console.log(segments)
       const foundSegment = children.find((s) => s.name.endsWith(topic))
       plan.equal(foundSegment.name, name)
 
