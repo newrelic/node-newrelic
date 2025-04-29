@@ -1,3 +1,33 @@
+### v12.18.1 (2025-04-29)
+
+#### Bug fixes
+
+* Only add `newrelic` header to outgoing headers if has a value ([#3052](https://github.com/newrelic/node-newrelic/pull/3052)) ([6ef0a90](https://github.com/newrelic/node-newrelic/commit/6ef0a904291fb4efc6d6f111b3ec93aac720c3ad))
+
+#### Code refactoring
+
+* Added defensive code when calculating exclusive time on a segment where it cannot locate the segment in the transaction trace tree ([#3051](https://github.com/newrelic/node-newrelic/pull/3051)) ([b4aa25e](https://github.com/newrelic/node-newrelic/commit/b4aa25e2df861dab732bb812bffe961c0cc3da36))
+* Updated how otel bridge trace propagator assigns traceparent/tracestate headers ([#3046](https://github.com/newrelic/node-newrelic/pull/3046)) ([6e317b8](https://github.com/newrelic/node-newrelic/commit/6e317b889c68a2e0e69b1d4d2fa9fe2846a0e94f))
+
+#### Documentation
+
+* Updated compatibility report ([#3054](https://github.com/newrelic/node-newrelic/pull/3054)) ([437d181](https://github.com/newrelic/node-newrelic/commit/437d181fd5b5626598f6a4a4ee5341432e32f133))
+    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
+* Updated compatibility report ([#3050](https://github.com/newrelic/node-newrelic/pull/3050)) ([b79e949](https://github.com/newrelic/node-newrelic/commit/b79e949611bc022920e16a3e17dffdf751c0fd1a))
+* Updated compatibility report ([#3026](https://github.com/newrelic/node-newrelic/pull/3026)) ([e08346e](https://github.com/newrelic/node-newrelic/commit/e08346e6e4d7aaf073d634a01875f5dc39a4f2e4))
+    * Co-authored-by: svetlanabrennan <50715937+svetlanabrennan@users.noreply.github.com>
+
+#### Tests
+
+* Skipped regressions in pg-native versioned tests ([#3053](https://github.com/newrelic/node-newrelic/pull/3053)) ([6ce3670](https://github.com/newrelic/node-newrelic/commit/6ce36706adc2e17a80b759b51c23807d617ad04f))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Updated elasticsearch image for versioned tests ([#3038](https://github.com/newrelic/node-newrelic/pull/3038)) ([3d73f9f](https://github.com/newrelic/node-newrelic/commit/3d73f9faffd45d2d1465210d168822494439c577))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+
+#### Continuous integration
+
+* Pinned pg-native to below 3.4.0 ([#3049](https://github.com/newrelic/node-newrelic/pull/3049)) ([8a5c4a4](https://github.com/newrelic/node-newrelic/commit/8a5c4a4cea6c536b22621e2c51dcfc2647899779))
+
 ### v12.18.0 (2025-04-14)
 
 #### Features
