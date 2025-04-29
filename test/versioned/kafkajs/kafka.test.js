@@ -64,6 +64,7 @@ test('send records correctly', async (t) => {
     if (tx.name === expectedName) {
       const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
       const segment = tx.agent.tracer.getSegment()
+      console.log(segment.name)
       const children = tx.trace.getChildren(segment.id)
 
       const segments = children.map((s) => s.name)
