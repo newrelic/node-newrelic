@@ -31,11 +31,12 @@ function forceSegmentName(ctx, name) {
  * Starts an active span of a given kind.
  * If kind is server or consumer it will update the tx name
  * It will also update the segment name to the span name
- * @param root0
- * @param root0.tracer
- * @param root0.spanName
- * @param root0.spanKind
- * @param cb
+ *
+ * @param {object} params to function
+ * @param {object} params.tracer otel tracer instance
+ * @param {string} params.spanName name of span to force
+ * @param {string} params.spanKind span kind to use to create span
+ * @param {function} cb function to call after span is created, passes newly created span
  */
 function doWorkInSpan({ tracer, spanName, spanKind }, cb) {
   const kind = SpanKind[spanKind.toUpperCase()]
@@ -52,6 +53,15 @@ function doWorkInSpan({ tracer, spanName, spanKind }, cb) {
   })
 }
 
+/**
+ * Creates a background transaction and forces the name for easier assertion.
+ *
+ * @param {object} params to function
+ * @param {object} params.api agent api
+ * @param {object} params.agent agent instance
+ * @param {string} params.transactionName name of transaction to force
+ * @param {function} cb function to call within transaction and passes active tx handle
+ */
 function doWorkInTransaction({ api, agent, transactionName }, cb) {
   api.startBackgroundTransaction(transactionName, () => {
     const transaction = agent.tracer.getTransaction()
@@ -63,6 +73,15 @@ function doWorkInTransaction({ api, agent, transactionName }, cb) {
   })
 }
 
+/**
+ * Creates a segment and forces the name for easier assertion.
+ *
+ * @param {object} params to function
+ * @param {object} params.api agent api
+ * @param {object} params.agent agent instance
+ * @param {string} params.segmentName name of segment to force
+ * @param {function} cb function to call within segment creation and passes newly created segment
+ */
 function doWorkInSegment({ agent, api, segmentName }, cb) {
   api.startSegment(segmentName, true, () => {
     const segment = agent.tracer.getSegment()
@@ -70,12 +89,28 @@ function doWorkInSegment({ agent, api, segmentName }, cb) {
   })
 }
 
+/**
+ * Adds attribute to active segment.
+ *
+ * @param {object} params to function
+ * @param {object} params.agent agent instance
+ * @param {string} params.name name of attribute
+ * @param {string} params.value value of attribute
+ * @param {function} cb function to call after attribute has been set on segment
+ */
 function addOTelAttribute({ agent, name, value }, cb) {
   const segment = agent.tracer.getSegment()
   segment.addAttribute(name, value)
   cb()
 }
 
+/**
+ * Adds an exception on the active span
+ *
+ * @param {object} params to function
+ * @param {string} params.errorMessage message to set on exception
+ * @param {function} cb function to call after exception is recorded on on active span
+ */
 function recordExceptionOnSpan({ errorMessage }, cb) {
   const active = trace.getActiveSpan()
   const errorEvent = {
@@ -89,6 +124,18 @@ function recordExceptionOnSpan({ errorMessage }, cb) {
   cb()
 }
 
+/**
+ * Starts an active span with traceparent header.
+ *
+ * @param {object} params to function
+ * @param {object} params.tracer otel tracer instance
+ * @param {string} params.spanName name of span to force
+ * @param {string} params.spanKind span kind to use to create span
+ * @param {number} params.traceIdInHeader trace id to set on traceparent
+ * @param {number} params.spanIdInHeader span id to set on traceparent
+ * @param {number} params.sampledFlagInHeader sampled flag to set on traceparent
+ * @param {function} cb function to call after span is created, passes newly created span
+ */
 function doWorkInSpanWithInboundContext({ tracer, spanKind, traceIdInHeader, spanIdInHeader, sampledFlagInHeader, spanName }, cb) {
   const headers = {
     traceparent: `00-${traceIdInHeader}-${spanIdInHeader}-0${sampledFlagInHeader}`
@@ -105,20 +152,44 @@ function doWorkInSpanWithInboundContext({ tracer, spanKind, traceIdInHeader, spa
   })
 }
 
+/**
+ * Passes the active context to callback.
+ * There's nothing we need to do to simulate an external call.
+ *
+ * @param {object} _unused param
+ * @param {function} cb to call with active context
+ */
 function simulateExternalCall(_unused, cb) {
   const active = context.active()
   cb(active)
 }
 
+/**
+ * Injects context and runs callback in the context
+ * We put the headers on the agent to be used in assertions later.
+ *
+ * @param {object} params to function
+ * @param {object} params.agent agent instance
+ * @param {object} params.data active context
+ * @param {function} cb function to run in new context
+ */
 function oTelInjectHeaders({ agent, data }, cb) {
   const ctx = data
   const headers = {}
   propagation.inject(ctx, headers)
   agent.headers = headers
 
-  return context.with(ctx, cb)
+  context.with(ctx, cb)
 }
 
+/**
+ * Inserts tracecontext into active transaction.
+ * We put the headers on the agent to be used in assertions later.
+ *
+ * @param {object} params to function
+ * @param {object} params.agent agent instance
+ * @param {function} cb function to run after setting inbound tracecontext
+ */
 function nrInjectHeaders({ agent }, cb) {
   const tx = agent.tracer.getTransaction()
   const headers = {}
@@ -127,6 +198,15 @@ function nrInjectHeaders({ agent }, cb) {
   cb()
 }
 
+/**
+ * Starts an active span with a remote context.
+ *
+ * @param {object} params to function
+ * @param {object} params.tracer otel tracer instance
+ * @param {string} params.spanName name of span to force
+ * @param {string} params.spanKind span kind to use to create span
+ * @param {function} cb function to call after span is created, passes newly created span
+ */
 function doWorkInSpanWithRemoteParent({ tracer, spanKind, spanName }, cb) {
   const kind = SpanKind[spanKind.toUpperCase()]
   const ctx = context.active()

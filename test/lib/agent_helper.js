@@ -249,7 +249,6 @@ helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
   shimmer.debug = false
   helper.maybeUnloadSecurityAgent(agent)
 
-
   // Stop future harvesting by aggregators.
   agent.harvester.stop()
 

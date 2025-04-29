@@ -7,12 +7,24 @@
 const assert = require('node:assert')
 const parameters = require('./parameters')
 
+/**
+ * Asserts that the result of a function is falsey
+ * @param {Agent} agent instance
+ * @param {object} param object. Executes function from parameters.js
+ * @param {string} description of test assertion
+ */
 function notValid(agent, param, description) {
   const fn = parameters[param.object]
   const result = fn(agent)
   assert.ok(!result, description)
 }
 
+/**
+ * Asserts values of two different parameters are equal
+ * @param {Agent} agent instance
+ * @param {object} param object. Executes function from parameters.js
+ * @param {string} description of test assertion
+ */
 function equals(agent, param, description) {
   const [leftFn, leftProp] = param.left.split('.')
   const [rightFn, rightProp] = param.right.split('.')
@@ -21,12 +33,24 @@ function equals(agent, param, description) {
   assert.equal(left[leftProp], right[rightProp], description)
 }
 
+/**
+ * Asserts value equals expected value
+ * @param {Agent} agent instance
+ * @param {object} param object. Executes function from parameters.js
+ * @param {string} description of test assertion
+ */
 function matches(agent, param, description) {
   const [fn, prop] = param.object.split('.')
   const data = parameters[fn](agent)
   assert.equal(data[prop], param.value, description)
 }
 
+/**
+ * Asserts transactions and spans collected during test run.
+ *
+ * @param {Agent} agent instance
+ * @param {object} output collection that asserts all transactions/spans created during test run
+ */
 function agentOutput(agent, output) {
   const txData = agent.transactionEventAggregator.getEvents()
   assert.equal(txData.length, output.transactions.length)

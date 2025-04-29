@@ -25,7 +25,7 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
 
-test('should create consumer segment from otel span', (t) => {
+test('should attributeValueLengthLimit accordingly', (t) => {
   const { agent, loggerMock } = t.nr
   agent.config.feature_flag.opentelemetry_bridge = true
   setupOtel(agent, loggerMock)
@@ -55,4 +55,3 @@ test('should assign span key to agent', (t) => {
   setupOtel(agent, loggerMock)
   assert.ok(agent.otelSpanKey)
 })
-

@@ -238,6 +238,20 @@ test('should create base http server segment', (t) => {
   assert.ok(transaction)
 })
 
+test('should not create tx if one already exists when a server span is created', (t, end) => {
+  const { agent, synthesizer, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'test-tx'
+    const span = createHttpServerSpan({ tracer })
+    const { segment, transaction } = synthesizer.synthesize(span)
+    assert.deepEqual(tx, transaction)
+    assert.equal(segment.name, 'test-span')
+    assert.equal(segment.id, span.spanContext().spanId)
+    assert.equal(segment.parentId, segment.root.id)
+    end()
+  })
+})
+
 test('should create topic producer segment', (t, end) => {
   const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
@@ -306,6 +320,25 @@ test('should create consumer segment from otel span', (t) => {
   assert.equal(transaction.name, expectedName)
   assert.equal(transaction.type, 'message')
   assert.equal(transaction.baseSegment, segment)
+})
+
+test('should not create tx if one already exists when a consumer span is created', (t, end) => {
+  const { agent, synthesizer, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'test-tx'
+    const span = createSpan({ tracer, kind: SpanKind.CONSUMER })
+    span.name = 'test-span'
+    span.setAttribute('messaging.operation', 'receive')
+    span.setAttribute(ATTR_MESSAGING_SYSTEM, 'msgqueuer')
+    span.setAttribute(ATTR_MESSAGING_DESTINATION, 'dest1')
+
+    const { segment, transaction } = synthesizer.synthesize(span)
+    assert.deepEqual(tx, transaction)
+    assert.equal(segment.name, 'test-span')
+    assert.equal(segment.id, span.spanContext().spanId)
+    assert.equal(segment.parentId, segment.root.id)
+    end()
+  })
 })
 
 test('should log warning span does not match a rule', (t, end) => {
