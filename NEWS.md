@@ -1,3 +1,13 @@
+### v12.18.2 (2025-04-30)
+
+#### Bug fixes
+
+* Updated `createSegment` to stop adding segments to trace when `max_trace_segments` is exceeded ([#3056](https://github.com/newrelic/node-newrelic/pull/3056)) ([8f3336e](https://github.com/newrelic/node-newrelic/commit/8f3336e98ac9f7d4ad0ded3a061774fd68053e76))
+
+#### Documentation
+
+* Updated compatibility report ([#3065](https://github.com/newrelic/node-newrelic/pull/3065)) ([#3063](https://github.com/newrelic/node-newrelic/pull/3063)) 
+
 ### v12.18.1 (2025-04-29)
 
 #### Bug fixes
