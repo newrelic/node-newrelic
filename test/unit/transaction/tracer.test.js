@@ -259,5 +259,19 @@ test('Tracer', async function (t) {
       assert.equal(segment.id, id)
       tx.end()
     })
+
+    await t.test('should stop adding segments to trace when `max_trace_segments` is exceeded', (t) => {
+      const { agent, tracer } = t.nr
+      const tx = new Transaction(agent)
+
+      const ar = new Array(1000).fill('a')
+      ar.forEach((_el, i) => {
+        tracer.createSegment({ name: `Test Segment ${i}`, parent: tx.trace.root, transaction: tx })
+      })
+
+      const [,,,,childSegments] = tx.trace.toJSON()
+      // max_trace_segments is 900(ROOT + 899 child segments
+      assert.equal(childSegments.length, 899)
+    })
   })
 })

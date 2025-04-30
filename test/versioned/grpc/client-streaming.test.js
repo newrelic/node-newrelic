@@ -81,7 +81,6 @@ test('should include distributed trace headers when enabled', (t, end) => {
         /^[\w-]{55}$/,
         'should have traceparent in server metadata'
       )
-      assert.equal(dtMeta.get('newrelic')[0], '', 'should have newrelic in server metadata')
     })
     tx.end()
     end()

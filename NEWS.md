@@ -1,3 +1,57 @@
+### v12.18.2 (2025-04-30)
+
+#### Bug fixes
+
+* Updated `createSegment` to stop adding segments to trace when `max_trace_segments` is exceeded ([#3056](https://github.com/newrelic/node-newrelic/pull/3056)) ([8f3336e](https://github.com/newrelic/node-newrelic/commit/8f3336e98ac9f7d4ad0ded3a061774fd68053e76))
+
+#### Documentation
+
+* Updated compatibility report ([#3065](https://github.com/newrelic/node-newrelic/pull/3065)) ([#3063](https://github.com/newrelic/node-newrelic/pull/3063)) 
+
+### v12.18.1 (2025-04-29)
+
+#### Bug fixes
+
+* Only add `newrelic` header to outgoing headers if has a value ([#3052](https://github.com/newrelic/node-newrelic/pull/3052)) ([6ef0a90](https://github.com/newrelic/node-newrelic/commit/6ef0a904291fb4efc6d6f111b3ec93aac720c3ad))
+
+#### Code refactoring
+
+* Added defensive code when calculating exclusive time on a segment where it cannot locate the segment in the transaction trace tree ([#3051](https://github.com/newrelic/node-newrelic/pull/3051)) ([b4aa25e](https://github.com/newrelic/node-newrelic/commit/b4aa25e2df861dab732bb812bffe961c0cc3da36))
+* Updated how otel bridge trace propagator assigns traceparent/tracestate headers ([#3046](https://github.com/newrelic/node-newrelic/pull/3046)) ([6e317b8](https://github.com/newrelic/node-newrelic/commit/6e317b889c68a2e0e69b1d4d2fa9fe2846a0e94f))
+
+#### Documentation
+
+* Updated compatibility report ([#3054](https://github.com/newrelic/node-newrelic/pull/3054)) ([#3050](https://github.com/newrelic/node-newrelic/pull/3050)) ([#3026](https://github.com/newrelic/node-newrelic/pull/3026)) 
+
+#### Tests
+
+* Skipped regressions in pg-native versioned tests ([#3053](https://github.com/newrelic/node-newrelic/pull/3053)) ([6ce3670](https://github.com/newrelic/node-newrelic/commit/6ce36706adc2e17a80b759b51c23807d617ad04f))
+* Updated elasticsearch image for versioned tests ([#3038](https://github.com/newrelic/node-newrelic/pull/3038)) ([3d73f9f](https://github.com/newrelic/node-newrelic/commit/3d73f9faffd45d2d1465210d168822494439c577))
+
+### v12.18.0 (2025-04-14)
+
+#### Features
+
+* Support Azure functions background trigger types ([#3028](https://github.com/newrelic/node-newrelic/pull/3028)) ([3bf17b0](https://github.com/newrelic/node-newrelic/commit/3bf17b03abaa713c1f9ad544c54c24a6374359c2))
+* Support Azure functions HTTP trigger type ([#3021](https://github.com/newrelic/node-newrelic/pull/3021)) ([90d894b](https://github.com/newrelic/node-newrelic/commit/90d894bf1eb4a48f4b7f314ae22eef2cc76c32b9))
+
+#### Bug fixes
+
+* Updated span streamer to properly retry failed batches and handle flushing batch queue every 5 seconds ([#3033](https://github.com/newrelic/node-newrelic/pull/3033)) ([7db0e7c](https://github.com/newrelic/node-newrelic/commit/7db0e7ca929d54858addd5255b46507f82333045))
+
+#### Code refactoring
+
+* Update otel bridge rules synthesizer to properly handle consumer kind rules ([#3003](https://github.com/newrelic/node-newrelic/pull/3003)) ([3295dd1](https://github.com/newrelic/node-newrelic/commit/3295dd12bbebb708f3eeca2ad32fbc157a892fec))
+
+#### Documentation
+
+* Updated compatibility report ([#3020](https://github.com/newrelic/node-newrelic/pull/3020)) ([ce32b67](https://github.com/newrelic/node-newrelic/commit/ce32b6754383b6b1fe95d1d37759810b4caaf34c))
+
+#### Miscellaneous chores
+
+* Fixed prisma CI issues ([#3031](https://github.com/newrelic/node-newrelic/pull/3031)) ([1349cae](https://github.com/newrelic/node-newrelic/commit/1349cae4d87941e4f55dffc2445c90e73d823bbc))
+* Improved logging within utilization detection ([#3034](https://github.com/newrelic/node-newrelic/pull/3034)) ([b47bd46](https://github.com/newrelic/node-newrelic/commit/b47bd46ad144723ac62192eb9cc474ddd1fce98d))
+
 ### v12.17.0 (2025-04-02)
 
 #### Features

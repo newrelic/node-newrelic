@@ -1573,10 +1573,28 @@ test('insertDistributedTraceHeaders', async (t) => {
 
     }
     const headers = {}
-    txn.insertDistributedTraceHeaders(headers, spanContext)
-    assert.equal(headers.traceparent, `00-${traceId}-${spanId}-01`)
-    const { tracestate } = headers
+    const setter = {
+      set(carrier, header, value) {
+        carrier[header] = value
+      }
+    }
+    txn.insertDistributedTraceHeaders(headers, setter, spanContext)
+    const { traceparent, tracestate } = headers
+    assert.equal(traceparent, `00-${traceId}-${spanId}-01`)
     assert.ok(tracestate.startsWith(`${trustedAccountKey}@nr=0-0-AccountId1-Application1-${spanId}-${txn.id}`))
+  })
+
+  await t.test('should not set newrelic header if empty string', (t) => {
+    const { agent } = t.nr
+    agent.config.distributed_tracing.enabled = true
+    agent.config.span_events.enabled = true
+    const txn = new Transaction(agent)
+    const headers = {}
+    txn.insertDistributedTraceHeaders(headers)
+    console.log(headers)
+    assert.ok(headers.traceparent)
+    assert.ok(!Object.prototype.hasOwnProperty.call(headers, 'tracestate'))
+    assert.ok(!Object.prototype.hasOwnProperty.call(headers, 'newrelic'))
   })
 })
 

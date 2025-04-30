@@ -67,6 +67,22 @@ test('TraceSegment', async (t) => {
     assert.equal(segment.timer.isRunning(), false)
   })
 
+  await t.test('does not crash when calculating exclusive time', (t) => {
+    const { agent } = t.nr
+    const trans = new Transaction(agent)
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root
+    })
+    segment.start()
+    segment.touch()
+    const duration = segment.getExclusiveDurationInMillis(trans.trace)
+    assert.ok(duration > 0)
+  })
+
   await t.test('allows the timer to be updated without ending it', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)

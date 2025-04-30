@@ -77,11 +77,6 @@ test.beforeEach((ctx) => {
 
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
-  // disable all global constructs from trace sdk
-  otel.trace.disable()
-  otel.context.disable()
-  otel.propagation.disable()
-  otel.diag.disable()
 })
 
 test('mix internal and NR span tests', (t, end) => {
