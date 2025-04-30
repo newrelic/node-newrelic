@@ -80,8 +80,8 @@ test('should add transaction and trace root to otel ctx', (t) => {
   const newContext = ctx.enterTransaction(transaction)
   const fakeSpan = newContext.getValue(agent.otelSpanKey)
   assert.deepEqual(fakeSpan, {
-    segment: transaction.trace.root,
-    transaction
+    segmentId: transaction.trace.root.id,
+    traceId: transaction.traceId
   })
 })
 
@@ -93,7 +93,7 @@ test('should add segment to otel ctx', (t) => {
   const newContext = ctx.enterSegment({ segment })
   const fakeSpan = newContext.getValue(agent.otelSpanKey)
   assert.deepEqual(fakeSpan, {
-    segment,
-    transaction: newContext.transaction
+    segmentId: segment.id,
+    traceId: newContext.transaction.traceId
   })
 })
