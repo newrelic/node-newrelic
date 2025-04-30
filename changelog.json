@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.18.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `createSegment` to stop adding segments to trace when `max_trace_segments` is exceeded"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "12.18.1",
       "changes": {
         "security": [],

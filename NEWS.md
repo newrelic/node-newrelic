@@ -1,3 +1,20 @@
+### v12.18.2 (2025-04-30)
+
+#### Bug fixes
+
+* Updated `createSegment` to stop adding segments to trace when `max_trace_segments` is exceeded ([#3056](https://github.com/newrelic/node-newrelic/pull/3056)) ([8f3336e](https://github.com/newrelic/node-newrelic/commit/8f3336e98ac9f7d4ad0ded3a061774fd68053e76))
+
+#### Documentation
+
+* Updated compatibility report ([#3065](https://github.com/newrelic/node-newrelic/pull/3065)) ([d5fcf83](https://github.com/newrelic/node-newrelic/commit/d5fcf83b897fb6762ea9ec7256d41914c6145616))
+    * Co-authored-by: mrickard <11327+mrickard@users.noreply.github.com>
+* Updated compatibility report ([#3063](https://github.com/newrelic/node-newrelic/pull/3063)) ([78579e8](https://github.com/newrelic/node-newrelic/commit/78579e8232cacd1fb85d6f3b8f8a303ce0244286))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+
+#### Tests
+
+* Pinned @aws-sdk/client-bedrock-runtime to <3.798.0 ([#3064](https://github.com/newrelic/node-newrelic/pull/3064)) ([585b5ee](https://github.com/newrelic/node-newrelic/commit/585b5eecac5a6132fdb764d138df4859e15b9ef7))
+
 ### v12.18.1 (2025-04-29)
 
 #### Bug fixes
