@@ -23,8 +23,18 @@
         "redis": ">=4.0.0 < 5.0.0"
       },
       "files": [
+        "redis-v4-legacy-mode.test.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "redis": ">=4.0.0"
+      },
+      "files": [
         "redis-v4.test.js",
-        "redis-v4-legacy-mode.test.js",
         "tls.test.js"
       ]
     }
