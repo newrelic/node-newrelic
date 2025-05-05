@@ -4,13 +4,60 @@
  */
 
 'use strict'
+
 const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 const helper = require('../../lib/agent_helper')
 const DatastoreShim = require('../../../lib/shim/datastore-shim.js')
+const { removeMatchedModules } = require('#testlib/cache-buster.js')
 const { redisClientOpts } = require('../../../lib/symbols')
 const { getRedisParams } = require('../../../lib/instrumentation/@node-redis/client')
+
+test('logs warnings correctly', async t => {
+  const instrumentation = require('../../../lib/instrumentation/redis.js')
+
+  t.beforeEach(ctx => {
+    ctx.nr = {
+      logs: [],
+      shim: {
+        pkgVersion: '5.0.0',
+        logger: {
+          info(msg) { ctx.nr.logs.push(msg) },
+          warn(msg) { ctx.nr.logs.push(msg) }
+        }
+      }
+    }
+  })
+
+  t.after(() => {
+    removeMatchedModules(/redis/)
+  })
+
+  await t.test('< v5', t => {
+    const { shim } = t.nr
+    shim.pkgVersion = '4.0.0'
+    instrumentation(null, Object.create(null), null, shim)
+    assert.equal(t.nr.logs.length, 1)
+    assert.equal(t.nr.logs[0], 'Skipping redis instrumentation due to unrecognized module shape')
+  })
+
+  await t.test('=== v5', t => {
+    const { shim } = t.nr
+    shim.pkgVersion = '5.0.0'
+    instrumentation(null, Object.create(null), null, shim)
+    assert.equal(t.nr.logs.length, 1)
+    assert.equal(t.nr.logs[0], 'Skipping redis instrumentation as v5 is supported through @redis/client')
+  })
+
+  await t.test('> v5', t => {
+    const { shim } = t.nr
+    shim.pkgVersion = '6.0.0'
+    instrumentation(null, Object.create(null), null, shim)
+    assert.equal(t.nr.logs.length, 1)
+    assert.equal(t.nr.logs[0], 'Skipping redis instrumentation due to unrecognized module version')
+  })
+})
 
 test('getRedisParams should behave as expected', async function (t) {
   await t.test('given no opts, should return sensible defaults', async function () {
