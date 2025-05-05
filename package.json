@@ -170,6 +170,7 @@
     "public-docs": "jsdoc -c ./jsdoc-conf.jsonc",
     "publish-docs": "./bin/publish-docs.sh",
     "services": "DOCKER_PLATFORM=linux/$(uname -m) docker compose up -d --wait",
+    "services:start": "npm run services",
     "services:stop": "docker compose down",
     "smoke": "time borp --timeout 180000 --reporter ./test/lib/test-reporter.mjs 'test/smoke/**/*.{test,tap}.js'",
     "sub-install": "node test/bin/install_sub_deps",
