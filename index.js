@@ -5,7 +5,7 @@
 
 'use strict'
 
-const HealthReporter = require('./lib/health-reporter')
+const HealthReporter = require('./lib/health-reporter.js')
 
 // Record opening times before loading any other files.
 const preAgentTime = process.uptime()
