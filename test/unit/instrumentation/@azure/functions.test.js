@@ -131,3 +131,31 @@ test('mapTriggerType maps recognized keys', t => {
     assert.equal(found, expected)
   }
 })
+
+test('app.setup wraps setup and disables HTTP/HTTPS instrumentation when enableHttpStream is true', t => {
+  bootstrapModule({ t })
+  const { agent } = t.nr
+  const azureFunctions = {
+    app: {}
+  }
+
+  let setupCalled = false
+  Object.defineProperty(azureFunctions.app, 'setup', {
+    enumerable: true,
+    configurable: true,
+    get: function () {
+      return function setup(opts) {
+        setupCalled = true
+      }
+    }
+  })
+
+  t.nr.initialize(agent, azureFunctions, 'azure-functions', t.nr.shim)
+
+  const setup = azureFunctions.app.setup
+  setup({ enableHttpStream: true })
+
+  assert.equal(setupCalled, true, 'Original setup should be called')
+  assert.equal(agent.config.instrumentation.http.enabled, false, 'HTTP instrumentation should be disabled')
+  assert.equal(agent.config.instrumentation.https.enabled, false, 'HTTPS instrumentation should be disabled')
+})
