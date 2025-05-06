@@ -25,6 +25,7 @@
       "files": [
         "redis-v4.test.js",
         "redis-v4-legacy-mode.test.js",
+        "redis-v4-promises.test.js",
         "tls.test.js"
       ]
     }

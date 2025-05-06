@@ -7,6 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const semver = require('semver')
+
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const params = require('../../lib/params')
@@ -16,8 +18,7 @@ const { checkMetrics } = require('./utils')
 // Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 2
 
-const pkg = require('redis/package.json')
-const redisVersion = Number(pkg.version.split('.').shift())
+const { version: redisVersion } = require('redis/package.json')
 
 test('Redis instrumentation', async function (t) {
   t.beforeEach(async function (ctx) {
@@ -25,7 +26,7 @@ test('Redis instrumentation', async function (t) {
     const redis = require('redis')
 
     let client
-    if (redisVersion >= 5) {
+    if (semver.satisfies(redisVersion, '>=5.0.0')) {
       client = await redis.createClient({
         port: params.redis_port,
         host: params.redis_host
@@ -78,7 +79,7 @@ test('Redis instrumentation', async function (t) {
     const { agent, client } = ctx.nr
     helper.unloadAgent(agent)
 
-    if (redisVersion >= 5) {
+    if (semver.satisfies(redisVersion, '>= 5.0.0')) {
       await client.close()
     } else {
       await client.disconnect()

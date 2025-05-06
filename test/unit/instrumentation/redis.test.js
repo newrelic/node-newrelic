@@ -23,7 +23,6 @@ test('logs warnings correctly', async t => {
       shim: {
         pkgVersion: '5.0.0',
         logger: {
-          info(msg) { ctx.nr.logs.push(msg) },
           warn(msg) { ctx.nr.logs.push(msg) }
         }
       }
@@ -34,28 +33,11 @@ test('logs warnings correctly', async t => {
     removeMatchedModules(/redis/)
   })
 
-  await t.test('< v5', t => {
+  await t.test('missing required prototype', t => {
     const { shim } = t.nr
-    shim.pkgVersion = '4.0.0'
-    instrumentation(null, Object.create(null), null, shim)
+    instrumentation(null, null, null, shim)
     assert.equal(t.nr.logs.length, 1)
     assert.equal(t.nr.logs[0], 'Skipping redis instrumentation due to unrecognized module shape')
-  })
-
-  await t.test('=== v5', t => {
-    const { shim } = t.nr
-    shim.pkgVersion = '5.0.0'
-    instrumentation(null, Object.create(null), null, shim)
-    assert.equal(t.nr.logs.length, 1)
-    assert.equal(t.nr.logs[0], 'Skipping redis instrumentation as v5 is supported through @redis/client')
-  })
-
-  await t.test('> v5', t => {
-    const { shim } = t.nr
-    shim.pkgVersion = '6.0.0'
-    instrumentation(null, Object.create(null), null, shim)
-    assert.equal(t.nr.logs.length, 1)
-    assert.equal(t.nr.logs[0], 'Skipping redis instrumentation due to unrecognized module version')
   })
 })
 
