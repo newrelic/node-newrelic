@@ -10,6 +10,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const { once } = require('node:events')
+const { Readable } = require('node:stream')
 
 const helper = require('../../lib/agent_helper.js')
 const { removeMatchedModules } = require('../../lib/cache-buster.js')
@@ -109,6 +110,15 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
       }
     }
   }
+  Object.defineProperty(mockApi.app, 'setup', {
+    enumerable: true,
+    configurable: true,
+    get: function () {
+      return function (opts) {
+        // Simulate Azure Function setup
+      }
+    }
+  })
   t.nr.mockApi = mockApi
 }
 
@@ -139,6 +149,7 @@ test('wraps expected methods', t => {
 
   initialize(agent, mockApi, MODULE_NAME, shim)
   for (const key of Object.keys(mockApi.app)) {
+    if (key === 'setup') continue
     const isWrapped = shim.isWrapped(mockApi.app[key])
     assert.equal(isWrapped, true)
   }
@@ -351,4 +362,39 @@ test('uses port provided in url', async (t) => {
   const [tx] = await txFinished
   assert.ok(tx)
   assert.equal(tx.port, '8080')
+})
+
+test('ends transaction when enableHttpStream is true and on stream close', async (t) => {
+  bootstrapModule({ t })
+  const { agent, initialize, mockApi, shim } = t.nr
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  mockApi.app.setup({ enableHttpStream: true })
+
+  const handler = async function () {
+    const response = new AzureFunctionHttpResponse()
+    response.body = new Readable({
+      read() {
+        this.push('streaming data')
+        this.push(null) // End the stream
+      }
+    })
+    response.status = 200
+    return response
+  }
+  const options = { handler }
+
+  const txFinished = once(agent, 'transactionFinished')
+  mockApi.app.get('a-test', options)
+  const response = await mockApi.httpRequest('get')
+
+  response.body.on('data', () => {})
+  await new Promise((resolve) => {
+    response.body.on('close', async () => {
+      const [tx] = await txFinished
+      assert.ok(tx)
+      assert.equal(tx.baseSegment.name, 'WebTransaction/AzureFunction/test-func')
+      resolve()
+    })
+  })
 })
