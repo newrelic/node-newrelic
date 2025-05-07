@@ -6,7 +6,7 @@
 'use strict'
 
 exports.config = {
-  app_name: ['redis@2 test'],
+  app_name: ['redis test'],
   license_key: 'license key here',
   utilization: {
     detect_aws: false,
@@ -16,6 +16,7 @@ exports.config = {
     detect_docker: false
   },
   logging: {
-    enabled: false
+    enabled: false,
+    level: 'trace'
   }
 }
