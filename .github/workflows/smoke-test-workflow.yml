@@ -1,7 +1,10 @@
 name: Server Smoke Tests
 
 on:
-    # Run on pushes to any branch. Not triggered for forked repo PRs.
+  pull_request:
+    types:
+      - labeled
+  # Run on pushes to any branch. Not triggered for forked repo PRs.
   push:
   schedule:
     # Run once a day at 9AM PDT (16 UTC) on week days (1-5).
@@ -12,6 +15,10 @@ on:
 
 jobs:
   smoke:
+    if: github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
+      github.event_name == 'schedule' ||
+      github.event.label.name == 'force-smoke'
     runs-on: ubuntu-latest
 
     strategy:
