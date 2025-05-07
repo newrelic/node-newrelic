@@ -1,7 +1,7 @@
 name: Server Smoke Tests
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - labeled
   # Run on pushes to any branch. Not triggered for forked repo PRs.
@@ -19,6 +19,7 @@ jobs:
       github.event_name == 'push' ||
       github.event_name == 'schedule' ||
       github.event.label.name == 'force-smoke'
+    permissions: read-all
     runs-on: ubuntu-latest
 
     strategy:
