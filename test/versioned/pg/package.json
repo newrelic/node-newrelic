@@ -6,7 +6,8 @@
   "tests": [
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=18 <24",
+        "comment": "https://github.com/brianc/node-postgres/issues/3458"
       },
       "dependencies": {
         "pg": ">=8.2.0",
