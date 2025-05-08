@@ -10,7 +10,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const { once } = require('node:events')
-const { Readable } = require('node:stream')
+const { Transform, Readable } = require('node:stream')
 
 const helper = require('../../lib/agent_helper.js')
 const { removeMatchedModules } = require('../../lib/cache-buster.js')
@@ -361,12 +361,17 @@ test('ends transaction on stream close', async (t) => {
 
   const handler = async function () {
     const response = new AzureFunctionHttpResponse()
-    response.body = new Readable({
+    const stream = new Readable({
       read() {
         this.push('streaming data')
         this.push(null) // End the stream
       }
     })
+    response.body = stream.pipe(new Transform({
+      transform(chunk, encoding, callback) {
+        callback()
+      }
+    }))
     response.status = 200
     return response
   }
@@ -376,13 +381,17 @@ test('ends transaction on stream close', async (t) => {
   mockApi.app.get('a-test', options)
   const response = await mockApi.httpRequest('get')
 
-  response.body.on('data', () => {})
-  await new Promise((resolve) => {
+  response.body.on('data', () => { })
+  await new Promise((resolve, reject) => {
     response.body.on('close', async () => {
-      const [tx] = await txFinished
-      assert.ok(tx)
-      assert.equal(tx.baseSegment.name, 'WebTransaction/AzureFunction/test-func')
-      resolve()
+      try {
+        const [tx] = await txFinished
+        assert.ok(tx)
+        assert.equal(tx.baseSegment.name, 'WebTransaction/AzureFunction/test-func')
+        resolve()
+      } catch (err) {
+        reject(err)
+      }
     })
   })
 })
