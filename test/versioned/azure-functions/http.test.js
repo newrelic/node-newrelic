@@ -382,7 +382,7 @@ test('ends transaction on stream close', async (t) => {
   mockApi.app.get('a-test', options)
   const response = await mockApi.httpRequest('get')
 
-  response.body.on('data', (data) => { 
+  response.body.on('data', (data) => {
     assert.equal(data.toString(), 'streamed data')
   })
   await new Promise((resolve, reject) => {
