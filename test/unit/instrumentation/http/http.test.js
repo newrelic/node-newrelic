@@ -45,6 +45,7 @@ test('built-in http module instrumentation', async (t) => {
 
     t.afterEach((ctx) => {
       helper.unloadAgent(ctx.nr.agent)
+      process.env.FUNCTIONS_WORKER_RUNTIME = ''
     })
 
     await t.test('when passed no module', (t) => {
@@ -55,6 +56,23 @@ test('built-in http module instrumentation', async (t) => {
     await t.test('when passed an empty module', (t) => {
       const { agent, initialize } = t.nr
       assert.doesNotThrow(() => initialize(agent, {}, 'http', new Shim(agent, 'http')))
+    })
+
+    await t.test('should not instrument if azure functions environment detected', (t) => {
+      const { agent, initialize } = t.nr
+      process.env.FUNCTIONS_WORKER_RUNTIME = 'node'
+      const http = {
+        request: function request(options) {
+          const requested = new EventEmitter()
+          requested.path = '/TEST'
+          if (options.path) {
+            requested.path = options.path
+          }
+
+          return requested
+        }
+      }
+      assert.equal(initialize(agent, http, 'http', new Shim(agent, 'http')), false)
     })
   })
 
