@@ -110,15 +110,6 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
       }
     }
   }
-  Object.defineProperty(mockApi.app, 'setup', {
-    enumerable: true,
-    configurable: true,
-    get: function () {
-      return function (opts) {
-        // Simulate Azure Function setup
-      }
-    }
-  })
   t.nr.mockApi = mockApi
 }
 
@@ -149,7 +140,6 @@ test('wraps expected methods', t => {
 
   initialize(agent, mockApi, MODULE_NAME, shim)
   for (const key of Object.keys(mockApi.app)) {
-    if (key === 'setup') continue
     const isWrapped = shim.isWrapped(mockApi.app[key])
     assert.equal(isWrapped, true)
   }
