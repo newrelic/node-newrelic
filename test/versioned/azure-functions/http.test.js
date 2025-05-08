@@ -363,12 +363,13 @@ test('ends transaction on stream close', async (t) => {
     const response = new AzureFunctionHttpResponse()
     const stream = new Readable({
       read() {
-        this.push('streaming data')
+        this.push('streamed data')
         this.push(null) // End the stream
       }
     })
     response.body = stream.pipe(new Transform({
       transform(chunk, encoding, callback) {
+        this.push(chunk.toString())
         callback()
       }
     }))
@@ -381,7 +382,9 @@ test('ends transaction on stream close', async (t) => {
   mockApi.app.get('a-test', options)
   const response = await mockApi.httpRequest('get')
 
-  response.body.on('data', () => { })
+  response.body.on('data', (data) => { 
+    assert.equal(data.toString(), 'streamed data')
+  })
   await new Promise((resolve, reject) => {
     response.body.on('close', async () => {
       try {
