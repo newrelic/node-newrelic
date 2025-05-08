@@ -354,12 +354,10 @@ test('uses port provided in url', async (t) => {
   assert.equal(tx.port, '8080')
 })
 
-test('ends transaction when enableHttpStream is true and on stream close', async (t) => {
+test('ends transaction on stream close', async (t) => {
   bootstrapModule({ t })
   const { agent, initialize, mockApi, shim } = t.nr
   initialize(agent, mockApi, MODULE_NAME, shim)
-
-  mockApi.app.setup({ enableHttpStream: true })
 
   const handler = async function () {
     const response = new AzureFunctionHttpResponse()
