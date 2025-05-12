@@ -17,12 +17,24 @@
     },
     {
       "engines": {
-        "node": ">=18 <24",
-        "comment": "https://github.com/brianc/node-postgres/issues/3458"
+        "node": ">=18 <24"
       },
       "dependencies": {
         "pg": ">=8.2.0",
         "pg-native": ">=3.0.0 <3.4.0 || >=3.4.5"
+      },
+      "files": [
+        "force-native.test.js",
+        "native.test.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=24"
+      },
+      "dependencies": {
+        "pg": ">=8.16.0",
+        "pg-native": ">=3.5.0"
       },
       "files": [
         "force-native.test.js",
