@@ -151,7 +151,7 @@
   ],
   "homepage": "https://github.com/newrelic/node-newrelic",
   "engines": {
-    "node": ">=18",
+    "node": ">=20",
     "npm": ">=6.0.0"
   },
   "directories": {

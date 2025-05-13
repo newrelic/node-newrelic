@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "tests": [
     {
       "supported": false,
       "comment": "Used to assert our instrumentation does not get loaded on old versions.",
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "dependencies": {
         "@elastic/elasticsearch": "7.13.0"
@@ -22,7 +22,7 @@
     },
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "dependencies": {
         "@elastic/elasticsearch": ">=7.16.0"

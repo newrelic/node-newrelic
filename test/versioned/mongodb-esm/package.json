@@ -6,7 +6,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "dependencies": {
         "mongodb": ">= 4.1.4 < 5"

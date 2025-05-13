@@ -9,12 +9,12 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "tests": [
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "dependencies": {
         "@prisma/client": ">=5.0.0 <5.9.0 || >=5.9.1"
