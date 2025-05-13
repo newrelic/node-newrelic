@@ -4,7 +4,7 @@
  */
 
 // This file provides a custom test reporter for the native test runner
-// included in Node.js >=18. The default `spec` reporter writes too much
+// included in Node.js >=20. The default `spec` reporter writes too much
 // information to be usable in CI, and the `dot` reporter hides which tests
 // failed. This custom reporter outputs nothing for successful tests, and
 // outputs the failing test file when any failing test has occurred.
@@ -102,6 +102,7 @@ async function * reporter(source) {
   for await (const event of source) {
     const file = event.data.file || event.data.name
 
+    // TODO: Remove this when Node.js v18 is no longer supported?
     // Once v18 has been dropped, we might want to revisit the output of
     // cases. The `event` object is supposed to provide things like
     // the failing line number and column, along with the failing test name.

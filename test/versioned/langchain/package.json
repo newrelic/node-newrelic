@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "tests": [
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "comment": "This is implicitly testing `@langchain/core` as it's a peer dep",
       "dependencies": {
@@ -23,7 +23,7 @@
     },
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "comment": "Using latest of `@langchain/openai` only as it is being used to seed embeddings, nothing to test that hasn't been done in the above stanza",
       "dependencies": {
