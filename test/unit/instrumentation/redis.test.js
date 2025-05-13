@@ -4,13 +4,42 @@
  */
 
 'use strict'
+
 const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 const helper = require('../../lib/agent_helper')
 const DatastoreShim = require('../../../lib/shim/datastore-shim.js')
+const { removeMatchedModules } = require('#testlib/cache-buster.js')
 const { redisClientOpts } = require('../../../lib/symbols')
 const { getRedisParams } = require('../../../lib/instrumentation/@node-redis/client')
+
+test('logs warnings correctly', async t => {
+  const instrumentation = require('../../../lib/instrumentation/redis.js')
+
+  t.beforeEach(ctx => {
+    ctx.nr = {
+      logs: [],
+      shim: {
+        pkgVersion: '5.0.0',
+        logger: {
+          warn(msg) { ctx.nr.logs.push(msg) }
+        }
+      }
+    }
+  })
+
+  t.after(() => {
+    removeMatchedModules(/redis/)
+  })
+
+  await t.test('missing required prototype', t => {
+    const { shim } = t.nr
+    instrumentation(null, null, null, shim)
+    assert.equal(t.nr.logs.length, 1)
+    assert.equal(t.nr.logs[0], 'Skipping redis instrumentation due to unrecognized module shape')
+  })
+})
 
 test('getRedisParams should behave as expected', async function (t) {
   await t.test('given no opts, should return sensible defaults', async function () {

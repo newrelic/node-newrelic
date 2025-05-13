@@ -319,6 +319,11 @@ test('with default properties', async (t) => {
     assert.equal(configuration.instrumentation.undici.enabled, true)
     assert.equal(configuration.instrumentation.domain.enabled, true)
   })
+
+  await t.test('remote parent sampling should default to baseline', () => {
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
+  })
 })
 
 test('with undefined as default', async (t) => {

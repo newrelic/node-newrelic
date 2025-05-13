@@ -12,7 +12,7 @@
         "redis": ">=3.1.0 < 4.0.0"
       },
       "files": [
-        "redis.test.js"
+        "redis-v3.test.js"
       ]
     },
     {
@@ -25,6 +25,7 @@
       "files": [
         "redis-v4.test.js",
         "redis-v4-legacy-mode.test.js",
+        "redis-v4-promises.test.js",
         "tls.test.js"
       ]
     }

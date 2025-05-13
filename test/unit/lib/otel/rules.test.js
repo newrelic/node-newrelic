@@ -10,21 +10,15 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { ROOT_CONTEXT, SpanKind, TraceFlags } = require('@opentelemetry/api')
-const { BasicTracerProvider, Span } = require('@opentelemetry/sdk-trace-base')
+const { ROOT_CONTEXT, SpanKind } = require('@opentelemetry/api')
+const { BasicTracerProvider } = require('@opentelemetry/sdk-trace-base')
 const { RulesEngine } = require('../../../../lib/otel/rules.js')
 
 const tracer = new BasicTracerProvider().getTracer('default')
-const spanContext = {
-  traceId: 'd4cda95b652f4a1592b449d5929fda1b',
-  spanId: '6e0c63257de34c92',
-  traceFlags: TraceFlags.SAMPLED
-}
-const parentId = '5c1c63257de34c67'
 
 test('engine returns correct matching rule', () => {
   const engine = new RulesEngine()
-  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.SERVER, parentId)
+  const span = tracer.startSpan('test-span', { kind: SpanKind.SERVER }, ROOT_CONTEXT)
   span.setAttribute('http.request.method', 'GET')
   span.end()
 
@@ -35,7 +29,7 @@ test('engine returns correct matching rule', () => {
 
 test('consumer does not match fallback rule', () => {
   const engine = new RulesEngine()
-  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.CONSUMER, parentId)
+  const span = tracer.startSpan('test-span', { kind: SpanKind.CONSUMER }, ROOT_CONTEXT)
   span.setAttribute('messaging.operation', 'create')
   span.end()
 
@@ -44,9 +38,19 @@ test('consumer does not match fallback rule', () => {
   assert.equal(rule.name, 'OtelMessagingConsumer1_24')
 })
 
+test('consumer matches fallback rule', () => {
+  const engine = new RulesEngine()
+  const span = tracer.startSpan('test-span', { kind: SpanKind.CONSUMER }, ROOT_CONTEXT)
+  span.end()
+
+  const rule = engine.test(span)
+  assert.notEqual(rule, undefined)
+  assert.equal(rule.name, 'FallbackConsumer')
+})
+
 test('fallback server rule is met', () => {
   const engine = new RulesEngine()
-  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.SERVER, parentId)
+  const span = tracer.startSpan('test-span', { kind: SpanKind.SERVER }, ROOT_CONTEXT)
   span.setAttribute('foo.bar', 'baz')
   span.end()
 
@@ -57,7 +61,7 @@ test('fallback server rule is met', () => {
 
 test('fallback client rule is met', () => {
   const engine = new RulesEngine()
-  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.CLIENT, parentId)
+  const span = tracer.startSpan('test-span', { kind: SpanKind.CLIENT }, ROOT_CONTEXT)
   span.setAttribute('foo.bar', 'baz')
   span.end()
 
@@ -68,7 +72,7 @@ test('fallback client rule is met', () => {
 
 test('fallback producer rule is met', () => {
   const engine = new RulesEngine()
-  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.PRODUCER, parentId)
+  const span = tracer.startSpan('test-span', { kind: SpanKind.PRODUCER }, ROOT_CONTEXT)
   span.setAttribute('foo.bar', 'baz')
   span.end()
 
@@ -79,7 +83,7 @@ test('fallback producer rule is met', () => {
 
 test('fallback internal rule is met', () => {
   const engine = new RulesEngine()
-  const span = new Span(tracer, ROOT_CONTEXT, 'test-span', spanContext, SpanKind.INTERNAL, parentId)
+  const span = tracer.startSpan('test-span', { kind: SpanKind.INTERNAL }, ROOT_CONTEXT)
   span.setAttribute('foo.bar', 'baz')
   span.end()
 

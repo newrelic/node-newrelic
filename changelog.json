@@ -2,6 +2,62 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.18.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `createSegment` to stop adding segments to trace when `max_trace_segments` is exceeded"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "12.18.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Only add `newrelic` header to outgoing headers if has a value"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "12.18.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated span streamer to properly retry failed batches and handle flushing batch queue every 5 seconds"
+        ],
+        "features": [
+          "Support Azure functions background trigger types",
+          "Support Azure functions HTTP trigger type"
+        ]
+      }
+    },
+    {
+      "version": "12.17.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Azure Function utilization",
+          "Support honoring W3C `traceparent` sampled flag"
+        ]
+      }
+    },
+    {
+      "version": "12.16.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed `tracer.transactionNestProxy` to create a new transaction if there is no transaction or transaction is not active"
+        ],
+        "features": [
+          "Assign all attributes on internal spans to segment"
+        ]
+      }
+    },
+    {
       "version": "12.16.0",
       "changes": {
         "security": [],

@@ -28,6 +28,7 @@
       "comment": "Using latest of `@langchain/openai` only as it is being used to seed embeddings, nothing to test that hasn't been done in the above stanza",
       "dependencies": {
         "@langchain/openai": "latest",
+        "openai": "4.90.0",
         "@langchain/community": ">=0.2.2",
         "@elastic/elasticsearch": "8.13.1"
       },

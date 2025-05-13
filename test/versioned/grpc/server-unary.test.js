@@ -102,11 +102,6 @@ test('should not include distributed trace headers when there is no client trans
   const attributes = serverTransaction.trace.attributes.get(DESTINATION)
   notHas({
     found: attributes,
-    doNotWant: 'request.header.newrelic',
-    msg: 'should not have newrelic in headers'
-  })
-  notHas({
-    found: attributes,
     doNotWant: 'request.header.traceparent',
     msg: 'should not have traceparent in headers'
   })
@@ -136,11 +131,6 @@ test('should not add DT headers when `distributed_tracing` is disabled', async (
   })
 
   const attributes = serverTransaction.trace.attributes.get(DESTINATION)
-  notHas({
-    found: attributes,
-    doNotWant: 'request.header.newrelic',
-    msg: 'should not have newrelic in headers'
-  })
   notHas({
     found: attributes,
     doNotWant: 'request.header.traceparent',

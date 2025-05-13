@@ -1,3 +1,104 @@
+### v12.18.2 (2025-04-30)
+
+#### Bug fixes
+
+* Updated `createSegment` to stop adding segments to trace when `max_trace_segments` is exceeded ([#3056](https://github.com/newrelic/node-newrelic/pull/3056)) ([8f3336e](https://github.com/newrelic/node-newrelic/commit/8f3336e98ac9f7d4ad0ded3a061774fd68053e76))
+
+#### Documentation
+
+* Updated compatibility report ([#3065](https://github.com/newrelic/node-newrelic/pull/3065)) ([#3063](https://github.com/newrelic/node-newrelic/pull/3063)) 
+
+### v12.18.1 (2025-04-29)
+
+#### Bug fixes
+
+* Only add `newrelic` header to outgoing headers if has a value ([#3052](https://github.com/newrelic/node-newrelic/pull/3052)) ([6ef0a90](https://github.com/newrelic/node-newrelic/commit/6ef0a904291fb4efc6d6f111b3ec93aac720c3ad))
+
+#### Code refactoring
+
+* Added defensive code when calculating exclusive time on a segment where it cannot locate the segment in the transaction trace tree ([#3051](https://github.com/newrelic/node-newrelic/pull/3051)) ([b4aa25e](https://github.com/newrelic/node-newrelic/commit/b4aa25e2df861dab732bb812bffe961c0cc3da36))
+* Updated how otel bridge trace propagator assigns traceparent/tracestate headers ([#3046](https://github.com/newrelic/node-newrelic/pull/3046)) ([6e317b8](https://github.com/newrelic/node-newrelic/commit/6e317b889c68a2e0e69b1d4d2fa9fe2846a0e94f))
+
+#### Documentation
+
+* Updated compatibility report ([#3054](https://github.com/newrelic/node-newrelic/pull/3054)) ([#3050](https://github.com/newrelic/node-newrelic/pull/3050)) ([#3026](https://github.com/newrelic/node-newrelic/pull/3026)) 
+
+#### Tests
+
+* Skipped regressions in pg-native versioned tests ([#3053](https://github.com/newrelic/node-newrelic/pull/3053)) ([6ce3670](https://github.com/newrelic/node-newrelic/commit/6ce36706adc2e17a80b759b51c23807d617ad04f))
+* Updated elasticsearch image for versioned tests ([#3038](https://github.com/newrelic/node-newrelic/pull/3038)) ([3d73f9f](https://github.com/newrelic/node-newrelic/commit/3d73f9faffd45d2d1465210d168822494439c577))
+
+### v12.18.0 (2025-04-14)
+
+#### Features
+
+* Support Azure functions background trigger types ([#3028](https://github.com/newrelic/node-newrelic/pull/3028)) ([3bf17b0](https://github.com/newrelic/node-newrelic/commit/3bf17b03abaa713c1f9ad544c54c24a6374359c2))
+* Support Azure functions HTTP trigger type ([#3021](https://github.com/newrelic/node-newrelic/pull/3021)) ([90d894b](https://github.com/newrelic/node-newrelic/commit/90d894bf1eb4a48f4b7f314ae22eef2cc76c32b9))
+
+#### Bug fixes
+
+* Updated span streamer to properly retry failed batches and handle flushing batch queue every 5 seconds ([#3033](https://github.com/newrelic/node-newrelic/pull/3033)) ([7db0e7c](https://github.com/newrelic/node-newrelic/commit/7db0e7ca929d54858addd5255b46507f82333045))
+
+#### Code refactoring
+
+* Update otel bridge rules synthesizer to properly handle consumer kind rules ([#3003](https://github.com/newrelic/node-newrelic/pull/3003)) ([3295dd1](https://github.com/newrelic/node-newrelic/commit/3295dd12bbebb708f3eeca2ad32fbc157a892fec))
+
+#### Documentation
+
+* Updated compatibility report ([#3020](https://github.com/newrelic/node-newrelic/pull/3020)) ([ce32b67](https://github.com/newrelic/node-newrelic/commit/ce32b6754383b6b1fe95d1d37759810b4caaf34c))
+
+#### Miscellaneous chores
+
+* Fixed prisma CI issues ([#3031](https://github.com/newrelic/node-newrelic/pull/3031)) ([1349cae](https://github.com/newrelic/node-newrelic/commit/1349cae4d87941e4f55dffc2445c90e73d823bbc))
+* Improved logging within utilization detection ([#3034](https://github.com/newrelic/node-newrelic/pull/3034)) ([b47bd46](https://github.com/newrelic/node-newrelic/commit/b47bd46ad144723ac62192eb9cc474ddd1fce98d))
+
+### v12.17.0 (2025-04-02)
+
+#### Features
+
+* Azure Function utilization ([#3017](https://github.com/newrelic/node-newrelic/pull/3017)) ([80ab93e](https://github.com/newrelic/node-newrelic/commit/80ab93ee5599800a823e3828f9730d5421b460c2))
+* Support honoring W3C `traceparent` sampled flag ([#3009](https://github.com/newrelic/node-newrelic/pull/3009)) ([d903413](https://github.com/newrelic/node-newrelic/commit/d903413a6216dae2cde3e6b6366c3a390d4ed4cd))
+  * By default the agent will not honor the `traceparent` sampled flag.
+  * To control how sampling works with `traceparent` set the following in config: 
+    * `distributed_tracing.sampler.remote_parent_sampled`(when the traceparent sampled flag is `01`) 
+        * `always_on`: the agent will sample spans
+        * `always_off`: the agent will not sample spans
+        * `default`: the agent will rely on existing priority sampling to make its decisions
+    * `distributed_tracing.sampler.remote_parent_not_sampled`(when the traceparent sampled flag is `00`)
+        * `always_on`: the agent will sample spans
+        * `always_off`: the agent will not sample spans
+        * `default`: the agent will rely on existing priority sampling to make its decisions
+
+#### Code refactoring
+
+* Updated otel bridge to centralize mapping rules for a given span attribute to accomondate semantic convention spec updates ([#3010](https://github.com/newrelic/node-newrelic/pull/3010)) ([c20c36b](https://github.com/newrelic/node-newrelic/commit/c20c36bbe0f63ab18fbbe85ad4bfaa3b80f1475d))
+
+#### Documentation
+
+* Updated compatibility report ([#3013](https://github.com/newrelic/node-newrelic/pull/3013)) ([8fab715](https://github.com/newrelic/node-newrelic/commit/8fab715581ccc5da7118884a0080557891329daa))
+
+#### Tests
+
+* Pinned `openai@4.90.0` to work with `@langchain/openai` ([#3019](https://github.com/newrelic/node-newrelic/pull/3019)) ([eaa3db0](https://github.com/newrelic/node-newrelic/commit/eaa3db0a556a19c44a05926dc339ea7bcbc9cebd))
+
+### v12.16.1 (2025-03-24)
+
+#### Features
+
+* Assign all attributes on internal spans to segment ([#3000](https://github.com/newrelic/node-newrelic/pull/3000)) ([5403018](https://github.com/newrelic/node-newrelic/commit/54030185ba5630099b76182a52c629276af4d93e))
+
+#### Bug fixes
+
+* Fixed `tracer.transactionNestProxy` to create a new transaction if there is no transaction or transaction is not active ([#3007](https://github.com/newrelic/node-newrelic/pull/3007)) ([ced9e22](https://github.com/newrelic/node-newrelic/commit/ced9e22a23ddeed860c1fd88f0afb10bb94343cb))
+
+#### Documentation
+
+* Updated compatibility report ([#2993](https://github.com/newrelic/node-newrelic/pull/2993)) ([cdfa042](https://github.com/newrelic/node-newrelic/commit/cdfa042325a7636e84a7b19a34874b20915dac63))
+
+#### Tests
+
+* Fixed handling require esm for >20.19.0+ ([#3002](https://github.com/newrelic/node-newrelic/pull/3002)) ([b808e00](https://github.com/newrelic/node-newrelic/commit/b808e00c399d3c924eeeb19f9c6b9fba4695a720))
+
 ### v12.16.0 (2025-03-17)
 
 #### Features

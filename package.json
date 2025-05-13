@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "12.16.0",
+  "version": "12.18.2",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -170,6 +170,7 @@
     "public-docs": "jsdoc -c ./jsdoc-conf.jsonc",
     "publish-docs": "./bin/publish-docs.sh",
     "services": "DOCKER_PLATFORM=linux/$(uname -m) docker compose up -d --wait",
+    "services:start": "npm run services",
     "services:stop": "docker compose down",
     "smoke": "time borp --timeout 180000 --reporter ./test/lib/test-reporter.mjs 'test/smoke/**/*.{test,tap}.js'",
     "sub-install": "node test/bin/install_sub_deps",
@@ -200,13 +201,12 @@
     "#test/assert": "./test/lib/custom-assertions/index.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.12.2",
+    "@grpc/grpc-js": "^1.13.2",
     "@grpc/proto-loader": "^0.7.5",
-    "@newrelic/security-agent": "^2.3.0",
+    "@newrelic/security-agent": "2.4.0",
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/core": "^1.30.0",
-    "@opentelemetry/resources": "^1.30.1",
-    "@opentelemetry/sdk-trace-base": "^1.30.0",
+    "@opentelemetry/core": "^2.0.0",
+    "@opentelemetry/sdk-trace-base": "^2.0.0",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "concat-stream": "^2.0.0",
     "https-proxy-agent": "^7.0.1",

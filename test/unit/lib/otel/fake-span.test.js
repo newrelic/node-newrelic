@@ -19,6 +19,8 @@ test('should create a fake span from segment and transaction', (t) => {
   const segment = { id: 'id' }
   const tx = { traceId: 'traceId' }
   const span = new FakeSpan(segment, tx)
+  assert.equal(span.segmentId, 'id')
+  assert.equal(span.traceId, 'traceId')
   const spanCtx = span.spanContext()
   assert.deepEqual(spanCtx, {
     spanId: 'id',

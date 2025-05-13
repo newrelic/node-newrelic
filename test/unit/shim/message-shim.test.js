@@ -421,20 +421,17 @@ test('MessageShim', async function (t) {
         match(messages, [
           {
             headers: {
-              newrelic: '',
               traceparent: `00-${tx.traceId}-${segment.id}-01`
             }
           },
           {
             headers: {
-              newrelic: '',
               traceparent: `00-${tx.traceId}-${segment.id}-01`,
               foo: 'foo'
             }
           },
           {
             headers: {
-              newrelic: '',
               traceparent: `00-${tx.traceId}-${segment.id}-01`
             }
           }

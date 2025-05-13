@@ -49,8 +49,8 @@ test.beforeEach(async (ctx) => {
 
   ctx.nr.logs = []
   ctx.nr.logger = {
-    debug(msg) {
-      ctx.nr.logs.push(msg)
+    debug(...args) {
+      ctx.nr.logs.push(args)
     }
   }
 })
@@ -70,7 +70,7 @@ test('error if not on linux', (t, end) => {
   function callback(error, data) {
     assert.equal(error, null)
     assert.equal(data, null)
-    assert.deepStrictEqual(t.nr.logs, ['Platform is not a flavor of linux, omitting boot info'])
+    assert.deepStrictEqual(t.nr.logs, [[{ utilization: 'docker' }, 'Platform is not a flavor of linux, omitting boot info']])
     end()
   }
 })
@@ -82,7 +82,7 @@ test('error if no proc file', (t, end) => {
   function callback(error, data) {
     assert.equal(error, null)
     assert.equal(data, null)
-    assert.deepStrictEqual(t.nr.logs, ['Container boot id is not available in cgroups info'])
+    assert.deepStrictEqual(t.nr.logs, [[{ utilization: 'docker' }, 'Container boot id is not available in cgroups info']])
     end()
   }
 })
@@ -123,9 +123,9 @@ test('falls back to v1 correctly', (t, end) => {
       id: 'f37a7e4d17017e7bf774656b19ca4360c6cdc4951c86700a464101d0d9ce97ee'
     })
     assert.deepStrictEqual(t.nr.logs, [
-      'Found /proc/self/mountinfo but failed to parse Docker container id.',
-      'Attempting to fall back to cgroups v1 parsing.',
-      'Found docker id from cgroups v1: f37a7e4d17017e7bf774656b19ca4360c6cdc4951c86700a464101d0d9ce97ee'
+      [{ utilization: 'docker' }, 'Found /proc/self/mountinfo but failed to parse Docker container id.'],
+      [{ utilization: 'docker' }, 'Attempting to fall back to cgroups v1 parsing.'],
+      [{ utilization: 'docker' }, 'Found docker id from cgroups v1: f37a7e4d17017e7bf774656b19ca4360c6cdc4951c86700a464101d0d9ce97ee']
     ])
     end()
   }
