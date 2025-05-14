@@ -57,7 +57,7 @@ common.setupRoutes = (fastify) => {
   }, {})
 
   /**
-   * Registeres a named route handler for testing adding hooks for
+   * Registers a named route handler for testing adding hooks for
    * every request lifecycle
    */
   fastify.get('/add-hook', function routeHandler(request, reply) {
