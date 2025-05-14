@@ -364,7 +364,6 @@ test('server span is bridged accordingly', (t, end) => {
   // Required span attributes for incoming HTTP server spans as defined by:
   // https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-server-semantic-conventions
   const attributes = {
-    [ATTR_FULL_URL]: 'http://newrelic.com/foo/bar',
     [ATTR_URL_SCHEME]: 'http',
     [ATTR_SERVER_ADDRESS]: 'newrelic.com',
     [ATTR_SERVER_PORT]: 80,
@@ -378,7 +377,6 @@ test('server span is bridged accordingly', (t, end) => {
     const tx = agent.getTransaction()
     assert.equal(tx.traceId, span.spanContext().traceId)
     span.setAttribute(ATTR_HTTP_RES_STATUS_CODE, 200)
-    span.setAttribute(ATTR_HTTP_STATUS_TEXT, 'OK')
     span.end()
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
@@ -401,7 +399,6 @@ test('server span is bridged accordingly', (t, end) => {
     assert.equal(attrs['url.path'], '/foo/bar')
     assert.equal(attrs['url.scheme'], 'http')
     assert.equal(attrs['http.statusCode'], 200)
-    assert.equal(attrs['http.statusText'], 'OK')
 
     const unscopedMetrics = tx.metrics.unscoped
     const expectedMetrics = [
@@ -485,12 +482,9 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
 
   const attributes = {
     [ATTR_URL_SCHEME]: 'gopher',
-    [ATTR_SERVER_ADDRESS]: '127.0.0.1',
-    [ATTR_SERVER_PORT]: 3000,
     [ATTR_URL_PATH]: '/foo/bar',
   }
 
-  const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
   tracer.startActiveSpan('http-test', { kind: otel.SpanKind.SERVER, attributes }, (span) => {
     const tx = agent.getTransaction()
     assert.equal(tx.traceId, span.spanContext().traceId)
@@ -506,11 +500,9 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
 
     const duration = hrTimeToMilliseconds(span.duration)
     assert.equal(duration, segment.getDurationInMillis())
-    assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//foo/bar')
+    assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//unknown')
 
     const attrs = segment.getAttributes()
-    assert.equal(attrs.host, expectedHost)
-    assert.equal(attrs.port, 3000)
     assert.equal(attrs['url.path'], '/foo/bar')
     assert.equal(attrs['url.scheme'], 'gopher')
     assert.equal(attrs.nr_exclusive_duration_millis, duration)
@@ -520,14 +512,14 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
       'HttpDispatcher',
       'WebTransaction',
       'WebTransactionTotalTime',
-      'WebTransactionTotalTime/WebFrameworkUri//foo/bar',
+      'WebTransactionTotalTime/WebFrameworkUri//unknown',
       segment.name
     ]
     for (const expectedMetric of expectedMetrics) {
       assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
     }
     assert.equal(unscopedMetrics.Apdex.apdexT, 0.1)
-    assert.equal(unscopedMetrics['Apdex/WebFrameworkUri//foo/bar'].apdexT, 0.1)
+    assert.equal(unscopedMetrics['Apdex/WebFrameworkUri//unknown'].apdexT, 0.1)
 
     end()
   })

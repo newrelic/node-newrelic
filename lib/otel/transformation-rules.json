@@ -1,0 +1,172 @@
+[
+  {
+    "name": "OtelHttpServer1_23",
+    "comment": "Semantic conventions 1.23.0 compliant server spans",
+    "type": "server",
+    "matcher": {
+      "required_span_kinds": [
+        "server"
+      ],
+      "required_attribute_keys": [
+        "http.request.method"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "http.response.status_code",
+        "target": "trace",
+        "name": "http.statusCode"
+      },
+      {
+        "key": "http.response.status_code",
+        "target": "transaction",
+        "name": "statusCode"
+      },
+      {
+        "key": "http.request.method",
+        "target": "trace",
+        "name": "request.method"
+      },
+      {
+        "key": "server.port",
+        "target": "segment",
+        "name": "port"
+      },
+      {
+        "key": "http.route",
+        "target": "segment",
+        "name": "http.route"
+      },
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host"
+      }
+    ],
+    "transaction": {
+      "type": "web",
+      "name": {
+        "verb": "http.request.method",
+        "path": "http.route"
+      },
+      "url": {
+        "template": "${url.scheme}://${server.address}${server.port}${url.path}${url.query}" 
+      }
+    }
+  },
+  {
+    "name": "OtelHttpServer1_20",
+    "type": "server",
+    "matcher": {
+      "required_span_kinds": [
+        "server"
+      ],
+      "required_attribute_keys": [
+        "http.method"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "http.status_code",
+        "target": "trace",
+        "name": "http.statusCode"
+      },
+      {
+        "key": "http.status_code",
+        "target": "transaction",
+        "name": "statusCode"
+      },
+      {
+        "key": "http.method",
+        "target": "trace",
+        "name": "request.method"
+      },
+      {
+        "key": "net.host.port",
+        "target": "segment",
+        "name": "port"
+      },
+      {
+        "key": "http.route",
+        "target": "segment",
+        "name": "http.route"
+      },
+      {
+        "key": "net.host.name",
+        "target": "segment",
+        "name": "host"
+      }
+    ],
+    "transaction": {
+      "type": "web",
+      "name": {
+        "verb": "http.method",
+        "path": "http.route"
+      },
+      "url": {
+        "key": "http.url"
+      }
+    }
+  },
+  {
+    "name": "OtelRpcServer1_20",
+    "type": "server",
+    "matcher": {
+      "required_span_kinds": [
+        "server"
+      ],
+      "required_attribute_keys": [
+        "rpc.system"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "rpc.grpc.status_code",
+        "target": "trace",
+        "name": "response.status"
+      },
+      {
+        "key": "rpc.grpc.status_code",
+        "target": "segment",
+        "name": "rpc.grpc.status_code"
+      },
+      {
+        "key": "rpc.system",
+        "target": "segment",
+        "name": "component"
+      },
+      {
+        "key": "rpc.method",
+        "target": "trace",
+        "name": "request.method"
+      }
+    ],
+    "transaction": {
+      "type": "web",
+      "name": {
+        "prefix": "rpc.system",
+        "templatePath": "${rpc.service}/${rpc.method}"
+      },
+      "url": {
+        "template": "${rpc.service}/${rpc.method}"
+      }
+    }
+  },
+  {
+    "name": "FallbackServer",
+    "type": "server",
+    "matcher": {
+      "required_span_kinds": [
+        "server"
+      ],
+      "required_attribute_keys": []
+    },
+    "attributes": [],
+    "transaction": {
+      "type": "web",
+      "name": {
+        "value": "WebFrameworkUri//unknown"
+      }
+    }
+  }
+]
