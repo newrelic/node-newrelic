@@ -1,0 +1,17 @@
+[
+  [
+    [
+      "WebTransaction/WebFrameworkUri/Fastify/GET//error",
+      [
+        [
+          "Nodejs/Middleware/Fastify/errorRoute//error",
+          []
+        ],
+        [
+          "Nodejs/Middleware/Fastify/onError/testHook",
+          []
+        ]
+      ]
+    ]
+  ]
+]
