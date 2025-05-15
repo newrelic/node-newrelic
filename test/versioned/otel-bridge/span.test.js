@@ -577,7 +577,6 @@ test('consumer span is bridged correctly', (t, end) => {
   const expectedHost = agent.config.getHostnameSafe('localhost')
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'kafka',
-    [ATTR_MESSAGING_OPERATION]: 'getMessage',
     [ATTR_SERVER_ADDRESS]: '127.0.0.1',
     [ATTR_SERVER_PORT]: '1234',
     [ATTR_MESSAGING_DESTINATION_NAME]: 'work-queue',
@@ -631,7 +630,6 @@ test('messaging consumer skips high security attributes', (t, end) => {
   const expectedHost = agent.config.getHostnameSafe('localhost')
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'kafka',
-    [ATTR_MESSAGING_OPERATION]: 'getMessage',
     [ATTR_SERVER_ADDRESS]: '127.0.0.1',
     [ATTR_SERVER_PORT]: '1234',
     [ATTR_MESSAGING_OPERATION]: 'queue',
@@ -656,12 +654,48 @@ test('messaging consumer skips high security attributes', (t, end) => {
   })
 })
 
+test('consumer span(fallback) is bridged accordingly', (t, end) => {
+  const { agent, tracer } = t.nr
+
+  tracer.startActiveSpan('http-test', { kind: otel.SpanKind.CONSUMER }, (span) => {
+    const tx = agent.getTransaction()
+    assert.equal(tx.traceId, span.spanContext().traceId)
+    span.end()
+    assert.ok(!tx.isDistributedTrace)
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: tx.name, kind: 'consumer' }
+      ]
+    })
+    const segment = agent.tracer.getSegment()
+
+    const duration = hrTimeToMilliseconds(span.duration)
+    assert.equal(duration, segment.getDurationInMillis())
+    assert.equal(segment.name, 'OtherTransaction/Message/unknown')
+
+    const attrs = segment.getAttributes()
+    assert.equal(attrs.nr_exclusive_duration_millis, duration)
+
+    const unscopedMetrics = tx.metrics.unscoped
+    const expectedMetrics = [
+      'OtherTransaction/all',
+      'OtherTransaction/Message/all',
+      'OtherTransaction/Message/unknown',
+      'OtherTransactionTotalTime'
+    ]
+    for (const expectedMetric of expectedMetrics) {
+      assert.equal(unscopedMetrics[expectedMetric].callCount, 1, `${expectedMetric} has correct callCount`)
+    }
+    end()
+  })
+})
+
 test('consumer span accepts upstream traceparent/tracestate correctly', (t, end) => {
   const { agent, tracer } = t.nr
 
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'kafka',
-    [ATTR_MESSAGING_OPERATION]: 'getMessage',
     [ATTR_SERVER_ADDRESS]: '127.0.0.1',
     [ATTR_MESSAGING_DESTINATION]: 'work-queue',
     [ATTR_MESSAGING_OPERATION]: 'queue'

@@ -168,5 +168,172 @@
         "value": "WebFrameworkUri//unknown"
       }
     }
+  },
+  {
+    "name": "OtelMessagingConsumer1_30",
+    "type": "consumer",
+    "matcher": {
+      "required_span_kinds": [
+        "consumer"
+      ],
+      "required_attribute_keys": [
+        "messaging.operation.name"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "messaging.destination.name",
+        "target": "trace",
+        "name": "message.queueName",
+        "highSecurity": true
+      },
+      {
+        "key": "messaging.destination.name",
+        "target": "segment",
+        "name": "message.queueName",
+        "highSecurity": true
+      },
+      {
+        "key": "server.port",
+        "target": "segment",
+        "name": "port"
+      },
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "messaging.kafka.message.key",
+        "target": "trace",
+        "name": "message.routingKey",
+        "highSecurity": true
+      },
+      {
+        "key": "messaging.rabbitmq.destination.routing_key",
+        "target": "trace",
+        "name": "message.routingKey",
+        "highSecurity": true
+      }
+    ],
+    "transaction": {
+      "type": "message",
+      "name": {
+        "templateValue": "${messaging.system}/${messaging.operation.name}/Named/${messaging.destination.name}"
+      }
+    }
+  },
+  {
+    "name": "OtelMessagingConsumer1_24",
+    "type": "consumer",
+    "matcher": {
+      "required_span_kinds": [
+        "consumer"
+      ],
+      "required_attribute_keys": [
+        "messaging.operation"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "messaging.destination.name",
+        "target": "trace",
+        "name": "message.queueName",
+        "highSecurity": true
+      },
+      {
+        "key": "messaging.destination.name",
+        "target": "segment",
+        "name": "message.queueName",
+        "highSecurity": true
+      },
+      {
+        "key": "server.port",
+        "target": "segment",
+        "name": "port"
+      },
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "messaging.rabbitmq.destination.routing_key",
+        "target": "trace",
+        "name": "message.routingKey",
+        "highSecurity": true
+      }
+    ],
+    "transaction": {
+      "type": "message",
+      "name": {
+        "templateValue": "${messaging.system}/${messaging.operation}/Named/${messaging.destination.name}"
+      }
+    }
+  },
+  {
+    "name": "OtelMessagingConsumer1_17",
+    "type": "consumer",
+    "matcher": {
+      "required_span_kinds": [
+        "consumer"
+      ],
+      "required_attribute_keys": [
+        "messaging.destination_kind"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "messaging.destination",
+        "target": "trace",
+        "name": "message.queueName",
+        "highSecurity": true
+      },
+      {
+        "key": "messaging.destination",
+        "target": "segment",
+        "name": "message.queueName",
+        "highSecurity": true
+      },
+      {
+        "key": "net.peer.port",
+        "target": "segment",
+        "name": "port"
+      },
+      {
+        "key": "net.peer.name",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "messaging.rabbitmq.routing_key",
+        "target": "trace",
+        "name": "message.routingKey",
+        "highSecurity": true
+      }
+    ],
+    "transaction": {
+      "type": "message",
+      "name": {
+        "templateValue": "${messaging.system}/${messaging.destination_kind}/Named/${messaging.destination}"
+      }
+    }
+  },
+  {
+    "name": "FallbackConsumer",
+    "type": "consumer",
+    "matcher": {
+      "required_span_kinds": [
+        "consumer"
+      ],
+      "required_attribute_keys": []
+    },
+    "attributes": [],
+    "transaction": {
+      "type": "message",
+      "name": {
+        "value": "unknown"
+      }
+    }
   }
 ]
