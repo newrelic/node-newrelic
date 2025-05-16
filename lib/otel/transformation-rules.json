@@ -337,6 +337,52 @@
     }
   },
   {
+    "name": "OtelDbClientRedis1_24",
+    "type": "db",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "db.system",
+        "server.address",
+        "server.port"
+      ],
+      "attribute_conditions": {
+        "db.system": ["redis", "memcached"]
+      }
+    },
+    "attributes": [
+      {
+        "key": "db.system",
+        "target": "segment",
+        "name": "product"
+      },
+      {
+        "key": "db.name",
+        "target": "segment",
+        "name": "database_name"
+      },
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "server.port",
+        "target": "segment",
+        "name": "port_path_or_id"
+      }
+    ],
+    "segment": {
+      "operation": "db.operation",
+      "type": "db.system",
+      "name": {
+        "template": "Datastore/operation/${type}/${operation}"
+      } 
+    }
+  },
+  {
     "name": "OtelDbClient1_24",
     "type": "db",
     "matcher": {
@@ -375,7 +421,7 @@
       "statement": "db.statement",
       "type": "db.system",
       "name": {
-        "template": "Datastore/statement/${type}/${operation}/${collection}"
+        "template": "Datastore/statement/${type}/${collection}/${operation}"
       } 
     }
   }

@@ -18,6 +18,7 @@ const { DESTINATIONS } = require('../../../lib/transaction')
 const {
   ATTR_AWS_REGION,
   ATTR_DB_NAME,
+  ATTR_DB_OPERATION,
   ATTR_DB_STATEMENT,
   ATTR_DB_SYSTEM,
   ATTR_DYNAMO_TABLE_NAMES,
@@ -41,7 +42,6 @@ const {
   ATTR_MESSAGING_SYSTEM,
   ATTR_NET_PEER_NAME,
   ATTR_NET_PEER_PORT,
-  ATTR_NETWORK_PEER_PORT,
   ATTR_RPC_METHOD,
   ATTR_RPC_SERVICE,
   ATTR_RPC_SYSTEM,
@@ -270,7 +270,6 @@ test('client span(db) is bridge accordingly(statement test)', (t, end) => {
   const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'db-test'
-    debugger
     tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'Datastore/statement/postgresql/test/select')
@@ -315,9 +314,9 @@ test('client span(db) is bridged accordingly(operation test)', (t, end) => {
   const { agent, tracer } = t.nr
   const attributes = {
     [ATTR_DB_SYSTEM]: DB_SYSTEM_VALUES.REDIS,
-    [ATTR_DB_STATEMENT]: 'hset has random random',
-    [ATTR_NET_PEER_PORT]: 5436,
-    [ATTR_NET_PEER_NAME]: '127.0.0.1'
+    [ATTR_DB_OPERATION]: 'hset',
+    [ATTR_SERVER_PORT]: 5436,
+    [ATTR_SERVER_ADDRESS]: '127.0.0.1'
   }
   const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
   helper.runInTransaction(agent, (tx) => {

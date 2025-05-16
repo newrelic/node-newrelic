@@ -241,10 +241,12 @@
         "client"
       ],
       "required_attribute_keys": [
-        "db.system"
+        "db.system",
+        "server.address",
+        "server.port"
       ],
       "attribute_conditions": {
-        "db.system": "redis"
+        "db.system": ["redis","memcached"]
       }
     },
     "target": {
