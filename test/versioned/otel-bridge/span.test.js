@@ -264,12 +264,13 @@ test('client span(db) is bridge accordingly(statement test)', (t, end) => {
     [ATTR_DB_NAME]: 'test-db',
     [ATTR_DB_SYSTEM]: 'postgresql',
     [ATTR_DB_STATEMENT]: "select foo from test where foo = 'bar';",
-    [ATTR_NETWORK_PEER_PORT]: 5436,
+    [ATTR_SERVER_PORT]: 5436,
     [ATTR_SERVER_ADDRESS]: '127.0.0.1'
   }
   const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'db-test'
+    debugger
     tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'Datastore/statement/postgresql/test/select')

@@ -280,7 +280,9 @@
         "client"
       ],
       "required_attribute_keys": [
-        "db.system"
+        "db.system",
+        "server.address",
+        "server.port"
       ]
     },
     "target": {
