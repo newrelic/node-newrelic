@@ -71,7 +71,7 @@
     "@newrelic/security-agent@2.4.1": {
       "name": "@newrelic/security-agent",
       "version": "2.4.1",
-      "range": "^2.3.0",
+      "range": "2.4.0",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
       "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v2.4.1",
