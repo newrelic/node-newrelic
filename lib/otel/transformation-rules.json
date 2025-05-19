@@ -359,6 +359,47 @@
         "name": "product"
       },
       {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "server.port",
+        "target": "segment",
+        "name": "port_path_or_id"
+      }
+    ],
+    "segment": {
+      "operation": "db.statement",
+      "type": "db.system",
+      "name": {
+        "template": "Datastore/operation/${type}/${operation}"
+      } 
+    }
+  },
+  {
+    "name": "OtelDbClientMongo1_24",
+    "type": "db",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "db.system",
+        "server.address",
+        "server.port"
+      ],
+      "attribute_conditions": {
+        "db.system": ["mongodb"]
+      }
+    },
+    "attributes": [
+      {
+        "key": "db.system",
+        "target": "segment",
+        "name": "product"
+      },
+      {
         "key": "db.name",
         "target": "segment",
         "name": "database_name"
@@ -376,9 +417,10 @@
     ],
     "segment": {
       "operation": "db.operation",
+      "collection": "db.mongodb.collection",
       "type": "db.system",
       "name": {
-        "template": "Datastore/operation/${type}/${operation}"
+        "template": "Datastore/statement/${type}/${collection}/${operation}"
       } 
     }
   },
@@ -423,6 +465,299 @@
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
       } 
+    }
+  },
+  {
+    "name": "OtelDbClientRedis1_17",
+    "type": "db",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "db.system",
+        "net.peer.name",
+        "net.peer.port"
+      ],
+      "attribute_conditions": {
+        "db.system": ["redis", "memcached"]
+      }
+    },
+    "attributes": [
+      {
+        "key": "db.system",
+        "target": "segment",
+        "name": "product"
+      },
+      {
+        "key": "db.name",
+        "target": "segment",
+        "name": "database_name"
+      },
+      {
+        "key": "net.peer.name",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "net.peer.port",
+        "target": "segment",
+        "name": "port_path_or_id"
+      }
+    ],
+    "segment": {
+      "operation": "db.statement",
+      "type": "db.system",
+      "name": {
+        "template": "Datastore/operation/${type}/${operation}"
+      } 
+    }
+  },
+  {
+    "name": "OtelDbClientMongo1_17",
+    "type": "db",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "db.system",
+        "net.peer.name",
+        "net.peer.port"
+      ],
+      "attribute_conditions": {
+        "db.system": ["mongodb"]
+      }
+    },
+    "attributes": [
+      {
+        "key": "db.system",
+        "target": "segment",
+        "name": "product"
+      },
+      {
+        "key": "db.name",
+        "target": "segment",
+        "name": "database_name"
+      },
+      {
+        "key": "net.peer.name",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "net.peer.port",
+        "target": "segment",
+        "name": "port_path_or_id"
+      }
+    ],
+    "segment": {
+      "operation": "db.operation",
+      "collection": "db.mongodb.collection",
+      "type": "db.system",
+      "name": {
+        "template": "Datastore/statement/${type}/${collection}/${operation}"
+      } 
+    }
+  },
+  {
+    "name": "OtelDbClient1_17",
+    "type": "db",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "db.system",
+        "net.peer.name",
+        "net.peer.port"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "db.system",
+        "target": "segment",
+        "name": "product"
+      },
+      {
+        "key": "db.name",
+        "target": "segment",
+        "name": "database_name"
+      },
+      {
+        "key": "net.peer.name",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "net.peer.port",
+        "target": "segment",
+        "name": "port_path_or_id"
+      }
+    ],
+    "segment": {
+      "statement": "db.statement",
+      "type": "db.system",
+      "name": {
+        "template": "Datastore/statement/${type}/${collection}/${operation}"
+      } 
+    }
+  },
+  {
+    "name": "OtelHttpClient1_23",
+    "type": "external",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "http.request.method"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "http.response.status_code",
+        "target": "segment",
+        "name": "http.statusCode"
+      },
+      {
+        "key": "http.request.method",
+        "target": "segment",
+        "name": "procedure"
+      },
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "hostname"
+      },
+      {
+        "key": "server.port",
+        "target": "segment",
+        "name": "port"
+      }
+    ],
+    "segment": {
+      "method": "http.request.method",
+      "host": "server.address",
+      "url": "url.full",
+      "name": {
+        "template": "External/${host}${path}"
+      } 
+    }
+  },
+  {
+    "name": "OtelHttpClient1_17",
+    "type": "external",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "http.method"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "http.status_code",
+        "target": "segment",
+        "name": "http.statusCode"
+      },
+      {
+        "key": "http.method",
+        "target": "segment",
+        "name": "procedure"
+      },
+      {
+        "key": "http.host",
+        "target": "segment",
+        "name": "hostname"
+      },
+      {
+        "key": "net.host.port",
+        "target": "segment",
+        "name": "port"
+      }
+    ],
+    "segment": {
+      "method": "http.method",
+      "host": "net.peer.name",
+      "url": "http.url",
+      "name": {
+        "template": "External/${host}${path}"
+      } 
+    }
+  },
+  {
+    "name": "OtelRpcClient1_20",
+    "matcher": {
+      "required_metric_names": [
+        "rpc.client.duration"
+      ],
+      "metric_assumed_unit": "ms",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "rpc.system"
+      ]
+    },
+    "target": {
+      "target_metrics": [
+        "external",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "External/${net.peer.name:-unknown}/all"
+        },
+        {
+          "attribute": "server.address",
+          "template": "${net.peer.name:-unknown}"
+        },
+        {
+          "attribute": "external.host",
+          "template": "${net.peer.name:-unknown}"
+        }
+      ]
+    }
+  },
+  {
+    "name": "FallbackClient",
+    "type": "external",
+    "matcher": {
+      "required_metric_names": [
+        "rpc.client.duration",
+        "http.client.duration",
+        "http.client.request.duration"
+      ],
+      "metric_assumed_unit": "s",
+      "metric_unit_validator": "time_unit",
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": []
+    },
+    "target": {
+      "target_metrics": [
+        "external",
+        "blame"
+      ],
+      "attribute_mappings": [
+        {
+          "attribute": "metricTimesliceName",
+          "template": "External/unknown/all"
+        },
+        {
+          "attribute": "server.address",
+          "template": "unknown"
+        },
+        {
+          "attribute": "external.host",
+          "template": "unknown"
+        }
+      ]
     }
   }
 ]
