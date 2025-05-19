@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.19.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Azure Function HTTP streaming support"
+        ]
+      }
+    },
+    {
       "version": "12.18.2",
       "changes": {
         "security": [],

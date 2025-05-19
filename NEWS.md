@@ -1,3 +1,33 @@
+### v12.19.0 (2025-05-19)
+
+#### Features
+
+* Azure Function HTTP streaming support ([#3070](https://github.com/newrelic/node-newrelic/pull/3070)) ([9865e1c](https://github.com/newrelic/node-newrelic/commit/9865e1c4d47c2a41fef20f83eb810eee8559bea2))
+
+#### Code refactoring
+
+* Added check to only set a FakeSpan if `transaction.agent.otelSpanKey` exists ([#3071](https://github.com/newrelic/node-newrelic/pull/3071)) ([b0c1ac1](https://github.com/newrelic/node-newrelic/commit/b0c1ac141be17e4aa1d845a810e60743dc08863d))
+
+#### Documentation
+
+* Updated compatibility report ([#3074](https://github.com/newrelic/node-newrelic/pull/3074)) ([7dc9aad](https://github.com/newrelic/node-newrelic/commit/7dc9aad20a1cf201de9dd946913daab8e3d23e54))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#3068](https://github.com/newrelic/node-newrelic/pull/3068)) ([9b80487](https://github.com/newrelic/node-newrelic/commit/9b804870ad5c0a8ac1cc90986190d10e7906dea5))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Added support for running jobs on label ([#3082](https://github.com/newrelic/node-newrelic/pull/3082)) ([8be3322](https://github.com/newrelic/node-newrelic/commit/8be332258dc36636550d5dbbcda1e2006365faac))
+* Fixed redis legacy test suite ([#3077](https://github.com/newrelic/node-newrelic/pull/3077)) ([ec39925](https://github.com/newrelic/node-newrelic/commit/ec399254d277e36e1120dcf43542819f1ce8d475))
+* Pins security agent due to bug ([#3094](https://github.com/newrelic/node-newrelic/pull/3094)) ([0a8c1b9](https://github.com/newrelic/node-newrelic/commit/0a8c1b949e6c25974dd9c0cbdffbdb60f8b3f589))
+* Reduced redis range to unblock CI ([#3072](https://github.com/newrelic/node-newrelic/pull/3072)) ([3cfb082](https://github.com/newrelic/node-newrelic/commit/3cfb0827486ffa205cc7e815cebe6acb98831cbd))
+* Tweaked redis pin ([#3075](https://github.com/newrelic/node-newrelic/pull/3075)) ([ebf3aa9](https://github.com/newrelic/node-newrelic/commit/ebf3aa946be1e6802b567f2bfeef0b0c13613375))
+* Updated security agent ([#3098](https://github.com/newrelic/node-newrelic/pull/3098)) ([48ed8cb](https://github.com/newrelic/node-newrelic/commit/48ed8cb53f5331966bb39065f1b157754a51414e))
+
+#### Tests
+
+* Added cross agent otel bridge tests ([#3057](https://github.com/newrelic/node-newrelic/pull/3057)) ([1526bed](https://github.com/newrelic/node-newrelic/commit/1526bed9cf0f99481cf26ded2ebd43a0fcd720ae))
+
 ### v12.18.2 (2025-04-30)
 
 #### Bug fixes
