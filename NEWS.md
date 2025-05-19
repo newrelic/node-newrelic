@@ -14,12 +14,9 @@
 
 #### Miscellaneous chores
 
-* Added support for running jobs on label ([#3082](https://github.com/newrelic/node-newrelic/pull/3082)) ([8be3322](https://github.com/newrelic/node-newrelic/commit/8be332258dc36636550d5dbbcda1e2006365faac))
 * Fixed `redis` legacy test suite ([#3077](https://github.com/newrelic/node-newrelic/pull/3077)) ([ec39925](https://github.com/newrelic/node-newrelic/commit/ec399254d277e36e1120dcf43542819f1ce8d475))
-* Pinned security agent due to bug ([#3094](https://github.com/newrelic/node-newrelic/pull/3094)) ([0a8c1b9](https://github.com/newrelic/node-newrelic/commit/0a8c1b949e6c25974dd9c0cbdffbdb60f8b3f589))
-* Reduced `redis` range to unblock CI ([#3072](https://github.com/newrelic/node-newrelic/pull/3072)) ([3cfb082](https://github.com/newrelic/node-newrelic/commit/3cfb0827486ffa205cc7e815cebe6acb98831cbd))
-* Tweaked `redis` pin ([#3075](https://github.com/newrelic/node-newrelic/pull/3075)) ([ebf3aa9](https://github.com/newrelic/node-newrelic/commit/ebf3aa946be1e6802b567f2bfeef0b0c13613375))
 * Updated security agent ([#3098](https://github.com/newrelic/node-newrelic/pull/3098)) ([48ed8cb](https://github.com/newrelic/node-newrelic/commit/48ed8cb53f5331966bb39065f1b157754a51414e))
+
 
 #### Tests
 
