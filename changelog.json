@@ -7,7 +7,7 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Azure Function HTTP streaming support"
+          "Added Azure Function HTTP streaming support"
         ]
       }
     },
