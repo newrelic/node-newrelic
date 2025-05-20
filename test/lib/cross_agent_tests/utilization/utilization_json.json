@@ -211,7 +211,7 @@
     "input_hostname": "myotherhost",
     "input_full_hostname": "myotherhost.com",
     "input_ip_address": ["1.2.3.4"],
-    "input_gcp_id": "3161347020215157123",
+    "input_gcp_id": null,
     "input_gcp_type": "projects/492690098729/machineTypes/custom-1-1024",
     "input_gcp_name": null,
     "input_gcp_zone": "projects/492690098729/zones/us-central1-c",
