@@ -279,7 +279,8 @@ test('should name transaction correctly in Lambda APM Mode', async (t) => {
 
   agent.on('transactionFinished', (tx) => {
     const agentAttributes = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-    const expectedApmTxnName = `OtherTransaction/Function/${agentAttributes[EVENTSOURCE_TYPE].toUpperCase()} ${context.functionName}`
+    const trigger = agentAttributes[EVENTSOURCE_TYPE].toUpperCase()
+    const expectedApmTxnName = `OtherTransaction/Function/${trigger} ${context.functionName}`
     plan.equal(tx.type, 'bg')
     plan.equal(tx.getFullName(), expectedApmTxnName)
 

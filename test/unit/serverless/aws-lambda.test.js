@@ -560,7 +560,8 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       function confirmAgentAttributeAndReset(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-        const expectedApmTxnName = `WebTransaction/Function/${agentAttributes[EVENTSOURCE_TYPE].toUpperCase()} ${functionName}`
+        const trigger = agentAttributes[EVENTSOURCE_TYPE].toUpperCase()
+        const expectedApmTxnName = `WebTransaction/Function/${trigger} ${functionName}`
 
         assert.equal(agentAttributes[EVENTSOURCE_TYPE], 'apiGateway')
         assert.ok(transaction)
