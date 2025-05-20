@@ -546,6 +546,33 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       }
     })
 
+    await t.test('should include event type in txn name for Lambda APM mode', (t, end) => {
+      process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
+      const { agent, awsLambda, stubContext, stubCallback } = t.nr
+      agent.on('transactionFinished', confirmAgentAttributeAndReset)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttributeAndReset(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+        const expectedApmTxnName = `WebTransaction/Function/${agentAttributes[EVENTSOURCE_TYPE].toUpperCase()} ${functionName}`
+
+        assert.equal(agentAttributes[EVENTSOURCE_TYPE], 'apiGateway')
+        assert.ok(transaction)
+        assert.equal(transaction.type, 'web')
+        assert.equal(transaction.getFullName(), expectedApmTxnName)
+
+        delete process.env.NEW_RELIC_APM_LAMBDA_MODE
+
+        end()
+      }
+    })
+
     await t.test('should record standard web metrics', (t, end) => {
       const { agent, awsLambda, stubContext, stubCallback } = t.nr
       agent.on('harvestStarted', confirmMetrics)

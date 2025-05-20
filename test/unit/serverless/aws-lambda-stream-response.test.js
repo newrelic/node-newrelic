@@ -16,6 +16,9 @@ const helper = require('#testlib/agent_helper.js')
 const tempRemoveListeners = require('../../lib/temp-remove-listeners')
 const AwsLambda = require('#agentlib/serverless/aws-lambda.js')
 
+const lambdaSampleEvents = require('./lambda-sample-events')
+const EVENTSOURCE_TYPE = 'aws.lambda.eventSource.eventType'
+
 const groupName = 'Function'
 const functionName = 'testNameStreaming'
 const expectedTransactionName = groupName + '/' + functionName
@@ -258,6 +261,34 @@ test('should create a transaction for handler', async (t) => {
     plan.equal(transaction.type, 'bg')
     plan.equal(transaction.getFullName(), expectedBgTransactionName)
     plan.ok(transaction.isActive())
+    responseStream.end()
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await responseDone
+  await plan.completed
+})
+
+test('should name transaction correctly in Lambda APM Mode', async (t) => {
+  const plan = tspl(t, { plan: 2 })
+  const { agent, awsLambda, responseStream, context, responseDone } = t.nr
+  const event = lambdaSampleEvents.cloudwatchScheduled
+  process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
+
+  agent.on('transactionFinished', (tx) => {
+    const agentAttributes = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+    const expectedApmTxnName = `OtherTransaction/Function/${agentAttributes[EVENTSOURCE_TYPE].toUpperCase()} ${context.functionName}`
+    plan.equal(tx.type, 'bg')
+    plan.equal(tx.getFullName(), expectedApmTxnName)
+
+    delete process.env.NEW_RELIC_APM_LAMBDA_MODE
+  })
+
+  const handler = decorateHandler(async (event, responseStream) => {
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
   })
 
