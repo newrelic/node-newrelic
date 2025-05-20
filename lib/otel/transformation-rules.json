@@ -561,6 +561,55 @@
     }
   },
   {
+    "name": "OtelDbClientDynamo1_17",
+    "type": "db",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "db.system"
+      ],
+      "attribute_conditions": {
+        "db.system": ["dynamodb"]
+      }
+    },
+    "attributes": [
+      {
+        "key": "db.system",
+        "target": "segment",
+        "name": "product"
+      },
+      {
+        "key": "db.name",
+        "target": "segment",
+        "name": "database_name"
+      },
+      {
+        "template": "dynamodb.${aws.region}.amazonaws.com",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "value": "443",
+        "target": "segment",
+        "name": "port_path_or_id"
+      },
+      {
+        "template": "arn:aws:dynamodb:${aws.region}:${accountId}:table/${aws.dynamodb.table_names}",
+        "target": "segment",
+        "name": "cloud.resource_id"
+      }
+    ],
+    "segment": {
+      "operation": "db.operation",
+      "type": "db.system",
+      "name": {
+        "template": "Datastore/operation/${type}/${operation}"
+      } 
+    }
+  },
+  {
     "name": "OtelDbClient1_17",
     "type": "db",
     "matcher": {
@@ -634,14 +683,29 @@
         "key": "server.port",
         "target": "segment",
         "name": "port"
+      },
+      {
+        "template": "${url.full}",
+        "regex": {
+          "statement": "(.*)\\?(.*)",
+          "groups": [
+            {
+              "group": 1,
+              "name": "url" 
+            },
+            {
+              "group": 2,
+             "name": "request.parameters" 
+            }
+          ] 
+        },
+        "target": "segment"
       }
     ],
     "segment": {
-      "method": "http.request.method",
       "host": "server.address",
-      "url": "url.full",
       "name": {
-        "template": "External/${host}${path}"
+        "template": "External/${server.address}${url.path}"
       } 
     }
   },
@@ -668,96 +732,350 @@
         "name": "procedure"
       },
       {
-        "key": "http.host",
+        "key": "net.peer.name",
         "target": "segment",
         "name": "hostname"
       },
       {
-        "key": "net.host.port",
+        "key": "net.peer.port",
         "target": "segment",
         "name": "port"
+      },
+      {
+        "template": "${http.url}",
+        "regex": {
+          "statement": "(.*)\\?(.*)",
+          "groups": [
+            {
+              "group": 1,
+              "name": "url" 
+            },
+            {
+              "group": 2,
+             "name": "request.parameters" 
+            }
+          ] 
+        },
+        "target": "segment"
       }
     ],
     "segment": {
-      "method": "http.method",
       "host": "net.peer.name",
       "url": "http.url",
       "name": {
-        "template": "External/${host}${path}"
+        "template": "External/${net.peer.name}${path}"
       } 
     }
   },
   {
-    "name": "OtelRpcClient1_20",
+    "name": "OtelRpcClient1_23",
+    "type": "external",
     "matcher": {
-      "required_metric_names": [
-        "rpc.client.duration"
-      ],
-      "metric_assumed_unit": "ms",
-      "metric_unit_validator": "time_unit",
       "required_span_kinds": [
         "client"
       ],
       "required_attribute_keys": [
-        "rpc.system"
+        "rpc.system",
+        "server.address"
       ]
     },
-    "target": {
-      "target_metrics": [
-        "external",
-        "blame"
+    "attributes": [
+      {
+        "key": "rpc.grpc.status_code",
+        "target": "segment",
+        "name": "grpc.statusCode"
+      },
+      {
+        "key": "rpc.system",
+        "target": "segment",
+        "name": "component"
+      },
+      {
+        "key": "rpc.method",
+        "target": "segment",
+        "name": "procedure"
+      },
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "hostname"
+      },
+      {
+        "key": "server.port",
+        "target": "segment",
+        "name": "port"
+      },
+      {
+        "template": "grpc://${server.address}${server.port}/${rpc.service}/${rpc.method}",
+        "target": "segment",
+        "name": "url"
+      }
+    ],
+    "segment": {
+      "host": "server.address",
+      "system": "rpc.system",
+      "name": {
+        "template": "External/${server.address}/${rpc.service}/${rpc.method}"
+      } 
+    }
+  },
+  {
+    "name": "OtelLambdaClient1_17",
+    "type": "external",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
       ],
-      "attribute_mappings": [
-        {
-          "attribute": "metricTimesliceName",
-          "template": "External/${net.peer.name:-unknown}/all"
-        },
-        {
-          "attribute": "server.address",
-          "template": "${net.peer.name:-unknown}"
-        },
-        {
-          "attribute": "external.host",
-          "template": "${net.peer.name:-unknown}"
-        }
+      "required_attribute_keys": [
+        "rpc.system",
+        "faas.invoked_provider"
+      ],
+      "attribute_conditions": {
+        "faas.invoked_provider": ["aws"]
+      }
+    },
+    "attributes": [
+      {
+        "value": "aws_lambda",
+        "target": "segment",
+        "name": "cloud.platform"
+      },
+      {
+        "template": "arn:aws:lambda:${faas.invoked_region}:${accountId}:function:${faas.invoked_name}",
+        "target": "segment",
+        "name": "cloud.resource_id"
+      }
+    ],
+    "segment": {
+      "host": {
+        "template": "lambda.${aws.region}.amazonaws.com"
+      },
+      "name": {
+        "template": "External/${host}"
+      } 
+    }
+  },
+  {
+    "name": "OtelRpcClient1_17",
+    "type": "external",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "rpc.system",
+        "net.peer.name"
       ]
+    },
+    "attributes": [
+      {
+        "key": "rpc.grpc.status_code",
+        "target": "segment",
+        "name": "grpc.statusCode"
+      },
+      {
+        "key": "rpc.system",
+        "target": "segment",
+        "name": "component"
+      },
+      {
+        "key": "rpc.method",
+        "target": "segment",
+        "name": "procedure"
+      },
+      {
+        "key": "net.peer.name",
+        "target": "segment",
+        "name": "hostname"
+      },
+      {
+        "key": "net.peer.port",
+        "target": "segment",
+        "name": "port"
+      },
+      {
+        "template": "grpc://${net.peer.name}${net.peer.port}/${rpc.service}/${rpc.method}",
+        "target": "segment",
+        "name": "url"
+      }
+    ],
+    "segment": {
+      "host": "net.peer.name",
+      "system": "rpc.system",
+      "name": {
+        "template": "External/${net.peer.name}/${rpc.service}/${rpc.method}"
+      } 
     }
   },
   {
     "name": "FallbackClient",
     "type": "external",
     "matcher": {
-      "required_metric_names": [
-        "rpc.client.duration",
-        "http.client.duration",
-        "http.client.request.duration"
-      ],
-      "metric_assumed_unit": "s",
-      "metric_unit_validator": "time_unit",
       "required_span_kinds": [
         "client"
       ],
       "required_attribute_keys": []
     },
-    "target": {
-      "target_metrics": [
-        "external",
-        "blame"
-      ],
-      "attribute_mappings": [
-        {
-          "attribute": "metricTimesliceName",
-          "template": "External/unknown/all"
-        },
-        {
-          "attribute": "server.address",
-          "template": "unknown"
-        },
-        {
-          "attribute": "external.host",
-          "template": "unknown"
-        }
-      ]
+    "attributes": [],
+    "segment": {
+      "name": {
+        "template": "External/unknown"
+      }
     }
+  },
+  {
+    "name": "Producer_1_30",
+    "type": "producer",
+    "matcher": {
+      "required_span_kinds": [
+        "producer"
+      ],
+      "required_attribute_keys": [
+        "messaging.system",
+        "messaging.destination.name"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "server.port",
+        "target": "segment", 
+        "name": "port"
+      },
+      {
+        "key": "messaging.kafka.message.key",
+        "target": "segment",
+        "name": "routing_key"
+      },
+      {
+        "key": "messaging.rabbitmq.destination.routing_key",
+        "target": "segment",
+        "name": "routing_key"
+      },
+      {
+        "key": "messaging.message.conversation_id",
+        "target": "segment",
+        "name": "correlation_id"
+      }
+    ],
+    "segment": {
+      "name": {
+        "template": "MessageBroker/${messaging.system}/${messaging.operation.name}/Produce/Named/${messaging.destination.name}"
+      }
+    }
+  },
+  {
+    "name": "ProducerSQS_1_17",
+    "type": "producer",
+    "matcher": {
+      "required_span_kinds": [
+        "producer"
+      ],
+      "required_attribute_keys": [
+        "messaging.system",
+        "messaging.destination"
+      ],
+      "attribute_conditions": {
+        "messaging.system": ["aws.sqs"]
+      }
+    },
+    "attributes": [
+      {
+        "value": "aws_sqs",
+        "target": "segment",
+        "name": "messaging.system"
+      },
+      {
+        "key": "messaging.destination",
+        "target": "segment",
+        "name": "messaging.destination.name"
+      },
+      {
+        "key": "aws.region",
+        "target": "segment",
+        "name": "cloud.region"
+      },
+      {
+        "template": "${messaging.url}",
+        "regex": {
+          "statement": "\\/\\/([\\w-\\.]+)\\/(\\d+)\\/.*$",
+          "groups": [
+            {
+              "group": 1,
+              "name": "host"
+            },
+            {
+              "group": 2,
+              "name": "cloud.account.id"
+            }
+          ] 
+        }
+      },
+      {
+        "key": "messaging.message_id",
+        "target": "segment",
+        "name": "correlation_id"
+      }
+    ],
+    "segment": {
+      "name": {
+        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination}"
+      }
+    }
+  },
+  {
+    "name": "Producer_1_17",
+    "type": "producer",
+    "matcher": {
+      "required_span_kinds": [
+        "producer"
+      ],
+      "required_attribute_keys": [
+        "messaging.system",
+        "messaging.destination"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "net.peer.name",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "net.peer.port",
+        "target": "segment", 
+        "name": "port"
+      },
+      {
+        "key": "messaging.rabbitmq.routing_key",
+        "target": "segment",
+        "name": "routing_key"
+      },
+      {
+        "key": "messaging.conversation_id",
+        "target": "segment",
+        "name": "correlation_id"
+      }
+    ],
+    "segment": {
+      "name": {
+        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination}"
+      }
+    }
+  },
+  {
+    "name": "Fallback",
+    "type": "internal",
+    "matcher": {
+      "required_span_kinds": [
+        "internal"
+      ],
+      "required_attribute_keys": []
+    },
+    "attributes": []
   }
 ]

@@ -38,6 +38,7 @@ const {
   ATTR_MESSAGING_DESTINATION_NAME,
   ATTR_MESSAGING_MESSAGE_CONVERSATION_ID,
   ATTR_MESSAGING_OPERATION,
+  ATTR_MESSAGING_OPERATION_NAME,
   ATTR_MESSAGING_RABBITMQ_DESTINATION_ROUTING_KEY,
   ATTR_MESSAGING_SYSTEM,
   ATTR_MONGODB_COLLECTION,
@@ -149,6 +150,7 @@ test('Http external span is bridged accordingly', (t, end) => {
     [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
     [ATTR_HTTP_REQUEST_METHOD]: 'GET',
     [ATTR_SERVER_PORT]: 8080,
+    [ATTR_URL_PATH]: '/search',
     [ATTR_FULL_URL]: 'https://www.newrelic.com:8080/search?q=test'
   }
 
@@ -181,6 +183,17 @@ test('Http external span is bridged accordingly', (t, end) => {
       assert.equal(spanAttributes.hostname, attributes[ATTR_SERVER_ADDRESS])
       assert.equal(spanAttributes.port, attributes[ATTR_SERVER_PORT])
       assert.equal(spanAttributes['request.parameters.q'], 'test')
+      const metrics = tx.metrics.scoped[tx.name]
+      assert.equal(metrics['External/www.newrelic.com/http'].callCount, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+        ;[
+        'External/all',
+        'External/allWeb',
+        'External/www.newrelic.com/all',
+        'External/www.newrelic.com/http'
+      ].forEach((expectedMetric) => {
+        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
+      })
       end()
     })
   })
@@ -222,6 +235,160 @@ test('Http external span is bridged accordingly(legacy attributes test)', (t, en
       assert.equal(spanAttributes.hostname, attributes[ATTR_NET_PEER_NAME])
       assert.equal(spanAttributes.port, attributes[ATTR_NET_PEER_PORT])
       assert.equal(spanAttributes['request.parameters.q'], 'test')
+      const metrics = tx.metrics.scoped[tx.name]
+      assert.equal(metrics['External/www.newrelic.com/http'].callCount, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+        ;[
+        'External/all',
+        'External/allWeb',
+        'External/www.newrelic.com/all',
+        'External/www.newrelic.com/http'
+      ].forEach((expectedMetric) => {
+        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
+      })
+      end()
+    })
+  })
+})
+
+test('rpc external span is bridged accordingly', (t, end) => {
+  const attributes = {
+    [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
+    [ATTR_RPC_METHOD]: 'getUsers',
+    [ATTR_SERVER_PORT]: 8080,
+    [ATTR_RPC_SERVICE]: 'test.service',
+    [ATTR_RPC_SYSTEM]: 'grpc',
+  }
+
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'rpc-test'
+    tracer.startActiveSpan('rpc-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+      span.setAttribute(ATTR_GRPC_STATUS_CODE, 0)
+      const segment = agent.tracer.getSegment()
+      assert.equal(segment.name, 'External/www.newrelic.com/test.service/getUsers')
+      assert.equal(tx.traceId, span.spanContext().traceId)
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
+
+      const attrs = segment.getAttributes()
+      const spanAttributes = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
+      assert.equal(attrs.procedure, 'getUsers')
+      assert.equal(attrs.component, 'grpc')
+      // attributes.url shouldn't include the query
+      assert.equal(attrs.url, 'grpc://www.newrelic.com:8080/test.service/getUsers')
+      assert.equal(spanAttributes['grpc.statusCode'], 0)
+      assert.equal(spanAttributes.hostname, attributes[ATTR_SERVER_ADDRESS])
+      assert.equal(spanAttributes.port, attributes[ATTR_SERVER_PORT])
+      const metrics = tx.metrics.scoped[tx.name]
+      assert.equal(metrics['External/www.newrelic.com/grpc'].callCount, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+        ;[
+        'External/all',
+        'External/allWeb',
+        'External/www.newrelic.com/all',
+        'External/www.newrelic.com/grpc'
+      ].forEach((expectedMetric) => {
+        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
+      })
+
+      end()
+    })
+  })
+})
+
+test('rpc external span(legacy attributes) is bridged accordingly', (t, end) => {
+  const attributes = {
+    [ATTR_NET_PEER_NAME]: 'www.newrelic.com',
+    [ATTR_RPC_METHOD]: 'getUsers',
+    [ATTR_NET_PEER_PORT]: 8080,
+    [ATTR_RPC_SERVICE]: 'test.service',
+    [ATTR_RPC_SYSTEM]: 'grpc',
+  }
+
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'rpc-test'
+    tracer.startActiveSpan('rpc-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+      span.setAttribute(ATTR_GRPC_STATUS_CODE, 0)
+      const segment = agent.tracer.getSegment()
+      assert.equal(segment.name, 'External/www.newrelic.com/test.service/getUsers')
+      assert.equal(tx.traceId, span.spanContext().traceId)
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
+
+      const attrs = segment.getAttributes()
+      const spanAttributes = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
+      assert.equal(attrs.procedure, 'getUsers')
+      assert.equal(attrs.component, 'grpc')
+      // attributes.url shouldn't include the query
+      assert.equal(attrs.url, 'grpc://www.newrelic.com:8080/test.service/getUsers')
+      assert.equal(spanAttributes['grpc.statusCode'], 0)
+      assert.equal(spanAttributes.hostname, attributes[ATTR_NET_PEER_NAME])
+      assert.equal(spanAttributes.port, attributes[ATTR_NET_PEER_PORT])
+      const metrics = tx.metrics.scoped[tx.name]
+      assert.equal(metrics['External/www.newrelic.com/grpc'].callCount, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+        ;[
+        'External/all',
+        'External/allWeb',
+        'External/www.newrelic.com/all',
+        'External/www.newrelic.com/grpc'
+      ].forEach((expectedMetric) => {
+        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
+      })
+
+      end()
+    })
+  })
+})
+
+test('fallback client is bridged accordingly', (t, end) => {
+  const { agent, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'fallback-client-test'
+    tracer.startActiveSpan('unidic-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
+      const segment = agent.tracer.getSegment()
+      assert.equal(segment.name, 'External/unknown')
+      assert.equal(tx.traceId, span.spanContext().traceId)
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'client' }
+        ]
+      })
+
+      const metrics = tx.metrics.scoped[tx.name]
+      assert.equal(metrics['External/unknown/http'].callCount, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+        ;[
+        'External/all',
+        'External/allWeb',
+        'External/unknown/all',
+        'External/unknown/http'
+      ].forEach((expectedMetric) => {
+        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
+      })
       end()
     })
   })
@@ -595,11 +762,11 @@ test('server span(fallback) is bridged accordingly', (t, end) => {
   })
 })
 
-test('producer span is bridged accordingly', (t, end) => {
+test('producer span(legacy) is bridged accordingly', (t, end) => {
   const { agent, tracer } = t.nr
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'messaging-lib',
-    [ATTR_MESSAGING_OPERATION]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
+    [ATTR_MESSAGING_OPERATION_NAME]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
     [ATTR_MESSAGING_DESTINATION_NAME]: 'test-queue',
     [ATTR_SERVER_ADDRESS]: 'localhost',
     [ATTR_SERVER_PORT]: 5672,
@@ -636,6 +803,53 @@ test('producer span is bridged accordingly', (t, end) => {
       assert.equal(attrs.routing_key, 'myKey')
       assert.equal(attrs[ATTR_MESSAGING_SYSTEM], 'messaging-lib')
       assert.equal(attrs[ATTR_MESSAGING_DESTINATION_NAME], 'test-queue')
+      assert.equal(attrs[ATTR_MESSAGING_OPERATION_NAME], MESSAGING_SYSTEM_KIND_VALUES.QUEUE)
+      end()
+    })
+  })
+})
+
+test('producer span is bridged accordingly', (t, end) => {
+  const { agent, tracer } = t.nr
+  const attributes = {
+    [ATTR_MESSAGING_SYSTEM]: 'messaging-lib',
+    [ATTR_MESSAGING_OPERATION]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
+    [ATTR_MESSAGING_DESTINATION]: 'test-queue',
+    [ATTR_NET_PEER_NAME]: 'localhost',
+    [ATTR_NET_PEER_PORT]: 5672,
+    'messaging.rabbitmq.routing_key': 'myKey',
+    'messaging.conversation_id': 'MyConversationId'
+  }
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'prod-test'
+
+    const expectedHost = agent.config.getHostnameSafe('localhost')
+    tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
+      const segment = agent.tracer.getSegment()
+      assert.equal(tx.traceId, span.spanContext().traceId)
+      assert.equal(segment.name, 'MessageBroker/messaging-lib/queue/Produce/Named/test-queue')
+      span.end()
+      const duration = hrTimeToMilliseconds(span.duration)
+      assert.equal(duration, segment.getDurationInMillis())
+      tx.end()
+      assertSpanKind({
+        agent,
+        segments: [
+          { name: segment.name, kind: 'producer' }
+        ]
+      })
+      const metrics = tx.metrics.scoped[tx.name]
+      assert.equal(metrics['MessageBroker/messaging-lib/queue/Produce/Named/test-queue'].callCount, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+      assert.equal(unscopedMetrics['MessageBroker/messaging-lib/queue/Produce/Named/test-queue'].callCount, 1)
+
+      const attrs = segment.getAttributes()
+      assert.equal(attrs.host, expectedHost)
+      assert.equal(attrs.port, 5672)
+      assert.equal(attrs.correlation_id, 'MyConversationId')
+      assert.equal(attrs.routing_key, 'myKey')
+      assert.equal(attrs[ATTR_MESSAGING_SYSTEM], 'messaging-lib')
+      assert.equal(attrs[ATTR_MESSAGING_DESTINATION], 'test-queue')
       assert.equal(attrs[ATTR_MESSAGING_OPERATION], MESSAGING_SYSTEM_KIND_VALUES.QUEUE)
       end()
     })
@@ -913,7 +1127,7 @@ test('aws dynamodb span has correct entity linking attributes', (t, end) => {
   const attributes = {
     [ATTR_DB_NAME]: 'test-db',
     [ATTR_DB_SYSTEM]: DB_SYSTEM_VALUES.DYNAMODB,
-    [ATTR_DB_STATEMENT]: 'select foo from test-table where foo = "bar"',
+    [ATTR_DB_OPERATION]: 'getItem',
     [ATTR_AWS_REGION]: 'us-east-1',
     [ATTR_DYNAMO_TABLE_NAMES]: ['test-table']
   }
@@ -921,12 +1135,26 @@ test('aws dynamodb span has correct entity linking attributes', (t, end) => {
     tx.name = 'db-test'
     tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
+      assert.equal(segment.name, 'Datastore/operation/dynamodb/getItem')
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
       const attrs = segment.getAttributes()
       assert.equal(attrs['cloud.resource_id'], 'arn:aws:dynamodb:us-east-1:123456789123:table/test-table')
+      const metrics = tx.metrics.scoped[tx.name]
+      assert.equal(metrics['Datastore/operation/dynamodb/getItem'].callCount, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+        ;[
+        'Datastore/all',
+        'Datastore/allWeb',
+        'Datastore/dynamodb/all',
+        'Datastore/dynamodb/allWeb',
+        'Datastore/operation/dynamodb/getItem',
+        'Datastore/instance/dynamodb/dynamodb.us-east-1.amazonaws.com/443'
+      ].forEach((expectedMetric) => {
+        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
+      })
       end()
     })
   })
@@ -936,6 +1164,8 @@ test('aws lambda span has correct entity linking attributes', (t, end) => {
   const { agent, tracer } = t.nr
   // see: https://github.com/open-telemetry/opentelemetry-specification/blob/v1.7.0/specification/trace/semantic_conventions/faas.md#example "Span A"
   const attributes = {
+    [ATTR_AWS_REGION]: 'us-east-1',
+    [ATTR_RPC_SYSTEM]: 'aws-api',
     [ATTR_FAAS_INVOKED_NAME]: 'test-function',
     [ATTR_FAAS_INVOKED_PROVIDER]: 'aws',
     [ATTR_FAAS_INVOKED_REGION]: 'us-east-1'
@@ -944,6 +1174,7 @@ test('aws lambda span has correct entity linking attributes', (t, end) => {
     tx.name = 'lambda-test'
     tracer.startActiveSpan('lambda-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
+      assert.equal(segment.name, 'External/lambda.us-east-1.amazonaws.com')
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
@@ -951,6 +1182,17 @@ test('aws lambda span has correct entity linking attributes', (t, end) => {
       const attrs = segment.getAttributes()
       assert.equal(attrs['cloud.resource_id'], 'arn:aws:lambda:us-east-1:123456789123:function:test-function')
       assert.equal(attrs['cloud.platform'], 'aws_lambda')
+      const metrics = tx.metrics.scoped[tx.name]
+      assert.equal(metrics['External/lambda.us-east-1.amazonaws.com/http'].callCount, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+        ;[
+        'External/all',
+        'External/allWeb',
+        'External/lambda.us-east-1.amazonaws.com/all',
+        'External/lambda.us-east-1.amazonaws.com/http'
+      ].forEach((expectedMetric) => {
+        assert.equal(unscopedMetrics[expectedMetric].callCount, 1)
+      })
       end()
     })
   })
@@ -961,20 +1203,24 @@ test('aws sqs span has correct entity linking attributes', (t, end) => {
   // see: https://github.com/open-telemetry/opentelemetry-js-contrib/blob/b520d048465d9b3dfdf275976010c989d2a78a2c/plugins/node/opentelemetry-instrumentation-aws-sdk/src/services/sqs.ts#L62
   const attributes = {
     [ATTR_RPC_SERVICE]: 'sqs',
+    [ATTR_MESSAGING_SYSTEM]: 'aws.sqs',
     [ATTR_MESSAGING_OPERATION]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
     [ATTR_MESSAGING_DESTINATION]: 'test-queue',
+    'messaging.url': 'https://sqs.us-east-1.amazonaws.com/123456789123/test-queue',
+    'messaging.message_id': 'test-message-id',
     [ATTR_AWS_REGION]: 'us-east-1'
   }
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'sqs-test'
     tracer.startActiveSpan('sqs-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
+      assert.equal(segment.name, 'MessageBroker/aws.sqs/queue/Produce/Named/test-queue')
       span.end()
       const duration = hrTimeToMilliseconds(span.duration)
       assert.equal(duration, segment.getDurationInMillis())
       tx.end()
       const attrs = segment.getAttributes()
-      assert.equal(attrs['cloud.account.id'], agent.config.cloud.aws.account_id)
+      assert.equal(attrs['cloud.account.id'], '123456789123')
       assert.equal(attrs['cloud.region'], 'us-east-1')
       assert.equal(attrs['messaging.destination.name'], 'test-queue')
       assert.equal(attrs['messaging.system'], 'aws_sqs')
