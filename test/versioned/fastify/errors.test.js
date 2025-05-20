@@ -22,12 +22,10 @@ test('Test Errors', async (t) => {
     fastify.close()
   })
 
-  if (semver.satisfies(pkgVersion, '>=3')) {
-    if (semver.major(pkgVersion) < 4) {
-      await fastify.register(require('middie'))
-    } else {
-      await fastify.register(require('@fastify/middie'))
-    }
+  if (semver.major(pkgVersion) < 4) {
+    await fastify.register(require('middie'))
+  } else {
+    await fastify.register(require('@fastify/middie'))
   }
 
   fastify.use((req, res, next) => {
