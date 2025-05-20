@@ -4,7 +4,11 @@ on:
   push:
   pull_request:
     types:
+      - edited
       - labeled
+      - opened
+      - reopened
+      - synchronize
   workflow_dispatch:
 
 env:
