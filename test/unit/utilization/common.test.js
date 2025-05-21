@@ -79,7 +79,6 @@ test('Utilization Common Components', async function (t) {
       // Should skip key with value too large
       assert.deepEqual(common.getKeys({ foo: BIG, bar: 'bar' }, ['foo', 'bar'], false), { bar: 'bar' })
     })
-
   })
 
   await t.test('common.request', async (t) => {
