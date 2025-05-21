@@ -54,16 +54,10 @@
         "timeout": false
       }
     },
-    "expected_vendors_hash": {
-      "gcp": {
-        "id": "3161347020215157123",
-        "name": "aef-default-20170501t160547-7gh8",
-        "zone": "us-central1-c"
-      }
-    },
+    "expected_vendors_hash": null,
     "expected_metrics": {
       "Supportability/utilization/gcp/error": {
-        "call_count": 0
+        "call_count": 1
       }
     }
   },
@@ -80,16 +74,10 @@
         "timeout": false
       }
     },
-    "expected_vendors_hash": {
-      "gcp": {
-        "id": "3161347020215157123",
-        "name": "aef-default-20170501t160547-7gh8",
-        "zone": "us-central1-c"
-      }
-    },
+    "expected_vendors_hash": null,
     "expected_metrics": {
       "Supportability/utilization/gcp/error": {
-        "call_count": 0
+        "call_count": 1
       }
     }
   },
@@ -186,16 +174,10 @@
         "timeout": false
       }
     },
-    "expected_vendors_hash": {
-      "gcp": {
-        "id": "3161347020215157123",
-        "machineType": "custom-1-1024",
-        "zone": "us-central1-c"
-      }
-    },
+    "expected_vendors_hash": null,
     "expected_metrics": {
       "Supportability/utilization/gcp/error": {
-        "call_count": 0
+        "call_count": 1
       }
     }
   },
@@ -212,16 +194,10 @@
         "timeout": false
       }
     },
-    "expected_vendors_hash": {
-      "gcp": {
-        "id": "3161347020215157123",
-        "machineType": "custom-1-1024",
-        "zone": "us-central1-c"
-      }
-    },
+    "expected_vendors_hash": null,
     "expected_metrics": {
       "Supportability/utilization/gcp/error": {
-        "call_count": 0
+        "call_count": 1
       }
     }
   },
@@ -260,16 +236,10 @@
         "timeout": false
       }
     },
-    "expected_vendors_hash": {
-      "gcp": {
-        "id": "3161347020215157123",
-        "machineType": "custom-1-1024",
-        "zone": "us-central1-c"
-      }
-    },
+    "expected_vendors_hash": null,
     "expected_metrics": {
       "Supportability/utilization/gcp/error": {
-        "call_count": 0
+        "call_count": 1
       }
     }
   },
@@ -286,16 +256,10 @@
         "timeout": false
       }
     },
-    "expected_vendors_hash": {
-      "gcp": {
-        "id": "3161347020215157123",
-        "machineType": "custom-1-1024",
-        "zone": "us-central1-c"
-      }
-    },
+    "expected_vendors_hash": null,
     "expected_metrics": {
       "Supportability/utilization/gcp/error": {
-        "call_count": 0
+        "call_count": 1
       }
     }
   },
