@@ -809,20 +809,18 @@ test('host facts', async (t) => {
       callback(null, systemInfo)
     }
 
-    const systemInfoPath = require.resolve('../../../lib/system-info')
-    ctx.originalSystemInfoModule = require.cache[systemInfoPath]
-    ctx.systemInfoPath = systemInfoPath
-    require.cache[systemInfoPath] = {
-      id: systemInfoPath,
-      filename: systemInfoPath,
+    ctx.systemInfoPath = require.resolve('../../../lib/system-info')
+    ctx.originalSystemInfoModule = require.cache[ctx.systemInfoPath]
+    require.cache[ctx.systemInfoPath] = {
+      id: ctx.systemInfoPath,
+      filename: ctx.systemInfoPath,
       loaded: true,
       exports: mockSysInfo
     }
 
-    const factsPath = require.resolve('../../../lib/collector/facts')
-    ctx.originalFactsModule = require.cache[factsPath]
-    ctx.factsPath = factsPath
-    delete require.cache[factsPath]
+    ctx.factsPath = require.resolve('../../../lib/collector/facts')
+    ctx.originalFactsModule = require.cache[ctx.factsPath]
+    delete require.cache[ctx.factsPath]
 
     const facts = require('../../../lib/collector/facts')
     ctx.nr.facts = function (agent, callback) {
