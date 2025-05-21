@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const os = require('node:os')
+const once = require('node:events').once
 const sinon = require('sinon')
 
 const { tspl } = require('@matteo.collina/tspl')
@@ -546,32 +547,30 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       }
     })
 
-    await t.test('should include event type in txn name for Lambda APM mode', (t, end) => {
+    await t.test('should include event type in txn name for Lambda APM mode', async (tc) => {
       process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
-      const { agent, awsLambda, stubContext, stubCallback } = t.nr
-      agent.on('transactionFinished', confirmAgentAttributeAndReset)
+      await t.beforeEach(tc)
+      const { agent, awsLambda, stubContext, stubCallback } = tc.nr
+      // agent.on('transactionFinished', confirmAgentAttributeAndReset)
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
-        callback(null, validResponse)
+        return validResponse
       })
 
-      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+      await wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+      const [transaction] = await once(agent, 'transactionFinished')
 
-      function confirmAgentAttributeAndReset(transaction) {
-        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-        const trigger = agentAttributes[EVENTSOURCE_TYPE].toUpperCase()
-        const expectedApmTxnName = `WebTransaction/Function/${trigger} ${functionName}`
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const trigger = agentAttributes[EVENTSOURCE_TYPE].toUpperCase()
+      const expectedApmTxnName = `WebTransaction/Function/${trigger} ${functionName}`
 
-        assert.equal(agentAttributes[EVENTSOURCE_TYPE], 'apiGateway')
-        assert.ok(transaction)
-        assert.equal(transaction.type, 'web')
-        assert.equal(transaction.getFullName(), expectedApmTxnName)
+      assert.equal(agentAttributes[EVENTSOURCE_TYPE], 'apiGateway')
+      assert.ok(transaction)
+      assert.equal(transaction.type, 'web')
+      assert.equal(transaction.getFullName(), expectedApmTxnName)
 
-        delete process.env.NEW_RELIC_APM_LAMBDA_MODE
-
-        end()
-      }
+      delete process.env.NEW_RELIC_APM_LAMBDA_MODE
     })
 
     await t.test('should record standard web metrics', (t, end) => {
