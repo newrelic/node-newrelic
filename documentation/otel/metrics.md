@@ -64,7 +64,7 @@ We altered this application in the following ways:
 
 1. We imported the OpenTelemetry API.
 1. We imported the New Relic Node.js agent API.
-1. We use the agent API to wait for the agent to have completed its booting
+1. We used the agent API to wait for the agent to have completed its booting
   process.
-1. After the agent has finished booting, we define our counter, and then
-  start the server.
+1. After the agent finished booting, we defined our counter, and then
+  started the server.
