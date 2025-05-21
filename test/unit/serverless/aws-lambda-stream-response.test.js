@@ -35,15 +35,19 @@ function getMetrics(agent) {
   return agent.metrics._metrics
 }
 
-test.beforeEach(async (ctx) => {
+const defaultConfig = {
+  allow_all_headers: true,
+  attributes: {
+    exclude: ['request.headers.x*', 'response.headers.x*']
+  },
+  serverless_mode: { enabled: true }
+}
+
+const lambdaApmConfig = { lambda: { apm_mode: true }, ...defaultConfig }
+
+async function beforeEach(ctx, agentConfig = defaultConfig) {
   ctx.nr = {}
-  ctx.nr.agent = helper.loadMockedAgent({
-    allow_all_headers: true,
-    attributes: {
-      exclude: ['request.headers.x*', 'response.headers.x*']
-    },
-    serverless_mode: { enabled: true }
-  })
+  ctx.nr.agent = helper.loadMockedAgent(agentConfig)
 
   const { request: responseStream, responseDone } = createAwsResponseStream()
   ctx.nr.responseStream = responseStream
@@ -67,15 +71,18 @@ test.beforeEach(async (ctx) => {
   }
 
   ctx.nr.error = new SyntaxError(errorMessage)
-})
+}
 
-test.afterEach(async (ctx) => {
+async function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
   if (ctx.nr.responseStream.writableFinished !== true) {
     await ctx.nr.responseStream.end()
     await ctx.nr.responseStream.destroy()
   }
-})
+}
+
+test.beforeEach(beforeEach)
+test.afterEach(afterEach)
 
 /**
  * Creates a writable stream that simulates the stream actions AWS's Lambda
@@ -232,8 +239,7 @@ test('should create a segment for handler', async (t) => {
     const chunks = ['step 1', ' step 2', ' step 3']
     await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
-  }
-  )
+  })
 
   const wrappedHandler = awsLambda.patchLambdaHandler(handler)
 
@@ -261,35 +267,6 @@ test('should create a transaction for handler', async (t) => {
     plan.equal(transaction.type, 'bg')
     plan.equal(transaction.getFullName(), expectedBgTransactionName)
     plan.ok(transaction.isActive())
-    responseStream.end()
-  })
-
-  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
-
-  await wrappedHandler(event, responseStream, context)
-  await responseDone
-  await plan.completed
-})
-
-test('should name transaction correctly in Lambda APM Mode', async (t) => {
-  const plan = tspl(t, { plan: 2 })
-  const { agent, awsLambda, responseStream, context, responseDone } = t.nr
-  const event = lambdaSampleEvents.cloudwatchScheduled
-  process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
-
-  agent.on('transactionFinished', (tx) => {
-    const agentAttributes = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-    const trigger = agentAttributes[EVENTSOURCE_TYPE].toUpperCase()
-    const expectedApmTxnName = `OtherTransaction/Function/${trigger} ${context.functionName}`
-    plan.equal(tx.type, 'bg')
-    plan.equal(tx.getFullName(), expectedApmTxnName)
-
-    delete process.env.NEW_RELIC_APM_LAMBDA_MODE
-  })
-
-  const handler = decorateHandler(async (event, responseStream) => {
-    const chunks = ['step 1', 'step 2', 'step 3']
-    await writeToResponseStream(chunks, responseStream, 100)
     responseStream.end()
   })
 
@@ -423,4 +400,35 @@ test('should record standard background metrics', async (t) => {
     plan.ok(otherTotalTimeBgTransactionNameMetric)
     plan.equal(otherTotalTimeBgTransactionNameMetric.callCount, 1)
   }
+})
+
+test('should name transaction correctly in Lambda APM Mode', async (t) => {
+  helper.unloadAgent(t.nr.agent)
+  await beforeEach(t, lambdaApmConfig)
+  const plan = tspl(t, { plan: 2 })
+  const { agent, awsLambda, responseStream, context, responseDone } = t.nr
+  const event = lambdaSampleEvents.cloudwatchScheduled
+  process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
+
+  agent.on('transactionFinished', (tx) => {
+    const agentAttributes = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+    const trigger = agentAttributes[EVENTSOURCE_TYPE].toUpperCase()
+    const expectedApmTxnName = `OtherTransaction/Function/${trigger} ${context.functionName}`
+    plan.equal(tx.type, 'bg')
+    plan.equal(tx.getFullName(), expectedApmTxnName)
+
+    delete process.env.NEW_RELIC_APM_LAMBDA_MODE
+  })
+
+  const handler = decorateHandler(async (event, responseStream) => {
+    const chunks = ['step 1', 'step 2', 'step 3']
+    await writeToResponseStream(chunks, responseStream, 100)
+    responseStream.end()
+  })
+
+  const wrappedHandler = awsLambda.patchLambdaHandler(handler)
+
+  await wrappedHandler(event, responseStream, context)
+  await responseDone
+  await plan.completed
 })
