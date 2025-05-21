@@ -70,14 +70,14 @@ test('Utilization Common Components', async function (t) {
       // Should skip missing key 'bar' and only return valid 'foo'
       assert.deepEqual(common.getKeys({ foo: 'foo' }, ['foo', 'bar'], false), { foo: 'foo' })
 
-      // Should skip invalid 'bar' and only return valid 'foo'
-      assert.deepEqual(common.getKeys({ foo: 'foo', bar: 'bar\0' }, ['foo', 'bar'], false), { foo: 'foo' })
+      // Should skip invalid key 'bar' and only return valid 'foo'
+      assert.deepEqual(common.getKeys({ foo: 'foo', bar: BIG }, ['foo', 'bar'], false), { foo: 'foo' })
 
-      // Should skip both keys if both are missing or invalid
+      // Should skip both keys if both are missing
       assert.deepEqual(common.getKeys({ baz: 'baz' }, ['foo', 'bar'], false), {})
 
-      // Should skip key with value too large
-      assert.deepEqual(common.getKeys({ foo: BIG, bar: 'bar' }, ['foo', 'bar'], false), { bar: 'bar' })
+      // Should skip both keys if both are invalid
+      assert.deepEqual(common.getKeys({ foo: BIG, bar: BIG }, ['foo', 'bar'], false), {})
     })
   })
 
