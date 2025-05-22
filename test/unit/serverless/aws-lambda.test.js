@@ -1570,6 +1570,7 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 test('APM Mode transaction name should include event type', async (t) => {
   process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
   await beforeTests(t)
+  t.after(async () => { await afterTests(t) })
   const { agent, awsLambda, stubContext, stubCallback } = t.nr
   let transaction
 
@@ -1589,6 +1590,4 @@ test('APM Mode transaction name should include event type', async (t) => {
   assert.ok(transaction)
   assert.equal(transaction.type, 'web')
   assert.equal(transaction.getFullName(), expectedApmTxnName)
-
-  await afterTests(t)
 })
