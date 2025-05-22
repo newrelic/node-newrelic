@@ -16,7 +16,8 @@ test('configures global provider after agent start', async (t) => {
     config: {
       entity_guid: 'guid-123456',
       license_key: 'license-123456',
-      host: 'example.com'
+      host: 'example.com',
+      port: 443
     }
   }
   Object.setPrototypeOf(agent, EventEmitter.prototype)
