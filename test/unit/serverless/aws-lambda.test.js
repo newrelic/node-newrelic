@@ -26,62 +26,75 @@ const LAMBDA_ARN = 'aws.lambda.arn'
 const COLDSTART = 'aws.lambda.coldStart'
 const EVENTSOURCE_ARN = 'aws.lambda.eventSource.arn'
 const EVENTSOURCE_TYPE = 'aws.lambda.eventSource.eventType'
+const groupName = 'Function'
+const functionName = 'testName'
+const errorMessage = 'sad day'
 
 function getMetrics(agent) {
   return agent.metrics._metrics
 }
 
+const validResponse = {
+  isBase64Encoded: false,
+  statusCode: 200,
+  headers: { responseHeader: 'headerValue' },
+  body: 'worked'
+}
+
+const defaultAgentConfig = {
+  allow_all_headers: true,
+  attributes: {
+    exclude: ['request.headers.x*', 'response.headers.x*']
+  },
+  serverless_mode: { enabled: true }
+}
+
+function beforeTests(ctx, agentConfig = defaultAgentConfig) {
+  ctx.nr = {}
+  ctx.nr.agent = helper.loadMockedAgent(agentConfig)
+
+  process.env.NEWRELIC_PIPE_PATH = os.devNull
+  const awsLambda = new AwsLambda(ctx.nr.agent)
+  ctx.nr.awsLambda = awsLambda
+  awsLambda._resetModuleState()
+
+  ctx.nr.stubEvent = {}
+  ctx.nr.stubContext = {
+    done() {},
+    succeed() {},
+    fail() {},
+    functionName,
+    functionVersion: 'TestVersion',
+    invokedFunctionArn: 'arn:test:function',
+    memoryLimitInMB: '128',
+    awsRequestId: 'testid'
+  }
+  ctx.nr.stubCallback = () => {}
+
+  process.env.AWS_EXECUTION_ENV = 'Test_nodejsNegative2.3'
+
+  ctx.nr.error = new SyntaxError(errorMessage)
+
+  ctx.nr.agent.setState('started')
+}
+
+function afterTests(ctx) {
+  delete process.env.AWS_EXECUTION_ENV
+  helper.unloadAgent(ctx.nr.agent)
+
+  if (process.emit && process.emit[symbols.unwrap]) {
+    process.emit[symbols.unwrap]()
+  }
+}
+
 test('AwsLambda.patchLambdaHandler', async (t) => {
-  const groupName = 'Function'
-  const functionName = 'testName'
   const expectedTransactionName = groupName + '/' + functionName
   const expectedBgTransactionName = 'OtherTransaction/' + expectedTransactionName
   const expectedWebTransactionName = 'WebTransaction/' + expectedTransactionName
-  const errorMessage = 'sad day'
 
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-    ctx.nr.agent = helper.loadMockedAgent({
-      allow_all_headers: true,
-      attributes: {
-        exclude: ['request.headers.x*', 'response.headers.x*']
-      },
-      serverless_mode: { enabled: true }
-    })
+  t.beforeEach(beforeTests)
 
-    process.env.NEWRELIC_PIPE_PATH = os.devNull
-    const awsLambda = new AwsLambda(ctx.nr.agent)
-    ctx.nr.awsLambda = awsLambda
-    awsLambda._resetModuleState()
-
-    ctx.nr.stubEvent = {}
-    ctx.nr.stubContext = {
-      done() {},
-      succeed() {},
-      fail() {},
-      functionName,
-      functionVersion: 'TestVersion',
-      invokedFunctionArn: 'arn:test:function',
-      memoryLimitInMB: '128',
-      awsRequestId: 'testid'
-    }
-    ctx.nr.stubCallback = () => {}
-
-    process.env.AWS_EXECUTION_ENV = 'Test_nodejsNegative2.3'
-
-    ctx.nr.error = new SyntaxError(errorMessage)
-
-    ctx.nr.agent.setState('started')
-  })
-
-  t.afterEach((ctx) => {
-    delete process.env.AWS_EXECUTION_ENV
-    helper.unloadAgent(ctx.nr.agent)
-
-    if (process.emit && process.emit[symbols.unwrap]) {
-      process.emit[symbols.unwrap]()
-    }
-  })
+  t.afterEach(afterTests)
 
   await t.test('should return original handler if not a function', (t) => {
     const handler = {}
@@ -104,12 +117,6 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
   await t.test('when invoked with API Gateway Lambda proxy event', async (t) => {
     helper.unloadAgent(t.nr.agent)
-    const validResponse = {
-      isBase64Encoded: false,
-      statusCode: 200,
-      headers: { responseHeader: 'headerValue' },
-      body: 'worked'
-    }
 
     await t.test(
       'should not create web transaction for custom direct invocation payload',
@@ -1556,4 +1563,32 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       end()
     }
   })
+})
+
+test('APM Mode transaction name should include event type', async (t) => {
+  process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
+  await beforeTests(t)
+  t.after(async () => {
+    await afterTests(t)
+    delete process.env.NEW_RELIC_APM_LAMBDA_MODE
+  })
+  const { agent, awsLambda, stubContext, stubCallback } = t.nr
+  let transaction
+
+  const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+  const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+    transaction = agent.tracer.getTransaction()
+    return validResponse
+  })
+
+  await wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+  const agentAttributes = await transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+  const trigger = agentAttributes[EVENTSOURCE_TYPE].toUpperCase()
+  const expectedApmTxnName = `WebTransaction/Function/${trigger} ${functionName}`
+
+  assert.equal(agentAttributes[EVENTSOURCE_TYPE], 'apiGateway')
+  assert.ok(transaction)
+  assert.equal(transaction.type, 'web')
+  assert.equal(transaction.getFullName(), expectedApmTxnName)
 })
