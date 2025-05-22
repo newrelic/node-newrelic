@@ -49,8 +49,6 @@ const defaultAgentConfig = {
   serverless_mode: { enabled: true }
 }
 
-// const apmLambdaConfig = { apm: { lambda_mode: true }, ...defaultAgentConfig }
-
 function beforeTests(ctx, agentConfig = defaultAgentConfig) {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent(agentConfig)

@@ -43,8 +43,6 @@ const defaultConfig = {
   serverless_mode: { enabled: true }
 }
 
-// const lambdaApmConfig = { apm: { lambda_mode: true }, ...defaultConfig }
-
 async function beforeEach(ctx, agentConfig = defaultConfig) {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent(agentConfig)
