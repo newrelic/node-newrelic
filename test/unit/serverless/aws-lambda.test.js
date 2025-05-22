@@ -49,7 +49,7 @@ const defaultAgentConfig = {
   serverless_mode: { enabled: true }
 }
 
-const apmLambdaConfig = { lambda: { apm_mode: true }, ...defaultAgentConfig }
+// const apmLambdaConfig = { apm: { lambda_mode: true }, ...defaultAgentConfig }
 
 function beforeTests(ctx, agentConfig = defaultAgentConfig) {
   ctx.nr = {}
@@ -1568,7 +1568,8 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 })
 
 test('APM Mode transaction name should include event type', async (t) => {
-  await beforeTests(t, apmLambdaConfig)
+  process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
+  await beforeTests(t)
   const { agent, awsLambda, stubContext, stubCallback } = t.nr
   let transaction
 

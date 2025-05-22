@@ -43,7 +43,7 @@ const defaultConfig = {
   serverless_mode: { enabled: true }
 }
 
-const lambdaApmConfig = { lambda: { apm_mode: true }, ...defaultConfig }
+// const lambdaApmConfig = { apm: { lambda_mode: true }, ...defaultConfig }
 
 async function beforeEach(ctx, agentConfig = defaultConfig) {
   ctx.nr = {}
@@ -404,11 +404,11 @@ test('should record standard background metrics', async (t) => {
 
 test('should name transaction correctly in Lambda APM Mode', async (t) => {
   helper.unloadAgent(t.nr.agent)
-  await beforeEach(t, lambdaApmConfig)
+  process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
+  await beforeEach(t)
   const plan = tspl(t, { plan: 2 })
   const { agent, awsLambda, responseStream, context, responseDone } = t.nr
   const event = lambdaSampleEvents.cloudwatchScheduled
-  process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
 
   agent.on('transactionFinished', (tx) => {
     const agentAttributes = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
