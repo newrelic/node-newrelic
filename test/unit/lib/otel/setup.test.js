@@ -7,6 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const { once } = require('node:events')
+
 const helper = require('../../../lib/agent_helper')
 const mockLogger = require('../../mocks/logger')
 const { setupOtel } = require('../../../../lib/otel/setup')
@@ -54,4 +56,15 @@ test('should assign span key to agent', (t) => {
   agent.config.feature_flag.opentelemetry_bridge = true
   setupOtel(agent, loggerMock)
   assert.ok(agent.otelSpanKey)
+})
+
+test('should bootstrap metrics', async t => {
+  const { agent, loggerMock } = t.nr
+  agent.config.feature_flag.opentelemetry_bridge = true
+  setupOtel(agent, loggerMock)
+
+  assert.equal(1, agent.listenerCount('started'))
+  process.nextTick(() => agent.emit('started'))
+  await once(agent, 'started')
+  assert.equal(0, agent.listenerCount('started'))
 })
