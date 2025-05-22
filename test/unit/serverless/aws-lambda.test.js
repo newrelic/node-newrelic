@@ -1568,7 +1568,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 test('APM Mode transaction name should include event type', async (t) => {
   process.env.NEW_RELIC_APM_LAMBDA_MODE = 'true'
   await beforeTests(t)
-  t.after(async () => { await afterTests(t) })
+  t.after(async () => {
+    await afterTests(t)
+    delete process.env.NEW_RELIC_APM_LAMBDA_MODE
+  })
   const { agent, awsLambda, stubContext, stubCallback } = t.nr
   let transaction
 
