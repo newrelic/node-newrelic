@@ -3,4 +3,124 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// TODO
+'use strict'
+
+const test = require('node:test')
+const assert = require('node:assert')
+const LlmEmbedding = require('../../../../lib/llm-events/openai/embedding')
+const helper = require('../../../lib/agent_helper')
+const { res, getExpectedResult } = require('./common')
+
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = helper.loadMockedAgent()
+})
+
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
+})
+
+test('should properly create a LlmEmbedding event', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    contents: 'This is my test contents',
+    model: 'gemini-2.0-flash'
+  }
+
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const embeddingEvent = new LlmEmbedding({
+        agent,
+        segment,
+        transaction: tx,
+        request: req,
+        response: res
+      })
+      const expected = getExpectedResult(tx, embeddingEvent, 'embedding')
+      assert.deepEqual(embeddingEvent, expected)
+      end()
+    })
+  })
+})
+;[
+  { type: 'string', value: 'test contents', expected: 'test contents' },
+  {
+    type: 'array of strings',
+    value: ['test contents', 'test input2'],
+    expected: 'test contents,test input2'
+  },
+  { type: 'array of numbers', value: [1, 2, 3, 4], expected: '1,2,3,4' },
+  {
+    type: 'array of array of numbers',
+    value: [
+      [1, 2],
+      [3, 4],
+      [5, 6]
+    ],
+    expected: '1,2,3,4,5,6'
+  }
+].forEach(({ type, value, expected }) => {
+  test(`should properly serialize contents when it is a ${type}`, (t, end) => {
+    const { agent } = t.nr
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment: null,
+      transaction: null,
+      request: { contents: value },
+      response: {}
+    })
+    assert.equal(embeddingEvent.contents, expected)
+    end()
+  })
+})
+
+test('should set error to true', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    contents: 'This is my test contents',
+    model: 'gemini-2.0-flash'
+  }
+
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, () => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      const embeddingEvent = new LlmEmbedding({
+        agent,
+        segment,
+        request: req,
+        response: res,
+        withError: true
+      })
+      assert.equal(true, embeddingEvent.error)
+      end()
+    })
+  })
+})
+
+test('respects record_content', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    contents: 'This is my test contents',
+    model: 'gemini-2.0-flash'
+  }
+  agent.config.ai_monitoring.record_content.enabled = false
+
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, () => {
+    const segment = api.shim.getActiveSegment()
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
+    })
+    assert.equal(embeddingEvent.contents, undefined)
+    end()
+  })
+})
+
+// TODO: tokens tests?
