@@ -1,7 +1,6 @@
 [
   {
     "name": "OtelHttpServer1_23",
-    "comment": "Semantic conventions 1.23.0 compliant server spans",
     "type": "server",
     "matcher": {
       "required_span_kinds": [
@@ -218,6 +217,7 @@
     ],
     "transaction": {
       "type": "message",
+      "system": "messaging.system",
       "name": {
         "templateValue": "${messaging.system}/${messaging.operation.name}/Named/${messaging.destination.name}"
       }
@@ -266,6 +266,7 @@
     ],
     "transaction": {
       "type": "message",
+      "system": "messaging.system",
       "name": {
         "templateValue": "${messaging.system}/${messaging.operation}/Named/${messaging.destination.name}"
       }
@@ -314,6 +315,7 @@
     ],
     "transaction": {
       "type": "message",
+      "system": "messaging.system",
       "name": {
         "templateValue": "${messaging.system}/${messaging.destination_kind}/Named/${messaging.destination}"
       }
@@ -331,6 +333,7 @@
     "attributes": [],
     "transaction": {
       "type": "message",
+      "system": "messaging.system",
       "name": {
         "value": "unknown"
       }
@@ -1064,6 +1067,22 @@
     "segment": {
       "name": {
         "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination}"
+      }
+    }
+  },
+  {
+    "name": "FallbackProducer",
+    "type": "producer",
+    "matcher": {
+      "required_span_kinds": [
+        "producer"
+      ],
+      "required_attribute_keys": []
+    },
+    "attributes": [],
+    "segment": {
+      "name": {
+        "template": "MessageBroker/unknown/unknown/Produce"
       }
     }
   },
