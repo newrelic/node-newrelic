@@ -68,14 +68,16 @@
  * @param {Array} expected          Array of strings that represent segment names.
  *                                  If an item in the array is another array, it
  *                                  represents children of the previous item.
- * @param {boolean} options.exact   If true, then the expected segments must match
+ * @param {object} [options]        Set of options for the assertion algorithm.
+ * @param {boolean} [options.exact] If true, then the expected segments must match
  *                                  exactly, including their position and children on all
  *                                  levels.  When false, then only check that each child
- *                                  exists.
- * @param {array} options.exclude   Array of segment names that should be excluded from
+ *                                  exists. Default: true.
+ * @param {array} [options.exclude] Array of segment names that should be excluded from
  *                                  validation.  This is useful, for example, when a
  *                                  segment may or may not be created by code that is not
  *                                  directly under test.  Only used when `exact` is true.
+ *                                  Default: empty array.
  * @param {object} [deps] Injected dependencies.
  * @param {object} [deps.assert] Assertion library to use.
  */
@@ -83,32 +85,24 @@ module.exports = function assertSegments( // eslint-disable-line sonarjs/cogniti
   trace,
   parent,
   expected,
-  options,
+  { exact, exclude } = { exact: true, exclude: [] },
   { assert = require('node:assert') } = {}
 ) {
   let child
   let childCount = 0
 
-  // rather default to what is more likely to fail than have a false test
-  let exact = true
-  if (options && options.exact === false) {
-    exact = options.exact
-  } else if (options === false) {
-    exact = false
-  }
-
   function getChildren(_parent) {
     const children = trace.getChildren(_parent.id)
     return children.filter(function (item) {
-      if (exact && options && options.exclude) {
-        return options.exclude.indexOf(item.name) === -1
+      if (exact && exclude) {
+        return exclude.indexOf(item.name) === -1
       }
       return true
     })
   }
 
   const children = getChildren(parent)
-  if (exact) {
+  if (exact === true) {
     for (let i = 0; i < expected.length; ++i) {
       const sequenceItem = expected[i]
 
@@ -125,8 +119,8 @@ module.exports = function assertSegments( // eslint-disable-line sonarjs/cogniti
             childCount
         )
 
-        // If the next expected item is not array, then check that the current
-        // child has no children
+        // If the next expected item is not an array, then check that the
+        // current child has no children.
         if (!Array.isArray(expected[i + 1])) {
           assert.ok(
             getChildren(child).length === 0,
@@ -134,7 +128,7 @@ module.exports = function assertSegments( // eslint-disable-line sonarjs/cogniti
           )
         }
       } else if (typeof sequenceItem === 'object') {
-        assertSegments(trace, child, sequenceItem, options, { assert })
+        assertSegments(trace, child, sequenceItem, { exact, exclude }, { assert })
       }
     }
 
