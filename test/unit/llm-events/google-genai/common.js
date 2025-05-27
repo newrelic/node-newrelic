@@ -47,8 +47,7 @@ function getExpectedResult(tx, event, type, completionId) {
     'request.model': 'gemini-2.0-flash',
     'response.model': 'gemini-2.0-flash',
     vendor: 'gemini',
-    ingest_source: 'Node',
-    token_count: 10,
+    ingest_source: 'Node'
   }
   const resKeys = {
     duration: child.getDurationInMillis(),
