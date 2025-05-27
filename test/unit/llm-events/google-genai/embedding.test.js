@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmEmbedding = require('../../../../lib/llm-events/openai/embedding')
+const LlmEmbedding = require('../../../../lib/llm-events/google-genai/embedding')
 const helper = require('../../../lib/agent_helper')
 const { res, getExpectedResult } = require('./common')
 
@@ -23,7 +23,7 @@ test.afterEach((ctx) => {
 test('should properly create a LlmEmbedding event', (t, end) => {
   const { agent } = t.nr
   const req = {
-    contents: 'This is my test contents',
+    contents: 'This is my test input',
     model: 'gemini-2.0-flash'
   }
 
@@ -72,7 +72,7 @@ test('should properly create a LlmEmbedding event', (t, end) => {
       request: { contents: value },
       response: {}
     })
-    assert.equal(embeddingEvent.contents, expected)
+    assert.equal(embeddingEvent.input, expected)
     end()
   })
 })
@@ -80,7 +80,7 @@ test('should properly create a LlmEmbedding event', (t, end) => {
 test('should set error to true', (t, end) => {
   const { agent } = t.nr
   const req = {
-    contents: 'This is my test contents',
+    contents: 'This is my test input',
     model: 'gemini-2.0-flash'
   }
 
@@ -104,7 +104,7 @@ test('should set error to true', (t, end) => {
 test('respects record_content', (t, end) => {
   const { agent } = t.nr
   const req = {
-    contents: 'This is my test contents',
+    contents: 'This is my test input',
     model: 'gemini-2.0-flash'
   }
   agent.config.ai_monitoring.record_content.enabled = false
@@ -118,9 +118,59 @@ test('respects record_content', (t, end) => {
       request: req,
       response: res
     })
-    assert.equal(embeddingEvent.contents, undefined)
+    assert.equal(embeddingEvent.input, undefined)
     end()
   })
 })
 
-// TODO: tokens tests?
+test('should calculate token count from tokenCountCallback', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    contents: 'This is my test input',
+    model: 'gemini-2.0-flash'
+  }
+
+  const api = helper.getAgentApi()
+
+  function cb(model, content) {
+    if (model === req.model) {
+      return content.length
+    }
+  }
+
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, () => {
+    const segment = api.shim.getActiveSegment()
+    delete res.usage
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
+    })
+    assert.equal(embeddingEvent.token_count, 21)
+    end()
+  })
+})
+
+test('should not set token count when not present in usage nor tokenCountCallback', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    input: 'This is my test input',
+    model: 'gemini-2.0-flash'
+  }
+
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, () => {
+    const segment = api.shim.getActiveSegment()
+    delete res.usage
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
+    })
+    assert.equal(embeddingEvent.token_count, undefined)
+    end()
+  })
+})
