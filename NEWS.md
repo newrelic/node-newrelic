@@ -1,3 +1,24 @@
+### v12.20.0 (2025-05-27)
+
+#### Features
+
+* Added support for OTEL metrics API ([#3109](https://github.com/newrelic/node-newrelic/pull/3109)) ([4a57721](https://github.com/newrelic/node-newrelic/commit/4a5772142817afd7ffda0659bad5c9328263fbd0))
+
+#### Bug fixes
+
+* common.getKeys logic ([#3114](https://github.com/newrelic/node-newrelic/pull/3114)) ([01d4fa5](https://github.com/newrelic/node-newrelic/commit/01d4fa586e0bc9d9eefdbc416d94f8e4b2ad6504))
+* Google Cloud Run hostname issue ([#3111](https://github.com/newrelic/node-newrelic/pull/3111)) ([e233fb7](https://github.com/newrelic/node-newrelic/commit/e233fb722760a7683a78145d2953d40b22a27f3a))
+
+#### Documentation
+
+* Updated compatibility report ([#3106](https://github.com/newrelic/node-newrelic/pull/3106)) ([3c47406](https://github.com/newrelic/node-newrelic/commit/3c47406257ee76d47a878bb71bce902e11211e3a))
+    * Co-authored-by: svetlanabrennan <50715937+svetlanabrennan@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Added event source type to  txn name for Lambda APM Mode ([#3110](https://github.com/newrelic/node-newrelic/pull/3110)) ([ddc2e2a](https://github.com/newrelic/node-newrelic/commit/ddc2e2ad962d72c0dd99f0c16436e7f64e23dce0))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com> Co-authored-by: James Sumners <jsumners@newrelic.com>
+
 ### v12.19.0 (2025-05-20)
 
 #### Features

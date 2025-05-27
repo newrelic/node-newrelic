@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.20.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "common.getKeys logic",
+          "Google Cloud Run hostname issue"
+        ],
+        "features": [
+          "Added support for OTEL metrics API"
+        ]
+      }
+    },
+    {
       "version": "12.19.0",
       "changes": {
         "security": [],
