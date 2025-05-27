@@ -110,8 +110,6 @@ test('respects record_content', (t, end) => {
   })
 })
 
-// TODO: Make the below tests work
-
 test('should use token_count from tokenCountCallback for prompt message', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
