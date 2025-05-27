@@ -45,12 +45,13 @@ function getExpectedResult(tx, event, type, completionId) {
     trace_id: tx.traceId,
     span_id: spanId,
     'request.model': 'gemini-2.0-flash',
+    'response.model': 'gemini-2.0-flash',
     vendor: 'gemini',
-    ingest_source: 'Node'
+    ingest_source: 'Node',
+    token_count: 10,
   }
   const resKeys = {
     duration: child.getDurationInMillis(),
-    'response.model': 'gemini-2.0-flash',
     // TODO: response.headers?
   }
 
@@ -78,7 +79,8 @@ function getExpectedResult(tx, event, type, completionId) {
         content: 'Why is the sky blue?',
         sequence: 0,
         completion_id: completionId,
-        is_response: false
+        is_response: false,
+        role: 'user'
       }
   }
 
