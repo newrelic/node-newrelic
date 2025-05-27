@@ -32,7 +32,7 @@ test('should properly create a LlmChatCompletionSummary event', (t, end) => {
         segment,
         transaction: tx,
         request: req,
-        response: res // TODO: res is different
+        response: res
       })
       const expected = getExpectedResult(tx, chatSummaryEvent, 'summary')
       assert.deepEqual(chatSummaryEvent, expected)

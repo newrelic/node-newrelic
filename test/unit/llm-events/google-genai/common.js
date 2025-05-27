@@ -5,8 +5,23 @@
 
 'use strict'
 const res = {
-  model: 'gemini-2.0-flash',
-  choices: [{ finish_reason: 'stop', message: { content: 'a lot', role: 'know-it-all' } }]
+  modelVersion: 'gemini-2.0-flash',
+  candidates: [
+    {
+      content: {
+        parts: [
+          { text: "I don't know!" }
+        ],
+        role: 'model'
+      },
+      finishReason: 'STOP'
+    }
+  ],
+  usageMetadata: {
+    promptTokenCount: 10,
+    candidatesTokenCount: 20,
+    totalTokenCount: 30
+  }
 }
 
 const req = {
@@ -29,20 +44,14 @@ function getExpectedResult(tx, event, type, completionId) {
     appName: 'New Relic for Node.js tests',
     trace_id: tx.traceId,
     span_id: spanId,
-    'response.model': 'gemini-2.0-flash',
+    'request.model': 'gemini-2.0-flash',
     vendor: 'gemini',
     ingest_source: 'Node'
   }
   const resKeys = {
     duration: child.getDurationInMillis(),
-    'request.model': 'gemini-2.0-flash',
-    'response.organization': 'new-relic',
-    'response.headers.llmVersion': '1.0.0',
-    'response.headers.ratelimitLimitRequests': '100',
-    'response.headers.ratelimitLimitTokens': '100',
-    'response.headers.ratelimitResetTokens': '100',
-    'response.headers.ratelimitRemainingTokens': '10',
-    'response.headers.ratelimitRemainingRequests': '10'
+    'response.model': 'gemini-2.0-flash',
+    // TODO: response.headers?
   }
 
   switch (type) {
@@ -56,10 +65,10 @@ function getExpectedResult(tx, event, type, completionId) {
       expected = {
         ...expected,
         ...resKeys,
-        'request.max_tokens': '1000000',
-        'request.temperature': '1.0',
-        'response.number_of_messages': 3,
-        'response.choices.finish_reason': 'stop',
+        'request.max_tokens': 1000000,
+        'request.temperature': 1.0,
+        'response.number_of_messages': 2,
+        'response.choices.finish_reason': 'STOP',
         error: false
       }
       break
