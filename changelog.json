@@ -6,8 +6,8 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "common.getKeys logic",
-          "Google Cloud Run hostname issue"
+          "Fixed common.getKeys logic",
+          "Fixed Google Cloud Run hostname issue"
         ],
         "features": [
           "Added support for OTEL metrics API"
