@@ -147,15 +147,12 @@ test('embedding invalid payload errors should be tracked', (t, end) => {
     assert.equal(tx.exceptions.length, 1)
     match(tx.exceptions[0], {
       error: {
-        status: 403,
-        code: null,
-        param: null
+        status: 404, // "NOT_FOUND"
       },
       customAttributes: {
-        'http.statusCode': 403,
+        'http.statusCode': 404,
         'error.message': /You are not allowed to generate embeddings from this model/,
-        'error.code': null,
-        'error.param': null,
+        'error.code': 404,
         completion_id: undefined,
         embedding_id: /\w{32}/
       },

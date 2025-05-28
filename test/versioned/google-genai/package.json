@@ -1,6 +1,11 @@
 {
   "name": "@google/genai-tests",
-  "targets": [{"name":"@google/genai","minAgentVersion":"12.20.0"}],
+  "targets": [
+    {
+      "name": "@google/genai",
+      "minAgentVersion": "12.20.0"
+    }
+  ],
   "version": "0.0.0",
   "private": true,
   "engines": {

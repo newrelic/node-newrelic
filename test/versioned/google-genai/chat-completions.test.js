@@ -57,12 +57,12 @@ test.afterEach((ctx) => {
 test('should create span on successful models generateContent', (t, end) => {
   const { client, agent, host, port } = t.nr
   helper.runInTransaction(agent, async (tx) => {
-    const results = await client.models.generateContent({
+    const result = await client.models.generateContent({
       contents: 'You are a mathematician.'
     })
 
-    assert.equal(results.headers, undefined, 'should remove response headers from user result')
-    assert.equal(results.choices[0].message.content, '1 plus 2 is 3.')
+    assert.equal(result.headers, undefined, 'should remove response headers from user result')
+    assert.equal(result.candidates[0].content.parts[0].text, '1 plus 2 is 3.')
 
     const name = `External/${host}:${port}/chat/completions`
     assertSegments(
@@ -143,17 +143,16 @@ test('should create span on successful models generateContentStream', (t, end) =
       contents: content
     })
 
-    // TODO: convert to google/genai
     let chunk = {}
     let res = ''
     for await (chunk of stream) {
-      res += chunk.choices[0]?.delta?.content
+      res += chunk?.text
     }
     assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
-    assert.equal(chunk.choices[0].message.role, 'assistant')
+    assert.equal(chunk.candidates[0].content.role, 'model')
     const expectedRes = responses.get(content)
-    assert.equal(chunk.choices[0].message.content, expectedRes.streamData)
-    assert.equal(chunk.choices[0].message.content, res)
+    assert.equal(chunk.candidates[0].content.parts[0].text, expectedRes.streamData)
+    assert.equal(chunk.candidates[0].content.parts[0].text, res)
 
     assertSegments(
       tx.trace,
@@ -185,10 +184,9 @@ test('should create chat completion message and summary for every message sent i
 
     let i = 0
     for await (const chunk of stream) {
-      res += chunk.choices[0]?.delta?.content
+      res += chunk?.text
 
-      // I tried to doing stream.controller.abort like their docs say
-      // but this didn't break
+      // break stream
       if (i === 10) {
         break
       }
