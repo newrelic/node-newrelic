@@ -10,7 +10,7 @@ const helper = require('../../../lib/agent_helper')
 const GenericShim = require('../../../../lib/shim/shim')
 const sinon = require('sinon')
 
-test('@google/genai unit.tests', async (t) => {
+test('@google/genai unit tests', async (t) => {
   t.beforeEach(function (ctx) {
     ctx.nr = {}
     const sandbox = sinon.createSandbox()

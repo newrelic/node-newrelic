@@ -1,0 +1,189 @@
+/*
+ * Copyright 2024 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+'use strict'
+
+const test = require('node:test')
+const assert = require('node:assert')
+const fs = require('node:fs')
+const path = require('node:path')
+
+const { removeModules } = require('../../lib/cache-buster')
+const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const GoogleGenAIMockServer = require('./mock-server')
+const helper = require('../../lib/agent_helper')
+
+const {
+  AI: { GEMINI }
+} = require('../../../lib/metrics/names')
+// have to read and not require because @google/genai does not export the package.json
+const { version: pkgVersion } = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '/node_modules/@google/genai/package.json'))
+)
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+
+test.beforeEach(async (ctx) => {
+  ctx.nr = {}
+  const { host, port, server } = await GoogleGenAIMockServer()
+  ctx.nr.host = host
+  ctx.nr.port = port
+  ctx.nr.server = server
+  ctx.nr.agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: true
+    },
+    streaming: {
+      enabled: true
+    }
+  })
+  const { GoogleGenAI } = require('@google/genai')
+  ctx.nr.client = new GoogleGenAI({
+    apiKey: 'fake-versioned-test-key',
+    vertexai: false
+  })
+})
+
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
+  ctx.nr.server?.close()
+  removeModules('@google/genai')
+})
+
+test('should create span on successful embedding create', (t, end) => {
+  const { client, agent, host, port } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    const results = await client.models.embedContent({
+      contents: 'This is an embedding test.',
+      model: 'text-embedding-004'
+    })
+
+    assert.equal(results.headers, undefined, 'should remove response headers from user result')
+    assert.equal(results.model, 'text-embedding-004')
+
+    const name = `External/${host}:${port}/embeddings`
+    assertSegments(
+      tx.trace,
+      tx.trace.root,
+      [GEMINI.EMBEDDING, [name]],
+      {
+        exact: false
+      }
+    )
+    tx.end()
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: GEMINI.EMBEDDING, kind: 'internal' },
+        { name, kind: 'client' }
+      ]
+    })
+    end()
+  })
+})
+
+test('should increment tracking metric for each embedding event', (t, end) => {
+  const { client, agent } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    await client.models.embedContent({
+      contents: 'This is an embedding test.',
+      model: 'text-embedding-004'
+    })
+
+    const metrics = agent.metrics.getOrCreateMetric(`Supportability/Nodejs/ML/Gemini/${pkgVersion}`)
+    assert.equal(metrics.callCount > 0, true)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should create an embedding message', (t, end) => {
+  const { client, agent } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    await client.models.embedContent({
+      contents: 'This is an embedding test.',
+      model: 'text-embedding-004'
+    })
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 1, 'should create a chat completion message and summary event')
+    const [embedding] = events
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
+    const expectedEmbedding = {
+      id: /[a-f0-9]{36}/,
+      appName: 'New Relic for Node.js tests',
+      request_id: 'c70828b2293314366a76a2b1dcb20688',
+      trace_id: tx.traceId,
+      span_id: segment.id,
+      'response.model': 'text-embedding-004',
+      vendor: 'gemini',
+      ingest_source: 'Node',
+      'request.model': 'text-embedding-004',
+      duration: segment.getDurationInMillis(),
+      token_count: undefined,
+      contents: 'This is an embedding test.',
+      error: false
+    }
+
+    assert.equal(embedding[0].type, 'LlmEmbedding')
+    match(embedding[1], expectedEmbedding, 'should match embedding message')
+
+    tx.end()
+    end()
+  })
+})
+
+test('embedding invalid payload errors should be tracked', (t, end) => {
+  const { client, agent } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    try {
+      await client.models.embedContent({
+        model: 'gemini-2.0-flash',
+        contents: 'Embedding not allowed.'
+      })
+    } catch {}
+
+    assert.equal(tx.exceptions.length, 1)
+    match(tx.exceptions[0], {
+      error: {
+        status: 403,
+        code: null,
+        param: null
+      },
+      customAttributes: {
+        'http.statusCode': 403,
+        'error.message': /You are not allowed to generate embeddings from this model/,
+        'error.code': null,
+        'error.param': null,
+        completion_id: undefined,
+        embedding_id: /\w{32}/
+      },
+      agentAttributes: {
+        spanId: /\w+/
+      }
+    })
+
+    const embedding = agent.customEventAggregator.events.toArray().slice(0, 1)[0][1]
+    assert.equal(embedding.error, true)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should add llm attribute to transaction', (t, end) => {
+  const { client, agent } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    await client.models.embedContent({
+      contents: 'This is an embedding test.',
+      model: 'text-embedding-004'
+    })
+
+    const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+    assert.equal(attributes.llm, true)
+
+    tx.end()
+    end()
+  })
+})
