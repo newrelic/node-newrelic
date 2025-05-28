@@ -50,8 +50,7 @@ function getExpectedResult(tx, event, type, completionId) {
     ingest_source: 'Node'
   }
   const resKeys = {
-    duration: child.getDurationInMillis(),
-    // TODO: response.headers?
+    duration: child.getDurationInMillis()
   }
 
   switch (type) {

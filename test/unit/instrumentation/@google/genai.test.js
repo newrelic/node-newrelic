@@ -33,8 +33,6 @@ test('@google/genai unit.tests', async (t) => {
 
   function getMockModule() {
     function GoogleGenAi() {}
-    GoogleGenAi.HttpResponse = function () {}
-    GoogleGenAi.HttpResponse.prototype.json = async function () {}
     GoogleGenAi.Models = function () {}
     GoogleGenAi.Models.prototype.generateContentInternal = async function () {}
     GoogleGenAi.Models.prototype.generateContentStreamInternal = async function () {}
@@ -48,7 +46,11 @@ test('@google/genai unit.tests', async (t) => {
     initialize(agent, MockGoogleGenAi, '@google/genai', shim)
     assert.equal(shim.logger.debug.callCount, 0, 'should not log debug messages')
     const isWrapped = shim.isWrapped(MockGoogleGenAi.Models.prototype.generateContentInternal)
+    const isStreamWrapped = shim.isWrapped(MockGoogleGenAi.Models.prototype.generateContentStreamInternal)
+    const isEmbedWrapped = shim.isWrapped(MockGoogleGenAi.Models.prototype.embedContent)
     assert.equal(isWrapped, true, 'should wrap models generateContentInternal')
+    assert.equal(isStreamWrapped, true, 'should wrap models generateContentStreamInternal')
+    assert.equal(isEmbedWrapped, true, 'should wrap models embedContent')
     end()
   })
 
@@ -83,7 +85,11 @@ test('@google/genai unit.tests', async (t) => {
       assert.equal(shim.logger.debug.callCount, 1, 'should log 1 debug message')
       assert.equal(shim.logger.debug.args[0][0], 'config.ai_monitoring.enabled is set to false.')
       const isWrapped = shim.isWrapped(MockGoogleGenAi.Models.prototype.generateContentInternal)
-      assert.equal(isWrapped, false, 'should not wrap models generate content internal')
+      const isStreamWrapped = shim.isWrapped(MockGoogleGenAi.Models.prototype.generateContentStreamInternal)
+      const isEmbedWrapped = shim.isWrapped(MockGoogleGenAi.Models.prototype.embedContent)
+      assert.equal(isWrapped, false, 'should not wrap models generateContentInternal')
+      assert.equal(isStreamWrapped, false, 'should not wrap models generateContentStreamInternal')
+      assert.equal(isEmbedWrapped, false, 'should not wrap models embedContent')
       end()
     }
   )
