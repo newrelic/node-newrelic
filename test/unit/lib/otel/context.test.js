@@ -14,6 +14,9 @@ test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
     feature_flag: {
       opentelemetry_bridge: true
+    },
+    opentelemetry: {
+      bridge: { enabled: true }
     }
   })
   ctx.nr = { agent }
