@@ -7,8 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionSummary = require('../../../../lib/llm-events/google-genai/chat-completion-summary')
-const helper = require('../../../lib/agent_helper')
+const LlmChatCompletionSummary = require('#agentlib/llm-events/google-genai/chat-completion-summary.js')
+const helper = require('#testlib/agent_helper.js')
 const { req, res, getExpectedResult } = require('./common')
 
 test.beforeEach((ctx) => {

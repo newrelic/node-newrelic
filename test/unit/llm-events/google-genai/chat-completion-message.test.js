@@ -7,8 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionMessage = require('../../../../lib/llm-events/google-genai/chat-completion-message')
-const helper = require('../../../lib/agent_helper')
+const LlmChatCompletionMessage = require('#agentlib/llm-events/google-genai/chat-completion-message.js')
+const helper = require('#testlib/agent_helper.js')
 const { req, res, getExpectedResult } = require('./common')
 
 test.beforeEach((ctx) => {
@@ -200,7 +200,7 @@ test('should not set token_count if not set in usage nor a callback registered r
   const { agent } = t.nr
   const api = helper.getAgentApi()
   function cb() {
-    // empty cb
+    // no-op so we don't return a token count
   }
   api.setLlmTokenCountCallback(cb)
   helper.runInTransaction(agent, (tx) => {

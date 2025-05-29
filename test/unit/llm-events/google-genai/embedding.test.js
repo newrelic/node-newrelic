@@ -7,8 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmEmbedding = require('../../../../lib/llm-events/google-genai/embedding')
-const helper = require('../../../lib/agent_helper')
+const LlmEmbedding = require('#agentlib/llm-events/google-genai/embedding.js')
+const helper = require('#testlib/agent_helper.js')
 const { res, getExpectedResult } = require('./common')
 
 test.beforeEach((ctx) => {
@@ -45,7 +45,8 @@ test('should properly create a LlmEmbedding event', (t, end) => {
     })
   })
 })
-;[
+
+const serializeTestCases = [
   { type: 'string', value: 'test contents', expected: 'test contents' },
   {
     type: 'array of strings',
@@ -62,20 +63,21 @@ test('should properly create a LlmEmbedding event', (t, end) => {
     ],
     expected: '1,2,3,4,5,6'
   }
-].forEach(({ type, value, expected }) => {
-  test(`should properly serialize contents when it is a ${type}`, (t, end) => {
+]
+for (const testCase of serializeTestCases) {
+  test(`should properly serialize contents when it is a ${testCase.type}`, (t, end) => {
     const { agent } = t.nr
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment: null,
       transaction: null,
-      request: { contents: value },
+      request: { contents: testCase.value },
       response: {}
     })
-    assert.equal(embeddingEvent.input, expected)
+    assert.equal(embeddingEvent.input, testCase.expected)
     end()
   })
-})
+}
 
 test('should set error to true', (t, end) => {
   const { agent } = t.nr

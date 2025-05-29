@@ -6,8 +6,8 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
-const helper = require('../../../lib/agent_helper')
-const GenericShim = require('../../../../lib/shim/shim')
+const helper = require('#testlib/agent_helper.js')
+const GenericShim = require('#agentlib/shim/shim.js')
 const sinon = require('sinon')
 
 test('@google/genai unit tests', async (t) => {
