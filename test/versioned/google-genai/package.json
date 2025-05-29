@@ -9,12 +9,12 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "tests": [
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=18"
       },
       "dependencies": {
         "@google/genai": "^1.1.0"

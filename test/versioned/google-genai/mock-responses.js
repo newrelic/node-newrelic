@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 New Relic Corporation. All rights reserved.
+ * Copyright 2025 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,34 +12,17 @@ responses.set('Invalid API key.', {
   code: 400,
   body: {
     error: {
-      message: 'API key not valid. Please pass a valid API key.',
-      status: 'INVALID_ARGUMENT',
-      reason: 'API_KEY_INVALID',
-      code: 400
+      name: 'ClientError',
+      message: '"got status: 400 Bad Request. {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key not valid. Please pass a valid API key."}]}}"'
     }
   }
 })
 
-responses.set('Embedded: Invalid API key.', {
-  code: 400,
-  body: {
-    error: {
-      message: 'API key not valid. Please pass a valid API key.',
-      status: 'INVALID_ARGUMENT',
-      reason: 'API_KEY_INVALID',
-      code: 400
-    }
-  }
-})
-
-// "got status: 400 Bad Request. {\"error\":{\"code\":400,\"contents\":\"* GenerateContentRequest.model: unexpected model name format\\n\",\"status\":\"INVALID_ARGUMENT\"}}"
 responses.set('Model does not exist.', {
   code: 400,
   body: {
     error: {
-      contents: '* GenerateContentRequest.model: unexpected model name format\n',
-      status: 'INVALID_ARGUMENT',
-      code: 400
+      message: 'got status: 400 Bad Request. {"error":{"code":400,"contents":"* GenerateContentRequest.model: unexpected model name formatn","status":"INVALID_ARGUMENT"}}'
     }
   }
 })
@@ -127,7 +110,6 @@ responses.set('Streamed response', {
 responses.set('bad stream', {
   code: 200,
   body: {
-    object: 'GenerateContentResponse',
     modelVersion: 'gemini-2.0-flash',
     candidates: [
       {

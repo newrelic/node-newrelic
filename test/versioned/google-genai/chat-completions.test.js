@@ -62,6 +62,7 @@ test('should create span on successful models generateContent', (t, end) => {
   const { client, agent, host, port } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     const result = await client.models.generateContent({
+      model: 'gemini-2.0-flash',
       contents: 'You are a mathematician.'
     })
 
@@ -92,6 +93,7 @@ test('should increment tracking metric for each chat completion event', (t, end)
   const { client, agent } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     await client.models.generateContent({
+      model: 'gemini-2.0-flash',
       contents: 'You are a mathematician.'
     })
 
@@ -124,7 +126,6 @@ test('should create chat completion message and summary for every message sent',
       tx,
       chatMsgs,
       model,
-      id: 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat',
       resContent: '1 plus 2 is 3.',
       reqContent: content
     })
@@ -309,6 +310,7 @@ test('handles error in stream', (t, end) => {
   })
 })
 
+// Other tests
 test('should not create llm events when ai_monitoring.streaming.enabled is false', (t, end) => {
   const { client, agent } = t.nr
   agent.config.ai_monitoring.streaming.enabled = false
@@ -328,7 +330,7 @@ test('should not create llm events when ai_monitoring.streaming.enabled is false
     let chunk = {}
 
     for await (chunk of stream) {
-      res += chunk.choices[0]?.delta?.content
+      res += chunk?.text
     }
     const expectedRes = responses.get(content)
     assert.equal(res, expectedRes.streamData)
@@ -365,6 +367,7 @@ test('auth errors should be tracked', (t, end) => {
   helper.runInTransaction(agent, async (tx) => {
     try {
       await client.models.generateContent({
+        model: 'gemini-2.0-flash',
         contents: 'Invalid API key.'
       })
     } catch {}
@@ -372,15 +375,13 @@ test('auth errors should be tracked', (t, end) => {
     assert.equal(tx.exceptions.length, 1)
     match(tx.exceptions[0], {
       error: {
-        status: 401,
-        code: 'invalid_api_key',
-        param: 'null'
+        message: /.*API key not valid. Please pass a valid API key.*/
       },
       customAttributes: {
-        'http.statusCode': 401,
-        'error.message': /Incorrect API key provided:/,
-        'error.code': 'invalid_api_key',
-        'error.param': 'null',
+        'http.statusCode': 400,
+        'error.message': /.*API key not valid. Please pass a valid API key..*/,
+        'error.code': 400,
+        'error.param': undefined,
         completion_id: /\w{32}/
       },
       agentAttributes: {

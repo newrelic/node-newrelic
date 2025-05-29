@@ -19,10 +19,10 @@ function assertChatCompletionMessages(
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
     appName: 'New Relic for Node.js tests',
-    request_id: '49dbbffbd3c3f4612aa48def69059aad',
     trace_id: tx.traceId,
     span_id: segment.id,
     'response.model': model,
+    'request.model': model,
     vendor: 'gemini',
     ingest_source: 'Node',
     role: 'user',
@@ -34,14 +34,14 @@ function assertChatCompletionMessages(
     const expectedChatMsg = { ...baseMsg }
     if (msg[1].sequence === 0) {
       expectedChatMsg.sequence = 0
-      expectedChatMsg.id = `${id}-0`
+      expectedChatMsg.id = /[a-f0-9]{36}/
       expectedChatMsg.content = reqContent
       if (tokenUsage) {
         expectedChatMsg.token_count = 53
       }
     } else if (msg[1].sequence === 1) {
       expectedChatMsg.sequence = 1
-      expectedChatMsg.id = `${id}-1`
+      expectedChatMsg.id = /[a-f0-9]{36}/
       expectedChatMsg.content = 'What does 1 plus 1 equal?'
       if (tokenUsage) {
         expectedChatMsg.token_count = 53
@@ -49,7 +49,7 @@ function assertChatCompletionMessages(
     } else {
       expectedChatMsg.sequence = 2
       expectedChatMsg.role = 'model'
-      expectedChatMsg.id = `${id}-2`
+      expectedChatMsg.id = /[a-f0-9]{36}/
       expectedChatMsg.content = resContent
       expectedChatMsg.is_response = true
       if (tokenUsage) {
@@ -70,7 +70,6 @@ function assertChatCompletionSummary(
   const expectedChatSummary = {
     id: /[a-f0-9]{36}/,
     appName: 'New Relic for Node.js tests',
-    request_id: '49dbbffbd3c3f4612aa48def69059aad',
     trace_id: tx.traceId,
     span_id: segment.id,
     'response.model': model,
@@ -79,7 +78,9 @@ function assertChatCompletionSummary(
     'request.model': model,
     duration: segment.getDurationInMillis(),
     'response.number_of_messages': 3,
-    'response.choices.finish_reason': 'stop',
+    'response.choices.finish_reason': 'STOP',
+    'request.max_tokens': 100,
+    'request.temperature': 0.5,
     error
   }
 
