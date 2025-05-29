@@ -41,7 +41,11 @@ test.beforeEach(async (ctx) => {
   const { GoogleGenAI } = require('@google/genai')
   ctx.nr.client = new GoogleGenAI({
     apiKey: 'fake-versioned-test-key',
-    vertexai: false
+    vertexai: false,
+    httpOptions: {
+      baseUrl: `http://${host}:${port}/`,
+    },
+    httpMethod: 'GET'
   })
 })
 
