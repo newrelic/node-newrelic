@@ -64,7 +64,6 @@ test('should create span on successful embedding create', (t, end) => {
     })
 
     assert.equal(results.headers, undefined, 'should remove response headers from user result')
-    assert.equal(results.model, 'text-embedding-004')
 
     const name = `External/${host}:${port}/embeddings`
     assertSegments(
@@ -115,19 +114,18 @@ test('should create an embedding message', (t, end) => {
     const [embedding] = events
     const [segment] = tx.trace.getChildren(tx.trace.root.id)
     const expectedEmbedding = {
-      id: /[a-f0-9]{36}/,
       appName: 'New Relic for Node.js tests',
-      request_id: 'c70828b2293314366a76a2b1dcb20688',
-      trace_id: tx.traceId,
-      span_id: segment.id,
-      'response.model': 'text-embedding-004',
-      vendor: 'gemini',
-      ingest_source: 'Node',
-      'request.model': 'text-embedding-004',
       duration: segment.getDurationInMillis(),
+      error: false,
+      id: /[a-f0-9]{36}/,
+      ingest_source: 'Node',
+      input: 'This is an embedding test.',
+      'request.model': 'text-embedding-004',
+      'response.model': undefined,
       token_count: undefined,
-      contents: 'This is an embedding test.',
-      error: false
+      span_id: segment.id,
+      trace_id: tx.traceId,
+      vendor: 'gemini',
     }
 
     assert.equal(embedding[0].type, 'LlmEmbedding')
@@ -151,11 +149,11 @@ test('embedding invalid payload errors should be tracked', (t, end) => {
     assert.equal(tx.exceptions.length, 1)
     match(tx.exceptions[0], {
       error: {
-        status: 404, // "NOT_FOUND"
+        message: /.*models\/gemini-2\.0-flash is not found for API version v1beta, or is not supported for embedContent\..*/,
       },
       customAttributes: {
         'http.statusCode': 404,
-        'error.message': /You are not allowed to generate embeddings from this model/,
+        'error.message': /.*models\/gemini-2\.0-flash is not found for API version v1beta, or is not supported for embedContent\..*/,
         'error.code': 404,
         completion_id: undefined,
         embedding_id: /\w{32}/

@@ -96,14 +96,12 @@ responses.set('You are a mathematician.', {
   }
 })
 
-// "got status: 404 Not Found. {\"error\":{\"code\":404,\"message\":\"models/gemini-2.0-flash is not found for API version v1beta, or is not supported for embedContent. Call ListModels to see the list of available models and their supported methods.\",\"status\":\"NOT_FOUND\"}}"
 responses.set('Embedding not allowed.', {
   code: 404,
   body: {
     error: {
-      message: 'models/gemini-2.0-flash is not found for API version v1beta, or is not supported for embedContent. Call ListModels to see the list of available models and their supported methods.',
-      code: 404,
-      status: 'NOT_FOUND',
+      name: 'ClientError',
+      message: '"got status: 404 Not Found. {\\"error\\":{\\"code\\":404,\\"message\\":\\"models/gemini-2.0-flash is not found for API version v1beta, or is not supported for embedContent. Call ListModels to see the list of available models and their supported methods.\\",\\"status\\":\\"NOT_FOUND\\"}}"',
     }
   }
 })

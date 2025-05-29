@@ -23,7 +23,7 @@ test('@google/genai unit tests', async (t) => {
     ctx.nr.agent = agent
     ctx.nr.shim = shim
     ctx.nr.sandbox = sandbox
-    ctx.nr.initialize = require('../../../../lib/instrumentation/@google/genai.js')
+    ctx.nr.initialize = require('#agentlib/instrumentation/@google/genai.js')
   })
 
   t.afterEach(function (ctx) {

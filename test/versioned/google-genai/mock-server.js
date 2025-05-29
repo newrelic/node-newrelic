@@ -66,10 +66,7 @@ function handler(req, res) {
       return
     }
 
-    const { headers, code, body, streamData } = RESPONSES.get(prompt)
-    for (const [key, value] of Object.entries(headers)) {
-      res.setHeader(key, value)
-    }
+    const { code, body, streamData } = RESPONSES.get(prompt)
     res.statusCode = code
 
     if (payload.stream === true) {
@@ -143,19 +140,19 @@ function randomStream(chunkTemplate) {
   return new Readable({
     read(size = 16) {
       const data = crypto.randomBytes(size)
-      chunkTemplate.choices[0].delta.content = data.toString('base64')
+      chunkTemplate.candidates[0].delta.content = data.toString('base64')
       this.push('data: ' + JSON.stringify(chunkTemplate) + '\n\n')
     }
   }).pause()
 }
 
 function getShortenedPrompt(reqBody) {
-  const prompt =
-    reqBody.prompt || reqBody.input || reqBody.messages.map((m) => m.content).join('\n')
+  try {
+    const prompt = reqBody.contents?.[0]?.parts?.[0]?.text ||
+    reqBody.requests?.[0]?.content?.parts?.[0]?.text
 
-  if (Array.isArray(prompt)) {
-    return prompt[0]
+    return prompt.split('\n')[0]
+  } catch {
+    return ''
   }
-
-  return prompt.split('\n')[0]
 }
