@@ -49,7 +49,19 @@
         "path": "http.route"
       },
       "url": {
-        "template": "${url.scheme}://${server.address}${server.port}${url.path}${url.query}" 
+        "template": "${url.scheme}://${server.address}${server.port}${url.path}${url.query}",
+        "mappings": [
+          {
+            "key": "server.port",
+            "arguments": "value",
+            "body": "return value !== 80 && value !== 443 ? `:${value}` : ''"
+          },
+          {
+            "key": "url.query",
+            "arguments": "value",
+            "body": "return value.startsWith('?') ? value : `?${value}`"
+          }
+        ]
       }
     }
   },
@@ -690,16 +702,23 @@
       {
         "template": "${url.full}",
         "regex": {
-          "statement": "(.*)\\?(.*)",
+          "statement": "^([^?]+)(?:\\?(.+))?$",
           "groups": [
             {
               "group": 1,
+              "key": "url.full",
               "name": "url" 
             },
             {
-              "group": 2,
-             "name": "request.parameters" 
-            }
+             "group": 2,
+             "regex": {
+               "statement": "([^&=?]+)=([^&]*)",
+               "flags": "g",
+               "name": 1,
+               "value": 2,
+               "prefix": "request.parameters."
+             }
+            } 
           ] 
         },
         "target": "segment"
@@ -751,12 +770,19 @@
           "groups": [
             {
               "group": 1,
+              "key": "http.url",
               "name": "url" 
             },
             {
-              "group": 2,
-             "name": "request.parameters" 
-            }
+             "group": 2,
+             "regex": {
+               "statement": "([^&=?]+)=([^&]*)",
+               "flags": "g",
+               "name": 1,
+               "value": 2,
+               "prefix": "request.parameters."
+             }
+            } 
           ] 
         },
         "target": "segment"
@@ -811,6 +837,13 @@
       {
         "template": "grpc://${server.address}${server.port}/${rpc.service}/${rpc.method}",
         "target": "segment",
+        "mappings": [
+          {
+            "key": "server.port",
+            "arguments": "value",
+            "body": "return value !== 80 && value !== 443 ? `:${value}` : ''"
+          }
+        ],
         "name": "url"
       }
     ],
@@ -899,7 +932,14 @@
       {
         "template": "grpc://${net.peer.name}${net.peer.port}/${rpc.service}/${rpc.method}",
         "target": "segment",
-        "name": "url"
+        "name": "url",
+        "mappings": [
+          {
+            "key": "net.peer.port",
+            "arguments": "value",
+            "body": "return value !== 80 && value !== 443 ? `:${value}` : ''"
+          }
+        ]
       }
     ],
     "segment": {

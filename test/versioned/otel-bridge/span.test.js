@@ -151,7 +151,7 @@ test('Http external span is bridged accordingly', (t, end) => {
     [ATTR_HTTP_REQUEST_METHOD]: 'GET',
     [ATTR_SERVER_PORT]: 8080,
     [ATTR_URL_PATH]: '/search',
-    [ATTR_FULL_URL]: 'https://www.newrelic.com:8080/search?q=test'
+    [ATTR_FULL_URL]: 'https://www.newrelic.com:8080/search?q=test&key=value',
   }
 
   const { agent, tracer } = t.nr
@@ -204,7 +204,7 @@ test('Http external span is bridged accordingly(legacy attributes test)', (t, en
     [ATTR_NET_PEER_NAME]: 'www.newrelic.com',
     [ATTR_HTTP_METHOD]: 'GET',
     [ATTR_NET_PEER_PORT]: 8080,
-    [ATTR_HTTP_URL]: 'https://www.newrelic.com:8080/search?q=test'
+    [ATTR_HTTP_URL]: 'https://www.newrelic.com:8080/search?q=test&key=value'
   }
 
   const { agent, tracer } = t.nr
@@ -309,7 +309,7 @@ test('rpc external span(legacy attributes) is bridged accordingly', (t, end) => 
   const attributes = {
     [ATTR_NET_PEER_NAME]: 'www.newrelic.com',
     [ATTR_RPC_METHOD]: 'getUsers',
-    [ATTR_NET_PEER_PORT]: 8080,
+    [ATTR_NET_PEER_PORT]: 80,
     [ATTR_RPC_SERVICE]: 'test.service',
     [ATTR_RPC_SYSTEM]: 'grpc',
   }
@@ -338,7 +338,7 @@ test('rpc external span(legacy attributes) is bridged accordingly', (t, end) => 
       assert.equal(attrs.procedure, 'getUsers')
       assert.equal(attrs.component, 'grpc')
       // attributes.url shouldn't include the query
-      assert.equal(attrs.url, 'grpc://www.newrelic.com:8080/test.service/getUsers')
+      assert.equal(attrs.url, 'grpc://www.newrelic.com/test.service/getUsers')
       assert.equal(spanAttributes['grpc.statusCode'], 0)
       assert.equal(spanAttributes.hostname, attributes[ATTR_NET_PEER_NAME])
       assert.equal(spanAttributes.port, attributes[ATTR_NET_PEER_PORT])
@@ -615,6 +615,7 @@ test('server span is bridged accordingly', (t, end) => {
     assert.equal(tx.traceId, span.spanContext().traceId)
     span.setAttribute(ATTR_HTTP_RES_STATUS_CODE, 200)
     span.end()
+    assert.equal(tx.parsedUrl.href, 'http://newrelic.com/foo/bar?key=value&key2=value2')
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
     assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//GET/foo/:param')
