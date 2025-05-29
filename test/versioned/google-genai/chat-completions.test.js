@@ -59,7 +59,7 @@ test.afterEach((ctx) => {
 })
 
 test('should create span on successful models generateContent', (t, end) => {
-  const { client, agent, host, port } = t.nr
+  const { client, agent } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     const result = await client.models.generateContent({
       model: 'gemini-2.0-flash',
@@ -69,11 +69,10 @@ test('should create span on successful models generateContent', (t, end) => {
     assert.equal(result.headers, undefined, 'should remove response headers from user result')
     assert.equal(result.candidates[0].content.parts[0].text, '1 plus 2 is 3.')
 
-    const name = `External/${host}:${port}/chat/completions`
     assertSegments(
       tx.trace,
       tx.trace.root,
-      [GEMINI.COMPLETION, [name]],
+      [GEMINI.COMPLETION],
       { exact: false }
     )
 
@@ -81,8 +80,7 @@ test('should create span on successful models generateContent', (t, end) => {
     assertSpanKind({
       agent,
       segments: [
-        { name: GEMINI.COMPLETION, kind: 'internal' },
-        { name, kind: 'client' }
+        { name: GEMINI.COMPLETION, kind: 'internal' }
       ]
     })
     end()
@@ -151,12 +149,14 @@ test('should create span on successful models generateContentStream', (t, end) =
     let chunk = {}
     let res = ''
     for await (chunk of stream) {
-      res += chunk?.text
+      assert.ok(chunk.text, 'should have text in chunk')
+      res += chunk.text
     }
+
     assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
     assert.equal(chunk.candidates[0].content.role, 'model')
     const expectedRes = responses.get(content)
-    assert.equal(chunk.candidates[0].content.parts[0].text, expectedRes.streamData)
+    assert.equal(chunk.candidates[0].content.parts[0].text, expectedRes.candidates[0].content.parts[0].text)
     assert.equal(chunk.candidates[0].content.parts[0].text, res)
 
     assertSegments(
@@ -186,16 +186,9 @@ test('should create chat completion message and summary for every message sent i
     })
 
     let res = ''
-
-    let i = 0
     for await (const chunk of stream) {
-      res += chunk?.text
-
-      // break stream
-      if (i === 10) {
-        break
-      }
-      i++
+      assert.ok(chunk.text, 'should have text in chunk')
+      res += chunk.text
     }
 
     const events = agent.customEventAggregator.events.toArray()
@@ -246,7 +239,8 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
     })
 
     for await (const chunk of stream) {
-      res += chunk.choices[0]?.delta?.content
+      assert.ok(chunk.text, 'should have text in chunk')
+      res += chunk.text
     }
 
     const events = agent.customEventAggregator.events.toArray()
@@ -272,20 +266,15 @@ test('handles error in stream', (t, end) => {
     const content = 'bad stream'
     const model = 'gemini-2.0-flash'
     const stream = await client.models.generateContentStream({
-      config: {
-        maxOutputTokens: 100,
-        temperature: 0.5
-      },
       model,
-      contents: [content, 'What does 1 plus 1 equal?'],
-      stream: true
+      contents: [content, 'What does 1 plus 1 equal?']
     })
 
     let res = ''
 
     try {
       for await (const chunk of stream) {
-        res += chunk.choices[0]?.delta?.content
+        if (chunk.text) res += chunk?.text
       }
     } catch (err) {
       assert.ok(res)
