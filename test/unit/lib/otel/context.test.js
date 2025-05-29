@@ -16,7 +16,8 @@ test.beforeEach((ctx) => {
       opentelemetry_bridge: true
     },
     opentelemetry: {
-      bridge: { enabled: true }
+      bridge: { enabled: true },
+      traces: { enabled: true }
     }
   })
   ctx.nr = { agent }

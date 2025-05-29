@@ -64,7 +64,8 @@ test.beforeEach((ctx) => {
       opentelemetry_bridge: true
     },
     opentelemetry: {
-      bridge: { enabled: true }
+      bridge: { enabled: true },
+      traces: { enabled: true }
     },
     // for AWS entity linking tests
     cloud: {
