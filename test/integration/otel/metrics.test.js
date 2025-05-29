@@ -19,6 +19,10 @@ test.beforeEach(async (ctx) => {
   ctx.nr.agent = helper.instrumentMockedAgent({
     feature_flag: {
       opentelemetry_bridge: true
+    },
+    opentelemetry: {
+      bridge: { enabled: true },
+      metrics: { enabled: true }
     }
   })
   ctx.nr.agent.config.entity_guid = 'guid-123456'

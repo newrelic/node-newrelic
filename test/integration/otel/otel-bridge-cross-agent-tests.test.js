@@ -12,7 +12,12 @@ const otel = require('@opentelemetry/api')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-  ctx.nr.agent = helper.instrumentMockedAgent({ feature_flag: { opentelemetry_bridge: true } })
+  ctx.nr.agent = helper.instrumentMockedAgent({
+    feature_flag: { opentelemetry_bridge: true },
+    opentelemetry: {
+      bridge: { enabled: true }
+    }
+  })
   ctx.nr.api = helper.getAgentApi(ctx.nr.agent)
   ctx.nr.tracer = otel.trace.getTracer('cross-agent-tests')
 })
