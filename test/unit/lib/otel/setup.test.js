@@ -30,6 +30,7 @@ test.afterEach((ctx) => {
 test('should attributeValueLengthLimit accordingly', (t) => {
   const { agent, loggerMock } = t.nr
   agent.config.feature_flag.opentelemetry_bridge = true
+  agent.config.opentelemetry.bridge.enabled = true
   setupOtel(agent, loggerMock)
   const tracer = otel.trace.getTracer('test')
   assert.equal(tracer._spanLimits.attributeValueLengthLimit, 4095)
@@ -38,6 +39,7 @@ test('should attributeValueLengthLimit accordingly', (t) => {
 test('should create supportability metric on successful setup of opentelemetry bridge', (t) => {
   const { agent, loggerMock } = t.nr
   agent.config.feature_flag.opentelemetry_bridge = true
+  agent.config.opentelemetry.bridge.enabled = true
   setupOtel(agent, loggerMock)
   const setupMetric = agent.metrics.getMetric('Supportability/Nodejs/OpenTelemetryBridge/Setup')
   assert.equal(setupMetric.callCount, 1)
@@ -51,16 +53,37 @@ test('should not create provider when `feature_flag.opentelemetry_bridge` is fal
   assert.equal(loggerMock.warn.args[0][0], '`feature_flag.opentelemetry_bridge` is not enabled, skipping setup of opentelemetry-bridge')
 })
 
+test('should not create provider when `opentelemetry.bridge.enabled` is false', (t) => {
+  const { agent, loggerMock } = t.nr
+  agent.config.feature_flag.opentelemetry_bridge = true
+  agent.config.opentelemetry.bridge.enabled = false
+  const provider = setupOtel(agent, loggerMock)
+  assert.equal(provider, null)
+  assert.equal(loggerMock.warn.args[0][0], '`feature_flag.opentelemetry_bridge` is not enabled, skipping setup of opentelemetry-bridge')
+})
+
 test('should assign span key to agent', (t) => {
   const { agent, loggerMock } = t.nr
   agent.config.feature_flag.opentelemetry_bridge = true
+  agent.config.opentelemetry.bridge.enabled = true
   setupOtel(agent, loggerMock)
   assert.ok(agent.otelSpanKey)
+})
+
+test('should log message if metrics is not enabled', async t => {
+  const { agent, loggerMock } = t.nr
+  agent.config.feature_flag.opentelemetry_bridge = true
+  agent.config.opentelemetry.bridge.enabled = true
+  setupOtel(agent, loggerMock)
+
+  assert.deepEqual(loggerMock.debug.args, [['`opentelemetry.metrics` is not enabled, skipping']])
 })
 
 test('should bootstrap metrics', async t => {
   const { agent, loggerMock } = t.nr
   agent.config.feature_flag.opentelemetry_bridge = true
+  agent.config.opentelemetry.bridge.enabled = true
+  agent.config.opentelemetry.metrics.enabled = true
   setupOtel(agent, loggerMock)
 
   assert.equal(1, agent.listenerCount('started'))
