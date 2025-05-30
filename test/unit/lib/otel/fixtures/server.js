@@ -33,12 +33,7 @@ function createHttpServerSpan({ tracer, name = 'test-span', spanContext }) {
   return span
 }
 
-function createBaseHttpSpan({ tracer, name = 'test-span', spanContext }) {
-  return createSpan({ name, kind: SpanKind.SERVER, tracer, spanContext })
-}
-
 module.exports = {
-  createBaseHttpSpan,
   createHttpServerSpan,
   createRpcServerSpan
 }

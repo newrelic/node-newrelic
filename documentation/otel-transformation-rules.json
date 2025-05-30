@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OpenTelemetry Transformation Rules",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name", "type", "matcher"],
+    "properties": {
+      "name": { "type": "string" },
+      "type": { "type": "string" },
+      "matcher": {
+        "type": "object",
+        "required": ["required_span_kinds", "required_attribute_keys"],
+        "properties": {
+          "required_span_kinds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "required_attribute_keys": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "attribute_conditions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "attributes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": { "type": "string" },
+            "value": { "type": ["string", "number", "boolean"] },
+            "template": { "type": "string" },
+            "regex": {
+              "type": "object",
+              "required": ["statement"],
+              "properties": {
+                "statement": { "type": "string" },
+                "flags": { "type": "string" },
+                "groups": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "group": { "type": ["integer", "string"] },
+                      "key": { "type": "string" },
+                      "name": { "type": "string" },
+                      "regex": { 
+                        "type": "object",
+                        "properties": {
+                          "statement": { "type": "string" },
+                          "flags": { "type": "string" },
+                          "name": { "type": "integer" },
+                          "value": { "type": "integer" },
+                          "prefix": {"type": "string" }
+                        }
+                      },
+                      "value": { "type": ["integer", "string"] },
+                      "prefix": { "type": "string" }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "target": { "type": "string" },
+            "name": { "type": "string" },
+            "highSecurity": { "type": "boolean" },
+            "mappings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": { "type": "string" },
+                  "arguments": { "type": "string" },
+                  "body": { "type": "string" }
+                },
+                "required": ["key", "arguments", "body"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "transaction": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string" },
+          "system": { "type": "string" },
+          "name": {
+            "type": "object",
+            "properties": {
+              "verb": { "type": "string" },
+              "path": { "type": "string" },
+              "prefix": { "type": "string" },
+              "templatePath": { "type": "string" },
+              "templateValue": { "type": "string" },
+              "value": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "url": {
+            "type": "object",
+            "properties": {
+              "template": { "type": "string" },
+              "key": { "type": "string" },
+              "mappings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": { "type": "string" },
+                    "arguments": { "type": "string" },
+                    "body": { "type": "string" }
+                  },
+                  "required": ["key", "arguments", "body"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "segment": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "properties": {
+              "template": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "host": { "type": ["string", "object"] },
+          "system": { "type": "string" },
+          "url": { "type": "string" },
+          "operation": { "type": "string" },
+          "type": { "type": "string" },
+          "statement": { "type": "string" },
+          "collection": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "additionalProperties": false
+  }
+}
