@@ -63,8 +63,8 @@ test.beforeEach((ctx) => {
     feature_flag: {
       opentelemetry_bridge: true
     },
-    opentelemetry: {
-      bridge: { enabled: true },
+    opentelemetry_bridge: {
+      enabled: true,
       traces: { enabled: true }
     },
     // for AWS entity linking tests
