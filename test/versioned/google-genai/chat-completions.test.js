@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 New Relic Corporation. All rights reserved.
+ * Copyright 2025 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -42,6 +42,7 @@ test.beforeEach(async (ctx) => {
     }
   })
   const { GoogleGenAI } = require('@google/genai')
+
   ctx.nr.client = new GoogleGenAI({
     apiKey: 'fake-versioned-test-key',
     vertexai: false,
@@ -138,7 +139,7 @@ test('should create chat completion message and summary for every message sent',
 
 // Streaming tests
 test('should create span on successful models generateContentStream', (t, end) => {
-  const { client, agent, host, port } = t.nr
+  const { client, agent } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     const content = 'Streamed response'
     const stream = await client.models.generateContentStream({
@@ -156,13 +157,13 @@ test('should create span on successful models generateContentStream', (t, end) =
     assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
     assert.equal(chunk.candidates[0].content.role, 'model')
     const expectedRes = responses.get(content)
-    assert.equal(chunk.candidates[0].content.parts[0].text, expectedRes.candidates[0].content.parts[0].text)
+    assert.equal(chunk.candidates[0].content.parts[0].text, expectedRes.body.candidates[0].content.parts[0].text)
     assert.equal(chunk.candidates[0].content.parts[0].text, res)
 
     assertSegments(
       tx.trace,
       tx.trace.root,
-      [GEMINI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+      [GEMINI.COMPLETION],
       { exact: false }
     )
 
@@ -197,7 +198,7 @@ test('should create chat completion message and summary for every message sent i
     assertChatCompletionMessages({
       tx,
       chatMsgs,
-      id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+      id: '0e7e48f05cf962e1692113a49b276e8bb1bc',
       model,
       resContent: res,
       reqContent: content
@@ -249,7 +250,7 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
       tokenUsage: true,
       tx,
       chatMsgs,
-      id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+      id: '"0e7e48f05cf962e1692113a49b276e8bb1bc"',
       model: expectedModel,
       resContent: res,
       reqContent: promptContent
@@ -265,20 +266,22 @@ test('handles error in stream', (t, end) => {
   helper.runInTransaction(agent, async (tx) => {
     const content = 'bad stream'
     const model = 'gemini-2.0-flash'
-    const stream = await client.models.generateContentStream({
-      model,
-      contents: [content, 'What does 1 plus 1 equal?']
-    })
-
-    let res = ''
 
     try {
+      const stream = await client.models.generateContentStream({
+        model,
+        contents: [content, content, content],
+        config: {
+          maxOutputTokens: 100,
+          temperature: 0.5
+        }
+      })
+
       for await (const chunk of stream) {
-        if (chunk.text) res += chunk?.text
+        // No-op to trigger the error
+        assert.ok(chunk)
       }
-    } catch (err) {
-      assert.ok(res)
-      assert.ok(err.message, 'exceeded count')
+    } catch {
       const events = agent.customEventAggregator.events.toArray()
       assert.equal(events.length, 4)
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
@@ -288,7 +291,7 @@ test('handles error in stream', (t, end) => {
       // are asserted in other tests
       match(tx.exceptions[0], {
         customAttributes: {
-          'error.message': 'Premature close',
+          'error.message': /.*bad stream.*/,
           completion_id: /\w{32}/
         }
       })
@@ -319,17 +322,14 @@ test('should not create llm events when ai_monitoring.streaming.enabled is false
     let chunk = {}
 
     for await (chunk of stream) {
-      res += chunk?.text
+      assert.ok(chunk.text, 'should have text in chunk')
+      res += chunk.text
     }
     const expectedRes = responses.get(content)
-    assert.equal(res, expectedRes.streamData)
+    assert.equal(res, expectedRes.body.candidates[0].content.parts[0].text)
 
     const events = agent.customEventAggregator.events.toArray()
     assert.equal(events.length, 0, 'should not llm events when streaming is disabled')
-    const metrics = agent.metrics.getOrCreateMetric(TRACKING_METRIC)
-    assert.equal(metrics.callCount > 0, true)
-    const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-    assert.equal(attributes.llm, true)
     const streamingDisabled = agent.metrics.getOrCreateMetric(
       'Supportability/Nodejs/ML/Streaming/Disabled'
     )

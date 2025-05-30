@@ -92,35 +92,37 @@ responses.set('Embedding not allowed.', {
 responses.set('Streamed response', {
   code: 200,
   body: {
-    modelVersion: 'gemini-2.0-flash',
     candidates: [
       {
         content: {
           parts: [
             { text: "A streamed response is a way of transmitting data from a server to a client (e.g. from a website to a user's computer or mobile device) in a continuous flow or stream, rather than all at one time. This means the client can start to process the data before all of it has been received, which can improve performance for large amounts of data or slow connections. Streaming is often used for real-time or near-real-time applications like video or audio playback." }
-          ]
+          ],
+          role: 'model'
         },
-        role: 'model',
+        usageMetadata: { promptTokenCount: 999, totalTokenCount: 999, promptTokensDetails: [{ modality: 'TEXT', tokenCount: 999 }] },
+        finishReason: 'STOP'
       }
     ],
-    finish_reason: 'STOP'
+    modelVersion: 'gemini-2.0-flash'
   }
 })
 
 responses.set('bad stream', {
   code: 200,
   body: {
-    modelVersion: 'gemini-2.0-flash',
     candidates: [
       {
         content: {
           parts: [
             { text: 'do random' }
-          ]
+          ],
+          role: 'model'
         },
-        role: 'model',
+        usageMetadata: { promptTokenCount: 2, totalTokenCount: 2, promptTokensDetails: [{ modality: 'TEXT', tokenCount: 2 }] },
+        finishReason: 'STOP'
       }
     ],
-    finish_reason: 'STOP'
+    modelVersion: 'gemini-2.0-flash'
   }
 })

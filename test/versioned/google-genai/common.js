@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 New Relic Corporation. All rights reserved.
+ * Copyright 2025 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -72,13 +72,13 @@ function assertChatCompletionSummary(
     appName: 'New Relic for Node.js tests',
     trace_id: tx.traceId,
     span_id: segment.id,
-    'response.model': model,
+    'response.model': error ? undefined : model,
     vendor: 'gemini',
     ingest_source: 'Node',
     'request.model': model,
     duration: segment.getDurationInMillis(),
     'response.number_of_messages': 3,
-    'response.choices.finish_reason': 'STOP',
+    'response.choices.finish_reason': error ? undefined : 'STOP',
     'request.max_tokens': 100,
     'request.temperature': 0.5,
     error

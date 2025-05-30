@@ -66,10 +66,32 @@ function handler(req, res) {
 
     const { code, body } = RESPONSES.get(prompt)
     res.statusCode = code
-    res.write(JSON.stringify(body))
-    res.end()
 
-    // TODO: Mock streaming responses
+    if (prompt.toLowerCase().includes('stream')) {
+      res.setHeader('Content-Type', 'application/json')
+      res.setHeader('Transfer-Encoding', 'chunked')
+
+      // Simulate streaming chunks
+      const streamData = body
+
+      // SSE format: data: {json}\r\n\r\n
+      if (prompt.toLowerCase().includes('bad')) {
+        const errorObj = {
+          error: {
+            status: 'INTERNAL',
+            code: 500,
+            message: 'bad stream'
+          }
+        }
+        res.write(JSON.stringify(errorObj))
+      } else res.write('data: ' + JSON.stringify(streamData) + '\r\n\r\n')
+
+      // Do not write any extra data after the last chunk
+      res.end()
+    } else {
+      res.write(JSON.stringify(body))
+      res.end()
+    }
   })
 }
 
