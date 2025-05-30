@@ -11,6 +11,13 @@ exports.createBenchmark = (opts) => {
   return new Benchmark(opts)
 }
 
+/**
+ * Represents the benchmark test
+ * @class
+ * @param {object} opts test suite configuration options
+ * @param {string} opts.name name of test suite
+ * @param {number} opts.runs number of iterations to run. 1000 by default
+ */
 class Benchmark {
   constructor(opts) {
     this.name = opts.name || 'Anonymous Suite'
@@ -26,6 +33,18 @@ class Benchmark {
     this.processedSamples = {}
   }
 
+  /**
+   * @param {object} opts benchmark test configuration options
+   * @param {string} opts.name name of benchmark test in the suite
+   * @param {function} opts.fn function invoking the agent method we're testing
+   * @param {function} [opts.initialize] function executed before the tests run
+   * @param {function} [opts.teardown] function executed after the tests run
+   * @param {function} [opts.before] function executed before each test run; accepts agent as its param
+   * @param {function} [opts.after] function executed after each test run
+   * @param {object} [opts.agent] agent configuration object, or a configured agent
+   * @param {bool} [opts.runInTransaction] if the agent code path under test must be run in a transaction, set to true.
+   * @param {bool} [opts.runGC] if GC should be run before each test, set to true
+   */
   add(opts) {
     opts = Object.assign({}, this.opts, opts)
     this.tests.push(opts)
