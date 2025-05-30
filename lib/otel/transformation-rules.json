@@ -79,7 +79,7 @@
     "attributes": [
       {
         "key": "http.status_code",
-        "target": "trace",
+        "targets": "trace",
         "name": "http.statusCode"
       },
       {
@@ -700,14 +700,14 @@
         "name": "port"
       },
       {
-        "template": "${url.full}",
+        "key": "url.full",
         "regex": {
           "statement": "^([^?]+)(?:\\?(.+))?$",
           "groups": [
             {
               "group": 1,
-              "key": "url.full",
-              "name": "url" 
+              "name": "url",
+              "target": "segment" 
             },
             {
              "group": 2,
@@ -716,7 +716,8 @@
                "flags": "g",
                "name": 1,
                "value": 2,
-               "prefix": "request.parameters."
+               "prefix": "request.parameters.",
+               "target": "segment" 
              }
             } 
           ] 
@@ -764,14 +765,14 @@
         "name": "port"
       },
       {
-        "template": "${http.url}",
+        "key": "http.url",
         "regex": {
           "statement": "(.*)\\?(.*)",
           "groups": [
             {
               "group": 1,
-              "key": "http.url",
-              "name": "url" 
+              "name": "url",
+              "target": "segment"
             },
             {
              "group": 2,
@@ -780,6 +781,7 @@
                "flags": "g",
                "name": 1,
                "value": 2,
+               "target": "segment",
                "prefix": "request.parameters."
              }
             } 
@@ -1043,17 +1045,19 @@
         "name": "cloud.region"
       },
       {
-        "template": "${messaging.url}",
+        "key": "messaging.url",
         "regex": {
           "statement": "\\/\\/([\\w-\\.]+)\\/(\\d+)\\/.*$",
           "groups": [
             {
               "group": 1,
-              "name": "host"
+              "name": "host",
+              "target": "segment"
             },
             {
               "group": 2,
-              "name": "cloud.account.id"
+              "name": "cloud.account.id",
+              "target": "segment"
             }
           ] 
         }
