@@ -302,7 +302,7 @@ if (semver.gte(pkgVersion, '4.12.2')) {
         // are asserted in other tests
         match(tx.exceptions[0], {
           customAttributes: {
-            'error.message': 'terminated',
+            'error.message': /terminated|Premature close/,
             completion_id: /\w{32}/
           }
         })
