@@ -12,8 +12,9 @@ const { otelSynthesis } = require('../../../../lib/symbols')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
-    feature_flag: {
-      opentelemetry_bridge: true
+    opentelemetry_bridge: {
+      enabled: true,
+      traces: { enabled: true }
     }
   })
   ctx.nr = { agent }
@@ -104,6 +105,14 @@ test('should add segment to otel ctx', (t) => {
     segmentId: segment.id,
     traceId: newContext.transaction.traceId
   })
+})
+
+test('should not error if missing segment', (t) => {
+  const { agent } = t.nr
+  const ctx = otel.context.active()
+  ctx._transaction = { agent, traceId: 'traceId' }
+  const newContext = ctx.enterSegment({})
+  assert.ok(newContext)
 })
 
 test('should add segment to otel when both segment and transaction are passed in', (t) => {
