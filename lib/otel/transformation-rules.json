@@ -79,7 +79,7 @@
     "attributes": [
       {
         "key": "http.status_code",
-        "targets": "trace",
+        "target": "trace",
         "name": "http.statusCode"
       },
       {

@@ -1,6 +1,6 @@
 # OpenTelemetry Transformation Rules JSON Schema Documentation
 
-This document describes the JSON schema for OpenTelemetry Transformation Rules, which define transaction events, trace segments, and time slice metrics are synthesized from span data. The intention is the attributes are processed when a span ends to ensure all the attributes are available for processing.  The segment naming occurs when a span starts for all segments except for the transaction segment which is processed when the span ends.  The schema is designed to be strict, ensuring that all rules conform to a defined structure and that no unknown properties are allowed.
+This document describes the JSON schema for OpenTelemetry Transformation Rules, which define how transaction events, trace segments, and time slice metrics are synthesized from span data. The intention is the OpenTelemetry attributes are processed when a span ends to ensure all the attributes are available for the agent's telemetry processing. The segment naming occurs when a span starts for all segments except for the transaction segment which is processed when the span ends. The schema is designed to be strict, ensuring that all rules conform to a defined structure and that no unknown properties are allowed.
 
 **Note**: This schema has only been tested with the Node.js agent, and while it is expected to work with other language agents, the implementation details may vary.
 
@@ -23,7 +23,7 @@ Each item in the array is a rule object with the following properties:
   The unique name of the transformation rule.
 
 - **type** (`string`):  
-  The type of the rule: `producer`, `consumer`, `external`, `server`, `db`, and `internal`.
+  The type of the rule. Must be one of: `producer`, `consumer`, `external`, `server`, `db`, `internal`. 
 
 - **matcher** (`object`):  
   Defines the criteria for matching spans to this rule.
@@ -33,7 +33,7 @@ Each item in the array is a rule object with the following properties:
 ### matcher
 
 - **required_span_kinds** (`string[]`):  
-  List of span kinds (e.g., `client`, `server`, `producer`) required for this rule to match.
+  List of span kinds required for this rule to match. Each must be one of: `server`, `client`, `producer`, `consumer`, `internal`.
 
 - **required_attribute_keys** (`string[]`):  
   List of attribute keys that must be present on the span.
@@ -94,7 +94,7 @@ Each item in the array is a rule object with the following properties:
 
 - **transaction** (`object`, optional):  
   Describes how to construct the transaction event.
-  - **type** (`string`, required): Transaction type. values: `web`, or `message`
+  - **type** (`string`, required): Transaction type. Must be one of: `web`, or `message`
   - **system** (`string`, optional): messaging system span attribute.(consumer segments only)
   - **name** (`object`, optional): Transaction naming details.
     - **verb** (`string`, optional): span attribute to use as verb.(sever segments only)
@@ -105,7 +105,7 @@ Each item in the array is a rule object with the following properties:
     - **value** (`string`, optional): Literal value for the transaction name.
   - **url** (`object`, optional): URL construction details.(server segments only)
     - **template** (`string`, optional): template to construct the URL.
-    - **key** (`string`, optional): span attriute to use as URL.
+    - **key** (`string`, optional): span attribute to use as URL.
     - **mappings** (`array`, optional): Array of mapping for advanced URL transformations.
       - **key** (`string`): Mapping key.
       - **arguments** (`string`): Mapping function arguments(comma delimited).

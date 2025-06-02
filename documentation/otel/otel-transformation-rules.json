@@ -7,14 +7,14 @@
     "required": ["name", "type", "matcher"],
     "properties": {
       "name": { "type": "string" },
-      "type": { "type": "string" },
+      "type": { "enum": ["producer", "consumer", "external", "server", "db", "internal"] },
       "matcher": {
         "type": "object",
         "required": ["required_span_kinds", "required_attribute_keys"],
         "properties": {
           "required_span_kinds": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": { "enum": ["server", "client", "producer", "consumer", "internal"] } 
           },
           "required_attribute_keys": {
             "type": "array",
@@ -52,6 +52,7 @@
                       "group": { "type": ["integer", "string"] },
                       "key": { "type": "string" },
                       "name": { "type": "string" },
+                      "target": { "enum": ["segment", "transaction", "trace"] },
                       "regex": { 
                         "type": "object",
                         "properties": {
@@ -94,7 +95,7 @@
       "transaction": {
         "type": "object",
         "properties": {
-          "type": { "type": "string" },
+          "type": { "enum": ["web", "message"] },
           "system": { "type": "string" },
           "name": {
             "type": "object",
