@@ -35,6 +35,7 @@ const {
   ATTR_HTTP_STATUS_TEXT,
   ATTR_HTTP_URL,
   ATTR_MESSAGING_DESTINATION,
+  ATTR_MESSAGING_DESTINATION_KIND,
   ATTR_MESSAGING_DESTINATION_NAME,
   ATTR_MESSAGING_MESSAGE_CONVERSATION_ID,
   ATTR_MESSAGING_OPERATION,
@@ -815,7 +816,7 @@ test('producer span is bridged accordingly', (t, end) => {
   const { agent, tracer } = t.nr
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'messaging-lib',
-    [ATTR_MESSAGING_OPERATION]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
+    [ATTR_MESSAGING_DESTINATION_KIND]: MESSAGING_SYSTEM_KIND_VALUES.QUEUE,
     [ATTR_MESSAGING_DESTINATION]: 'test-queue',
     [ATTR_NET_PEER_NAME]: 'localhost',
     [ATTR_NET_PEER_PORT]: 5672,
@@ -852,7 +853,7 @@ test('producer span is bridged accordingly', (t, end) => {
       assert.equal(attrs.routing_key, 'myKey')
       assert.equal(attrs[ATTR_MESSAGING_SYSTEM], 'messaging-lib')
       assert.equal(attrs[ATTR_MESSAGING_DESTINATION], 'test-queue')
-      assert.equal(attrs[ATTR_MESSAGING_OPERATION], MESSAGING_SYSTEM_KIND_VALUES.QUEUE)
+      assert.equal(attrs[ATTR_MESSAGING_DESTINATION_KIND], MESSAGING_SYSTEM_KIND_VALUES.QUEUE)
       end()
     })
   })

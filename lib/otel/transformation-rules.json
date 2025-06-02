@@ -188,7 +188,9 @@
         "consumer"
       ],
       "required_attribute_keys": [
-        "messaging.operation.name"
+        "messaging.system",
+        "messaging.operation.name",
+        "messaging.destination.name"
       ]
     },
     "attributes": [
@@ -243,7 +245,9 @@
         "consumer"
       ],
       "required_attribute_keys": [
-        "messaging.operation"
+        "messaging.system",
+        "messaging.operation",
+        "messaging.destination.name"
       ]
     },
     "attributes": [
@@ -969,6 +973,39 @@
     }
   },
   {
+    "name": "Producer_1_24_GCP",
+    "type": "producer",
+    "matcher": {
+      "required_span_kinds": [
+        "producer"
+      ],
+      "required_attribute_keys": [
+        "messaging.system",
+        "messaging.destination.name"
+      ],
+      "attribute_conditions": {
+        "messaging.system": ["gcp_pubsub"]
+      }
+    },
+    "attributes": [
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "server.port",
+        "target": "segment", 
+        "name": "port"
+      }
+    ],
+    "segment": {
+      "name": {
+        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination.name}"
+      }
+    }
+  },
+  {
     "name": "Producer_1_30",
     "type": "producer",
     "matcher": {
@@ -977,6 +1014,7 @@
       ],
       "required_attribute_keys": [
         "messaging.system",
+        "messaging.operation.name",
         "messaging.destination.name"
       ]
     },
@@ -1010,6 +1048,52 @@
     "segment": {
       "name": {
         "template": "MessageBroker/${messaging.system}/${messaging.operation.name}/Produce/Named/${messaging.destination.name}"
+      }
+    }
+  },
+  {
+    "name": "Producer_1_24",
+    "type": "producer",
+    "matcher": {
+      "required_span_kinds": [
+        "producer"
+      ],
+      "required_attribute_keys": [
+        "messaging.system",
+        "messaging.operation",
+        "messaging.destination.name"
+      ]
+    },
+    "attributes": [
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host"
+      },
+      {
+        "key": "server.port",
+        "target": "segment", 
+        "name": "port"
+      },
+      {
+        "key": "messaging.kafka.message.key",
+        "target": "segment",
+        "name": "routing_key"
+      },
+      {
+        "key": "messaging.rabbitmq.destination.routing_key",
+        "target": "segment",
+        "name": "routing_key"
+      },
+      {
+        "key": "messaging.message.conversation_id",
+        "target": "segment",
+        "name": "correlation_id"
+      }
+    ],
+    "segment": {
+      "name": {
+        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination.name}"
       }
     }
   },
@@ -1083,7 +1167,7 @@
       ],
       "required_attribute_keys": [
         "messaging.system",
-        "messaging.destination"
+        "messaging.destination_kind"
       ]
     },
     "attributes": [
@@ -1110,7 +1194,7 @@
     ],
     "segment": {
       "name": {
-        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination}"
+        "template": "MessageBroker/${messaging.system}/${messaging.destination_kind}/Produce/Named/${messaging.destination}"
       }
     }
   },
