@@ -60,8 +60,9 @@ const { assertSpanKind } = require('../../lib/custom-assertions')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
-    feature_flag: {
-      opentelemetry_bridge: true
+    opentelemetry_bridge: {
+      enabled: true,
+      traces: { enabled: true }
     },
     // for AWS entity linking tests
     cloud: {
