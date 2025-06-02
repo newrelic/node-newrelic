@@ -9,9 +9,9 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
+const traceToSegmentTree = require('../../lib/trace-to-segment-tree')
 
 // all of these events fire before the route handler
 // See: https://www.fastify.io/docs/latest/Lifecycle/
@@ -30,17 +30,10 @@ const AFTER_TX_HOOKS = ['onResponse']
 
 const ALL_HOOKS = [...REQUEST_HOOKS, ...AFTER_HANDLER_HOOKS, ...AFTER_TX_HOOKS]
 
-/**
- * Helper to return the list of expected segments
- *
- * @param {Array} hooks lifecyle hook names to build segment names from
- * @returns {Array} formatted list of expected segments
- */
-function getExpectedSegments(hooks) {
-  return hooks.map((hookName) => {
-    return `Nodejs/Middleware/Fastify/${hookName}/testHook`
-  })
-}
+const nonErrorHooksSegmentsSnap = require('./snapshots/non-error-hooks-segments.json')
+const nonErrorHooksSegmentsSecAgentSnap = require('./snapshots/non-error-hooks-segments-secagent.json')
+const errorHooksSegmentsSnap = require('./snapshots/error-hooks-segments.json')
+const errorHooksSegmentsSegAgentSnap = require('./snapshots/error-hooks-segments-secagent.json')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -83,32 +76,12 @@ test('non-error hooks', async (t) => {
       transaction.getName(),
       'transaction name matched'
     )
-    // all the hooks are siblings of the route handler
-    // except the AFTER_HANDLER_HOOKS which are children of the route handler
-    let expectedSegments
-    if (helper.isSecurityAgentEnabled(agent)) {
-      expectedSegments = [
-        'WebTransaction/WebFrameworkUri/Fastify/GET//add-hook',
-        [
-          'Nodejs/Middleware/Fastify/onRequest/<anonymous>',
-          [
-            ...getExpectedSegments(REQUEST_HOOKS),
-            'Nodejs/Middleware/Fastify/routeHandler//add-hook',
-            getExpectedSegments(AFTER_HANDLER_HOOKS)
-          ]
-        ]
-      ]
-    } else {
-      expectedSegments = [
-        'WebTransaction/WebFrameworkUri/Fastify/GET//add-hook',
-        [
-          ...getExpectedSegments(REQUEST_HOOKS),
-          'Nodejs/Middleware/Fastify/routeHandler//add-hook',
-          getExpectedSegments(AFTER_HANDLER_HOOKS)
-        ]
-      ]
-    }
-    assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
+
+    const expectedSegments = helper.isSecurityAgentEnabled(agent)
+      ? nonErrorHooksSegmentsSecAgentSnap
+      : nonErrorHooksSegmentsSnap
+    const actualSegments = traceToSegmentTree(transaction.trace.toJSON())
+    assert.deepStrictEqual(actualSegments, expectedSegments)
 
     txPassed = true
   })
@@ -146,29 +119,11 @@ test('error hook', async function errorHookTest(t) {
       'transaction name matched'
     )
     // all the hooks are siblings of the route handler
-    let expectedSegments
-    if (helper.isSecurityAgentEnabled(agent)) {
-      expectedSegments = [
-        'WebTransaction/WebFrameworkUri/Fastify/GET//error',
-        [
-          'Nodejs/Middleware/Fastify/onRequest/<anonymous>',
-          [
-            'Nodejs/Middleware/Fastify/errorRoute//error',
-            [`Nodejs/Middleware/Fastify/${hookName}/testHook`]
-          ]
-        ]
-      ]
-    } else {
-      expectedSegments = [
-        'WebTransaction/WebFrameworkUri/Fastify/GET//error',
-        [
-          'Nodejs/Middleware/Fastify/errorRoute//error',
-          [`Nodejs/Middleware/Fastify/${hookName}/testHook`]
-        ]
-      ]
-    }
-
-    assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
+    const expectedSegments = helper.isSecurityAgentEnabled(agent)
+      ? errorHooksSegmentsSegAgentSnap
+      : errorHooksSegmentsSnap
+    const foundSegments = traceToSegmentTree(transaction.trace.toJSON())
+    assert.deepStrictEqual(foundSegments, expectedSegments)
 
     txPassed = true
   })
