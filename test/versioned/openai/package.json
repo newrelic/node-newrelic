@@ -12,7 +12,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "openai": "^5.0.0"
+        "openai": ">=4.0.0"
       },
       "files": [
         "chat-completions.test.js",
