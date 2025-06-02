@@ -137,7 +137,7 @@ test('should create chat completion message and summary for every message sent',
 
 if (semver.gte(pkgVersion, '4.12.2')) {
   test('should create span on successful chat completion stream create', (t, end) => {
-    const { client, agent } = t.nr
+    const { client, agent, host, port } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const content = 'Streamed response'
       const stream = await client.chat.completions.create({
@@ -159,7 +159,7 @@ if (semver.gte(pkgVersion, '4.12.2')) {
       assertSegments(
         tx.trace,
         tx.trace.root,
-        [OPENAI.COMPLETION],
+        [OPENAI.COMPLETION, `External/${host}:${port}/chat/completions`],
         { exact: false }
       )
 
