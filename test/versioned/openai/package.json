@@ -1,6 +1,6 @@
 {
   "name": "openai-tests",
-  "targets": [{"name":"openai","minAgentVersion":"12.20.0"}],
+  "targets": [{"name":"openai","minAgentVersion":"11.13.0"}],
   "version": "0.0.0",
   "private": true,
   "engines": {
