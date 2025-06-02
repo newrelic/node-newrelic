@@ -1,6 +1,6 @@
 {
   "name": "openai-tests",
-  "targets": [{"name":"openai","minAgentVersion":"11.13.0"}],
+  "targets": [{"name":"openai","minAgentVersion":"12.20.0"}],
   "version": "0.0.0",
   "private": true,
   "engines": {
@@ -12,7 +12,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "openai": ">=4.0.0"
+        "openai": "^5.0.0"
       },
       "files": [
         "chat-completions.test.js",
