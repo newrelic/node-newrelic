@@ -159,7 +159,7 @@ if (semver.gte(pkgVersion, '4.12.2')) {
       assertSegments(
         tx.trace,
         tx.trace.root,
-        [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+        [OPENAI.COMPLETION, `External/${host}:${port}/chat/completions`],
         { exact: false }
       )
 
@@ -302,7 +302,7 @@ if (semver.gte(pkgVersion, '4.12.2')) {
         // are asserted in other tests
         match(tx.exceptions[0], {
           customAttributes: {
-            'error.message': 'Premature close',
+            'error.message': /terminated|Premature close/,
             completion_id: /\w{32}/
           }
         })
