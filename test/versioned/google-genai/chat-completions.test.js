@@ -219,8 +219,10 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
   let res = ''
   const expectedModel = 'gemini-2.0-flash'
   const api = helper.getAgentApi()
+  let cbCalled = false
   function cb(model, content) {
     assert.equal(model, expectedModel)
+    cbCalled = true
     if (content === promptContent || content === promptContent2) {
       return 53
     } else if (content === res) {
@@ -244,6 +246,7 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
       res += chunk.text
     }
 
+    assert.equal(cbCalled, true, 'should call the token count callback')
     const events = agent.customEventAggregator.events.toArray()
     const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
     assertChatCompletionMessages({

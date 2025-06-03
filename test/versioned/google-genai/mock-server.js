@@ -16,10 +16,10 @@ const RESPONSES = require('./mock-responses')
  * Google GenAI client library.
  *
  * @example
- * const { server, port } = await GoogleGenAIMockServer()
+ * const { server, host, port } = await GoogleGenAIMockServer()
  * const client = new GoogleGenAI({
- *   vertexai: false
- *   apiKey: 'some gemini api key'
+ *   apiKey: 'some gemini api key',
+ *   baseURL: `http://${host}:${port}`
  *  }
  *
  * const res = await client.models.generateContent({
