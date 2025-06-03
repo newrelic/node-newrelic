@@ -155,7 +155,7 @@ test('should calculate token count from tokenCountCallback', (t, end) => {
   })
 })
 
-test('should not set token count when not present in usage nor tokenCountCallback', (t, end) => {
+test('should not set token count when not present in usage or tokenCountCallback', (t, end) => {
   const { agent } = t.nr
   const req = {
     input: 'This is my test input',

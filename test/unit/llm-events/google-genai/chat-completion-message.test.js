@@ -90,7 +90,7 @@ test('should set conversation_id from custom attributes', (t, end) => {
   })
 })
 
-test('respects record_content', (t, end) => {
+test('content will not be recorded if record_content is not enabled', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
   const conversationId = 'convo-id'
@@ -172,7 +172,7 @@ test('should use token_count from tokenCountCallback for completion messages', (
   })
 })
 
-test('should not set token_count if not set in usage nor a callback registered', (t, end) => {
+test('should not set token_count if it is not set in usage, or if no callback is registered', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {
@@ -196,7 +196,7 @@ test('should not set token_count if not set in usage nor a callback registered',
   })
 })
 
-test('should not set token_count if not set in usage nor a callback registered returns count', (t, end) => {
+test('should not set token_count if not set in usage or if a callback registered does not return count', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
   function cb() {
