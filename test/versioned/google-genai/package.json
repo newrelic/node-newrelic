@@ -17,7 +17,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "@google/genai": "^1.2.0"
+        "@google/genai": "^1.1.0"
       },
       "files": [
         "chat-completions.test.js",

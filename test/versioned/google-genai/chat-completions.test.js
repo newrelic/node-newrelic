@@ -60,7 +60,7 @@ test.afterEach((ctx) => {
 })
 
 test('should create span on successful models generateContent', (t, end) => {
-  const { client, agent } = t.nr
+  const { client, agent, host, port } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     const result = await client.models.generateContent({
       model: 'gemini-2.0-flash',
@@ -70,10 +70,11 @@ test('should create span on successful models generateContent', (t, end) => {
     assert.equal(result.headers, undefined, 'should remove response headers from user result')
     assert.equal(result.candidates[0].content.parts[0].text, '1 plus 2 is 3.')
 
+    const name = `External/${host}:${port}/generate_content`
     assertSegments(
       tx.trace,
       tx.trace.root,
-      [GEMINI.COMPLETION],
+      [GEMINI.COMPLETION, name],
       { exact: false }
     )
 
@@ -139,7 +140,7 @@ test('should create chat completion message and summary for every message sent',
 
 // Streaming tests
 test('should create span on successful models generateContentStream', (t, end) => {
-  const { client, agent } = t.nr
+  const { client, agent, host, port } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     const content = 'Streamed response'
     const stream = await client.models.generateContentStream({
@@ -160,10 +161,11 @@ test('should create span on successful models generateContentStream', (t, end) =
     assert.equal(chunk.candidates[0].content.parts[0].text, expectedRes.body.candidates[0].content.parts[0].text)
     assert.equal(chunk.candidates[0].content.parts[0].text, res)
 
+    const name = `External/${host}:${port}/generate_content`
     assertSegments(
       tx.trace,
       tx.trace.root,
-      [GEMINI.COMPLETION],
+      [GEMINI.COMPLETION, name],
       { exact: false }
     )
 

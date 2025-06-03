@@ -56,7 +56,7 @@ test.afterEach((ctx) => {
 })
 
 test('should create span on successful embedding create', (t, end) => {
-  const { client, agent } = t.nr
+  const { client, agent, host, port } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     const results = await client.models.embedContent({
       contents: 'This is an embedding test.',
@@ -65,10 +65,11 @@ test('should create span on successful embedding create', (t, end) => {
 
     assert.equal(results.headers, undefined, 'should remove response headers from user result')
 
+    const name = `External/${host}:${port}/embed`
     assertSegments(
       tx.trace,
       tx.trace.root,
-      [GEMINI.EMBEDDING],
+      [GEMINI.EMBEDDING, name],
       {
         exact: false
       }
