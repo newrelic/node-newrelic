@@ -4,19 +4,19 @@
  */
 
 'use strict'
-const { faasAttr } = require('#agentlib/otel/attr-mapping/faas.js')
+const exceptionAttr = require('#agentlib/otel/exception-mapping.js')
 const test = require('node:test')
 const assert = require('node:assert')
 const {
-  ATTR_AWS_REGION
+  EXCEPTION_TYPE
 } = require('#agentlib/otel/constants.js')
 
-test('region', () => {
+test('msg', () => {
   const span = {
     attributes: {
-      [ATTR_AWS_REGION]: 'us-east-1'
+      [EXCEPTION_TYPE]: 'Error'
     }
   }
-  const value = faasAttr({ key: 'region', span })
-  assert.deepEqual(value, 'us-east-1')
+  const value = exceptionAttr({ key: 'msg', span })
+  assert.deepEqual(value, 'Error')
 })
