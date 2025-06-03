@@ -829,7 +829,12 @@ test('host facts', async (t) => {
 
     ctx.nr.agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
     ctx.nr.agent.config.utilization = null
-    ctx.nr.agent.config.getHostnameSafe = () => 'localhost'
+    ctx.nr.agent.config.getHostnameSafe = (gcpId) => {
+      if (ctx.nr.agent.config.gcp_cloud_run.use_instance_as_host && process.env.K_SERVICE && gcpId) {
+        return gcpId
+      }
+      return 'localhost'
+    }
   })
 
   t.afterEach((ctx) => {
@@ -873,7 +878,7 @@ test('host facts', async (t) => {
     agent.config.gcp_cloud_run = { use_instance_as_host: true }
 
     facts(agent, (result) => {
-      assert.equal(result.host, 'localhost', 'Hostname should be set to GCP instance ID')
+      assert.equal(result.host, 'localhost', 'Hostname should still be localhost')
       end()
     })
   })
@@ -885,7 +890,7 @@ test('host facts', async (t) => {
     process.env.K_SERVICE = 'mock-service'
 
     facts(agent, (result) => {
-      assert.equal(result.host, 'localhost', 'Hostname should be set to GCP instance ID')
+      assert.equal(result.host, 'localhost', 'Hostname should still be localhost')
       end()
     })
   })
