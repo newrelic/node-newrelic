@@ -872,7 +872,7 @@ test('host facts', async (t) => {
     agent.config.gcp_cloud_run = { use_instance_as_host: true }
 
     facts(agent, (result) => {
-      assert.notEqual(result.host, 'mock-gcp-instance-id', 'Hostname should not be set to GCP instance ID')
+      assert.equal(result.host, os.hostname(), 'Hostname should not be set to GCP instance ID')
       end()
     })
   })
@@ -884,7 +884,7 @@ test('host facts', async (t) => {
     process.env.K_SERVICE = 'mock-service'
 
     facts(agent, (result) => {
-      assert.notEqual(result.host, 'mock-gcp-instance-id', 'Hostname should not be set to GCP instance ID')
+      assert.equal(result.host, os.hostname(), 'Hostname should not be set to GCP instance ID')
       end()
     })
   })
