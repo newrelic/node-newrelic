@@ -7,7 +7,7 @@
 
 #### Bug fixes
 
-* Refactored getHostnameSafe to accomodate GCP ([#3132](https://github.com/newrelic/node-newrelic/pull/3132)) ([f1eea8d](https://github.com/newrelic/node-newrelic/commit/f1eea8d076586cd0b6c4d671c261deefe5e0f027))
+* Refactored getHostnameSafe to accommodate GCP ([#3132](https://github.com/newrelic/node-newrelic/pull/3132)) ([f1eea8d](https://github.com/newrelic/node-newrelic/commit/f1eea8d076586cd0b6c4d671c261deefe5e0f027))
 * Updated openai instrumentation to work with 5.0.0+ ([#3129](https://github.com/newrelic/node-newrelic/pull/3129)) ([09146a9](https://github.com/newrelic/node-newrelic/commit/09146a9d550c0cdbb23ec54325be6f8343db8b78))
 * Updated rules to work with 1.17.0 and 1.24.0 for consumer and producer span kind ([#3128](https://github.com/newrelic/node-newrelic/pull/3128)) ([686c747](https://github.com/newrelic/node-newrelic/commit/686c747cedc2582061608c20402f11912092d5b5))
 
