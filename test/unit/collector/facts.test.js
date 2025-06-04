@@ -829,12 +829,6 @@ test('host facts', async (t) => {
 
     ctx.nr.agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
     ctx.nr.agent.config.utilization = null
-    ctx.nr.agent.config.getHostnameSafe = (gcpId) => {
-      if (ctx.nr.agent.config.gcp_cloud_run.use_instance_as_host && process.env.K_SERVICE && gcpId) {
-        return gcpId
-      }
-      return 'localhost'
-    }
   })
 
   t.afterEach((ctx) => {
@@ -860,7 +854,7 @@ test('host facts', async (t) => {
     }
   })
 
-  await t.test('should use GCP instance ID as hostname when K_SERVICE is set', (t, end) => {
+  await t.test('should be GCP id when K_SERVICE is set', (t, end) => {
     const { agent, facts } = t.nr
 
     agent.config.gcp_cloud_run = { use_instance_as_host: true }
@@ -872,25 +866,25 @@ test('host facts', async (t) => {
     })
   })
 
-  await t.test('should use getHostnameSafe as hostname when K_SERVICE is not present', (t, end) => {
+  await t.test('should not be GCP id when K_SERVICE is not present', (t, end) => {
     const { agent, facts } = t.nr
 
     agent.config.gcp_cloud_run = { use_instance_as_host: true }
 
     facts(agent, (result) => {
-      assert.equal(result.host, 'localhost', 'Hostname should still be localhost')
+      assert.notEqual(result.host, 'mock-gcp-instance-id', 'Hostname should not be set to GCP instance ID')
       end()
     })
   })
 
-  await t.test('should use getHostnameSafe when K_SERVICE is set but gcp_cloud_run.use_instance_as_host is false', (t, end) => {
+  await t.test('should not be GCP id when K_SERVICE is set but gcp_cloud_run.use_instance_as_host is false', (t, end) => {
     const { agent, facts } = t.nr
 
     agent.config.gcp_cloud_run = { use_instance_as_host: false }
     process.env.K_SERVICE = 'mock-service'
 
     facts(agent, (result) => {
-      assert.equal(result.host, 'localhost', 'Hostname should still be localhost')
+      assert.notEqual(result.host, 'mock-gcp-instance-id', 'Hostname should not be set to GCP instance ID')
       end()
     })
   })
