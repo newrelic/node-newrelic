@@ -405,7 +405,7 @@ test('client span(db) is bridge accordingly(statement test)', (t, end) => {
     [ATTR_SERVER_PORT]: 5436,
     [ATTR_SERVER_ADDRESS]: '127.0.0.1'
   }
-  const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
+  const expectedHost = agent.config.getHostnameSafe()
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'db-test'
     tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
@@ -456,7 +456,7 @@ test('client span(db) is bridged accordingly(operation test)', (t, end) => {
     [ATTR_SERVER_PORT]: 5436,
     [ATTR_SERVER_ADDRESS]: '127.0.0.1'
   }
-  const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
+  const expectedHost = agent.config.getHostnameSafe()
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'db-test'
     tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
@@ -504,7 +504,7 @@ test('client span(db) 1.17 is bridged accordingly(operation test)', (t, end) => 
     [ATTR_NET_PEER_PORT]: 5436,
     [ATTR_NET_PEER_NAME]: '127.0.0.1'
   }
-  const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
+  const expectedHost = agent.config.getHostnameSafe()
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'db-test'
     tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
@@ -555,7 +555,7 @@ test('client span(db) 1.17 mongodb is bridged accordingly(operation test)', (t, 
     [ATTR_NET_PEER_PORT]: 5436,
     [ATTR_NET_PEER_NAME]: '127.0.0.1'
   }
-  const expectedHost = agent.config.getHostnameSafe('127.0.0.1')
+  const expectedHost = agent.config.getHostnameSafe()
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'db-test'
     tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
@@ -779,7 +779,7 @@ test('producer span(legacy) is bridged accordingly', (t, end) => {
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'prod-test'
 
-    const expectedHost = agent.config.getHostnameSafe('localhost')
+    const expectedHost = agent.config.getHostnameSafe()
     tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(tx.traceId, span.spanContext().traceId)
@@ -826,7 +826,7 @@ test('producer span is bridged accordingly', (t, end) => {
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'prod-test'
 
-    const expectedHost = agent.config.getHostnameSafe('localhost')
+    const expectedHost = agent.config.getHostnameSafe()
     tracer.startActiveSpan('prod-test', { kind: otel.SpanKind.PRODUCER, attributes }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(tx.traceId, span.spanContext().traceId)
@@ -861,7 +861,7 @@ test('producer span is bridged accordingly', (t, end) => {
 
 test('consumer span is bridged correctly', (t, end) => {
   const { agent, tracer } = t.nr
-  const expectedHost = agent.config.getHostnameSafe('localhost')
+  const expectedHost = agent.config.getHostnameSafe()
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'kafka',
     [ATTR_SERVER_ADDRESS]: '127.0.0.1',
@@ -914,7 +914,7 @@ test('consumer span is bridged correctly', (t, end) => {
 
 test('messaging consumer skips high security attributes', (t, end) => {
   const { agent, tracer } = t.nr
-  const expectedHost = agent.config.getHostnameSafe('localhost')
+  const expectedHost = agent.config.getHostnameSafe()
   const attributes = {
     [ATTR_MESSAGING_SYSTEM]: 'kafka',
     [ATTR_SERVER_ADDRESS]: '127.0.0.1',
