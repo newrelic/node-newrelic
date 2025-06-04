@@ -1,0 +1,29 @@
+{
+  "name": "@google/genai-tests",
+  "targets": [
+    {
+      "name": "@google/genai",
+      "minAgentVersion": "12.20.0"
+    }
+  ],
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "@google/genai": "^1.1.0"
+      },
+      "files": [
+        "chat-completions.test.js",
+        "embeddings.test.js",
+        "feedback-messages.test.js"
+      ]
+    }
+  ]
+}
