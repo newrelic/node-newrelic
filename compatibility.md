@@ -109,3 +109,10 @@ Through the `openai` module, we support:
 | --- | --- | --- | --- | --- | --- |
 | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
 
+### Gemini
+
+Through the `@google/genai` module, we support:
+
+| Audio | Text | Embeddings | PDF | Images | Video | Chat | Cache |
+| ----- | ---- | ---------- | ----- | ------ | ----- | ---- | ----- |
+| ❌    | ✅   | ✅         | ❌    | ❌     | ❌    | ✅    | ❌    |
