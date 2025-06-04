@@ -1,3 +1,24 @@
+### v12.21.0 (2025-06-04)
+
+#### Features
+
+* Added `@google/genai` Gemini AI LLM instrumentation ([#3119](https://github.com/newrelic/node-newrelic/pull/3119)) ([7f28a29](https://github.com/newrelic/node-newrelic/commit/7f28a293fbd623464ed1f3f809de59eaea0ff367))
+* Updated opentelemetry bridge to rely on configuration based transformation rules ([#3125](https://github.com/newrelic/node-newrelic/pull/3125)) ([ad116d2](https://github.com/newrelic/node-newrelic/commit/ad116d2aa49818c2824bca606a22c48abecf9580))
+
+#### Bug fixes
+
+* Refactored getHostnameSafe to accommodate GCP ([#3132](https://github.com/newrelic/node-newrelic/pull/3132)) ([f1eea8d](https://github.com/newrelic/node-newrelic/commit/f1eea8d076586cd0b6c4d671c261deefe5e0f027))
+* Updated openai instrumentation to work with 5.0.0+ ([#3129](https://github.com/newrelic/node-newrelic/pull/3129)) ([09146a9](https://github.com/newrelic/node-newrelic/commit/09146a9d550c0cdbb23ec54325be6f8343db8b78))
+* Updated rules to work with 1.17.0 and 1.24.0 for consumer and producer span kind ([#3128](https://github.com/newrelic/node-newrelic/pull/3128)) ([686c747](https://github.com/newrelic/node-newrelic/commit/686c747cedc2582061608c20402f11912092d5b5))
+
+#### Documentation
+
+* Updated compatibility report ([#3124](https://github.com/newrelic/node-newrelic/pull/3124)) ([c51d45f](https://github.com/newrelic/node-newrelic/commit/c51d45f4fc3c4fd56bdaa80c1028a83c7f4aadd2)) ([#3117](https://github.com/newrelic/node-newrelic/pull/3117)) ([084e599](https://github.com/newrelic/node-newrelic/commit/084e599428ac9c21e6991e27b5c154db2830ce17))
+
+#### Miscellaneous chores
+
+* Added preliminary otel configuration ([#3121](https://github.com/newrelic/node-newrelic/pull/3121)) ([664ee4a](https://github.com/newrelic/node-newrelic/commit/664ee4ae956d9cc6ebc6b68ad79a47948510422f))
+
 ### v12.20.0 (2025-05-27)
 
 #### Features

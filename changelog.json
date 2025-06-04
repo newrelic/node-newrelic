@@ -2,6 +2,21 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.21.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Refactored getHostnameSafe to accommodate GCP",
+          "Updated openai instrumentation to work with 5.0.0+",
+          "Updated rules to work with 1.17.0 and 1.24.0 for consumer and producer span kind"
+        ],
+        "features": [
+          "Added `@google/genai` Gemini AI LLM instrumentation",
+          "Updated opentelemetry bridge to rely on configuration based transformation rules"
+        ]
+      }
+    },
+    {
       "version": "12.20.0",
       "changes": {
         "security": [],
