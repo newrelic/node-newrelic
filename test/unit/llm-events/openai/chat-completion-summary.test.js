@@ -10,6 +10,7 @@ const assert = require('node:assert')
 const LlmChatCompletionSummary = require('../../../../lib/llm-events/openai/chat-completion-summary')
 const helper = require('../../../lib/agent_helper')
 const ChatCompletions = require('./common-chat-completions-api')
+const Responses = require('./common-responses-api')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -20,7 +21,7 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
 
-test('should properly create a LlmChatCompletionSummary event', (t, end) => {
+test('chat.completions.create should properly create a LlmChatCompletionSummary event', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {
@@ -35,6 +36,27 @@ test('should properly create a LlmChatCompletionSummary event', (t, end) => {
         response: ChatCompletions.chatRes
       })
       const expected = ChatCompletions.getExpectedResult(tx, chatSummaryEvent, 'summary')
+      assert.deepEqual(chatSummaryEvent, expected)
+      end()
+    })
+  })
+})
+
+test('responses.create should properly create a LlmChatCompletionSummary event', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment,
+        transaction: tx,
+        request: Responses.req,
+        response: Responses.chatRes
+      })
+      const expected = Responses.getExpectedResult(tx, chatSummaryEvent, 'summary')
       assert.deepEqual(chatSummaryEvent, expected)
       end()
     })

@@ -58,7 +58,7 @@ function getExpectedResult(tx, event, type, completionId) {
   }
   const resKeys = {
     duration: child.getDurationInMillis(),
-    'request.model': 'gpt-4-0613',
+    'request.model': 'gpt-4',
     'response.organization': 'new-relic',
     'response.headers.llmVersion': '1.0.0',
     'response.headers.ratelimitLimitRequests': '100',
@@ -81,7 +81,7 @@ function getExpectedResult(tx, event, type, completionId) {
         ...resKeys,
         'request.max_tokens': 1000000,
         'request.temperature': 1,
-        'response.number_of_messages': 3,
+        'response.number_of_messages': 2,
         'response.choices.finish_reason': 'completed',
         error: false
       }
