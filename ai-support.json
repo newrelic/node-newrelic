@@ -139,6 +139,7 @@
     "kind": "sdk",
     "title": "OpenAI",
     "featuresPreamble": "Through the `openai` module, we support:",
+    "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
     "features": [
       {
         "title": "Completions",
@@ -163,6 +164,47 @@
       {
         "title": "Audio",
         "supported": false
+      }
+    ]
+  },
+
+  {
+    "kind": "sdk",
+    "title": "Google GenAI",
+    "featuresPreamble": "Through the `@google/genai` module, we support:",
+    "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
+    "features": [
+      {
+        "title": "Text",
+        "supported": true
+      },
+      {
+        "title": "Image",
+        "supported": false
+      },
+      {
+        "title": "Audio",
+        "supported": false
+      },
+      {
+        "title": "Video",
+        "supported": false
+      },
+      {
+        "title": "PDF",
+        "supported": false
+      },
+      {
+        "title": "Chat",
+        "supported": true
+      },
+      {
+        "title": "Cache",
+        "supported": false
+      },
+      {
+        "title": "Embeddings",
+        "supported": true
       }
     ]
   }

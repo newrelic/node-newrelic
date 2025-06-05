@@ -109,4 +109,3 @@ Through the `openai` module, we support:
 | Audio | Chat | Completions | Embeddings | Files | Images |
 | --- | --- | --- | --- | --- | --- |
 | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
-
