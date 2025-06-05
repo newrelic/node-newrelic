@@ -21,7 +21,7 @@ supported by the agent.
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.7.2 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.0.2 | 11.9.0 |
-| `@google/genai` | 1.1.0 | 1.3.0 | 12.20.0 |
+| `@google/genai` | 1.1.0 | 1.4.0 | 12.20.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.13.4 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.0 | 9.0.0 |
 | `@koa/router` | 11.0.2 | 13.1.0 | 3.2.0 |
@@ -29,7 +29,7 @@ supported by the agent.
 | `@nestjs/cli` | 9.0.0 | 11.0.7 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 6.9.0 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 4.4.2 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 4.4.3 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.8 | 2.0.0 |
 | `apollo-server` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-express` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
@@ -109,3 +109,11 @@ Through the `openai` module, we support:
 | Audio | Chat | Completions | Embeddings | Files | Images |
 | --- | --- | --- | --- | --- | --- |
 | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
+### Google GenAI
+
+Through the `@google/genai` module, we support:
+
+| Audio | Cache | Chat | Embeddings | Image | PDF | Text | Video |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+
