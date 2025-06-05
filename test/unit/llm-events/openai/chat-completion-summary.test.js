@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const LlmChatCompletionSummary = require('../../../../lib/llm-events/openai/chat-completion-summary')
 const helper = require('../../../lib/agent_helper')
-const ChatCompletions = require('./common-chat-completions-api')
+const ChatCompletions = require('./common-chat-api')
 const Responses = require('./common-responses-api')
 
 test.beforeEach((ctx) => {

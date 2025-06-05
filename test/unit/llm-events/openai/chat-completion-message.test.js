@@ -60,7 +60,7 @@ test('both APIs', async (t) => {
 })
 
 test('openai.chat.completions.create', async (t) => {
-  const { req, chatRes, getExpectedResult } = require('./common-chat-completions-api')
+  const { req, chatRes, getExpectedResult } = require('./common-chat-api')
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()

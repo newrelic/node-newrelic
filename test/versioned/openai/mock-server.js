@@ -9,13 +9,25 @@ module.exports = openaiMockServer
 
 const http = require('node:http')
 const { Readable } = require('node:stream')
-const RESPONSES = require('./mock-responses')
+const CHAT_API_RESPONSES = require('./mock-chat-api-responses')
+const RESPONSES_API_RESPONSES = require('./mock-responses-api-responses')
+const RESPONSES = new Map([
+  ...Object.entries(CHAT_API_RESPONSES).map(([prompt, response]) => [
+    prompt,
+    response
+  ]),
+  ...Object.entries(RESPONSES_API_RESPONSES).map(([prompt, response]) => [
+    prompt,
+    response
+  ])
+])
 const crypto = require('crypto')
 
 /**
  * Build a mock server that listens on a 127.0.0.1 and a random port that
  * responds with pre-defined responses based on the "prompt" sent by the
- * OpenAI client library.
+ * OpenAI client library. Supports both `chat.completions` and
+ * `responses` API.
  *
  * @example
  * const { server, port } = await openaiMockServer()
@@ -25,10 +37,25 @@ const crypto = require('crypto')
  *  }
  *
  * const res = await client.chat.completions.create({
- *   model: 'gpt-4',
+ *   model: 'gpt-3.5',
  *   messages: [{ role: 'user', content: 'You are a scientist.' }]
  * })
  * console.dir(res)
+ *
+ * server.close()
+ *
+ * @example
+ * const { server, port } = await openaiMockServer()
+ * const client = new OpenAI({
+ *   baseURL: `http://127.0.0.1:${port}`,
+ *   apiKey: 'some key'
+ *  }
+ *
+ * const res = await client.responses.create({
+ *   model: 'gpt-4',
+ *   input: 'You are a scientist.'
+ * })
+ * console.log(response.output_text);
  *
  * server.close()
  *
@@ -151,7 +178,7 @@ function randomStream(chunkTemplate) {
 
 function getShortenedPrompt(reqBody) {
   const prompt =
-    reqBody.prompt || reqBody.input || reqBody.messages.map((m) => m.content).join('\n')
+    reqBody.input?.[0]?.content || reqBody.prompt || reqBody.input || reqBody.messages.map((m) => m.content).join('\n')
 
   if (Array.isArray(prompt)) {
     return prompt[0]
