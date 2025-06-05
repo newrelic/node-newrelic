@@ -40,6 +40,7 @@ test('configures global provider after agent start', async (t) => {
   await once(agent, 'started')
   plan.equal(0, agent.listenerCount('started'))
 
+  await once(agent, 'otelMetricsBootstrapped')
   const provider = require('@opentelemetry/api').metrics.getMeterProvider()
   plan.deepEqual(provider._sharedState.resource.attributes, { 'entity.guid': 'guid-123456' })
 

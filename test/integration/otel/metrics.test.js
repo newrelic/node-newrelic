@@ -8,7 +8,9 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const https = require('node:https')
+const path = require('node:path')
 const { once } = require('node:events')
+const protobuf = require('protobufjs')
 
 const fakeCert = require('#testlib/fake-cert.js')
 const promiseResolvers = require('#testlib/promise-resolvers.js')
@@ -38,9 +40,9 @@ test.beforeEach(async (ctx) => {
     ctx.nr.data.path = req.url
     ctx.nr.data.headers = structuredClone(req.headers)
 
-    let payload = ''
+    let payload = Buffer.alloc(0)
     req.on('data', d => {
-      payload += d
+      payload = Buffer.concat([payload, d])
     })
     req.on('end', () => {
       res.writeHead(200, { 'content-type': 'text/plain' })
@@ -69,20 +71,41 @@ test.afterEach((ctx) => {
 
 test('sends metrics', { timeout: 5_000 }, async (t) => {
   const { agent, requestResolvers: { promise: request } } = t.nr
+  const { metrics } = require('@opentelemetry/api')
+  const otlpSchemas = new protobuf.Root()
+  otlpSchemas.resolvePath = (...args) => {
+    return path.join(__dirname, 'schemas', args[1])
+  }
+  await otlpSchemas.load('opentelemetry/proto/collector/metrics/v1/metrics_service.proto')
 
+  // Add increment a metric prior to the agent being ready:
+  const counter = metrics.getMeter('test-meter').createCounter('test-counter')
+  counter.add(1, { ready: 'no' })
+
+  // Increment a metric after the agent is ready:
   process.nextTick(() => agent.emit('started'))
   await once(agent, 'started')
-
-  const { metrics } = require('@opentelemetry/api')
-  const counter = metrics.getMeter('test-meter').createCounter('test-counter')
-  counter.add(1, { foo: 'bar' })
+  counter.add(1, { ready: 'yes' })
 
   await request
   assert.equal(t.nr.data.path, '/v1/metrics')
   assert.equal(t.nr.data.headers['api-key'], agent.config.license_key)
-  assert.match(t.nr.data.payload, /guid-123456/)
-  assert.match(t.nr.data.payload, /test-meter/)
-  assert.match(t.nr.data.payload, /test-counter/)
-  assert.match(t.nr.data.payload, /foo/)
-  assert.match(t.nr.data.payload, /bar/)
+
+  const payload = otlpSchemas.lookupType(
+    'opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest'
+  ).decode(new protobuf.BufferReader(t.nr.data.payload))
+  const resource = payload?.resourceMetrics?.[0]?.resource
+  assert.equal(resource.attributes[0]?.key, 'entity.guid')
+  assert.deepEqual(resource.attributes[0]?.value, { stringValue: 'guid-123456' })
+
+  const found = payload?.resourceMetrics?.[0]?.scopeMetrics?.[0]?.metrics
+  assert.equal(Array.isArray(found), true)
+  assert.equal(found.length, 1)
+  const metric = found[0]
+  assert.equal(metric.name, 'test-counter')
+  assert.equal(metric.sum.dataPoints.length, 2)
+  assert.equal(metric.sum.dataPoints[0].attributes[0].key, 'ready')
+  assert.deepEqual(metric.sum.dataPoints[0].attributes[0].value, { stringValue: 'no' })
+  assert.equal(metric.sum.dataPoints[1].attributes[0].key, 'ready')
+  assert.deepEqual(metric.sum.dataPoints[1].attributes[0].value, { stringValue: 'yes' })
 })

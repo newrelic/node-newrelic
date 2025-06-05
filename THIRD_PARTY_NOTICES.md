@@ -72,6 +72,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [lint-staged](#lint-staged)
 * [lockfile-lint](#lockfile-lint)
 * [nock](#nock)
+* [protobufjs](#protobufjs)
 * [proxyquire](#proxyquire)
 * [rimraf](#rimraf)
 * [self-cert](#self-cert)
@@ -94,7 +95,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.13.3](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.13.3)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.13.3/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.13.4](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.13.4)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.13.4/LICENSE):
 
 ```
                                  Apache License
@@ -1901,7 +1902,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.13.2](https://github.com/nodejs/import-in-the-middle/tree/v1.13.2)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.13.2/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.14.0](https://github.com/nodejs/import-in-the-middle/tree/v1.14.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.14.0/LICENSE):
 
 ```
                                  Apache License
@@ -2332,7 +2333,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.810.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.810.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.810.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.821.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.821.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.821.0/LICENSE):
 
 ```
                                 Apache License
@@ -2541,7 +2542,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.810.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.810.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.810.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.821.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.821.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.821.0/LICENSE):
 
 ```
                                 Apache License
@@ -4369,7 +4370,7 @@ SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.6.17](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.6.17)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.6.17/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.7.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.7.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.7.1/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -4401,7 +4402,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.26.0](https://github.com/eslint/eslint/tree/v9.26.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.26.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.28.0](https://github.com/eslint/eslint/tree/v9.28.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.28.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -5009,6 +5010,53 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+```
+
+### protobufjs
+
+This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.3](https://github.com/protobufjs/protobuf.js/tree/v7.5.3)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.3/LICENSE):
+
+```
+This license applies to all parts of protobuf.js except those files
+either explicitly including or referencing a different license or
+located in a directory containing a different LICENSE file.
+
+---
+
+Copyright (c) 2016, Daniel Wirtz  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+* Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+* Neither the name of its author, nor the names of its contributors
+  may be used to endorse or promote products derived from this software
+  without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+---
+
+Code generated by the command line utilities is owned by the owner
+of the input file used when generating it. This code is not
+standalone and requires a support library to be linked with it. This
+support library is itself covered by the above license.
 
 ```
 
