@@ -12,11 +12,11 @@ exports.createBenchmark = (opts) => {
 }
 
 /**
- * Represents the benchmark test
+ * Represents the benchmark test; created in test/benchmark/*.bench.js files
  * @class
- * @param {object} opts test suite configuration options
- * @param {string} opts.name name of test suite
- * @param {number} opts.runs number of iterations to run. 1000 by default
+ * @param {Object} opts test suite configuration options
+ * @param {string} [opts.name='Anonymous Suite'] name of test suite
+ * @param {number} [opts.runs=1000] number of test iterations to run
  */
 class Benchmark {
   constructor(opts) {
@@ -24,7 +24,6 @@ class Benchmark {
     if (!opts.runs) {
       opts.runs = 1000
     }
-    this.numRuns = opts.runs
     this.opts = opts
 
     // Aggregation collections
@@ -34,22 +33,27 @@ class Benchmark {
   }
 
   /**
-   * @param {object} opts benchmark test configuration options
+   * Adds a test to the suite in a *.bench.js file
+   * @param {Object} opts benchmark test configuration options
    * @param {string} opts.name name of benchmark test in the suite
    * @param {function} opts.fn function invoking the agent method we're testing
    * @param {function} [opts.initialize] function executed before the tests run
    * @param {function} [opts.teardown] function executed after the tests run
    * @param {function} [opts.before] function executed before each test run; accepts agent as its param
    * @param {function} [opts.after] function executed after each test run
-   * @param {object} [opts.agent] agent configuration object, or a configured agent
-   * @param {bool} [opts.runInTransaction] if the agent code path under test must be run in a transaction, set to true.
-   * @param {bool} [opts.runGC] if GC should be run before each test, set to true
+   * @param {Object} [opts.agent] agent configuration object, or a configured agent
+   * @param {boolean} [opts.runInTransaction] if the agent code path under test must be run in a transaction, set to true.
+   * @param {boolean} [opts.runGC] if GC should be run before each test, set to true
    */
   add(opts) {
     opts = Object.assign({}, this.opts, opts)
     this.tests.push(opts)
   }
 
+  /**
+   * Processes each property of the `samples` object to reduce them to stats
+   * @returns {BenchmarkStats} object representing statistical analysis of samples
+   */
   processSamples() {
     const samples = this.samples
     this.processedSamples = Object.keys(samples).reduce((acc, sampleName) => {
@@ -64,19 +68,38 @@ class Benchmark {
     return this.processedSamples
   }
 
+  /**
+   * Last step of the test: this prints the processed stats as a string to stdout
+   */
   print() {
     console.log(JSON.stringify(this.processSamples(), null, 2))
   }
 
+  /**
+   * This function is called from the /test/benchmark/*.bench.js test files.
+   * Once a suite is created and tests added, `suite.run()` begins the test
+   */
   async run() {
     const suite = this
     let agent = null
 
+    /**
+     * Function that calculates CPU usage after a test, and calls any defined after/callback
+     * @param {Object} test Object defining the current test configuration
+     * @param {function} next anonymous function defined in the `startTest` for loop;
+     *   its second parameter is the delta between the current CPU usage and the previous CPU usage.
+     * @param {?function} [executeCb] If the test is run in a transaction, `executeCb` is defined,
+     *   and will run after any user-defined `after` function. If `executeCb` is defined, the result of
+     *   that is the `after` function's return value.
+     * @param {{user: number, system: number}} prevCpu Output of process.cpuUsage() in the previous test
+     * @returns {function} an invocation of `executeCb`, if defined, or `next(null, delta)`
+     */
     const after = async (test, next, executeCb, prevCpu) => {
       // The cpu delta is reported in microseconds, so we turn them into
       // milliseconds
       const delta = process.cpuUsage(prevCpu).user / 1000
-      const afterCallback = () => next(null, delta) // still sending this to callbackistan
+      // Despite an effort to reduce callbacks in this test class, some remain, like this one:
+      const afterCallback = () => next(null, delta)
 
       if (typeof test.after === 'function') {
         test.after()
@@ -89,6 +112,16 @@ class Benchmark {
       return afterCallback()
     }
 
+    /**
+     * `execute` gets the CPU usage prior to the test and runs the test.
+     * @param {Object} test configuration for the test, including the function to be tested
+     * @param {function} next anonymous function defined in the `startTest` for loop;
+     *   its second parameter is the delta between the current CPU usage and the previous CPU usage.
+     * @param {function} [executeCb] If the test is run in a transaction, `executeCb` is defined,
+     *   and will run after any user-defined `after` function. If `executeCb` is defined, the result of
+     *   that is the `after` function's return value.
+     * @returns {function} an invocation of the `after` function
+     */
     const execute = async (test, next, executeCb) => {
       const prevCpu = process.cpuUsage()
       const testFn = test.fn
@@ -97,6 +130,15 @@ class Benchmark {
       return after(test, next, executeCb, prevCpu)
     }
 
+    /**
+     * `runTest` performs one execution of a benchmark test
+     * @param {number} n Index of the test in the sequence of tests to be run
+     * @param {object} test Test configuration as defined in the *.bench.js file for this suite
+     * @param {function} next anonymous function defined in the `startTest` for loop;
+     *   its second parameter is the delta between the current CPU usage and the previous CPU usage.
+     * @returns {function} If this test is run in a transaction, this returns an invocation of
+     *    helper.runInTransaction. Otherwise, this returns an invocation of `execute`.
+     */
     const runTest = async (n, test, next) => {
       if (global.gc && test.runGC) {
         global.gc()
@@ -121,6 +163,13 @@ class Benchmark {
       return execute(test, next)
     }
 
+    /**
+     *
+     * @param {function} initiator Function to begin the test process--`startTest`
+     * @param {number} idx Index of the current test run
+     * @returns {Promise<*|boolean>} resolves to the return value of the recursive chain of
+     *   initiators (`startTest`) and returned functions (`afterTestRuns`)
+     */
     const testIterator = async (initiator, idx) => {
       if (idx >= suite.tests.length) {
         return true
@@ -128,6 +177,15 @@ class Benchmark {
       return await initiator(initiator, suite.tests[idx], idx)
     }
 
+    /**
+     *
+     * @param {function} initiator The test runner `startTest`
+     * @param {object} test configuration for the test
+     * @param {Array} samples Array of the CPU deltas from this test
+     * @param {number} idx Index of the current test run
+     * @returns {function} The next instance in the recursive chain of initiators (`startTest`)
+     *   and returned functions (`afterTestRuns`)
+     */
     const afterTestRuns = (initiator, test, samples, idx) => {
       const testName = test.name
 
@@ -143,6 +201,14 @@ class Benchmark {
       return testIterator(initiator, idx + 1)
     }
 
+    /**
+     * `startTest` begins the suite of tests, passing its initiator argument to subsequent tests.
+     * @param {function} initiator Sets up and executes tests, and is passed to the
+     *   afterTestRuns function to be passed on to subsequent tests
+     * @param {object} test Configuration object for this suite's test
+     * @param {number} idx Integer for tracking progress through the recursive tests
+     * @returns {function} invocation of `afterTestRuns`, which continues the chain of recursion.
+     */
     const startTest = async (initiator, test, idx) => {
       if (test.agent) {
         agent = helper.instrumentMockedAgent(test.agent.config)
@@ -168,6 +234,15 @@ class Benchmark {
   }
 }
 
+/**
+ * Class representing the statistical analysis of the benchmark test runs
+ * @class
+ * @param {Array} samples Array of deltas of CPU performances
+ * @param {string} testName Name of this test
+ * @param {string} sampleName Name of the kind of test sample being run. This is displayed only if
+ *   the test produces no samples--likely an indicator of a benchmark test returning before tests
+ *   have finished.
+ */
 class BenchmarkStats {
   constructor(samples, testName, sampleName) {
     if (samples.length < 1) {
