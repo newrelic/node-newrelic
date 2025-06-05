@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const LlmChatCompletionSummary = require('../../../../lib/llm-events/openai/chat-completion-summary')
 const helper = require('../../../lib/agent_helper')
-const { req, chatRes, getExpectedResult } = require('./common')
+const ChatCompletions = require('./common-chat-completions-api')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -31,10 +31,10 @@ test('should properly create a LlmChatCompletionSummary event', (t, end) => {
         agent,
         segment,
         transaction: tx,
-        request: req,
-        response: chatRes
+        request: ChatCompletions.req,
+        response: ChatCompletions.chatRes
       })
-      const expected = getExpectedResult(tx, chatSummaryEvent, 'summary')
+      const expected = ChatCompletions.getExpectedResult(tx, chatSummaryEvent, 'summary')
       assert.deepEqual(chatSummaryEvent, expected)
       end()
     })

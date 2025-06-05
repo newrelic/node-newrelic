@@ -4,6 +4,7 @@
  */
 
 'use strict'
+// These are the mock variables for the `openai.chat.completions.create` API.
 const res = {
   headers: {
     'x-request-id': 'req-id',
