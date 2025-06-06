@@ -3,7 +3,7 @@
   "targets": [
     {
       "name": "@google/genai",
-      "minAgentVersion": "12.20.0"
+      "minAgentVersion": "12.21.0"
     }
   ],
   "version": "0.0.0",
