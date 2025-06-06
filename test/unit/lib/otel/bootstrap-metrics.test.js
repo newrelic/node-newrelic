@@ -18,7 +18,14 @@ test('configures global provider after agent start', async (t) => {
       entity_guid: 'guid-123456',
       license_key: 'license-123456',
       host: 'example.com',
-      port: 443
+      port: 443,
+      opentelemetry_bridge: {
+        metrics: {
+          enabled: true,
+          exportInterval: 1_000,
+          exportTimeout: 1_000
+        }
+      }
     },
     metrics: {
       getOrCreateMetric(name) {
@@ -40,6 +47,7 @@ test('configures global provider after agent start', async (t) => {
   await once(agent, 'started')
   plan.equal(0, agent.listenerCount('started'))
 
+  await once(agent, 'otelMetricsBootstrapped')
   const provider = require('@opentelemetry/api').metrics.getMeterProvider()
   plan.deepEqual(provider._sharedState.resource.attributes, { 'entity.guid': 'guid-123456' })
 

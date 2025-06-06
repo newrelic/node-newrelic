@@ -263,6 +263,7 @@
     "lint-staged": "^11.0.0",
     "lockfile-lint": "^4.9.6",
     "nock": "11.8.0",
+    "protobufjs": "^7.5.3",
     "proxyquire": "^1.8.0",
     "rimraf": "^2.6.3",
     "self-cert": "^2.0.0",

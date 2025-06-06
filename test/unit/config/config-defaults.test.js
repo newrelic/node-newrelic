@@ -330,6 +330,8 @@ test('with default properties', async (t) => {
     assert.equal(otel.enabled, false)
     assert.equal(otel.traces.enabled, false)
     assert.equal(otel.metrics.enabled, false)
+    assert.equal(otel.metrics.exportInterval, 60_000)
+    assert.equal(otel.metrics.exportTimeout, 30_000)
   })
 })
 
