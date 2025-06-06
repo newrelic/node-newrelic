@@ -71,7 +71,7 @@ test('responses.create', async (t) => {
       assertSegments(
         tx.trace,
         tx.trace.root,
-        [OPENAI.COMPLETION, name],
+        [OPENAI.COMPLETION, [name]],
         { exact: false }
       )
 
