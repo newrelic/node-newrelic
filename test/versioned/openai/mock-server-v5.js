@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 New Relic Corporation. All rights reserved.
+ * Copyright 2025 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ module.exports = openaiMockServer
 
 const http = require('node:http')
 const { Readable } = require('node:stream')
-const RESPONSES = require('./mock-chat-api-responses')
+const RESPONSES = require('./mock-responses-api-responses')
 const crypto = require('crypto')
 
 /**
@@ -24,11 +24,11 @@ const crypto = require('crypto')
  *   apiKey: 'some key'
  *  }
  *
- * const res = await client.chat.completions.create({
+ * const res = await client.responses.create({
  *   model: 'gpt-4',
- *   messages: [{ role: 'user', content: 'You are a scientist.' }]
+ *   input: 'You are a scientist.'
  * })
- * console.dir(res)
+ * console.log(response.output_text);
  *
  * server.close()
  *
