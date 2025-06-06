@@ -9,19 +9,8 @@ module.exports = openaiMockServer
 
 const http = require('node:http')
 const { Readable } = require('node:stream')
-const CHAT_API_RESPONSES = require('./mock-chat-api-responses')
-const RESPONSES_API_RESPONSES = require('./mock-responses-api-responses')
-const RESPONSES = new Map([
-  ...Object.entries(CHAT_API_RESPONSES).map(([prompt, response]) => [
-    prompt,
-    response
-  ]),
-  ...Object.entries(RESPONSES_API_RESPONSES).map(([prompt, response]) => [
-    prompt,
-    response
-  ])
-])
 const crypto = require('crypto')
+let RESPONSES = new Map()
 
 /**
  * Build a mock server that listens on a 127.0.0.1 and a random port that
@@ -29,8 +18,9 @@ const crypto = require('crypto')
  * OpenAI client library. Supports both `chat.completions` and
  * `responses` API.
  *
+ * @param responses
  * @example
- * const { server, port } = await openaiMockServer()
+ * const { server, port } = await openaiMockServer(CHAT_API_RESPONSES)
  * const client = new OpenAI({
  *   baseURL: `http://127.0.0.1:${port}`,
  *   apiKey: 'some key'
@@ -45,7 +35,7 @@ const crypto = require('crypto')
  * server.close()
  *
  * @example
- * const { server, port } = await openaiMockServer()
+ * const { server, port } = await openaiMockServer(RESPONSES_API_RESPONSES)
  * const client = new OpenAI({
  *   baseURL: `http://127.0.0.1:${port}`,
  *   apiKey: 'some key'
@@ -61,7 +51,8 @@ const crypto = require('crypto')
  *
  * @returns {Promise<object>} Has `server`, `host`, and `port` properties.
  */
-async function openaiMockServer() {
+async function openaiMockServer(responses) {
+  RESPONSES = responses
   const server = http.createServer(handler)
 
   return new Promise((resolve) => {

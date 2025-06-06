@@ -8,12 +8,12 @@
 const responses = new Map()
 module.exports = responses
 
-responses.set('Invalid API key 2', {
+responses.set('Invalid API key.', {
   headers: {},
   body: {}
 })
 
-responses.set('Model does not exist 2', {
+responses.set('Model does not exist.', {
   code: 400,
   body: {
     error: {
@@ -25,7 +25,7 @@ responses.set('Model does not exist 2', {
   }
 })
 
-responses.set('You are a scientist.', {
+responses.set('You are a mathematician.', {
   headers: {
     'content-type': 'application/json',
     'openai-organization': 'new-relic-nkmd8b',
@@ -35,16 +35,15 @@ responses.set('You are a scientist.', {
     'x-ratelimit-limit-tokens': '1000000',
     'x-ratelimit-remaining-requests': '9999',
     'x-ratelimit-remaining-tokens': '999984',
-    'x-ratelimit-reset-requests': '7m12s',
     'x-ratelimit-reset-tokens': '0s',
-    'x-request-id': '"req_dfcfcd9f6a176a36c7e386577161b792"'
+    'x-request-id': 'req_dfcfcd9f6a176a36c7e386577161b792'
   },
   code: 200,
   body: {
     output: [
       {
         content: [{
-          text: '212 degrees Fahrenheit is equal to 100 degrees Celsius.',
+          text: '1 plus 2 is 3.',
         }],
         role: 'assistant',
         status: 'completed',
@@ -54,47 +53,17 @@ responses.set('You are a scientist.', {
     id: 'resp_68420d9a5d4481a1bff5b86663299e3403b76731ee674f61',
     model: 'gpt-4-0613',
     object: 'response',
-    usage: { input_tokens: 11, output_tokens: 53, total_tokens: 64 }
-  }
-})
-
-responses.set('You are a wizard.', {
-  headers: {
-    'content-type': 'application/json',
-    'openai-organization': 'new-relic-nkmd8b',
-    'openai-processing-ms': '770',
-    'openai-version': '2020-10-01',
-    'x-ratelimit-limit-requests': '10000',
-    'x-ratelimit-limit-tokens': '1000000',
-    'x-ratelimit-remaining-requests': '9999',
-    'x-ratelimit-remaining-tokens': '999984',
-    'x-ratelimit-reset-requests': '7m12s',
-    'x-ratelimit-reset-tokens': '0s',
-    'x-request-id': '"req_dfcfcd9f6a176a36c7e386577161b792"'
+    usage: { input_tokens: 11, output_tokens: 53, total_tokens: 64 },
+    output_text: '1 plus 2 is 3.',
+    status: 'completed',
   },
-  code: 200,
-  body: {
-    output: [
-      {
-        content: [{
-          text: '1 plus 2 is 3 .',
-        }],
-        role: 'assistant',
-        status: 'completed',
-      }
-    ],
-    created_at: 1749159322,
-    id: 'resp_68420d9a5d4481a1bff5b86663299e3403b76731ee674f61',
-    model: 'gpt-4-0613',
-    object: 'response',
-    usage: { input_tokens: 11, output_tokens: 53, total_tokens: 64 }
-  }
 })
 
-responses.set('Invalid role 2', {
+// TODO: double check this response
+responses.set('Invalid role.', {
   headers: {
     'content-type': 'application/json',
-    'x-request-id': '5db943f509e9031e73de8f4a5e46de32',
+    'x-request-id': 'req_dfcfcd9f6a176a36c7e386577161b792',
     'openai-organization': 'new-relic-nkmd8b',
     'openai-processing-ms': '4',
     'openai-version': '2020-10-01'
@@ -111,69 +80,66 @@ responses.set('Invalid role 2', {
   }
 })
 
-responses.set('Streamed response 2', {
+// The last chunk event in a streamed response.
+responses.set('Streamed response', {
   headers: {
-    'Content-Type': 'text/event-stream',
-    'openai-model': 'gpt-4',
+    'content-type': 'text/event-stream; charset=utf-8',
     'openai-organization': 'new-relic-nkmd8b',
-    'openai-processing-ms': '1469',
+    'openai-processing-ms': '70',
     'openai-version': '2020-10-01',
-    'x-ratelimit-limit-requests': '200',
-    'x-ratelimit-limit-tokens': '40000',
-    'x-ratelimit-remaining-requests': '199',
-    'x-ratelimit-remaining-tokens': '39940',
-    'x-ratelimit-reset-requests': '7m12s',
-    'x-ratelimit-reset-tokens': '90ms',
-    'x-request-id': '49dbbffbd3c3f4612aa48def69059aad'
+    'transfer-encoding': 'chunked',
+    'x-request-id': 'req_dfcfcd9f6a176a36c7e386577161b792'
   },
   code: 200,
   body: {
-    id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
-    object: 'chat.completion.chunk',
-    // 2023-11-20T09:00:00-05:00
-    created: 1700488800,
-    model: 'gpt-4',
-    choices: [
-      {
-        delta: { role: 'assistant' },
-        finish_reason: 'stop',
-        index: 0
-      }
-    ]
+    type: 'response.completed',
+    sequence_number: 100,
+    response: {
+      id: 'resp_68420d9a5d4481a1bff5b86663299e3403b76731ee674f61',
+      object: 'response',
+      created_at: 1749221320,
+      model: 'gpt-4-0613',
+      output: [{
+        content: [{
+          text: "A streamed response is a way of transmitting data from a server to a client (e.g. from a website to a user's computer or mobile device) in a continuous flow or stream, rather than all at one time. This means the client can start to process the data before all of it has been received, which can improve performance for large amounts of data or slow connections. Streaming is often used for real-time or near-real-time applications like video or audio playback.",
+        }],
+        role: 'assistant',
+        status: 'completed',
+        id: 'msg_6843007469bc8192af5e145250c297db0374f342293105d9',
+      }]
+    }
   },
-  streamData:
-    "A streamed response is a way of transmitting data from a server to a client (e.g. from a website to a user's computer or mobile device) in a continuous flow or stream, rather than all at one time. This means the client can start to process the data before all of it has been received, which can improve performance for large amounts of data or slow connections. Streaming is often used for real-time or near-real-time applications like video or audio playback."
+  // For testing purposes only
+  streamData: "A streamed response is a way of transmitting data from a server to a client (e.g. from a website to a user's computer or mobile device) in a continuous flow or stream, rather than all at one time. This means the client can start to process the data before all of it has been received, which can improve performance for large amounts of data or slow connections. Streaming is often used for real-time or near-real-time applications like video or audio playback.",
 })
 
-responses.set('bad stream 2', {
+responses.set('bad stream', {
   headers: {
-    'Content-Type': 'text/event-stream',
-    'openai-model': 'gpt-4',
+    'content-type': 'text/event-stream; charset=utf-8',
     'openai-organization': 'new-relic-nkmd8b',
-    'openai-processing-ms': '1469',
+    'openai-processing-ms': '70',
     'openai-version': '2020-10-01',
-    'x-ratelimit-limit-requests': '200',
-    'x-ratelimit-limit-tokens': '40000',
-    'x-ratelimit-remaining-requests': '199',
-    'x-ratelimit-remaining-tokens': '39940',
-    'x-ratelimit-reset-requests': '7m12s',
-    'x-ratelimit-reset-tokens': '90ms',
-    'x-request-id': '49dbbffbd3c3f4612aa48def69059aad'
+    'transfer-encoding': 'chunked',
+    'x-request-id': 'req_dfcfcd9f6a176a36c7e386577161b792'
   },
   code: 200,
   body: {
-    id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
-    object: 'chat.completion.chunk',
-    // 2023-11-20T09:00:00-05:00
-    created: 1700488800,
-    model: 'gpt-4',
-    choices: [
-      {
-        delta: { role: 'assistant' },
-        finish_reason: 'stop',
-        index: 0
-      }
-    ]
+    type: 'response.completed',
+    sequence_number: 100,
+    response: {
+      id: 'resp_68420d9a5d4481a1bff5b86663299e3403b76731ee674f61',
+      object: 'response',
+      created_at: 1749221320,
+      model: 'gpt-4-0613',
+      output: [{
+        content: [{
+          text: 'do random',
+        }],
+        role: 'assistant',
+        status: 'completed',
+        id: 'msg_6843007469bc8192af5e145250c297db0374f342293105d9',
+      }]
+    },
   },
-  streamData: 'do random'
+  streamData: 'do random' // For testing purposes only
 })

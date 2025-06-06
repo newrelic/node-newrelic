@@ -13,7 +13,6 @@ const semver = require('semver')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
-const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
 const createOpenAIMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
 
@@ -29,9 +28,10 @@ const TRACKING_METRIC = `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
 
 test('chat.completions.create', async (t) => {
   const responses = require('./mock-chat-api-responses')
+  const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common-chat-api')
   t.beforeEach(async (ctx) => {
     ctx.nr = {}
-    const { host, port, server } = await createOpenAIMockServer()
+    const { host, port, server } = await createOpenAIMockServer(responses)
     ctx.nr.host = host
     ctx.nr.port = port
     ctx.nr.server = server
@@ -546,9 +546,10 @@ test('chat.completions.create', async (t) => {
 if (semver.gte(pkgVersion, '5.0.0')) {
   test('responses.create', async (t) => {
     const responses = require('./mock-responses-api-responses')
+    const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common-responses-api')
     t.beforeEach(async (ctx) => {
       ctx.nr = {}
-      const { host, port, server } = await createOpenAIMockServer()
+      const { host, port, server } = await createOpenAIMockServer(responses)
       ctx.nr.host = host
       ctx.nr.port = port
       ctx.nr.server = server
@@ -577,12 +578,13 @@ if (semver.gte(pkgVersion, '5.0.0')) {
       const { client, agent, host, port } = t.nr
       helper.runInTransaction(agent, async (tx) => {
         const results = await client.responses.create({
-          input: [{ role: 'user', content: 'You are a wizard.' }]
+          input: [{ role: 'user', content: 'You are a mathematician.' }]
         })
 
         assert.equal(results.headers, undefined, 'should remove response headers from user result')
-        assert.equal(results.output_text, '1 plus 2 is 3.')
+        assert.equal(results.output[0].content[0].text, '1 plus 2 is 3.')
 
+        // TODO: why is External segment missing?
         const name = `External/${host}:${port}/chat/completions`
         assertSegments(
           tx.trace,
@@ -607,7 +609,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
       const { client, agent } = t.nr
       helper.runInTransaction(agent, async (tx) => {
         await client.responses.create({
-          input: [{ role: 'user', content: 'You are a wizard.' }]
+          input: [{ role: 'user', content: 'You are a mathematician.' }]
         })
 
         const metrics = agent.metrics.getOrCreateMetric(TRACKING_METRIC)
@@ -622,10 +624,8 @@ if (semver.gte(pkgVersion, '5.0.0')) {
       const { client, agent } = t.nr
       helper.runInTransaction(agent, async (tx) => {
         const model = 'gpt-4'
-        const content = 'You are a wizard.'
+        const content = 'You are a mathematician.'
         await client.responses.create({
-          max_output_tokens: 100,
-          temperature: 0.5,
           model,
           input: [
             { role: 'user', content },
@@ -639,8 +639,8 @@ if (semver.gte(pkgVersion, '5.0.0')) {
         assertChatCompletionMessages({
           tx,
           chatMsgs,
-          model,
-          id: 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat',
+          model: 'gpt-4-0613',
+          id: 'resp_68420d9a5d4481a1bff5b86663299e3403b76731ee674f61',
           resContent: '1 plus 2 is 3.',
           reqContent: content
         })
@@ -656,22 +656,21 @@ if (semver.gte(pkgVersion, '5.0.0')) {
     await t.test('should create span on successful chat completion stream create', (t, end) => {
       const { client, agent, host, port } = t.nr
       helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response 2'
+        const content = 'Streamed response'
         const stream = await client.responses.create({
           stream: true,
           input: [{ role: 'user', content }]
         })
 
         let chunk = {}
-        let res = ''
         for await (chunk of stream) {
-          res += chunk.choices[0]?.delta?.content
+          continue
         }
         assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
-        assert.equal(chunk.choices[0].message.role, 'assistant')
+        assert.equal(chunk.choices[0].delta.role, 'assistant')
         const expectedRes = responses.get(content)
-        assert.equal(chunk.choices[0].message.content, expectedRes.streamData)
-        assert.equal(chunk.choices[0].message.content, res)
+        assert.equal(chunk.choices[0].delta.content, expectedRes.streamData)
+        assert.equal(chunk.choices[0].delta.content, responses.res)
 
         assertSegments(
           tx.trace,
@@ -688,11 +687,9 @@ if (semver.gte(pkgVersion, '5.0.0')) {
     await t.test('should create chat completion message and summary for every message sent in stream', (t, end) => {
       const { client, agent } = t.nr
       helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response 2'
+        const content = 'Streamed response'
         const model = 'gpt-4'
         const stream = await client.responses.create({
-          max_output_tokens: 100,
-          temperature: 0.5,
           model,
           input: [
             { role: 'user', content },
@@ -721,7 +718,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
         assertChatCompletionMessages({
           tx,
           chatMsgs,
-          id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+          id: 'resp_68420d9a5d4481a1bff5b86663299e3403b76731ee674f61',
           model,
           resContent: res,
           reqContent: content
@@ -737,7 +734,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
 
     await t.test('should call the tokenCountCallback in streaming', (t, end) => {
       const { client, agent } = t.nr
-      const promptContent = 'Streamed response 2'
+      const promptContent = 'Streamed response'
       const promptContent2 = 'What does 1 plus 1 equal?'
       let res = ''
       const expectedModel = 'gpt-4'
@@ -754,8 +751,6 @@ if (semver.gte(pkgVersion, '5.0.0')) {
 
       helper.runInTransaction(agent, async (tx) => {
         const stream = await client.responses.create({
-          max_tokens: 100,
-          temperature: 0.5,
           model: expectedModel,
           input: [
             { role: 'user', content: promptContent },
@@ -774,7 +769,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
           tokenUsage: true,
           tx,
           chatMsgs,
-          id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+          id: 'resp_68420d9a5d4481a1bff5b86663299e3403b76731ee674f61',
           model: expectedModel,
           resContent: res,
           reqContent: promptContent
@@ -788,7 +783,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
     await t.test('handles error in stream', (t, end) => {
       const { client, agent } = t.nr
       helper.runInTransaction(agent, async (tx) => {
-        const content = 'bad stream 2'
+        const content = 'bad stream'
         const model = 'gpt-4'
         const stream = await client.responses.create({
           max_tokens: 100,
@@ -834,7 +829,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
       const { client, agent } = t.nr
       agent.config.ai_monitoring.streaming.enabled = false
       helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response 2'
+        const content = 'Streamed response'
         const model = 'gpt-4'
         const stream = await client.responses.create({
           max_output_tokens: 100,
@@ -872,7 +867,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
     await t.test('should not create llm events when not in a transaction', async (t) => {
       const { client, agent } = t.nr
       await client.responses.create({
-        input: [{ role: 'user', content: 'You are a wizard.' }]
+        input: [{ role: 'user', content: 'You are a mathematician.' }]
       })
 
       const events = agent.customEventAggregator.events.toArray()
@@ -884,7 +879,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
       helper.runInTransaction(agent, async (tx) => {
         try {
           await client.responses.create({
-            input: [{ role: 'user', content: 'Invalid API key 2' }]
+            input: [{ role: 'user', content: 'Invalid API key.' }]
           })
         } catch {}
 
@@ -923,7 +918,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
       helper.runInTransaction(agent, async (tx) => {
         try {
           await client.responses.create({
-            input: [{ role: 'bad-role', content: 'Invalid role 2' }]
+            input: [{ role: 'bad-role', content: 'Invalid role.' }]
           })
         } catch {}
 
@@ -955,7 +950,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
       const { client, agent } = t.nr
       helper.runInTransaction(agent, async (tx) => {
         await client.responses.create({
-          input: [{ role: 'user', content: 'You are a wizard.' }]
+          input: [{ role: 'user', content: 'You are a mathematician.' }]
         })
 
         const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
@@ -977,10 +972,8 @@ if (semver.gte(pkgVersion, '5.0.0')) {
             async () => {
               agent.config.ai_monitoring.streaming.enabled = true
               const model = 'gpt-4'
-              const content = 'You are a wizard.'
+              const content = 'You are a mathematician.'
               await client.responses.create({
-                max_output_tokens: 100,
-                temperature: 0.5,
                 model,
                 input: [
                   { role: 'user', content },
@@ -994,7 +987,7 @@ if (semver.gte(pkgVersion, '5.0.0')) {
             { 'llm.path': 'root/branch2', 'llm.attr2': true },
             async () => {
               agent.config.ai_monitoring.streaming.enabled = true
-              const model = 'gpt-3.5-turbo-0613'
+              const model = 'gpt-4'
               const content = 'You are a mathematician.'
               await client.responses.create({
                 max_tokens: 100,
