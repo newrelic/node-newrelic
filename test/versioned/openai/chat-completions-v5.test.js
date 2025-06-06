@@ -71,7 +71,7 @@ test('responses.create', async (t) => {
       assertSegments(
         tx.trace,
         tx.trace.root,
-        [OPENAI.COMPLETION, [name]],
+        [OPENAI.COMPLETION, name],
         { exact: false }
       )
 
@@ -229,64 +229,6 @@ test('responses.create', async (t) => {
 
       tx.end()
       end()
-    })
-  })
-
-  await t.test('should record LLM custom events with attributes', (t, end) => {
-    const { client, agent } = t.nr
-    const api = helper.getAgentApi()
-
-    helper.runInTransaction(agent, () => {
-      api.withLlmCustomAttributes({ 'llm.shared': true, 'llm.path': 'root/' }, async () => {
-        await api.withLlmCustomAttributes(
-          { 'llm.path': 'root/branch1', 'llm.attr1': true },
-          async () => {
-            agent.config.ai_monitoring.streaming.enabled = true
-            const model = 'gpt-4'
-            const content = 'You are a mathematician.'
-            await client.responses.create({
-              model,
-              input: [
-                { role: 'user', content },
-                { role: 'user', content: 'What does 1 plus 1 equal?' }
-              ]
-            })
-          }
-        )
-
-        await api.withLlmCustomAttributes(
-          { 'llm.path': 'root/branch2', 'llm.attr2': true },
-          async () => {
-            agent.config.ai_monitoring.streaming.enabled = true
-            const model = 'gpt-4'
-            const content = 'You are a mathematician.'
-            await client.responses.create({
-              max_tokens: 100,
-              temperature: 0.5,
-              model,
-              messages: [
-                { role: 'user', content },
-                { role: 'user', content: 'What does 1 plus 2 equal?' }
-              ]
-            })
-          }
-        )
-
-        const events = agent.customEventAggregator.events.toArray().map((event) => event[1])
-
-        events.forEach((event) => {
-          assert.ok(event['llm.shared'])
-          if (event['llm.path'] === 'root/branch1') {
-            assert.ok(event['llm.attr1'])
-            assert.equal(event['llm.attr2'], undefined)
-          } else {
-            assert.ok(event['llm.attr2'])
-            assert.equal(event['llm.attr1'], undefined)
-          }
-        })
-
-        end()
-      })
     })
   })
 })

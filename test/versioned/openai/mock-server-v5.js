@@ -8,9 +8,7 @@
 module.exports = openaiMockServer
 
 const http = require('node:http')
-const { Readable } = require('node:stream')
 const RESPONSES = require('./mock-responses-api-responses')
-const crypto = require('crypto')
 
 /**
  * Build a mock server that listens on a 127.0.0.1 and a random port that
@@ -66,32 +64,16 @@ function handler(req, res) {
       return
     }
 
-    const { headers, code, body, streamData } = RESPONSES.get(prompt)
+    const { headers, code, body } = RESPONSES.get(prompt)
     for (const [key, value] of Object.entries(headers)) {
       res.setHeader(key, value)
     }
     res.statusCode = code
 
     if (payload.stream === true) {
-      // OpenAI streamed responses are double newline delimited lines that
-      // are prefixed with the string `data: `. The end of the stream is
-      // terminated with a `done: [DONE]` string.
-      let outStream
-      if (streamData !== 'do random') {
-        outStream = finiteStream(streamData, { ...body })
-      } else {
-        outStream = randomStream({ ...body })
-        let streamChunkCount = 0
-        outStream.on('data', () => {
-          if (streamChunkCount >= 100) {
-            outStream.destroy()
-            res.destroy()
-          }
-          streamChunkCount += 1
-        })
-      }
-
-      outStream.pipe(res)
+      res.statusCode = 500
+      res.write('Streaming is not yet supported in this mock server.')
+      res.end()
     } else {
       res.write(JSON.stringify(body))
       res.end()
@@ -99,63 +81,8 @@ function handler(req, res) {
   })
 }
 
-/**
- * Splits the provided `dataToStream` into chunks and returns a stream that
- * sends those chunks as OpenAI data stream messages. This stream has a finite
- * number of messages that will be sent.
- *
- * @param {string} dataToStream A fairly long string to split on space chars.
- * @param {object} chunkTemplate An object that is shaped like an OpenAI stream
- * data object.
- * @returns {Readable} A paused stream.
- */
-function finiteStream(dataToStream, chunkTemplate) {
-  const parts = dataToStream.split(' ')
-  let i = 0
-  return new Readable({
-    read() {
-      // This is how the data is streamed from openai
-      // The message response only seems to change and mostly
-      // a stream of content changes via the delta key
-      if (i < parts.length) {
-        const content = parts.length - 1 === i ? parts[i] : `${parts[i]} `
-        chunkTemplate.choices[0].delta.content = content
-        const chunk = JSON.stringify(chunkTemplate)
-        this.push(`data: ${chunk}\n\n`)
-        i += 1
-      } else {
-        this.push('data: [DONE]\n\n')
-        this.push(null)
-      }
-    }
-  }).pause()
-}
-
-/**
- * Creates a stream that will stream an infinite number of OpenAI stream data
- * chunks.
- *
- * @param {object} chunkTemplate An object that is shaped like an OpenAI stream
- * data object.
- * @returns {Readable} A paused stream.
- */
-function randomStream(chunkTemplate) {
-  return new Readable({
-    read(size = 16) {
-      const data = crypto.randomBytes(size)
-      chunkTemplate.choices[0].delta.content = data.toString('base64')
-      this.push('data: ' + JSON.stringify(chunkTemplate) + '\n\n')
-    }
-  }).pause()
-}
-
 function getShortenedPrompt(reqBody) {
-  const prompt =
-    reqBody.prompt || reqBody.input || reqBody.messages.map((m) => m.content).join('\n')
-
-  if (Array.isArray(prompt)) {
-    return prompt[0]
-  }
+  const prompt = reqBody.input?.[0]?.content || reqBody.input
 
   return prompt.split('\n')[0]
 }

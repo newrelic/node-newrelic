@@ -10,7 +10,17 @@ module.exports = responses
 
 responses.set('Invalid API key.', {
   headers: {},
-  body: {}
+  code: 401,
+  body: {
+    error: {
+      message:
+        '401 Incorrect API key provided: bad. You can find your API key at https://platform.openai.com/account/api-keys.',
+      type: 'invalid_request_error',
+      param: 'null',
+      code: 'invalid_api_key',
+      requestID: 'req_f3b1353d6a35554bcc6d6e0cbf07ad4b'
+    }
+  }
 })
 
 responses.set('Model does not exist.', {
