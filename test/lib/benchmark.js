@@ -36,11 +36,22 @@ class Benchmark {
    * Adds a test to the suite in a *.bench.js file
    * @param {Object} opts benchmark test configuration options
    * @param {string} opts.name name of benchmark test in the suite
-   * @param {function} opts.fn function invoking the agent method we're testing
-   * @param {function} [opts.initialize] function executed before the tests run
-   * @param {function} [opts.teardown] function executed after the tests run
-   * @param {function} [opts.before] function executed before each test run; accepts agent as its param
-   * @param {function} [opts.after] function executed after each test run
+   * @param {function} opts.fn A function invoking the agent method under test. Depending on what the test requires,
+   *   this function can return a function invocation (see `events/span-event.bench.js`, or `shim` `is<Type>` tests),
+   *   an object defining functions to test (see `shim/wrapped.bench.js`), a promise (see many tests in `datastore-shim`),
+   *   or have no return value at all, being used for its side effects (see `events/merge.bench.js`).
+   * @param {function} [opts.initialize] Executed before tests run, to instantiate resources used by the test suite.
+   *   The function supplied to `initialize` could return a promise (as with `createServer` in `http`), it can also *not* return
+   *   anything, instead using side effects to create resources (see `makeInit` in `datastore-shim`) or fill queues (see
+   *   the anonymous for loop in `events`).
+   * @param {function} [opts.teardown] Executed after the tests run, typically to clean up resources or listeners.
+   *   This could return a promise or function invocation. See `closeServer` in `http` for an example.
+   * @param {function} [opts.before] Executed before each test run. This could return a value--for example, see
+   *   the `shim/shared.js` function `getTest`, which is returned by the `before` properties in `shim/wrapped.bench.js`
+   *   tests, after some pre-test configuration. In other cases, such as `shim/merged.bench.js`, `before` is used to fill
+   *   queues shared by the tests, and there is no returned value--it's used only to produce side effects.
+   * @param {function} [opts.after] Executed after each test run to reset any changes to test resources. This does not
+   *   need to return any value. See `metrics/getOrCreateMetric.js`, `async-hooks.bench.js`, or `events/merge.bench.js`
    * @param {Object} [opts.agent] agent configuration object, or a configured agent
    * @param {boolean} [opts.runInTransaction] if the agent code path under test must be run in a transaction, set to true.
    * @param {boolean} [opts.runGC] if GC should be run before each test, set to true
