@@ -94,7 +94,7 @@ server.route({
 })
 
 const newrelic = require('newrelic')
-newrelic.agent.on('otel-metrics-bootstrapped', () => {
+newrelic.agent.on('otelMetricsBootstrapped', () => {
   server.decorate('metrics', {
     'test-counter': metrics.getMeter('test-meter').createCounter('test-counter')
   })
