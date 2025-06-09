@@ -134,6 +134,37 @@ test('responses.create', async (t) => {
     })
   })
 
+  await t.test('should create chat completion message and summary when input is a single string', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const model = 'gpt-4'
+      const content = 'You are a mathematician.'
+      await client.responses.create({
+        model,
+        input: content
+      })
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 3, 'should create a chat completion message and summary event')
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      assertChatCompletionMessages({
+        tx,
+        chatMsgs,
+        model: 'gpt-4-0613',
+        id: 'resp_68420d9a5d4481a1bff5b86663299e3403b76731ee674f61',
+        resContent: '1 plus 2 is 3.',
+        reqContent: content,
+        singleInput: true
+      })
+
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage: true, singleInput: true })
+
+      tx.end()
+      end()
+    })
+  })
+
   await t.test('should not create llm events when not in a transaction', async (t) => {
     const { client, agent } = t.nr
     await client.responses.create({

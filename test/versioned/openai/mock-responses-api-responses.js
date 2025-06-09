@@ -69,7 +69,6 @@ responses.set('You are a mathematician.', {
   },
 })
 
-// TODO: double check this response
 responses.set('Invalid role.', {
   headers: {
     'content-type': 'application/json',
