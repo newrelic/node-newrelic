@@ -36,10 +36,17 @@ class Benchmark {
    * Adds a test to the suite in a *.bench.js file
    * @param {Object} opts benchmark test configuration options
    * @param {string} opts.name name of benchmark test in the suite
-   * @param {function} opts.fn A function invoking the agent method under test. Depending on what the test requires,
-   *   this function can return a function invocation (see `events/span-event.bench.js`, or `shim` `is<Type>` tests),
-   *   an object defining functions to test (see `shim/wrapped.bench.js`), a promise (see many tests in `datastore-shim`),
-   *   or have no return value at all, being used for its side effects (see `events/merge.bench.js`).
+   * @param {function} opts.fn A function invoking the agent method or behavior that is the target of the test.
+   *   Depending on what the test requires, this function can return a function invocation (see `events/span-event.bench.js`,
+   *   or `shim` `is<Type>` tests), an object defining functions to test (see `shim/wrapped.bench.js`), a promise (see
+   *   many tests in `datastore-shim`), or have no return value at all, being used for its side effects (see
+   *   `events/merge.bench.js`).
+   *
+   *   In its simplest form, the function supplied to `fn` could execute an agent method synchronously, and this framework
+   *   will measure its performance. Any necessary configuration can be handled in the function body. Similar code can be
+   *   shared between tests in imported files. (See the `shim` directory's `shared.js` for an example.
+   *
+   *   Any precondition or post-test cleanup can be handled in before/after or initialize/ teardown parameters.
    * @param {function} [opts.initialize] Executed before tests run, to instantiate resources used by the test suite.
    *   The function supplied to `initialize` could return a promise (as with `createServer` in `http`), it can also *not* return
    *   anything, instead using side effects to create resources (see `makeInit` in `datastore-shim`) or fill queues (see
