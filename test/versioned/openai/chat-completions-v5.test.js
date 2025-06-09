@@ -66,8 +66,7 @@ test('responses.create', async (t) => {
       assert.equal(results.headers, undefined, 'should remove response headers from user result')
       assert.equal(results.output[0].content[0].text, '1 plus 2 is 3.')
 
-      // TODO: why is External segment missing?
-      const name = `External/${host}:${port}/chat/completions`
+      const name = `External/${host}:${port}/responses`
       assertSegments(
         tx.trace,
         tx.trace.root,
