@@ -214,7 +214,42 @@ test('responses.create', async (t) => {
     })
   })
 
-  await t.test('invalid payload errors should be tracked', (t, end) => {
+  await t.test('bad input error should be tracked', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const model = 'gpt-4'
+      try {
+        await client.responses.create({
+          model,
+          input: { badContent: 'Invalid input.' }
+        })
+      } catch {}
+
+      assert.equal(tx.exceptions.length, 1)
+      match(tx.exceptions[0], {
+        error: {
+          status: 400,
+          code: 'invalid_type',
+          param: 'input'
+        },
+        customAttributes: {
+          'http.statusCode': 400,
+          'error.message': /Invalid type for 'input'/,
+          'error.code': 'invalid_type',
+          'error.param': 'input',
+          completion_id: /\w{32}/
+        },
+        agentAttributes: {
+          spanId: /\w+/
+        }
+      })
+
+      tx.end()
+      end()
+    })
+  })
+
+  await t.test('invalid role error should be tracked', (t, end) => {
     const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       try {

@@ -89,6 +89,22 @@ responses.set('Invalid role.', {
   }
 })
 
+responses.set('Invalid input.', {
+  headers: {
+  },
+  code: 400,
+  body: {
+    error: {
+      message:
+        "Invalid type for 'input': expected one of a string or array of input items, but got an object instead.",
+      type: 'invalid_request_error',
+      param: 'input',
+      code: 'invalid_type'
+    }
+  }
+}
+)
+
 // The last chunk event in a streamed response.
 responses.set('Streamed response', {
   headers: {

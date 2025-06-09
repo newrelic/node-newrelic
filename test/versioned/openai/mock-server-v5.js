@@ -82,7 +82,7 @@ function handler(req, res) {
 }
 
 function getShortenedPrompt(reqBody) {
-  const prompt = reqBody.input?.[0]?.content || reqBody.input
+  const prompt = reqBody.input?.[0]?.content || reqBody.input?.badContent || reqBody.input
 
   return prompt.split('\n')[0]
 }
