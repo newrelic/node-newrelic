@@ -18,7 +18,7 @@ const {
 } = require('./common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const createOpenAIMockServer = require('../openai/mock-server')
-const mockResponses = require('../openai/mock-responses')
+const mockResponses = require('../openai/mock-chat-api-responses')
 const helper = require('../../lib/agent_helper')
 
 const config = {
