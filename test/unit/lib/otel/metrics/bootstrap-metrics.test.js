@@ -9,7 +9,7 @@ const test = require('node:test')
 const { once, EventEmitter } = require('node:events')
 const tspl = require('@matteo.collina/tspl')
 
-const bootstrapMetrics = require('#agentlib/otel/bootstrap-metrics.js')
+const bootstrapMetrics = require('#agentlib/otel/metrics/bootstrap-metrics.js')
 
 test('configures global provider after agent start', async (t) => {
   const plan = tspl(t, { plan: 5 })

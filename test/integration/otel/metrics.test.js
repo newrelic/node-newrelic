@@ -22,8 +22,8 @@ test.beforeEach(async (ctx) => {
       enabled: true,
       metrics: {
         enabled: true,
-        exportInterval: 4_000,
-        exportTimeout: 4_000
+        exportInterval: 1_000,
+        exportTimeout: 1_000
       }
     }
   })
