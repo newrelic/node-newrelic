@@ -2663,29 +2663,6 @@ test('Shim', async function (t) {
     })
   })
 
-  await t.test('#toArray', async function (t) {
-    t.beforeEach(beforeEach)
-    t.afterEach(afterEach)
-    await t.test('should convert array-like objects into arrays', function (t) {
-      const { shim } = t.nr
-      const res = ['a', 'b', 'c', 'd']
-      const resToArray = shim.toArray(res)
-      assert.deepEqual(resToArray, res)
-      assert.ok(resToArray instanceof Array)
-
-      const strToArray = shim.toArray('abcd')
-      assert.deepEqual(strToArray, res)
-      assert.ok(strToArray instanceof Array)
-
-      argumentsTest.apply(null, res)
-      function argumentsTest() {
-        const argsToArray = shim.toArray(arguments)
-        assert.deepEqual(argsToArray, res)
-        assert.ok(argsToArray instanceof Array)
-      }
-    })
-  })
-
   await t.test('#normalizeIndex', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
