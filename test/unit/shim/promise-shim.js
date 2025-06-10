@@ -24,8 +24,7 @@ module.exports = () => {
   }
 
   TestPromise.promisify = function (shim, func) {
-    return function () {
-      const args = shim.argsToArray.apply(shim, arguments)
+    return function (...args) {
       const p = Object.create(TestPromise.prototype)
       args.push((err, res) => {
         if (err) {
