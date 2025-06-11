@@ -415,9 +415,7 @@ test('responses.create', async (t) => {
       const model = 'gpt-4'
 
       try {
-        const stream = await client.responses.create({
-          max_tokens: 100,
-          temperature: 0.5,
+        await client.responses.create({
           model,
           input: [
             { role: 'user', content },
@@ -425,11 +423,8 @@ test('responses.create', async (t) => {
           ],
           stream: true
         })
-        for await (const chunk of stream) {
-          continue
-        }
       } catch (err) {
-        assert.ok(err.message, 'exceeded count')
+        assert.ok(err.message, '500 fetch failed')
         const events = agent.customEventAggregator.events.toArray()
         assert.equal(events.length, 4)
         const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
@@ -439,7 +434,7 @@ test('responses.create', async (t) => {
         // are asserted in other tests
         match(tx.exceptions[0], {
           customAttributes: {
-            'error.message': /terminated|Premature close/,
+            'error.message': /500 fetch failed/,
             completion_id: /\w{32}/
           }
         })

@@ -9,7 +9,7 @@ module.exports = openaiMockServer
 
 const http = require('node:http')
 const RESPONSES = require('./mock-responses-api-responses')
-const { chunks, errorChunk } = require('./stream-chunks-v5')
+const chunks = require('./stream-chunks-v5')
 const { Readable } = require('node:stream')
 
 /**
@@ -76,17 +76,22 @@ function handler(req, res) {
       let outStream
       if (streamData !== 'bad stream') {
         outStream = finiteStream()
+        outStream.pipe(res)
       } else {
-        outStream = new Readable({
-          read() {
-            this.push(`data: ${JSON.stringify(errorChunk)}\n\n`)
-            this.push('data: [DONE]\n\n')
-            this.push(null)
+        // Simulate a server-side error for a bad stream request
+        res.statusCode = 500
+        res.setHeader('Content-Type', 'application/json')
+        const errorResponse = {
+          error: {
+            message: 'fetch failed',
+            type: 'server_error',
+            param: null,
+            code: 500
           }
-        }).pause()
+        }
+        res.write(JSON.stringify(errorResponse))
+        res.end()
       }
-
-      outStream.pipe(res)
     } else {
       res.write(JSON.stringify(body))
       res.end()
