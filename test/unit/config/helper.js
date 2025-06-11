@@ -10,6 +10,7 @@ const Config = require('../../../lib/config')
 class TestConfigLogger {
   #logs = {
     error: [],
+    info: [],
     trace: [],
     warn: []
   }
@@ -22,6 +23,10 @@ class TestConfigLogger {
 
   error(...args) {
     this.#logs.error.push(args)
+  }
+
+  info(...args) {
+    this.#logs.info.push(args)
   }
 
   trace(...args) {
