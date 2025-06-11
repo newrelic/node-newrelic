@@ -20,7 +20,7 @@
         "node": ">=20"
       },
       "dependencies": {
-        "@nestjs/cli": ">11"
+        "@nestjs/cli": ">=11"
       },
       "files": [
         "nest.test.js"
