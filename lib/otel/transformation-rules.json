@@ -973,39 +973,6 @@
     }
   },
   {
-    "name": "Producer_1_24_GCP",
-    "type": "producer",
-    "matcher": {
-      "required_span_kinds": [
-        "producer"
-      ],
-      "required_attribute_keys": [
-        "messaging.system",
-        "messaging.destination.name"
-      ],
-      "attribute_conditions": {
-        "messaging.system": ["gcp_pubsub"]
-      }
-    },
-    "attributes": [
-      {
-        "key": "server.address",
-        "target": "segment",
-        "name": "host"
-      },
-      {
-        "key": "server.port",
-        "target": "segment", 
-        "name": "port"
-      }
-    ],
-    "segment": {
-      "name": {
-        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination.name}"
-      }
-    }
-  },
-  {
     "name": "Producer_1_30",
     "type": "producer",
     "matcher": {
