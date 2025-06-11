@@ -7,8 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmErrorMessage = require('../../../lib/llm-events/error-message')
-const { req, chatRes } = require('./openai/common')
+const LlmErrorMessage = require('../../../../lib/llm-events/error-message')
+const { req, chatRes } = require('./common-chat-api')
 
 test('LlmErrorMessage', async () => {
   const res = { ...chatRes, code: 'insufficient_quota', param: 'test-param', status: 429 }

@@ -9,7 +9,7 @@ module.exports = openaiMockServer
 
 const http = require('node:http')
 const { Readable } = require('node:stream')
-const RESPONSES = require('./mock-responses')
+const RESPONSES = require('./mock-chat-api-responses')
 const crypto = require('crypto')
 
 /**
