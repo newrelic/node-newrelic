@@ -5,7 +5,6 @@
 
 'use strict'
 
-const ai21 = require('./ai21')
 const amazon = require('./amazon')
 const claude = require('./claude')
 const claude3 = require('./claude3')
@@ -13,7 +12,6 @@ const cohere = require('./cohere')
 const llama = require('./llama')
 
 module.exports = {
-  ai21,
   amazon,
   claude,
   claude3,

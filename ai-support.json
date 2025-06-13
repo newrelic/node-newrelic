@@ -38,33 +38,6 @@
       },
 
       {
-        "name": "AI21 Labs Jurassic-2",
-        "features": [
-          {
-            "title": "Text",
-            "supported": true
-          },
-          {
-            "title": "Image",
-            "supported": false
-          }
-        ]
-      },
-
-      {
-        "name": "Meta Llama2",
-        "features": [
-          {
-            "title": "Text",
-            "supported": true
-          },
-          {
-            "title": "Image",
-            "supported": false
-          }
-        ]
-      },
-      {
         "name": "Meta Llama3",
         "features": [
           {
@@ -77,6 +50,7 @@
           }
         ]
       },
+
       {
         "name": "Amazon Titan",
         "features": [
