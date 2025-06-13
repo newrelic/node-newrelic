@@ -73,12 +73,6 @@ function handler(req, res) {
     const [, model] = /model\/(.+)\/invoke/.exec(req.url)
     let response
     switch (decodeURIComponent(model)) {
-      case 'ai21.j2-mid-v1':
-      case 'ai21.j2-ultra-v1': {
-        response = responses.ai21.get(payload.prompt)
-        break
-      }
-
       case 'amazon.titan-text-express-v1':
       case 'amazon.titan-embed-text-v1': {
         response = responses.amazon.get(payload.inputText)
@@ -86,19 +80,15 @@ function handler(req, res) {
       }
 
       // v1 seems to be the same as v2, just with less helpful responses.
-      case 'anthropic.claude-v1':
       case 'anthropic.claude-instant-v1':
       case 'anthropic.claude-v2':
       case 'anthropic.claude-v2:1':
-      case 'us.anthropic.claude-v1':
       case 'us.anthropic.claude-instant-v1':
       case 'us.anthropic.claude-v2':
       case 'us.anthropic.claude-v2:1':
-      case 'eu.anthropic.claude-v1':
       case 'eu.anthropic.claude-instant-v1':
       case 'eu.anthropic.claude-v2':
       case 'eu.anthropic.claude-v2:1':
-      case 'apac.anthropic.claude-v1':
       case 'apac.anthropic.claude-instant-v1':
       case 'apac.anthropic.claude-v2':
       case 'apac.anthropic.claude-v2:1':{
@@ -143,9 +133,6 @@ function handler(req, res) {
         break
       }
 
-      // llama3 responses are identical, just return llama2 data
-      case 'meta.llama2-13b-chat-v1':
-      case 'meta.llama2-70b-chat-v1':
       case 'meta.llama3-8b-instruct-v1:0':
       case 'meta.llama3-70b-instruct-v1:0': {
         response = responses.llama.get(payload.prompt)

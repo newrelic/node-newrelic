@@ -25,10 +25,6 @@ function consumeStreamChunk() {
 }
 
 const requests = {
-  ai21: (prompt, modelId) => ({
-    body: JSON.stringify({ prompt, temperature: 0.5, maxTokens: 100 }),
-    modelId
-  }),
   amazon: (prompt, modelId) => ({
     body: JSON.stringify({
       inputText: prompt,
@@ -103,14 +99,12 @@ test.beforeEach(async (ctx) => {
 
 test.afterEach(afterEach)
 ;[
-  { modelId: 'ai21.j2-ultra-v1', resKey: 'ai21' },
   { modelId: 'amazon.titan-text-express-v1', resKey: 'amazon' },
   { modelId: 'anthropic.claude-v2', resKey: 'claude' },
   { modelId: 'us.anthropic.claude-v2', resKey: 'claude' },
   { modelId: 'anthropic.claude-3-haiku-20240307-v1:0', resKey: 'claude3' },
   { modelId: 'us.anthropic.claude-3-haiku-20240307-v1:0', resKey: 'claude3' },
   { modelId: 'cohere.command-text-v14', resKey: 'cohere' },
-  { modelId: 'meta.llama2-13b-chat-v1', resKey: 'llama' },
   { modelId: 'meta.llama3-8b-instruct-v1:0', resKey: 'llama' }
 ].forEach(({ modelId, resKey }) => {
   test(`${modelId}: should properly create completion segment`, async (t) => {
@@ -192,10 +186,6 @@ test.afterEach(afterEach)
   })
 
   test(`${modelId}: text answer (streamed)`, async (t) => {
-    if (modelId.includes('ai21')) {
-      return
-    }
-
     const { bedrock, client, agent } = t.nr
     const prompt = `text ${resKey} ultimate question streamed`
     const input = requests[resKey](prompt, modelId)
@@ -415,70 +405,6 @@ test('cohere embedding streaming works', async (t) => {
     assert.equal(embedding.error, false)
     assert.equal(embedding.input, prompt)
 
-    tx.end()
-  })
-})
-
-test('ai21: should properly create errors on create completion (streamed)', async (t) => {
-  const { bedrock, client, agent, expectedExternalPath } = t.nr
-  const modelId = 'ai21.j2-mid-v1'
-  const prompt = 'text ai21 ultimate question error streamed'
-  const input = requests.ai21(prompt, modelId)
-
-  const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
-  const expectedMsg = 'The model is unsupported for streaming'
-  const expectedType = 'ValidationException'
-
-  const api = helper.getAgentApi()
-  await helper.runInTransaction(agent, async (tx) => {
-    api.addCustomAttribute('llm.conversation_id', 'convo-id')
-    try {
-      await client.send(command)
-    } catch (err) {
-      assert.equal(err.message, expectedMsg)
-      assert.equal(err.name, expectedType)
-    }
-
-    assert.equal(tx.exceptions.length, 1)
-    match(tx.exceptions[0], {
-      error: {
-        name: expectedType,
-        message: expectedMsg
-      },
-      customAttributes: {
-        'http.statusCode': 400,
-        'error.message': expectedMsg,
-        'error.code': expectedType,
-        completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
-      },
-      agentAttributes: {
-        spanId: /\w+/
-      }
-    })
-
-    assertSegments(
-      tx.trace,
-      tx.trace.root,
-      [
-        'Llm/completion/Bedrock/InvokeModelWithResponseStreamCommand',
-        [expectedExternalPath(modelId, 'invoke-with-response-stream')]
-      ],
-      { exact: false }
-    )
-
-    const events = agent.customEventAggregator.events.toArray()
-    assert.equal(events.length, 2)
-    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-
-    assertChatCompletionMessages({
-      modelId,
-      prompt,
-      tx,
-      chatMsgs
-    })
-
-    assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
     tx.end()
   })
 })

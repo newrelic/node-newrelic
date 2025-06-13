@@ -53,9 +53,6 @@ test.beforeEach((ctx) => {
     prompt: [
       { role: 'user', content: 'Hello!' }
     ],
-    isAi21() {
-      return false
-    },
     isClaude() {
       return false
     },
@@ -63,9 +60,6 @@ test.beforeEach((ctx) => {
       return false
     },
     isCohere() {
-      return false
-    },
-    isLlama2() {
       return false
     },
     isTitan() {
@@ -94,17 +88,6 @@ test('creates a basic summary', async (t) => {
   assert.equal(event['response.number_of_messages'], 2)
 })
 
-test('creates an ai21 summary', async (t) => {
-  t.nr.bedrockCommand.isAi21 = () => true
-  const event = new LlmChatCompletionSummary(t.nr)
-  assert.equal(event['llm.conversation_id'], 'conversation-1')
-  assert.equal(event.duration, 100)
-  assert.equal(event['request.max_tokens'], 25)
-  assert.equal(event['request.temperature'], 0.5)
-  assert.equal(event['response.choices.finish_reason'], 'done')
-  assert.equal(event['response.number_of_messages'], 2)
-})
-
 test('creates an claude summary', async (t) => {
   t.nr.bedrockCommand.isClaude = () => true
   const event = new LlmChatCompletionSummary(t.nr)
@@ -118,17 +101,6 @@ test('creates an claude summary', async (t) => {
 
 test('creates a cohere summary', async (t) => {
   t.nr.bedrockCommand.isCohere = () => true
-  const event = new LlmChatCompletionSummary(t.nr)
-  assert.equal(event['llm.conversation_id'], 'conversation-1')
-  assert.equal(event.duration, 100)
-  assert.equal(event['request.max_tokens'], 25)
-  assert.equal(event['request.temperature'], 0.5)
-  assert.equal(event['response.choices.finish_reason'], 'done')
-  assert.equal(event['response.number_of_messages'], 2)
-})
-
-test('creates a llama2 summary', async (t) => {
-  t.nr.bedrockCommand.isLlama2 = () => true
   const event = new LlmChatCompletionSummary(t.nr)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.duration, 100)
