@@ -118,24 +118,22 @@ responses.set('Streamed response', {
   code: 200,
   body: {
     type: 'response.completed',
-    sequence_number: 100,
+    sequence_number: 9,
     response: {
-      id: 'resp_68420d9a5d4481a1bff5b86663299e3403b76731ee674f61',
+      id: 'resp_684886977be881928c9db234e14ae7d80f8976796514dff9',
       object: 'response',
       created_at: 1749221320,
       model: 'gpt-4-0613',
       output: [{
         content: [{
-          text: "A streamed response is a way of transmitting data from a server to a client (e.g. from a website to a user's computer or mobile device) in a continuous flow or stream, rather than all at one time. This means the client can start to process the data before all of it has been received, which can improve performance for large amounts of data or slow connections. Streaming is often used for real-time or near-real-time applications like video or audio playback.",
+          text: 'Test stream',
         }],
         role: 'assistant',
         status: 'completed',
-        id: 'msg_6843007469bc8192af5e145250c297db0374f342293105d9',
+        id: 'msg_68488698f6088192a505b70393c560bc0f8976796514dff9',
       }]
     }
-  },
-  // For testing purposes only
-  streamData: "A streamed response is a way of transmitting data from a server to a client (e.g. from a website to a user's computer or mobile device) in a continuous flow or stream, rather than all at one time. This means the client can start to process the data before all of it has been received, which can improve performance for large amounts of data or slow connections. Streaming is often used for real-time or near-real-time applications like video or audio playback.",
+  }
 })
 
 responses.set('bad stream', {
@@ -158,7 +156,7 @@ responses.set('bad stream', {
       model: 'gpt-4-0613',
       output: [{
         content: [{
-          text: 'do random',
+          text: 'bad stream',
         }],
         role: 'assistant',
         status: 'completed',
@@ -166,5 +164,5 @@ responses.set('bad stream', {
       }]
     },
   },
-  streamData: 'do random' // For testing purposes only
+  streamData: 'bad stream' // For testing purposes only
 })

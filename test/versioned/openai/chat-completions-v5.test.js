@@ -296,4 +296,188 @@ test('responses.create', async (t) => {
       end()
     })
   })
+
+  await t.test('should create span on successful responses stream create', (t, end) => {
+    const { client, agent, host, port } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const stream = await client.responses.create({
+        stream: true,
+        input: content,
+        model: 'gpt-4'
+      })
+
+      let chunk = {}
+      for await (chunk of stream) {
+        continue
+      }
+      assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
+      assert.equal(chunk.response.output[0].role, 'assistant')
+      const expectedRes = responses.get(content)
+      assert.equal(chunk.response.output[0].content[0].text, expectedRes.body.response.output[0].content[0].text)
+
+      assertSegments(
+        tx.trace,
+        tx.trace.root,
+        [OPENAI.COMPLETION, `External/${host}:${port}/responses`],
+        { exact: false }
+      )
+
+      tx.end()
+      end()
+    })
+  })
+
+  await t.test('should create chat completion message and summary for every message sent in stream', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const stream = await client.responses.create({
+        stream: true,
+        input: [{ role: 'user', content }, { role: 'user', content: 'What does 1 plus 1 equal?' }],
+        model: 'gpt-4'
+      })
+
+      let chunk = {}
+      for await (chunk of stream) {
+        continue
+      }
+      const res = chunk.response?.output?.[0]?.content?.[0]?.text
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 4, 'should create a chat completion message and summary event')
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      assertChatCompletionMessages({
+        tx,
+        chatMsgs,
+        id: 'resp_684886977be881928c9db234e14ae7d80f8976796514dff9',
+        model: 'gpt-4-0613',
+        resContent: res,
+        reqContent: content
+      })
+
+      tx.end()
+      end()
+    })
+  })
+
+  await t.test('should call the tokenCountCallback in streaming', (t, end) => {
+    const { client, agent } = t.nr
+    const promptContent = 'Streamed response'
+    const promptContent2 = 'What does 1 plus 1 equal?'
+    const res = 'Test stream'
+    const api = helper.getAgentApi()
+    function cb(model, content) {
+      // could be gpt-4 or gpt-4-0613
+      assert.ok(model === 'gpt-4' || model === 'gpt-4-0613', 'should be gpt-4 or gpt-4-0613')
+      if (content === promptContent || content === promptContent2) {
+        return 53
+      } else if (content === res) {
+        return 11
+      }
+    }
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, async (tx) => {
+      const stream = await client.responses.create({
+        model: 'gpt-4',
+        input: [
+          { role: 'user', content: promptContent },
+          { role: 'user', content: promptContent2 }
+        ],
+        stream: true
+      })
+
+      let chunk = {}
+      for await (chunk of stream) {
+        continue
+      }
+      assert.equal(res, chunk.response?.output?.[0]?.content?.[0]?.text)
+      const events = agent.customEventAggregator.events.toArray()
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      assertChatCompletionMessages({
+        tokenUsage: true,
+        tx,
+        chatMsgs,
+        id: 'resp_684886977be881928c9db234e14ae7d80f8976796514dff9',
+        model: 'gpt-4-0613',
+        resContent: res,
+        reqContent: promptContent
+      })
+
+      tx.end()
+      end()
+    })
+  })
+
+  await t.test('handles error in stream', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'bad stream'
+      const model = 'gpt-4'
+
+      try {
+        await client.responses.create({
+          model,
+          input: [
+            { role: 'user', content },
+            { role: 'user', content: 'What does 1 plus 1 equal?' }
+          ],
+          stream: true
+        })
+      } catch (err) {
+        assert.ok(err.message, '500 fetch failed')
+        const events = agent.customEventAggregator.events.toArray()
+        assert.equal(events.length, 4)
+        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+        assertChatCompletionSummary({ tx, model, chatSummary, error: true })
+        assert.equal(tx.exceptions.length, 1)
+        // only asserting message and completion_id as the rest of the attrs
+        // are asserted in other tests
+        match(tx.exceptions[0], {
+          customAttributes: {
+            'error.message': /500 fetch failed/,
+            completion_id: /\w{32}/
+          }
+        })
+
+        tx.end()
+        end()
+      }
+    })
+  })
+
+  await t.test('should not create llm events when ai_monitoring.streaming.enabled is false', (t, end) => {
+    const { client, agent } = t.nr
+    agent.config.ai_monitoring.streaming.enabled = false
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const model = 'gpt-4'
+      const stream = await client.responses.create({
+        model,
+        input: [{ role: 'user', content }],
+        stream: true
+      })
+
+      let chunk = {}
+      for await (chunk of stream) {
+        continue
+      }
+      const res = chunk.response?.output?.[0]?.content?.[0]?.text
+      const expectedRes = responses.get(content)
+      assert.equal(res, expectedRes.body.response.output[0].content[0].text)
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 0, 'should not llm events when streaming is disabled')
+      const metrics = agent.metrics.getOrCreateMetric(TRACKING_METRIC)
+      assert.equal(metrics.callCount > 0, true)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+      assert.equal(attributes.llm, true)
+      const streamingDisabled = agent.metrics.getOrCreateMetric(
+        'Supportability/Nodejs/ML/Streaming/Disabled'
+      )
+      assert.equal(streamingDisabled.callCount > 0, true)
+
+      tx.end()
+      end()
+    })
+  })
 })

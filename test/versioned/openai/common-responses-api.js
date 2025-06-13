@@ -93,29 +93,45 @@ function assertChatCompletionSummary(
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
-  const expectedChatSummary = {
-    id: /[a-f0-9]{36}/,
-    appName: 'New Relic for Node.js tests',
-    request_id: 'req_dfcfcd9f6a176a36c7e386577161b792',
-    trace_id: tx.traceId,
-    span_id: segment.id,
-    'response.model': 'gpt-4-0613',
-    vendor: 'openai',
-    ingest_source: 'Node',
-    'request.model': model,
-    duration: segment.getDurationInMillis(),
-    'response.organization': 'new-relic-nkmd8b',
-    'response.headers.llmVersion': '2020-10-01',
-    'response.headers.ratelimitLimitRequests': '10000',
-    'response.headers.ratelimitLimitTokens': '1000000',
-    'response.headers.ratelimitResetTokens': '0s',
-    'response.headers.ratelimitRemainingTokens': '999984',
-    'response.headers.ratelimitRemainingRequests': '9999',
-    'response.number_of_messages': singleInput ? 2 : 3,
-    'response.choices.finish_reason': 'completed',
-    'request.max_tokens': undefined,
-    'request.temperature': undefined,
-    error
+  let expectedChatSummary
+  if (!error) {
+    expectedChatSummary = {
+      appName: 'New Relic for Node.js tests',
+      duration: segment.getDurationInMillis(),
+      error,
+      id: /[a-f0-9]{36}/,
+      ingest_source: 'Node',
+      request_id: 'req_dfcfcd9f6a176a36c7e386577161b792',
+      'request.max_tokens': undefined,
+      'request.model': model,
+      'request.temperature': undefined,
+      'response.choices.finish_reason': 'completed',
+      'response.headers.llmVersion': '2020-10-01',
+      'response.headers.ratelimitLimitRequests': '10000',
+      'response.headers.ratelimitLimitTokens': '1000000',
+      'response.headers.ratelimitRemainingRequests': '9999',
+      'response.headers.ratelimitRemainingTokens': '999984',
+      'response.headers.ratelimitResetTokens': '0s',
+      'response.model': 'gpt-4-0613',
+      'response.number_of_messages': singleInput ? 2 : 3,
+      'response.organization': 'new-relic-nkmd8b',
+      span_id: segment.id,
+      trace_id: tx.traceId,
+      vendor: 'openai'
+    }
+  } else {
+    expectedChatSummary = {
+      appName: 'New Relic for Node.js tests',
+      id: /[a-f0-9]{36}/,
+      duration: segment.getDurationInMillis(),
+      error,
+      ingest_source: 'Node',
+      'request.model': model,
+      'response.number_of_messages': 2,
+      span_id: segment.id,
+      trace_id: tx.traceId,
+      vendor: 'openai',
+    }
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')

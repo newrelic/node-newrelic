@@ -9,6 +9,8 @@ module.exports = openaiMockServer
 
 const http = require('node:http')
 const RESPONSES = require('./mock-responses-api-responses')
+const chunks = require('./stream-chunks-v5')
+const { Readable } = require('node:stream')
 
 /**
  * Build a mock server that listens on a 127.0.0.1 and a random port that
@@ -64,21 +66,58 @@ function handler(req, res) {
       return
     }
 
-    const { headers, code, body } = RESPONSES.get(prompt)
+    const { headers, code, body, streamData } = RESPONSES.get(prompt)
     for (const [key, value] of Object.entries(headers)) {
       res.setHeader(key, value)
     }
     res.statusCode = code
 
     if (payload.stream === true) {
-      res.statusCode = 500
-      res.write('Streaming is not yet supported in this mock server.')
-      res.end()
+      let outStream
+      if (streamData !== 'bad stream') {
+        outStream = finiteStream()
+        outStream.pipe(res)
+      } else {
+        // Simulate a server-side error for a bad stream request
+        res.statusCode = 500
+        res.setHeader('Content-Type', 'application/json')
+        const errorResponse = {
+          error: {
+            message: 'fetch failed',
+            type: 'server_error',
+            param: null,
+            code: 500
+          }
+        }
+        res.write(JSON.stringify(errorResponse))
+        res.end()
+      }
     } else {
       res.write(JSON.stringify(body))
       res.end()
     }
   })
+}
+
+/**
+ * Returns a stream that sends `chunks`
+ * as OpenAI v5 data stream messages. This stream
+ * has a finite number of messages that will be sent.
+ *
+ * @returns {Readable} A paused stream.
+ */
+function finiteStream() {
+  return new Readable({
+    read() {
+      // This is how the data is streamed from openai
+      for (let i = 0; i < chunks.length; i++) {
+        const chunkString = JSON.stringify(chunks[i])
+        this.push(`data: ${chunkString}\n\n`)
+      }
+      this.push('data: [DONE]\n\n')
+      this.push(null)
+    }
+  }).pause()
 }
 
 function getShortenedPrompt(reqBody) {
