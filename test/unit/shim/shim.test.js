@@ -133,8 +133,8 @@ test('Shim', async function (t) {
       await t.test(`${key} should be an array index value`, function (t) {
         const { shim } = t.nr
         assert.equal(shim[key], key === 'LAST' ? -1 : i)
+        i++
       })
-      i++
     }
   })
 
