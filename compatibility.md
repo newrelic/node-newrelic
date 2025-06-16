@@ -21,7 +21,7 @@ supported by the agent.
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.7.3-beta.0 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.0.2 | 11.9.0 |
-| `@google/genai` | 1.1.0 | 1.4.0 | 12.21.0 |
+| `@google/genai` | 1.1.0 | 1.5.1 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.13.4 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.0 | 9.0.0 |
 | `@koa/router` | 11.0.2 | 13.1.0 | 3.2.0 |
@@ -39,7 +39,7 @@ supported by the agent.
 | `cassandra-driver` | 3.4.0 | 4.8.0 | 1.7.1 |
 | `connect` | 3.0.0 | 3.7.0 | 2.6.0 |
 | `express` | 4.6.0 | 5.1.0 | 2.6.0 |
-| `fastify` | 2.0.0 | 5.3.3 | 8.5.0 |
+| `fastify` | 2.0.0 | 5.4.0 | 8.5.0 |
 | `generic-pool` | 3.0.0 | 3.9.0 | 0.9.0 |
 | `ioredis` | 4.0.0 | 5.6.1 | 1.26.2 |
 | `kafkajs` | 2.0.0 | 2.2.4 | 11.19.0 |
@@ -75,11 +75,9 @@ Through the `@aws-sdk/client-bedrock-runtime` module, we support:
 
 | Model | Image | Text | Vision |
 | --- | --- | --- | --- |
-| AI21 Labs Jurassic-2 | ❌ | ✅ | - |
 | Amazon Titan | ❌ | ✅ | - |
 | Anthropic Claude | ❌ | ✅ | ❌ |
 | Cohere | ❌ | ✅ | - |
-| Meta Llama2 | ❌ | ✅ | - |
 | Meta Llama3 | ❌ | ✅ | - |
 
 Note: if a model supports streaming, we also instrument the streaming variant.
