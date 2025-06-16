@@ -72,9 +72,6 @@ test.beforeEach((ctx) => {
 
   ctx.nr.bedrockCommand = {
     id: 'cmd-1',
-    isAi21() {
-      return false
-    },
     isClaude() {
       return false
     },
@@ -131,21 +128,6 @@ test('create creates a cohere response instance', async (t) => {
   assert.equal(event.content, 'a response')
   assert.equal(event.role, 'assistant')
   assert.match(event.id, /42-0/)
-})
-
-test('create creates a ai21 response instance when response.id is undefined', async (t) => {
-  t.nr.bedrockCommand.isAi21 = () => true
-  t.nr.content = 'a response'
-  t.nr.isResponse = true
-  delete t.nr.bedrockResponse.id
-  const event = new LlmChatCompletionMessage(t.nr)
-  assert.equal(event.is_response, true)
-  assert.equal(event['llm.conversation_id'], 'conversation-1')
-  assert.equal(event.completion_id, 'completion-1')
-  assert.equal(event.sequence, 0)
-  assert.equal(event.content, 'a response')
-  assert.equal(event.role, 'assistant')
-  assert.match(event.id, /[\w-]{36}-0/)
 })
 
 test('should not capture content when `ai_monitoring.record_content.enabled` is false', async (t) => {
