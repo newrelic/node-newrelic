@@ -66,7 +66,7 @@ jobs:
           branch: "compatibility-report/auto-update"
           delete-branch: true
           base: main
-          labels: "documentation"
+          labels: "documentation,dev:repo_maintenance"
 
   docs:
     runs-on: ubuntu-latest
