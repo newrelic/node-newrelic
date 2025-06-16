@@ -5,7 +5,7 @@
 
 'use strict'
 
-const HealthReporter = require('./lib/health-reporter')
+const HealthReporter = require('./lib/health-reporter.js')
 
 // Record opening times before loading any other files.
 const preAgentTime = process.uptime()
@@ -64,8 +64,8 @@ function initialize() {
       throw new Error(message)
     }
 
-    // TODO: Update this check when Node v24 support is added
-    if (psemver.satisfies('>=23.0.0')) {
+    // TODO: Update this check when Node v26 support is added
+    if (psemver.satisfies('>=25.0.0')) {
       logger.warn(
         'New Relic for Node.js %s has not been tested on Node.js %s. Please ' +
           'update the agent or downgrade your version of Node.js',
