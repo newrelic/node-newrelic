@@ -137,4 +137,15 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   assert.equal(metric.sum.dataPoints.length, 1)
   assert.equal(metric.sum.dataPoints[0].attributes[0].key, 'otel')
   assert.deepEqual(metric.sum.dataPoints[0].attributes[0].value, { stringValue: 'yes' })
+
+  const supportMetrics = agent.metrics._metrics.unscoped
+  const expectedMetricNames = [
+    'Supportability/Nodejs/OpenTelemetryBridge/Setup',
+    'Supportability/Nodejs/OpenTelemetryBridge/Metrics',
+    'Supportability/Nodejs/OpenTelemetryBridge/Metrics/getMeter',
+    'Supportability/Nodejs/OpenTelemetryBridge/Metrics/meter/createCounter'
+  ]
+  for (const expectedMetricName of expectedMetricNames) {
+    assert.equal(supportMetrics[expectedMetricName].callCount, 1)
+  }
 })
