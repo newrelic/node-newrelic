@@ -136,6 +136,25 @@ test('TraceContext', async function (t) {
         end()
       })
     })
+
+    await t.test('should not fail when tracestate header is missing', (t, end) => {
+      const { agent } = t.nr
+      agent.config.distributed_tracing.enabled = true
+
+      helper.runInTransaction(agent, tx => {
+        const childSegment = tx.trace.add('child')
+        agent.tracer.setSegment({ segment: childSegment })
+        childSegment.start()
+
+        tx.acceptTraceContextPayload('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00', undefined)
+
+        const newTraceparent = tx.traceContext.createTraceparent()
+        assert.ok(newTraceparent.startsWith('00-4bf92f3577b34da6a'))
+
+        tx.end()
+        end()
+      })
+    })
   })
 
   await t.test('flags hex', async (t) => {
