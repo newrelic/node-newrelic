@@ -148,7 +148,15 @@ async function findMergedPRs(repo, ignoredLabels) {
       if (a.number < b.number) return -1
       return 0
     })
-    .map((pr) => `<${pr.html_url} | (${pr.number}) ${pr.title}>`)
+    .map((pr) => {
+      const slackifiedTitle = pr.title
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('`', '&DiacriticalGrave;')
+        .replaceAll('|', '&mid;')
+      return `<${pr.html_url} | (${pr.number}) ${slackifiedTitle}>`
+    })
   return {
     prs,
     latestRelease
