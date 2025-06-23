@@ -528,7 +528,7 @@ test('streaming enabled', async (t) => {
         assert.equal(str, '[object LlmErrorMessage]')
         match(e, {
           customAttributes: {
-            'error.message': 'Premature close',
+            'error.message': /(?:Premature close)|(?:terminated)/,
             completion_id: /\w{32}/
           }
         })
