@@ -148,8 +148,7 @@ test('TraceContext', async function (t) {
 
         tx.acceptTraceContextPayload('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00', undefined)
 
-        const newTraceparent = tx.traceContext.createTraceparent()
-        assert.ok(newTraceparent.startsWith('00-4bf92f3577b34da6a'))
+        assert.equal(tx.agent.recordSupportability.args.flat(1).includes('TraceContext/TraceState/Parse/Exception'), false)
 
         tx.end()
         end()
