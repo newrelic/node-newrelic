@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Jun 05 2025 14:26:53 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Jun 24 2025 09:59:40 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -113,6 +113,30 @@
       "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.201.1",
       "licenseFile": "node_modules/@opentelemetry/exporter-metrics-otlp-proto/LICENSE",
       "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.201.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
+    },
+    "@opentelemetry/instrumentation-knex@0.47.0": {
+      "name": "@opentelemetry/instrumentation-knex",
+      "version": "0.47.0",
+      "range": "^0.47.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js-contrib",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js-contrib/tree/v0.47.0",
+      "licenseFile": "node_modules/@opentelemetry/instrumentation-knex/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js-contrib/blob/v0.47.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
+    },
+    "@opentelemetry/instrumentation@0.202.0": {
+      "name": "@opentelemetry/instrumentation",
+      "version": "0.202.0",
+      "range": "^0.202.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.202.0",
+      "licenseFile": "node_modules/@opentelemetry/instrumentation/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.202.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },

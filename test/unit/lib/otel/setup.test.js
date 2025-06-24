@@ -11,7 +11,7 @@ const { once } = require('node:events')
 
 const helper = require('../../../lib/agent_helper')
 const mockLogger = require('../../mocks/logger')
-const { setupOtel } = require('../../../../lib/otel/setup')
+const { setupOtel } = require('#agentlib/otel/index.js')
 const otel = require('@opentelemetry/api')
 
 test.beforeEach((ctx) => {

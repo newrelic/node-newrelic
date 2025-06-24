@@ -1,0 +1,22 @@
+{
+  "name": "knex-tests",
+  "targets": [
+    { "name": "knex", "minAgentVersion": "12.21.0", "minSupported": "3.1.0", "otelBridgeRequired": true }
+  ],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "better-sqlite3": ">=12.1.0",
+        "knex": ">=3.1.0"
+      },
+      "files": [
+        "knex.test.js"
+      ]
+    }
+  ]
+}
