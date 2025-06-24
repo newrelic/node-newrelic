@@ -9,7 +9,7 @@
           "Fixed error logging for undefined tracestate header"
         ],
         "features": [
-          "Added `openai `v5 streaming support",
+          "Added `openai` v5 streaming support",
           "Added support for `openai.responses.create` api"
         ]
       }
