@@ -2,8 +2,8 @@
 
 #### Features
 
-* `openai` v5 streaming support ([#3148](https://github.com/newrelic/node-newrelic/pull/3148)) ([6e90d41](https://github.com/newrelic/node-newrelic/commit/6e90d41756929bf69b82e190dc39792f97ec6d92))
-* Support `openai.responses.create` api ([#3139](https://github.com/newrelic/node-newrelic/pull/3139)) ([a1204b2](https://github.com/newrelic/node-newrelic/commit/a1204b2484f3307eac74e7a370be2fc38061c358))
+* Added `openai` v5 streaming support ([#3148](https://github.com/newrelic/node-newrelic/pull/3148)) ([6e90d41](https://github.com/newrelic/node-newrelic/commit/6e90d41756929bf69b82e190dc39792f97ec6d92))
+* Added support for `openai.responses.create` api ([#3139](https://github.com/newrelic/node-newrelic/pull/3139)) ([a1204b2](https://github.com/newrelic/node-newrelic/commit/a1204b2484f3307eac74e7a370be2fc38061c358))
 
 #### Bug fixes
 
@@ -17,16 +17,6 @@
 
 * Gemini compatibility ([#3134](https://github.com/newrelic/node-newrelic/pull/3134)) ([bbdc531](https://github.com/newrelic/node-newrelic/commit/bbdc531ac59aad7b53f1a98306b6857927b87237))
 * Updated compatibility report ([#3171](https://github.com/newrelic/node-newrelic/pull/3171)) ([f3361e4](https://github.com/newrelic/node-newrelic/commit/f3361e421d67a0015719c3ae91bed64e5d38f317))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
-* Updated compatibility report ([#3155](https://github.com/newrelic/node-newrelic/pull/3155)) ([a9f325e](https://github.com/newrelic/node-newrelic/commit/a9f325eee103be13fb49ec3b6f83054f971bb2ff))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
-* Updated compatibility report ([#3150](https://github.com/newrelic/node-newrelic/pull/3150)) ([4b693a6](https://github.com/newrelic/node-newrelic/commit/4b693a64cbb14eb2d6cab5fd0f0ec759268af25e))
-* Updated compatibility report ([#3147](https://github.com/newrelic/node-newrelic/pull/3147)) ([833cfee](https://github.com/newrelic/node-newrelic/commit/833cfee67a9c49c82a9b5a6a4d9b260daf427d39))
-    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
-* Updated compatibility report ([#3136](https://github.com/newrelic/node-newrelic/pull/3136)) ([f9c8c06](https://github.com/newrelic/node-newrelic/commit/f9c8c06736cd23e0b9c9de9e055454fbf422d85a))
-    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
-* Updated compatibility report ([#3131](https://github.com/newrelic/node-newrelic/pull/3131)) ([83b3e30](https://github.com/newrelic/node-newrelic/commit/83b3e30f39a3ac5944ed9e5ae1f25b6e4c41c238))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 
 #### Miscellaneous chores
 
@@ -35,15 +25,14 @@
 * Fixed formatting in Slack PR titles ([#3167](https://github.com/newrelic/node-newrelic/pull/3167)) ([847859f](https://github.com/newrelic/node-newrelic/commit/847859f8ece852d4fa511039d2131573d4b1392b))
 * Improved output of pending prs script ([#3160](https://github.com/newrelic/node-newrelic/pull/3160)) ([9bafd77](https://github.com/newrelic/node-newrelic/commit/9bafd7758fc63d7fb5106fe0a28aaa5a626bdf3d))
 * Improved setup of OpenTelemetry metrics API ([#3138](https://github.com/newrelic/node-newrelic/pull/3138)) ([e91592d](https://github.com/newrelic/node-newrelic/commit/e91592d8365a3e2543228526d6959751da7ea5aa))
-* Pin google/genai to <1.5.0 ([#3154](https://github.com/newrelic/node-newrelic/pull/3154)) ([04b9bde](https://github.com/newrelic/node-newrelic/commit/04b9bdef417d6ce9e9148c9489bbfc28081d5e84))
-* Remove discontinued Bedrock models ([#3158](https://github.com/newrelic/node-newrelic/pull/3158)) ([2c79a31](https://github.com/newrelic/node-newrelic/commit/2c79a312daf31f51f8a270facf1c3a125700e987))
+* Pinned google/genai to <1.5.0 ([#3154](https://github.com/newrelic/node-newrelic/pull/3154)) ([04b9bde](https://github.com/newrelic/node-newrelic/commit/04b9bdef417d6ce9e9148c9489bbfc28081d5e84))
+* Removed discontinued Bedrock models ([#3158](https://github.com/newrelic/node-newrelic/pull/3158)) ([2c79a31](https://github.com/newrelic/node-newrelic/commit/2c79a312daf31f51f8a270facf1c3a125700e987))
 * Removed usage of `shim.argsToArray` in favor of rest parameters ([#3141](https://github.com/newrelic/node-newrelic/pull/3141)) ([b144d71](https://github.com/newrelic/node-newrelic/commit/b144d712f6e75265dc4be6f82a2fc3977ac1c640))
-* Tweak nestjs test manifest ([#3152](https://github.com/newrelic/node-newrelic/pull/3152)) ([51b82aa](https://github.com/newrelic/node-newrelic/commit/51b82aa28279e0d5ac8be5f4e6a4274532c76a22))
+* Tweaked nestjs test manifest ([#3152](https://github.com/newrelic/node-newrelic/pull/3152)) ([51b82aa](https://github.com/newrelic/node-newrelic/commit/51b82aa28279e0d5ac8be5f4e6a4274532c76a22))
 
 #### Tests
 
 * Added JSDoc annotation for benchmark interface ([#3127](https://github.com/newrelic/node-newrelic/pull/3127)) ([77e7e0a](https://github.com/newrelic/node-newrelic/commit/77e7e0a27f719ce14d31636e46600ec7ff881b13))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com>
 * fixed test assertion for langchain openai ([#3169](https://github.com/newrelic/node-newrelic/pull/3169)) ([29ec912](https://github.com/newrelic/node-newrelic/commit/29ec9122fdf9347875b884efa6f6fba9cb32303e))
 * Skips running nest 11+ on node 18 due to dropping support ([#3149](https://github.com/newrelic/node-newrelic/pull/3149)) ([961975b](https://github.com/newrelic/node-newrelic/commit/961975baeb74e46c0e60d96cbd49fb421acd0dfd))
 * unpinned google genai tests ([#3168](https://github.com/newrelic/node-newrelic/pull/3168)) ([cfa7114](https://github.com/newrelic/node-newrelic/commit/cfa71142ba7fb9861a1e7ab835276e7c651b9993))
