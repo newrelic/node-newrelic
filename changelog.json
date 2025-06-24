@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.22.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed error logging for undefined tracestate header"
+        ],
+        "features": [
+          "`openai` v5 streaming support",
+          "Support `openai.responses.create` api"
+        ]
+      }
+    },
+    {
       "version": "12.21.0",
       "changes": {
         "security": [],
