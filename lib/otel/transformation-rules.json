@@ -487,7 +487,7 @@
     }
   },
   {
-    "name": "OtelDbClientNoServer1_24",
+    "name": "OtelDbClientSqlite_24",
     "type": "db",
     "matcher": {
       "required_span_kinds": [
@@ -495,7 +495,10 @@
       ],
       "required_attribute_keys": [
         "db.system"
-      ]
+      ],
+      "attribute_conditions": {
+        "db.system": ["sqlite3", "better-sqlite3"]
+      }
     },
     "attributes": [
       {
@@ -507,6 +510,18 @@
         "key": "db.name",
         "target": "segment",
         "name": "database_name"
+      },
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host",
+        "value": "localhost"
+      },
+      {
+        "key": "server.port",
+        "target": "segment",
+        "name": "port_path_or_id",
+        "value": "0"
       }
     ],
     "segment": {
