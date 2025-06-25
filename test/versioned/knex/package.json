@@ -8,7 +8,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "dependencies": {
         "better-sqlite3": ">=12.1.0",

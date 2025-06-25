@@ -60,6 +60,19 @@ test('records queries', (t, end) => {
     assert.equal(agent.queries.samples.size === 1, true, 'should have recorded query')
     const sample = agent.queries.samples.values().next().value
     assert.equal(sample.trace.query, 'insert into `users` (`email`, `username`) values (?, ?)')
+    assert.equal(sample.total > 0, true, 'sample should have positive duration')
+
+    const metrics = agent.metrics._metrics.unscoped
+    const expectedMetrics = [
+      'Datastore/better-sqlite3/all',
+      'Datastore/better-sqlite3/allWeb',
+      'Datastore/instance/better-sqlite3/localhost/0',
+      'Datastore/operation/better-sqlite3/insert',
+      'Datastore/statement/better-sqlite3/users/insert'
+    ]
+    for (const expectedMetric of expectedMetrics) {
+      assert.equal(metrics[expectedMetric].callCount, 1)
+    }
 
     end()
   })
