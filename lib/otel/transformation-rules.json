@@ -393,7 +393,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/operation/${type}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -440,7 +440,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -483,7 +483,55 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
-      } 
+      }
+    }
+  },
+  {
+    "name": "OtelDbClientSqlite_24",
+    "type": "db",
+    "matcher": {
+      "required_span_kinds": [
+        "client"
+      ],
+      "required_attribute_keys": [
+        "db.system"
+      ],
+      "attribute_conditions": {
+        "db.system": ["sqlite3", "better-sqlite3"]
+      }
+    },
+    "attributes": [
+      {
+        "key": "db.system",
+        "target": "segment",
+        "name": "product"
+      },
+      {
+        "key": "db.name",
+        "target": "segment",
+        "name": "database_name"
+      },
+      {
+        "key": "server.address",
+        "target": "segment",
+        "name": "host",
+        "value": "localhost"
+      },
+      {
+        "key": "server.port",
+        "target": "segment",
+        "name": "port_path_or_id",
+        "value": "0"
+      }
+    ],
+    "segment": {
+      "collection": "db.sql.table",
+      "operation": "db.operation",
+      "statement": "db.statement",
+      "type": "db.system",
+      "name": {
+        "template": "Datastore/statement/${type}/${collection}/${operation}"
+      }
     }
   },
   {
@@ -529,7 +577,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/operation/${type}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -576,7 +624,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -625,7 +673,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/operation/${type}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -668,7 +716,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -711,7 +759,7 @@
             {
               "group": 1,
               "name": "url",
-              "target": "segment" 
+              "target": "segment"
             },
             {
              "group": 2,
@@ -721,10 +769,10 @@
                "name": 1,
                "value": 2,
                "prefix": "request.parameters.",
-               "target": "segment" 
+               "target": "segment"
              }
-            } 
-          ] 
+            }
+          ]
         },
         "target": "segment"
       }
@@ -733,7 +781,7 @@
       "host": "server.address",
       "name": {
         "template": "External/${server.address}${url.path}"
-      } 
+      }
     }
   },
   {
@@ -788,8 +836,8 @@
                "target": "segment",
                "prefix": "request.parameters."
              }
-            } 
-          ] 
+            }
+          ]
         },
         "target": "segment"
       }
@@ -799,7 +847,7 @@
       "url": "http.url",
       "name": {
         "template": "External/${net.peer.name}${path}"
-      } 
+      }
     }
   },
   {
@@ -858,7 +906,7 @@
       "system": "rpc.system",
       "name": {
         "template": "External/${server.address}/${rpc.service}/${rpc.method}"
-      } 
+      }
     }
   },
   {
@@ -894,7 +942,7 @@
       },
       "name": {
         "template": "External/${host}"
-      } 
+      }
     }
   },
   {
@@ -953,7 +1001,7 @@
       "system": "rpc.system",
       "name": {
         "template": "External/${net.peer.name}/${rpc.service}/${rpc.method}"
-      } 
+      }
     }
   },
   {
@@ -993,7 +1041,7 @@
       },
       {
         "key": "server.port",
-        "target": "segment", 
+        "target": "segment",
         "name": "port"
       },
       {
@@ -1039,7 +1087,7 @@
       },
       {
         "key": "server.port",
-        "target": "segment", 
+        "target": "segment",
         "name": "port"
       },
       {
@@ -1110,7 +1158,7 @@
               "name": "cloud.account.id",
               "target": "segment"
             }
-          ] 
+          ]
         }
       },
       {
@@ -1145,7 +1193,7 @@
       },
       {
         "key": "net.peer.port",
-        "target": "segment", 
+        "target": "segment",
         "name": "port"
       },
       {
