@@ -11,13 +11,13 @@ supported by the agent.
 
 | Package name | Minimum supported version | Latest published version | Introduced in* |
 | --- | --- | --- | --- |
-| `@apollo/gateway` | 2.3.0 | 2.11.0 | `@newrelic/apollo-server-plugin@1.0.0` |
+| `@apollo/gateway` | 2.3.0 | 2.11.1 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 4.12.2 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.830.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.830.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.830.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.831.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.830.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.835.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.835.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.835.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.835.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.835.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.7.3-beta.0 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.0.2 | 11.9.0 |
@@ -29,7 +29,7 @@ supported by the agent.
 | `@nestjs/cli` | 9.0.0 | 11.0.7 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 6.10.1 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 4.4.4 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 4.4.5 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.8 | 2.0.0 |
 | `apollo-server` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-express` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
@@ -51,7 +51,7 @@ supported by the agent.
 | `mysql` | 2.2.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.14.1 | 1.32.0 |
 | `next` | 13.4.19 | 15.3.4 | 12.0.0 |
-| `openai` | 4.0.0 | 5.6.0 | 11.13.0 |
+| `openai` | 4.0.0 | 5.7.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.16.2 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.5.1 | 9.0.0 |
 | `pino` | 7.0.0 | 9.7.0 | 8.11.0 |
