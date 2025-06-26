@@ -37,20 +37,14 @@ async function setup(t, config) {
   t.nr.fastify = require('fastify')()
 
   const { fastify, calls } = t.nr
-  if (semver.satisfies(pkgVersion, '>=3') === true) {
-    common.setupRoutes(fastify)
+  common.setupRoutes(fastify)
 
-    if (semver.major(pkgVersion) < 4) {
-      await fastify.register(require('middie'))
-    } else {
-      await fastify.register(require('@fastify/middie'))
-    }
-    common.registerMiddlewares({ fastify, calls })
+  if (semver.major(pkgVersion) < 4) {
+    await fastify.register(require('middie'))
   } else {
-    // TODO: once we drop v2 support remove this case
-    common.setupRoutes(fastify)
-    common.registerMiddlewares({ fastify, calls })
+    await fastify.register(require('@fastify/middie'))
   }
+  common.registerMiddlewares({ fastify, calls })
 }
 
 function assertSegments({ t, trace, baseSegment, isCLMEnabled }) {
@@ -59,47 +53,22 @@ function assertSegments({ t, trace, baseSegment, isCLMEnabled }) {
   if (helper.isSecurityAgentEnabled(agent)) {
     children = trace.getChildren(children[0].id)
   }
-  // TODO: once we drop v2 support, this function can be removed and assert inline in test below
-  if (semver.satisfies(pkgVersion, '>=3')) {
-    const [middieSegment, handlerSegment] = children
-    assertCLMAttrs({
-      segments: [
-        {
-          segment: middieSegment,
-          name: 'runMiddie',
-          filepath: /test\/versioned\/fastify\/node_modules\/(@fastify)?\/middie\/index.js/
-        },
-        {
-          segment: handlerSegment,
-          name: '(anonymous)',
-          filepath: 'test/versioned/fastify/common.js'
-        }
-      ],
-      enabled: isCLMEnabled
-    })
-  } else {
-    const [middieSegment, mwSegment, handlerSegment] = children
-    assertCLMAttrs({
-      segments: [
-        {
-          segment: middieSegment,
-          name: 'testMiddleware',
-          filepath: 'test/versioned/fastify/common.js'
-        },
-        {
-          segment: mwSegment,
-          name: 'pathMountedMiddleware',
-          filepath: 'test/versioned/fastify/common.js'
-        },
-        {
-          segment: handlerSegment,
-          name: '(anonymous)',
-          filepath: 'test/versioned/fastify/common.js'
-        }
-      ],
-      enabled: isCLMEnabled
-    })
-  }
+  const [middieSegment, handlerSegment] = children
+  assertCLMAttrs({
+    segments: [
+      {
+        segment: middieSegment,
+        name: 'runMiddie',
+        filepath: /test\/versioned\/fastify\/node_modules\/(@fastify)?\/middie\/index.js/
+      },
+      {
+        segment: handlerSegment,
+        name: '(anonymous)',
+        filepath: 'test/versioned/fastify/common.js'
+      }
+    ],
+    enabled: isCLMEnabled
+  })
 }
 
 async function performTest(t) {
