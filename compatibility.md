@@ -11,7 +11,7 @@ supported by the agent.
 
 | Package name | Minimum supported version | Latest published version | Introduced in* |
 | --- | --- | --- | --- |
-| `@apollo/gateway` | 2.3.0 | 2.11.1 | `@newrelic/apollo-server-plugin@1.0.0` |
+| `@apollo/gateway` | 2.3.0 | 2.11.2 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 4.12.2 | `@newrelic/apollo-server-plugin@2.1.0` |
 | `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.835.0 | 11.13.0 |
 | `@aws-sdk/client-dynamodb` | 3.0.0 | 3.835.0 | 8.7.1 |
@@ -21,7 +21,7 @@ supported by the agent.
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.7.3-beta.0 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.0.2 | 11.9.0 |
-| `@google/genai` | 1.1.0 | 1.6.0 | 12.21.0 |
+| `@google/genai` | 1.1.0 | 1.7.0 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.13.4 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.0 | 9.0.0 |
 | `@koa/router` | 11.0.2 | 13.1.0 | 3.2.0 |
@@ -38,7 +38,7 @@ supported by the agent.
 | `bunyan` | 1.8.12 | 1.8.15 | 9.3.0 |
 | `cassandra-driver` | 3.4.0 | 4.8.0 | 1.7.1 |
 | `connect` | 3.0.0 | 3.7.0 | 2.6.0 |
-| `express` | 4.6.0 | 5.1.0 | 2.6.0 |
+| `express` | 4.15.0 | 5.1.0 | 2.6.0 |
 | `fastify` | 2.0.0 | 5.4.0 | 8.5.0 |
 | `generic-pool` | 3.0.0 | 3.9.0 | 0.9.0 |
 | `ioredis` | 4.0.0 | 5.6.1 | 1.26.2 |
@@ -48,7 +48,7 @@ supported by the agent.
 | `koa-router` | 11.0.2 | 13.0.1 | 3.2.0 |
 | `memcached` | 2.2.0 | 2.2.2 | 1.26.2 |
 | `mongodb` | 4.1.4 | 6.17.0 | 1.32.0 |
-| `mysql` | 2.2.0 | 2.18.1 | 1.32.0 |
+| `mysql` | 2.16.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.14.1 | 1.32.0 |
 | `next` | 13.4.19 | 15.3.4 | 12.0.0 |
 | `openai` | 4.0.0 | 5.7.0 | 11.13.0 |
