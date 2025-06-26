@@ -15,7 +15,7 @@
       },
       "dependencies": {
         "express": {
-          "versions": ">=4.6.0",
+          "versions": ">=4.15.0",
           "samples": 5
         },
         "express-enrouten": "1.1",
