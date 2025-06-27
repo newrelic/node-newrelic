@@ -443,6 +443,38 @@ test('fromSegment()', async (t) => {
       const span = StreamingSpanEvent.fromSegment({ segment, transaction, inProcessSpans: false })
       assert.ok(span)
       assert.deepEqual(span._intrinsicAttributes['nr.entryPoint'], { [BOOL_TYPE]: true })
+      assert.ok(!span._intrinsicAttributes.parentId)
+      end()
+    })
+  })
+
+  await t.test('should not update parentId for entry span when it is part of an acceptedDistributed trace', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('entrySpan')
+      transaction.baseSegment = segment
+      transaction.acceptedDistributedTrace = true
+      const parentId = 'untouchedParentId'
+      const span = StreamingSpanEvent.fromSegment({ segment, transaction, inProcessSpans: false, isRoot: true, parentId })
+      assert.ok(span)
+      assert.deepEqual(span._intrinsicAttributes['nr.entryPoint'], { [BOOL_TYPE]: true })
+      assert.deepEqual(span._intrinsicAttributes['parentId'], { [STRING_TYPE]: parentId })
+      end()
+    })
+  })
+
+  await t.test('should update parentId for exit span when it is part of an acceptedDistributed trace', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('entrySpan')
+      transaction.baseSegment = segment
+      transaction.acceptedDistributedTrace = true
+      const inProcessSegment = transaction.trace.add('inProcessSpan')
+      const exitSegment = transaction.trace.add('Datastore/operation/foo', () => {}, inProcessSegment)
+      const span = StreamingSpanEvent.fromSegment({ segment: exitSegment, transaction, inProcessSpans: false, isRoot: false, parentId: 'parentId' })
+      assert.ok(span)
+      assert.ok(!span._intrinsicAttributes['nr.entryPoint'])
+      assert.deepEqual(span._intrinsicAttributes['parentId'], { [STRING_TYPE]: segment.id })
       end()
     })
   })
