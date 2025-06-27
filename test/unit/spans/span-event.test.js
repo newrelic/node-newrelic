@@ -71,7 +71,7 @@ test('fromSegment()', async (t) => {
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('Span Lee', 'no prize')
 
-        const span = SpanEvent.fromSegment(segment, transaction, 'parent')
+        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
         // Should have all the normal properties.
         assert.ok(span)
@@ -138,7 +138,7 @@ test('fromSegment()', async (t) => {
         res.on('end', () => {
           const tx = agent.tracer.getTransaction()
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
-          const span = SpanEvent.fromSegment(segment, transaction, 'parent')
+          const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
           // Should have all the normal properties.
           assert.ok(span)
@@ -240,7 +240,7 @@ test('fromSegment()', async (t) => {
       dsConn.myDbOp(longQuery, () => {
         transaction.end()
         const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
-        const span = SpanEvent.fromSegment(segment, transaction, 'parent')
+        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
         // Should have all the normal properties.
         assert.ok(span)
@@ -305,7 +305,7 @@ test('fromSegment()', async (t) => {
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
-        const span = SpanEvent.fromSegment(segment, transaction, 'parent')
+        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
         const serializedSpan = span.toJSON()
         const [intrinsics] = serializedSpan
@@ -338,7 +338,7 @@ test('fromSegment()', async (t) => {
         spanContext.addIntrinsicAttribute('intrinsic.1', 1)
         spanContext.addIntrinsicAttribute('intrinsic.2', 2)
 
-        const span = SpanEvent.fromSegment(segment, transaction, 'parent')
+        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
         const serializedSpan = span.toJSON()
         const [intrinsics] = serializedSpan
@@ -362,7 +362,7 @@ test('fromSegment()', async (t) => {
           const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           assert.ok(segment.name.startsWith('Truncated'))
 
-          const span = SpanEvent.fromSegment(segment, transaction)
+          const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
           assert.ok(span)
           assert.ok(span instanceof SpanEvent)
           assert.ok(span instanceof SpanEvent.HttpSpanEvent)
@@ -381,7 +381,7 @@ test('fromSegment()', async (t) => {
 
       assert.ok(segment.name.startsWith('Truncated'))
 
-      const span = SpanEvent.fromSegment(segment, transaction)
+      const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
       assert.ok(span)
       assert.ok(span instanceof SpanEvent)
       assert.ok(span instanceof SpanEvent.DatastoreSpanEvent)
@@ -389,4 +389,78 @@ test('fromSegment()', async (t) => {
       end()
     })
   })
+
+  await t.test('should not create spans for in-process segments when feature is disabled', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('segmentName')
+
+      const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: false })
+      assert.ok(!span)
+      end()
+    })
+  })
+
+  await t.test('should create span for entry span when in-process spans feature is disabled', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('entrySpan')
+      transaction.baseSegment = segment
+      const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: false })
+      assert.ok(span)
+      assert.equal(span.intrinsics['nr.entryPoint'], true)
+      assert.equal(span.intrinsics.parentId, null)
+      end()
+    })
+  })
+
+  await t.test('should not update parentId for entry span when it is part of an acceptedDistributed trace', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('entrySpan')
+      transaction.baseSegment = segment
+      transaction.acceptedDistributedTrace = true
+      const parentId = 'untouchedParentId'
+      const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: false, isRoot: true, parentId })
+      assert.ok(span)
+      assert.equal(span.intrinsics['nr.entryPoint'], true)
+      assert.equal(span.intrinsics.parentId, parentId)
+      end()
+    })
+  })
+
+  await t.test('should update parentId for exit span when it is part of an acceptedDistributed trace', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('entrySpan')
+      transaction.baseSegment = segment
+      transaction.acceptedDistributedTrace = true
+      const inProcessSegment = transaction.trace.add('inProcessSpan')
+      const exitSegment = transaction.trace.add('Datastore/operation/foo', () => {}, inProcessSegment)
+      const span = SpanEvent.fromSegment({ segment: exitSegment, transaction, inProcessSpans: false, isRoot: false, parentId: 'parentId' })
+      assert.ok(span)
+      assert.equal(span.intrinsics['nr.entryPoint'], null)
+      assert.equal(span.intrinsics.parentId, segment.id)
+      end()
+    })
+  })
+
+  const exitSpans = ['Datastore/operation/test', 'External/example.com/test', 'MessageBroker/Produce/Named/test']
+  for (const exitSpan of exitSpans) {
+    await t.test(`should create span for ${exitSpan} when in-process spans feature is disabled`, (t, end) => {
+      const { agent } = t.nr
+      helper.runInTransaction(agent, (transaction) => {
+        const segment = transaction.trace.add('entrySpan')
+        transaction.baseSegment = segment
+        const inProcessSegment = transaction.trace.add('inProcessSpan')
+        const exitSegment = transaction.trace.add(exitSpan, () => {}, inProcessSegment)
+        assert.equal(exitSegment.parentId, inProcessSegment.id)
+        const span = SpanEvent.fromSegment({ segment: exitSegment, transaction, parentId: inProcessSegment.id, inProcessSpans: false })
+        assert.ok(span)
+        assert.equal(span.intrinsics['nr.entryPoint'], null)
+        assert.equal(span.intrinsics.parentId, segment.id)
+        end()
+      })
+    })
+  }
 })

@@ -226,7 +226,7 @@ test('Agent API - custom attributes', async (t) => {
       api.startSegment('foobar', false, function () {
         api.addCustomSpanAttribute('spannnnnny', 1)
         const segment = api.shim.getSegment()
-        const span = SpanEvent.fromSegment(segment, 'parent')
+        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
         const attributes = span.customAttributes
 
         assert.equal(attributes.spannnnnny, 1)
@@ -246,7 +246,7 @@ test('Agent API - custom attributes', async (t) => {
           two: 2
         })
         const segment = api.shim.getSegment()
-        const span = SpanEvent.fromSegment(segment, 'parent')
+        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
         const attributes = span.customAttributes
 
         assert.equal(attributes.one, 1)
