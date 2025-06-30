@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.23.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added ability to report only on entry and exit spans",
+          "Added Node.js 24 support"
+        ]
+      }
+    },
+    {
       "version": "12.22.0",
       "changes": {
         "security": [],
