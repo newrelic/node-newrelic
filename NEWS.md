@@ -1,3 +1,28 @@
+### v12.23.0 (2025-06-30)
+
+#### Features
+
+* Added ability to only report on entry and exit spans ([#3184](https://github.com/newrelic/node-newrelic/pull/3184)) ([1f909d3](https://github.com/newrelic/node-newrelic/commit/1f909d389f790733c8787a9db8b0ee71c26bb5ed))
+
+#### Documentation
+
+* Updated compatibility report ([#3186](https://github.com/newrelic/node-newrelic/pull/3186)) ([5498c15](https://github.com/newrelic/node-newrelic/commit/5498c15bb6cf3329fe50595da46ab4f2b1385170))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#3182](https://github.com/newrelic/node-newrelic/pull/3182)) ([a460564](https://github.com/newrelic/node-newrelic/commit/a460564d6ffc9ce27d5edd95b813515aefcd310e))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#3174](https://github.com/newrelic/node-newrelic/pull/3174)) ([83eaebe](https://github.com/newrelic/node-newrelic/commit/83eaebefb8cca3d704f8d35c7f3c6a67e2e09a91))
+
+#### Miscellaneous chores
+
+* Added Node.js 24 support ([#3080](https://github.com/newrelic/node-newrelic/pull/3080)) ([a538c2a](https://github.com/newrelic/node-newrelic/commit/a538c2a5e23b96be40fa3c014e60b912f695423e))
+* Fix issues on Node 24 ([#3181](https://github.com/newrelic/node-newrelic/pull/3181)) ([24832df](https://github.com/newrelic/node-newrelic/commit/24832df2984df960a4e44375525a8127a00a637c))
+* Removed force labels on main CI workflow ([#3183](https://github.com/newrelic/node-newrelic/pull/3183)) ([3aaee17](https://github.com/newrelic/node-newrelic/commit/3aaee17586f817ae1a2ab0573570a740bd6397ef))
+* Updated undici tests to unblock CI ([#3185](https://github.com/newrelic/node-newrelic/pull/3185)) ([08261eb](https://github.com/newrelic/node-newrelic/commit/08261ebcdbafdb625a451f4ccec9b0cba7641cc2))
+
+#### Continuous integration
+
+* Fixed the name of todo colum in add to board reusable workflow ([#3178](https://github.com/newrelic/node-newrelic/pull/3178)) ([f216e0c](https://github.com/newrelic/node-newrelic/commit/f216e0c48adf0291bfa38b3edbb04c9dcc96f92c))
+
 ### v12.22.0 (2025-06-24)
 
 #### Features
