@@ -7,7 +7,8 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Added ability to only report on entry and exit spans"
+          "Added ability to report only on entry and exit spans",
+          "Added Node.js 24 support"
         ]
       }
     },
