@@ -18,7 +18,7 @@ export async function resolve(specifier, context, nextResolve) {
   const resolvedModule = parse(url.url)
   if (resolvedModule) {
     const path = fileURLToPath(resolvedModule.basedir)
-    const version = getPackageVersion(path, resolvedModule.name)
+    const version = getPackageVersion(path, resolvedModule.name) || '0.0.0'
     const transformer = instrumentator.getTransformer(resolvedModule.name, version, resolvedModule.path)
     if (transformer) {
       transformers.set(url.url, transformer)
