@@ -29,23 +29,27 @@ export async function resolve(specifier, context, nextResolve) {
 
 export async function load(url, context, nextLoad) {
   const result = await nextLoad(url, context)
-  if (transformers.has(url)) {
-    if (result.format === 'commonjs') {
-      const parsedUrl = new URL(result.responseURL ?? url)
-      result.source ??= await readFile(parsedUrl)
-    }
-    const code = result.source
-    if (code) {
-      const transformer = transformers.get(url)
-      const isEsm = result.format === 'module'
-      const transformedCode = transformer.transform(code.toString('utf8'), isEsm)
-      transformer.free()
-      return {
-        format: result.format,
-        shortCircuit: true,
-        source: transformedCode
-      }
+  if (transformers.has(url) === false) {
+    return result
+  }
+  
+  if (result.format === 'commonjs') {
+    const parsedUrl = new URL(result.responseURL ?? url)
+    result.source ??= await readFile(parsedUrl)
+  }
+  
+  const code = result.source
+  if (code) {
+    const transformer = transformers.get(url)
+    const isEsm = result.format === 'module'
+    const transformedCode = transformer.transform(code.toString('utf8'), isEsm)
+    transformer.free()
+    return {
+      format: result.format,
+      shortCircuit: true,
+      source: transformedCode
     }
   }
+  
   return result
 }
