@@ -68,6 +68,11 @@ function handler(req, res) {
   req.on('end', () => {
     const payload = JSON.parse(data.toString('utf8'))
 
+    if (req.url.includes('converse')) {
+      handleConverse(payload, res)
+      return
+    }
+
     // Available  model identifiers are listed at:
     // https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     const [, model] = /model\/(.+)\/invoke/.exec(req.url)
@@ -174,6 +179,28 @@ function handler(req, res) {
 
     res.end(JSON.stringify(response.body))
   })
+}
+
+function handleConverse(payload, res) {
+  // Converse API has a different response structure.
+  // TODO: Implement ConverseStreamCommand responses.
+  let response
+  const prompt = payload.messages?.[0]?.content?.[0]?.text
+  if (prompt && prompt.includes('stream')) {
+    // Streaming response
+    res.statusCode = 500
+    res.end('{"error": "not implemented"}')
+  } else {
+    // Non-streaming response
+    response = responses.converse.get(prompt)
+  }
+
+  res.statusCode = response.statusCode
+  for (const [key, value] of Object.entries(response.headers)) {
+    res.setHeader(key, value)
+  }
+
+  res.end(JSON.stringify(response.body))
 }
 
 /**
