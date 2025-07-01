@@ -55,6 +55,8 @@ const exampleCommit = {
 const exampleMarkdown = `### v1.0.0 (2020-04-03)
 #### ⚠ BREAKING CHANGES
 
+This version of the Node.js agent is a semver major update and contains the following breaking changes. For more details on these changes please see the [migration guide](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/update-nodejs-agent/).
+
 * **thing:** updated Thing to prevent modifications to inputs
 
 #### Bug fixes
