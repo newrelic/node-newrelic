@@ -182,22 +182,28 @@ function handler(req, res) {
 }
 
 function handleConverse(payload, res) {
-  // Converse API has a different response structure.
-  // TODO: Implement ConverseStreamCommand responses.
-  let response
   const prompt = payload.messages?.[0]?.content?.[0]?.text
-  if (prompt && prompt.includes('stream')) {
-    // Streaming response
-    res.statusCode = 500
-    res.end('{"error": "not implemented"}')
-  } else {
-    // Non-streaming response
-    response = responses.converse.get(prompt)
-  }
+  const response = responses.converse.get(prompt)
 
   res.statusCode = response.statusCode
   for (const [key, value] of Object.entries(response.headers)) {
     res.setHeader(key, value)
+  }
+
+  if (response.headers['content-type'].endsWith('amazon.eventstream') === true) {
+    encodeChunks(response.chunks).pipe(res)
+    // TODO: for converse api, don't encode the chunk headers??
+    // const stream = new Readable({
+    //   read() {
+    //     if (response.chunks.length > 0) {
+    //       this.push(response.chunks.shift())
+    //     } else {
+    //       this.push(null)
+    //     }
+    //   }
+    // }).pause()
+    // stream.pipe(res)
+    return
   }
 
   res.end(JSON.stringify(response.body))
