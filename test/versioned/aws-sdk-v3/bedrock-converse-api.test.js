@@ -16,6 +16,7 @@ const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { assertSegments, match } = require('../../lib/custom-assertions')
+const promiseResolvers = require('../../lib/promise-resolvers')
 const responseConstants = require('../../lib/aws-server-stubs/ai-server/responses/constants')
 
 // We'll test with only one model because the
@@ -38,7 +39,7 @@ test.beforeEach(async (ctx) => {
   ctx.nr.baseUrl = baseUrl
   ctx.nr.responses = responses
   ctx.nr.expectedExternalPath = (modelId, method = 'converse') =>
-    `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
+        `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
 
   const client = new bedrock.BedrockRuntimeClient({
     region: 'us-east-1',
@@ -76,6 +77,75 @@ test('should properly create completion segment', async (t) => {
     )
     tx.end()
   })
+})
+
+test('properly create the LlmChatCompletionMessage(s) and LlmChatCompletionSummary events', async (t) => {
+  const { bedrock, client, agent } = t.nr
+  const prompt = 'text converse ultimate question'
+  const input = {
+    modelId,
+    messages: [
+      { role: 'user', content: [{ text: prompt }] }
+    ],
+    inferenceConfig: {
+      maxTokens: 100,
+      temperature: 0.5
+    },
+  }
+  const command = new bedrock.ConverseCommand(input)
+
+  const api = helper.getAgentApi()
+  await helper.runInTransaction(agent, async (tx) => {
+    api.addCustomAttribute('llm.conversation_id', 'convo-id')
+    await client.send(command)
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 3)
+    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+
+    assertChatCompletionMessages({
+      modelId,
+      prompt,
+      tx,
+      expectedId: null,
+      chatMsgs,
+      resContent: 'This is a test.'
+    })
+
+    assertChatCompletionSummary({ tx, modelId, chatSummary })
+
+    tx.end()
+  })
+})
+
+test('supports custom attributes on LlmChatCompletionMessage(s) and LlmChatCompletionSummary events', async (t) => {
+  const { bedrock, client, agent } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  const prompt = 'text converse ultimate question'
+  const input = {
+    modelId,
+    messages: [
+      { role: 'user', content: [{ text: prompt }] }
+    ],
+  }
+  const command = new bedrock.ConverseCommand(input)
+
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, (tx) => {
+    api.addCustomAttribute('llm.conversation_id', 'convo-id')
+    api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
+      await client.send(command)
+      const events = agent.customEventAggregator.events.toArray()
+
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      const [, message] = chatSummary
+      assert.equal(message['llm.contextAttribute'], 'someValue')
+
+      tx.end()
+      resolve()
+    })
+  })
+  await promise
 })
 
 test('should record feedback message accordingly', async (t) => {
@@ -154,7 +224,7 @@ test('should properly create errors on create completion', async (t) => {
 
   const command = new bedrock.ConverseCommand(input)
   const expectedMsg =
-      'Malformed input request: 2 schema violations found, please reformat your input and try again.'
+        'Malformed input request: 2 schema violations found, please reformat your input and try again.'
   const expectedType = 'ValidationException'
 
   const api = helper.getAgentApi()
@@ -262,79 +332,90 @@ test('should decorate messages with custom attrs', async (t) => {
   })
 })
 
-// test('should instrument stream', async (t) => {
-//   const { bedrock, client, agent } = t.nr
-//   agent.config.ai_monitoring.streaming.enabled = false
-//   const prompt = 'text converse ultimate question streamed'
-//   const input = {
-//     modelId,
-//     messages: [
-//       { role: 'user', content: [{ text: prompt }] }
-//     ],
-//   }
-//   const command = new bedrock.ConverseStreamCommand(input)
+test('should instrument text stream', async (t) => {
+  const { bedrock, client, agent } = t.nr
+  const prompt = 'text converse ultimate question streamed'
+  const input = {
+    modelId,
+    messages: [
+      { role: 'user', content: [{ text: prompt }] }
+    ],
+    inferenceConfig: {
+      maxTokens: 100,
+      temperature: 0.5
+    },
+  }
+  const command = new bedrock.ConverseStreamCommand(input)
 
-//   await helper.runInTransaction(agent, async (tx) => {
-//     const response = await client.send(command)
-//     let responseText = ''
-//     for await (const event of response?.output?.message?.content) {
-//       if (event.contentBlockDelta && event.contentBlockDelta.delta.text) {
-//         const text = event.contentBlockDelta.delta.text
-//         responseText += text
-//       }
-//     }
-//     assert.ok(responseText)
-//     // TODO: assert other things
+  const api = helper.getAgentApi()
+  await helper.runInTransaction(agent, async (tx) => {
+    api.addCustomAttribute('llm.conversation_id', 'convo-id')
+    const response = await client.send(command)
+    for await (const event of response?.output?.message?.content) {
+      // no-op iteration over the stream in order to exercise the instrumentation
+      consumeStreamChunk(event)
+    }
 
-//     tx.end()
-//   })
-// })
+    const events = agent.customEventAggregator.events.toArray()
+    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+    assert.equal(events.length > 2, true)
 
-// test('should not instrument stream when disabled', async (t) => {
-//   const { bedrock, client, agent } = t.nr
-//   agent.config.ai_monitoring.streaming.enabled = false
-//   const prompt = 'text converse ultimate question streamed'
-//   const input = {
-//     modelId,
-//     messages: [
-//       { role: 'user', content: [{ text: prompt }] }
-//     ],
-//   }
-//   const command = new bedrock.ConverseStreamCommand(input)
+    assertChatCompletionMessages({
+      modelId,
+      prompt,
+      expectedId: null,
+      resContent: 'This is a test.',
+      tx,
+      chatMsgs
+    })
 
-//   await helper.runInTransaction(agent, async (tx) => {
-//     const response = await client.send(command)
-//     // build up the response to assert it does not get tainted when streaming is disabled
-//     let responseText = ''
-//     for await (const event of response?.output?.message?.content) {
-//       if (event.contentBlockDelta && event.contentBlockDelta.delta.text) {
-//         const text = event.contentBlockDelta.delta.text
-//         responseText += text
-//       }
-//     }
-//     assert.ok(responseText)
+    assertChatCompletionSummary({ tx, modelId, chatSummary, numMsgs: events.length - 1 })
 
-//     const events = agent.customEventAggregator.events.toArray()
-//     assert.equal(events.length, 0, 'should not create Llm events when streaming is disabled')
-//     const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-//     assert.equal(attributes.llm, true, 'should assign llm attribute to transaction trace')
-//     const metrics = getPrefixedMetric({
-//       agent,
-//       metricPrefix: 'Supportability/Nodejs/ML/Bedrock'
-//     })
-//     assert.equal(metrics.callCount > 0, true, 'should set framework metric')
-//     const supportabilityMetrics = agent.metrics.getOrCreateMetric(
-//       'Supportability/Nodejs/ML/Streaming/Disabled'
-//     )
-//     assert.equal(
-//       supportabilityMetrics.callCount > 0,
-//       true,
-//       'should increment streaming disabled metric'
-//     )
+    tx.end()
+  })
+})
 
-//     tx.end()
-//   })
-// })
+test('should not instrument stream when disabled', async (t) => {
+  const { bedrock, client, agent } = t.nr
+  agent.config.ai_monitoring.streaming.enabled = false
+  const prompt = 'text converse ultimate question streamed'
+  const input = {
+    modelId,
+    messages: [
+      { role: 'user', content: [{ text: prompt }] }
+    ],
+  }
+  const command = new bedrock.ConverseStreamCommand(input)
+
+  await helper.runInTransaction(agent, async (tx) => {
+    const response = await client.send(command)
+    for await (const event of response?.stream?.options?.messageStream?.options?.inputStream) {
+      // no-op iteration over the stream in order to exercise the instrumentation
+      consumeStreamChunk(event)
+    }
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 0, 'should not create Llm events when streaming is disabled')
+    const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+    assert.equal(attributes.llm, true, 'should assign llm attribute to transaction trace')
+    const metrics = getPrefixedMetric({
+      agent,
+      metricPrefix: 'Supportability/Nodejs/ML/Bedrock'
+    })
+    assert.equal(metrics.callCount > 0, true, 'should set framework metric')
+    const supportabilityMetrics = agent.metrics.getOrCreateMetric(
+      'Supportability/Nodejs/ML/Streaming/Disabled'
+    )
+    assert.equal(
+      supportabilityMetrics.callCount > 0,
+      true,
+      'should increment streaming disabled metric'
+    )
+
+    tx.end()
+  })
+})
 
 function getPrefixedMetric({ agent, metricPrefix }) {
   for (const [key, value] of Object.entries(agent.metrics._metrics.unscoped)) {
@@ -343,4 +424,8 @@ function getPrefixedMetric({ agent, metricPrefix }) {
     }
     return value
   }
+}
+
+function consumeStreamChunk() {
+  // A no-op function used to consume chunks of a stream.
 }

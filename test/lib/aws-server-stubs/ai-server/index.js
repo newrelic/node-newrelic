@@ -191,18 +191,29 @@ function handleConverse(payload, res) {
   }
 
   if (response.headers['content-type'].endsWith('amazon.eventstream') === true) {
-    encodeChunks(response.chunks).pipe(res)
-    // TODO: for converse api, don't encode the chunk headers??
-    // const stream = new Readable({
-    //   read() {
-    //     if (response.chunks.length > 0) {
-    //       this.push(response.chunks.shift())
-    //     } else {
-    //       this.push(null)
-    //     }
-    //   }
-    // }).pause()
-    // stream.pipe(res)
+    // The stream encoding for Converse API is a bit simpler tha
+    // what `encodeChunks` does.
+    const encodedChunks = []
+    const codec = new EventStreamCodec(toUtf8, fromUtf8)
+
+    for (const chunk of response.chunks) {
+      const bodyBuffer = Buffer.from(JSON.stringify(chunk.body))
+      const toEncode = {
+        headers: chunk.headers,
+        body: new Uint8Array(bodyBuffer, 0, bodyBuffer.byteLength)
+      }
+      encodedChunks.push(codec.encode(toEncode))
+    }
+    const stream = new Readable({
+      read() {
+        if (encodedChunks.length > 0) {
+          this.push(encodedChunks.shift())
+        } else {
+          this.push(null)
+        }
+      }
+    }).pause()
+    stream.pipe(res)
     return
   }
 
