@@ -627,7 +627,7 @@ test('display_host facts', async (t) => {
     }
 
     ctx.nr.agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
-    ctx.nr.agent.config.utilization = null
+    ctx.nr.agent.config.utilization = {}
 
     ctx.nr.osNetworkInterfaces = os.networkInterfaces
     ctx.nr.osHostname = os.hostname
