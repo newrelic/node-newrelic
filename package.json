@@ -172,11 +172,11 @@
     "services": "DOCKER_PLATFORM=linux/$(uname -m) docker compose up -d --wait",
     "services:start": "npm run services",
     "services:stop": "docker compose down",
-    "smoke": "time borp --timeout 180000 --reporter ./test/lib/test-reporter.mjs 'test/smoke/**/*.{test,tap}.js'",
+    "smoke": "time borp --timeout 180000 --reporter ./test/lib/test-reporter.mjs 'test/smoke/**/*.test.js'",
     "sub-install": "node test/bin/install_sub_deps",
     "test": "npm run integration && npm run unit",
     "third-party-updates": "oss third-party manifest --includeOptDeps && oss third-party notices --includeOptDeps && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
-    "unit": "rm -f newrelic_agent.log && time c8 -o ./coverage/unit borp --timeout 180000 --reporter ./test/lib/test-reporter.mjs 'test/unit/**/*.test.js'",
+    "unit": "rm -f newrelic_agent.log && time c8 -o ./coverage/unit borp --timeout 180000 --reporter ./test/lib/test-reporter.mjs 'test/unit/**/*.test.{js,mjs}'",
     "unit:scripts": "time c8 -o ./coverage/scripts-unit borp --reporter ./test/lib/test-reporter.mjs 'bin/test/*.test.js'",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
@@ -201,6 +201,7 @@
     "#test/assert": "./test/lib/custom-assertions/index.js"
   },
   "dependencies": {
+    "@apm-js-collab/code-transformer": "^0.4.0",
     "@grpc/grpc-js": "^1.13.2",
     "@grpc/proto-loader": "^0.7.5",
     "@newrelic/security-agent": "^2.4.2",
@@ -271,7 +272,8 @@
     "self-cert": "^2.0.0",
     "should": "*",
     "sinon": "^5.1.1",
-    "superagent": "^9.0.1"
+    "superagent": "^9.0.1",
+    "testdouble": "^3.20.2"
   },
   "repository": {
     "type": "git",
