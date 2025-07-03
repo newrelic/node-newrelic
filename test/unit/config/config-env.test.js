@@ -872,7 +872,6 @@ test('when overriding configuration values via environment variables', async (t)
 
     await t.test('should convert NEW_RELIC_INSTRUMENTATION*  accordingly', (t, end) => {
       const env = {
-        NEW_RELIC_INSTRUMENTATION_IOREDIS_ENABLED: 'false',
         'NEW_RELIC_INSTRUMENTATION_@GRPC/GRPC-JS_ENABLED': 'false',
         NEW_RELIC_INSTRUMENTATION_KNEX_ENABLED: 'false',
         NEW_RELIC_INSTRUMENTATION_HTTP_ENABLED: 'false',
@@ -880,7 +879,6 @@ test('when overriding configuration values via environment variables', async (t)
         NEW_RELIC_INSTRUMENTATION_DOMAIN_ENABLED: 'false',
       }
       idempotentEnv(env, (config) => {
-        assert.equal(config.instrumentation.ioredis.enabled, false)
         assert.equal(config.instrumentation['@grpc/grpc-js'].enabled, false)
         assert.equal(config.instrumentation.knex.enabled, false)
         assert.equal(config.instrumentation.http.enabled, false)
