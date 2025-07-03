@@ -13,18 +13,20 @@ const path = require('node:path')
 const { readFileSync } = require('node:fs')
 
 test.beforeEach((ctx) => {
-  const subscribers = [
-    {
-      channelName: 'unitTest',
-      module: { name: 'pkg-1', versionRange: '>=1', filePath: 'foo.js' },
-      operator: 'tracePromise',
-      functionQuery: {
-        className: 'Foo',
-        methodName: 'doStuff',
-        kind: 'Async'
+  const subscribers = {
+    packages: new Set(['pkg-1']),
+    instrumentations: [
+      {
+        channelName: 'unitTest',
+        module: { name: 'pkg-1', versionRange: '>=1', filePath: 'foo.js' },
+        functionQuery: {
+          className: 'Foo',
+          methodName: 'doStuff',
+          kind: 'Async'
+        }
       }
-    }
-  ]
+    ]
+  }
   const modulePath = path.join(__dirname, '../lib/example-deps/lib/node_modules/pkg-1/foo.js')
   const modulePatch = new ModulePatch(subscribers)
   ctx.nr = {
@@ -72,7 +74,7 @@ test('should rewrite code for a match transformer', (t) => {
   const testModule = new Module(resolvedPath)
   testModule._compile(data, resolvedPath)
   const rewrittenCode = testModule.exports.toString()
-  assert.ok(rewrittenCode.includes('return tr_ch_apm$unitTest.tracePromise(traced'))
+  assert.ok(rewrittenCode.includes('return tr_ch_apm$unitTest.tracePromise(__apm$traced'))
 })
 
 test('should not rewrite code for an unmatch patch', (t) => {

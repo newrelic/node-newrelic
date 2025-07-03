@@ -97,7 +97,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @apm-js-collab/code-transformer
 
-This product includes source derived from [@apm-js-collab/code-transformer](https://github.com/apm-js-collab/orchestrion-js) ([v0.3.0](https://github.com/apm-js-collab/orchestrion-js/tree/v0.3.0)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/orchestrion-js/blob/v0.3.0/LICENSE):
+This product includes source derived from [@apm-js-collab/code-transformer](https://github.com/apm-js-collab/orchestrion-js) ([v0.4.0](https://github.com/apm-js-collab/orchestrion-js/tree/v0.4.0)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/orchestrion-js/blob/v0.4.0/LICENSE):
 
 ```
 

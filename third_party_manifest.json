@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Jul 01 2025 13:50:50 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu Jul 03 2025 11:55:45 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -44,15 +44,15 @@
   },
   "includeDev": true,
   "dependencies": {
-    "@apm-js-collab/code-transformer@0.3.0": {
+    "@apm-js-collab/code-transformer@0.4.0": {
       "name": "@apm-js-collab/code-transformer",
-      "version": "0.3.0",
-      "range": "^0.3.0",
+      "version": "0.4.0",
+      "range": "^0.4.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/apm-js-collab/orchestrion-js",
-      "versionedRepoUrl": "https://github.com/apm-js-collab/orchestrion-js/tree/v0.3.0",
+      "versionedRepoUrl": "https://github.com/apm-js-collab/orchestrion-js/tree/v0.4.0",
       "licenseFile": "node_modules/@apm-js-collab/code-transformer/LICENSE",
-      "licenseUrl": "https://github.com/apm-js-collab/orchestrion-js/blob/v0.3.0/LICENSE",
+      "licenseUrl": "https://github.com/apm-js-collab/orchestrion-js/blob/v0.4.0/LICENSE",
       "licenseTextSource": "file"
     },
     "@grpc/grpc-js@1.13.3": {

@@ -11,29 +11,32 @@ import * as td from 'testdouble'
 import { readFileSync } from 'node:fs'
 
 test.beforeEach(async (ctx) => {
-  await td.replaceEsm('../../lib/instrumentation-subscribers.js', {}, [
-    {
-      channelName: 'unitTestEsm',
-      module: { name: 'esm-pkg', versionRange: '>=1', filePath: 'foo.js' },
-      operator: 'tracePromise',
-      functionQuery: {
-        className: 'Foo',
-        methodName: 'doStuff',
-        kind: 'Async'
-      }
-    },
-    {
-      channelName: 'unitTestCjs',
-      module: { name: 'pkg-1', versionRange: '>=1', filePath: 'foo.js' },
-      operator: 'tracePromise',
-      functionQuery: {
-        className: 'Foo',
-        methodName: 'doStuff',
-        kind: 'Async'
-      }
+  await td.replaceEsm('../../lib/subscribers/index.js', {}, {
+    subscribers: {},
+    config: {
+      packages: new Set(['esm-pkg', 'pkg-1']),
+      instrumentations: [
+        {
+          channelName: 'unitTestEsm',
+          module: { name: 'esm-pkg', versionRange: '>=1', filePath: 'foo.js' },
+          functionQuery: {
+            className: 'Foo',
+            methodName: 'doStuff',
+            kind: 'Async'
+          }
+        },
+        {
+          channelName: 'unitTestCjs',
+          module: { name: 'pkg-1', versionRange: '>=1', filePath: 'foo.js' },
+          functionQuery: {
+            className: 'Foo',
+            methodName: 'doStuff',
+            kind: 'Async'
+          }
+        }
+      ]
     }
-
-  ])
+  })
 
   let cjsPath
   let esmPath
@@ -114,7 +117,7 @@ test('should rewrite code if it matches a subscriber and esm module', async (t) 
   const result = await esmLoaderRewriter.load(url.url, {}, nextLoad)
   assert.equal(result.format, 'module')
   assert.equal(result.shortCircuit, true)
-  assert.ok(result.source.includes('return tr_ch_apm$unitTestEsm.tracePromise(traced'))
+  assert.ok(result.source.includes('return tr_ch_apm$unitTestEsm.tracePromise(__apm$traced'))
 })
 
 test('should not rewrite code if it does not match a subscriber and a esm module', async (t) => {
@@ -123,7 +126,7 @@ test('should not rewrite code if it does not match a subscriber and a esm module
   const result = await esmLoaderRewriter.load(url.url, {}, nextLoad)
   assert.equal(result.format, 'module')
   assert.ok(!result.shortCircuit)
-  assert.ok(!result.source.includes('return tr_ch_apm$unitTestEsm.tracePromise(traced'))
+  assert.ok(!result.source.includes('return tr_ch_apm$unitTestEsm.tracePromise(__apm$traced'))
 })
 
 test('should rewrite code if it matches a subscriber and a cjs module', async (t) => {
@@ -132,7 +135,7 @@ test('should rewrite code if it matches a subscriber and a cjs module', async (t
   const result = await esmLoaderRewriter.load(url.url, {}, nextLoad)
   assert.equal(result.format, 'commonjs')
   assert.equal(result.shortCircuit, true)
-  assert.ok(result.source.includes('return tr_ch_apm$unitTestCjs.tracePromise(traced'))
+  assert.ok(result.source.includes('return tr_ch_apm$unitTestCjs.tracePromise(__apm$traced'))
 })
 
 test('should rewrite code if it matches a subscriber and a cjs module', async (t) => {
@@ -141,7 +144,7 @@ test('should rewrite code if it matches a subscriber and a cjs module', async (t
   const result = await esmLoaderRewriter.load(url.url, { responseUrl: true }, nextLoad)
   assert.equal(result.format, 'commonjs')
   assert.equal(result.shortCircuit, true)
-  assert.ok(result.source.includes('return tr_ch_apm$unitTestCjs.tracePromise(traced'))
+  assert.ok(result.source.includes('return tr_ch_apm$unitTestCjs.tracePromise(__apm$traced'))
 })
 
 test('should not rewrite code if it does not match a subscriber and a cjs module', async (t) => {
@@ -150,5 +153,5 @@ test('should not rewrite code if it does not match a subscriber and a cjs module
   const result = await esmLoaderRewriter.load(url.url, {}, nextLoad)
   assert.equal(result.format, 'commonjs')
   assert.ok(!result.shortCircuit)
-  assert.ok(!result.source.includes('return tr_ch_apm$unitTestCjs.tracePromise(traced'))
+  assert.ok(!result.source.includes('return tr_ch_apm$unitTestCjs.tracePromise(__apm$traced'))
 })
