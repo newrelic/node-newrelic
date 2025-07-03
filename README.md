@@ -105,13 +105,11 @@ The New Relic Node.js agent includes ***_experimental_*** support for ES Modules
     $ mv newrelic.js newrelic.cjs
     ```
 
- 2. To use the newrelic ESM loader, start your program with node and use the `--experimental-loader` flag and a path to the loader file, like this:
+ 2. To use the newrelic ESM loader, start your program with node and use the `--import` flag and a path to the loader file, like this:
 
     ```sh
-    $ node --experimental-loader newrelic/esm-loader.mjs -r newrelic your-program.js
+    $ node --import newrelic/esm-loader.mjs -r newrelic your-program.js
     ```
-
-**Note**: Unlike the CommonJS methods listed above, there are no alternatives to running the agent without the `--experimental-loader` flag.
 
 ### Custom Instrumentation
 
