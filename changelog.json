@@ -6,7 +6,9 @@
       "changes": {
         "security": [],
         "bugfixes": [],
-        "features": []
+        "features": [
+          "Implemented configurable attribute value size limit"
+        ]
       }
     },
     {
