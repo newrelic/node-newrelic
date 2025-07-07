@@ -211,8 +211,6 @@ test('Elasticsearch instrumentation', async (t) => {
       assert.equal(attrs.product, 'ElasticSearch')
       assert.equal(attrs.host, METRIC_HOST_NAME)
       assert.equal(attrs.port_path_or_id, `${params.elastic_port}`)
-      // TODO: update once instrumentation is properly setting database name
-      assert.equal(attrs.database_name, 'unknown')
       transaction.end()
       assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
