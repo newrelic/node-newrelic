@@ -1,13 +1,16 @@
 ### v12.24.0 (2025-07-07)
 
+#### Features
+
+* Implemented configurable attribute value size limit ([#3206](https://github.com/newrelic/node-newrelic/pull/3206)) ([08a6eca](https://github.com/newrelic/node-newrelic/commit/08a6eca7cd35811f5bcb4e6c13264eac156b302f))
+
 #### Documentation
 
 * Updated compatibility report ([#3190](https://github.com/newrelic/node-newrelic/pull/3190)) ([72c492c](https://github.com/newrelic/node-newrelic/commit/72c492cf78b6cc52791604ac354e34718c8ae926))
 
 #### Miscellaneous chores
 
-* Implemented configurable attribute value size limit ([#3206](https://github.com/newrelic/node-newrelic/pull/3206)) ([08a6eca](https://github.com/newrelic/node-newrelic/commit/08a6eca7cd35811f5bcb4e6c13264eac156b302f))
-* Rename gcp id config flag ([#3205](https://github.com/newrelic/node-newrelic/pull/3205)) ([8446f29](https://github.com/newrelic/node-newrelic/commit/8446f29fc6ed469d663e5634540a4afe4932765b))
+* Rename GCP ID config flag ([#3205](https://github.com/newrelic/node-newrelic/pull/3205)) ([8446f29](https://github.com/newrelic/node-newrelic/commit/8446f29fc6ed469d663e5634540a4afe4932765b))
 
 ### v12.23.0 (2025-06-30)
 
