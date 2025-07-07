@@ -86,6 +86,10 @@ test('with default properties', async (t) => {
     assert.equal(configuration.trusted_account_key, null)
   })
 
+  await t.test('should have the default attribute value_size_limit setting', () => {
+    assert.equal(configuration.attributes.value_size_limit, 256)
+  })
+
   await t.test('should have the default excluded request attributes', () => {
     assert.deepStrictEqual(configuration.attributes.exclude, [])
   })
