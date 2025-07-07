@@ -7,7 +7,6 @@
 const test = require('node:test')
 const nock = require('nock')
 const { nockRequest } = require('./response-handling-utils')
-const path = require('path')
 const grpc = require('@grpc/grpc-js')
 const protoLoader = require('@grpc/proto-loader')
 const { tspl } = require('@matteo.collina/tspl')
@@ -20,14 +19,14 @@ const helper = require('../lib/agent_helper')
 // intensive operation and would slow down tests if each test created its
 // own certificate.
 const cert = fakeCert({ commonName: 'localhost' })
-const PROTO_PATH = path.join(__dirname, '../..', '/lib/grpc/endpoints/infinite-tracing/v1.proto')
+const PROTO = require('../../lib/grpc/endpoints/infinite-tracing/v1.json')
 const TEST_DOMAIN = 'test-collector.newrelic.com'
 // This key is hardcoded in the agent helper
 const EXPECTED_LICENSE_KEY = 'license key here'
 const INITIAL_RUN_ID = 'initial_run_id'
 const INITIAL_SESSION_ID = 'initial_session_id'
 
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+const packageDefinition = protoLoader.fromJSON(PROTO, {
   keepCase: true,
   longs: String,
   enums: String,
