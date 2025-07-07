@@ -161,4 +161,157 @@ Have a picture of a sunny day!</tool_result>
 
     assert.equal(out, "The user said their name is\n\n<guard_content>Robert');DROP TABLE Students;--</guard_content>")
   })
+
+  test('handles empty chunks array', () => {
+    const out = stringifyConverseChunkedMessage([])
+    assert.equal(out, '')
+  })
+
+  test('handles single text chunk', () => {
+    const out = stringifyConverseChunkedMessage([{ text: 'Hello world' }])
+    assert.equal(out, 'Hello world')
+  })
+
+  test('handles empty text chunk', () => {
+    const out = stringifyConverseChunkedMessage([{ text: '' }])
+    assert.equal(out, '')
+  })
+
+  test('handles image chunk without format', () => {
+    const out = stringifyConverseChunkedMessage([
+      { image: { source: { bytes: new Uint8Array([]) } } }
+    ])
+    assert.equal(out, '<image>')
+  })
+
+  test('handles document chunk without name', () => {
+    const out = stringifyConverseChunkedMessage([
+      { document: { format: 'pdf', source: { bytes: new Uint8Array([]) } } }
+    ])
+    assert.equal(out, '<document></document>')
+  })
+
+  test('handles document chunk with empty name', () => {
+    const out = stringifyConverseChunkedMessage([
+      { document: { format: 'pdf', name: '', source: { bytes: new Uint8Array([]) } } }
+    ])
+    assert.equal(out, '<document></document>')
+  })
+
+  test('handles toolUse chunk without name', () => {
+    const out = stringifyConverseChunkedMessage([
+      { toolUse: { toolUseId: 'abc123', input: { location: 'Test' } } }
+    ])
+    assert.equal(out, '<tool_use></tool_use>')
+  })
+
+  test('handles toolUse chunk with null toolUse object', () => {
+    const out = stringifyConverseChunkedMessage([
+      { toolUse: null }
+    ])
+    assert.equal(out, '<tool_use></tool_use>')
+  })
+
+  test('handles json chunk with empty object', () => {
+    const out = stringifyConverseChunkedMessage([
+      { json: {} }
+    ])
+    assert.equal(out, '<json>{}</json>')
+  })
+
+  test('handles json chunk with null value', () => {
+    const out = stringifyConverseChunkedMessage([
+      { json: null }
+    ])
+    assert.equal(out, '<json>null</json>')
+  })
+
+  test('handles json chunk with special characters', () => {
+    const out = stringifyConverseChunkedMessage([
+      { json: { message: 'Hello "world"', newline: 'Line 1\nLine 2' } }
+    ])
+    assert.equal(out, '<json>{"message":"Hello \\"world\\"","newline":"Line 1\\nLine 2"}</json>')
+  })
+
+  test('handles toolResult chunk without content', () => {
+    const out = stringifyConverseChunkedMessage([
+      { toolResult: { toolUseId: 'abc123' } }
+    ])
+    assert.equal(out, '<tool_result></tool_result>')
+  })
+
+  test('handles toolResult chunk with empty content array', () => {
+    const out = stringifyConverseChunkedMessage([
+      { toolResult: { toolUseId: 'abc123', content: [] } }
+    ])
+    assert.equal(out, '<tool_result></tool_result>')
+  })
+
+  test('handles toolResult chunk with null content', () => {
+    const out = stringifyConverseChunkedMessage([
+      { toolResult: { toolUseId: 'abc123', content: null } }
+    ])
+    assert.equal(out, '<tool_result></tool_result>')
+  })
+
+  test('handles guardContent chunk without text', () => {
+    const out = stringifyConverseChunkedMessage([
+      { guardContent: {} }
+    ])
+    assert.equal(out, '<guard_content></guard_content>')
+  })
+
+  test('handles guardContent chunk with null guardContent', () => {
+    const out = stringifyConverseChunkedMessage([
+      { guardContent: null }
+    ])
+    assert.equal(out, '<guard_content></guard_content>')
+  })
+
+  test('handles guardContent chunk with empty text', () => {
+    const out = stringifyConverseChunkedMessage([
+      { guardContent: { text: '' } }
+    ])
+    assert.equal(out, '<guard_content></guard_content>')
+  })
+
+  test('handles toolResult with mixed content including filtered toolUse and toolResult', () => {
+    const out = stringifyConverseChunkedMessage([
+      { text: 'Processing request' },
+      {
+        toolResult: {
+          toolUseId: 'abc123',
+          content: [
+            { text: 'Starting analysis' },
+            { toolUse: { name: 'nested_tool', toolUseId: 'xyz789' } }, // should be filtered
+            { image: { format: 'png', source: { bytes: new Uint8Array([]) } } },
+            { json: { status: 'processing' } },
+            { toolResult: { toolUseId: 'nested', content: [{ text: 'nested result' }] } }, // should be filtered
+            { text: 'Analysis complete' }
+          ]
+        }
+      }
+    ])
+
+    assert.equal(out, 'Processing request\n\n<tool_result>Starting analysis\n\n<image>\n\n<json>{"status":"processing"}</json>\n\nAnalysis complete</tool_result>')
+  })
+
+  test('handles completely empty object chunk', () => {
+    const out = stringifyConverseChunkedMessage([
+      { text: 'Before' },
+      {}, // completely empty object
+      { text: 'After' }
+    ])
+    assert.equal(out, 'Before\n\n<unknown_chunk>\n\nAfter')
+  })
+
+  test('handles multiple unknown chunk types', () => {
+    const out = stringifyConverseChunkedMessage([
+      { text: 'Start' },
+      { unknownType1: 'data1' },
+      { unknownType2: 'data2' },
+      { text: 'End' }
+    ])
+    assert.equal(out, 'Start\n\n<unknown_chunk>\n\n<unknown_chunk>\n\nEnd')
+  })
 })
