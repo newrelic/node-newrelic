@@ -6,5 +6,5 @@ the equivalent `.proto` files. This is accomplished by utilizing the CLI
 tool provided by `protobufjs`. As an example:
 
 ```sh
-npx --package=protobufjs-cli -c 'pbjs v1.proto' > v1.json
+npx --package=protobufjs-cli -c 'pbjs --keep-case v1.proto' > v1.json
 ```

@@ -35,7 +35,7 @@
                     },
                     "Span": {
                       "fields": {
-                        "traceId": {
+                        "trace_id": {
                           "type": "string",
                           "id": 1
                         },
@@ -44,12 +44,12 @@
                           "type": "AttributeValue",
                           "id": 2
                         },
-                        "userAttributes": {
+                        "user_attributes": {
                           "keyType": "string",
                           "type": "AttributeValue",
                           "id": 3
                         },
-                        "agentAttributes": {
+                        "agent_attributes": {
                           "keyType": "string",
                           "type": "AttributeValue",
                           "id": 4
@@ -60,27 +60,27 @@
                       "oneofs": {
                         "value": {
                           "oneof": [
-                            "stringValue",
-                            "boolValue",
-                            "intValue",
-                            "doubleValue"
+                            "string_value",
+                            "bool_value",
+                            "int_value",
+                            "double_value"
                           ]
                         }
                       },
                       "fields": {
-                        "stringValue": {
+                        "string_value": {
                           "type": "string",
                           "id": 1
                         },
-                        "boolValue": {
+                        "bool_value": {
                           "type": "bool",
                           "id": 2
                         },
-                        "intValue": {
+                        "int_value": {
                           "type": "int64",
                           "id": 3
                         },
-                        "doubleValue": {
+                        "double_value": {
                           "type": "double",
                           "id": 4
                         }
@@ -88,7 +88,7 @@
                     },
                     "RecordStatus": {
                       "fields": {
-                        "messagesSeen": {
+                        "messages_seen": {
                           "type": "uint64",
                           "id": 1
                         }
