@@ -104,12 +104,44 @@ test('Elasticsearch instrumentation', async (t) => {
       assert.ok(transaction, 'transaction should be visible')
       await client.indices.create({ index })
       const trace = transaction.trace
+      // should only have two segments: the root and the index create, verifies opaque is working
+      assert.equal(transaction.numSegments, 2)
       const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${index}/index.create`,
         'should record index PUT as create'
       )
+    })
+  })
+
+  await t.test('should be able to record creating an index(callback)', async (t) => {
+    const { agent, client, pkgVersion } = t.nr
+    if (semver.gte(pkgVersion, '8.0.0')) {
+      return
+    }
+
+    const index = `test-index-${randomString()}`
+    t.after(async () => {
+      await client.indices.delete({ index })
+    })
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+      assert.ok(transaction, 'transaction should be visible')
+      await new Promise((resolve) => {
+        client.indices.create({ index }, (err) => {
+          assert.ifError(err, 'should not error when creating index')
+          const trace = transaction.trace
+          // should only have two segments: the root and the index create, verifies opaque is working
+          assert.equal(transaction.numSegments, 2)
+          const [firstChild] = trace.getChildren(trace.root.id)
+          assert.equal(
+            firstChild.name,
+            `Datastore/statement/ElasticSearch/${index}/index.create`,
+            'should record index PUT as create'
+          )
+          resolve()
+        })
+      })
     })
   })
 
@@ -211,8 +243,6 @@ test('Elasticsearch instrumentation', async (t) => {
       assert.equal(attrs.product, 'ElasticSearch')
       assert.equal(attrs.host, METRIC_HOST_NAME)
       assert.equal(attrs.port_path_or_id, `${params.elastic_port}`)
-      // TODO: update once instrumentation is properly setting database name
-      assert.equal(attrs.database_name, 'unknown')
       transaction.end()
       assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
