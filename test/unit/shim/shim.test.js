@@ -1161,6 +1161,29 @@ test('Shim', async function (t) {
         assert.equal(eventSegment.getAttributes().count, 3)
       })
     })
+
+    await t.test('should not error if createSegment returns null', function (t) {
+      const { agent, shim, stream, toWrap } = t.nr
+      const wrapped = shim.record(toWrap, function () {
+        return new RecorderSpec({ name: 'test segment', stream: 'foobar' })
+      })
+
+      // Override createSegment to return null for this test
+      const originalCreateSegment = shim.createSegment
+      shim.createSegment = function () {
+        return null
+      }
+      t.after(() => {
+        shim.createSegment = originalCreateSegment
+      })
+
+      helper.runInTransaction(agent, function (tx) {
+        assert.doesNotThrow(() => {
+          wrapped()
+          stream.emit('foobar')
+        })
+      })
+    })
   })
 
   await t.test('#record with a promise', async function (t) {
