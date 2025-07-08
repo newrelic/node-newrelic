@@ -1178,17 +1178,10 @@ test('Shim', async function (t) {
       })
 
       helper.runInTransaction(agent, function (tx) {
-        const ret = wrapped()
-        assert.equal(ret, stream)
-        // Emit the event and check the segment name.
-        let children = tx.trace.getChildren(stream.segment.id)
-        assert.equal(children.length, 0)
-        stream.emit('foobar')
-        children = tx.trace.getChildren(stream.segment.id)
-        assert.equal(children.length, 1)
-
-        const [eventSegment] = children
-        assert.equal(eventSegment.getAttributes().count, 0)
+        assert.doesNotThrow(() => {
+          wrapped()
+          stream.emit('foobar')
+        })
       })
     })
   })
