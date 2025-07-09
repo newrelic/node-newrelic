@@ -40,6 +40,8 @@ test('openai unit.tests', async (t) => {
     OpenAI.Chat = { Completions }
     OpenAI.Embeddings = function () {}
     OpenAI.Embeddings.prototype.create = async function () {}
+    OpenAI.Responses = function () {}
+    OpenAI.Responses.prototype.create = async function () {}
     return OpenAI
   }
 
@@ -122,4 +124,26 @@ test('openai unit.tests', async (t) => {
       end()
     }
   )
+
+  await t.test('should instrument responses api if openai version >=4.87.0', (t, end) => {
+    const { shim, agent, initialize } = t.nr
+    const MockOpenAi = getMockModule()
+    shim.pkgVersion = '4.87.0'
+    initialize(agent, MockOpenAi, 'openai', shim)
+    assert.equal(shim.logger.debug.callCount, 0, 'should not log debug messages')
+    const isWrapped = shim.isWrapped(MockOpenAi.Responses.prototype.create)
+    assert.equal(isWrapped, true, 'should wrap chat completions create')
+    end()
+  })
+
+  await t.test('should not instrument responses api if openai version <4.87.0', (t, end) => {
+    const { shim, agent, initialize } = t.nr
+    const MockOpenAi = getMockModule()
+    shim.pkgVersion = '4.0.0'
+    initialize(agent, MockOpenAi, 'openai', shim)
+    assert.equal(shim.logger.debug.callCount, 0, 'should not log debug messages')
+    const isWrapped = shim.isWrapped(MockOpenAi.Responses.prototype.create)
+    assert.equal(isWrapped, false, 'should wrap chat completions create')
+    end()
+  })
 })
