@@ -1,3 +1,26 @@
+### v12.25.0 (2025-07-09)
+
+#### Features
+
+* Instrument AWS Bedrock Converse API ([#3191](https://github.com/newrelic/node-newrelic/pull/3191)) ([16ac684](https://github.com/newrelic/node-newrelic/commit/16ac6845a82506bbdd0e51f3f9a6d05ac8016246))
+
+#### Bug fixes
+
+* Defensive `addAttribute` code ([#3215](https://github.com/newrelic/node-newrelic/pull/3215)) ([8955f37](https://github.com/newrelic/node-newrelic/commit/8955f3737e686b4bf6beab2d4e53a1f5eb221166))
+* Tweak `openai` version for Responses API support ([#3219](https://github.com/newrelic/node-newrelic/pull/3219)) ([19c0c70](https://github.com/newrelic/node-newrelic/commit/19c0c7011c8c877098c5a57063354f01f5f83295))
+
+#### Documentation
+
+* Updated compatibility report ([#3220](https://github.com/newrelic/node-newrelic/pull/3220)) ([b4350c7](https://github.com/newrelic/node-newrelic/commit/b4350c7e3a718e47d066c5c2c1f4f5f20f43e52c))
+    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
+* Updated compatibility report ([#3216](https://github.com/newrelic/node-newrelic/pull/3216)) ([26e996f](https://github.com/newrelic/node-newrelic/commit/26e996f710f00ce33ef09e3f467ef2f51c52c2d6))
+    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
+* Updated compatibility report ([#3211](https://github.com/newrelic/node-newrelic/pull/3211)) ([087332b](https://github.com/newrelic/node-newrelic/commit/087332badeb5ba201666ebfdb8f1a66f9b4e0499))
+
+#### Miscellaneous chores
+
+* Converted .proto to .json for bundling ([#3212](https://github.com/newrelic/node-newrelic/pull/3212)) ([1e208d4](https://github.com/newrelic/node-newrelic/commit/1e208d43acc1811674126b6aa987c895178f4fc3))
+
 ### v12.24.0 (2025-07-07)
 
 #### Features

@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.25.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Tweak `openai` version for Responses API support",
+          "Defensive `addAttribute` code"
+        ],
+        "features": [
+          "Instrument AWS Bedrock Converse API"
+        ]
+      }
+    },
+    {
       "version": "12.24.0",
       "changes": {
         "security": [],
