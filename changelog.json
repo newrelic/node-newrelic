@@ -6,8 +6,8 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Tweak `openai` version for Responses API support",
-          "Defensive `addAttribute` code"
+          "`eventSegment.addAttribute` will not crash if null",
+          "`openai` Responses API support changed to >=v4.87.0"
         ],
         "features": [
           "Instrument AWS Bedrock Converse API"
