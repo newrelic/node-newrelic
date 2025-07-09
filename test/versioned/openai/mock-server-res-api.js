@@ -9,7 +9,7 @@ module.exports = openaiMockServer
 
 const http = require('node:http')
 const RESPONSES = require('./mock-responses-api-responses')
-const chunks = require('./stream-chunks-v5')
+const chunks = require('./stream-chunks-res-api')
 const { Readable } = require('node:stream')
 
 /**

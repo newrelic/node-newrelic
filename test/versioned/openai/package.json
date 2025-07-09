@@ -25,10 +25,10 @@
         "node": ">=20"
       },
       "dependencies": {
-        "openai": ">=5.0.0"
+        "openai": ">=4.87.0"
       },
       "files": [
-        "chat-completions-v5.test.js"
+        "chat-completions-res-api.test.js"
       ]
     }
   ]

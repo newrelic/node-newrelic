@@ -12,7 +12,7 @@ const path = require('node:path')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
-const createOpenAIMockServer = require('./mock-server-v5')
+const createOpenAIMockServer = require('./mock-server-res-api')
 const helper = require('../../lib/agent_helper')
 
 const {
