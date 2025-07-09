@@ -29,7 +29,7 @@ supported by the agent.
 | `@nestjs/cli` | 9.0.0 | 11.0.7 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 6.11.1 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 4.4.5 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 4.4.6 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.8 | 2.0.0 |
 | `apollo-server` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-express` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
