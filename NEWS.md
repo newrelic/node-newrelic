@@ -7,7 +7,7 @@
 #### Bug fixes
 
 * `eventSegment.addAttribute` will not crash if null ([#3215](https://github.com/newrelic/node-newrelic/pull/3215)) ([8955f37](https://github.com/newrelic/node-newrelic/commit/8955f3737e686b4bf6beab2d4e53a1f5eb221166))
-* `openai` Responses API support for >=v4.87.0 ([#3219](https://github.com/newrelic/node-newrelic/pull/3219)) ([19c0c70](https://github.com/newrelic/node-newrelic/commit/19c0c7011c8c877098c5a57063354f01f5f83295))
+* `openai` Responses API support changed to >=v4.87.0 ([#3219](https://github.com/newrelic/node-newrelic/pull/3219)) ([19c0c70](https://github.com/newrelic/node-newrelic/commit/19c0c7011c8c877098c5a57063354f01f5f83295))
 
 #### Documentation
 
