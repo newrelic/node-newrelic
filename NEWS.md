@@ -35,7 +35,6 @@
 
 #### Features
 
-* Added ability to report only on entry and exit spans ([#3184](https://github.com/newrelic/node-newrelic/pull/3184)) ([1f909d3](https://github.com/newrelic/node-newrelic/commit/1f909d389f790733c8787a9db8b0ee71c26bb5ed))
 * Added Node.js 24 support ([#3080](https://github.com/newrelic/node-newrelic/pull/3080)) ([a538c2a](https://github.com/newrelic/node-newrelic/commit/a538c2a5e23b96be40fa3c014e60b912f695423e))
 
 #### Documentation
