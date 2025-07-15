@@ -48,3 +48,11 @@ test('normalizes hrtime', () => {
   assert.equal(found >= dnow, true)
   assert.equal(isNaN(new Date(found)), false)
 })
+
+test('normalizes junk', () => {
+  const dnow = Date.now()
+  const input = 'some garbage'
+  const found = normalizeTimestamp(input)
+  assert.equal(found >= dnow, true)
+  assert.equal(isNaN(new Date(found)), false)
+})
