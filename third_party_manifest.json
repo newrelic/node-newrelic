@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Thu Jun 12 2025 09:25:25 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Jul 15 2025 09:00:20 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
-    "@contrast/fn-inspect@4.3.0": {
-      "name": "@contrast/fn-inspect",
-      "version": "4.3.0",
-      "range": "^4.2.0",
+    "@newrelic/fn-inspect@4.4.0": {
+      "name": "@newrelic/fn-inspect",
+      "version": "4.4.0",
+      "range": "^4.4.0",
       "licenses": "MIT",
-      "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
-      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v4.3.0",
-      "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
-      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v4.3.0/LICENSE",
+      "repoUrl": "https://github.com/newrelic-forks/node-fn-inspect",
+      "versionedRepoUrl": "https://github.com/newrelic-forks/node-fn-inspect/tree/v4.4.0",
+      "licenseFile": "node_modules/@newrelic/fn-inspect/LICENSE",
+      "licenseUrl": "https://github.com/newrelic-forks/node-fn-inspect/blob/v4.4.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
@@ -80,6 +80,18 @@
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
+    "@opentelemetry/api-logs@0.203.0": {
+      "name": "@opentelemetry/api-logs",
+      "version": "0.203.0",
+      "range": "^0.203.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.203.0",
+      "licenseFile": "node_modules/@opentelemetry/api-logs/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.203.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
+    },
     "@opentelemetry/api@1.9.0": {
       "name": "@opentelemetry/api",
       "version": "1.9.0",
@@ -104,6 +116,18 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
+    "@opentelemetry/exporter-logs-otlp-proto@0.203.0": {
+      "name": "@opentelemetry/exporter-logs-otlp-proto",
+      "version": "0.203.0",
+      "range": "^0.203.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.203.0",
+      "licenseFile": "node_modules/@opentelemetry/exporter-logs-otlp-proto/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.203.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
+    },
     "@opentelemetry/exporter-metrics-otlp-proto@0.201.1": {
       "name": "@opentelemetry/exporter-metrics-otlp-proto",
       "version": "0.201.1",
@@ -125,6 +149,18 @@
       "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1",
       "licenseFile": "node_modules/@opentelemetry/resources/LICENSE",
       "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
+    },
+    "@opentelemetry/sdk-logs@0.203.0": {
+      "name": "@opentelemetry/sdk-logs",
+      "version": "0.203.0",
+      "range": "^0.203.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.203.0",
+      "licenseFile": "node_modules/@opentelemetry/sdk-logs/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.203.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
