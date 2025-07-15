@@ -7,13 +7,9 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const https = require('node:https')
-const path = require('node:path')
 const { once } = require('node:events')
-const protobuf = require('protobufjs')
 const logsApi = require('@opentelemetry/api-logs')
 
-const fakeCert = require('#testlib/fake-cert.js')
 const helper = require('#testlib/agent_helper.js')
 
 test.beforeEach(async (ctx) => {
@@ -21,42 +17,7 @@ test.beforeEach(async (ctx) => {
 
   ctx.nr = {}
 
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-  const cert = fakeCert()
-  const serverOpts = {
-    key: cert.privateKeyBuffer,
-    cert: cert.certificateBuffer
-  }
-
-  ctx.nr.data = {}
-  const server = https.createServer(serverOpts, (req, res) => {
-    ctx.nr.data.path = req.url
-    ctx.nr.data.headers = structuredClone(req.headers)
-
-    let payload = Buffer.alloc(0)
-    req.on('data', d => {
-      payload = Buffer.concat([payload, d])
-    })
-    req.on('end', () => {
-      res.writeHead(200, { 'content-type': 'text/plain' })
-      res.end('ok')
-
-      ctx.nr.data.payload = payload
-      server.emit('requestComplete', payload)
-    })
-  })
-
-  ctx.nr.server = server
-  await new Promise((resolve, reject) => {
-    server.listen(0, '127.0.0.1', error => {
-      if (error) return reject(error)
-      resolve()
-    })
-  })
-
   ctx.nr.agent = helper.instrumentMockedAgent({
-    host: server.address().address,
-    port: server.address().port,
     opentelemetry_bridge: {
       enabled: true,
       logs: {
@@ -70,20 +31,11 @@ test.beforeEach(async (ctx) => {
 
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
-  ctx.nr.server.close()
 })
 
-test('sends logs', /* { timeout: 15_000 }, */ async (t) => {
-  const { agent, server } = t.nr
+test('sends logs', { timeout: 5_000 }, async (t) => {
+  const { agent } = t.nr
   const { logs } = require('@opentelemetry/api-logs')
-  const otlpSchemas = new protobuf.Root()
-  otlpSchemas.resolvePath = (...args) => {
-    return path.join(__dirname, 'schemas', args[1])
-  }
-  await otlpSchemas.load('opentelemetry/proto/collector/logs/v1/logs_service.proto')
-  const requestSchema = otlpSchemas.lookupType(
-    'opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest'
-  )
 
   process.nextTick(() => agent.emit('started'))
   await once(agent, 'started')
@@ -98,16 +50,11 @@ test('sends logs', /* { timeout: 15_000 }, */ async (t) => {
     }
   })
 
-  await once(server, 'requestComplete')
-  const payload = requestSchema.decode(
-    new protobuf.BufferReader(t.nr.data.payload)
-  )
-  assert.equal(payload.resourceLogs[0].scopeLogs[0].logRecords.length, 1)
   assert.equal(agent.logs.length, 1)
-
   const nrShippedLogs = agent.logs._toPayloadSync()
   assert.equal(nrShippedLogs.length, 1)
   assert.equal(nrShippedLogs[0].common.attributes['entity.guid'], 'guid-123456')
+
   const log = nrShippedLogs[0].logs[0]
   assert.equal(log['entity.guid'], 'guid-123456')
   assert.equal(log['entity.name'], 'New Relic for Node.js tests')
