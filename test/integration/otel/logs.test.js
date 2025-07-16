@@ -7,38 +7,45 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { once } = require('node:events')
 const logsApi = require('@opentelemetry/api-logs')
 
 const helper = require('#testlib/agent_helper.js')
+// const { removeMatchedModules } = require('#testlib/cache-buster.js')
+
+const BASE_AGENT_CONFIG = {
+  opentelemetry_bridge: {
+    enabled: true,
+    logs: { enabled: true }
+  }
+}
 
 test.beforeEach(async (ctx) => {
   process.env.OTEL_BLRP_SCHEDULE_DELAY = 1_000 // Interval for processor to ship logs
-
   ctx.nr = {}
-
-  ctx.nr.agent = helper.instrumentMockedAgent({
-    opentelemetry_bridge: {
-      enabled: true,
-      logs: {
-        enabled: true
-      }
-    }
-  })
-  ctx.nr.agent.config.entity_guid = 'guid-123456'
-  ctx.nr.agent.config.license_key = 'license-123456'
 })
 
 test.afterEach((ctx) => {
+  delete process.env.OTEL_BLRP_SCHEDULE_DELAY
   helper.unloadAgent(ctx.nr.agent)
+
+  // TODO: I think we should be resetting things, but the stuff we need to reset
+  // is loaded as part of the agent and _not_ part of the instrumentation
+  // bootstrap process. So if we remove the otel modules, we end up losing
+  // things like the `OtelContext` object.
+  // removeMatchedModules(/@opentelemetry/)
 })
 
-test('sends logs', { timeout: 5_000 }, async (t) => {
-  const { agent } = t.nr
-  const { logs } = require('@opentelemetry/api-logs')
+function initAgent({ t, config = BASE_AGENT_CONFIG }) {
+  t.nr.agent = helper.instrumentMockedAgent(config)
+  t.nr.agent.config.entity_guid = 'guid-123456'
+  t.nr.agent.config.license_key = 'license-123456'
 
-  process.nextTick(() => agent.emit('started'))
-  await once(agent, 'started')
+  return t.nr.agent
+}
+
+test('sends logs outside of transaction', async (t) => {
+  const agent = initAgent({ t })
+  const { logs } = require('@opentelemetry/api-logs')
 
   const logger = logs.getLogger('testLogger')
   logger.emit({
@@ -54,12 +61,15 @@ test('sends logs', { timeout: 5_000 }, async (t) => {
   const nrShippedLogs = agent.logs._toPayloadSync()
   assert.equal(nrShippedLogs.length, 1)
   assert.equal(nrShippedLogs[0].common.attributes['entity.guid'], 'guid-123456')
+  assert.equal(nrShippedLogs[0].common.attributes['entity.name'], 'New Relic for Node.js tests')
+  assert.equal(nrShippedLogs[0].common.attributes['entity.type'], 'SERVICE')
+  assert.ok(nrShippedLogs[0].common.attributes.hostname)
 
   const log = nrShippedLogs[0].logs[0]
-  assert.equal(log['entity.guid'], 'guid-123456')
-  assert.equal(log['entity.name'], 'New Relic for Node.js tests')
-  assert.equal(log['entity.type'], 'SERVICE')
-  assert.ok(log['hostname'])
+  assert.equal(log['entity.guid'], undefined)
+  assert.equal(log['entity.name'], undefined)
+  assert.equal(log['entity.type'], undefined)
+  assert.equal(log.hostname, undefined)
   assert.equal(log.level, 'info')
   assert.equal(log.message, 'test log')
   assert.equal(Number.isFinite(log.timestamp), true)
@@ -78,4 +88,35 @@ test('sends logs', { timeout: 5_000 }, async (t) => {
   for (const expectedMetricName of expectedMetricNames) {
     assert.equal(supportMetrics[expectedMetricName].callCount, 1)
   }
+})
+
+test('sends logs within transaction', (t, end) => {
+  const agent = initAgent({ t })
+  const { logs } = require('@opentelemetry/api-logs')
+  const logger = logs.getLogger('testLogger')
+
+  helper.runInTransaction(agent, tx => {
+    logger.emit({
+      severityNumber: logsApi.SeverityNumber.INFO,
+      body: 'test log',
+      timestamp: new Date(1752516000000), // 2025-07-14T14:00:00.000-04:00
+      attributes: {
+        foo: 'bar'
+      }
+    })
+    assert.equal(agent.logs.length, 0, 'should not add to non-tx logs array')
+
+    const span = tx.trace.root
+    tx.end()
+
+    const txLogs = tx.logs.aggregator.getEvents()
+    assert.equal(txLogs.length, 1)
+
+    const log = txLogs[0]
+    assert.equal(log['trace.id'], tx.traceId)
+    assert.equal(log['span.id'], span.id)
+    assert.equal(log.foo, 'bar')
+
+    end()
+  })
 })
