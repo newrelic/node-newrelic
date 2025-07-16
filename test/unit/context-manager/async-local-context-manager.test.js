@@ -18,6 +18,7 @@ test('Should default to null context', () => {
   assert.ok(context instanceof Context)
   assert.equal(context.transaction, null)
   assert.equal(context.segment, null)
+  assert.deepEqual(context.extras, {})
 })
 
 test('setContext should update the current context', () => {
@@ -159,5 +160,14 @@ test('runInContext()', async (t) => {
         arguments
       )
     }
+  })
+
+  await t.test('should allow to assign random key/value paris to context', (t) => {
+    const contextManager = new AsyncLocalContextManager()
+    const context = contextManager.getContext()
+    let newContext = context.setExtras({ key: 'value', anotherKey: 'anotherValue' })
+    assert.deepEqual(newContext.extras, { key: 'value', anotherKey: 'anotherValue' })
+    newContext = newContext.setExtras({ key: 'newValue', yetAnotherKey: 'yetAnotherValue' })
+    assert.deepEqual(newContext.extras, { key: 'newValue', anotherKey: 'anotherValue', yetAnotherKey: 'yetAnotherValue' })
   })
 })
