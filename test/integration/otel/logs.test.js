@@ -18,6 +18,7 @@ const BASE_AGENT_CONFIG = {
     logs: { enabled: true }
   }
 }
+const TS_FIXTURE = 1752516000000 // 2025-07-14T14:00:00.000-04:00
 
 test.beforeEach(async (ctx) => {
   process.env.OTEL_BLRP_SCHEDULE_DELAY = 1_000 // Interval for processor to ship logs
@@ -51,7 +52,7 @@ test('sends logs outside of transaction', async (t) => {
   logger.emit({
     severityNumber: logsApi.SeverityNumber.INFO,
     body: 'test log',
-    timestamp: new Date(1752516000000), // 2025-07-14T14:00:00.000-04:00
+    timestamp: new Date(TS_FIXTURE),
     attributes: {
       foo: 'bar'
     }
@@ -73,7 +74,7 @@ test('sends logs outside of transaction', async (t) => {
   assert.equal(log.level, 'info')
   assert.equal(log.message, 'test log')
   assert.equal(Number.isFinite(log.timestamp), true)
-  assert.equal(log.timestamp, 1752516000000)
+  assert.equal(log.timestamp, TS_FIXTURE)
   assert.equal(log.foo, 'bar')
 
   const supportMetrics = agent.metrics._metrics.unscoped
@@ -86,7 +87,7 @@ test('sends logs outside of transaction', async (t) => {
     'Supportability/Nodejs/OpenTelemetryBridge/Setup'
   ]
   for (const expectedMetricName of expectedMetricNames) {
-    assert.equal(supportMetrics[expectedMetricName].callCount, 1)
+    assert.equal(supportMetrics[expectedMetricName].callCount, 1, `${expectedMetricName} is present`)
   }
 })
 
@@ -99,7 +100,7 @@ test('sends logs within transaction', (t, end) => {
     logger.emit({
       severityNumber: logsApi.SeverityNumber.INFO,
       body: 'test log',
-      timestamp: new Date(1752516000000), // 2025-07-14T14:00:00.000-04:00
+      timestamp: new Date(TS_FIXTURE),
       attributes: {
         foo: 'bar'
       }
@@ -119,4 +120,87 @@ test('sends logs within transaction', (t, end) => {
 
     end()
   })
+})
+
+test('omits logging metrics when disabled', async (t) => {
+  const agentConfig = Object.assign(
+    {},
+    structuredClone(BASE_AGENT_CONFIG),
+    {
+      application_logging: {
+        metrics: { enabled: false }
+      }
+    }
+  )
+  const agent = initAgent({ t, config: agentConfig })
+  const { logs } = require('@opentelemetry/api-logs')
+
+  const logger = logs.getLogger('testLogger')
+  logger.emit({
+    severityNumber: logsApi.SeverityNumber.INFO,
+    body: 'test log',
+    timestamp: new Date(TS_FIXTURE),
+    attributes: {
+      foo: 'bar'
+    }
+  })
+
+  assert.equal(agent.logs.length, 1)
+  const nrShippedLogs = agent.logs._toPayloadSync()
+  const log = nrShippedLogs[0].logs[0]
+  assert.equal(log.message, 'test log')
+
+  const supportMetrics = agent.metrics._metrics.unscoped
+  const expectedMetricNames = [
+    'Logging/lines',
+    'Logging/lines/INFO'
+  ]
+  for (const expectedMetricName of expectedMetricNames) {
+    assert.equal(supportMetrics[expectedMetricName], undefined, `${expectedMetricName} not present`)
+  }
+})
+
+test('does not forward logs when disabled', async (t) => {
+  const agentConfig = Object.assign(
+    {},
+    structuredClone(BASE_AGENT_CONFIG),
+    {
+      application_logging: {
+        metrics: { enabled: true },
+        forwarding: { enabled: false }
+      }
+    }
+  )
+  const agent = initAgent({ t, config: agentConfig })
+  const { logs } = require('@opentelemetry/api-logs')
+
+  const logger = logs.getLogger('testLogger')
+  logger.emit({
+    severityNumber: logsApi.SeverityNumber.INFO,
+    body: 'test log',
+    timestamp: new Date(TS_FIXTURE),
+    attributes: {
+      foo: 'bar'
+    }
+  })
+
+  assert.equal(agent.logs.length, 0)
+
+  const supportMetrics = agent.metrics._metrics.unscoped
+  let expectedMetricNames = [
+    'Supportability/Logging/Forwarding/Seen',
+    'Supportability/Logging/Forwarding/Sent',
+  ]
+  for (const expectedMetricName of expectedMetricNames) {
+    assert.equal(supportMetrics[expectedMetricName], undefined, `${expectedMetricName} not present`)
+  }
+  expectedMetricNames = [
+    'Logging/lines',
+    'Logging/lines/INFO',
+    'Supportability/Nodejs/OpenTelemetryBridge/Logs',
+    'Supportability/Nodejs/OpenTelemetryBridge/Setup'
+  ]
+  for (const expectedMetricName of expectedMetricNames) {
+    assert.equal(supportMetrics[expectedMetricName].callCount, 1, `${expectedMetricName} is present`)
+  }
 })
