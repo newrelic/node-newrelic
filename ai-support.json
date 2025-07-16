@@ -4,6 +4,72 @@
     "title": "Amazon Bedrock",
     "preamble": "Through the `@aws-sdk/client-bedrock-runtime` module, we support:",
     "footnote": "Note: if a model supports streaming, we also instrument the streaming variant.",
+    "apis": [
+      { "name": "InvokeModelCommand",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          },
+          {
+            "title": "Vision",
+            "supported": false
+          }
+        ]
+      },
+      { "name": "InvokeModelWithResponseStreamCommand",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          },
+          {
+            "title": "Vision",
+            "supported": false
+          }
+        ]
+      }.
+      { "name": "ConverseCommand",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          },
+          {
+            "title": "Vision",
+            "supported": false
+          }
+        ]
+      },
+      { "name": "ConverseStreamCommand",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          },
+          {
+            "title": "Vision",
+            "supported": false
+          }
+        ]
+      }
+    ],
     "models": [
       {
         "name": "Anthropic Claude",
