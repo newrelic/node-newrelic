@@ -99,7 +99,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @apm-js-collab/code-transformer
 
-This product includes source derived from [@apm-js-collab/code-transformer](https://github.com/apm-js-collab/orchestrion-js) ([v0.4.0](https://github.com/apm-js-collab/orchestrion-js/tree/v0.4.0)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/orchestrion-js/blob/v0.4.0/LICENSE):
+This product includes source derived from [@apm-js-collab/code-transformer](https://github.com/apm-js-collab/orchestrion-js) ([v0.6.0](https://github.com/apm-js-collab/orchestrion-js/tree/v0.6.0)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/orchestrion-js/blob/v0.6.0/LICENSE):
 
 ```
 
@@ -518,7 +518,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.13](https://github.com/grpc/grpc-node/tree/v0.7.13)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.13/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.15](https://github.com/grpc/grpc-node/tree/v0.7.15)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.15/LICENSE):
 
 ```
                                  Apache License
@@ -2534,7 +2534,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.14.0](https://github.com/nodejs/import-in-the-middle/tree/v1.14.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.14.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.14.2](https://github.com/nodejs/import-in-the-middle/tree/v1.14.2)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.14.2/LICENSE):
 
 ```
                                  Apache License
@@ -2794,12 +2794,12 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### module-details-from-path
 
-This product includes source derived from [module-details-from-path](https://github.com/watson/module-details-from-path) ([v1.0.3](https://github.com/watson/module-details-from-path/tree/v1.0.3)), distributed under the [MIT License](https://github.com/watson/module-details-from-path/blob/v1.0.3/LICENSE):
+This product includes source derived from [module-details-from-path](https://github.com/watson/module-details-from-path) ([v1.0.4](https://github.com/watson/module-details-from-path/tree/v1.0.4)), distributed under the [MIT License](https://github.com/watson/module-details-from-path/blob/v1.0.4/LICENSE):
 
 ```
 The MIT License (MIT)
 
-Copyright (c) 2016 Thomas Watson Steen
+Copyright (c) 2016-2025 Thomas Watson Steen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2909,7 +2909,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.1](https://github.com/npm/node-semver/tree/v7.7.1)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.1/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.2](https://github.com/npm/node-semver/tree/v7.7.2)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.2/LICENSE):
 
 ```
 The ISC License
@@ -2965,7 +2965,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.823.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.823.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.823.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.842.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.842.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.842.0/LICENSE):
 
 ```
                                 Apache License
@@ -3174,7 +3174,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.823.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.823.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.823.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.842.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.842.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.842.0/LICENSE):
 
 ```
                                 Apache License
@@ -5002,7 +5002,7 @@ SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.7.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.7.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.7.1/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.8.0](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.8.0)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.8.0/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -5034,7 +5034,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.28.0](https://github.com/eslint/eslint/tree/v9.28.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.28.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.30.1](https://github.com/eslint/eslint/tree/v9.30.1)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.30.1/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -5061,7 +5061,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v4.21.2](https://github.com/expressjs/express/tree/v4.21.2)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.21.2/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v5.1.0](https://github.com/expressjs/express/tree/v5.1.0)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v5.1.0/LICENSE):
 
 ```
 (The MIT License)
@@ -5314,11 +5314,20 @@ MIT License
 
 Copyright (c) <year> <copyright holders>
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
+associated documentation files (the "Software"), to deal in the Software without restriction, including 
+without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the 
+following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial 
+portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT 
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO 
+EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ### koa-router
@@ -5352,7 +5361,7 @@ THE SOFTWARE.
 
 ### koa
 
-This product includes source derived from [koa](https://github.com/koajs/koa) ([v2.15.3](https://github.com/koajs/koa/tree/v2.15.3)), distributed under the [MIT License](https://github.com/koajs/koa/blob/v2.15.3/LICENSE):
+This product includes source derived from [koa](https://github.com/koajs/koa) ([v2.16.1](https://github.com/koajs/koa/tree/v2.16.1)), distributed under the [MIT License](https://github.com/koajs/koa/blob/v2.16.1/LICENSE):
 
 ```
 (The MIT License)
@@ -5411,7 +5420,7 @@ SOFTWARE.
 
 ### lockfile-lint
 
-This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.14.0](https://github.com/lirantal/lockfile-lint/tree/v4.14.0)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.14.0/LICENSE):
+This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.14.1](https://github.com/lirantal/lockfile-lint/tree/v4.14.1)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.14.1/LICENSE):
 
 ```
 
@@ -5746,11 +5755,20 @@ MIT License
 
 Copyright (c) <year> <copyright holders>
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
+associated documentation files (the "Software"), to deal in the Software without restriction, including 
+without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the 
+following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial 
+portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT 
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO 
+EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ### should
