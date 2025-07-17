@@ -45,7 +45,7 @@ test.beforeEach(async (ctx) => {
   const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
 
   ctx.nr.embedding = new OpenAIEmbeddings({
-    openAIApiKey: 'fake-key',
+    apiKey: 'fake-key',
     configuration: {
       baseURL: `http://${host}:${port}`
     }
