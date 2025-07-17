@@ -137,10 +137,10 @@ test('should not set fake span if transaction.agent.otelSpanKey is null', (t) =>
   assert.equal(fakeSpan, undefined)
 })
 
-test('should allow to assign random key/value paris to context', (t) => {
-  const ctx = otel.context.active()
-  let newContext = ctx.setExtras({ key: 'value', anotherKey: 'anotherValue' })
-  assert.deepEqual(newContext.extras, { key: 'value', anotherKey: 'anotherValue' })
-  newContext = newContext.setExtras({ key: 'newValue', yetAnotherKey: 'yetAnotherValue' })
-  assert.deepEqual(newContext.extras, { key: 'newValue', anotherKey: 'anotherValue', yetAnotherKey: 'yetAnotherValue' })
+test('should allow to assign random key/value pairs to context', (t) => {
+  const context = otel.context.active()
+  context.extras = { key: 'value', anotherKey: 'anotherValue' }
+  assert.deepEqual(context.extras, { key: 'value', anotherKey: 'anotherValue' })
+  context.extras = { key: 'newValue', yetAnotherKey: 'yetAnotherValue' }
+  assert.deepEqual(context.extras, { key: 'newValue', anotherKey: 'anotherValue', yetAnotherKey: 'yetAnotherValue' })
 })
