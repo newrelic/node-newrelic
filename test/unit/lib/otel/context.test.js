@@ -26,9 +26,9 @@ test.afterEach((ctx) => {
 
 test('should give root context', () => {
   const ctx = otel.context.active()
-  assert.equal(ctx._transaction, undefined)
-  assert.equal(ctx._segment, undefined)
-  assert.equal(ctx._otelCtx.size, 0)
+  assert.equal(ctx.transaction, undefined)
+  assert.equal(ctx.segment, undefined)
+  assert.equal(ctx.otelCtx.size, 0)
 })
 
 test('should get proper context', (t, end) => {
@@ -135,4 +135,12 @@ test('should not set fake span if transaction.agent.otelSpanKey is null', (t) =>
   const newContext = ctx.enterSegment({ segment })
   const fakeSpan = newContext.getValue(agent.otelSpanKey)
   assert.equal(fakeSpan, undefined)
+})
+
+test('should allow to assign random key/value pairs to context', (t) => {
+  const context = otel.context.active()
+  context.extras = { key: 'value', anotherKey: 'anotherValue' }
+  assert.deepEqual(context.extras, { key: 'value', anotherKey: 'anotherValue' })
+  context.extras = { key: 'newValue', yetAnotherKey: 'yetAnotherValue' }
+  assert.deepEqual(context.extras, { key: 'newValue', anotherKey: 'anotherValue', yetAnotherKey: 'yetAnotherValue' })
 })
