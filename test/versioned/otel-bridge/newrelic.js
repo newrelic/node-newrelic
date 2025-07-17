@@ -17,5 +17,10 @@ exports.config = {
     detect_azure: false,
     detect_gcp: false,
     detect_docker: false
-  }
+  },
+  instrumentation: {
+    pino: {
+      enabled: false
+    }
+  },
 }
