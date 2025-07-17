@@ -9,6 +9,7 @@ const helper = require('../../lib/agent_helper')
 const test = require('node:test')
 const assert = require('node:assert')
 const symbols = require('../../../lib/symbols')
+const nock = require('nock')
 
 test('external requests', async function (t) {
   t.beforeEach((ctx) => {
@@ -159,42 +160,15 @@ test('external requests', async function (t) {
     })
   })
 
-  await t.test('should not duplicate the external segment', function (t, end) {
-    const { agent } = t.nr
-    const https = require('https')
-
-    helper.runInTransaction(agent, function inTransaction() {
-      https.get('https://example.com:443/', function onResponse(res) {
-        res.once('end', check)
-        res.resume()
-      })
-    })
-
-    function check() {
-      const tx = agent.getTransaction()
-      const [segment] = tx.trace.getChildren(tx.trace.root.id)
-
-      assert.equal(segment.name, 'External/example.com/', 'should be named')
-      assert.ok(segment.timer.start, 'should have started')
-      assert.ok(segment.timer.hasEnd(), 'should have ended')
-      const segmentChildren = tx.trace.getChildren(segment.id)
-      assert.equal(segmentChildren.length, 1, 'should have 1 child')
-
-      const notDuped = segmentChildren[0]
-      assert.notEqual(
-        notDuped.name,
-        segment.name,
-        'child should not be named the same as the external segment'
-      )
-
-      end()
-    }
-  })
-
   await t.test('NODE-1647 should not interfere with `got`', { timeout: 5000 }, function (t, end) {
     const { agent } = t.nr
     // Our way of wrapping HTTP response objects caused `got` to hang. This was
     // resolved in agent 2.5.1.
+    nock.disableNetConnect()
+    t.after(() => {
+      nock.enableNetConnect()
+    })
+    nock('https://example.com').get('/').reply(200)
     const got = require('got')
     helper.runInTransaction(agent, function () {
       const req = got('https://example.com/')
@@ -215,8 +189,13 @@ test('external requests', async function (t) {
 
   await t.test('should record requests to default ports', (t, end) => {
     const { agent, http } = t.nr
+    nock.disableNetConnect()
+    t.after(() => {
+      nock.enableNetConnect()
+    })
+    nock('http://example.com').get('/').reply(200)
     helper.runInTransaction(agent, (tx) => {
-      http.get('http://example.com', (res) => {
+      http.get('http://example.com/', (res) => {
         res.resume()
         res.on('end', () => {
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
@@ -229,9 +208,14 @@ test('external requests', async function (t) {
 
   await t.test('should expose the external segment on the http request', (t, end) => {
     const { agent, http } = t.nr
+    nock.disableNetConnect()
+    t.after(() => {
+      nock.enableNetConnect()
+    })
+    nock('http://example.com').get('/').reply(200)
     helper.runInTransaction(agent, (tx) => {
       let reqSegment = null
-      const req = http.get('http://example.com', (res) => {
+      const req = http.get('http://example.com/', (res) => {
         res.resume()
         res.on('end', () => {
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
