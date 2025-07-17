@@ -201,7 +201,7 @@
     "#test/assert": "./test/lib/custom-assertions/index.js"
   },
   "dependencies": {
-    "@apm-js-collab/code-transformer": "^0.4.0",
+    "@apm-js-collab/code-transformer": "^0.6.0",
     "@grpc/grpc-js": "^1.13.2",
     "@grpc/proto-loader": "^0.7.5",
     "@newrelic/security-agent": "^2.4.2",

@@ -72,8 +72,21 @@ test('logging disabled', async (t) => {
 
 test('logging enabled', (t) => {
   setup(t.nr, { application_logging: { enabled: true } })
-  const { agent } = t.nr
-  const metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
+  const { agent, pino, sink } = t.nr
+
+  const logger = pino({ level: 'info' }, sink)
+  const message = 'logs are not enriched'
+  logger.info(message)
+  const line = t.nr.logs[0]
+  originalMsgAssertion({
+    logLine: line,
+    hostname: agent.config.getHostnameSafe()
+  })
+  assert.equal(line.msg, message, 'msg should not change')
+  let metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
+  assert.equal(metric.callCount, 1, `should create ${LOGGING.LIBS.PINO} metric`)
+  logger.info(message)
+  metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
   assert.equal(metric.callCount, 1, `should create ${LOGGING.LIBS.PINO} metric`)
 })
 
