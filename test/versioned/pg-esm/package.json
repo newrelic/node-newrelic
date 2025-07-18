@@ -10,13 +10,36 @@
         "node": ">=20"
       },
       "dependencies": {
+        "pg": ">=8.2.0"
+      },
+      "files": [
+        "pg.test.mjs"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=18 <24"
+      },
+      "dependencies": {
         "pg": ">=8.2.0",
         "pg-native": ">=3.0.0 <3.4.0 || >=3.4.5"
       },
       "files": [
         "force-native.test.mjs",
-        "native.test.mjs",
-        "pg.test.mjs"
+        "native.test.mjs"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=24"
+      },
+      "dependencies": {
+        "pg": ">=8.16.0",
+        "pg-native": ">=3.5.0"
+      },
+      "files": [
+        "force-native.test.mjs",
+        "native.test.mjs"
       ]
     }
   ]

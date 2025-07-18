@@ -909,3 +909,19 @@ test('loads agent control settings from env', (t, end) => {
     end()
   })
 })
+
+test('logs redacted information when setting from env vars', (t, end) => {
+  const env = {
+    NEW_RELIC_LICENSE_KEY: 'super secret value',
+    NEW_RELIC_AGENT_CONTROL_ENABLED: 'true',
+    NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY: 1
+  }
+  idempotentEnv(env, (_, logger) => {
+    assert.deepStrictEqual(logger.logs.trace, [
+      [{ env: { NEW_RELIC_LICENSE_KEY: 's******************e' } }, 'setting value from environment variable'],
+      [{ env: { NEW_RELIC_AGENT_CONTROL_ENABLED: 't****e' } }, 'setting value from environment variable'],
+      [{ env: { NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY: '1*1' } }, 'setting value from environment variable'],
+    ])
+    end()
+  })
+})

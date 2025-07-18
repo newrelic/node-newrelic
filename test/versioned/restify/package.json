@@ -6,7 +6,8 @@
   "tests": [
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=20 <24",
+        "comment": "https://github.com/restify/node-restify/issues/1984"
       },
       "dependencies": {
         "restify": ">=11.0.0",

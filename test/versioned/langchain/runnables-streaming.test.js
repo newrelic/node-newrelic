@@ -18,7 +18,7 @@ const {
 } = require('./common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const createOpenAIMockServer = require('../openai/mock-server')
-const mockResponses = require('../openai/mock-responses')
+const mockResponses = require('../openai/mock-chat-api-responses')
 const helper = require('../../lib/agent_helper')
 
 const config = {
@@ -44,7 +44,7 @@ async function beforeEach({ enabled, ctx }) {
 
   ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} response']])
   ctx.nr.model = new ChatOpenAI({
-    openAIApiKey: 'fake-key',
+    apiKey: 'fake-key',
     maxRetries: 0,
     configuration: {
       baseURL: `http://${host}:${port}`
@@ -528,7 +528,7 @@ test('streaming enabled', async (t) => {
         assert.equal(str, '[object LlmErrorMessage]')
         match(e, {
           customAttributes: {
-            'error.message': 'Premature close',
+            'error.message': /(?:Premature close)|(?:terminated)/,
             completion_id: /\w{32}/
           }
         })

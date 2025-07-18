@@ -9,14 +9,23 @@
         "node": ">=20"
       },
       "dependencies": {
-        "undici": ">=5.0.0"
+        "undici": ">=5.0.0 <7.11.0"
+      },
+      "files": [
+        "requests.test.js"
+      ]
+    },
+
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "undici": ">=7.11.0"
       },
       "files": [
         "requests.test.js"
       ]
     }
-  ],
-  "engines": {
-    "node": ">=20"
-  }
+  ]
 }

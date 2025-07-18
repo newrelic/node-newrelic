@@ -10,13 +10,6 @@ const assert = require('node:assert')
 const structuredClone = require('./clone')
 const BedrockCommand = require('../../../../lib/llm-events/aws-bedrock/bedrock-command')
 
-const ai21 = {
-  modelId: 'ai21.j2-mid-v1',
-  body: {
-    prompt: 'who are you'
-  }
-}
-
 const claude = {
   modelId: 'anthropic.claude-v1',
   body: {
@@ -81,13 +74,6 @@ const cohereEmbed = {
   }
 }
 
-const llama2 = {
-  modelId: 'meta.llama2-13b-chat-v1',
-  body: {
-    prompt: 'who are you'
-  }
-}
-
 const llama3 = {
   modelId: 'meta.llama3-8b-instruct-v1:0',
   body: {
@@ -124,7 +110,6 @@ test.beforeEach((ctx) => {
 test('non-conforming command is handled gracefully', async (t) => {
   const cmd = new BedrockCommand(t.nr.input)
   for (const model of [
-    'Ai21',
     'Claude',
     'Claude3',
     'Cohere',
@@ -140,31 +125,6 @@ test('non-conforming command is handled gracefully', async (t) => {
   assert.equal(cmd.modelType, 'completion')
   assert.deepEqual(cmd.prompt, [])
   assert.equal(cmd.temperature, undefined)
-})
-
-test('ai21 minimal command works', async (t) => {
-  t.nr.updatePayload(structuredClone(ai21))
-  const cmd = new BedrockCommand(t.nr.input)
-  assert.equal(cmd.isAi21(), true)
-  assert.equal(cmd.maxTokens, undefined)
-  assert.equal(cmd.modelId, ai21.modelId)
-  assert.equal(cmd.modelType, 'completion')
-  assert.deepEqual(cmd.prompt, [{ role: 'user', content: ai21.body.prompt }])
-  assert.equal(cmd.temperature, undefined)
-})
-
-test('ai21 complete command works', async (t) => {
-  const payload = structuredClone(ai21)
-  payload.body.maxTokens = 25
-  payload.body.temperature = 0.5
-  t.nr.updatePayload(payload)
-  const cmd = new BedrockCommand(t.nr.input)
-  assert.equal(cmd.isAi21(), true)
-  assert.equal(cmd.maxTokens, 25)
-  assert.equal(cmd.modelId, payload.modelId)
-  assert.equal(cmd.modelType, 'completion')
-  assert.deepEqual(cmd.prompt, [{ role: 'user', content: payload.body.prompt }])
-  assert.equal(cmd.temperature, payload.body.temperature)
 })
 
 test('claude minimal command works', async (t) => {
@@ -424,31 +384,6 @@ test('cohere embed minimal command works', async (t) => {
   assert.equal(cmd.modelType, 'embedding')
   assert.deepStrictEqual(cmd.prompt, [{ role: 'user', content: cohereEmbed.body.texts.join(' ') }])
   assert.equal(cmd.temperature, undefined)
-})
-
-test('llama2 minimal command works', async (t) => {
-  t.nr.updatePayload(structuredClone(llama2))
-  const cmd = new BedrockCommand(t.nr.input)
-  assert.equal(cmd.isLlama(), true)
-  assert.equal(cmd.maxTokens, undefined)
-  assert.equal(cmd.modelId, llama2.modelId)
-  assert.equal(cmd.modelType, 'completion')
-  assert.deepEqual(cmd.prompt, [{ role: 'user', content: llama2.body.prompt }])
-  assert.equal(cmd.temperature, undefined)
-})
-
-test('llama2 complete command works', async (t) => {
-  const payload = structuredClone(llama2)
-  payload.body.max_gen_length = 25
-  payload.body.temperature = 0.5
-  t.nr.updatePayload(payload)
-  const cmd = new BedrockCommand(t.nr.input)
-  assert.equal(cmd.isLlama(), true)
-  assert.equal(cmd.maxTokens, 25)
-  assert.equal(cmd.modelId, payload.modelId)
-  assert.equal(cmd.modelType, 'completion')
-  assert.deepEqual(cmd.prompt, [{ role: 'user', content: payload.body.prompt }])
-  assert.equal(cmd.temperature, payload.body.temperature)
 })
 
 test('llama3 minimal command works', async (t) => {

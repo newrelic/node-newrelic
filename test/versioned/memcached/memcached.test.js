@@ -28,7 +28,7 @@ function flush(memcached) {
 }
 
 test('memcached instrumentation', { timeout: 5000 }, async function (t) {
-  await await t.test('generates correct metrics and trace segments', async function (t) {
+  await t.test('generates correct metrics and trace segments', async function (t) {
     t.beforeEach(async (ctx) => {
       const agent = helper.instrumentMockedAgent()
       const Memcached = require('memcached')

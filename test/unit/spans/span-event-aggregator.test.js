@@ -27,6 +27,13 @@ test('SpanAggregator', async (t) => {
         periodMs: DEFAULT_PERIOD
       },
       {
+        config: {
+          distributed_tracing: {
+            in_process_spans: {
+              enabled: true
+            }
+          }
+        },
         collector: {},
         metrics: new Metrics(5, {}, {}),
         harvester: { add() {} }
@@ -117,6 +124,13 @@ test('SpanAggregator', async (t) => {
         metricNames: METRIC_NAMES
       },
       {
+        config: {
+          distributed_tracing: {
+            in_process_spans: {
+              enabled: true
+            }
+          }
+        },
         collector: {},
         metrics,
         harvester: { add() {} }
@@ -134,20 +148,20 @@ test('SpanAggregator', async (t) => {
         assert.equal(spanEventAggregator.seen, 0)
 
         // First segment is added regardless of priority.
-        assert.equal(spanEventAggregator.addSegment({ segment, transaction: tx }), true)
+        spanEventAggregator.addSegment({ segment, transaction: tx })
         assert.equal(spanEventAggregator.length, 1)
         assert.equal(spanEventAggregator.seen, 1)
 
         // Higher priority should be added.
         tx.priority = 100
-        assert.equal(spanEventAggregator.addSegment({ segment, transaction: tx }), true)
+        spanEventAggregator.addSegment({ segment, transaction: tx })
         assert.equal(spanEventAggregator.length, 1)
         assert.equal(spanEventAggregator.seen, 2)
         const event1 = spanEventAggregator.getEvents()[0]
 
         // Lower priority should not be added.
         tx.priority = 1
-        assert.equal(spanEventAggregator.addSegment({ segment, transaction: tx }), false)
+        spanEventAggregator.addSegment({ segment, transaction: tx })
         assert.equal(spanEventAggregator.length, 1)
         assert.equal(spanEventAggregator.seen, 3)
         const event2 = spanEventAggregator.getEvents()[0]

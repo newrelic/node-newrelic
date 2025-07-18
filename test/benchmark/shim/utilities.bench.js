@@ -28,13 +28,6 @@ suite.add({
 })
 
 suite.add({
-  name: 'shim.argsToArray',
-  fn: function () {
-    return shim.argsToArray({}, 'func', 1, 2, 3)
-  }
-})
-
-suite.add({
   name: 'shim.normalizeIndex',
   fn: function () {
     return shim.normalizeIndex(4, -1)

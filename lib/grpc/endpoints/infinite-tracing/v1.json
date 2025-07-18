@@ -1,0 +1,106 @@
+{
+  "nested": {
+    "com": {
+      "nested": {
+        "newrelic": {
+          "nested": {
+            "trace": {
+              "nested": {
+                "v1": {
+                  "nested": {
+                    "IngestService": {
+                      "methods": {
+                        "RecordSpan": {
+                          "requestType": "Span",
+                          "requestStream": true,
+                          "responseType": "RecordStatus",
+                          "responseStream": true
+                        },
+                        "RecordSpanBatch": {
+                          "requestType": "SpanBatch",
+                          "requestStream": true,
+                          "responseType": "RecordStatus",
+                          "responseStream": true
+                        }
+                      }
+                    },
+                    "SpanBatch": {
+                      "fields": {
+                        "spans": {
+                          "rule": "repeated",
+                          "type": "Span",
+                          "id": 1
+                        }
+                      }
+                    },
+                    "Span": {
+                      "fields": {
+                        "trace_id": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "intrinsics": {
+                          "keyType": "string",
+                          "type": "AttributeValue",
+                          "id": 2
+                        },
+                        "user_attributes": {
+                          "keyType": "string",
+                          "type": "AttributeValue",
+                          "id": 3
+                        },
+                        "agent_attributes": {
+                          "keyType": "string",
+                          "type": "AttributeValue",
+                          "id": 4
+                        }
+                      }
+                    },
+                    "AttributeValue": {
+                      "oneofs": {
+                        "value": {
+                          "oneof": [
+                            "string_value",
+                            "bool_value",
+                            "int_value",
+                            "double_value"
+                          ]
+                        }
+                      },
+                      "fields": {
+                        "string_value": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "bool_value": {
+                          "type": "bool",
+                          "id": 2
+                        },
+                        "int_value": {
+                          "type": "int64",
+                          "id": 3
+                        },
+                        "double_value": {
+                          "type": "double",
+                          "id": 4
+                        }
+                      }
+                    },
+                    "RecordStatus": {
+                      "fields": {
+                        "messages_seen": {
+                          "type": "uint64",
+                          "id": 1
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

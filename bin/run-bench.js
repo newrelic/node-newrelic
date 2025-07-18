@@ -145,6 +145,8 @@ async function run() {
 
   const runBenchmarks = async () => {
     tests.sort()
+    // silence agent logs during these tests
+    process.env.NEW_RELIC_LOG_LEVEL = 'error'
     for await (const file of tests) {
       await spawnEachFile(file)
     }
