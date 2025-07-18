@@ -10,20 +10,6 @@ const assert = require('node:assert')
 const structuredClone = require('./clone')
 const BedrockResponse = require('../../../../lib/llm-events/aws-bedrock/bedrock-response')
 
-const ai21 = {
-  id: 'ai21-response-1',
-  completions: [
-    {
-      data: {
-        text: 'ai21-response'
-      },
-      finishReason: {
-        reason: 'done'
-      }
-    }
-  ]
-}
-
 const claude = {
   completion: 'claude-response',
   stop_reason: 'done'
@@ -77,9 +63,6 @@ test.beforeEach((ctx) => {
   }
 
   ctx.nr.bedrockCommand = {
-    isAi21() {
-      return false
-    },
     isClaude() {
       return false
     },
@@ -110,29 +93,6 @@ test('non-conforming response is handled gracefully', async (t) => {
   assert.deepStrictEqual(res.headers, undefined)
   assert.equal(res.id, undefined)
   assert.equal(res.requestId, undefined)
-  assert.equal(res.statusCode, 200)
-})
-
-test('ai21 malformed responses work', async (t) => {
-  t.nr.bedrockCommand.isAi21 = () => true
-  const res = new BedrockResponse(t.nr)
-  assert.deepStrictEqual(res.completions, [])
-  assert.equal(res.finishReason, undefined)
-  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
-  assert.equal(res.id, undefined)
-  assert.equal(res.requestId, 'aws-request-1')
-  assert.equal(res.statusCode, 200)
-})
-
-test('ai21 complete responses work', async (t) => {
-  t.nr.bedrockCommand.isAi21 = () => true
-  t.nr.updatePayload(structuredClone(ai21))
-  const res = new BedrockResponse(t.nr)
-  assert.deepStrictEqual(res.completions, ['ai21-response'])
-  assert.equal(res.finishReason, 'done')
-  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
-  assert.equal(res.id, 'ai21-response-1')
-  assert.equal(res.requestId, 'aws-request-1')
   assert.equal(res.statusCode, 200)
 })
 

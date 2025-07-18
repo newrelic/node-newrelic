@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed May 14 2025 07:35:45 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu Jun 12 2025 09:25:25 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -16,15 +16,15 @@
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
-    "@newrelic/native-metrics@11.0.0": {
+    "@newrelic/native-metrics@11.1.0": {
       "name": "@newrelic/native-metrics",
-      "version": "11.0.0",
+      "version": "11.1.0",
       "range": "^11.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v11.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v11.1.0",
       "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v11.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v11.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -44,15 +44,15 @@
   },
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.13.3": {
+    "@grpc/grpc-js@1.13.4": {
       "name": "@grpc/grpc-js",
-      "version": "1.13.3",
+      "version": "1.13.4",
       "range": "^1.13.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.13.3",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.13.4",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.13.3/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.13.4/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -68,15 +68,15 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/security-agent@2.4.1": {
+    "@newrelic/security-agent@2.4.2": {
       "name": "@newrelic/security-agent",
-      "version": "2.4.1",
-      "range": "2.4.0",
+      "version": "2.4.2",
+      "range": "^2.4.2",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v2.4.1",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v2.4.2",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v2.4.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v2.4.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -92,27 +92,63 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@opentelemetry/core@2.0.0": {
+    "@opentelemetry/core@2.0.1": {
       "name": "@opentelemetry/core",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "range": "^2.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1",
       "licenseFile": "node_modules/@opentelemetry/core/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@opentelemetry/sdk-trace-base@2.0.0": {
+    "@opentelemetry/exporter-metrics-otlp-proto@0.201.1": {
+      "name": "@opentelemetry/exporter-metrics-otlp-proto",
+      "version": "0.201.1",
+      "range": "^0.201.1",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.201.1",
+      "licenseFile": "node_modules/@opentelemetry/exporter-metrics-otlp-proto/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.201.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
+    },
+    "@opentelemetry/resources@2.0.1": {
+      "name": "@opentelemetry/resources",
+      "version": "2.0.1",
+      "range": "^2.0.1",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1",
+      "licenseFile": "node_modules/@opentelemetry/resources/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
+    },
+    "@opentelemetry/sdk-metrics@2.0.1": {
+      "name": "@opentelemetry/sdk-metrics",
+      "version": "2.0.1",
+      "range": "^2.0.1",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1",
+      "licenseFile": "node_modules/@opentelemetry/sdk-metrics/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "OpenTelemetry Authors"
+    },
+    "@opentelemetry/sdk-trace-base@2.0.1": {
       "name": "@opentelemetry/sdk-trace-base",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "range": "^2.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1",
       "licenseFile": "node_modules/@opentelemetry/sdk-trace-base/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
@@ -156,15 +192,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@1.13.2": {
+    "import-in-the-middle@1.14.0": {
       "name": "import-in-the-middle",
-      "version": "1.13.2",
+      "version": "1.14.0",
       "range": "^1.13.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/nodejs/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v1.13.2",
+      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v1.14.0",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v1.13.2/LICENSE",
+      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v1.14.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
@@ -262,28 +298,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.808.0": {
+    "@aws-sdk/client-s3@3.821.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.808.0",
+      "version": "3.821.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.808.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.821.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.808.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.821.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.808.0": {
+    "@aws-sdk/s3-request-presigner@3.821.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.808.0",
+      "version": "3.821.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.808.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.821.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.808.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.821.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -529,29 +565,29 @@
       "email": "maochenyan@gmail.com",
       "url": "https://github.com/stevemao"
     },
-    "eslint-plugin-jsdoc@50.6.14": {
+    "eslint-plugin-jsdoc@50.7.1": {
       "name": "eslint-plugin-jsdoc",
-      "version": "50.6.14",
+      "version": "50.7.1",
       "range": "^50.6.1",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.6.14",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.7.1",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.6.14/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.7.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
       "url": "http://gajus.com"
     },
-    "eslint@9.26.0": {
+    "eslint@9.28.0": {
       "name": "eslint",
-      "version": "9.26.0",
+      "version": "9.28.0",
       "range": "^9.17.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v9.26.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v9.28.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v9.26.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v9.28.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
@@ -708,6 +744,19 @@
       "licenseTextSource": "file",
       "publisher": "Pedro Teixeira",
       "email": "pedro.teixeira@gmail.com"
+    },
+    "protobufjs@7.5.3": {
+      "name": "protobufjs",
+      "version": "7.5.3",
+      "range": "^7.5.3",
+      "licenses": "BSD-3-Clause",
+      "repoUrl": "https://github.com/protobufjs/protobuf.js",
+      "versionedRepoUrl": "https://github.com/protobufjs/protobuf.js/tree/v7.5.3",
+      "licenseFile": "node_modules/protobufjs/LICENSE",
+      "licenseUrl": "https://github.com/protobufjs/protobuf.js/blob/v7.5.3/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Daniel Wirtz",
+      "email": "dcode+protobufjs@dcode.io"
     },
     "proxyquire@1.8.0": {
       "name": "proxyquire",

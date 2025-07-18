@@ -31,6 +31,8 @@ test('consumer does not match fallback rule', () => {
   const engine = new RulesEngine()
   const span = tracer.startSpan('test-span', { kind: SpanKind.CONSUMER }, ROOT_CONTEXT)
   span.setAttribute('messaging.operation', 'create')
+  span.setAttribute('messaging.system', 'rabbitmq')
+  span.setAttribute('messaging.destination.name', 'test-queue')
   span.end()
 
   const rule = engine.test(span)

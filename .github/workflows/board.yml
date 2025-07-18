@@ -24,7 +24,7 @@ on:
         type: number 
       todo_column:
         description: Name of the To-Do column in project
-        default: 'Triage Needed: Unprioritized Features'
+        default: 'Triage Needed'
         required: false
         type: string
       pr_column:

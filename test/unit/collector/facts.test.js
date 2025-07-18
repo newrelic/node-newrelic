@@ -627,7 +627,7 @@ test('display_host facts', async (t) => {
     }
 
     ctx.nr.agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
-    ctx.nr.agent.config.utilization = null
+    ctx.nr.agent.config.utilization = {}
 
     ctx.nr.osNetworkInterfaces = os.networkInterfaces
     ctx.nr.osHostname = os.hostname
@@ -787,6 +787,107 @@ test('display_host facts', async (t) => {
       })
     }
   )
+})
+
+test('host facts', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+
+    // Mock fetchSystemInfo to return a specific value
+    const mockSysInfo = async (agent, callback) => {
+      const systemInfo = {}
+
+      // Mock utilization.getVendors
+      const vendorStats = {
+        gcp: {
+          id: 'mock-gcp-instance-id',
+          zone: 'us-central1-a'
+        }
+      }
+      systemInfo.vendors = vendorStats
+
+      callback(null, systemInfo)
+    }
+
+    ctx.systemInfoPath = require.resolve('../../../lib/system-info')
+    ctx.originalSystemInfoModule = require.cache[ctx.systemInfoPath]
+    require.cache[ctx.systemInfoPath] = {
+      id: ctx.systemInfoPath,
+      filename: ctx.systemInfoPath,
+      loaded: true,
+      exports: mockSysInfo
+    }
+
+    ctx.factsPath = require.resolve('../../../lib/collector/facts')
+    ctx.originalFactsModule = require.cache[ctx.factsPath]
+    delete require.cache[ctx.factsPath]
+
+    const facts = require('../../../lib/collector/facts')
+    ctx.nr.facts = function (agent, callback) {
+      return facts(agent, callback, { logger: ctx.nr.logger })
+    }
+
+    ctx.nr.agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
+    ctx.nr.agent.config.utilization = null
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    delete process.env.K_SERVICE
+
+    // Restore system-info cache
+    if (ctx.systemInfoPath) {
+      if (ctx.originalSystemInfoModule === undefined) {
+        delete require.cache[ctx.systemInfoPath]
+      } else {
+        require.cache[ctx.systemInfoPath] = ctx.originalSystemInfoModule
+      }
+    }
+
+    // Restore facts cache
+    if (ctx.factsPath) {
+      if (ctx.originalFactsModule === undefined) {
+        delete require.cache[ctx.factsPath]
+      } else {
+        require.cache[ctx.factsPath] = ctx.originalFactsModule
+      }
+    }
+  })
+
+  await t.test('should be GCP id when K_SERVICE is set', (t, end) => {
+    const { agent, facts } = t.nr
+
+    agent.config.utilization = { gcp_use_instance_as_host: true }
+    process.env.K_SERVICE = 'mock-service'
+
+    facts(agent, (result) => {
+      assert.equal(result.host, 'mock-gcp-instance-id', 'Hostname should be set to GCP instance ID')
+      end()
+    })
+  })
+
+  await t.test('should not be GCP id when K_SERVICE is not present', (t, end) => {
+    const { agent, facts } = t.nr
+
+    agent.config.utilization = { gcp_use_instance_as_host: true }
+
+    facts(agent, (result) => {
+      assert.equal(result.host, os.hostname(), 'Hostname should not be set to GCP instance ID')
+      end()
+    })
+  })
+
+  await t.test('should not be GCP id when K_SERVICE is set but utilization.gcp_use_instance_as_host is false', (t, end) => {
+    const { agent, facts } = t.nr
+
+    agent.config.utilization = { gcp_use_instance_as_host: false }
+    process.env.K_SERVICE = 'mock-service'
+
+    facts(agent, (result) => {
+      assert.equal(result.host, os.hostname(), 'Hostname should not be set to GCP instance ID')
+      end()
+    })
+  })
 })
 
 function mockIpAddresses(values) {

@@ -2,6 +2,81 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.25.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "`eventSegment.addAttribute` will not crash if null",
+          "`openai` Responses API support changed to >=v4.87.0"
+        ],
+        "features": [
+          "Instrument AWS Bedrock Converse API"
+        ]
+      }
+    },
+    {
+      "version": "12.24.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Implemented configurable attribute value size limit"
+        ]
+      }
+    },
+    {
+      "version": "12.23.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added ability to report only on entry and exit spans",
+          "Added Node.js 24 support"
+        ]
+      }
+    },
+    {
+      "version": "12.22.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed error logging for undefined tracestate header"
+        ],
+        "features": [
+          "Added `openai` v5 streaming support",
+          "Added support for `openai.responses.create` api"
+        ]
+      }
+    },
+    {
+      "version": "12.21.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Refactored getHostnameSafe to accommodate GCP",
+          "Updated openai instrumentation to work with 5.0.0+",
+          "Updated rules to work with 1.17.0 and 1.24.0 for consumer and producer span kind"
+        ],
+        "features": [
+          "Added `@google/genai` Gemini AI LLM instrumentation",
+          "Updated opentelemetry bridge to rely on configuration based transformation rules"
+        ]
+      }
+    },
+    {
+      "version": "12.20.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed common.getKeys logic",
+          "Fixed Google Cloud Run hostname issue"
+        ],
+        "features": [
+          "Added support for OTEL metrics API"
+        ]
+      }
+    },
+    {
       "version": "12.19.0",
       "changes": {
         "security": [],

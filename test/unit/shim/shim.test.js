@@ -133,8 +133,8 @@ test('Shim', async function (t) {
       await t.test(`${key} should be an array index value`, function (t) {
         const { shim } = t.nr
         assert.equal(shim[key], key === 'LAST' ? -1 : i)
+        i++
       })
-      i++
     }
   })
 
@@ -1159,6 +1159,29 @@ test('Shim', async function (t) {
         assert.equal(children.length, 1)
         assert.equal(children[0], eventSegment)
         assert.equal(eventSegment.getAttributes().count, 3)
+      })
+    })
+
+    await t.test('should not error if createSegment returns null', function (t) {
+      const { agent, shim, stream, toWrap } = t.nr
+      const wrapped = shim.record(toWrap, function () {
+        return new RecorderSpec({ name: 'test segment', stream: 'foobar' })
+      })
+
+      // Override createSegment to return null for this test
+      const originalCreateSegment = shim.createSegment
+      shim.createSegment = function () {
+        return null
+      }
+      t.after(() => {
+        shim.createSegment = originalCreateSegment
+      })
+
+      helper.runInTransaction(agent, function (tx) {
+        assert.doesNotThrow(() => {
+          wrapped()
+          stream.emit('foobar')
+        })
       })
     })
   })

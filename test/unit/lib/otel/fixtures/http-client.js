@@ -7,15 +7,28 @@
 
 const { SpanKind } = require('@opentelemetry/api')
 const createSpan = require('./span')
-
 const {
+  ATTR_HTTP_REQUEST_METHOD,
   ATTR_SERVER_ADDRESS,
-  ATTR_HTTP_METHOD
+  ATTR_SERVER_PORT,
+  ATTR_URL_PATH,
+  ATTR_URL_SCHEME,
+  ATTR_URL_QUERY,
 } = require('#agentlib/otel/constants.js')
 
-module.exports = function createHttpClientSpan({ tracer }) {
+const defaultAttributes = {
+  [ATTR_URL_SCHEME]: 'https',
+  [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
+  [ATTR_HTTP_REQUEST_METHOD]: 'GET',
+  [ATTR_SERVER_PORT]: 8080,
+  [ATTR_URL_QUERY]: 'q=test',
+  [ATTR_URL_PATH]: '/search',
+}
+
+module.exports = function createHttpClientSpan({ tracer, attributes = defaultAttributes }) {
   const span = createSpan({ name: 'test-span', kind: SpanKind.CLIENT, tracer })
-  span.setAttribute(ATTR_HTTP_METHOD, 'GET')
-  span.setAttribute(ATTR_SERVER_ADDRESS, 'newrelic.com')
+  for (const [key, value] of Object.entries(attributes)) {
+    span.setAttribute(key, value)
+  }
   return span
 }

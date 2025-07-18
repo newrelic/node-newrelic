@@ -9,29 +9,19 @@ const { SpanKind } = require('@opentelemetry/api')
 const createSpan = require('./span')
 
 const {
-  ATTR_MESSAGING_DESTINATION,
-  ATTR_MESSAGING_DESTINATION_KIND,
+  ATTR_MESSAGING_DESTINATION_NAME,
   ATTR_MESSAGING_SYSTEM,
-  MESSAGING_SYSTEM_KIND_VALUES
+  ATTR_MESSAGING_OPERATION,
 } = require('#agentlib/otel/constants.js')
 
-function createTopicProducerSpan({ tracer, name = 'test-span' }) {
+function createProducerSpan({ tracer, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.PRODUCER, tracer })
   span.setAttribute(ATTR_MESSAGING_SYSTEM, 'messaging-lib')
-  span.setAttribute(ATTR_MESSAGING_DESTINATION_KIND, MESSAGING_SYSTEM_KIND_VALUES.TOPIC)
-  span.setAttribute(ATTR_MESSAGING_DESTINATION, 'test-topic')
-  return span
-}
-
-function createQueueProducerSpan({ tracer, name = 'test-span' }) {
-  const span = createSpan({ name, kind: SpanKind.PRODUCER, tracer })
-  span.setAttribute(ATTR_MESSAGING_SYSTEM, 'messaging-lib')
-  span.setAttribute(ATTR_MESSAGING_DESTINATION_KIND, MESSAGING_SYSTEM_KIND_VALUES.QUEUE)
-  span.setAttribute(ATTR_MESSAGING_DESTINATION, 'test-queue')
+  span.setAttribute(ATTR_MESSAGING_OPERATION, 'send')
+  span.setAttribute(ATTR_MESSAGING_DESTINATION_NAME, 'test-topic')
   return span
 }
 
 module.exports = {
-  createQueueProducerSpan,
-  createTopicProducerSpan
+  createProducerSpan,
 }

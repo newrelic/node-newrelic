@@ -67,7 +67,7 @@ test('fromSegment()', async (t) => {
         segment.addSpanAttribute('host', 'my-host')
         segment.addSpanAttribute('port', 22)
 
-        const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
+        const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
         // Should have all the normal properties.
         assert.ok(span)
@@ -133,7 +133,7 @@ test('fromSegment()', async (t) => {
         res.on('end', () => {
           const tx = agent.tracer.getTransaction()
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
-          const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
+          const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
           // Should have all the normal properties.
           assert.ok(span)
@@ -240,7 +240,7 @@ test('fromSegment()', async (t) => {
       dsConn.myDbOp(longQuery, () => {
         transaction.end()
         const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
-        const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
+        const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
         // Should have all the normal properties.
         assert.ok(span)
@@ -331,7 +331,7 @@ test('fromSegment()', async (t) => {
         const spanContext = agent.tracer.getSpanContext()
         spanContext.addCustomAttribute('customKey', 'customValue')
 
-        const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
+        const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
         const serializedSpan = span.toStreamingFormat()
         const {
@@ -368,7 +368,7 @@ test('fromSegment()', async (t) => {
         spanContext.addIntrinsicAttribute('intrinsic.1', 1)
         spanContext.addIntrinsicAttribute('intrinsic.2', 2)
 
-        const span = StreamingSpanEvent.fromSegment(segment, transaction, 'parent')
+        const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
         const serializedSpan = span.toStreamingFormat()
         const { intrinsics } = serializedSpan
@@ -392,7 +392,7 @@ test('fromSegment()', async (t) => {
           const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           assert.ok(segment.name.startsWith('Truncated'))
 
-          const span = StreamingSpanEvent.fromSegment(segment, transaction)
+          const span = StreamingSpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
           assert.ok(span)
           assert.ok(span instanceof StreamingSpanEvent)
 
@@ -414,7 +414,7 @@ test('fromSegment()', async (t) => {
 
       assert.ok(segment.name.startsWith('Truncated'))
 
-      const span = StreamingSpanEvent.fromSegment(segment, transaction)
+      const span = StreamingSpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
       assert.ok(span)
       assert.ok(span instanceof StreamingSpanEvent)
 
@@ -423,4 +423,78 @@ test('fromSegment()', async (t) => {
       end()
     })
   })
+
+  await t.test('should not create spans for in-process segments when feature is disabled', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('segmentName')
+
+      const span = StreamingSpanEvent.fromSegment({ segment, transaction, inProcessSpans: false })
+      assert.ok(!span)
+      end()
+    })
+  })
+
+  await t.test('should create span for entry span when in-process spans feature is disabled', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('entrySpan')
+      transaction.baseSegment = segment
+      const span = StreamingSpanEvent.fromSegment({ segment, transaction, inProcessSpans: false })
+      assert.ok(span)
+      assert.deepEqual(span._intrinsicAttributes['nr.entryPoint'], { [BOOL_TYPE]: true })
+      assert.ok(!span._intrinsicAttributes.parentId)
+      end()
+    })
+  })
+
+  await t.test('should not update parentId for entry span when it is part of an acceptedDistributed trace', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('entrySpan')
+      transaction.baseSegment = segment
+      transaction.acceptedDistributedTrace = true
+      const parentId = 'untouchedParentId'
+      const span = StreamingSpanEvent.fromSegment({ segment, transaction, inProcessSpans: false, isRoot: true, parentId })
+      assert.ok(span)
+      assert.deepEqual(span._intrinsicAttributes['nr.entryPoint'], { [BOOL_TYPE]: true })
+      assert.deepEqual(span._intrinsicAttributes['parentId'], { [STRING_TYPE]: parentId })
+      end()
+    })
+  })
+
+  await t.test('should update parentId for exit span when it is part of an acceptedDistributed trace', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('entrySpan')
+      transaction.baseSegment = segment
+      transaction.acceptedDistributedTrace = true
+      const inProcessSegment = transaction.trace.add('inProcessSpan')
+      const exitSegment = transaction.trace.add('Datastore/operation/foo', () => {}, inProcessSegment)
+      const span = StreamingSpanEvent.fromSegment({ segment: exitSegment, transaction, inProcessSpans: false, isRoot: false, parentId: 'parentId' })
+      assert.ok(span)
+      assert.ok(!span._intrinsicAttributes['nr.entryPoint'])
+      assert.deepEqual(span._intrinsicAttributes['parentId'], { [STRING_TYPE]: segment.id })
+      end()
+    })
+  })
+
+  const exitSpans = ['Datastore/operation/test', 'External/example.com/test', 'MessageBroker/Produce/Named/test']
+  for (const exitSpan of exitSpans) {
+    await t.test(`should create span for ${exitSpan} when in-process spans feature is disabled`, (t, end) => {
+      const { agent } = t.nr
+      helper.runInTransaction(agent, (transaction) => {
+        const segment = transaction.trace.add('entrySpan')
+        transaction.baseSegment = segment
+        const inProcessSegment = transaction.trace.add('inProcessSpan')
+        const exitSegment = transaction.trace.add(exitSpan, () => {}, inProcessSegment)
+        assert.equal(exitSegment.parentId, inProcessSegment.id)
+        const span = StreamingSpanEvent.fromSegment({ segment: exitSegment, transaction, parentId: inProcessSegment.id, inProcessSpans: false })
+        assert.ok(span)
+        assert.ok(!span._intrinsicAttributes['nr.entryPoint'])
+        assert.deepEqual(span._intrinsicAttributes.parentId, { [STRING_TYPE]: segment.id })
+        end()
+      })
+    })
+  }
 })

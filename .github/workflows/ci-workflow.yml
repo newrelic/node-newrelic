@@ -5,7 +5,6 @@ on:
   pull_request:
     types:
       - edited
-      - labeled
       - opened
       - reopened
       - synchronize
@@ -50,7 +49,6 @@ jobs:
     needs:
       - should_run
     if: github.event_name == 'workflow_dispatch' ||
-      github.event.label.name == 'force-lint' ||
       (needs.should_run.outputs.javascript_changed == 'true' ||
       needs.should_run.outputs.deps_changed == 'true')
     runs-on: ubuntu-latest
@@ -98,7 +96,6 @@ jobs:
     needs:
       - should_run
     if: github.event_name == 'workflow_dispatch' ||
-      github.event.label.name == 'force-unit' ||
       (needs.should_run.outputs.javascript_changed == 'true' ||
       needs.should_run.outputs.deps_changed == 'true')
     runs-on: ubuntu-latest
@@ -106,7 +103,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -128,7 +125,6 @@ jobs:
     needs:
       - should_run
     if: github.event_name == 'workflow_dispatch' ||
-      github.event.label.name == 'force-integration' ||
       (needs.should_run.outputs.javascript_changed == 'true' ||
       needs.should_run.outputs.deps_changed == 'true')
     runs-on: ubuntu-latest
@@ -139,7 +135,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -168,7 +164,6 @@ jobs:
     needs:
       - should_run
     if: github.event_name == 'workflow_dispatch' ||
-      github.event.label.name == 'force-versioned' ||
       (needs.should_run.outputs.javascript_changed == 'true' ||
       needs.should_run.outputs.deps_changed == 'true')
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
@@ -176,7 +171,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -220,7 +215,6 @@ jobs:
     needs:
       - should_run
     if: github.event_name == 'workflow_dispatch' ||
-      github.event.label.name == 'force-versioned' ||
       (needs.should_run.outputs.javascript_changed == 'true' ||
       needs.should_run.outputs.deps_changed == 'true')
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
@@ -228,7 +222,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -251,7 +245,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v4
