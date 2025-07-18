@@ -8,10 +8,11 @@ const assert = require('node:assert')
 const test = require('node:test')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const helper = require('../../lib/agent_helper')
-const https = require('https')
+const http = require('http')
 const SpanEvent = require('../../../lib/spans/span-event')
 const DatastoreParameters = require('../../../lib/shim/specs/params/datastore')
 const { QuerySpec } = require('../../../lib/shim/specs')
+const nock = require('nock')
 
 test('#constructor() should construct an empty span event', () => {
   const attrs = {}
@@ -43,6 +44,7 @@ test('#constructor() should construct an empty span event', () => {
 
 test('fromSegment()', async (t) => {
   t.beforeEach((ctx) => {
+    nock.disableNetConnect()
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent({
       distributed_tracing: {
@@ -52,6 +54,7 @@ test('fromSegment()', async (t) => {
   })
 
   t.afterEach((ctx) => {
+    nock.enableNetConnect()
     helper.unloadAgent(ctx.nr.agent)
   })
 
@@ -132,8 +135,9 @@ test('fromSegment()', async (t) => {
     helper.runInTransaction(agent, (transaction) => {
       transaction.sampled = true
       transaction.priority = 42
+      nock('http://example.com').get('/?foo=bar').reply(200)
 
-      https.get('https://example.com?foo=bar', (res) => {
+      http.get('http://example.com?foo=bar', (res) => {
         res.resume()
         res.on('end', () => {
           const tx = agent.tracer.getTransaction()
@@ -159,7 +163,7 @@ test('fromSegment()', async (t) => {
           assert.equal(span.intrinsics.name, 'External/example.com/')
           assert.equal(span.intrinsics.timestamp, segment.timer.start)
 
-          assert.ok(span.intrinsics.duration >= 0.01 && span.intrinsics.duration <= 2)
+          assert.ok(span.intrinsics.duration > 0 && span.intrinsics.duration <= 2)
 
           // Should have type-specific intrinsics
           assert.equal(span.intrinsics.component, 'http')
@@ -169,13 +173,12 @@ test('fromSegment()', async (t) => {
           const attributes = span.attributes
 
           // Should have (most) http properties.
-          assert.equal(attributes['http.url'], 'https://example.com/')
+          assert.equal(attributes['http.url'], 'http://example.com/')
           assert.equal(attributes['server.address'], 'example.com')
-          assert.equal(attributes['server.port'], 443)
+          assert.equal(attributes['server.port'], 80)
           assert.ok(attributes['http.method'])
           assert.ok(attributes['http.request.method'])
           assert.equal(attributes['http.statusCode'], 200)
-          assert.equal(attributes['http.statusText'], 'OK')
 
           // should nullify mapped properties
           assert.ok(!attributes.library)
@@ -353,8 +356,9 @@ test('fromSegment()', async (t) => {
 
   await t.test('should handle truncated http spans', (t, end) => {
     const { agent } = t.nr
+    nock('http://www.example.com').get('/path?foo=bar').reply(200)
     helper.runInTransaction(agent, (transaction) => {
-      https.get('https://example.com?foo=bar', (res) => {
+      http.get('http://www.example.com/path?foo=bar', (res) => {
         transaction.end() // prematurely end to truncate
 
         res.resume()
