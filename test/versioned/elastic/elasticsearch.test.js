@@ -171,11 +171,9 @@ test('Elasticsearch instrumentation', async (t) => {
       })
       assert.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
-      // helper interface results in a first child of timers.setTimeout, with the second child related to the operation
-      const [firstChild, secondChild] = trace.getChildren(trace.root.id)
-      assert.ok(firstChild)
+      const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
-        secondChild.name,
+        firstChild.name,
         'Datastore/statement/ElasticSearch/any/bulk.create',
         'should record bulk operation'
       )
@@ -357,8 +355,7 @@ test('Elasticsearch instrumentation', async (t) => {
       const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
-        'timers.setTimeout',
-        'helpers, for some reason, generates a setTimeout metric first'
+        'Datastore/statement/ElasticSearch/any/msearch.create'
       )
       transaction.end()
       assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')

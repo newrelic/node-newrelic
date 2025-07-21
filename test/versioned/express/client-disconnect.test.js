@@ -51,7 +51,7 @@ test('Client Premature Disconnection', { timeout: 3000 }, (t, end) => {
         [
           'Nodejs/Middleware/Expressjs/jsonParser',
           'Expressjs/Route Path: /test',
-          ['Nodejs/Middleware/Expressjs/controller', ['timers.setTimeout']]
+          ['Nodejs/Middleware/Expressjs/controller']
         ]
       ],
       { exact: false }

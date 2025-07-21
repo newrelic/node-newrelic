@@ -124,7 +124,7 @@ test('connect', function connectTest(t, end) {
       }
       connectChildren = transaction.trace.getChildren(connectSegment.id)
 
-      assert.equal(connectChildren.length, 1, 'connect should have a two child segment')
+      assert.equal(connectChildren.length, 1, 'connect should have one child segment')
       const [dnsSegment] = connectChildren
 
       assert.equal(dnsSegment.name, 'dns.lookup', 'dns segment should have correct name')
