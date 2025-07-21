@@ -161,7 +161,7 @@ test('chat.completions.create', async (t) => {
         assertSegments(
           tx.trace,
           tx.trace.root,
-          [OPENAI.COMPLETION, `External/${host}:${port}/chat/completions`],
+          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
           { exact: false }
         )
 

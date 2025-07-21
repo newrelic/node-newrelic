@@ -78,6 +78,10 @@
  *                                  directly under test.  Only used when `exact` is true.
  * @param {object} [deps] Injected dependencies.
  * @param {object} [deps.assert] Assertion library to use.
+ * @param options
+ * @param root0
+ * @param root0.assert
+ * @param options.assert
  */
 module.exports = function assertSegments( // eslint-disable-line sonarjs/cognitive-complexity
   trace,
@@ -145,12 +149,7 @@ module.exports = function assertSegments( // eslint-disable-line sonarjs/cogniti
       const sequenceItem = expected[i]
 
       if (typeof sequenceItem === 'string') {
-        // find corresponding child in parent
-        for (let j = 0; j < children.length; j++) {
-          if (children[j].name === sequenceItem) {
-            child = children[j]
-          }
-        }
+        const child = children.find((segment) => segment.name === sequenceItem)
         assert.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
         if (typeof expected[i + 1] === 'object') {
           assertSegments(trace, child, expected[i + 1], { exact }, { assert })
