@@ -29,36 +29,41 @@ const TRACKING_METRIC = `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
 const responses = require('./mock-chat-api-responses')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common-chat-api')
 
+/**
+ * DISCLAIMER:
+ * This test suite is registering all instrumentation once and then cleaning up what is needed after each test.
+ * If you do not do it this way, undici does not play nice with our context manager, which is the default client in openai >= 5.0.0. This leads to every test,
+ * after the first one not having the appropriate context for the outgoing call to the mock server.
+ */
 test('chat.completions.create', async (t) => {
-  t.beforeEach(async (ctx) => {
-    ctx.nr = {}
-    const { host, port, server } = await createOpenAIMockServer(responses)
-    ctx.nr.host = host
-    ctx.nr.port = port
-    ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent({
-      ai_monitoring: {
-        enabled: true
-      },
-      streaming: {
-        enabled: true
-      }
-    })
-    const OpenAI = require('openai')
-    ctx.nr.client = new OpenAI({
-      apiKey: 'fake-versioned-test-key',
-      baseURL: `http://${host}:${port}`
-    })
+  const { host, port, server } = await createOpenAIMockServer(responses)
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: true
+    },
+    streaming: {
+      enabled: true
+    }
+  })
+  const OpenAI = require('openai')
+  const client = new OpenAI({
+    apiKey: 'fake-versioned-test-key',
+    baseURL: `http://${host}:${port}`
   })
 
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
-    ctx.nr.server?.close()
+  t.after(() => {
+    helper.unloadAgent(agent)
+    server?.close()
     removeModules('openai')
   })
 
+  t.afterEach(() => {
+    agent.customEventAggregator.clear()
+    agent.llm.tokenCountCallback = null
+    agent.config.ai_monitoring.streaming.enabled = true
+  })
+
   await t.test('should create span on successful chat completion create', (t, end) => {
-    const { client, agent, host, port } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const results = await client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
@@ -88,7 +93,6 @@ test('chat.completions.create', async (t) => {
   })
 
   await t.test('should increment tracking metric for each chat completion event', (t, end) => {
-    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       await client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
@@ -103,7 +107,6 @@ test('chat.completions.create', async (t) => {
   })
 
   await t.test('should create chat completion message and summary for every message sent', (t, end) => {
-    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const model = 'gpt-3.5-turbo-0613'
       const content = 'You are a mathematician.'
@@ -139,7 +142,6 @@ test('chat.completions.create', async (t) => {
 
   if (semver.gte(pkgVersion, '4.12.2')) {
     await t.test('should create span on successful chat completion stream create', (t, end) => {
-      const { client, agent, host, port } = t.nr
       helper.runInTransaction(agent, async (tx) => {
         const content = 'Streamed response'
         const stream = await client.chat.completions.create({
@@ -170,8 +172,7 @@ test('chat.completions.create', async (t) => {
       })
     })
 
-    test('should create chat completion message and summary for every message sent in stream', (t, end) => {
-      const { client, agent } = t.nr
+    await t.test('should create chat completion message and summary for every message sent in stream', (t, end) => {
       helper.runInTransaction(agent, async (tx) => {
         const content = 'Streamed response'
         const model = 'gpt-4'
@@ -220,8 +221,7 @@ test('chat.completions.create', async (t) => {
       })
     })
 
-    test('should call the tokenCountCallback in streaming', (t, end) => {
-      const { client, agent } = t.nr
+    await t.test('should call the tokenCountCallback in streaming', (t, end) => {
       const promptContent = 'Streamed response'
       const promptContent2 = 'What does 1 plus 1 equal?'
       let res = ''
@@ -270,8 +270,7 @@ test('chat.completions.create', async (t) => {
       })
     })
 
-    test('handles error in stream', (t, end) => {
-      const { client, agent } = t.nr
+    await t.test('handles error in stream', (t, end) => {
       helper.runInTransaction(agent, async (tx) => {
         const content = 'bad stream'
         const model = 'gpt-4'
@@ -299,15 +298,27 @@ test('chat.completions.create', async (t) => {
           assert.equal(events.length, 4)
           const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
           assertChatCompletionSummary({ tx, model, chatSummary, error: true })
-          assert.equal(tx.exceptions.length, 1)
-          // only asserting message and completion_id as the rest of the attrs
-          // are asserted in other tests
-          match(tx.exceptions[0], {
-            customAttributes: {
-              'error.message': /terminated|Premature close/,
-              completion_id: /\w{32}/
-            }
-          })
+          if (semver.gte(pkgVersion, '5.0.0')) {
+            assert.equal(tx.exceptions.length, 2)
+            // only asserting message and completion_id as the rest of the attrs
+            // are asserted in other tests
+            match(tx.exceptions[1], {
+              customAttributes: {
+                'error.message': /terminated|Premature close/,
+                completion_id: /\w{32}/
+              }
+            })
+          } else {
+            assert.equal(tx.exceptions.length, 1)
+            // only asserting message and completion_id as the rest of the attrs
+            // are asserted in other tests
+            match(tx.exceptions[0], {
+              customAttributes: {
+                'error.message': /terminated|Premature close/,
+                completion_id: /\w{32}/
+              }
+            })
+          }
 
           tx.end()
           end()
@@ -315,8 +326,7 @@ test('chat.completions.create', async (t) => {
       })
     })
 
-    test('should not create llm events when ai_monitoring.streaming.enabled is false', (t, end) => {
-      const { client, agent } = t.nr
+    await t.test('should not create llm events when ai_monitoring.streaming.enabled is false', (t, end) => {
       agent.config.ai_monitoring.streaming.enabled = false
       helper.runInTransaction(agent, async (tx) => {
         const content = 'Streamed response'
@@ -355,7 +365,6 @@ test('chat.completions.create', async (t) => {
     })
   } else {
     await t.test('should not instrument streams when openai < 4.12.2', (t, end) => {
-      const { client, agent, host, port } = t.nr
       helper.runInTransaction(agent, async (tx) => {
         const content = 'Streamed response'
         const stream = await client.chat.completions.create({
@@ -387,7 +396,6 @@ test('chat.completions.create', async (t) => {
   }
 
   await t.test('should not create llm events when not in a transaction', async (t) => {
-    const { client, agent } = t.nr
     await client.chat.completions.create({
       messages: [{ role: 'user', content: 'You are a mathematician.' }]
     })
@@ -397,7 +405,6 @@ test('chat.completions.create', async (t) => {
   })
 
   await t.test('auth errors should be tracked', (t, end) => {
-    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       try {
         await client.chat.completions.create({
@@ -436,7 +443,6 @@ test('chat.completions.create', async (t) => {
   })
 
   await t.test('invalid payload errors should be tracked', (t, end) => {
-    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       try {
         await client.chat.completions.create({
@@ -469,7 +475,6 @@ test('chat.completions.create', async (t) => {
   })
 
   await t.test('should add llm attribute to transaction', (t, end) => {
-    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       await client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
@@ -484,7 +489,6 @@ test('chat.completions.create', async (t) => {
   })
 
   await t.test('should record LLM custom events with attributes', (t, end) => {
-    const { client, agent } = t.nr
     const api = helper.getAgentApi()
 
     helper.runInTransaction(agent, () => {
