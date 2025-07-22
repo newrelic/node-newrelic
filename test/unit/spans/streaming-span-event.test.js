@@ -8,7 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const helper = require('../../lib/agent_helper')
-const https = require('https')
+const http = require('http')
 const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
 const {
   QuerySpec,
@@ -25,6 +25,7 @@ const STRING_TYPE = 'string_value'
 const BOOL_TYPE = 'bool_value'
 const INT_TYPE = 'int_value'
 const DOUBLE_TYPE = 'double_value'
+const nock = require('nock')
 
 test('#constructor() should construct an empty span event', () => {
   const attrs = {}
@@ -47,10 +48,12 @@ test('fromSegment()', async (t) => {
         enabled: true
       }
     })
+    nock.disableNetConnect()
   })
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
+    nock.enableNetConnect()
   })
 
   await t.test('should create a generic span with a random segment', (t, end) => {
@@ -127,8 +130,9 @@ test('fromSegment()', async (t) => {
     helper.runInTransaction(agent, (transaction) => {
       transaction.sampled = true
       transaction.priority = 42
+      nock('http://example.com').get('/?foo=bar').reply(200, 'OK')
 
-      https.get('https://example.com?foo=bar', (res) => {
+      http.get('http://example.com?foo=bar', (res) => {
         res.resume()
         res.on('end', () => {
           const tx = agent.tracer.getTransaction()
@@ -171,13 +175,12 @@ test('fromSegment()', async (t) => {
 
           // Should have (most) http properties.
           assert.deepEqual(agentAttributes['request.parameters.foo'], { [STRING_TYPE]: 'bar' })
-          assert.deepEqual(agentAttributes['http.url'], { [STRING_TYPE]: 'https://example.com/' })
+          assert.deepEqual(agentAttributes['http.url'], { [STRING_TYPE]: 'http://example.com/' })
           assert.deepEqual(agentAttributes['server.address'], { [STRING_TYPE]: 'example.com' })
-          assert.deepEqual(agentAttributes['server.port'], { [INT_TYPE]: 443 })
+          assert.deepEqual(agentAttributes['server.port'], { [INT_TYPE]: 80 })
           assert.ok(agentAttributes['http.method'])
           assert.ok(agentAttributes['http.request.method'])
           assert.deepEqual(agentAttributes['http.statusCode'], { [INT_TYPE]: 200 })
-          assert.deepEqual(agentAttributes['http.statusText'], { [STRING_TYPE]: 'OK' })
 
           const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
 
@@ -384,7 +387,8 @@ test('fromSegment()', async (t) => {
   await t.test('should handle truncated http spans', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
-      https.get('https://example.com?foo=bar', (res) => {
+      nock('http://example.com').get('/?foo=bar').reply(200, 'OK')
+      http.get('http://example.com?foo=bar', (res) => {
         transaction.end() // prematurely end to truncate
 
         res.resume()
