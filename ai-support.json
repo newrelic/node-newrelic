@@ -2,7 +2,7 @@
   {
     "kind": "gateway",
     "title": "Amazon Bedrock",
-    "preamble": "Through the `@aws-sdk/client-bedrock-runtime` module, we support:",
+    "preamble": "Through the `@aws-sdk/client-bedrock-runtime` module, we support all models (text-only) through the `Converse` API; for `InvokeModel` API, we support the following models:",
     "footnote": "Note: if a model supports streaming, we also instrument the streaming variant.",
     "models": [
       {

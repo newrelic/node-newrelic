@@ -319,7 +319,7 @@ test('responses.create', async (t) => {
       assertSegments(
         tx.trace,
         tx.trace.root,
-        [OPENAI.COMPLETION, `External/${host}:${port}/responses`],
+        [OPENAI.COMPLETION, [`External/${host}:${port}/responses`]],
         { exact: false }
       )
 

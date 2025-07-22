@@ -14,23 +14,6 @@
         "node": ">=20"
       },
       "dependencies": {
-        "fastify": ">=2.0.0 < 3"
-      },
-      "files": [
-        "add-hook.test.js",
-        "code-level-metrics-middleware.test.js",
-        "code-level-metrics-hooks.test.js",
-        "errors.test.js",
-        "fastify-2-naming.test.js",
-        "new-state-tracking.test.js"
-      ]
-    },
-
-    {
-      "engines": {
-        "node": ">=20"
-      },
-      "dependencies": {
         "fastify": "^3.0.0",
         "middie": ">=3.0.0 && <7.0.0"
       },
