@@ -161,7 +161,7 @@ test('chat.completions.create', async (t) => {
         assertSegments(
           tx.trace,
           tx.trace.root,
-          [OPENAI.COMPLETION, `External/${host}:${port}/chat/completions`],
+          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
           { exact: false }
         )
 
@@ -299,16 +299,27 @@ test('chat.completions.create', async (t) => {
           assert.equal(events.length, 4)
           const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
           assertChatCompletionSummary({ tx, model, chatSummary, error: true })
-          assert.equal(tx.exceptions.length, 1)
-          // only asserting message and completion_id as the rest of the attrs
-          // are asserted in other tests
-          match(tx.exceptions[0], {
-            customAttributes: {
-              'error.message': /terminated|Premature close/,
-              completion_id: /\w{32}/
-            }
-          })
-
+          if (semver.gte(pkgVersion, '5.0.0')) {
+            assert.equal(tx.exceptions.length, 2)
+            // only asserting message and completion_id as the rest of the attrs
+            // are asserted in other tests
+            match(tx.exceptions[1], {
+              customAttributes: {
+                'error.message': /terminated|Premature close/,
+                completion_id: /\w{32}/
+              }
+            })
+          } else {
+            assert.equal(tx.exceptions.length, 1)
+            // only asserting message and completion_id as the rest of the attrs
+            // are asserted in other tests
+            match(tx.exceptions[0], {
+              customAttributes: {
+                'error.message': /terminated|Premature close/,
+                completion_id: /\w{32}/
+              }
+            })
+          }
           tx.end()
           end()
         }
