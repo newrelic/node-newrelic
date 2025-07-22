@@ -52,6 +52,18 @@ const exampleCommit = {
   }
 }
 
+const exampleMarkdownNoSemverMajorCopy = `### v1.0.0 (2020-04-03)
+#### ⚠ BREAKING CHANGES
+
+
+* **thing:** updated Thing to prevent modifications to inputs
+
+#### Bug fixes
+
+* **thing:** updated Thing to prevent modifications to inputs ([#123](https://github.com/newrelic/node-newrelic/pull/123)), closes [1234](https://github.com/newrelic/testRepo/issues/1234)
+    * Thing no longer mutates provided inputs, but instead clones inputs before performing modifications. Thing will now always return an entirely new output
+`
+
 const exampleMarkdown = `### v1.0.0 (2020-04-03)
 #### ⚠ BREAKING CHANGES
 
@@ -202,6 +214,16 @@ test('Conventional Changelog Class', async (t) => {
       const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
       const markdown = await changelog.generateMarkdownChangelog([exampleCommit])
       assert.equal(markdown, exampleMarkdown)
+    }
+  )
+
+  await t.test(
+    'generateMarkdownChangelog - should create the new Markdown changelog entry, skip semver major copy',
+    async (t) => {
+      const { ConventionalChangelog } = t.nr
+      const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0', repo: 'testRepo' })
+      const markdown = await changelog.generateMarkdownChangelog([exampleCommit])
+      assert.equal(markdown, exampleMarkdownNoSemverMajorCopy)
     }
   )
 

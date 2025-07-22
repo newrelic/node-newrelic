@@ -206,7 +206,8 @@ class ConventionalChangelog {
         owner: self.org,
         repository: self.repo,
         isPatch: false,
-        version: self.newVersion
+        version: self.newVersion,
+        includeSemverCopy: self.repo === 'node-newrelic'
       }
 
       const markdownFormatter = conventionalChangelogWriter(context, {
