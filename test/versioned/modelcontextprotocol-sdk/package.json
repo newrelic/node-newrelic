@@ -1,0 +1,23 @@
+{
+  "name": "mcp-tests",
+  "targets": [{"name":"mcp","minAgentVersion":"12.25.0"}],
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.13.0",
+        "zod":  "^3.23.8"
+      },
+      "files": [
+        "client.test.js"
+      ]
+    }
+  ]
+}
