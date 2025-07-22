@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const logsApi = require('@opentelemetry/api-logs')
 
 const helper = require('#testlib/agent_helper.js')
-// const { removeMatchedModules } = require('#testlib/cache-buster.js')
 
 const BASE_AGENT_CONFIG = {
   opentelemetry_bridge: {
@@ -28,12 +27,6 @@ test.beforeEach(async (ctx) => {
 test.afterEach((ctx) => {
   delete process.env.OTEL_BLRP_SCHEDULE_DELAY
   helper.unloadAgent(ctx.nr.agent)
-
-  // TODO: I think we should be resetting things, but the stuff we need to reset
-  // is loaded as part of the agent and _not_ part of the instrumentation
-  // bootstrap process. So if we remove the otel modules, we end up losing
-  // things like the `OtelContext` object.
-  // removeMatchedModules(/@opentelemetry/)
 })
 
 function initAgent({ t, config = BASE_AGENT_CONFIG }) {
@@ -44,14 +37,14 @@ function initAgent({ t, config = BASE_AGENT_CONFIG }) {
   return t.nr.agent
 }
 
-test('sends logs outside of transaction', async (t) => {
+test('sends logs outside of transaction', { skip: false }, async (t) => {
   const agent = initAgent({ t })
   const { logs } = require('@opentelemetry/api-logs')
 
   const logger = logs.getLogger('testLogger')
   logger.emit({
     severityNumber: logsApi.SeverityNumber.INFO,
-    body: 'test log',
+    body: 'test log outside of transaction',
     timestamp: new Date(TS_FIXTURE),
     attributes: {
       foo: 'bar'
@@ -72,7 +65,7 @@ test('sends logs outside of transaction', async (t) => {
   assert.equal(log['entity.type'], undefined)
   assert.equal(log.hostname, undefined)
   assert.equal(log.level, 'info')
-  assert.equal(log.message, 'test log')
+  assert.equal(log.message, 'test log outside of transaction')
   assert.equal(Number.isFinite(log.timestamp), true)
   assert.equal(log.timestamp, TS_FIXTURE)
   assert.equal(log.foo, 'bar')
@@ -99,10 +92,11 @@ test('sends logs within transaction', (t, end) => {
   helper.runInTransaction(agent, tx => {
     logger.emit({
       severityNumber: logsApi.SeverityNumber.INFO,
-      body: 'test log',
+      body: 'test log in transaction',
       timestamp: new Date(TS_FIXTURE),
       attributes: {
-        foo: 'bar'
+        foo: 'bar',
+        agent
       }
     })
     assert.equal(agent.logs.length, 0, 'should not add to non-tx logs array')
@@ -138,7 +132,7 @@ test('omits logging metrics when disabled', async (t) => {
   const logger = logs.getLogger('testLogger')
   logger.emit({
     severityNumber: logsApi.SeverityNumber.INFO,
-    body: 'test log',
+    body: 'test log metrics disabled',
     timestamp: new Date(TS_FIXTURE),
     attributes: {
       foo: 'bar'
@@ -148,7 +142,7 @@ test('omits logging metrics when disabled', async (t) => {
   assert.equal(agent.logs.length, 1)
   const nrShippedLogs = agent.logs._toPayloadSync()
   const log = nrShippedLogs[0].logs[0]
-  assert.equal(log.message, 'test log')
+  assert.equal(log.message, 'test log metrics disabled')
 
   const supportMetrics = agent.metrics._metrics.unscoped
   const expectedMetricNames = [
@@ -177,7 +171,7 @@ test('does not forward logs when disabled', async (t) => {
   const logger = logs.getLogger('testLogger')
   logger.emit({
     severityNumber: logsApi.SeverityNumber.INFO,
-    body: 'test log',
+    body: 'test log no forwarding',
     timestamp: new Date(TS_FIXTURE),
     attributes: {
       foo: 'bar'
