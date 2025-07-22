@@ -28,41 +28,36 @@ const TRACKING_METRIC = `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
 const responses = require('./mock-responses-api-responses')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common-responses-api')
 
-/**
- * DISCLAIMER:
- * This test suite is registering all instrumentation once and then cleaning up what is needed after each test.
- * If you do not do it this way, undici does not play nice with our context manager, which is the default client in openai >= 5.0.0. This leads to every test,
- * after the first one not having the appropriate context for the outgoing call to the mock server.
- */
 test('responses.create', async (t) => {
-  const { host, port, server } = await createOpenAIMockServer(responses)
-  const agent = helper.instrumentMockedAgent({
-    ai_monitoring: {
-      enabled: true
-    },
-    streaming: {
-      enabled: true
-    }
-  })
-  const OpenAI = require('openai')
-  const client = new OpenAI({
-    apiKey: 'fake-versioned-test-key',
-    baseURL: `http://${host}:${port}`
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+    const { host, port, server } = await createOpenAIMockServer(responses)
+    ctx.nr.host = host
+    ctx.nr.port = port
+    ctx.nr.server = server
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      ai_monitoring: {
+        enabled: true
+      },
+      streaming: {
+        enabled: true
+      }
+    })
+    const OpenAI = require('openai')
+    ctx.nr.client = new OpenAI({
+      apiKey: 'fake-versioned-test-key',
+      baseURL: `http://${host}:${port}`
+    })
   })
 
-  t.after(() => {
-    helper.unloadAgent(agent)
-    server?.close()
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.server?.close()
     removeModules('openai')
   })
 
-  t.afterEach(() => {
-    agent.customEventAggregator.clear()
-    agent.llm.tokenCountCallback = null
-    agent.config.ai_monitoring.streaming.enabled = true
-  })
-
   await t.test('should create span on successful chat completion create', (t, end) => {
+    const { client, agent, host, port } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const results = await client.responses.create({
         input: [{ role: 'user', content: 'You are a mathematician.' }]
@@ -92,6 +87,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('should increment tracking metric for each chat completion event', (t, end) => {
+    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       await client.responses.create({
         input: [{ role: 'user', content: 'You are a mathematician.' }]
@@ -106,6 +102,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('should create chat completion message and summary for every message sent', (t, end) => {
+    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const model = 'gpt-4'
       const content = 'You are a mathematician.'
@@ -138,6 +135,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('should create chat completion message and summary when input is a single string', (t, end) => {
+    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const model = 'gpt-4'
       const content = 'You are a mathematician.'
@@ -168,6 +166,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('should not create llm events when not in a transaction', async (t) => {
+    const { client, agent } = t.nr
     await client.responses.create({
       input: [{ role: 'user', content: 'You are a mathematician.' }]
     })
@@ -177,6 +176,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('auth errors should be tracked', (t, end) => {
+    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       try {
         await client.responses.create({
@@ -215,6 +215,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('bad input error should be tracked', (t, end) => {
+    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const model = 'gpt-4'
       try {
@@ -249,6 +250,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('invalid role error should be tracked', (t, end) => {
+    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       try {
         await client.responses.create({
@@ -281,6 +283,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('should add llm attribute to transaction', (t, end) => {
+    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       await client.responses.create({
         input: [{ role: 'user', content: 'You are a mathematician.' }]
@@ -295,6 +298,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('should create span on successful responses stream create', (t, end) => {
+    const { client, agent, host, port } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const content = 'Streamed response'
       const stream = await client.responses.create({
@@ -325,6 +329,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('should create chat completion message and summary for every message sent in stream', (t, end) => {
+    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const content = 'Streamed response'
       const stream = await client.responses.create({
@@ -356,6 +361,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('should call the tokenCountCallback in streaming', (t, end) => {
+    const { client, agent } = t.nr
     const promptContent = 'Streamed response'
     const promptContent2 = 'What does 1 plus 1 equal?'
     const res = 'Test stream'
@@ -403,6 +409,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('handles error in stream', (t, end) => {
+    const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const content = 'bad stream'
       const model = 'gpt-4'
@@ -439,6 +446,7 @@ test('responses.create', async (t) => {
   })
 
   await t.test('should not create llm events when ai_monitoring.streaming.enabled is false', (t, end) => {
+    const { client, agent } = t.nr
     agent.config.ai_monitoring.streaming.enabled = false
     helper.runInTransaction(agent, async (tx) => {
       const content = 'Streamed response'
