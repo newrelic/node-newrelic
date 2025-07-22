@@ -224,7 +224,7 @@
   },
   "optionalDependencies": {
     "@newrelic/fn-inspect": "^4.4.0",
-    "@newrelic/native-metrics": "^11.1.0",
+    "@newrelic/native-metrics": "^12.0.0",
     "@prisma/prisma-fmt-wasm": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085"
   },
   "devDependencies": {
@@ -234,7 +234,7 @@
     "@matteo.collina/tspl": "^0.1.1",
     "@newrelic/eslint-config": "^0.5.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
-    "@newrelic/test-utilities": "^9.1.0",
+    "@newrelic/test-utilities": "^10.0.0",
     "@octokit/rest": "^18.0.15",
     "@slack/bolt": "^3.7.0",
     "@smithy/eventstream-codec": "^2.2.0",
