@@ -524,6 +524,11 @@ test('streaming enabled', async (t) => {
       // But, we should also get two error events: 1xLLM and 1xLangChain
       const exceptions = tx.exceptions
       for (const e of exceptions) {
+        // skip the socket error as it is not related to LLM
+        // this started occurring when openai used undici as the HTTP client
+        if (e.error.code === 'UND_ERR_SOCKET') {
+          continue
+        }
         const str = Object.prototype.toString.call(e.customAttributes)
         assert.equal(str, '[object LlmErrorMessage]')
         match(e, {
