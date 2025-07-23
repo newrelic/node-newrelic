@@ -37,7 +37,7 @@ function initAgent({ t, config = BASE_AGENT_CONFIG }) {
   return t.nr.agent
 }
 
-test('sends logs outside of transaction', { skip: false }, async (t) => {
+test('sends logs outside of transaction', async (t) => {
   const agent = initAgent({ t })
   const { logs } = require('@opentelemetry/api-logs')
 
