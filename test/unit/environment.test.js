@@ -15,7 +15,6 @@ const { spawn } = require('node:child_process')
 // environment when testing.
 delete process.env.NODE_ENV
 
-const { isSupportedVersion } = require('../lib/agent_helper')
 const environment = require('../../lib/environment')
 
 function find(settings, name) {
@@ -128,67 +127,6 @@ test('with process.config', (t) => {
   )
 })
 
-// TODO: remove tests when we drop support for node 18
-test('without process.config', { skip: isSupportedVersion('v19.0.0') }, async (t) => {
-  t.beforeEach(async (ctx) => {
-    ctx.nr.conf = { ...process.config }
-
-    /**
-     * TODO: Augmenting process.config has been deprecated in Node 16.
-     * When fully disabled we may no-longer be able to test but also may no-longer need to.
-     * https://nodejs.org/api/deprecations.html#DEP0150
-     */
-    process.config = null
-
-    ctx.nr.settings = await environment.getJSON()
-  })
-
-  t.afterEach(async (ctx) => {
-    process.config = { ...ctx.nr.conf }
-    ctx.nr.settings = await environment.getJSON()
-  })
-
-  await t.test('assertions without process.config', (t) => {
-    const { settings } = t.nr
-    assert.equal(
-      find(settings, 'npm installed?'),
-      undefined,
-      'should not know whether npm was installed with Node.js'
-    )
-    assert.equal(
-      find(settings, 'WAF build system installed?'),
-      undefined,
-      'should not know whether WAF was installed with Node.js'
-    )
-    assert.equal(
-      find(settings, 'OpenSSL support?'),
-      undefined,
-      'should not know whether OpenSSL support was compiled into Node.js'
-    )
-    assert.equal(
-      find(settings, 'Dynamically linked to OpenSSL?'),
-      undefined,
-      'Dynamically linked to OpenSSL?'
-    )
-    assert.equal(
-      find(settings, 'Dynamically linked to V8?'),
-      undefined,
-      'Dynamically linked to V8?'
-    )
-    assert.equal(
-      find(settings, 'Dynamically linked to Zlib?'),
-      undefined,
-      'Dynamically linked to Zlib?'
-    )
-    assert.equal(find(settings, 'DTrace support?'), undefined, 'DTrace support?')
-    assert.equal(
-      find(settings, 'Event Tracing for Windows (ETW) support?'),
-      undefined,
-      'Event Tracing for Windows (ETW) support?'
-    )
-  })
-})
-
 test('should have built a flattened package list', (t) => {
   const { settings } = t.nr
   const packages = find(settings, 'Packages')
@@ -221,19 +159,6 @@ test('should get correct version for dependencies', async () => {
     'valid-json': '1.2.3'
   })
 })
-
-// TODO: remove this test when we drop support for node 18
-test(
-  'should resolve refresh where deps and deps of deps are symlinked to each other',
-  { skip: isSupportedVersion('v19.0.0') },
-  async () => {
-    process.config.variables.node_prefix = path.join(__dirname, '../lib/example-deps')
-    const data = await environment.getJSON()
-    const pkgs = find(data, 'Dependencies')
-    const customPkgs = pkgs.filter((pkg) => pkg.includes('custom-pkg'))
-    assert.equal(customPkgs.length, 3)
-  }
-)
 
 test('should not crash when given a file in NODE_PATH', (t, end) => {
   const env = {
