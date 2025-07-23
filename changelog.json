@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.0.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Dropped support for Node.js 18",
+          "Updated min supported version for `fastify` to 3.0.0, `pino` to 8.0.0, and `koa-router` to 12.0.0"
+        ]
+      }
+    },
+    {
       "version": "12.25.0",
       "changes": {
         "security": [],
