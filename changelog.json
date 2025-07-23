@@ -8,7 +8,7 @@
         "bugfixes": [],
         "features": [
           "Dropped support for Node.js 18",
-          "Updated min supported version for `fastify`, `pino`, and `koa-router`"
+          "Updated min supported version for `fastify` to 3.0.0, `pino` to 8.0.0, and `koa-router` to 12.0.0"
         ]
       }
     },

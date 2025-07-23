@@ -4,7 +4,7 @@
 This version of the Node.js agent is a SemVer MAJOR update and contains the following breaking changes. MAJOR versions may drop support for language runtimes that have reached End-of-Life according to the maintainer. Additionally, MAJOR versions may drop support for and remove certain instrumentation. For more details on these changes please see the [migration guide](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/update-nodejs-agent/).
 
 * Dropped support for Node.js 18
-* Updated min supported version for `fastify`, `pino`, and `koa-router`
+* Updated min supported version for `fastify` to 3.0.0, `pino` to 8.0.0, and `koa-router` to 12.0.0
 
 #### Features
 
@@ -13,8 +13,6 @@ This version of the Node.js agent is a SemVer MAJOR update and contains the foll
 
 #### Documentation
 
-* Removed entry/exit spans PR from 12.23.0, this is an experimental feature designed for 1 customer ([#3224](https://github.com/newrelic/node-newrelic/pull/3224)) ([e4916d8](https://github.com/newrelic/node-newrelic/commit/e4916d837e1bdcca1044e0df60dc9f763f9b6c67))
-* Restored removal of enty/exit spans feature ([#3225](https://github.com/newrelic/node-newrelic/pull/3225)) ([41deb7e](https://github.com/newrelic/node-newrelic/commit/41deb7ec43b67780804b8f7bbf06c2df607965c0))
 * Updated ai-support.json with AWS Bedrock apis ([#3230](https://github.com/newrelic/node-newrelic/pull/3230)) ([e1ff0d3](https://github.com/newrelic/node-newrelic/commit/e1ff0d3e2b1d3481f0c85e5c0b7d32bacae332ab))
 * Updated compatibility report ([#3237](https://github.com/newrelic/node-newrelic/pull/3237)) ([dc85e4e](https://github.com/newrelic/node-newrelic/commit/dc85e4e196f67038492deb5c13ecf76cd8161025))
 
