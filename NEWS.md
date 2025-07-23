@@ -13,7 +13,7 @@ This version of the Node.js agent is a SemVer MAJOR update and contains the foll
 
 #### Documentation
 
-* Updated ai-support.json with AWS Bedrock apis ([#3230](https://github.com/newrelic/node-newrelic/pull/3230)) ([e1ff0d3](https://github.com/newrelic/node-newrelic/commit/e1ff0d3e2b1d3481f0c85e5c0b7d32bacae332ab))
+* Updated AI Monitoring compatibility docs with new AWS Bedrock APIs ([#3230](https://github.com/newrelic/node-newrelic/pull/3230)) ([e1ff0d3](https://github.com/newrelic/node-newrelic/commit/e1ff0d3e2b1d3481f0c85e5c0b7d32bacae332ab))
 * Updated compatibility report ([#3237](https://github.com/newrelic/node-newrelic/pull/3237)) ([dc85e4e](https://github.com/newrelic/node-newrelic/commit/dc85e4e196f67038492deb5c13ecf76cd8161025))
 
 
