@@ -15,6 +15,11 @@ test('otel decorated logs do not overwrite NR data', (t, end) => {
   process.env.OTEL_BLRP_SCHEDULE_DELAY = 1_000 // Interval for processor to ship logs
 
   const agent = helper.instrumentMockedAgent({
+    instrumentation: {
+      pino: {
+        enabled: false
+      }
+    },
     opentelemetry_bridge: {
       enabled: true,
       logs: { enabled: true }
@@ -38,10 +43,10 @@ test('otel decorated logs do not overwrite NR data', (t, end) => {
   })
 
   helper.runInTransaction(agent, tx => {
-    logger.info('hello world')
+    logger.info({ foo: 'bar' }, 'hello world')
 
     assert.equal(agent.logs.length, 0)
-    assert.equal(tx.logs.storage.length, 1)
+    assert.equal(tx.logs.storage.length, 1, 'should not get a duplicate log')
 
     const span = tx.trace.root
     tx.end()
@@ -50,8 +55,8 @@ test('otel decorated logs do not overwrite NR data', (t, end) => {
     assert.equal(txLogs.length, 1)
 
     const log = txLogs[0]
-    assert.equal(log['trace.id'], tx.traceId)
-    assert.equal(log['span.id'], span.id)
+    assert.equal(log['trace.id'], tx.traceId, 'trace id should be NR id')
+    assert.equal(log['span.id'], span.id, 'span id should be NR id')
     assert.equal(log.foo, 'bar')
 
     end()
