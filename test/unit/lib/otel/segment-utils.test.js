@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const sinon = require('sinon')
 const helper = require('#testlib/agent_helper.js')
 const hashes = require('#agentlib/util/hashes.js')
-const { propagateTraceContext } = require('#agentlib/otel/segments/utils.js')
+const { propagateTraceContext } = require('#agentlib/otel/traces/segments/utils.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
