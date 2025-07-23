@@ -1,3 +1,39 @@
+### v13.0.0 (2025-07-23)
+#### ⚠ BREAKING CHANGES
+
+This version of the Node.js agent is a SemVer MAJOR update and contains the following breaking changes. MAJOR versions may drop support for language runtimes that have reached End-of-Life according to the maintainer. Additionally, MAJOR versions may drop support for and remove certain instrumentation. For more details on these changes please see the [migration guide](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/update-nodejs-agent/).
+
+* Dropped support for Node.js 18
+* Updated min supported version for `fastify`, `pino`, and `koa-router`
+
+#### Features
+
+* Dropped support for Node.js 18 ([#3097](https://github.com/newrelic/node-newrelic/pull/3097)) ([cb7c080](https://github.com/newrelic/node-newrelic/commit/cb7c080aadb0afbf6a894c1abbd1c77bd6b11e31))
+* Updated min supported version for `fastify`, `pino`, and `koa-router` ([#3108](https://github.com/newrelic/node-newrelic/pull/3108)) ([ae9e21d](https://github.com/newrelic/node-newrelic/commit/ae9e21d94896e5c540927477b91113b5a38dc31c))
+
+#### Documentation
+
+* removed entry/exit spans PR from 12.23.0, this is an experimental feature designed for 1 customer ([#3224](https://github.com/newrelic/node-newrelic/pull/3224)) ([e4916d8](https://github.com/newrelic/node-newrelic/commit/e4916d837e1bdcca1044e0df60dc9f763f9b6c67))
+* restore removal of enty/exit spans feature ([#3225](https://github.com/newrelic/node-newrelic/pull/3225)) ([41deb7e](https://github.com/newrelic/node-newrelic/commit/41deb7ec43b67780804b8f7bbf06c2df607965c0))
+* Update ai-support.json with AWS Bedrock apis ([#3230](https://github.com/newrelic/node-newrelic/pull/3230)) ([e1ff0d3](https://github.com/newrelic/node-newrelic/commit/e1ff0d3e2b1d3481f0c85e5c0b7d32bacae332ab))
+    * Co-authored-by: James Sumners <jsumners@newrelic.com>
+* Updated compatibility report ([#3237](https://github.com/newrelic/node-newrelic/pull/3237)) ([dc85e4e](https://github.com/newrelic/node-newrelic/commit/dc85e4e196f67038492deb5c13ecf76cd8161025))
+    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Replaced `openAIApiKey` with `apiKey` ([#3233](https://github.com/newrelic/node-newrelic/pull/3233)) ([4f04db0](https://github.com/newrelic/node-newrelic/commit/4f04db07f0f1237898b88e290c017b5c98d75fee))
+
+#### Tests
+
+* Fixed assertSegments to insert all expected segments ([#3239](https://github.com/newrelic/node-newrelic/pull/3239)) ([de183fb](https://github.com/newrelic/node-newrelic/commit/de183fbe608fbf6fb97ad3508f506957b784d868))
+* Updated tests to mock outgoing calls to avoid issues in CI ([#3234](https://github.com/newrelic/node-newrelic/pull/3234)) ([66694c6](https://github.com/newrelic/node-newrelic/commit/66694c6885cd384967d0402bf6a2cfe6910f3d95))
+
+#### Continuous integration
+
+* Updated prepare release to exclude semver major copy for repos other than `node-newrelic` ([#3242](https://github.com/newrelic/node-newrelic/pull/3242)) ([82d9689](https://github.com/newrelic/node-newrelic/commit/82d968921b5fa6e4e7b3961285237e60a69b4dee))
+* Updated release prep to add copy around breaking changes ([#3199](https://github.com/newrelic/node-newrelic/pull/3199)) ([ca1131c](https://github.com/newrelic/node-newrelic/commit/ca1131cb3b2cea27b91a7b76ddbe39484bf9e032))
+
 ### v12.25.0 (2025-07-09)
 
 #### Features
