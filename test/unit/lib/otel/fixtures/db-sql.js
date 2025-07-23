@@ -18,7 +18,7 @@ const {
   ATTR_DB_STATEMENT,
   ATTR_DB_SYSTEM,
   DB_SYSTEM_VALUES
-} = require('#agentlib/otel/constants.js')
+} = require('#agentlib/otel/traces/constants.js')
 
 function createDbClientSpan({ tracer, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.CLIENT, tracer })
