@@ -18,7 +18,7 @@ const {
 } = require('./common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const createOpenAIMockServer = require('../openai/mock-server')
-const mockResponses = require('../openai/mock-responses')
+const mockResponses = require('../openai/mock-chat-api-responses')
 const helper = require('../../lib/agent_helper')
 
 const config = {
@@ -44,7 +44,7 @@ async function beforeEach({ enabled, ctx }) {
 
   ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} response']])
   ctx.nr.model = new ChatOpenAI({
-    openAIApiKey: 'fake-key',
+    apiKey: 'fake-key',
     maxRetries: 0,
     configuration: {
       baseURL: `http://${host}:${port}`
@@ -524,11 +524,16 @@ test('streaming enabled', async (t) => {
       // But, we should also get two error events: 1xLLM and 1xLangChain
       const exceptions = tx.exceptions
       for (const e of exceptions) {
+        // skip the socket error as it is not related to LLM
+        // this started occurring when openai used undici as the HTTP client
+        if (e.error.code === 'UND_ERR_SOCKET') {
+          continue
+        }
         const str = Object.prototype.toString.call(e.customAttributes)
         assert.equal(str, '[object LlmErrorMessage]')
         match(e, {
           customAttributes: {
-            'error.message': 'Premature close',
+            'error.message': /(?:Premature close)|(?:terminated)/,
             completion_id: /\w{32}/
           }
         })

@@ -1,3 +1,160 @@
+### v12.25.0 (2025-07-09)
+
+#### Features
+
+* Instrument AWS Bedrock Converse API ([#3191](https://github.com/newrelic/node-newrelic/pull/3191)) ([16ac684](https://github.com/newrelic/node-newrelic/commit/16ac6845a82506bbdd0e51f3f9a6d05ac8016246))
+
+#### Bug fixes
+
+* `eventSegment.addAttribute` will not crash if null ([#3215](https://github.com/newrelic/node-newrelic/pull/3215)) ([8955f37](https://github.com/newrelic/node-newrelic/commit/8955f3737e686b4bf6beab2d4e53a1f5eb221166))
+* `openai` Responses API support changed to >=v4.87.0 ([#3219](https://github.com/newrelic/node-newrelic/pull/3219)) ([19c0c70](https://github.com/newrelic/node-newrelic/commit/19c0c7011c8c877098c5a57063354f01f5f83295))
+
+#### Documentation
+
+* Updated compatibility report ([#3220](https://github.com/newrelic/node-newrelic/pull/3220)) ([b4350c7](https://github.com/newrelic/node-newrelic/commit/b4350c7e3a718e47d066c5c2c1f4f5f20f43e52c))
+
+#### Miscellaneous chores
+
+* Converted .proto to .json for bundling ([#3212](https://github.com/newrelic/node-newrelic/pull/3212)) ([1e208d4](https://github.com/newrelic/node-newrelic/commit/1e208d43acc1811674126b6aa987c895178f4fc3))
+
+### v12.24.0 (2025-07-07)
+
+#### Features
+
+* Implemented configurable attribute value size limit ([#3206](https://github.com/newrelic/node-newrelic/pull/3206)) ([08a6eca](https://github.com/newrelic/node-newrelic/commit/08a6eca7cd35811f5bcb4e6c13264eac156b302f))
+
+#### Documentation
+
+* Updated compatibility report ([#3190](https://github.com/newrelic/node-newrelic/pull/3190)) ([72c492c](https://github.com/newrelic/node-newrelic/commit/72c492cf78b6cc52791604ac354e34718c8ae926))
+
+#### Miscellaneous chores
+
+* Rename GCP ID config flag ([#3205](https://github.com/newrelic/node-newrelic/pull/3205)) ([8446f29](https://github.com/newrelic/node-newrelic/commit/8446f29fc6ed469d663e5634540a4afe4932765b))
+
+### v12.23.0 (2025-06-30)
+
+#### Features
+
+* Added ability to report only on entry and exit spans ([#3184](https://github.com/newrelic/node-newrelic/pull/3184)) ([1f909d3](https://github.com/newrelic/node-newrelic/commit/1f909d389f790733c8787a9db8b0ee71c26bb5ed))
+* Added Node.js 24 support ([#3080](https://github.com/newrelic/node-newrelic/pull/3080)) ([a538c2a](https://github.com/newrelic/node-newrelic/commit/a538c2a5e23b96be40fa3c014e60b912f695423e))
+
+#### Documentation
+
+* Updated compatibility report ([#3186](https://github.com/newrelic/node-newrelic/pull/3186)) ([5498c15](https://github.com/newrelic/node-newrelic/commit/5498c15bb6cf3329fe50595da46ab4f2b1385170))
+
+#### Miscellaneous chores
+
+* Fix issues on Node 24 ([#3181](https://github.com/newrelic/node-newrelic/pull/3181)) ([24832df](https://github.com/newrelic/node-newrelic/commit/24832df2984df960a4e44375525a8127a00a637c))
+* Removed force labels on main CI workflow ([#3183](https://github.com/newrelic/node-newrelic/pull/3183)) ([3aaee17](https://github.com/newrelic/node-newrelic/commit/3aaee17586f817ae1a2ab0573570a740bd6397ef))
+* Updated undici tests to unblock CI ([#3185](https://github.com/newrelic/node-newrelic/pull/3185)) ([08261eb](https://github.com/newrelic/node-newrelic/commit/08261ebcdbafdb625a451f4ccec9b0cba7641cc2))
+
+#### Continuous integration
+
+* Fixed the name of todo colum in add to board reusable workflow ([#3178](https://github.com/newrelic/node-newrelic/pull/3178)) ([f216e0c](https://github.com/newrelic/node-newrelic/commit/f216e0c48adf0291bfa38b3edbb04c9dcc96f92c))
+
+### v12.22.0 (2025-06-24)
+
+#### Features
+
+* Added `openai` v5 streaming support ([#3148](https://github.com/newrelic/node-newrelic/pull/3148)) ([6e90d41](https://github.com/newrelic/node-newrelic/commit/6e90d41756929bf69b82e190dc39792f97ec6d92))
+* Added support for `openai.responses.create` api ([#3139](https://github.com/newrelic/node-newrelic/pull/3139)) ([a1204b2](https://github.com/newrelic/node-newrelic/commit/a1204b2484f3307eac74e7a370be2fc38061c358))
+
+#### Bug fixes
+
+* Fixed error logging for undefined tracestate header ([#3170](https://github.com/newrelic/node-newrelic/pull/3170)) ([3c915f5](https://github.com/newrelic/node-newrelic/commit/3c915f5a631b609daa6b87f3018e458945077f65))
+
+#### Code refactoring
+
+* Updated transformation rules to remove the bespoke rule to appease `@google-cloud/pubsub` < 5.1.0 ([#3151](https://github.com/newrelic/node-newrelic/pull/3151)) ([2d9b4b4](https://github.com/newrelic/node-newrelic/commit/2d9b4b4642e856622175adcfd2e31fa4cdfa7a3a))
+
+#### Documentation
+
+* Gemini compatibility ([#3134](https://github.com/newrelic/node-newrelic/pull/3134)) ([bbdc531](https://github.com/newrelic/node-newrelic/commit/bbdc531ac59aad7b53f1a98306b6857927b87237))
+* Updated compatibility report ([#3171](https://github.com/newrelic/node-newrelic/pull/3171)) ([f3361e4](https://github.com/newrelic/node-newrelic/commit/f3361e421d67a0015719c3ae91bed64e5d38f317))
+
+#### Miscellaneous chores
+
+* Added logging of used New Relic environment variables ([#3145](https://github.com/newrelic/node-newrelic/pull/3145)) ([1a9d9f5](https://github.com/newrelic/node-newrelic/commit/1a9d9f53ddce7f373a7ff868b363feacf10e3bd8))
+* Added supportability metrics to OTEL metrics API ([#3164](https://github.com/newrelic/node-newrelic/pull/3164)) ([5312db0](https://github.com/newrelic/node-newrelic/commit/5312db0f7c0b4260dd39691e246625380ea2ed12))
+* Fixed formatting in Slack PR titles ([#3167](https://github.com/newrelic/node-newrelic/pull/3167)) ([847859f](https://github.com/newrelic/node-newrelic/commit/847859f8ece852d4fa511039d2131573d4b1392b))
+* Improved output of pending prs script ([#3160](https://github.com/newrelic/node-newrelic/pull/3160)) ([9bafd77](https://github.com/newrelic/node-newrelic/commit/9bafd7758fc63d7fb5106fe0a28aaa5a626bdf3d))
+* Improved setup of OpenTelemetry metrics API ([#3138](https://github.com/newrelic/node-newrelic/pull/3138)) ([e91592d](https://github.com/newrelic/node-newrelic/commit/e91592d8365a3e2543228526d6959751da7ea5aa))
+* Pinned google/genai to <1.5.0 ([#3154](https://github.com/newrelic/node-newrelic/pull/3154)) ([04b9bde](https://github.com/newrelic/node-newrelic/commit/04b9bdef417d6ce9e9148c9489bbfc28081d5e84))
+* Removed discontinued Bedrock models ([#3158](https://github.com/newrelic/node-newrelic/pull/3158)) ([2c79a31](https://github.com/newrelic/node-newrelic/commit/2c79a312daf31f51f8a270facf1c3a125700e987))
+* Removed usage of `shim.argsToArray` in favor of rest parameters ([#3141](https://github.com/newrelic/node-newrelic/pull/3141)) ([b144d71](https://github.com/newrelic/node-newrelic/commit/b144d712f6e75265dc4be6f82a2fc3977ac1c640))
+* Tweaked nestjs test manifest ([#3152](https://github.com/newrelic/node-newrelic/pull/3152)) ([51b82aa](https://github.com/newrelic/node-newrelic/commit/51b82aa28279e0d5ac8be5f4e6a4274532c76a22))
+
+#### Tests
+
+* Added JSDoc annotation for benchmark interface ([#3127](https://github.com/newrelic/node-newrelic/pull/3127)) ([77e7e0a](https://github.com/newrelic/node-newrelic/commit/77e7e0a27f719ce14d31636e46600ec7ff881b13))
+* fixed test assertion for langchain openai ([#3169](https://github.com/newrelic/node-newrelic/pull/3169)) ([29ec912](https://github.com/newrelic/node-newrelic/commit/29ec9122fdf9347875b884efa6f6fba9cb32303e))
+* Skips running nest 11+ on node 18 due to dropping support ([#3149](https://github.com/newrelic/node-newrelic/pull/3149)) ([961975b](https://github.com/newrelic/node-newrelic/commit/961975baeb74e46c0e60d96cbd49fb421acd0dfd))
+* unpinned google genai tests ([#3168](https://github.com/newrelic/node-newrelic/pull/3168)) ([cfa7114](https://github.com/newrelic/node-newrelic/commit/cfa71142ba7fb9861a1e7ab835276e7c651b9993))
+
+### v12.21.0 (2025-06-04)
+
+#### Features
+
+* Added `@google/genai` Gemini AI LLM instrumentation ([#3119](https://github.com/newrelic/node-newrelic/pull/3119)) ([7f28a29](https://github.com/newrelic/node-newrelic/commit/7f28a293fbd623464ed1f3f809de59eaea0ff367))
+* Updated opentelemetry bridge to rely on configuration based transformation rules ([#3125](https://github.com/newrelic/node-newrelic/pull/3125)) ([ad116d2](https://github.com/newrelic/node-newrelic/commit/ad116d2aa49818c2824bca606a22c48abecf9580))
+
+#### Bug fixes
+
+* Refactored getHostnameSafe to accommodate GCP ([#3132](https://github.com/newrelic/node-newrelic/pull/3132)) ([f1eea8d](https://github.com/newrelic/node-newrelic/commit/f1eea8d076586cd0b6c4d671c261deefe5e0f027))
+* Updated openai instrumentation to work with 5.0.0+ ([#3129](https://github.com/newrelic/node-newrelic/pull/3129)) ([09146a9](https://github.com/newrelic/node-newrelic/commit/09146a9d550c0cdbb23ec54325be6f8343db8b78))
+* Updated rules to work with 1.17.0 and 1.24.0 for consumer and producer span kind ([#3128](https://github.com/newrelic/node-newrelic/pull/3128)) ([686c747](https://github.com/newrelic/node-newrelic/commit/686c747cedc2582061608c20402f11912092d5b5))
+
+#### Documentation
+
+* Updated compatibility report ([#3124](https://github.com/newrelic/node-newrelic/pull/3124)) ([c51d45f](https://github.com/newrelic/node-newrelic/commit/c51d45f4fc3c4fd56bdaa80c1028a83c7f4aadd2)) ([#3117](https://github.com/newrelic/node-newrelic/pull/3117)) ([084e599](https://github.com/newrelic/node-newrelic/commit/084e599428ac9c21e6991e27b5c154db2830ce17))
+
+#### Miscellaneous chores
+
+* Added preliminary otel configuration ([#3121](https://github.com/newrelic/node-newrelic/pull/3121)) ([664ee4a](https://github.com/newrelic/node-newrelic/commit/664ee4ae956d9cc6ebc6b68ad79a47948510422f))
+
+### v12.20.0 (2025-05-27)
+
+#### Features
+
+* Added support for OTEL metrics API ([#3109](https://github.com/newrelic/node-newrelic/pull/3109)) ([4a57721](https://github.com/newrelic/node-newrelic/commit/4a5772142817afd7ffda0659bad5c9328263fbd0))
+
+#### Bug fixes
+
+* Fixed common.getKeys logic ([#3114](https://github.com/newrelic/node-newrelic/pull/3114)) ([01d4fa5](https://github.com/newrelic/node-newrelic/commit/01d4fa586e0bc9d9eefdbc416d94f8e4b2ad6504))
+* Fixed Google Cloud Run hostname issue ([#3111](https://github.com/newrelic/node-newrelic/pull/3111)) ([e233fb7](https://github.com/newrelic/node-newrelic/commit/e233fb722760a7683a78145d2953d40b22a27f3a))
+
+#### Documentation
+
+* Updated compatibility report ([#3106](https://github.com/newrelic/node-newrelic/pull/3106)) ([3c47406](https://github.com/newrelic/node-newrelic/commit/3c47406257ee76d47a878bb71bce902e11211e3a))
+
+#### Miscellaneous chores
+
+* Added event source type to  txn name for Lambda APM Mode ([#3110](https://github.com/newrelic/node-newrelic/pull/3110)) ([ddc2e2a](https://github.com/newrelic/node-newrelic/commit/ddc2e2ad962d72c0dd99f0c16436e7f64e23dce0))
+
+### v12.19.0 (2025-05-20)
+
+#### Features
+
+* Added Azure Function HTTP streaming support ([#3070](https://github.com/newrelic/node-newrelic/pull/3070)) ([9865e1c](https://github.com/newrelic/node-newrelic/commit/9865e1c4d47c2a41fef20f83eb810eee8559bea2))
+
+#### Code refactoring
+
+* Added check to only set a FakeSpan if `transaction.agent.otelSpanKey` exists ([#3071](https://github.com/newrelic/node-newrelic/pull/3071)) ([b0c1ac1](https://github.com/newrelic/node-newrelic/commit/b0c1ac141be17e4aa1d845a810e60743dc08863d))
+
+#### Documentation
+
+* Updated compatibility report ([#3074](https://github.com/newrelic/node-newrelic/pull/3074)) ([7dc9aad](https://github.com/newrelic/node-newrelic/commit/7dc9aad20a1cf201de9dd946913daab8e3d23e54))
+
+#### Miscellaneous chores
+
+* Fixed `redis` legacy test suite ([#3077](https://github.com/newrelic/node-newrelic/pull/3077)) ([ec39925](https://github.com/newrelic/node-newrelic/commit/ec399254d277e36e1120dcf43542819f1ce8d475))
+* Updated security agent ([#3098](https://github.com/newrelic/node-newrelic/pull/3098)) ([48ed8cb](https://github.com/newrelic/node-newrelic/commit/48ed8cb53f5331966bb39065f1b157754a51414e))
+
+
+#### Tests
+
+* Added cross agent otel bridge tests ([#3057](https://github.com/newrelic/node-newrelic/pull/3057)) ([1526bed](https://github.com/newrelic/node-newrelic/commit/1526bed9cf0f99481cf26ded2ebd43a0fcd720ae))
+
 ### v12.18.2 (2025-04-30)
 
 #### Bug fixes

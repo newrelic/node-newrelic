@@ -68,17 +68,16 @@ function handler(req, res) {
   req.on('end', () => {
     const payload = JSON.parse(data.toString('utf8'))
 
+    if (req.url.includes('converse')) {
+      handleConverse(payload, res)
+      return
+    }
+
     // Available  model identifiers are listed at:
     // https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     const [, model] = /model\/(.+)\/invoke/.exec(req.url)
     let response
     switch (decodeURIComponent(model)) {
-      case 'ai21.j2-mid-v1':
-      case 'ai21.j2-ultra-v1': {
-        response = responses.ai21.get(payload.prompt)
-        break
-      }
-
       case 'amazon.titan-text-express-v1':
       case 'amazon.titan-embed-text-v1': {
         response = responses.amazon.get(payload.inputText)
@@ -86,19 +85,15 @@ function handler(req, res) {
       }
 
       // v1 seems to be the same as v2, just with less helpful responses.
-      case 'anthropic.claude-v1':
       case 'anthropic.claude-instant-v1':
       case 'anthropic.claude-v2':
       case 'anthropic.claude-v2:1':
-      case 'us.anthropic.claude-v1':
       case 'us.anthropic.claude-instant-v1':
       case 'us.anthropic.claude-v2':
       case 'us.anthropic.claude-v2:1':
-      case 'eu.anthropic.claude-v1':
       case 'eu.anthropic.claude-instant-v1':
       case 'eu.anthropic.claude-v2':
       case 'eu.anthropic.claude-v2:1':
-      case 'apac.anthropic.claude-v1':
       case 'apac.anthropic.claude-instant-v1':
       case 'apac.anthropic.claude-v2':
       case 'apac.anthropic.claude-v2:1':{
@@ -143,9 +138,6 @@ function handler(req, res) {
         break
       }
 
-      // llama3 responses are identical, just return llama2 data
-      case 'meta.llama2-13b-chat-v1':
-      case 'meta.llama2-70b-chat-v1':
       case 'meta.llama3-8b-instruct-v1:0':
       case 'meta.llama3-70b-instruct-v1:0': {
         response = responses.llama.get(payload.prompt)
@@ -187,6 +179,45 @@ function handler(req, res) {
 
     res.end(JSON.stringify(response.body))
   })
+}
+
+function handleConverse(payload, res) {
+  const prompt = payload.messages?.[0]?.content?.[0]?.text
+  const response = responses.converse.get(prompt)
+
+  res.statusCode = response.statusCode
+  for (const [key, value] of Object.entries(response.headers)) {
+    res.setHeader(key, value)
+  }
+
+  if (response.headers['content-type'].endsWith('amazon.eventstream') === true) {
+    // The stream encoding for Converse API is a bit simpler tha
+    // what `encodeChunks` does.
+    const encodedChunks = []
+    const codec = new EventStreamCodec(toUtf8, fromUtf8)
+
+    for (const chunk of response.chunks) {
+      const bodyBuffer = Buffer.from(JSON.stringify(chunk.body))
+      const toEncode = {
+        headers: chunk.headers,
+        body: new Uint8Array(bodyBuffer, 0, bodyBuffer.byteLength)
+      }
+      encodedChunks.push(codec.encode(toEncode))
+    }
+    const stream = new Readable({
+      read() {
+        if (encodedChunks.length > 0) {
+          this.push(encodedChunks.shift())
+        } else {
+          this.push(null)
+        }
+      }
+    }).pause()
+    stream.pipe(res)
+    return
+  }
+
+  res.end(JSON.stringify(response.body))
 }
 
 /**

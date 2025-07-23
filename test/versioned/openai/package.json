@@ -19,6 +19,17 @@
         "embeddings.test.js",
         "feedback-messages.test.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "openai": ">=4.87.0"
+      },
+      "files": [
+        "chat-completions-res-api.test.js"
+      ]
     }
   ]
 }

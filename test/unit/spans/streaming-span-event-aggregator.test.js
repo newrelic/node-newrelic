@@ -10,6 +10,13 @@ const sinon = require('sinon')
 
 const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
 const agent = {
+  config: {
+    distributed_tracing: {
+      in_process_spans: {
+        enbabled: true
+      }
+    }
+  },
   collector: {},
   metrics: {},
   harvester: { add: sinon.stub() }

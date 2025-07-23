@@ -24,6 +24,8 @@ on:
   pull_request:
     branches:
       - main
+    types:
+      - labeled
 
 env:
   # Enable versioned runner quiet mode to make CI output easier to read:
@@ -56,6 +58,7 @@ jobs:
     needs: [should_run]
     if: github.event_name == 'workflow_dispatch' ||
       github.event_name == 'schedule' ||
+      github.event.label.name == 'force-security' ||
       needs.should_run.outputs.sec_agent_did_change == 'true'
 
     runs-on: ${{ vars.NR_RUNNER || 'ubuntu-latest' }}
@@ -63,7 +66,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
     - uses: actions/checkout@v4

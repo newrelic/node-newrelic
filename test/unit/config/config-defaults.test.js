@@ -86,6 +86,10 @@ test('with default properties', async (t) => {
     assert.equal(configuration.trusted_account_key, null)
   })
 
+  await t.test('should have the default attribute value_size_limit setting', () => {
+    assert.equal(configuration.attributes.value_size_limit, 256)
+  })
+
   await t.test('should have the default excluded request attributes', () => {
     assert.deepStrictEqual(configuration.attributes.exclude, [])
   })
@@ -323,6 +327,15 @@ test('with default properties', async (t) => {
   await t.test('remote parent sampling should default to baseline', () => {
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
+  })
+
+  await t.test('opentelemetry', () => {
+    const otel = configuration.opentelemetry_bridge
+    assert.equal(otel.enabled, false)
+    assert.equal(otel.traces.enabled, false)
+    assert.equal(otel.metrics.enabled, false)
+    assert.equal(otel.metrics.exportInterval, 60_000)
+    assert.equal(otel.metrics.exportTimeout, 30_000)
   })
 })
 

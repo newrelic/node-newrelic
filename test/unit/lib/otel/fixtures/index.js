@@ -5,28 +5,28 @@
 
 'use strict'
 const {
+  createDbSpan,
   createDbClientSpan,
-  createDbStatementSpan,
   createMemcachedDbSpan,
   createMongoDbSpan,
   createRedisDbSpan
 } = require('./db-sql')
 const createSpan = require('./span')
 const createHttpClientSpan = require('./http-client')
-const { createRpcServerSpan, createHttpServerSpan, createBaseHttpSpan } = require('./server')
-const { createQueueProducerSpan, createTopicProducerSpan } = require('./producer')
+const { createRpcServerSpan, createHttpServerSpan } = require('./server')
+const { createProducerSpan } = require('./producer')
+const { createConsumerSpan } = require('./consumer')
 
 module.exports = {
-  createBaseHttpSpan,
+  createConsumerSpan,
+  createDbSpan,
   createDbClientSpan,
-  createDbStatementSpan,
   createHttpClientSpan,
   createHttpServerSpan,
   createMemcachedDbSpan,
   createMongoDbSpan,
-  createQueueProducerSpan,
   createRedisDbSpan,
   createRpcServerSpan,
   createSpan,
-  createTopicProducerSpan
+  createProducerSpan
 }

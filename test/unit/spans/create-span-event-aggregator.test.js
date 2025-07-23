@@ -22,6 +22,13 @@ const metricsStub = {
 const collectorStub = sinon.stub()
 const harvesterStub = { add: sinon.stub() }
 const agent = {
+  config: {
+    distributed_tracing: {
+      in_process_spans: {
+        enabled: true
+      }
+    }
+  },
   collector: collectorStub,
   metrics: metricsStub,
   harvester: harvesterStub

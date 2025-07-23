@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
  * Copyright 2021 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
@@ -46,8 +47,8 @@ function unreleasedPRs() {
       stopOnError()
     }
 
-    const repos = opts.repos.split(',')
-    const ignoredLabels = opts.ignoreLabels.split(',')
+    const repos = opts.repos?.split(',') ?? []
+    const ignoredLabels = opts.ignoreLabels?.split(',') ?? []
 
     repos.forEach(async (repo) => {
       const { prs, latestRelease } = await findMergedPRs(repo, ignoredLabels)
@@ -141,7 +142,21 @@ async function findMergedPRs(repo, ignoredLabels) {
   })
 
   console.log(`Found ${filteredPullRequests.length} PRs not yet released.`)
-  const prs = filteredPullRequests.map((pr) => pr.html_url)
+  const prs = filteredPullRequests
+    .sort((a, b) => {
+      if (a.number > b.number) return 1
+      if (a.number < b.number) return -1
+      return 0
+    })
+    .map((pr) => {
+      const slackifiedTitle = pr.title
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('`', '&DiacriticalGrave;')
+        .replaceAll('|', '&mid;')
+      return `<${pr.html_url} | (${pr.number}) ${slackifiedTitle}>`
+    })
   return {
     prs,
     latestRelease

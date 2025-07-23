@@ -3,6 +3,11 @@ name: Node Agent CI
 on:
   push:
   pull_request:
+    types:
+      - edited
+      - opened
+      - reopened
+      - synchronize
   workflow_dispatch:
 
 env:
@@ -53,15 +58,15 @@ jobs:
         node-version: [lts/*]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm install
-    - name: Run Linting
-      run: npm run lint
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Linting
+        run: npm run lint
 
   ci:
     needs:
@@ -77,15 +82,15 @@ jobs:
         node-version: [lts/*]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm install
-    - name: Run CI Script Unit Tests
-      run: npm run unit:scripts
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: npm install
+      - name: Run CI Script Unit Tests
+        run: npm run unit:scripts
 
   unit:
     needs:
@@ -98,23 +103,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm install
-    - name: Run Unit Tests
-      run: npm run unit
-    - name: Archive Unit Test Coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: unit-tests-${{ matrix.node-version }}
-        path: ./coverage/unit/lcov.info
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Unit Tests
+        run: npm run unit
+      - name: Archive Unit Test Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-tests-${{ matrix.node-version }}
+          path: ./coverage/unit/lcov.info
 
   integration:
     needs:
@@ -130,30 +135,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm install
-    - name: Run Integration Tests
-      run: npm run integration
-    - name: Run ESM Integration Tests
-      run: npm run integration:esm
-    - name: Archive Integration Test Coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: integration-tests-cjs-${{ matrix.node-version }}
-        path: ./coverage/integration/lcov.info
-    - name: Archive Integration (ESM) Test Coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: integration-tests-esm-${{ matrix.node-version }}
-        path: ./coverage/integration-esm/lcov.info
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Integration Tests
+        run: npm run integration
+      - name: Run ESM Integration Tests
+        run: npm run integration:esm
+      - name: Archive Integration Test Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-tests-cjs-${{ matrix.node-version }}
+          path: ./coverage/integration/lcov.info
+      - name: Archive Integration (ESM) Test Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-tests-esm-${{ matrix.node-version }}
+          path: ./coverage/integration-esm/lcov.info
 
   versioned-internal:
     needs:
@@ -166,44 +171,44 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm install
-    - name: Run Docker Services
-      run: npm run services
-    - name: Run Versioned Tests
-      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:internal
-      env:
-        VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
-        # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
-        JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
-        C8_REPORTER: lcovonly
-    - name: Archive Versioned Test Coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: versioned-tests-${{ matrix.node-version }}
-        path: ./coverage/versioned/lcov.info
-    - name: Collect docker logs on failure
-      if: failure()
-      uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e
-      with:
-        dest: ./logs-${{ matrix.node-version }}
-    - name: Tar logs
-      if: failure()
-      run: tar cvzf ./logs-${{ matrix.node-version }}.tgz ./logs-${{ matrix.node-version }}
-    - name: Upload logs to GitHub
-      if: failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: logs-${{ matrix.node-version }}.tgz
-        path: ./logs-${{ matrix.node-version }}.tgz
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Docker Services
+        run: npm run services
+      - name: Run Versioned Tests
+        run: TEST_CHILD_TIMEOUT=600000 npm run versioned:internal
+        env:
+          VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
+          # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
+          JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
+          C8_REPORTER: lcovonly
+      - name: Archive Versioned Test Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: versioned-tests-${{ matrix.node-version }}
+          path: ./coverage/versioned/lcov.info
+      - name: Collect docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e
+        with:
+          dest: ./logs-${{ matrix.node-version }}
+      - name: Tar logs
+        if: failure()
+        run: tar cvzf ./logs-${{ matrix.node-version }}.tgz ./logs-${{ matrix.node-version }}
+      - name: Upload logs to GitHub
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.node-version }}.tgz
+          path: ./logs-${{ matrix.node-version }}.tgz
 
   # There is no coverage for external as that's tracked in their respective repos
   versioned-external:
@@ -217,22 +222,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm install
-    - name: Run Versioned Tests
-      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:external
-      env:
-        VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
-        # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
-        JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Versioned Tests
+        run: TEST_CHILD_TIMEOUT=600000 npm run versioned:external
+        env:
+          VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
+          # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
+          JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
 
   codecov:
     needs: [unit, integration, versioned-internal]
@@ -240,7 +245,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v4
