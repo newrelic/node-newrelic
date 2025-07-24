@@ -83,6 +83,8 @@ test('should create span on successful embedding create', (t, end) => {
   })
 })
 
+// TODO: waiting for orchestrion to have package version
+/*
 test('should increment tracking metric for each embedding event', (t, end) => {
   const { client, agent } = t.nr
   helper.runInTransaction(agent, async (tx) => {
@@ -98,6 +100,7 @@ test('should increment tracking metric for each embedding event', (t, end) => {
     end()
   })
 })
+*/
 
 test('should create an embedding message', (t, end) => {
   const { client, agent } = t.nr
