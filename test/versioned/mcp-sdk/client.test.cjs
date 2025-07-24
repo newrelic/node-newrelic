@@ -26,7 +26,7 @@ test.beforeEach(async (ctx) => {
 
   ctx.nr.transport = new StdioClientTransport({
     command: 'node',
-    args: ['mock-server.js']
+    args: ['mock-server.cjs']
   })
   ctx.nr.client = new Client(
     {
@@ -40,7 +40,7 @@ test.beforeEach(async (ctx) => {
 test.afterEach(async (ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   // Kill any running mock-server.js processes
-  execSync('pkill -f "node mock-server.js"')
+  execSync('pkill -f "node mock-server.cjs"')
   removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/stdio.js'])
 })
 
