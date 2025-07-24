@@ -21,7 +21,7 @@ supported by the agent.
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.7.2-preview | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.0.3 | 11.9.0 |
-| `@google/genai` | 1.1.0 | 1.10.0 | 12.21.0 |
+| `@google/genai` | 1.1.0 | 1.11.0 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.13.4 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.0 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 13.1.1 | 3.2.0 |
