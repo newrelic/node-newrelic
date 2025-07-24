@@ -19,6 +19,11 @@ async function main() {
     },
   })
 
+  // Set up auto-shutdown after first request
+  const shutdown = () => {
+    process.exit(0)
+  }
+
   server.registerResource(
     'echo',
     new ResourceTemplate('echo://{message}', { list: undefined }),
@@ -26,12 +31,16 @@ async function main() {
       title: 'Echo Resource',
       description: 'Echoes back messages as resources'
     },
-    async (uri, { message }) => ({
-      contents: [{
-        uri: uri.href,
-        text: `Resource echo: ${message}`
-      }]
-    })
+    async (uri, { message }) => {
+      const result = {
+        contents: [{
+          uri: uri.href,
+          text: `Resource echo: ${message}`
+        }]
+      }
+      setTimeout(shutdown, 100)
+      return result
+    }
   )
 
   server.registerTool(
@@ -41,9 +50,11 @@ async function main() {
       description: 'Echoes back the provided message',
       inputSchema: { message: z.string() }
     },
-    async ({ message }) => ({
-      content: [{ type: 'text', text: `Tool echo: ${message}` }]
-    })
+    async ({ message }) => {
+      const result = { content: [{ type: 'text', text: `Tool echo: ${message}` }] }
+      setTimeout(shutdown, 100)
+      return result
+    }
   )
 
   server.registerPrompt(
@@ -53,22 +64,25 @@ async function main() {
       description: 'Creates a prompt to process a message',
       argsSchema: { message: z.string() }
     },
-    ({ message }) => ({
-      messages: [{
-        role: 'user',
-        content: {
-          type: 'text',
-          text: `Please process this message: ${message}`
-        }
-      }]
-    })
+    ({ message }) => {
+      const result = {
+        messages: [{
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Please process this message: ${message}`
+          }
+        }]
+      }
+      setTimeout(shutdown, 100)
+      return result
+    }
   )
 
   const transport = new StdioServerTransport()
   await server.connect(transport)
 }
 
-main().catch((err) => {
-  console.error('Error starting mock server:', err)
+main().catch(() => {
   process.exit(1)
 })

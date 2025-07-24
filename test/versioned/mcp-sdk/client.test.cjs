@@ -7,7 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { execSync } = require('node:child_process')
 
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
@@ -39,8 +38,6 @@ test.beforeEach(async (ctx) => {
 
 test.afterEach(async (ctx) => {
   helper.unloadAgent(ctx.nr.agent)
-  // Kill any running mock-server.js processes
-  execSync('pkill -f "node mock-server.cjs"')
   removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/stdio.js'])
 })
 
