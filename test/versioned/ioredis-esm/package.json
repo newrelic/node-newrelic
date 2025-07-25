@@ -1,0 +1,20 @@
+{
+  "name": "ioredis-test",
+  "targets": [{"name":"ioredis","minAgentVersion":"1.26.2"}],
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "ioredis": ">=4.0.0"
+      },
+      "files": [
+        "ioredis.test.js"
+      ]
+    }
+  ]
+}

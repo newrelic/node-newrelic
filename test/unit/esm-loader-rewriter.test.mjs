@@ -11,10 +11,9 @@ import * as td from 'testdouble'
 import { readFileSync } from 'node:fs'
 
 test.beforeEach(async (ctx) => {
-  await td.replaceEsm('../../lib/subscribers/index.js', {}, {
-    subscribers: {},
-    config: {
-      packages: new Set(['esm-pkg', 'pkg-1']),
+  await td.replaceEsm('../../lib/subscriptions.js', {}, {
+    'esm-pkg': {
+      path: './foo.js',
       instrumentations: [
         {
           channelName: 'unitTestEsm',
@@ -24,7 +23,12 @@ test.beforeEach(async (ctx) => {
             methodName: 'doStuff',
             kind: 'Async'
           }
-        },
+        }
+      ]
+    },
+    'pkg-1': {
+      path: '/bar.js',
+      instrumentations: [
         {
           channelName: 'unitTestCjs',
           module: { name: 'pkg-1', versionRange: '>=1', filePath: 'foo.js' },

@@ -11,21 +11,12 @@ const params = require('../../lib/params')
 const { assertSegments } = require('../../lib/custom-assertions')
 const mongoCommon = require('../mongodb/common')
 
-test('Disabled mongodb scenarios', async (t) => {
+test('Disabled ioredis scenarios', async (t) => {
   t.beforeEach(async (ctx) => {
     ctx.nr = {}
     const agent = helper.instrumentMockedAgent({
       instrumentation: {
-        mongodb: {
-          enabled: false
-        },
-        timers: {
-          enabled: false
-        },
-        dns: {
-          enabled: false
-        },
-        net: {
+        ioredis: {
           enabled: false
         }
       }
@@ -53,31 +44,31 @@ test('Disabled mongodb scenarios', async (t) => {
   await t.test('should record child segments if pg is disabled and using promises', async (t) => {
     const { agent, redisClient, collection } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
-      await redisClient.set('foo', 'bar')
-      await collection.countDocuments()
       await redisClient.get('foo')
+      await collection.countDocuments()
+      await redisClient.get('bar')
       tx.end()
       assertSegments(tx.trace, tx.trace.root, [
-        'Datastore/operation/Redis/set',
-        'Datastore/operation/Redis/get'
+        'Datastore/statement/MongoDB/disabled-inst-test/aggregate',
+        'Datastore/statement/MongoDB/disabled-inst-test/next'
       ])
     })
   })
 
-  await t.test('should record child segments if mongodb is disabled and using callbacks', async (t) => {
+  await t.test('should record child segments if pg is disabled and using callbacks', async (t) => {
     const { agent, redisClient, collection } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
       await new Promise((resolve) => {
-        redisClient.set('foo', 'bar', async (err) => {
+        redisClient.get('foo', async (err) => {
           assert.equal(err, null)
           await collection.countDocuments()
-          redisClient.get('foo', (innerErr) => {
+          redisClient.get('bar', (innerErr) => {
+            tx.end()
             assert.equal(innerErr, null)
             assertSegments(tx.trace, tx.trace.root, [
-              'Datastore/operation/Redis/set',
-              'Datastore/operation/Redis/get'
+              'Datastore/statement/MongoDB/disabled-inst-test/aggregate',
+              'Datastore/statement/MongoDB/disabled-inst-test/next'
             ])
-            tx.end()
             resolve()
           })
         })
