@@ -191,6 +191,7 @@ function addStartupSupportabilities(agent) {
   recordNodeVersionMetric(agent)
   recordFeatureFlagMetrics(agent)
   recordSourceMapMetric(agent)
+  recordDisabledPackages(agent)
 }
 
 /**
@@ -263,5 +264,17 @@ function recordSourceMapMetric(agent) {
   const isSourceMapsEnabled = process.execArgv.includes('--enable-source-maps')
   if (isSourceMapsEnabled) {
     agent.metrics.getOrCreateMetric(NAMES.FEATURES.SOURCE_MAPS).incrementCallCount()
+  }
+}
+
+/**
+ * Records supportability metrics for disabled instrumentation packages.
+ * @param {Agent} agent active NR agent
+ */
+function recordDisabledPackages(agent) {
+  for (const [pkg, config] of Object.entries(agent.config.instrumentation)) {
+    if (config.enabled === false) {
+      agent.recordSupportability(`Nodejs/Instrumentation/${pkg}/disabled`)
+    }
   }
 }
