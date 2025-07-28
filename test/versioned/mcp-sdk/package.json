@@ -1,6 +1,6 @@
 {
   "name": "mcp-tests",
-  "targets": [{"name":"mcp","minAgentVersion":"12.23.0"}],
+  "targets": [{"name":"mcp","minAgentVersion":"13.0.0"}],
   "version": "0.0.0",
   "private": true,
   "engines": {
