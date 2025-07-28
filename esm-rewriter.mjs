@@ -8,7 +8,7 @@ import { create } from '@apm-js-collab/code-transformer'
 import parse from 'module-details-from-path'
 import { fileURLToPath } from 'node:url'
 import getPackageVersion from './lib/util/get-package-version.js'
-import subscriptions from './lib/subscriptions.js'
+import subscriptions from './lib/subscriber-configs.js'
 import createSubscriberConfigs from './lib/subscribers/create-config.js'
 const { packages, instrumentations } = createSubscriberConfigs(subscriptions)
 const transformers = new Map()

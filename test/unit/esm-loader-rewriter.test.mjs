@@ -11,7 +11,7 @@ import * as td from 'testdouble'
 import { readFileSync } from 'node:fs'
 
 test.beforeEach(async (ctx) => {
-  await td.replaceEsm('../../lib/subscriptions.js', {}, {
+  await td.replaceEsm('../../lib/subscriber-configs.js', {}, {
     'esm-pkg': {
       path: './foo.js',
       instrumentations: [
