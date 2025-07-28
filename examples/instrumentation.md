@@ -8,6 +8,6 @@ We have moved our examples and tutorials over to [newrelic-node-examples](https:
 * [attributesAndEvents](https://github.com/newrelic/newrelic-node-examples/tree/main/custom-instrumentation/attributes-and-events) - example application that demonstrates how to share custom [attributes](https://newrelic.github.io/node-newrelic/API.html#addCustomAttribute) and [events](https://newrelic.github.io/node-newrelic/API.html#recordCustomEvent)
 * [backgroundTransactions](https://github.com/newrelic/newrelic-node-examples/tree/main/custom-instrumentation/background-transactions) - example application that uses the newrelic API to create [background transactions](https://newrelic.github.io/node-newrelic/API.html#startBackgroundTransaction)
 * [segments](https://github.com/newrelic/newrelic-node-examples/tree/main/custom-instrumentation/segments) - example application that demonstrates how to use the [newrelic.startSegment API](https://newrelic.github.io/node-newrelic/API.html#startSegment) in a variety of cases: callback-based, promise-based, asyncronously, and syncronously
-* [distributed tracing](https://github.com/amychisholm03/newrelic-node-examples/blob/main/custom-instrumentation/distributed-tracing) - example application that demonstrates distributed tracing
+* [distributed tracing](https://github.com/newrelic/newrelic-node-examples/tree/main/custom-instrumentation/distributed-tracing) - example application that demonstrates distributed tracing
 
 To request additional examples, please [file an issue](https://github.com/newrelic/node-newrelic/issues)!
