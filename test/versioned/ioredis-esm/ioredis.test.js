@@ -16,7 +16,7 @@ const { assertMetrics } = assertions
 import { removeModules } from '../../lib/cache-buster.js'
 
 // Indicates unique database in Redis. 0-15 supported.
-const DB_INDEX = 3
+const DB_INDEX = 5
 
 test('ioredis instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -172,7 +172,7 @@ test('ioredis instrumentation', async (t) => {
   await t.test('should follow selected database', async (t) => {
     const { agent, redisClient } = t.nr
     const plan = tspl(t, { plan: 7 })
-    const SELECTED_DB = 5
+    const SELECTED_DB = 8
 
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
