@@ -7,4 +7,6 @@
 import { register } from 'node:module'
 
 register('./esm-rewriter.mjs', import.meta.url)
-register('import-in-the-middle/hook.mjs', import.meta.url)
+register('import-in-the-middle/hook.mjs', import.meta.url, {
+  data: { exclude: ['@openai/agents-core', '@openai/agents'] }
+})
