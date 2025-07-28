@@ -176,6 +176,11 @@ test('index tests', async (t) => {
     const mockConfig = {
       applications: sandbox.stub(),
       agent_enabled: true,
+      instrumentation: {
+        foo: { enabled: false },
+        bar: { enabled: false },
+        enabled: { enabled: true }
+      },
       logging: {},
       feature_flag: { flag_1: true, flag_2: false },
       security: { agent: { enabled: false } },
@@ -228,18 +233,20 @@ test('index tests', async (t) => {
   await t.test('should properly register when agent starts and add appropriate metrics', (t) => {
     const api = loadIndex(t)
     const version = /^v(\d+)/.exec(process.version)
-    assert.equal(api.agent.recordSupportability.callCount, 5, 'should log 5 supportability metrics')
+    assert.equal(api.agent.recordSupportability.callCount, 7, 'should log 5 supportability metrics')
     assert.equal(api.agent.recordSupportability.args[0][0], `Nodejs/Version/${version[1]}`)
     assert.equal(api.agent.recordSupportability.args[1][0], 'Nodejs/FeatureFlag/flag_1/enabled')
     assert.equal(api.agent.recordSupportability.args[2][0], 'Nodejs/FeatureFlag/flag_2/disabled')
-    assert.equal(api.agent.recordSupportability.args[3][0], 'Nodejs/Application/Opening/Duration')
+    assert.equal(api.agent.recordSupportability.args[3][0], 'Nodejs/Instrumentation/foo/disabled')
+    assert.equal(api.agent.recordSupportability.args[4][0], 'Nodejs/Instrumentation/bar/disabled')
+    assert.equal(api.agent.recordSupportability.args[5][0], 'Nodejs/Application/Opening/Duration')
     assert.equal(
-      api.agent.recordSupportability.args[4][0],
+      api.agent.recordSupportability.args[6][0],
       'Nodejs/Application/Initialization/Duration'
     )
     api.agent.emit('started')
     assert.equal(
-      api.agent.recordSupportability.args[5][0],
+      api.agent.recordSupportability.args[7][0],
       'Nodejs/Application/Registration/Duration'
     )
     assert.equal(t.nr.k2Stub.start.callCount, 0, 'should not register security agent')
