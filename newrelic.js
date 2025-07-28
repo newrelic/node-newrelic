@@ -23,6 +23,16 @@ exports.config = {
     level: 'info'
   },
   /**
+   * This provides instrumentation for `setTimeout` and `setInterval` calls.
+   * We recommend you disable this instrumentation as it does not not provide
+   * much value and creates a lot of unncessary TraceSegments/Span events.
+   */
+  instrumentation: {
+    timers: {
+      enabled: false
+    }
+  },
+  /**
    * When true, all request headers except for those listed in attributes.exclude
    * will be captured for all traces, unless otherwise specified in a destination's
    * attributes include/exclude lists.
