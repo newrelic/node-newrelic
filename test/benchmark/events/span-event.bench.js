@@ -21,7 +21,7 @@ suite.add({
     segment.name = 'some random segment'
   },
   fn: () => {
-    return SpanEvent.fromSegment(segment, transaction)
+    return SpanEvent.fromSegment({ segment, transaction })
   }
 })
 
@@ -33,7 +33,7 @@ suite.add({
     segment.name = 'External/www.foobar.com/'
   },
   fn: () => {
-    return SpanEvent.fromSegment(segment, transaction)
+    return SpanEvent.fromSegment({ segment, transaction })
   }
 })
 
@@ -45,7 +45,7 @@ suite.add({
     segment.name = 'Datastore/statement/SELECT'
   },
   fn: () => {
-    return SpanEvent.fromSegment(segment, transaction)
+    return SpanEvent.fromSegment({ segment, transaction })
   }
 })
 
