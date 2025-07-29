@@ -14,7 +14,13 @@ const tempRemoveListeners = require('../../lib/temp-remove-listeners')
 const Context = require('../../../lib/context-manager/context')
 
 test.beforeEach((ctx) => {
-  const agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent({
+    instrumentation: {
+      timers: {
+        enabled: true
+      }
+    }
+  })
   const tracer = helper.getTracer()
   ctx.nr = {
     agent,
