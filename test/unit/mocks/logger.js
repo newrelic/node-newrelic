@@ -12,5 +12,6 @@ module.exports = (sandbox = sinon) => ({
   info: sandbox.stub(),
   debug: sandbox.stub(),
   warn: sandbox.stub(),
-  error: sandbox.stub()
+  error: sandbox.stub(),
+  child: sandbox.stub().returnsThis(),
 })
