@@ -15,7 +15,7 @@
       },
       "files": [
         "disabled-express.test.js",
-        "disabled-db.test.js"
+        "disabled-ioredis.test.js"
       ]
     }
   ]
