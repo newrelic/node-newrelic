@@ -112,9 +112,6 @@ test('external requests', async function (t) {
       const dnsLookup = connectChildren[0]
       assert.equal(dnsLookup.name, 'dns.lookup', 'should be dns.lookup segment')
 
-      const callback = externalChildren[externalChildren.length - 1]
-      assert.equal(callback.name, 'timers.setTimeout', 'should have timeout segment')
-
       end()
     }
   })

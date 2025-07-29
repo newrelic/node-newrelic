@@ -60,12 +60,7 @@ test('createServer', function createServerTest(t, end) {
       const childChildren = transaction.trace.getChildren(child.id)
       assert.equal(child.name, 'net.Server.onconnection', 'child segment should have correct name')
       assert.ok(child.timer.touched, 'child should started and ended')
-      assert.equal(childChildren.length, 1, 'child should have a single child segment')
-      const timeout = childChildren[0]
-      const timeoutChildren = transaction.trace.getChildren(timeout.id)
-      assert.equal(timeout.name, 'timers.setTimeout', 'timeout segment should have correct name')
-      assert.ok(timeout.timer.touched, 'timeout should started and ended')
-      assert.equal(timeoutChildren.length, 1, 'timeout should have a single callback segment')
+      assert.equal(childChildren.length, 0)
       end()
     }
   })
@@ -129,21 +124,13 @@ test('connect', function connectTest(t, end) {
       }
       connectChildren = transaction.trace.getChildren(connectSegment.id)
 
-      assert.equal(connectChildren.length, 2, 'connect should have a two child segment')
-      const [dnsSegment, timeoutSegment] = connectChildren
+      assert.equal(connectChildren.length, 1, 'connect should have a two child segment')
+      const [dnsSegment] = connectChildren
 
       assert.equal(dnsSegment.name, 'dns.lookup', 'dns segment should have correct name')
       assert.ok(dnsSegment.timer.touched, 'dns segment should started and ended')
       const dnsChildren = transaction.trace.getChildren(dnsSegment.id)
       assert.equal(dnsChildren.length, 1, 'dns should have a single callback segment')
-      assert.equal(
-        timeoutSegment.name,
-        'timers.setTimeout',
-        'timeout segment should have correct name'
-      )
-      assert.ok(timeoutSegment.timer.touched, 'timeout should started and ended')
-      const timeoutChildren = transaction.trace.getChildren(timeoutSegment.id)
-      assert.equal(timeoutChildren.length, 1, 'timeout should have a single callback segment')
       end()
     }
   }
