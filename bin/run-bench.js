@@ -19,6 +19,7 @@ const tests = []
 const testPromises = []
 const globs = []
 const opts = Object.create(null)
+let hasFailures = false
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file) && file.indexOf('=') > -1) {
@@ -82,6 +83,12 @@ class Printer {
     const fileName = `${resultPath}/${filePrefix}_${new Date().getTime()}.json`
     await fs.writeFile(fileName, content)
     console.log(`Done! Test output written to ${fileName}`)
+
+    // Exit with code 1 to propagate failure to GH Actions
+    // if any test failed.
+    if (hasFailures) {
+      process.exit(1)
+    }
   }
 }
 
@@ -130,12 +137,14 @@ async function run() {
 
     child.on('error', (err) => {
       console.error(`Error in child test ${test}`, err)
+      hasFailures = true
       throw err
     })
     child.on('exit', function onChildExit(code) {
       currentTest = currentTest + 1
       if (code) {
         console.error(`(${currentTest}/${tests.length}) FAILED: ${test} exited with code ${code}`)
+        hasFailures = true
         return
       }
       console.log(`(${currentTest}/${tests.length}) ${file} has completed`)
