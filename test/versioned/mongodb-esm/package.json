@@ -9,7 +9,7 @@
         "node": ">=20"
       },
       "dependencies": {
-        "mongodb": ">= 4.1.4"
+        "mongodb": ">=4.1.4 < 5"
       },
       "files": [
         "bulk.test.mjs",
