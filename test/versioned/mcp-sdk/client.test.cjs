@@ -41,20 +41,15 @@ test.afterEach(async (ctx) => {
   removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/stdio.js'])
 })
 
-test('should create span for callTool', (t, end) => {
+test('should create span for callTool', async (t) => {
   const { agent, client } = t.nr
-  helper.runInTransaction(agent, async (tx) => {
-    let result
-    try {
-      result = await client.callTool({
-        name: 'echo',
-        arguments: {
-          message: 'example message'
-        }
-      })
-    } catch (e) {
-      assert.fail(`Tool call failed: ${e.message}`)
-    }
+  await helper.runInTransaction(agent, async (tx) => {
+    const result = await client.callTool({
+      name: 'echo',
+      arguments: {
+        message: 'example message'
+      }
+    })
 
     assert.ok(result, 'should return a result from the tool call')
 
@@ -68,21 +63,15 @@ test('should create span for callTool', (t, end) => {
         { name, kind: 'internal' }
       ]
     })
-    end()
   })
 })
 
-test('should create span for readResource', (t, end) => {
+test('should create span for readResource', async (t) => {
   const { agent, client } = t.nr
-  helper.runInTransaction(agent, async (tx) => {
-    let resource
-    try {
-      resource = await client.readResource({
-        uri: 'echo://hello-world',
-      })
-    } catch (e) {
-      assert.fail(`readResource failed: ${e.message}`)
-    }
+  await helper.runInTransaction(agent, async (tx) => {
+    const resource = await client.readResource({
+      uri: 'echo://hello-world',
+    })
 
     assert.ok(resource, 'should return a resource from readResource')
 
@@ -96,24 +85,18 @@ test('should create span for readResource', (t, end) => {
         { name, kind: 'internal' }
       ]
     })
-    end()
   })
 })
 
-test('should create span for getPrompt', (t, end) => {
+test('should create span for getPrompt', async (t) => {
   const { agent, client } = t.nr
-  helper.runInTransaction(agent, async (tx) => {
-    let prompt
-    try {
-      prompt = await client.getPrompt({
-        name: 'echo',
-        arguments: {
-          message: 'example message'
-        }
-      })
-    } catch (e) {
-      assert.fail(`getPrompt failed: ${e.message}`)
-    }
+  await helper.runInTransaction(agent, async (tx) => {
+    const prompt = await client.getPrompt({
+      name: 'echo',
+      arguments: {
+        message: 'example message'
+      }
+    })
 
     assert.ok(prompt, 'should return a prompt from getPrompt')
 
@@ -127,6 +110,5 @@ test('should create span for getPrompt', (t, end) => {
         { name, kind: 'internal' }
       ]
     })
-    end()
   })
 })
