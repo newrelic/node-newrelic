@@ -82,7 +82,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 **[optionalDependencies](#optionalDependencies)**
 
-* [@contrast/fn-inspect](#contrastfn-inspect)
+* [@newrelic/fn-inspect](#newrelicfn-inspect)
 * [@newrelic/native-metrics](#newrelicnative-metrics)
 * [@prisma/prisma-fmt-wasm](#prismaprisma-fmt-wasm)
 
@@ -513,7 +513,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.4.2](https://github.com/newrelic/csec-node-agent/tree/v2.4.2)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.4.2/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.4.3](https://github.com/newrelic/csec-node-agent/tree/v2.4.3)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.4.3/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -1902,7 +1902,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.14.0](https://github.com/nodejs/import-in-the-middle/tree/v1.14.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.14.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.14.2](https://github.com/nodejs/import-in-the-middle/tree/v1.14.2)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.14.2/LICENSE):
 
 ```
                                  Apache License
@@ -2333,7 +2333,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.821.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.821.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.821.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.856.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.856.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.856.0/LICENSE):
 
 ```
                                 Apache License
@@ -2542,7 +2542,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.821.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.821.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.821.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.856.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.856.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.856.0/LICENSE):
 
 ```
                                 Apache License
@@ -3226,7 +3226,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v9.1.0](https://github.com/newrelic/node-test-utilities/tree/v9.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v9.1.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v9.2.0](https://github.com/newrelic/node-test-utilities/tree/v9.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v9.2.0/LICENSE):
 
 ```
                                  Apache License
@@ -4370,7 +4370,7 @@ SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.7.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.7.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.7.1/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.8.0](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.8.0)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.8.0/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -4402,7 +4402,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.28.0](https://github.com/eslint/eslint/tree/v9.28.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.28.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.32.0](https://github.com/eslint/eslint/tree/v9.32.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.32.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -4729,7 +4729,7 @@ THE SOFTWARE.
 
 ### koa
 
-This product includes source derived from [koa](https://github.com/koajs/koa) ([v2.16.1](https://github.com/koajs/koa/tree/v2.16.1)), distributed under the [MIT License](https://github.com/koajs/koa/blob/v2.16.1/LICENSE):
+This product includes source derived from [koa](https://github.com/koajs/koa) ([v2.16.2](https://github.com/koajs/koa/tree/v2.16.2)), distributed under the [MIT License](https://github.com/koajs/koa/blob/v2.16.2/LICENSE):
 
 ```
 (The MIT License)
@@ -5235,9 +5235,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## optionalDependencies
 
-### @contrast/fn-inspect
+### @newrelic/fn-inspect
 
-This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v4.3.0](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v4.3.0)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v4.3.0/LICENSE):
+This product includes source derived from [@newrelic/fn-inspect](https://github.com/newrelic-forks/node-fn-inspect) ([v4.4.0](https://github.com/newrelic-forks/node-fn-inspect/tree/v4.4.0)), distributed under the [MIT License](https://github.com/newrelic-forks/node-fn-inspect/blob/v4.4.0/LICENSE):
 
 ```
 Copyright 2022 Contrast Security, Inc

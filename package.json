@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "12.25.0",
+  "version": "12.25.1",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -203,7 +203,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.13.2",
     "@grpc/proto-loader": "^0.7.5",
-    "@newrelic/security-agent": "^2.4.2",
+    "@newrelic/security-agent": "^2.4.3",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/core": "^2.0.0",
     "@opentelemetry/exporter-metrics-otlp-proto": "^0.201.1",
