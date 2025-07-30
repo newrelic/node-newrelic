@@ -18,7 +18,7 @@
     },
     {
       "engines": {
-        "node": ">=18 <24"
+        "node": ">=20 <24"
       },
       "dependencies": {
         "pg": ">=8.2.0",
