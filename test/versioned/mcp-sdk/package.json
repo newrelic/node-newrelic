@@ -13,10 +13,10 @@
       },
       "dependencies": {
         "@modelcontextprotocol/sdk": ">=1.13.0",
-        "zod":  "^3.23.8"
+        "zod":  "3.23.8"
       },
       "files": [
-        "client.test.cjs"
+        "client.test.js"
       ]
     }
   ]

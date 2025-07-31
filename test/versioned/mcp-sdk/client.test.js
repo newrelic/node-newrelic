@@ -25,7 +25,7 @@ test.beforeEach(async (ctx) => {
 
   ctx.nr.transport = new StdioClientTransport({
     command: 'node',
-    args: ['mock-server.cjs']
+    args: ['mock-server.js']
   })
   ctx.nr.client = new Client(
     {
@@ -75,7 +75,7 @@ test('should create span for readResource', async (t) => {
 
     assert.ok(resource, 'should return a resource from readResource')
 
-    const name = `${MCP.RESOURCE}/readResource/echo://hello-world`
+    const name = `${MCP.RESOURCE}/readResource/echo`
     assertSegments(tx.trace, tx.trace.root, [name], { exact: false })
 
     tx.end()
