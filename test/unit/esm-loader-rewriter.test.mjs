@@ -12,7 +12,7 @@ import { readFileSync } from 'node:fs'
 
 test.beforeEach(async (ctx) => {
   await td.replaceEsm('../../lib/subscriber-configs.js', {}, {
-    'esm-pkg': {
+    'esm-pkg': [{
       path: './foo.js',
       instrumentations: [
         {
@@ -25,8 +25,8 @@ test.beforeEach(async (ctx) => {
           }
         }
       ]
-    },
-    'pkg-1': {
+    }],
+    'pkg-1': [{
       path: '/bar.js',
       instrumentations: [
         {
@@ -39,7 +39,7 @@ test.beforeEach(async (ctx) => {
           }
         }
       ]
-    }
+    }]
   })
 
   let cjsPath
