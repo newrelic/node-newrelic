@@ -12,7 +12,6 @@ const helper = require('../../lib/agent_helper')
 const TransactionShim = require('../../../lib/shim/transaction-shim')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const hashes = require('../../../lib/util/hashes')
-const symbols = require('../../../lib/symbols')
 const HOST = 'https://www.example.com'
 
 test('undici instrumentation', async function (t) {
@@ -83,8 +82,9 @@ test('undici instrumentation', async function (t) {
           path: '/foo-2'
         }
         channels.create.publish({ request })
-        assert.ok(request[symbols.parentSegment])
-        assert.ok(request[symbols.transaction])
+        const context = agent.tracer.getContext()
+        assert.ok(context.extras.undiciParent)
+        assert.ok(context.transaction)
         assert.equal(request.addHeader.callCount, 2)
         assert.deepEqual(request.addHeader.args[0], ['x-newrelic-synthetics', 'synthHeader'])
         assert.deepEqual(request.addHeader.args[1], [
@@ -134,12 +134,17 @@ test('undici instrumentation', async function (t) {
             origin: 'https://unittesting.com',
             path: '/foo?a=b&c=d'
           }
-          request[symbols.parentSegment] = shim.createSegment({
+          let context = agent.tracer.getContext()
+          const parent = shim.createSegment({
             name: 'parent',
             parent: tx.trace.root
           })
+          context.extras = { undiciParent: parent }
           channels.create.publish({ request })
-          assert.ok(request[symbols.segment])
+          context = agent.tracer.getContext()
+          assert.ok(context.extras.undiciParent)
+          assert.ok(context.transaction)
+          assert.ok(context.extras.undiciSegment)
           const segment = shim.getSegment()
           assert.equal(segment.name, 'External/unittesting.com/foo')
           const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
@@ -160,10 +165,12 @@ test('undici instrumentation', async function (t) {
           origin: 'http://unittesting.com',
           path: '/http'
         }
-        request[symbols.parentSegment] = shim.createSegment({
+        const context = agent.tracer.getContext()
+        const parent = shim.createSegment({
           name: 'parent',
           parent: tx.trace.root
         })
+        context.extras = { undiciParent: parent }
         channels.create.publish({ request })
         const segment = shim.getSegment()
         assert.equal(segment.name, 'External/unittesting.com/http')
@@ -181,10 +188,12 @@ test('undici instrumentation', async function (t) {
           method: 'POST',
           path: '/port-https'
         }
-        request[symbols.parentSegment] = shim.createSegment({
+        const context = agent.tracer.getContext()
+        const parent = shim.createSegment({
           name: 'parent',
           parent: tx.trace.root
         })
+        context.extras = { undiciParent: parent }
         channels.create.publish({ request })
         const segment = shim.getSegment()
         assert.equal(segment.name, 'External/unittesting.com:9999/port-https')
@@ -202,10 +211,12 @@ test('undici instrumentation', async function (t) {
           method: 'POST',
           path: '/port-http'
         }
-        request[symbols.parentSegment] = shim.createSegment({
+        const context = agent.tracer.getContext()
+        const parent = shim.createSegment({
           name: 'parent',
           parent: tx.trace.root
         })
+        context.extras = { undiciParent: parent }
         channels.create.publish({ request })
         const segment = shim.getSegment()
         assert.equal(segment.name, 'External/unittesting.com:8080/port-http')
@@ -223,10 +234,12 @@ test('undici instrumentation', async function (t) {
           method: 'POST',
           path: '/port-http'
         }
-        request[symbols.parentSegment] = shim.createSegment({
+        const context = agent.tracer.getContext()
+        const parent = shim.createSegment({
           name: 'parent',
           parent: tx.trace.root
         })
+        context.extras = { undiciParent: parent }
         channels.create.publish({ request })
         const segment = shim.getSegment()
         assert.equal(segment.name, 'ROOT', 'should not create a new segment if URL fails to parse')
@@ -244,7 +257,7 @@ test('undici instrumentation', async function (t) {
       'should not add span attrs when there is not an active segment',
       function (t, end) {
         helper.runInTransaction(agent, function (tx) {
-          channels.headers.publish({ request: {} })
+          channels.headers.publish({})
           const segment = shim.getSegment()
           const attrs = segment.getAttributes()
           assert.deepEqual(Object.keys(attrs), [])
@@ -257,14 +270,13 @@ test('undici instrumentation', async function (t) {
     await t.test('should add statusCode and statusText from response', function (t, end) {
       helper.runInTransaction(agent, function (tx) {
         const segment = shim.createSegment({ name: 'active', parent: tx.trace.root })
-        const request = {
-          [symbols.segment]: segment
-        }
+        const context = agent.tracer.getContext()
+        context.extras = { undiciSegment: segment }
         const response = {
           statusCode: 200,
           statusText: 'OK'
         }
-        channels.headers.publish({ request, response })
+        channels.headers.publish({ response })
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
         assert.equal(attrs['http.statusCode'], 200)
         assert.equal(attrs['http.statusText'], 'OK')
@@ -278,11 +290,10 @@ test('undici instrumentation', async function (t) {
       agent.config.encoding_key = 'testing-key'
       agent.config.trusted_account_ids = [111]
       helper.runInTransaction(agent, function (tx) {
+        const context = agent.tracer.getContext()
         const segment = shim.createSegment({ name: 'active', parent: tx.trace.root })
         segment.addAttribute('url', 'https://www.unittesting.com/path')
-        const request = {
-          [symbols.segment]: segment
-        }
+        context.extras = { undiciSegment: segment }
         const response = {
           headers: {
             'x-newrelic-app-data': hashes.obfuscateNameUsingKey(
@@ -293,7 +304,7 @@ test('undici instrumentation', async function (t) {
           statusCode: 200,
           statusText: 'OK'
         }
-        channels.headers.publish({ request, response })
+        channels.headers.publish({ response })
         assert.equal(segment.name, 'ExternalTransaction/www.unittesting.com/111#456/abc')
         tx.end()
         end()
@@ -306,13 +317,10 @@ test('undici instrumentation', async function (t) {
       helper.runInTransaction(agent, function (tx) {
         const parentSegment = shim.createSegment({ name: 'parent', parent: tx.trace.root })
         const segment = shim.createSegment({ name: 'active', parent: tx.trace.root })
+        const context = agent.tracer.getContext()
+        context.extras = { undiciSegment: segment, undiciParent: parentSegment }
         shim.setActiveSegment(segment)
-        const request = {
-          [symbols.parentSegment]: parentSegment,
-          [symbols.segment]: segment,
-          [symbols.transaction]: tx
-        }
-        channels.send.publish({ request })
+        channels.send.publish({})
         assert.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
         assert.equal(parentSegment.id, shim.getSegment().id, 'parentSegment should now the active')
         tx.end()
@@ -329,14 +337,11 @@ test('undici instrumentation', async function (t) {
           sandbox.stub(tx.agent.errors, 'add')
           const parentSegment = shim.createSegment({ name: 'parent', parent: tx.trace.root })
           const segment = shim.createSegment({ name: 'active', parent: tx.trace.root })
+          const context = agent.tracer.getContext()
+          context.extras = { undiciSegment: segment, undiciParent: parentSegment }
           shim.setActiveSegment(segment)
           const error = new Error('request failed')
-          const request = {
-            [symbols.parentSegment]: parentSegment,
-            [symbols.segment]: segment,
-            [symbols.transaction]: tx
-          }
-          channels.error.publish({ request, error })
+          channels.error.publish({ error })
           assert.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
           assert.equal(
             parentSegment.id,
