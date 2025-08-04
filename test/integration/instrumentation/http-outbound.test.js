@@ -103,9 +103,17 @@ test('external requests', async function (t) {
       let connectChildren = tx.trace.getChildren(connect.id)
       assert.equal(connectChildren.length, 1, 'connect should have 1 child')
 
+      // as of Node 24.5.0 there's yet another layer of net segments
+      if (connectChildren[0].name === 'net.createConnection') {
+        connectChildren = tx.trace.getChildren(connectChildren[0].id)
+      }
       // There is potentially an extra layer of create/connect segments.
       if (connectChildren[0].name === 'net.Socket.connect') {
         connect = connectChildren[0]
+      }
+
+      if (connectChildren[0].name === 'net.createConnection') {
+        connectChildren = tx.trace.getChildren(connectChildren[0].id)
       }
       connectChildren = tx.trace.getChildren(connect.id)
 
