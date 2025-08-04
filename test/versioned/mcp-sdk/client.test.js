@@ -58,7 +58,7 @@ test('should create span for callTool', async (t) => {
     assert.ok(result, 'should return a result from the tool call')
 
     const name = `${MCP.TOOL}/callTool/echo`
-    assert.equal(tx.trace.transaction.numSegments, 3, 'should not 3 segments')
+    assert.equal(tx.trace.transaction.numSegments, 3, 'should have 3 segments')
     assertSegments(tx.trace, tx.trace.root, [name], { exact: false })
 
     tx.end()
