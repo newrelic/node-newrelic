@@ -112,9 +112,6 @@ test('external requests', async function (t) {
         connect = connectChildren[0]
       }
 
-      if (connectChildren[0].name === 'net.createConnection') {
-        connectChildren = tx.trace.getChildren(connectChildren[0].id)
-      }
       connectChildren = tx.trace.getChildren(connect.id)
 
       const dnsLookup = connectChildren[0]
