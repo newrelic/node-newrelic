@@ -337,6 +337,37 @@ test('built-in http module instrumentation', async (t) => {
       }
     )
 
+    await t.test(
+      'when url_obfuscation regex pattern is set, obfuscate transaction url',
+      (t, end) => {
+        const { agent, http, serverPort } = t.nr
+        agent.config.url_obfuscation = {
+          enabled: true,
+          regex: {
+            pattern: '.*',
+            replacement: '/***'
+          }
+        }
+        makeRequest(
+          http,
+          {
+            port: serverPort,
+            host: 'localhost',
+            path: '/foo4/bar4',
+            method: 'GET'
+          },
+          finish
+        )
+
+        function finish() {
+          const { transaction } = t.nr
+          assert.equal(transaction.url, '/***')
+
+          end()
+        }
+      }
+    )
+
     await t.test('request.uri should not contain request params', (t, end) => {
       const { http, serverPort } = t.nr
       makeRequest(
