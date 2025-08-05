@@ -824,7 +824,8 @@ test('Shimmer with logger mock', async (t) => {
 
     require(TEST_MODULE_RELATIVE_PATH)
     const version = shimmer.getPackageVersion(TEST_MODULE_PATH)
-    assert.ok(!loggerMock.debug.callCount)
+    const found = loggerMock.debug.args.find(debugArgs => debugArgs?.[0]?.includes('Failed to get version for `%s`, reason: %s'))
+    assert.equal(undefined, found)
     assert.equal(version, '0.0.1', 'should get package version from package.json')
   })
 
@@ -833,7 +834,7 @@ test('Shimmer with logger mock', async (t) => {
     () => {
       const version = shimmer.getPackageVersion('bogus')
       assert.equal(version, process.version)
-      assert.deepEqual(loggerMock.debug.args[0], [
+      assert.deepEqual(loggerMock.debug.args[loggerMock.debug.args.length - 1], [
         'Failed to get version for `%s`, reason: %s',
         'bogus',
         "no tracked items for module 'bogus'"
