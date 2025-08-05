@@ -20,11 +20,12 @@ function getPostgresUrl() {
 }
 async function initPrismaApp() {
   process.env.DATABASE_URL = getPostgresUrl()
-  const infoOut = await exec('npm info @prisma/client version')
-  const clientVersion = infoOut.stdout.trim()
-  await exec(`npm install prisma@${clientVersion}`)
-  await exec('node ./node_modules/prisma/build/index.js generate')
-  await exec('node ./node_modules/prisma/build/index.js migrate reset --force')
+  const { version } = require('@prisma/client/package.json')
+  // install CLI globally with proper version so the client package can be generated and setup accordingly
+  // If this was locally installed, it would get stomped on.
+  await exec(`npm install -g prisma@${version}`)
+  await exec('prisma generate')
+  await exec('prisma migrate reset --force')
   delete process.env.DATABASE_URL
 }
 
