@@ -842,6 +842,51 @@ test('Shimmer with logger mock', async (t) => {
   )
 })
 
+test('Shimmer subscriber setup/teardown', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const sandbox = sinon.createSandbox()
+    const loggerMock = require('./mocks/logger')(sandbox)
+    const shimmer = proxyquire('../../lib/shimmer', {
+      './logger': {
+        child: sandbox.stub().callsFake(() => loggerMock)
+      }
+    })
+    const agent = helper.loadMockedAgent({}, true)
+    agent.config.instrumentation.pino.enabled = false
+    agent.config.instrumentation.ioredis.enabled = true
+    ctx.nr = {
+      agent,
+      sandbox,
+      shimmer,
+      loggerMock
+    }
+  })
+
+  t.afterEach((ctx) => {
+    const { agent, sandbox, shimmer } = ctx.nr
+    sandbox.restore()
+    clearCachedModules([TEST_MODULE_RELATIVE_PATH])
+    helper.unloadAgent(agent, shimmer)
+  })
+
+  await t.test('should setup subscribers that are enabled', (t) => {
+    const { agent, shimmer } = t.nr
+    assert.ok(!shimmer._subscribers, 'should not have subscribers before setup')
+    shimmer.setupSubscribers(agent)
+    assert.ok(!shimmer._subscribers['orchestrion:pino:nr_asJson'])
+    assert.ok(shimmer._subscribers['orchestrion:ioredis:nr_sendCommand'])
+  })
+
+  await t.test('should teardown subscribers that are enabled', (t) => {
+    const { agent, shimmer } = t.nr
+    assert.ok(!shimmer._subscribers, 'should not have subscribers before setup')
+    shimmer.setupSubscribers(agent)
+    shimmer.teardownSubscribers()
+    assert.deepEqual(shimmer._subscribers, {}, 'should not have subscribers after teardown')
+  })
+})
+
 function clearCachedModules(modules) {
   modules.forEach((moduleName) => {
     try {
