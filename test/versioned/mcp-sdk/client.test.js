@@ -18,7 +18,11 @@ const {
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
-  ctx.nr.agent = helper.instrumentMockedAgent({})
+  ctx.nr.agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: ctx.name.includes('disabled') ? false : true
+    }
+  })
 
   const { Client } = require('@modelcontextprotocol/sdk/client/index.js')
   const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js')
@@ -54,6 +58,7 @@ test('should create span for callTool', async (t) => {
     assert.ok(result, 'should return a result from the tool call')
 
     const name = `${MCP.TOOL}/callTool/echo`
+    assert.equal(tx.trace.transaction.numSegments, 3, 'should have 3 segments')
     assertSegments(tx.trace, tx.trace.root, [name], { exact: false })
 
     tx.end()
@@ -110,5 +115,24 @@ test('should create span for getPrompt', async (t) => {
         { name, kind: 'internal' }
       ]
     })
+  })
+})
+
+test('should not instrument if ai_monitoring is disabled', async (t) => {
+  const { agent, client } = t.nr
+
+  await helper.runInTransaction(agent, async (tx) => {
+    const result = await client.callTool({
+      name: 'echo',
+      arguments: {
+        message: 'example message'
+      }
+    })
+
+    assert.ok(result, 'should still return a result from the tool call')
+
+    assert.equal(tx.trace.transaction.numSegments, 2, 'should not create MCP segment')
+
+    tx.end()
   })
 })
