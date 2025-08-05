@@ -11,6 +11,7 @@ const glob = require('glob')
 const path = require('path')
 const { errorAndExit } = require('./utils')
 const fs = require('fs/promises')
+const { sendBenchmarkTestMetrics, meterProvider } = require('./otel-metrics-sender')
 
 const cwd = path.resolve(__dirname, '..')
 const benchpath = path.resolve(cwd, 'test/benchmark')
@@ -48,6 +49,12 @@ if (tests.length === 0 && globs.length === 0) {
 class Printer {
   constructor() {
     this._tests = Object.create(null)
+    this.metricPromises = []
+    this.attributes = {
+      'node.version': process.version,
+      // 'github.run_id': process.env.GITHUB_RUN_ID,
+      // 'github.sha': process.env.GITHUB_SHA
+    }
   }
 
   addTest(name, child) {
@@ -58,7 +65,12 @@ class Printer {
     this._tests[name] = new Promise((resolve) => {
       child.stdout.on('end', () => {
         try {
-          this._tests[name] = JSON.parse(output)
+          const parsedOutput = JSON.parse(output)
+          this._tests[name] = parsedOutput
+
+          // Send OTel metrics to NR for this benchmark test
+          const sendPromise = sendBenchmarkTestMetrics({ name, parsedOutput }, this.attributes)
+          this.metricPromises.push(sendPromise)
         } catch (e) {
           console.error(`Error parsing test results for ${name}`, e)
           this._tests[name] = output
@@ -69,6 +81,14 @@ class Printer {
   }
 
   async finish() {
+    try {
+      // Wait for any outstanding metric sending operations to complete
+      await Promise.all(this.metricPromises)
+      await meterProvider.shutdown()
+    } catch (e) {
+      console.error('Error shutting down metrics provider:', e)
+    }
+
     if (opts.console) {
       console.log(JSON.stringify(this._tests, null, 2))
     }
@@ -167,6 +187,6 @@ async function run() {
 
   await resolveGlobs()
   await runBenchmarks()
-  await Promise.all(testPromises)
-  printer.finish()
+  await Promise.all(testPromises) // await Promise.all(Object.values(printer._tests))
+  await printer.finish()
 }
