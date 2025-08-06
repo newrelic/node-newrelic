@@ -21,3 +21,4 @@ nr-security-home
 !test/integration/moduleLoading/node_modules
 # benchmark results
 benchmark_results
+bin/.env

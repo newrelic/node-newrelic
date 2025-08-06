@@ -49,11 +49,8 @@ if (tests.length === 0 && globs.length === 0) {
 class Printer {
   constructor() {
     this._tests = Object.create(null)
-    this.metricPromises = []
     this.attributes = {
-      'node.version': process.version,
-      // 'github.run_id': process.env.GITHUB_RUN_ID,
-      // 'github.sha': process.env.GITHUB_SHA
+      'node.version': process.version
     }
   }
 
@@ -69,22 +66,21 @@ class Printer {
           this._tests[name] = parsedOutput
 
           // Send OTel metrics to NR for this benchmark test
-          const sendPromise = sendBenchmarkTestMetrics({ name, parsedOutput }, this.attributes)
-          this.metricPromises.push(sendPromise)
+          sendBenchmarkTestMetrics({ name, parsedOutput }, this.attributes)
         } catch (e) {
           console.error(`Error parsing test results for ${name}`, e)
           this._tests[name] = output
+        } finally {
+          resolve()
         }
-        resolve()
       })
     })
   }
 
   async finish() {
     try {
-      // Wait for any outstanding metric sending operations to complete
-      await Promise.all(this.metricPromises)
       await meterProvider.shutdown()
+      console.log('✅ Metrics flushed and provider shut down successfully.')
     } catch (e) {
       console.error('Error shutting down metrics provider:', e)
     }
@@ -158,7 +154,7 @@ async function run() {
     child.on('error', (err) => {
       console.error(`Error in child test ${test}`, err)
       hasFailures = true
-      throw err
+      // throw err
     })
     child.on('exit', function onChildExit(code) {
       currentTest = currentTest + 1
@@ -185,8 +181,8 @@ async function run() {
     }
   }
 
-  await resolveGlobs()
+  resolveGlobs()
   await runBenchmarks()
-  await Promise.all(testPromises) // await Promise.all(Object.values(printer._tests))
-  await printer.finish()
+  await Promise.all(testPromises)
+  printer.finish()
 }
