@@ -314,6 +314,46 @@ test('instrumentOutbound', async (t) => {
     })
     end()
   })
+
+  await t.test('should pritortize using href', (t, end) => {
+    const { agent } = t.nr
+    const req = new events.EventEmitter()
+    helper.runInTransaction(agent, function (transaction) {
+      const path = '/someother/path'
+      const href = `http://${HOSTNAME}:${PORT}/someother/path/more?query=string`
+
+      instrumentOutbound(agent, { href, host: HOSTNAME, port: PORT }, makeFakeRequest)
+
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.ok(child.name.includes('someother/path/more'), 'should use href over request.path')
+
+      function makeFakeRequest(opts) {
+        req.path = path
+        return req
+      }
+      end()
+    })
+  })
+
+  await t.test('should fallback to url.parse when href is malformed', (t, end) => {
+    const { agent } = t.nr
+    const req = new events.EventEmitter()
+    helper.runInTransaction(agent, function (transaction) {
+      const path = '/fallback/path'
+      const href = 'not-a-valid-url'
+
+      instrumentOutbound(agent, { href, host: HOSTNAME, port: PORT }, makeFakeRequest)
+
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.ok(child.name.includes(path), 'should use request.path when href is invalid')
+
+      function makeFakeRequest(opts) {
+        req.path = path
+        return req
+      }
+      end()
+    })
+  })
 })
 
 test('should add data from cat header to segment', async (t) => {
