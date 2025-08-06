@@ -40,8 +40,8 @@ if (require.cache.__NR_cache) {
   initialize()
 }
 
-function initApi({ agent, apiPath }) {
-  const API = require(`./${apiPath}`)
+function initApi({ agent }) {
+  const API = agent != null ? require('./api.js') : require('./stub_api.js')
 
   const api = new API(agent)
   require.cache.__NR_cache = module.exports = api
@@ -114,7 +114,7 @@ function initialize() {
     console.error(error.stack)
   }
 
-  const api = agent ? initApi({ agent, apiPath: 'api' }) : initApi({ apiPath: 'stub_api' })
+  const api = initApi({ agent })
 
   // If we loaded an agent, record a startup time for the agent.
   // NOTE: Metrics are recorded in seconds, so divide the value by 1000.
