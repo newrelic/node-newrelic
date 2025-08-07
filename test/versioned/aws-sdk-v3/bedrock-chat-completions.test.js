@@ -635,18 +635,31 @@ test('models should properly create errors on stream interruption', async (t) =>
   const prompt = 'text amazon bad stream'
   const input = requests.amazon(prompt, modelId)
 
+  const httpError = {
+    code: 'ECONNRESET',
+    message: /aborted/,
+    $response: {
+      statusCode: 500
+    }
+  }
+  const http2Error = {
+    message: /Unterminated string in JSON/,
+    $response: {
+      statusCode: 500
+    }
+  }
+
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
   await helper.runInTransaction(agent, async (tx) => {
     try {
       await client.send(command)
     } catch (error) {
-      match(error, {
-        code: 'ECONNRESET',
-        message: /aborted/,
-        $response: {
-          statusCode: 500
-        }
-      })
+      // http errors are different from http2 errors
+      if (error.code) {
+        match(error, httpError)
+      } else {
+        match(error, http2Error)
+      }
     }
 
     const events = agent.customEventAggregator.events.toArray()
