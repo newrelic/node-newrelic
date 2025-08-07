@@ -184,5 +184,5 @@ async function run() {
   resolveGlobs()
   await runBenchmarks()
   await Promise.all(testPromises)
-  await printer.finish()
+  printer.finish()
 }

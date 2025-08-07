@@ -48,7 +48,7 @@ function sanitize(str) {
 /**
  * Normalizes and sends metrics for a single benchmark file's results.
  * @param {object} benchmarkFileData The benchmark test file data e.g. { name: 'test.bench.js', parsedOutput: { 'test case 1': { mean: 123, max: 456 }, ... } }
- * @param {object} commonAttributes Common attributes to add to all metrics.
+ * @param {object} commonAttributes Common attributes to add to all metrics, like Node version.
  */
 function sendBenchmarkTestMetrics(benchmarkFileData, commonAttributes = {}) {
   const fileName = benchmarkFileData.name
@@ -62,21 +62,23 @@ function sendBenchmarkTestMetrics(benchmarkFileData, commonAttributes = {}) {
   const suiteName = sanitize(fileName)
   console.log(`--- Sending metrics for ${fileName} ---`)
 
+  // measurements will contain the following: 
+  // 'mean', 'max', 'min', 'median', '5thPercentile', '95thPercentile', 'stdDev', 'numSamples'
   for (const [caseName, measurements] of Object.entries(testCases)) {
     const sanitizedCaseName = sanitize(caseName)
-    //for (const [metricKey, metricValue] of Object.entries(measurements)) {
-      //if (metricKey === 'numSamples') continue
-      //if (typeof metricValue === 'number' && !isNaN(metricValue)) {
+    for (const [metricKey, metricValue] of Object.entries(measurements)) {
+      if (metricKey === 'numSamples') continue
+      if (typeof metricValue === 'number' && !isNaN(metricValue)) {
         const attributes = {
           ...commonAttributes,
           suite_name: suiteName,
           case_name: sanitizedCaseName,
-          metric_type: 'mean', // e.g., 'mean', 'max', 'min',
+          metric_type: metricKey,
           numSamples: measurements.numSamples
         };
-        benchmarkValueGauge.record(measurements.mean, attributes);
-      //}
-    //}
+        benchmarkValueGauge.record(metricValue, attributes);
+      }
+    }
   }
 }
 
