@@ -71,6 +71,11 @@ function handler(req, res) {
   req.on('end', () => {
     const payload = JSON.parse(data.toString('utf8'))
 
+    if (req.url.includes('converse')) {
+      handleConverse(payload, res)
+      return
+    }
+
     // Available  model identifiers are listed at:
     // https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     const [, model] = /model\/(.+)\/invoke/.exec(req.url)
@@ -190,6 +195,45 @@ function handler(req, res) {
 
     res.end(JSON.stringify(response.body))
   })
+}
+
+function handleConverse(payload, res) {
+  const prompt = payload.messages?.[0]?.content?.[0]?.text
+  const response = responses.converse.get(prompt)
+
+  res.statusCode = response.statusCode
+  for (const [key, value] of Object.entries(response.headers)) {
+    res.setHeader(key, value)
+  }
+
+  if (response.headers['content-type'].endsWith('amazon.eventstream') === true) {
+    // The stream encoding for Converse API is a bit simpler tha
+    // what `encodeChunks` does.
+    const encodedChunks = []
+    const codec = new EventStreamCodec(toUtf8, fromUtf8)
+
+    for (const chunk of response.chunks) {
+      const bodyBuffer = Buffer.from(JSON.stringify(chunk.body))
+      const toEncode = {
+        headers: chunk.headers,
+        body: new Uint8Array(bodyBuffer, 0, bodyBuffer.byteLength)
+      }
+      encodedChunks.push(codec.encode(toEncode))
+    }
+    const stream = new Readable({
+      read() {
+        if (encodedChunks.length > 0) {
+          this.push(encodedChunks.shift())
+        } else {
+          this.push(null)
+        }
+      }
+    }).pause()
+    stream.pipe(res)
+    return
+  }
+
+  res.end(JSON.stringify(response.body))
 }
 
 /**
