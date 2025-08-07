@@ -50,7 +50,7 @@ class Printer {
   constructor() {
     this._tests = Object.create(null)
     this.attributes = {
-      'node.version': process.version
+      'node_version': process.version
     }
   }
 
@@ -184,5 +184,5 @@ async function run() {
   resolveGlobs()
   await runBenchmarks()
   await Promise.all(testPromises)
-  printer.finish()
+  await printer.finish()
 }

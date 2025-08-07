@@ -8,9 +8,15 @@
 const { MeterProvider, PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics')
 const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-http')
 const { diag, DiagConsoleLogger, DiagLogLevel } = require('@opentelemetry/api')
+const { resourceFromAttributes } = require('@opentelemetry/resources')
+const { ATTR_SERVICE_NAME } = require('@opentelemetry/semantic-conventions')
 
 // This will capture internal errors from all OTel components, including the exporter.
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR)
+
+const resource = resourceFromAttributes({
+  [ATTR_SERVICE_NAME]: 'nodejs-benchmark-runner'
+})
 
 const exporter = new OTLPMetricExporter({
   url: 'https://otlp.nr-data.net:443/v1/metrics',
@@ -18,15 +24,21 @@ const exporter = new OTLPMetricExporter({
 })
 
 const meterProvider = new MeterProvider({
+  resource,
   readers: [new PeriodicExportingMetricReader({ exporter, exportIntervalMillis: 1000 })]
 })
 
 const meter = meterProvider.getMeter('nodejs-agent-benchmarks')
 
+// A single, reusable gauge for all benchmark measurements.
+const benchmarkValueGauge = meter.createGauge('nodejs_benchmark.value', {
+  description: 'The value of a specific benchmark measurement.'
+});
+
 /**
  * Sanitizes a string to create a valid metric name
  * by replacing slashes with dots and removing the '.bench.js' suffix.
- * @param str {string} The string to sanitize.
+ * @param {string} str The string to sanitize.
  * @returns {string} The sanitized string.
  */
 function sanitize(str) {
@@ -35,10 +47,10 @@ function sanitize(str) {
 
 /**
  * Normalizes and sends metrics for a single benchmark file's results.
- * @param {object} benchmarkFileData The benchmark test file data e.g. { name: 'test.bench.js', parsedOutput: { 'test case 1': { metric1: 123, metric2: 456 }, ... } }
- * @param {object} attributes Common attributes to add to all metrics.
+ * @param {object} benchmarkFileData The benchmark test file data e.g. { name: 'test.bench.js', parsedOutput: { 'test case 1': { mean: 123, max: 456 }, ... } }
+ * @param {object} commonAttributes Common attributes to add to all metrics.
  */
-function sendBenchmarkTestMetrics(benchmarkFileData, attributes = {}) {
+function sendBenchmarkTestMetrics(benchmarkFileData, commonAttributes = {}) {
   const fileName = benchmarkFileData.name
   const testCases = benchmarkFileData.parsedOutput
 
@@ -52,13 +64,19 @@ function sendBenchmarkTestMetrics(benchmarkFileData, attributes = {}) {
 
   for (const [caseName, measurements] of Object.entries(testCases)) {
     const sanitizedCaseName = sanitize(caseName)
-    for (const [metricKey, metricValue] of Object.entries(measurements)) {
-      if (typeof metricValue === 'number' && !isNaN(metricValue)) {
-        const metricName = `nodejs_benchmark.${suiteName}.${sanitizedCaseName}.${metricKey}`
-        const gauge = meter.createGauge(metricName)
-        gauge.record(metricValue, attributes)
-      }
-    }
+    //for (const [metricKey, metricValue] of Object.entries(measurements)) {
+      //if (metricKey === 'numSamples') continue
+      //if (typeof metricValue === 'number' && !isNaN(metricValue)) {
+        const attributes = {
+          ...commonAttributes,
+          suite_name: suiteName,
+          case_name: sanitizedCaseName,
+          metric_type: 'mean', // e.g., 'mean', 'max', 'min',
+          numSamples: measurements.numSamples
+        };
+        benchmarkValueGauge.record(measurements.mean, attributes);
+      //}
+    //}
   }
 }
 
