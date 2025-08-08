@@ -153,7 +153,6 @@ async function findMergedPRs(repo, ignoredLabels) {
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
-        .replaceAll('`', '&DiacriticalGrave;')
         .replaceAll('|', '&mid;')
       return `<${pr.html_url} | (${pr.number}) ${slackifiedTitle}>`
     })
