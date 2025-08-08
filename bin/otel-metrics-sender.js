@@ -6,7 +6,7 @@
 'use strict'
 
 const { MeterProvider, PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics')
-const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-http')
+const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-proto')
 const { diag, DiagConsoleLogger, DiagLogLevel } = require('@opentelemetry/api')
 const { resourceFromAttributes } = require('@opentelemetry/resources')
 
