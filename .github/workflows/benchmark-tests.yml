@@ -27,6 +27,8 @@ jobs:
     - name: Install Dependencies
       run: npm install
     - name: Run Benchmark Tests
+      env:
+        NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
       run: node ./bin/run-bench.js --filename=${{ github.base_ref || 'main' }}_${{ matrix.node-version }}
     - name: Verify Benchmark Output
       run: ls benchmark_results
