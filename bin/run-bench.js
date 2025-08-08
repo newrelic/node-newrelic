@@ -50,7 +50,11 @@ class Printer {
   constructor() {
     this._tests = Object.create(null)
     this.attributes = {
-      'node_version': process.version
+      node_version: process.version,
+      agent_version: require(path.resolve(cwd, './package.json')).version,
+      run_id: process.env.GITHUB_RUN_ID
+        ? `gh-run-${process.env.GITHUB_RUN_ID}`
+        : `local-run-${Date.now()}`
     }
   }
 
@@ -154,7 +158,7 @@ async function run() {
     child.on('error', (err) => {
       console.error(`Error in child test ${test}`, err)
       hasFailures = true
-      // throw err
+      throw err
     })
     child.on('exit', function onChildExit(code) {
       currentTest = currentTest + 1

@@ -9,13 +9,12 @@ const { MeterProvider, PeriodicExportingMetricReader } = require('@opentelemetry
 const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-http')
 const { diag, DiagConsoleLogger, DiagLogLevel } = require('@opentelemetry/api')
 const { resourceFromAttributes } = require('@opentelemetry/resources')
-const { ATTR_SERVICE_NAME } = require('@opentelemetry/semantic-conventions')
 
 // This will capture internal errors from all OTel components, including the exporter.
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR)
 
 const resource = resourceFromAttributes({
-  [ATTR_SERVICE_NAME]: 'nodejs-benchmark-runner'
+  'service.name': 'nodejs-benchmark-runner'
 })
 
 const exporter = new OTLPMetricExporter({
@@ -33,7 +32,7 @@ const meter = meterProvider.getMeter('nodejs-agent-benchmarks')
 // A single, reusable gauge for all benchmark measurements.
 const benchmarkValueGauge = meter.createGauge('nodejs_benchmark.value', {
   description: 'The value of a specific benchmark measurement.'
-});
+})
 
 /**
  * Sanitizes a string to create a valid metric name
@@ -62,7 +61,7 @@ function sendBenchmarkTestMetrics(benchmarkFileData, commonAttributes = {}) {
   const suiteName = sanitize(fileName)
   console.log(`--- Sending metrics for ${fileName} ---`)
 
-  // measurements will contain the following: 
+  // measurements will contain the following:
   // 'mean', 'max', 'min', 'median', '5thPercentile', '95thPercentile', 'stdDev', 'numSamples'
   for (const [caseName, measurements] of Object.entries(testCases)) {
     const sanitizedCaseName = sanitize(caseName)
@@ -75,8 +74,8 @@ function sendBenchmarkTestMetrics(benchmarkFileData, commonAttributes = {}) {
           case_name: sanitizedCaseName,
           metric_type: metricKey,
           numSamples: measurements.numSamples
-        };
-        benchmarkValueGauge.record(metricValue, attributes);
+        }
+        benchmarkValueGauge.record(metricValue, attributes)
       }
     }
   }
