@@ -12,7 +12,7 @@ const assert = require('node:assert')
 
 const { ROOT_CONTEXT, SpanKind } = require('@opentelemetry/api')
 const { BasicTracerProvider } = require('@opentelemetry/sdk-trace-base')
-const { RulesEngine } = require('../../../../lib/otel/rules.js')
+const { RulesEngine } = require('#agentlib/otel/traces/rules.js')
 
 const tracer = new BasicTracerProvider().getTracer('default')
 
