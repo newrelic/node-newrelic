@@ -5,13 +5,20 @@
  */
 
 'use strict'
+
+const { promisify } = require('node:util')
+const childProcess = require('node:child_process')
+const exec = promisify(childProcess.exec)
+
 const Github = require('./github')
 const { App } = require('@slack/bolt')
 const requiredEnvVars = ['GITHUB_TOKEN', 'SLACK_CHANNEL', 'SLACK_TOKEN', 'SLACK_SECRET']
 const channel = process.env.SLACK_CHANNEL
 const token = process.env.SLACK_TOKEN
 const signingSecret = process.env.SLACK_SECRET
+
 let missingEnvVars = []
+
 const { program } = require('commander')
 program.requiredOption(
   '--repos <repos>',
@@ -130,16 +137,23 @@ async function findMergedPRs(repo, ignoredLabels) {
 
   console.log(`Finding merged pull requests since: ${commitDate}`)
 
+  const { stdout } = await exec(`git log main ${latestRelease.tag_name}..HEAD --show-pulls --pretty="%H"`)
+  const mainBranchShas = stdout.split('\n')
   const mergedPullRequests = await github.getMergedPullRequestsSince(commitDate)
 
-  const filteredPullRequests = mergedPullRequests.filter((pr) => {
-    // Find all PRs without an ignored label
-    const withIngored = pr.labels.some(({ name }) => ignoredLabels.includes(name))
+  const filteredPullRequests = mergedPullRequests
+    .filter((pr) => {
+      // Find all PRs without an ignored label
+      const withIngored = pr.labels.some(({ name }) => ignoredLabels.includes(name))
 
-    // Sometimes the commit for the PR the tag is set to has an earlier time than
-    // the PR merge time and we'll pull in release note PRs. Filters those out.
-    return pr.merge_commit_sha !== tag.commit.sha && !withIngored
-  })
+      // Sometimes the commit for the PR the tag is set to has an earlier time than
+      // the PR merge time and we'll pull in release note PRs. Filters those out.
+      return pr.merge_commit_sha !== tag.commit.sha && !withIngored
+    })
+    .filter((pr) => {
+      // Only the ones that target the "main" branch.
+      return mainBranchShas.includes(pr.merge_commit_sha)
+    })
 
   console.log(`Found ${filteredPullRequests.length} PRs not yet released.`)
   const prs = filteredPullRequests
