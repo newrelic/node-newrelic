@@ -5,6 +5,12 @@
 
 'use strict'
 
+const NR_KEY = process.env.NEW_RELIC_LICENSE_KEY
+if (NR_KEY === null) {
+  console.error('Missing required environment variable: NEW_RELIC_LICENSE_KEY')
+  process.exit(1)
+}
+
 const { MeterProvider, PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics')
 const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-proto')
 const { diag, DiagConsoleLogger, DiagLogLevel } = require('@opentelemetry/api')
@@ -19,7 +25,7 @@ const resource = resourceFromAttributes({
 
 const exporter = new OTLPMetricExporter({
   url: 'https://otlp.nr-data.net:443/v1/metrics',
-  headers: { 'api-key': process.env.NEW_RELIC_LICENSE_KEY } // Prod ingest license key
+  headers: { 'api-key': NR_KEY } // Prod ingest license key
 })
 
 const meterProvider = new MeterProvider({

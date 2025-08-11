@@ -29,8 +29,6 @@ jobs:
     - name: Run Benchmark Tests
       env:
         NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
-        NEW_RELIC_APP_NAME: 'nodejs-benchmark-tests'
-        OTEL_EXPORTER_OTLP_INSECURE: false
       run: node ./bin/run-bench.js --filename=${{ github.base_ref || 'main' }}_${{ matrix.node-version }}
     - name: Verify Benchmark Output
       run: ls benchmark_results
