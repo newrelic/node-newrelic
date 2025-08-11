@@ -11,6 +11,7 @@ const glob = require('glob')
 const path = require('path')
 const { errorAndExit } = require('./utils')
 const fs = require('fs/promises')
+const { sendBenchmarkTestMetrics, meterProvider } = require('./otel-metrics-sender')
 
 const cwd = path.resolve(__dirname, '..')
 const benchpath = path.resolve(cwd, 'test/benchmark')
@@ -48,6 +49,13 @@ if (tests.length === 0 && globs.length === 0) {
 class Printer {
   constructor() {
     this._tests = Object.create(null)
+    this.attributes = {
+      node_version: process.version,
+      agent_version: require(path.resolve(cwd, './package.json')).version,
+      run_id: process.env.GITHUB_RUN_ID
+        ? `gh-run-${process.env.GITHUB_RUN_ID}`
+        : `local-run-${Date.now()}`
+    }
   }
 
   addTest(name, child) {
@@ -58,17 +66,29 @@ class Printer {
     this._tests[name] = new Promise((resolve) => {
       child.stdout.on('end', () => {
         try {
-          this._tests[name] = JSON.parse(output)
+          const parsedOutput = JSON.parse(output)
+          this._tests[name] = parsedOutput
+
+          // Send OTel metrics to NR for this benchmark test
+          sendBenchmarkTestMetrics({ name, parsedOutput }, this.attributes)
         } catch (e) {
           console.error(`Error parsing test results for ${name}`, e)
           this._tests[name] = output
+        } finally {
+          resolve()
         }
-        resolve()
       })
     })
   }
 
   async finish() {
+    try {
+      await meterProvider.shutdown()
+      console.log('✅ Metrics flushed and provider shut down successfully.')
+    } catch (e) {
+      console.error('Error shutting down metrics provider:', e)
+    }
+
     if (opts.console) {
       console.log(JSON.stringify(this._tests, null, 2))
     }
@@ -165,7 +185,7 @@ async function run() {
     }
   }
 
-  await resolveGlobs()
+  resolveGlobs()
   await runBenchmarks()
   await Promise.all(testPromises)
   printer.finish()
