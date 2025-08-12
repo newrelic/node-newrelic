@@ -42,7 +42,7 @@ test('otel decorated logs do not overwrite NR data', (t, end) => {
     stream: dest
   })
 
-  helper.runInTransaction(agent, tx => {
+  helper.runInTransaction(agent, (tx) => {
     logger.info({ foo: 'bar' }, 'hello world')
 
     assert.equal(agent.logs.length, 0)

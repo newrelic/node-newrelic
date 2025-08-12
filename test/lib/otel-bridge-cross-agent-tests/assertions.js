@@ -78,9 +78,7 @@ function agentOutput(agent, output) {
     }
 
     if (span.parentName) {
-      const parent = spans.find((s) => {
-        return s.intrinsics.name.endsWith(span.parentName)
-      })
+      const parent = spans.find((s) => s.intrinsics.name.endsWith(span.parentName))
       assert.equal(spanFromAgent.intrinsics.parentId, parent.intrinsics.guid)
     }
   })

@@ -220,7 +220,7 @@ test('Can start new chunks whether or not an explicit start event is seen', asyn
   for await (const _ of handler.generator()) { /* empty */ }
   assert.deepEqual(handler.response.output, { output: { message: { content: [{ text: 'Hello world' }] } } })
 
-  t.nr.stream = asyncGeneratorFromChunks(chunks.filter(chunk => !chunk.contentBlockStart))
+  t.nr.stream = asyncGeneratorFromChunks(chunks.filter((chunk) => !chunk.contentBlockStart))
   handler = new ConverseStreamHandler(t.nr)
   // eslint-disable-next-line sonarjs/no-unused-vars, no-unused-vars
   for await (const _ of handler.generator()) { /* empty */ }

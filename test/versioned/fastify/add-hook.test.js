@@ -37,9 +37,7 @@ const ALL_HOOKS = [...REQUEST_HOOKS, ...AFTER_HANDLER_HOOKS, ...AFTER_TX_HOOKS]
  * @returns {Array} formatted list of expected segments
  */
 function getExpectedSegments(hooks) {
-  return hooks.map((hookName) => {
-    return `Nodejs/Middleware/Fastify/${hookName}/testHook`
-  })
+  return hooks.map((hookName) => `Nodejs/Middleware/Fastify/${hookName}/testHook`)
 }
 
 test.beforeEach((ctx) => {

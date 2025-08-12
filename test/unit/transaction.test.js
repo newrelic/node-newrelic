@@ -31,9 +31,7 @@ test('Transaction unit tests', async (t) => {
   await t.test('basic transaction tests', (t, end) => {
     const { agent, txn } = t.nr
     assert.throws(
-      () => {
-        return new Transaction()
-      },
+      () => new Transaction(),
       /must be bound to the agent/,
       'should require an agent to create new transactions'
     )

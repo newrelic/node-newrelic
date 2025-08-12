@@ -75,9 +75,7 @@ function checkMetrics(
   const agentMetrics = getMetrics(agent)
 
   const unscopedMetrics = agentMetrics.unscoped
-  const unscopedDatastoreNames = Object.keys(unscopedMetrics).filter((input) => {
-    return input.includes('Datastore')
-  })
+  const unscopedDatastoreNames = Object.keys(unscopedMetrics).filter((input) => input.includes('Datastore'))
 
   const scoped = agentMetrics.scoped[TRANSACTION_NAME]
   let total = 0

@@ -342,24 +342,22 @@ helper.runInSegment = (agent, name, callback) => {
  * @param {function} callback
  *  The operations to be performed while the server is running.
  */
-helper.flushRedisDb = (client, dbIndex) => {
-  return new Promise((resolve, reject) => {
-    client.select(dbIndex, (err) => {
+helper.flushRedisDb = (client, dbIndex) => new Promise((resolve, reject) => {
+  client.select(dbIndex, (err) => {
+    if (err) {
+      client.end(true)
+      reject(err)
+    }
+
+    client.flushdb((err) => {
       if (err) {
-        client.end(true)
         reject(err)
       }
 
-      client.flushdb((err) => {
-        if (err) {
-          reject(err)
-        }
-
-        resolve()
-      })
+      resolve()
     })
   })
-}
+})
 
 helper.randomPort = (callback) => {
   const net = require('net')

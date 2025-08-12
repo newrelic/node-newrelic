@@ -13,14 +13,18 @@ const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { afterEach } = require('./common')
 const requests = {
-  amazon: (prompt, modelId) => ({
-    body: JSON.stringify({ inputText: prompt }),
-    modelId
-  }),
-  cohere: (prompt, modelId) => ({
-    body: JSON.stringify({ input_type: 'search_document', texts: prompt.split(' ') }),
-    modelId
-  })
+  amazon: (prompt, modelId) => {
+    return {
+      body: JSON.stringify({ inputText: prompt }),
+      modelId
+    }
+  },
+  cohere: (prompt, modelId) => {
+    return {
+      body: JSON.stringify({ input_type: 'search_document', texts: prompt.split(' ') }),
+      modelId
+    }
+  }
 }
 const { tspl } = require('@matteo.collina/tspl')
 

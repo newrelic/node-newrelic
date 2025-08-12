@@ -3229,7 +3229,7 @@ SOFTWARE.
 
 ### @newrelic/eslint-config
 
-This product includes source derived from [@newrelic/eslint-config](https://github.com/newrelic/eslint-config-newrelic) ([v0.5.0](https://github.com/newrelic/eslint-config-newrelic/tree/v0.5.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/eslint-config-newrelic/blob/v0.5.0/LICENSE):
+This product includes source derived from [@newrelic/eslint-config](https://github.com/newrelic/eslint-config-newrelic) ([v0.6.0](https://github.com/newrelic/eslint-config-newrelic/tree/v0.6.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/eslint-config-newrelic/blob/v0.6.0/LICENSE):
 
 ```
                                  Apache License
@@ -3646,7 +3646,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v9.1.0](https://github.com/newrelic/node-test-utilities/tree/v9.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v9.1.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v10.0.0](https://github.com/newrelic/node-test-utilities/tree/v10.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v10.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -5683,7 +5683,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @newrelic/native-metrics
 
-This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v11.1.0](https://github.com/newrelic/node-native-metrics/tree/v11.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v11.1.0/LICENSE):
+This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v12.0.0](https://github.com/newrelic/node-native-metrics/tree/v12.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v12.0.0/LICENSE):
 
 ```
                                  Apache License

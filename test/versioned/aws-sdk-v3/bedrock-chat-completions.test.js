@@ -25,50 +25,62 @@ function consumeStreamChunk() {
 }
 
 const requests = {
-  amazon: (prompt, modelId) => ({
-    body: JSON.stringify({
-      inputText: prompt,
-      textGenerationConfig: { temperature: 0.5, maxTokenCount: 100 }
-    }),
-    modelId
-  }),
-  claude: (prompt, modelId) => ({
-    body: JSON.stringify({ prompt, temperature: 0.5, max_tokens_to_sample: 100 }),
-    modelId
-  }),
-  claude3: (prompt, modelId) => ({
-    body: JSON.stringify({
-      anthropic_version: 'bedrock-2023-05-31',
-      max_tokens: 100,
-      temperature: 0.5,
-      system: 'Please respond in the style of Christopher Walken',
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
-    }),
-    modelId
-  }),
-  claude3Chunked: (chunks, modelId) => ({
-    body: JSON.stringify({
-      anthropic_version: 'bedrock-2023-05-31',
-      max_tokens: 100,
-      temperature: 0.5,
-      system: 'Please respond in the style of Christopher Walken',
-      messages: chunks
-    }),
-    modelId
-  }),
-  cohere: (prompt, modelId) => ({
-    body: JSON.stringify({ prompt, temperature: 0.5, max_tokens: 100 }),
-    modelId
-  }),
-  llama: (prompt, modelId) => ({
-    body: JSON.stringify({ prompt, max_gen_length: 100, temperature: 0.5 }),
-    modelId
-  })
+  amazon: (prompt, modelId) => {
+    return {
+      body: JSON.stringify({
+        inputText: prompt,
+        textGenerationConfig: { temperature: 0.5, maxTokenCount: 100 }
+      }),
+      modelId
+    }
+  },
+  claude: (prompt, modelId) => {
+    return {
+      body: JSON.stringify({ prompt, temperature: 0.5, max_tokens_to_sample: 100 }),
+      modelId
+    }
+  },
+  claude3: (prompt, modelId) => {
+    return {
+      body: JSON.stringify({
+        anthropic_version: 'bedrock-2023-05-31',
+        max_tokens: 100,
+        temperature: 0.5,
+        system: 'Please respond in the style of Christopher Walken',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      }),
+      modelId
+    }
+  },
+  claude3Chunked: (chunks, modelId) => {
+    return {
+      body: JSON.stringify({
+        anthropic_version: 'bedrock-2023-05-31',
+        max_tokens: 100,
+        temperature: 0.5,
+        system: 'Please respond in the style of Christopher Walken',
+        messages: chunks
+      }),
+      modelId
+    }
+  },
+  cohere: (prompt, modelId) => {
+    return {
+      body: JSON.stringify({ prompt, temperature: 0.5, max_tokens: 100 }),
+      modelId
+    }
+  },
+  llama: (prompt, modelId) => {
+    return {
+      body: JSON.stringify({ prompt, max_gen_length: 100, temperature: 0.5 }),
+      modelId
+    }
+  }
 }
 
 test.beforeEach(async (ctx) => {
@@ -85,8 +97,7 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.baseUrl = baseUrl
   ctx.nr.responses = responses
-  ctx.nr.expectedExternalPath = (modelId, method = 'invoke') =>
-    `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
+  ctx.nr.expectedExternalPath = (modelId, method = 'invoke') => `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
 
   const client = new bedrock.BedrockRuntimeClient({
     region: 'us-east-1',

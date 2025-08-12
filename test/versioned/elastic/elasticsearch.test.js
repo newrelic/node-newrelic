@@ -474,9 +474,7 @@ function getBulkData(includeIndex) {
   ]
 
   if (includeIndex) {
-    operations = operations.flatMap((doc, i) => {
-      return [{ index: { _index: i < 4 ? DB_INDEX : DB_INDEX_2 } }, doc]
-    })
+    operations = operations.flatMap((doc, i) => [{ index: { _index: i < 4 ? DB_INDEX : DB_INDEX_2 } }, doc])
   }
 
   return operations

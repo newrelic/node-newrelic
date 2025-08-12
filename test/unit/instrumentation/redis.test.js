@@ -14,10 +14,10 @@ const { removeMatchedModules } = require('#testlib/cache-buster.js')
 const { redisClientOpts } = require('../../../lib/symbols')
 const { getRedisParams } = require('../../../lib/instrumentation/@node-redis/client')
 
-test('logs warnings correctly', async t => {
+test('logs warnings correctly', async (t) => {
   const instrumentation = require('../../../lib/instrumentation/redis.js')
 
-  t.beforeEach(ctx => {
+  t.beforeEach((ctx) => {
     ctx.nr = {
       logs: [],
       shim: {
@@ -33,7 +33,7 @@ test('logs warnings correctly', async t => {
     removeMatchedModules(/redis/)
   })
 
-  await t.test('missing required prototype', t => {
+  await t.test('missing required prototype', (t) => {
     const { shim } = t.nr
     instrumentation(null, null, null, shim)
     assert.equal(t.nr.logs.length, 1)

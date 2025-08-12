@@ -435,9 +435,7 @@ test('chat.completions.create', async (t) => {
         }
       })
 
-      const summary = agent.customEventAggregator.events.toArray().find((e) => {
-        return e[0].type === 'LlmChatCompletionSummary'
-      })
+      const summary = agent.customEventAggregator.events.toArray().find((e) => e[0].type === 'LlmChatCompletionSummary')
       assert.ok(summary)
       assert.equal(summary[1].error, true)
 
