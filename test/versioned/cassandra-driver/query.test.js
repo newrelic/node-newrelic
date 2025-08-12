@@ -86,8 +86,8 @@ test.beforeEach(async (ctx) => {
 test.afterEach((ctx) => {
   ctx.nr.agent.queries.clear()
   ctx.nr.agent.metrics.clear()
-  helper.unloadAgent(ctx.nr.agent)
   ctx.nr.client.shutdown()
+  helper.unloadAgent(ctx.nr.agent)
   removeModules(['cassandra-driver'])
 })
 
@@ -123,33 +123,24 @@ test('executeBatch - callback style', (t, end) => {
   })
 })
 
-test('executeBatch - promise style', (t, end) => {
+test('executeBatch - promise style', async (t) => {
   const { agent, client } = t.nr
   assert.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
-  helper.runInTransaction(agent, (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     const transaction = agent.getTransaction()
     assert.ok(transaction, 'transaction should be visible')
     assert.equal(tx, transaction, 'we got the same transaction')
 
-    client
-      .batch(insArr, { hints })
-      .then(() => {
-        assert.ok(agent.getTransaction(), 'transaction still should be visible')
-        client
-          .execute(selQuery)
-          .then((result) => {
-            assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            assert.equal(result.rows[0][COL], colValArr[0], 'cassandra client should still work')
-            const children = transaction.trace.getChildren(transaction.trace.root.id)
-            assert.equal(children.length, 2, 'there should be two children of the root')
-            verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
-            transaction.end()
-            checkMetric(agent)
-          })
-          .catch((error) => assert.ifError(error))
-          .finally(end)
-      })
-      .catch((error) => assert.ifError(error))
+    await client.batch(insArr, { hints })
+    assert.ok(agent.getTransaction(), 'transaction still should be visible')
+    const result = await client.execute(selQuery)
+    assert.ok(agent.getTransaction(), 'transaction should still be visible')
+    assert.equal(result.rows[0][COL], colValArr[0], 'cassandra client should still work')
+    const children = transaction.trace.getChildren(transaction.trace.root.id)
+    assert.equal(children.length, 2, 'there should be two children of the root')
+    verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
+    transaction.end()
+    checkMetric(agent)
   })
 })
 
@@ -191,11 +182,12 @@ function checkMetric(agent, scoped) {
   const agentMetrics = agent.metrics._metrics
 
   const expected = {
+    'Datastore/operation/Cassandra/connect': 1,
     'Datastore/operation/Cassandra/insert': 1,
-    'Datastore/allWeb': 2,
-    'Datastore/Cassandra/allWeb': 2,
-    'Datastore/Cassandra/all': 2,
-    'Datastore/all': 2,
+    'Datastore/allWeb': 3,
+    'Datastore/Cassandra/allWeb': 3,
+    'Datastore/Cassandra/all': 3,
+    'Datastore/all': 3,
     'Datastore/statement/Cassandra/test.testFamily/insert': 1,
     'Datastore/operation/Cassandra/select': 1,
     'Datastore/statement/Cassandra/test.testFamily/select': 1
