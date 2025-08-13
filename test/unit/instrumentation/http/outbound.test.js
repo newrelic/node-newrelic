@@ -14,7 +14,7 @@ const nock = require('nock')
 
 const Tracestate = require('#agentlib/w3c/tracestate.js')
 const helper = require('../../../lib/agent_helper')
-const { instrumentOutbound } = require('../../../../lib/instrumentation/core/http-outbound')
+const instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
 const hashes = require('../../../../lib/util/hashes')
 const Segment = require('../../../../lib/transaction/trace/segment')
 const symbols = require('../../../../lib/symbols')
