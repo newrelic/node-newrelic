@@ -9,7 +9,7 @@
           "Fixed `transaction.url` obfuscation"
         ],
         "features": [
-          "Disable timers instrumentation by default in the sample configuration",
+          "Disabled timers instrumentation by default in the sample configuration",
           "Added supportability metrics when instrumentation has been disabled for a package",
           "Added support for OTEL logs API"
         ]
