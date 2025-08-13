@@ -26,6 +26,10 @@ logger.info(
   pkgJSON.version,
   process.version
 )
+const path = require('node:path')
+const Module = require('node:module')
+const otelPackages = Object.keys(pkgJSON.dependencies).filter(d => d.startsWith('@opentelemetry'))
+const otelRequire = Module.createRequire(path.join(__dirname, __filename))
 
 if (require.cache.__NR_cache) {
   logger.warn(
@@ -48,6 +52,7 @@ function initApi({ agent }) {
   return api
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 function initialize() {
   logger.debug('Loading agent from %s', __dirname)
   let agent = null
@@ -96,6 +101,10 @@ function initialize() {
     } else if (!config.worker_threads.enabled && !isMainThread) {
       logger.warn(
         'New Relic for Node.js in worker_threads is not officially supported. Not starting! To bypass this, set `config.worker_threads.enabled` to true in configuration.'
+      )
+    } else if (config.opentelemetry_bridge.enabled === true && otelBridgeAvailable() === false) {
+      logger.warn(
+        'OpenTelemetry bridge enabled, but packages are missing. Not starting!'
       )
     } else {
       if (!isMainThread && config.worker_threads.enabled) {
@@ -277,4 +286,17 @@ function recordDisabledPackages(agent) {
       agent.recordSupportability(`Nodejs/Instrumentation/${pkg}/disabled`)
     }
   }
+}
+
+function otelBridgeAvailable() {
+  for (const p of otelPackages) {
+    try {
+      otelRequire.resolve(p)
+    } catch (error) {
+      if (error.code === 'ERR_MODULE_NOT_FOUND') {
+        return false
+      }
+    }
+  }
+  return true
 }
