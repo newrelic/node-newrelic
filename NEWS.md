@@ -27,9 +27,8 @@
 #### Miscellaneous chores
 
 * Added guardrail for OTEL bridge ([#3283](https://github.com/newrelic/node-newrelic/pull/3283)) ([ff71865](https://github.com/newrelic/node-newrelic/commit/ff718658754d711b3b837e5ad633a8da4feeba7e))
-* Pinned prisma ([#3297](https://github.com/newrelic/node-newrelic/pull/3297)) ([5f298e7](https://github.com/newrelic/node-newrelic/commit/5f298e7fc94c697363595bec95123f9e126ddfc7))
 * Refactored API bootstrapping ([#3281](https://github.com/newrelic/node-newrelic/pull/3281)) ([97be8f6](https://github.com/newrelic/node-newrelic/commit/97be8f6b67c364a5a720d2889989ce3dfacb2cf5))
-* Removed diacritical grave encoding ([#3286](https://github.com/newrelic/node-newrelic/pull/3286)) ([c71185f](https://github.com/newrelic/node-newrelic/commit/c71185f7730fc12e5cb8860517394b53880a91b7))
+
 
 #### Tests
 
