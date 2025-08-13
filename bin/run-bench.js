@@ -21,6 +21,7 @@ const testPromises = []
 const globs = []
 const opts = Object.create(null)
 let hasFailures = false
+const SEND_METRICS = process.env.NEW_RELIC_LICENSE_KEY ? true : false
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file) && file.indexOf('=') > -1) {
@@ -70,7 +71,9 @@ class Printer {
           this._tests[name] = parsedOutput
 
           // Send OTel metrics to NR for this benchmark test
-          sendBenchmarkTestMetrics({ name, parsedOutput }, this.attributes)
+          if (SEND_METRICS) {
+            sendBenchmarkTestMetrics({ name, parsedOutput }, this.attributes)
+          }
         } catch (e) {
           console.error(`Error parsing test results for ${name}`, e)
           this._tests[name] = output
@@ -83,8 +86,10 @@ class Printer {
 
   async finish() {
     try {
-      await meterProvider.shutdown()
-      console.log('✅ Metrics flushed and provider shut down successfully.')
+      if (SEND_METRICS) {
+        await meterProvider.shutdown()
+        console.log('✅ Metrics flushed and provider shut down successfully.')
+      }
     } catch (e) {
       console.error('Error shutting down metrics provider:', e)
     }
