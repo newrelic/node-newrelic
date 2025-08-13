@@ -307,6 +307,31 @@ helper.runInTransaction = (agent, type, callback) => {
   })() // <-- invoke immediately
 }
 
+helper.runInTransactionForWeb = (agent, urlInfo, type, callback) => {
+  if (!callback && typeof type === 'function') {
+    callback = type
+    type = undefined
+  }
+  if (!(agent && callback)) {
+    throw new TypeError('Must include both agent and function!')
+  }
+  type = type || 'web'
+
+  // if the agent hasn't been started, set to a state that can collect transactions.
+  // do not override states for an agent that is already started or in the
+  // process of starting.
+  if (agent._state === 'stopped') {
+    agent.setState('started')
+  }
+
+  return agent.tracer.transactionNestProxy(type, () => {
+    const transaction = agent.getTransaction()
+    transaction.parsedUrl = new URL(`${urlInfo.protocol || 'http'}://${urlInfo.hostname || urlInfo.host}:${urlInfo.port || ''}${urlInfo.path || '/'}`)
+
+    return callback(transaction)
+  })() // <-- invoke immediately
+}
+
 /**
  * Proxy for runInTransaction that names the transaction that the
  * callback is executed in

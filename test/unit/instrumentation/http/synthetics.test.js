@@ -52,7 +52,7 @@ test('synthetics outbound header', async (t) => {
 
   await t.test('should be propagated if on tx', (t, end) => {
     const { agent, http, port } = t.nr
-    helper.runInTransaction(agent, function (transaction) {
+    helper.runInTransaction(agent, 'web', function (transaction) {
       transaction.syntheticsData = SYNTHETICS_DATA
       transaction.syntheticsHeader = SYNTHETICS_HEADER
       transaction.syntheticsInfoData = SYNTHETICS_INFO

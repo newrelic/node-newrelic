@@ -966,6 +966,10 @@ test('built-in http module instrumentation', async (t) => {
         addSegment({ agent }) // Add web segment so everything works properly
         const transaction = agent.getTransaction()
         transaction.url = '/xyz'
+
+        // setting parsedUrl since this is needed to getFullName(). Parsed url is suppose to be
+        // set in core http instrumentation on transaction wrapping in wrapEmitWithTransaction
+        transaction.parsedUrl = new URL(transaction.url, 'http://localhost')
         transaction.nameState.appendPath('/xyz')
         transaction.name = null
         transaction.referringPathHash = 'h/def'
