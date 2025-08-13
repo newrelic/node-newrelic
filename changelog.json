@@ -2,6 +2,20 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.1.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed `transaction.url` obfuscation"
+        ],
+        "features": [
+          "Disabled timers instrumentation by default in the sample configuration",
+          "Added supportability metrics when instrumentation has been disabled for a package",
+          "Added support for OTEL logs API"
+        ]
+      }
+    },
+    {
       "version": "13.0.0",
       "changes": {
         "security": [],

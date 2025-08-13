@@ -1,3 +1,49 @@
+### v13.1.0 (2025-08-13)
+
+#### Features
+
+* Added support for OTEL logs API ([#3228](https://github.com/newrelic/node-newrelic/pull/3228)) ([19a9c78](https://github.com/newrelic/node-newrelic/commit/19a9c788c27f084618093d94a31b7badd5fcafd9))
+* Added supportability metrics when instrumentation has been disabled for a package ([#3252](https://github.com/newrelic/node-newrelic/pull/3252)) ([6098a5b](https://github.com/newrelic/node-newrelic/commit/6098a5b24497029686f0253d68e2d3138e84a27b))
+* Disabled timers instrumentation by default in the sample configuration ([#3253](https://github.com/newrelic/node-newrelic/pull/3253)) ([72eb8d4](https://github.com/newrelic/node-newrelic/commit/72eb8d4450e2f2eb958d5faf472a94c2b93b0b81))
+
+#### Bug fixes
+
+* Fixed `transaction.url` obfuscation ([#3280](https://github.com/newrelic/node-newrelic/pull/3280)) ([dc09492](https://github.com/newrelic/node-newrelic/commit/dc09492228e0ddae2598e0edd5403bd01cd3bbcd))
+
+#### Code refactoring
+
+* Updated `http-outbound` to parse url only once ([#3270](https://github.com/newrelic/node-newrelic/pull/3270)) ([5bb0f8d](https://github.com/newrelic/node-newrelic/commit/5bb0f8d79ab9cf7100d323166302b509edce3ff1))
+
+#### Documentation
+
+* Updated distributed tracing example target to use the correct repo ([#3254](https://github.com/newrelic/node-newrelic/pull/3254)) ([1fb3859](https://github.com/newrelic/node-newrelic/commit/1fb3859ed905c03d601a5344436037969fcc1256))
+* Updated compatibility report ([#3299](https://github.com/newrelic/node-newrelic/pull/3299)) ([8b85342](https://github.com/newrelic/node-newrelic/commit/8b85342f35c7fe92287b227f48fb2d14079070bf))
+* Updated compatibility report ([#3267](https://github.com/newrelic/node-newrelic/pull/3267)) ([2712c94](https://github.com/newrelic/node-newrelic/commit/2712c94a07c13cea6dd7a488e6df960daba55307))
+* Updated compatibility report ([#3265](https://github.com/newrelic/node-newrelic/pull/3265)) ([daedadd](https://github.com/newrelic/node-newrelic/commit/daedadde1766ddb8b0d94b6d9599bdd246073576))
+* Updated compatibility report ([#3261](https://github.com/newrelic/node-newrelic/pull/3261)) ([bd7d3fa](https://github.com/newrelic/node-newrelic/commit/bd7d3fa1bed4ce312ef7609fc2dd87aa348ed2b6))
+* Updated compatibility report ([#3246](https://github.com/newrelic/node-newrelic/pull/3246)) ([c289fb5](https://github.com/newrelic/node-newrelic/commit/c289fb5d241c85c6ff4d20c5a54222178475ce33))
+* Updated compatibility report ([#3241](https://github.com/newrelic/node-newrelic/pull/3241)) ([64529e1](https://github.com/newrelic/node-newrelic/commit/64529e189e409cfedf552f8c212a36997df408b4))
+
+#### Miscellaneous chores
+
+* Added guardrail for OTEL bridge ([#3283](https://github.com/newrelic/node-newrelic/pull/3283)) ([ff71865](https://github.com/newrelic/node-newrelic/commit/ff718658754d711b3b837e5ad633a8da4feeba7e))
+* Refactored API bootstrapping ([#3281](https://github.com/newrelic/node-newrelic/pull/3281)) ([97be8f6](https://github.com/newrelic/node-newrelic/commit/97be8f6b67c364a5a720d2889989ce3dfacb2cf5))
+
+
+#### Tests
+
+* Cleaned up engines and version ranges in versioned tests ([#3260](https://github.com/newrelic/node-newrelic/pull/3260)) ([c7fd60e](https://github.com/newrelic/node-newrelic/commit/c7fd60e938aaaf9b13dc4055f6aff02508ae554c))
+* Fixed failing http benchmark test ([#3258](https://github.com/newrelic/node-newrelic/pull/3258)) ([7e8cd48](https://github.com/newrelic/node-newrelic/commit/7e8cd480786f7d971a8c6263c6cc82e92fbc0fe1))
+* Fixed a failing span-event benchmark test ([#3255](https://github.com/newrelic/node-newrelic/pull/3255)) ([05b955f](https://github.com/newrelic/node-newrelic/commit/05b955fb6ff2a470b82436964eeeaed8e93962ae))
+* Fixed CI issues with latest 24 ([#3277](https://github.com/newrelic/node-newrelic/pull/3277)) ([960d169](https://github.com/newrelic/node-newrelic/commit/960d169122fc821a432eb7c200ba713963b66289))
+* Fixed tests that assumed timers instrumentation was always enabled ([#3257](https://github.com/newrelic/node-newrelic/pull/3257)) ([40cfda1](https://github.com/newrelic/node-newrelic/commit/40cfda159a86f7c83bdfc783480ad56183098b45))
+* Forced install of peer deps on nestjs test app ([#3269](https://github.com/newrelic/node-newrelic/pull/3269)) ([4e454ff](https://github.com/newrelic/node-newrelic/commit/4e454ffabef4aa6a731bc07bb730d29e726b4713))
+
+#### Continuous integration
+
+* Updated CI to fail if benchmark tests fail ([#3256](https://github.com/newrelic/node-newrelic/pull/3256)) ([a6a7a15](https://github.com/newrelic/node-newrelic/commit/a6a7a15d1d8d1241ca88c9d3c33ec537fe5c0164))
+* Added sending benchmark metrics to NR One ([#3285](https://github.com/newrelic/node-newrelic/pull/3285)) ([7fc8e40](https://github.com/newrelic/node-newrelic/commit/7fc8e40e3d9995fd161b85e4e0ef92501aed9369))
+
 ### v13.0.0 (2025-07-23)
 #### ⚠ BREAKING CHANGES
 
