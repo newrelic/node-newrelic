@@ -1,3 +1,60 @@
+### v13.1.0 (2025-08-13)
+
+#### Features
+
+* Added support for OTEL logs API ([#3228](https://github.com/newrelic/node-newrelic/pull/3228)) ([19a9c78](https://github.com/newrelic/node-newrelic/commit/19a9c788c27f084618093d94a31b7badd5fcafd9))
+* Added supportability metrics when instrumentation has been disabled for a package ([#3252](https://github.com/newrelic/node-newrelic/pull/3252)) ([6098a5b](https://github.com/newrelic/node-newrelic/commit/6098a5b24497029686f0253d68e2d3138e84a27b))
+* Disable timers instrumentation by default in the sample configuration ([#3253](https://github.com/newrelic/node-newrelic/pull/3253)) ([72eb8d4](https://github.com/newrelic/node-newrelic/commit/72eb8d4450e2f2eb958d5faf472a94c2b93b0b81))
+
+#### Bug fixes
+
+* Fixed `transaction.url` obfuscation ([#3280](https://github.com/newrelic/node-newrelic/pull/3280)) ([dc09492](https://github.com/newrelic/node-newrelic/commit/dc09492228e0ddae2598e0edd5403bd01cd3bbcd))
+
+#### Code refactoring
+
+* Parse url only once in `http-outbound` ([#3270](https://github.com/newrelic/node-newrelic/pull/3270)) ([5bb0f8d](https://github.com/newrelic/node-newrelic/commit/5bb0f8d79ab9cf7100d323166302b509edce3ff1))
+
+#### Reverts
+
+* Updated PRs notice to only consider the main branch ([#3294](https://github.com/newrelic/node-newrelic/pull/3294)) ([b61f6f7](https://github.com/newrelic/node-newrelic/commit/b61f6f76d68097b3f50575f6a7dfcb7ac5fe5010))
+
+#### Documentation
+
+* update distributed tracing example target to use the correct repo ([#3254](https://github.com/newrelic/node-newrelic/pull/3254)) ([1fb3859](https://github.com/newrelic/node-newrelic/commit/1fb3859ed905c03d601a5344436037969fcc1256))
+* Updated compatibility report ([#3299](https://github.com/newrelic/node-newrelic/pull/3299)) ([8b85342](https://github.com/newrelic/node-newrelic/commit/8b85342f35c7fe92287b227f48fb2d14079070bf))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#3267](https://github.com/newrelic/node-newrelic/pull/3267)) ([2712c94](https://github.com/newrelic/node-newrelic/commit/2712c94a07c13cea6dd7a488e6df960daba55307))
+    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
+* Updated compatibility report ([#3265](https://github.com/newrelic/node-newrelic/pull/3265)) ([daedadd](https://github.com/newrelic/node-newrelic/commit/daedadde1766ddb8b0d94b6d9599bdd246073576))
+* Updated compatibility report ([#3261](https://github.com/newrelic/node-newrelic/pull/3261)) ([bd7d3fa](https://github.com/newrelic/node-newrelic/commit/bd7d3fa1bed4ce312ef7609fc2dd87aa348ed2b6))
+* Updated compatibility report ([#3246](https://github.com/newrelic/node-newrelic/pull/3246)) ([c289fb5](https://github.com/newrelic/node-newrelic/commit/c289fb5d241c85c6ff4d20c5a54222178475ce33))
+* Updated compatibility report ([#3241](https://github.com/newrelic/node-newrelic/pull/3241)) ([64529e1](https://github.com/newrelic/node-newrelic/commit/64529e189e409cfedf552f8c212a36997df408b4))
+
+#### Miscellaneous chores
+
+* Add guardrail for OTEL bridge ([#3283](https://github.com/newrelic/node-newrelic/pull/3283)) ([ff71865](https://github.com/newrelic/node-newrelic/commit/ff718658754d711b3b837e5ad633a8da4feeba7e))
+* Pin prisma ([#3297](https://github.com/newrelic/node-newrelic/pull/3297)) ([5f298e7](https://github.com/newrelic/node-newrelic/commit/5f298e7fc94c697363595bec95123f9e126ddfc7))
+* Refactor API bootstrapping ([#3281](https://github.com/newrelic/node-newrelic/pull/3281)) ([97be8f6](https://github.com/newrelic/node-newrelic/commit/97be8f6b67c364a5a720d2889989ce3dfacb2cf5))
+* Remove diacritical grave encoding ([#3286](https://github.com/newrelic/node-newrelic/pull/3286)) ([c71185f](https://github.com/newrelic/node-newrelic/commit/c71185f7730fc12e5cb8860517394b53880a91b7))
+* Updated PRs notice to only consider the main branch ([#3287](https://github.com/newrelic/node-newrelic/pull/3287)) ([35a53d0](https://github.com/newrelic/node-newrelic/commit/35a53d077835f994c0713ea4e163942ecb74892d))
+
+#### Tests
+
+* cleaned up engines and version ranges in versioned tests ([#3260](https://github.com/newrelic/node-newrelic/pull/3260)) ([c7fd60e](https://github.com/newrelic/node-newrelic/commit/c7fd60e938aaaf9b13dc4055f6aff02508ae554c))
+* Fix failing http benchmark test ([#3258](https://github.com/newrelic/node-newrelic/pull/3258)) ([7e8cd48](https://github.com/newrelic/node-newrelic/commit/7e8cd480786f7d971a8c6263c6cc82e92fbc0fe1))
+* fixed a failing span-event benchmark test ([#3255](https://github.com/newrelic/node-newrelic/pull/3255)) ([05b955f](https://github.com/newrelic/node-newrelic/commit/05b955fb6ff2a470b82436964eeeaed8e93962ae))
+* Fixed CI issues with latest 24 ([#3277](https://github.com/newrelic/node-newrelic/pull/3277)) ([960d169](https://github.com/newrelic/node-newrelic/commit/960d169122fc821a432eb7c200ba713963b66289))
+    * Co-authored-by: James Sumners <jsumners@newrelic.com>
+* Fixed tests that assumed timers instrumentation was always enabled ([#3257](https://github.com/newrelic/node-newrelic/pull/3257)) ([40cfda1](https://github.com/newrelic/node-newrelic/commit/40cfda159a86f7c83bdfc783480ad56183098b45))
+* force install of peer deps on nestjs test app ([#3269](https://github.com/newrelic/node-newrelic/pull/3269)) ([4e454ff](https://github.com/newrelic/node-newrelic/commit/4e454ffabef4aa6a731bc07bb730d29e726b4713))
+* pin nestjs to avoid failure with cli ([#3259](https://github.com/newrelic/node-newrelic/pull/3259)) ([80634e3](https://github.com/newrelic/node-newrelic/commit/80634e38023526c982f94790ba9d4b9a687923bc))
+* unpinned nestjs versions as a fix was made in 11.0.10 ([#3266](https://github.com/newrelic/node-newrelic/pull/3266)) ([1a93773](https://github.com/newrelic/node-newrelic/commit/1a93773b25458104f70a17646da43b6e83ceb4bf))
+
+#### Continuous integration
+
+* Fail benchmark ci if tests fail ([#3256](https://github.com/newrelic/node-newrelic/pull/3256)) ([a6a7a15](https://github.com/newrelic/node-newrelic/commit/a6a7a15d1d8d1241ca88c9d3c33ec537fe5c0164))
+* Send benchmark metrics to NR One ([#3285](https://github.com/newrelic/node-newrelic/pull/3285)) ([7fc8e40](https://github.com/newrelic/node-newrelic/commit/7fc8e40e3d9995fd161b85e4e0ef92501aed9369))
+
 ### v13.0.0 (2025-07-23)
 #### ⚠ BREAKING CHANGES
 
