@@ -12,6 +12,7 @@ const { removeModules } = require('../../lib/cache-buster')
 const { findSegment } = require('../../lib/metrics_helper')
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
+const semver = require('semver')
 
 // constants for keyspace and table creation
 const KS = 'test'
@@ -73,6 +74,7 @@ test.beforeEach(async (ctx) => {
   ctx.nr.agent = helper.instrumentMockedAgent()
 
   const cassandra = require('cassandra-driver')
+  ctx.nr.pkgVersion = cassandra.version
   await cassSetup(cassandra)
 
   ctx.nr.client = new cassandra.Client({
@@ -115,7 +117,7 @@ test('executeBatch - callback style', (t, end) => {
         assert.equal(children.length, 1, 'there should be only one child of the root')
         verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
         transaction.end()
-        checkMetric(agent)
+        checkMetric(t, agent)
 
         end()
       })
@@ -140,7 +142,7 @@ test('executeBatch - promise style', async (t) => {
     assert.equal(children.length, 2, 'there should be two children of the root')
     verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
     transaction.end()
-    checkMetric(agent)
+    checkMetric(t, agent)
   })
 })
 
@@ -170,7 +172,7 @@ test('executeBatch - slow query', (t, end) => {
         verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
         transaction.end()
         assert.ok(agent.queries.samples.size > 0, 'there should be a slow query')
-        checkMetric(agent)
+        checkMetric(t, agent)
 
         end()
       })
@@ -178,7 +180,7 @@ test('executeBatch - slow query', (t, end) => {
   })
 })
 
-function checkMetric(agent, scoped) {
+function checkMetric(ctx, agent, scoped) {
   const agentMetrics = agent.metrics._metrics
 
   const expected = {
@@ -190,7 +192,9 @@ function checkMetric(agent, scoped) {
     'Datastore/all': 3,
     'Datastore/statement/Cassandra/test.testFamily/insert': 1,
     'Datastore/operation/Cassandra/select': 1,
-    'Datastore/statement/Cassandra/test.testFamily/select': 1
+    'Datastore/statement/Cassandra/test.testFamily/select': 1,
+    'Supportability/Features/Instrumentation/OnRequire/cassandra-driver': 1,
+    [`Supportability/Features/Instrumentation/OnRequire/cassandra-driver/Version/${semver.major(ctx.nr.pkgVersion)}`]: 1
   }
 
   for (const expectedMetric in expected) {
@@ -204,11 +208,13 @@ function checkMetric(agent, scoped) {
       }
 
       assert.equal(metric.callCount, count, 'should be called ' + count + ' times')
-      assert.ok(metric.total, 'should have set total')
-      assert.ok(metric.totalExclusive, 'should have set totalExclusive')
-      assert.ok(metric.min, 'should have set min')
-      assert.ok(metric.max, 'should have set max')
-      assert.ok(metric.sumOfSquares, 'should have set sumOfSquares')
+      if (expectedMetric.includes('Datastore')) {
+        assert.ok(metric.total, 'should have set total')
+        assert.ok(metric.totalExclusive, 'should have set totalExclusive')
+        assert.ok(metric.min, 'should have set min')
+        assert.ok(metric.max, 'should have set max')
+        assert.ok(metric.sumOfSquares, 'should have set sumOfSquares')
+      }
     }
   }
 }
