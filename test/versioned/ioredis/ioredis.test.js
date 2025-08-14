@@ -13,6 +13,7 @@ const urltils = require('../../../lib/util/urltils')
 const { tspl } = require('@matteo.collina/tspl')
 const { assertMetrics } = require('../../lib/custom-assertions')
 const { removeModules } = require('../../lib/cache-buster')
+const semver = require('semver')
 
 // Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 3
@@ -20,6 +21,7 @@ const DB_INDEX = 3
 test('ioredis instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
     const agent = helper.instrumentMockedAgent()
+    const { version: pkgVersion } = require('ioredis/package.json')
     const Redis = require('ioredis')
     const redisClient = new Redis(params.redis_port, params.redis_host)
     await redisClient.flushall()
@@ -31,6 +33,7 @@ test('ioredis instrumentation', async (t) => {
     await redisClient.select(DB_INDEX)
     ctx.nr = {
       agent,
+      pkgVersion,
       redisClient,
       HOST_ID,
       METRIC_HOST_NAME
@@ -45,7 +48,7 @@ test('ioredis instrumentation', async (t) => {
   })
 
   await t.test('creates expected metrics', async (t) => {
-    const { agent, redisClient, HOST_ID } = t.nr
+    const { agent, pkgVersion, redisClient, HOST_ID } = t.nr
     const plan = tspl(t, { plan: 6 })
     agent.on('transactionFinished', function (tx) {
       const expected = [
@@ -56,6 +59,12 @@ test('ioredis instrumentation', async (t) => {
       expected['Datastore/instance/Redis/' + HOST_ID] = 2
 
       assertMetrics(tx.metrics, expected, false, false, { assert: plan })
+      const expectedPkgMetrics = [
+        [{ name: 'Supportability/Features/Instrumentation/OnRequire/ioredis' }],
+        [{ name: `Supportability/Features/Instrumentation/OnRequire/ioredis/Version/${semver.major(pkgVersion)}` }]
+      ]
+
+      assertMetrics(agent.metrics, expectedPkgMetrics, false, false)
     })
 
     helper.runInTransaction(agent, async (transaction) => {

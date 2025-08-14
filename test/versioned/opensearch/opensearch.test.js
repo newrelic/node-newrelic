@@ -13,6 +13,7 @@ const crypto = require('crypto')
 const DB_INDEX = `test-${randomString()}`
 const DB_INDEX_2 = `test2-${randomString()}`
 const SEARCHTERM_1 = randomString()
+const semver = require('semver')
 
 function randomString() {
   return crypto.randomBytes(5).toString('hex')
@@ -47,10 +48,12 @@ test('opensearch instrumentation', async (t) => {
     const client = new Client({
       node: `http://${params.opensearch_host}:${params.opensearch_port}`
     })
+    const { version: pkgVersion } = require('@opensearch-project/opensearch/package.json')
 
     ctx.nr = {
       agent,
       client,
+      pkgVersion,
       METRIC_HOST_NAME,
       HOST_ID
     }
@@ -314,7 +317,7 @@ test('opensearch instrumentation', async (t) => {
   })
 
   await t.test('should create correct metrics', async function (t) {
-    const { agent, client, HOST_ID } = t.nr
+    const { agent, client, pkgVersion, HOST_ID } = t.nr
     const id = `key-${randomString()}`
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const documentProp = setRequestBody({
@@ -355,6 +358,12 @@ test('opensearch instrumentation', async (t) => {
       }
       expected['Datastore/instance/OpenSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
+      const agentMetrics = agent.metrics._metrics.unscoped
+      const expectedPkgMetrics = {
+        'Supportability/Features/Instrumentation/OnRequire/@opensearch-project/opensearch': 1,
+        [`Supportability/Features/Instrumentation/OnRequire/@opensearch-project/opensearch/Version/${semver.major(pkgVersion)}`]: 1,
+      }
+      checkMetrics(agentMetrics, expectedPkgMetrics)
     })
   })
 

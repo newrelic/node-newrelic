@@ -10,7 +10,10 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
-const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const semver = require('semver')
+const { readFile } = require('node:fs/promises')
+const path = require('node:path')
 
 const {
   MCP
@@ -26,6 +29,9 @@ test.beforeEach(async (ctx) => {
 
   const { Client } = require('@modelcontextprotocol/sdk/client/index.js')
   const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js')
+  const pkg = await readFile(path.join(__dirname, '/node_modules/@modelcontextprotocol/sdk/package.json'))
+  const { version: pkgVersion } = JSON.parse(pkg.toString())
+  ctx.nr.pkgVersion = pkgVersion
 
   ctx.nr.transport = new StdioClientTransport({
     command: 'node',
@@ -72,7 +78,7 @@ test('should create span for callTool', async (t) => {
 })
 
 test('should create span for readResource', async (t) => {
-  const { agent, client } = t.nr
+  const { agent, client, pkgVersion } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
     const resource = await client.readResource({
       uri: 'echo://hello-world',
@@ -90,6 +96,12 @@ test('should create span for readResource', async (t) => {
         { name, kind: 'internal' }
       ]
     })
+    const agentMetrics = agent.metrics
+    const expectedPkgMetrics = [
+      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/client/index.js' }],
+      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/client/index.js/Version/${semver.major(pkgVersion)}` }]
+    ]
+    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
 })
 
