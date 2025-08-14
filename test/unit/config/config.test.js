@@ -24,9 +24,7 @@ test('when loading invalid configuration file', async (t) => {
   const fsUnwrapped = require('../../../lib/util/unwrapped-core').fs
 
   t.beforeEach(() => {
-    realpathSyncStub = sinon.stub(fsUnwrapped, 'realpathSync').callsFake(() => {
-      return 'BadPath'
-    })
+    realpathSyncStub = sinon.stub(fsUnwrapped, 'realpathSync').callsFake(() => 'BadPath')
   })
 
   t.afterEach(() => {
@@ -114,18 +112,14 @@ test('#publicSettings', async (t) => {
   await t.test('should not return serialized attributeFilter object from publicSettings', () => {
     const pub = configuration.publicSettings()
 
-    const result = Object.keys(pub).some((key) => {
-      return key.includes('attributeFilter')
-    })
+    const result = Object.keys(pub).some((key) => key.includes('attributeFilter'))
 
     assert.ok(!result)
   })
 
   await t.test('should not return serialized mergeServerConfig props from publicSettings', () => {
     const pub = configuration.publicSettings()
-    const result = Object.keys(pub).some((key) => {
-      return key.includes('mergeServerConfig')
-    })
+    const result = Object.keys(pub).some((key) => key.includes('mergeServerConfig'))
 
     assert.ok(!result)
   })

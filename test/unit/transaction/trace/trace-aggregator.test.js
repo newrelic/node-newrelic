@@ -237,9 +237,7 @@ test('TraceAggregator', async function (t) {
       assert.ok(!agent.traces.trace, 'trace waiting to be collected')
       createTransaction(agent, `/test-${n % 3}`, 500)
       assert.ok(agent.traces.trace, `${n}th trace to collect`)
-      agent.traces.once('finished_data_send-transaction_sample_data', (err) =>
-        cb(err, { idx: n, max })
-      )
+      agent.traces.once('finished_data_send-transaction_sample_data', (err) => cb(err, { idx: n, max }))
       agent.traces.send()
     }
 
@@ -388,9 +386,7 @@ test('TraceAggregator with top n support', async function (t) {
       } else {
         assert.ok(!agent.traces.trace, 'trace 5 collected')
       }
-      agent.traces.once('finished_data_send-transaction_sample_data', (err) =>
-        cb(err, { idx: n, max })
-      )
+      agent.traces.once('finished_data_send-transaction_sample_data', (err) => cb(err, { idx: n, max }))
       agent.traces.send()
       assert.ok(!agent.traces.trace, 'trace after harvest')
       if (n === 5) {

@@ -5,4 +5,4 @@
 
 'use strict'
 
-module.exports = () => ({ hello: 'world' })
+module.exports = () => { return { hello: 'world' } }

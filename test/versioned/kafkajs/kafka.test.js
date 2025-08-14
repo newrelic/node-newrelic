@@ -352,7 +352,7 @@ test('consume inside of a transaction', async (t) => {
       })
     })
     await utils.waitForConsumersToJoinGroup({ consumer })
-    const messagePayload = messages.map((m, i) => ({ key: `key-${i}`, value: m }))
+    const messagePayload = messages.map((m, i) => { return { key: `key-${i}`, value: m } })
     await producer.send({
       acks: 1,
       topic,
@@ -423,7 +423,7 @@ test('consume batch inside of a transaction', async (t) => {
       })
     })
     await utils.waitForConsumersToJoinGroup({ consumer })
-    const messagePayload = messages.map((m, i) => ({ key: `key-${i}`, value: m }))
+    const messagePayload = messages.map((m, i) => { return { key: `key-${i}`, value: m } })
     await producer.send({
       acks: 1,
       topic,

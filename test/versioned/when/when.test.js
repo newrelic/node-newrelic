@@ -103,16 +103,13 @@ test('new Promise() resolve then throw', async (t) => {
 test('when()', async (t) => {
   const plan = tspl(t, { plan: 10 })
   const { agent, when } = setupTest(t)
-  const testFunc = (name) =>
-    when(name).then(function resolved(value) {
-      plan.equal(value, name, `${name} should pass the value`)
+  const testFunc = (name) => when(name).then(function resolved(value) {
+    plan.equal(value, name, `${name} should pass the value`)
 
-      return when(when.reject(Error(`${name} error message`)))
-        .then(() => plan.fail(`${name} should not call resolve handler after throwing`))
-        .catch((error) =>
-          plan.equal(error.message, `${name} error message`, `${name} should have correct error`)
-        )
-    })
+    return when(when.reject(Error(`${name} error message`)))
+      .then(() => plan.fail(`${name} should not call resolve handler after throwing`))
+      .catch((error) => plan.equal(error.message, `${name} error message`, `${name} should have correct error`))
+  })
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -133,9 +130,7 @@ test('when.defer', async (t) => {
       defer2.reject(Error(`${name} error message`))
       return defer2.promise
         .then(() => plan.fail(`${name} should not call resolve handler after throwing`))
-        .catch((error) =>
-          plan.equal(error.message, `${name} error message`, `${name} should have correct error`)
-        )
+        .catch((error) => plan.equal(error.message, `${name} error message`, `${name} should have correct error`))
     })
   }
 
@@ -168,8 +163,7 @@ test('when debug API', async (t) => {
 
     let p = null
     const error = { val: 'test' }
-    when.Promise.onPotentiallyUnhandledRejectionHandled = (e) =>
-      plan.equal(e.value, error, 'should have passed error through')
+    when.Promise.onPotentiallyUnhandledRejectionHandled = (e) => plan.equal(e.value, error, 'should have passed error through')
     when.Promise.onPotentiallyUnhandledRejection = (e) => {
       plan.equal(e.value, error, 'should pass error through')
       // Trigger the `onPotentiallyUnhandledRejectionHandled` callback.
@@ -221,16 +215,13 @@ test('when.iterate', async (t) => {
 test('when.join', async (t) => {
   const plan = tspl(t, { plan: 10 })
   const { agent, when } = setupTest(t)
-  const testFunc = (name) =>
-    when.join(2, when.resolve(name)).then((value) => {
-      plan.deepStrictEqual(value, [2, name], `${name} should resolve with correct value`)
-      return when
-        .join(2, when.reject(Error(`${name} error message`)))
-        .then(() => plan.fail(`${name} should not call resolve handler after throwing`))
-        .catch((error) =>
-          plan.equal(error.message, `${name} error message`, `${name} should have correct error`)
-        )
-    })
+  const testFunc = (name) => when.join(2, when.resolve(name)).then((value) => {
+    plan.deepStrictEqual(value, [2, name], `${name} should resolve with correct value`)
+    return when
+      .join(2, when.reject(Error(`${name} error message`)))
+      .then(() => plan.fail(`${name} should not call resolve handler after throwing`))
+      .catch((error) => plan.equal(error.message, `${name} error message`, `${name} should have correct error`))
+  })
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -252,9 +243,7 @@ test('when.lift', async (t) => {
       plan.equal(value, `${name} return value`, `${name} should pass return value`)
       return func(Error(`${name} error message`))
         .then(() => plan.fail(`${name} should not call resolve handler after throwing`))
-        .catch((error) =>
-          plan.equal(error.message, `${name} error message`, `${name} should have correct error`)
-        )
+        .catch((error) => plan.equal(error.message, `${name} error message`, `${name} should have correct error`))
     })
   }
 
@@ -266,17 +255,16 @@ test('when.lift', async (t) => {
 test('when.promise', async (t) => {
   const plan = tspl(t, { plan: 10 })
   const { agent, when } = setupTest(t)
-  const testFunc = (name) =>
-    when
-      .promise((resolve) => resolve(`${name} resolve value`))
-      .then((value) => {
-        plan.equal(value, `${name} resolve value`, `${name} should pass the value`)
-        return when.promise((_, reject) => reject(`${name} reject value`))
-      })
-      .then(
-        () => plan.fail(`${name} should not call resolve handler after rejection`),
-        (error) => plan.equal(error, `${name} reject value`, `${name} should pass the value`)
-      )
+  const testFunc = (name) => when
+    .promise((resolve) => resolve(`${name} resolve value`))
+    .then((value) => {
+      plan.equal(value, `${name} resolve value`, `${name} should pass the value`)
+      return when.promise((_, reject) => reject(`${name} reject value`))
+    })
+    .then(
+      () => plan.fail(`${name} should not call resolve handler after rejection`),
+      (error) => plan.equal(error, `${name} reject value`, `${name} should pass the value`)
+    )
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -286,10 +274,9 @@ test('when.promise', async (t) => {
 test('when.resolve', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, when } = setupTest(t)
-  const testFunc = (name) =>
-    when
-      .resolve(`${name} resolve value`)
-      .then((value) => plan.equal(value, `${name} resolve value`, `${name} should pass the value`))
+  const testFunc = (name) => when
+    .resolve(`${name} resolve value`)
+    .then((value) => plan.equal(value, `${name} resolve value`, `${name} should pass the value`))
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -299,13 +286,10 @@ test('when.resolve', async (t) => {
 test('when.reject', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, when } = setupTest(t)
-  const testFunc = (name) =>
-    when
-      .reject(`${name} reject value`)
-      .then(() => plan.fail(`${name} should not resolve after a rejection`))
-      .catch((error) =>
-        plan.equal(error, `${name} reject value`, `${name} should reject with the error`)
-      )
+  const testFunc = (name) => when
+    .reject(`${name} reject value`)
+    .then(() => plan.fail(`${name} should not resolve after a rejection`))
+    .catch((error) => plan.equal(error, `${name} reject value`, `${name} should reject with the error`))
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -323,9 +307,7 @@ for (const method of ['try', 'attempt']) {
           throw Error(`${name} error message`)
         })
           .then(() => plan.fail(`${name} should not call resolve handler after throwing`))
-          .catch((error) =>
-            plan.equal(error.message, `${name} error message`, `${name} should have correct error`)
-          )
+          .catch((error) => plan.equal(error.message, `${name} error message`, `${name} should have correct error`))
       })
 
       function handler(value) {
@@ -343,10 +325,7 @@ for (const method of ['try', 'attempt']) {
 test('Promise.resolve', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, when } = setupTest(t)
-  const testFunc = (name) =>
-    when.Promise.resolve(`${name} resolve value`).then((value) =>
-      plan.equal(value, `${name} resolve value`, `${name} should pass the value`)
-    )
+  const testFunc = (name) => when.Promise.resolve(`${name} resolve value`).then((value) => plan.equal(value, `${name} resolve value`, `${name} should pass the value`))
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -356,12 +335,9 @@ test('Promise.resolve', async (t) => {
 test('Promise.reject', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, when } = setupTest(t)
-  const testFunc = (name) =>
-    when.Promise.reject(`${name} reject value`)
-      .then(() => plan.fail(`${name} should not resolve after a rejection`))
-      .catch((error) =>
-        plan.equal(error, `${name} reject value`, `${name} should reject with the error`)
-      )
+  const testFunc = (name) => when.Promise.reject(`${name} reject value`)
+    .then(() => plan.fail(`${name} should not resolve after a rejection`))
+    .catch((error) => plan.equal(error, `${name} reject value`, `${name} should reject with the error`))
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -372,24 +348,16 @@ test('Promise#done', async (t) => {
   const plan = tspl(t, { plan: 4 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
-  const testFunc = (name) =>
-    new Promise((resolve, reject) => {
-      const ret = Promise.resolve(`${name} resolve value`).done(resolve, reject)
-      plan.equal(ret, undefined, `${name} should not return a promise from #done`)
-    })
-      .then((value) =>
-        plan.equal(value, `${name} resolve value`, `${name} should resolve correctly`)
-      )
-      .then(
-        () =>
-          new Promise((resolve, reject) =>
-            Promise.reject(Error(`${name} error message`)).done(resolve, reject)
-          )
-      )
-      .then(() => plan.fail(`${name} should not resolve after rejection`))
-      .catch((error) =>
-        plan.equal(error.message, `${name} error message`, `${name} should have correct error`)
-      )
+  const testFunc = (name) => new Promise((resolve, reject) => {
+    const ret = Promise.resolve(`${name} resolve value`).done(resolve, reject)
+    plan.equal(ret, undefined, `${name} should not return a promise from #done`)
+  })
+    .then((value) => plan.equal(value, `${name} resolve value`, `${name} should resolve correctly`))
+    .then(
+      () => new Promise((resolve, reject) => Promise.reject(Error(`${name} error message`)).done(resolve, reject))
+    )
+    .then(() => plan.fail(`${name} should not resolve after rejection`))
+    .catch((error) => plan.equal(error.message, `${name} error message`, `${name} should have correct error`))
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -400,19 +368,18 @@ test('Promise#then', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
-  const testFunc = (name) =>
-    Promise.resolve([1, 2, 3, name])
-      .then((value) => {
-        plan.deepStrictEqual(value, [1, 2, 3, name], `${name} should have the correct result value`)
-        throw Error('Promise#then test error')
-      })
-      .then(
-        () => plan.fail(`${name} should not go into resolve handler from rejected promise`),
-        (error) => {
-          plan.ok(error, `${name} should pass error into then-ed rejection handler`)
-          plan.equal(error.message, 'Promise#then test error', `${name} should be correct error`)
-        }
-      )
+  const testFunc = (name) => Promise.resolve([1, 2, 3, name])
+    .then((value) => {
+      plan.deepStrictEqual(value, [1, 2, 3, name], `${name} should have the correct result value`)
+      throw Error('Promise#then test error')
+    })
+    .then(
+      () => plan.fail(`${name} should not go into resolve handler from rejected promise`),
+      (error) => {
+        plan.ok(error, `${name} should pass error into then-ed rejection handler`)
+        plan.equal(error.message, 'Promise#then test error', `${name} should be correct error`)
+      }
+    )
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -423,16 +390,15 @@ test('Promise#catch', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
-  const testFunc = (name) =>
-    Promise.resolve([1, 2, 3, name])
-      .catch(() => plan.fail(`${name} should not go into catch from a resolved promise`))
-      .then(() => {
-        throw Error('Promise#catch test error')
-      })
-      .catch((error) => {
-        plan.ok(error, `${name} should pass error into then-ed rejection handler`)
-        plan.equal(error.message, 'Promise#catch test error', `${name} should be correct error`)
-      })
+  const testFunc = (name) => Promise.resolve([1, 2, 3, name])
+    .catch(() => plan.fail(`${name} should not go into catch from a resolved promise`))
+    .then(() => {
+      throw Error('Promise#catch test error')
+    })
+    .catch((error) => {
+      plan.ok(error, `${name} should pass error into then-ed rejection handler`)
+      plan.equal(error.message, 'Promise#catch test error', `${name} should be correct error`)
+    })
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -443,16 +409,15 @@ test('Promise#otherwise', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
-  const testFunc = (name) =>
-    Promise.resolve([1, 2, 3, name])
-      .otherwise(() => plan.fail(`${name} should not go into otherwise from a resolved promise`))
-      .then(() => {
-        throw Error('Promise#otherwise test error')
-      })
-      .otherwise((error) => {
-        plan.ok(error, `${name} should pass error into then-ed rejection handler`)
-        plan.equal(error.message, 'Promise#otherwise test error', `${name} should be correct error`)
-      })
+  const testFunc = (name) => Promise.resolve([1, 2, 3, name])
+    .otherwise(() => plan.fail(`${name} should not go into otherwise from a resolved promise`))
+    .then(() => {
+      throw Error('Promise#otherwise test error')
+    })
+    .otherwise((error) => {
+      plan.ok(error, `${name} should pass error into then-ed rejection handler`)
+      plan.equal(error.message, 'Promise#otherwise test error', `${name} should be correct error`)
+    })
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -463,27 +428,26 @@ test('Promise#finally', async (t) => {
   const plan = tspl(t, { plan: 18 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
-  const testFunc = (name) =>
-    Promise.resolve([1, 2, 3, name])
-      .finally((...args) => {
-        plan.equal(args.length, 0, `${name} should not receive any parameters`)
-      })
-      .then((value) => {
-        plan.deepStrictEqual(
-          value,
-          [1, 2, 3, name],
+  const testFunc = (name) => Promise.resolve([1, 2, 3, name])
+    .finally((...args) => {
+      plan.equal(args.length, 0, `${name} should not receive any parameters`)
+    })
+    .then((value) => {
+      plan.deepStrictEqual(
+        value,
+        [1, 2, 3, name],
           `${name} should pass values beyond finally handler`
-        )
-        throw Error('Promise#finally test error')
-      })
-      .finally((...args) => {
-        plan.equal(args.length, 0, `${name} should not receive any parameters`)
-        plan.ok(true, `${name} should go into finally handler from rejected promise`)
-      })
-      .catch((error) => {
-        plan.ok(error, `${name} should pass error beyond finally handler`)
-        plan.equal(error.message, 'Promise#finally test error', `${name} should be correct error`)
-      })
+      )
+      throw Error('Promise#finally test error')
+    })
+    .finally((...args) => {
+      plan.equal(args.length, 0, `${name} should not receive any parameters`)
+      plan.ok(true, `${name} should go into finally handler from rejected promise`)
+    })
+    .catch((error) => {
+      plan.ok(error, `${name} should pass error beyond finally handler`)
+      plan.equal(error.message, 'Promise#finally test error', `${name} should be correct error`)
+    })
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -494,27 +458,26 @@ test('Promise#ensure', async (t) => {
   const plan = tspl(t, { plan: 18 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
-  const testFunc = (name) =>
-    Promise.resolve([1, 2, 3, name])
-      .ensure((...args) => {
-        plan.equal(args.length, 0, `${name} should not receive any parameters`)
-      })
-      .then((value) => {
-        plan.deepStrictEqual(
-          value,
-          [1, 2, 3, name],
+  const testFunc = (name) => Promise.resolve([1, 2, 3, name])
+    .ensure((...args) => {
+      plan.equal(args.length, 0, `${name} should not receive any parameters`)
+    })
+    .then((value) => {
+      plan.deepStrictEqual(
+        value,
+        [1, 2, 3, name],
           `${name} should pass values beyond ensure handler`
-        )
-        throw Error('Promise#ensure test error')
-      })
-      .ensure((...args) => {
-        plan.equal(args.length, 0, `${name} should not receive any parameters`)
-        plan.ok(true, `${name} should go into ensure handler from rejected promise`)
-      })
-      .catch((error) => {
-        plan.ok(error, `${name} should pass error beyond ensure handler`)
-        plan.equal(error.message, 'Promise#ensure test error', `${name} should be correct error`)
-      })
+      )
+      throw Error('Promise#ensure test error')
+    })
+    .ensure((...args) => {
+      plan.equal(args.length, 0, `${name} should not receive any parameters`)
+      plan.ok(true, `${name} should go into ensure handler from rejected promise`)
+    })
+    .catch((error) => {
+      plan.ok(error, `${name} should pass error beyond ensure handler`)
+      plan.equal(error.message, 'Promise#ensure test error', `${name} should be correct error`)
+    })
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -525,24 +488,23 @@ test('Promise#tap', async (t) => {
   const plan = tspl(t, { plan: 14 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
-  const testFunc = (name) =>
-    Promise.resolve([1, 2, 3, name])
-      .tap((value) => {
-        plan.deepStrictEqual(value, [1, 2, 3, name], `${name} should pass values into tap handler`)
-      })
-      .then((value) => {
-        plan.deepStrictEqual(
-          value,
-          [1, 2, 3, name],
+  const testFunc = (name) => Promise.resolve([1, 2, 3, name])
+    .tap((value) => {
+      plan.deepStrictEqual(value, [1, 2, 3, name], `${name} should pass values into tap handler`)
+    })
+    .then((value) => {
+      plan.deepStrictEqual(
+        value,
+        [1, 2, 3, name],
           `${name} should pass values beyond tap handler`
-        )
-        throw Error('Promise#tap test error')
-      })
-      .tap(() => plan.fail(`${name} should not call tap after rejected promises`))
-      .catch((error) => {
-        plan.ok(error, `${name} should pass error beyond tap handler`)
-        plan.equal(error.message, 'Promise#tap test error', `${name} should be correct error`)
-      })
+      )
+      throw Error('Promise#tap test error')
+    })
+    .tap(() => plan.fail(`${name} should not call tap after rejected promises`))
+    .catch((error) => {
+      plan.ok(error, `${name} should pass error beyond tap handler`)
+      plan.equal(error.message, 'Promise#tap test error', `${name} should be correct error`)
+    })
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -553,10 +515,7 @@ test('Promise#spread', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
-  const testFunc = (name) =>
-    Promise.resolve([1, 2, 3, name]).spread((a, b, c, d) =>
-      plan.deepStrictEqual([a, b, c, d], [1, 2, 3, name], `${name} parameters should be correct`)
-    )
+  const testFunc = (name) => Promise.resolve([1, 2, 3, name]).spread((a, b, c, d) => plan.deepStrictEqual([a, b, c, d], [1, 2, 3, name], `${name} parameters should be correct`))
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -582,13 +541,11 @@ test('Promise#fold', async (t) => {
         },
         p.then(() => name)
       )
-      .then((value) =>
-        plan.deepStrictEqual(
-          value,
-          [name, [1, 2, 3, name]],
+      .then((value) => plan.deepStrictEqual(
+        value,
+        [name, [1, 2, 3, name]],
           `${name} should have correct parameters`
-        )
-      )
+      ))
   }
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
@@ -600,12 +557,9 @@ test('Promise#yield', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, when } = setupTest(t)
   const { Promise } = when
-  const testFunc = (name) =>
-    Promise.resolve([1, 2, 3, name])
-      .yield(`${name} yield value`)
-      .then((value) =>
-        plan.equal(value, `${name} yield value`, `${name} should have correct value`)
-      )
+  const testFunc = (name) => Promise.resolve([1, 2, 3, name])
+    .yield(`${name} yield value`)
+    .then((value) => plan.equal(value, `${name} yield value`, `${name} should have correct value`))
 
   await testThrowOutsideTransaction({ plan, agent, testFunc })
   await testInsideTransaction({ plan, agent, testFunc })
@@ -621,23 +575,20 @@ for (const method of ['else', 'orElse']) {
       const p = Promise.resolve([1, 2, 3, name])
       return p[method](Error(`${name} skipped else message`))
         .then(
-          (value) =>
-            plan.deepStrictEqual(
-              value,
-              [1, 2, 3, name],
+          (value) => plan.deepStrictEqual(
+            value,
+            [1, 2, 3, name],
               `${name} should pass value through the else`
-            ),
+          ),
           () => plan.fail(`${name} should not have rejected first promise`)
         )
         .then(() => {
           throw Error(`${name} original error`)
-        })[method](`${name} elsed value`).then((value) =>
-          plan.deepStrictEqual(
-            value,
+        })[method](`${name} elsed value`).then((value) => plan.deepStrictEqual(
+          value,
             `${name} elsed value`,
             `${name} should resolve with else value`
-          )
-        )
+        ))
     }
 
     await testThrowOutsideTransaction({ plan, agent, testFunc })
@@ -835,9 +786,7 @@ test('reduce', async (t) => {
       when
         .reduce(
           [1, 2],
-          (total, item) => {
-            return when.resolve(item).then((r) => total + r)
-          },
+          (total, item) => when.resolve(item).then((r) => total + r),
           0
         )
         .then((total) => {
@@ -855,9 +804,7 @@ test('reduce', async (t) => {
     helper.runInTransaction(agent, (tx) => {
       Promise.reduce(
         [1, 2],
-        (total, item) => {
-          return when.resolve(item).then((r) => total + r)
-        },
+        (total, item) => when.resolve(item).then((r) => total + r),
         0
       ).then((total) => {
         assert.equal(total, 3)

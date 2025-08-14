@@ -66,9 +66,7 @@ class Github {
         page: pageNum
       })
 
-      const found = result.data.find((tag) => {
-        return tag.name === name
-      })
+      const found = result.data.find((tag) => tag.name === name)
 
       if (found) {
         return found
@@ -111,9 +109,7 @@ class Github {
         page: pageNum
       })
 
-      const mergedPrs = result.data.filter((pr) => {
-        return pr.merged_at && new Date(pr.merged_at) > comparisonDate
-      })
+      const mergedPrs = result.data.filter((pr) => pr.merged_at && new Date(pr.merged_at) > comparisonDate)
 
       mergedPullRequests.push(...mergedPrs)
       // Since we are going by 'updated' on query but merged on filter,

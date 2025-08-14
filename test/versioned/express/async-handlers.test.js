@@ -51,9 +51,7 @@ test('async handlers', { skip: !isExpress5() }, async (t) => {
   await test('should properly handle errors in async handlers', async (t) => {
     const { app } = t.nr
 
-    app.use(() => {
-      return Promise.reject(new Error('whoops i failed'))
-    })
+    app.use(() => Promise.reject(new Error('whoops i failed')))
     app.use('/test', function handler() {
       throw new Error('should not call handler on error')
     })

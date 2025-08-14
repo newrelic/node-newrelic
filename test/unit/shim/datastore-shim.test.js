@@ -373,9 +373,7 @@ test('DatastoreShim', async function (t) {
 
     await t.test('should create a child segment when opaque is false', (t, end) => {
       const { agent, shim, wrappable } = t.nr
-      shim.recordOperation(wrappable, 'withNested', () => {
-        return new OperationSpec({ name: 'test', opaque: false })
-      })
+      shim.recordOperation(wrappable, 'withNested', () => new OperationSpec({ name: 'test', opaque: false }))
       helper.runInTransaction(agent, (tx) => {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.withNested()
@@ -392,9 +390,7 @@ test('DatastoreShim', async function (t) {
 
     await t.test('should not create a child segment when opaque is true', (t, end) => {
       const { agent, shim, wrappable } = t.nr
-      shim.recordOperation(wrappable, 'withNested', () => {
-        return new OperationSpec({ name: 'test', opaque: true })
-      })
+      shim.recordOperation(wrappable, 'withNested', () => new OperationSpec({ name: 'test', opaque: true }))
       helper.runInTransaction(agent, (tx) => {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.withNested()

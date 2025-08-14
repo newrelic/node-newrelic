@@ -28,9 +28,7 @@ test.beforeEach((ctx) => {
     }
   }, 10)
   ctx.nr.addTask = (cb, args = []) => {
-    ctx.nr.tasks.push(() => {
-      return cb.apply(null, args)
-    })
+    ctx.nr.tasks.push(() => cb.apply(null, args))
   }
 })
 

@@ -150,7 +150,7 @@ function decorateHandler(handler, options) {
 function writeToResponseStream(chunks, stream, delay) {
   const writes = []
   for (const chunk of chunks) {
-    const promise = new Promise(resolve => {
+    const promise = new Promise((resolve) => {
       setTimeout(() => {
         stream.write(chunk)
         resolve()

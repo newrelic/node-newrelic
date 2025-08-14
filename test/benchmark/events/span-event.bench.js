@@ -20,9 +20,7 @@ suite.add({
     ;({ segment, transaction } = makeSegment(agent))
     segment.name = 'some random segment'
   },
-  fn: () => {
-    return SpanEvent.fromSegment({ segment, transaction })
-  }
+  fn: () => SpanEvent.fromSegment({ segment, transaction })
 })
 
 suite.add({
@@ -32,9 +30,7 @@ suite.add({
     ;({ segment, transaction } = makeSegment(agent))
     segment.name = 'External/www.foobar.com/'
   },
-  fn: () => {
-    return SpanEvent.fromSegment({ segment, transaction })
-  }
+  fn: () => SpanEvent.fromSegment({ segment, transaction })
 })
 
 suite.add({
@@ -44,9 +40,7 @@ suite.add({
     ;({ segment, transaction } = makeSegment(agent))
     segment.name = 'Datastore/statement/SELECT'
   },
-  fn: () => {
-    return SpanEvent.fromSegment({ segment, transaction })
-  }
+  fn: () => SpanEvent.fromSegment({ segment, transaction })
 })
 
 suite.run()

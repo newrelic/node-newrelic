@@ -72,9 +72,7 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
             }
 
             const metrics = agent.metrics._metrics.unscoped
-            const hostPortMetric = Object.entries(metrics).find((entry) =>
-              /Datastore\/instance\/MySQL\/[0-9a-zA-Z.-]+\/3306/.test(entry[0])
-            )
+            const hostPortMetric = Object.entries(metrics).find((entry) => /Datastore\/instance\/MySQL\/[0-9a-zA-Z.-]+\/3306/.test(entry[0]))
             assert.ok(hostPortMetric, 'has host:port metric')
             assert.equal(hostPortMetric[1].callCount, 1, 'host:port metric has been incremented')
 

@@ -46,7 +46,7 @@ test('Redis instrumentation', async function (t) {
       client = client.legacy()
       client.close = close
       client.select = (idx, callback) => {
-        select(idx).then(() => { callback() }).catch(error => callback(error))
+        select(idx).then(() => { callback() }).catch((error) => callback(error))
       }
     } else {
       client = redis.createClient({

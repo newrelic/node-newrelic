@@ -135,13 +135,9 @@ test('Agent API LLM methods', async (t) => {
     const agent = api.agent
 
     helper.runInTransaction(api.agent, (tx) => {
-      agent.tracer.getTransaction = () => {
-        return tx
-      }
+      agent.tracer.getTransaction = () => tx
       assert.equal(
-        api.withLlmCustomAttributes(null, () => {
-          return 1
-        }),
+        api.withLlmCustomAttributes(null, () => 1),
         1
       )
       end()
@@ -152,9 +148,7 @@ test('Agent API LLM methods', async (t) => {
     const { api } = t.nr
     const agent = api.agent
     helper.runInTransaction(api.agent, (tx) => {
-      agent.tracer.getTransaction = () => {
-        return tx
-      }
+      agent.tracer.getTransaction = () => tx
       api.withLlmCustomAttributes({ test: 1 }, null)
       assert.equal(loggerMock.warn.callCount, 1)
       end()
@@ -165,9 +159,7 @@ test('Agent API LLM methods', async (t) => {
     const { api } = t.nr
     const agent = api.agent
     helper.runInTransaction(api.agent, (tx) => {
-      agent.tracer.getTransaction = () => {
-        return tx
-      }
+      agent.tracer.getTransaction = () => tx
       api.withLlmCustomAttributes(
         {
           toRename: 'value1',
@@ -197,9 +189,7 @@ test('Agent API LLM methods', async (t) => {
     const agent = api.agent
 
     helper.runInTransaction(api.agent, (tx) => {
-      agent.tracer.getTransaction = () => {
-        return tx
-      }
+      agent.tracer.getTransaction = () => tx
       api.withLlmCustomAttributes(
         { 'llm.step': '1', 'llm.path': 'root', 'llm.name': 'root' },
         () => {
