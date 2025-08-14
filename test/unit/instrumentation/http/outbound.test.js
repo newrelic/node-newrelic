@@ -51,13 +51,7 @@ test('instrumentOutbound', async (t) => {
       const { agent } = t.nr
       agent.config.attributes.enabled = false
       const req = new events.EventEmitter()
-      const urlInfo = {
-        protocol: 'http',
-        hostname: HOSTNAME,
-        port: PORT,
-        path: '/asdf?a=b&another=yourself&thing&grownup=true'
-      }
-      helper.runInTransactionForWeb(agent, urlInfo, function (transaction) {
+      helper.runInTransaction(agent, function (transaction) {
         instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
         const [child] = transaction.trace.getChildren(transaction.trace.root.id)
         assert.deepEqual(child.getAttributes(), {})
@@ -75,14 +69,9 @@ test('instrumentOutbound', async (t) => {
     const { agent } = t.nr
     agent.config.high_security = true
     const req = new events.EventEmitter()
-    const urlInfo = {
-      protocol: 'http',
-      hostname: HOSTNAME,
-      port: PORT,
-      path: '/asdf?a=b&another=yourself&thing&grownup=true'
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function (transaction) {
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+    const path = '/asdf?a=b&another=yourself&thing&grownup=true'
+    helper.runInTransaction(agent, function (transaction) {
+      instrumentOutbound(agent, { host: HOSTNAME, path, port: PORT }, makeFakeRequest)
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.deepEqual(child.getAttributes(), {
         procedure: 'GET',
@@ -90,7 +79,7 @@ test('instrumentOutbound', async (t) => {
       })
 
       function makeFakeRequest() {
-        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
+        req.path = path
         return req
       }
       end()
@@ -107,13 +96,7 @@ test('instrumentOutbound', async (t) => {
       }
     }
     const req = new events.EventEmitter()
-    const urlInfo = {
-      protocol: 'http',
-      hostname: HOSTNAME,
-      port: PORT,
-      path: '/asdf/foo/bar/baz?test=123&test2=456'
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function (transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.deepEqual(child.getAttributes(), {
@@ -132,16 +115,11 @@ test('instrumentOutbound', async (t) => {
   await t.test('should strip query parameters from path in transaction trace segment', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
-    const urlInfo = {
-      hostname: HOSTNAME,
-      port: PORT,
-      path: '/asdf'
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function (transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       const path = '/asdf'
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      instrumentOutbound(agent, { host: HOSTNAME, path, port: PORT }, makeFakeRequest)
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(child.name, name)
 
@@ -156,16 +134,10 @@ test('instrumentOutbound', async (t) => {
   await t.test('should save query parameters from path if attributes.enabled is true', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
-    const path = '/asdf?a=b&another=yourself&thing&grownup=true'
-    const urlInfo = {
-      path,
-      host: HOSTNAME,
-      port: PORT,
-      protocol: 'http'
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function (transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.config.attributes.enabled = true
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      const path = '/asdf?a=b&another=yourself&thing&grownup=true'
+      instrumentOutbound(agent, { host: HOSTNAME, path, port: PORT }, makeFakeRequest)
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.deepEqual(
         child.attributes.get(DESTINATIONS.SPAN_EVENT),
@@ -190,7 +162,7 @@ test('instrumentOutbound', async (t) => {
     })
   })
 
-  // TODO: do we need this test anymore if the path is coming from parsedUrl from tx instead of passed in
+  // TODO: need to address, right now we add a default path of /
   // await t.test('should not accept an undefined path', (t, end) => {
   //   const { agent } = t.nr
   //   const req = new events.EventEmitter()
@@ -211,15 +183,10 @@ test('instrumentOutbound', async (t) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
     const path = '/newrelic'
-    const urlInfo = {
-      path,
-      host: HOSTNAME,
-      port: PORT
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function (transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      instrumentOutbound(agent, { host: HOSTNAME, path, port: PORT }, makeFakeRequest)
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(child.name, name)
       end()
@@ -235,15 +202,10 @@ test('instrumentOutbound', async (t) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
     const path = '/newrelic/'
-    const urlInfo = {
-      path,
-      host: HOSTNAME,
-      port: PORT
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function (transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      instrumentOutbound(agent, { host: HOSTNAME, path, port: PORT }, makeFakeRequest)
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(child.name, name)
     })
@@ -258,11 +220,8 @@ test('instrumentOutbound', async (t) => {
   await t.test('should not throw if hostname is undefined', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
-    const urlInfo = {
-      path: '/newrelic'
-    }
 
-    helper.runInTransactionForWeb(agent, urlInfo, function () {
+    helper.runInTransaction(agent, function () {
       let req2 = null
       assert.doesNotThrow(() => {
         req2 = instrumentOutbound(agent, { port: PORT }, makeFakeRequest)
@@ -282,11 +241,8 @@ test('instrumentOutbound', async (t) => {
   await t.test('should not throw if hostname is null', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
-    const urlInfo = {
-      path: '/newrelic'
-    }
 
-    helper.runInTransactionForWeb(agent, urlInfo, function () {
+    helper.runInTransaction(agent, function () {
       let req2 = null
       assert.doesNotThrow(() => {
         req2 = instrumentOutbound(agent, { host: null, port: PORT }, makeFakeRequest)
@@ -306,10 +262,7 @@ test('instrumentOutbound', async (t) => {
   await t.test('should not throw if hostname is an empty string', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
-    const urlInfo = {
-      path: '/newrelic'
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function () {
+    helper.runInTransaction(agent, function () {
       let req2 = null
       assert.doesNotThrow(() => {
         req2 = instrumentOutbound(agent, { host: '', port: PORT }, makeFakeRequest)
@@ -329,11 +282,8 @@ test('instrumentOutbound', async (t) => {
   await t.test('should not throw if port is undefined', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
-    const urlInfo = {
-      host: 'hostname'
-    }
 
-    helper.runInTransactionForWeb(agent, urlInfo, function () {
+    helper.runInTransaction(agent, function () {
       let req2 = null
       assert.doesNotThrow(() => {
         req2 = instrumentOutbound(agent, { host: 'hostname' }, makeFakeRequest)
@@ -353,13 +303,9 @@ test('instrumentOutbound', async (t) => {
   await t.test('should not crash when req.headers is null', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
-    const path = '/asdf'
-    const urlInfo = {
-      host: HOSTNAME,
-      port: PORT,
-      path
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function () {
+    helper.runInTransaction(agent, function () {
+      const path = '/asdf'
+
       instrumentOutbound(agent, { headers: null, host: HOSTNAME, port: PORT }, makeFakeRequest)
 
       function makeFakeRequest(opts) {
@@ -395,20 +341,11 @@ test('instrumentOutbound', async (t) => {
   await t.test('should fallback to url.parse when href is malformed', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
-    const path = '/fallback/path'
-    const href = 'not-a-valid-url'
-
-    const urlInfo = {
-      host: HOSTNAME,
-      port: PORT,
-      href,
-      path,
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function (transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       const path = '/fallback/path'
       const href = 'not-a-valid-url'
 
-      instrumentOutbound(agent, { href, host: HOSTNAME, port: PORT }, makeFakeRequest)
+      instrumentOutbound(agent, { href, host: path, HOSTNAME, port: PORT }, makeFakeRequest)
 
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.ok(child.name.includes(path), 'should use request.path when href is invalid')
@@ -458,11 +395,7 @@ test('should add data from cat header to segment', async (t) => {
 
   await t.test('should use config.obfuscatedId as the x-newrelic-id header', (t, end) => {
     const { agent, server } = t.nr
-    const urlInfo = {
-      host: 'localhost',
-      port: server.address().port
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function () {
+    helper.runInTransaction(agent, function () {
       addSegment({ agent })
 
       const port = server.address().port
@@ -484,11 +417,7 @@ test('should add data from cat header to segment', async (t) => {
 
   await t.test('should not explode with invalid data', (t, end) => {
     const { agent, server } = t.nr
-    const urlInfo = {
-      host: 'localhost',
-      port: server.address().port
-    }
-    helper.runInTransactionForWeb(agent, urlInfo, function () {
+    helper.runInTransaction(agent, function () {
       addSegment({ agent })
 
       const port = server.address().port
@@ -523,12 +452,7 @@ test('should add data from cat header to segment', async (t) => {
       events.EventEmitter.prototype.emit = emit
     })
 
-    const urlInfo = {
-      host: 'localhost',
-      port: 12345
-    }
-
-    helper.runInTransactionForWeb(agent, urlInfo, handled)
+    helper.runInTransaction(agent, handled)
     const expectedCode = 'ECONNREFUSED'
 
     function handled(transaction) {
