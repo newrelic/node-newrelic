@@ -28,7 +28,7 @@ logger.info(
 )
 const path = require('node:path')
 const Module = require('node:module')
-const otelPackages = Object.keys(pkgJSON.dependencies).filter(d => d.startsWith('@opentelemetry'))
+const otelPackages = Object.keys(pkgJSON.dependencies).filter((d) => d.startsWith('@opentelemetry'))
 const otelRequire = Module.createRequire(path.join(__dirname, __filename))
 
 if (require.cache.__NR_cache) {
