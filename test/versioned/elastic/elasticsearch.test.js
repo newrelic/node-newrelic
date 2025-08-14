@@ -418,6 +418,12 @@ test('Elasticsearch instrumentation', async (t) => {
       }
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
+      const agentMetrics = agent.metrics._metrics.unscoped
+      const expectedPkgMetrics = {
+        'Supportability/Features/Instrumentation/OnRequire/@elastic/elasticsearch': 1,
+        [`Supportability/Features/Instrumentation/OnRequire/@elastic/elasticsearch/Version/${semver.major(pkgVersion)}`]: 1,
+      }
+      checkMetrics(agentMetrics, expectedPkgMetrics)
     })
   })
 
