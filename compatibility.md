@@ -21,11 +21,12 @@ supported by the agent.
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.7.2-preview | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.1.1 | 11.9.0 |
-| `@google/genai` | 1.1.0 | 1.13.0 | 12.21.0 |
+| `@google/genai` | 1.1.0 | 1.14.0 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.13.4 | 8.17.0 |
-| `@hapi/hapi` | 20.1.2 | 21.4.2 | 9.0.0 |
+| `@hapi/hapi` | 20.1.2 | 21.4.3 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 14.0.0 | 3.2.0 |
 | `@langchain/core` | 0.1.17 | 0.3.70 | 11.13.0 |
+| `@modelcontextprotocol/sdk` | 1.13.0 | 1.17.3 | 13.0.0 |
 | `@nestjs/cli` | 9.0.0 | 11.0.10 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 6.14.0 | 11.0.0 |
