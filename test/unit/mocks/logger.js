@@ -13,6 +13,7 @@ module.exports = (sandbox = sinon) => {
     info: sandbox.stub(),
     debug: sandbox.stub(),
     warn: sandbox.stub(),
-    error: sandbox.stub().returnsThis()
+    error: sandbox.stub(),
+    child: sandbox.stub().returnsThis()
   }
 }
