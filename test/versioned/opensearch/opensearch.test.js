@@ -6,6 +6,8 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
+const { readFile } = require('node:fs/promises')
+const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
@@ -48,7 +50,8 @@ test('opensearch instrumentation', async (t) => {
     const client = new Client({
       node: `http://${params.opensearch_host}:${params.opensearch_port}`
     })
-    const { version: pkgVersion } = require('@opensearch-project/opensearch/package.json')
+    const pkg = await readFile(path.join(__dirname, '/node_modules/@opensearch-project/opensearch/package.json'))
+    const { version: pkgVersion } = JSON.parse(pkg.toString())
 
     ctx.nr = {
       agent,
