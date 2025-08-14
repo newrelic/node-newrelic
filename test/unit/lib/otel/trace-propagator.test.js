@@ -45,11 +45,13 @@ test('should set traceparent and tracestate on outgoing headers when otel root c
   agent.config.account_id = 1
   const propagation = new NewRelicTracePropagator(agent)
   helper.runInTransaction(agent, (tx) => {
-    otel.trace.getSpanContext.callsFake(() => ({
-      traceId: tx.traceId,
-      spanId: tx.trace.root.id,
-      traceFlags: otel.TraceFlags.SAMPLED
-    }))
+    otel.trace.getSpanContext.callsFake(() => {
+      return {
+        traceId: tx.traceId,
+        spanId: tx.trace.root.id,
+        traceFlags: otel.TraceFlags.SAMPLED
+      }
+    })
 
     propagation.inject(otel.ROOT_CONTEXT, carrier, setter)
     assert.equal(carrier.traceparent, `00-${tx.traceId}-${tx.trace.root.id}-01`)

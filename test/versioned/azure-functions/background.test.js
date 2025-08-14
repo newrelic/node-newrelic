@@ -95,7 +95,7 @@ const azureFunctionsAppMethods = {
   }
 }
 
-test.beforeEach(ctx => {
+test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent()
   ctx.nr.shim = new GenericShim(ctx.nr.agent, 'azure-functions')
@@ -112,7 +112,7 @@ test.beforeEach(ctx => {
   process.env.WEBSITE_SITE_NAME = 'test-site'
 })
 
-test.afterEach(ctx => {
+test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   removeMatchedModules(/lib\/instrumentation\/@azure\/functions\.js/)
 
@@ -157,7 +157,7 @@ function bootstrapModule({ t }) {
   t.nr.mockApi = mockApi
 }
 
-test('instruments background methods', async t => {
+test('instruments background methods', async (t) => {
   bootstrapModule({ t })
   const { agent, initialize, mockApi, shim } = t.nr
   initialize(agent, mockApi, MODULE_NAME, shim)

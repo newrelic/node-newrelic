@@ -43,7 +43,7 @@ test.beforeEach(async (ctx) => {
     ctx.nr.data.headers = structuredClone(req.headers)
 
     let payload = Buffer.alloc(0)
-    req.on('data', d => {
+    req.on('data', (d) => {
       payload = Buffer.concat([payload, d])
     })
     req.on('end', () => {
@@ -57,7 +57,7 @@ test.beforeEach(async (ctx) => {
 
   ctx.nr.server = server
   await new Promise((resolve, reject) => {
-    server.listen(0, '127.0.0.1', error => {
+    server.listen(0, '127.0.0.1', (error) => {
       if (error) return reject(error)
       ctx.nr.agent.config.host = server.address().address
       ctx.nr.agent.config.port = server.address().port
@@ -82,9 +82,7 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   const { agent, server } = t.nr
   const { metrics } = require('@opentelemetry/api')
   const otlpSchemas = new protobuf.Root()
-  otlpSchemas.resolvePath = (...args) => {
-    return path.join(__dirname, 'schemas', args[1])
-  }
+  otlpSchemas.resolvePath = (...args) => path.join(__dirname, 'schemas', args[1])
   await otlpSchemas.load('opentelemetry/proto/collector/metrics/v1/metrics_service.proto')
   const requestSchema = otlpSchemas.lookupType(
     'opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest'

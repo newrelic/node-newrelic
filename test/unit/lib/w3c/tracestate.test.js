@@ -11,13 +11,13 @@ const assert = require('node:assert')
 const Tracestate = require('#agentlib/w3c/tracestate.js')
 const helper = require('#testlib/agent_helper.js')
 
-test('instances from header values', async t => {
-  t.beforeEach(ctx => {
+test('instances from header values', async (t) => {
+  t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
   })
 
-  t.afterEach(ctx => {
+  t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
@@ -28,13 +28,13 @@ test('instances from header values', async t => {
     assert.throws(() => Tracestate.fromHeader({ header: 42, agent }), expected)
   })
 
-  await t.test('agent must be an agent instance', t => {
+  await t.test('agent must be an agent instance', (t) => {
     const agent = {}
     const expected = /agent must be an agent instance/
     assert.throws(() => Tracestate.fromHeader({ header: '', agent }), expected)
   })
 
-  await t.test('parses w3c combined example correctly', t => {
+  await t.test('parses w3c combined example correctly', (t) => {
     // See https://www.w3.org/TR/trace-context/#combined-header-value
     const { agent } = t.nr
     const header = 'congo=congosFirstPosition,rojo=rojosFirstPosition,congo=congosSecondPosition'
@@ -47,7 +47,7 @@ test('instances from header values', async t => {
     assert.equal(agent.__mocks.supportability.get('TraceContext/TraceState/NoNrEntry'), 1)
   })
 
-  await t.test('records logs when no nr tracestate present', t => {
+  await t.test('records logs when no nr tracestate present', (t) => {
     const { agent } = t.nr
 
     let recordedMsg
@@ -68,7 +68,7 @@ test('instances from header values', async t => {
     assert.equal(agent.__mocks.supportability.get('TraceContext/TraceState/Accept/Exception'), 1)
   })
 
-  await t.test('throws for bad list members', t => {
+  await t.test('throws for bad list members', (t) => {
     const { agent } = t.nr
     let recordedMsg
     const logger = {

@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Jul 23 2025 14:56:27 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Aug 12 2025 13:54:38 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -16,15 +16,15 @@
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
-    "@newrelic/native-metrics@11.1.0": {
+    "@newrelic/native-metrics@12.0.0": {
       "name": "@newrelic/native-metrics",
-      "version": "11.1.0",
-      "range": "^11.0.0",
+      "version": "12.0.0",
+      "range": "^12.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v11.1.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v12.0.0",
       "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v11.1.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v12.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -374,15 +374,15 @@
       "publisher": "Matteo Collina",
       "email": "hello@matteocollina.com"
     },
-    "@newrelic/eslint-config@0.5.0": {
+    "@newrelic/eslint-config@0.6.0": {
       "name": "@newrelic/eslint-config",
-      "version": "0.5.0",
-      "range": "^0.5.0",
+      "version": "0.6.0",
+      "range": "^0.6.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/eslint-config-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.5.0",
+      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.6.0",
       "licenseFile": "node_modules/@newrelic/eslint-config/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.5.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.6.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -399,15 +399,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@9.1.0": {
+    "@newrelic/test-utilities@10.0.0": {
       "name": "@newrelic/test-utilities",
-      "version": "9.1.0",
-      "range": "^9.1.0",
+      "version": "10.0.0",
+      "range": "^10.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v9.1.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v10.0.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v9.1.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v10.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"

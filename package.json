@@ -234,7 +234,7 @@
     "@aws-sdk/s3-request-presigner": "^3.556.0",
     "@koa/router": "^12.0.1",
     "@matteo.collina/tspl": "^0.1.1",
-    "@newrelic/eslint-config": "^0.5.0",
+    "@newrelic/eslint-config": "^0.6.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/test-utilities": "^10.0.0",
     "@octokit/rest": "^18.0.15",

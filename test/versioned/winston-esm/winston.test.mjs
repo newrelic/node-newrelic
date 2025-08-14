@@ -60,9 +60,7 @@ test('named import issues logs correctly', async (t) => {
 
   const agentLogs = agent.logs.getEvents()
   assert.equal(
-    agentLogs.some((l) => {
-      return l?.message === 'import winston from winston'
-    }),
+    agentLogs.some((l) => l?.message === 'import winston from winston'),
     true,
     'log gets added to agent logs'
   )
@@ -96,9 +94,7 @@ test(
     const agentLogs = agent.logs.getEvents()
     assert.equal(
       true,
-      agentLogs.some((l) => {
-        return l?.message === 'import * as winston from winston'
-      }),
+      agentLogs.some((l) => l?.message === 'import * as winston from winston'),
       'log gets added to agent logs'
     )
 

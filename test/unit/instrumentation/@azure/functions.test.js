@@ -15,7 +15,7 @@ const Transaction = require('#agentlib/transaction/index.js')
 
 const { DESTINATIONS: DESTS } = require('#agentlib/transaction/index.js')
 
-test.beforeEach(ctx => {
+test.beforeEach((ctx) => {
   ctx.nr = {}
 
   ctx.nr.agent = helper.loadMockedAgent()
@@ -26,7 +26,7 @@ test.beforeEach(ctx => {
   process.env.WEBSITE_SITE_NAME = 'test-site'
 })
 
-test.afterEach(ctx => {
+test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   removeMatchedModules(/lib\/instrumentation\/@azure\/functions\.js/)
 
@@ -39,7 +39,7 @@ function bootstrapModule({ t }) {
   t.nr.initialize = require('#agentlib/instrumentation/@azure/functions.js')
 }
 
-test('addAttributes adds expected attributes', t => {
+test('addAttributes adds expected attributes', (t) => {
   bootstrapModule({ t })
   const { agent } = t.nr
   const { addAttributes } = t.nr.initialize.internals
@@ -65,7 +65,7 @@ test('addAttributes adds expected attributes', t => {
   )
 })
 
-test('buildCloudResourceId returns correct string', t => {
+test('buildCloudResourceId returns correct string', (t) => {
   bootstrapModule({ t })
   const { buildCloudResourceId } = t.nr.initialize.internals
   const id = buildCloudResourceId({ functionContext: { functionName: 'test-func' } })
@@ -81,7 +81,7 @@ test('buildCloudResourceId returns correct string', t => {
   ].join(''))
 })
 
-test('buildCloudResourceId returns correct string (missing WEBSITE_RESOURCE_GROUP)', t => {
+test('buildCloudResourceId returns correct string (missing WEBSITE_RESOURCE_GROUP)', (t) => {
   delete process.env.WEBSITE_RESOURCE_GROUP
   bootstrapModule({ t })
   const { buildCloudResourceId } = t.nr.initialize.internals
@@ -98,7 +98,7 @@ test('buildCloudResourceId returns correct string (missing WEBSITE_RESOURCE_GROU
   ].join(''))
 })
 
-test('mapTriggerType maps recognized keys', t => {
+test('mapTriggerType maps recognized keys', (t) => {
   bootstrapModule({ t })
   const { mapTriggerType } = t.nr.initialize.internals
   const testData = [

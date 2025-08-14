@@ -575,9 +575,7 @@ test('Errors', async (t) => {
         const api = new API(agent)
         const tx = createTransaction(agent, 200)
 
-        agent.tracer.getTransaction = () => {
-          return tx
-        }
+        agent.tracer.getTransaction = () => tx
         api.noticeError(Error('error1'))
         api.noticeError(Error('error2'))
         errors.onTransactionFinished(tx)
@@ -710,9 +708,7 @@ test('Errors', async (t) => {
           const api = new API(agent)
           const tx = createTransaction(agent, 404)
 
-          agent.tracer.getTransaction = () => {
-            return tx
-          }
+          agent.tracer.getTransaction = () => tx
 
           // 404 errors are ignored by default, but making sure the config is set
           errors.config.error_collector.ignore_status_codes = [404]

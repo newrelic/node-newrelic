@@ -128,9 +128,7 @@ const reportResults = async (resultFiles) => {
 const iterate = async () => {
   const files = process.argv.slice(2)
   const results = await Promise.all(
-    files.map(async (file) => {
-      return await processFile(file)
-    })
+    files.map(async (file) => await processFile(file))
   )
   reportResults(results)
 }

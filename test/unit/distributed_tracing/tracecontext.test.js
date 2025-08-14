@@ -141,7 +141,7 @@ test('TraceContext', async function (t) {
       const { agent } = t.nr
       agent.config.distributed_tracing.enabled = true
 
-      helper.runInTransaction(agent, tx => {
+      helper.runInTransaction(agent, (tx) => {
         const childSegment = tx.trace.add('child')
         agent.tracer.setSegment({ segment: childSegment })
         childSegment.start()

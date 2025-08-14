@@ -235,9 +235,7 @@ test('distributed tracing full integration', async (t) => {
 
     const testsToCheck = []
     agent.on('transactionFinished', (trans) => {
-      const event = agent.transactionEventAggregator.getEvents().filter((evt) => {
-        return evt[0].guid === trans.id
-      })[0]
+      const event = agent.transactionEventAggregator.getEvents().filter((evt) => evt[0].guid === trans.id)[0]
       testsToCheck.push(transInspector[txCount].bind(this, trans, event))
       if (++txCount === 3) {
         for (const testToCheck of testsToCheck) {
@@ -284,17 +282,11 @@ test('distributed tracing', async (t) => {
       })
     }
 
-    const end = generateServer(http, api, cb, (req, res) => {
-      return createResponse(req, res, {}, 'end')
-    })
+    const end = generateServer(http, api, cb, (req, res) => createResponse(req, res, {}, 'end'))
     const END_PORT = end.address().port
-    const middle = generateServer(http, api, cb, (req, res) => {
-      return getNextUrl('middle/end', 'middle', END_PORT, req, res)
-    })
+    const middle = generateServer(http, api, cb, (req, res) => getNextUrl('middle/end', 'middle', END_PORT, req, res))
     const MIDDLE_PORT = middle.address().port
-    const start = generateServer(http, api, cb, (req, res) => {
-      return getNextUrl('start/middle', 'start', MIDDLE_PORT, req, res)
-    })
+    const start = generateServer(http, api, cb, (req, res) => getNextUrl('start/middle', 'start', MIDDLE_PORT, req, res))
     const START_PORT = start.address().port
 
     ctx.nr = { agent, start, START_PORT, middle, MIDDLE_PORT, end, END_PORT }

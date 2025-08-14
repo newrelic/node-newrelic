@@ -25,18 +25,18 @@ const defaultAgentConfig = {
   }
 }
 
-test.beforeEach(ctx => {
+test.beforeEach((ctx) => {
   ctx.nr = {}
 })
 
-test.afterEach(ctx => {
+test.afterEach((ctx) => {
   ctx.nr.server.close()
   if (ctx.nr.agent) {
     helper.unloadAgent(ctx.nr.agent)
   }
 })
 
-test('remote_parent_sampled: always_on', async t => {
+test('remote_parent_sampled: always_on', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
@@ -60,7 +60,7 @@ test('remote_parent_sampled: always_on', async t => {
   }
 })
 
-test('remote_parent_sampled: always_off', async t => {
+test('remote_parent_sampled: always_off', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
@@ -84,7 +84,7 @@ test('remote_parent_sampled: always_off', async t => {
   }
 })
 
-test('remote_parent_sampled: default', async t => {
+test('remote_parent_sampled: default', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
@@ -108,7 +108,7 @@ test('remote_parent_sampled: default', async t => {
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag true)', async t => {
+test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag true)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
@@ -133,7 +133,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag false)', async t => {
+test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag false)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
@@ -158,7 +158,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (flag true)', async t => {
+test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (flag true)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
@@ -183,7 +183,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (fla
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (flag false)', async t => {
+test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (flag false)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
@@ -208,7 +208,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (fla
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag true)', async t => {
+test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag true)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
@@ -233,7 +233,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag t
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag false)', async t => {
+test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag false)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
@@ -258,7 +258,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag f
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag false, intrinsics available)', async t => {
+test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag false, intrinsics available)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {

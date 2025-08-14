@@ -30,9 +30,7 @@ test('extractLlmContext', async (t) => {
     }
     ctx.nr.agent = {
       tracer: {
-        getTransaction: () => {
-          return tx
-        }
+        getTransaction: () => tx
       }
     }
     ctx.nr.tx = tx
@@ -60,9 +58,7 @@ test('extractLlmContext', async (t) => {
 
   await t.test('no transaction', (t, end) => {
     const { tx, agent } = t.nr
-    agent.tracer.getTransaction = () => {
-      return null
-    }
+    agent.tracer.getTransaction = () => null
     tx._llmContextManager.run(null, () => {
       const llmContext = extractLlmContext(agent)
       assert.equal(typeof llmContext, 'object')

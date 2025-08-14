@@ -6,11 +6,13 @@
 'use strict'
 const sinon = require('sinon')
 
-module.exports = (sandbox = sinon) => ({
-  traceEnabled: sandbox.stub().returns(true),
-  trace: sandbox.stub(),
-  info: sandbox.stub(),
-  debug: sandbox.stub(),
-  warn: sandbox.stub(),
-  error: sandbox.stub()
-})
+module.exports = (sandbox = sinon) => {
+  return {
+    traceEnabled: sandbox.stub().returns(true),
+    trace: sandbox.stub(),
+    info: sandbox.stub(),
+    debug: sandbox.stub(),
+    warn: sandbox.stub(),
+    error: sandbox.stub()
+  }
+}

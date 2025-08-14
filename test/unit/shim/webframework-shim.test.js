@@ -1007,18 +1007,16 @@ test('WebFrameworkShim', async function (t) {
       return helper.runInTransaction(agent, (tx) => {
         tx.nameState.appendPath('/')
         txInfo.transaction = tx
-        return wrapped(req, null, () => {
-          return new Promise((resolve) => {
-            const _tx = agent.tracer.getTransaction()
-            assert.equal(_tx, tx)
-            assert.equal(_tx.nameState.getPath(), '/')
+        return wrapped(req, null, () => new Promise((resolve) => {
+          const _tx = agent.tracer.getTransaction()
+          assert.equal(_tx, tx)
+          assert.equal(_tx.nameState.getPath(), '/')
 
-            const childSegment = _tx.agent.tracer.createSegment('childSegment')
-            assert.equal(childSegment.parent.name, 'Nodejs/Middleware/Restify/middleware//foo/bar')
+          const childSegment = _tx.agent.tracer.createSegment('childSegment')
+          assert.equal(childSegment.parent.name, 'Nodejs/Middleware/Restify/middleware//foo/bar')
 
-            resolve()
-          })
-        })
+          resolve()
+        }))
       })
     })
   })

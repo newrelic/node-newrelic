@@ -194,7 +194,7 @@ test('Query Sample', async (t) => {
         }
       },
       segment: {
-        getAttributes: () => ({})
+        getAttributes: () => { return {} }
       }
     }
 
@@ -222,7 +222,7 @@ test('Query Sample', async (t) => {
         }
       },
       segment: {
-        getAttributes: () => ({})
+        getAttributes: () => { return {} }
       }
     }
 

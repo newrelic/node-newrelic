@@ -372,7 +372,7 @@ test('with undefined as default', async (t) => {
   assert.equal(configuration.fake_key.another_layer.fake_nested_key, 'fake-value')
 })
 
-test('agent control', async t => {
+test('agent control', async (t) => {
   await t.test('loads defaults', () => {
     const config = Config.initialize({})
     assert.deepStrictEqual(config.agent_control, {

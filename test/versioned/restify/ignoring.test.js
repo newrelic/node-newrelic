@@ -43,9 +43,7 @@ test('Restify router introspection', async function (t) {
     const metrics = agent.metrics._metrics.unscoped
 
     const unexpectedMetrics = Object.keys(metrics).filter((metricName) => {
-      const matching = potentialSupportMetrics.filter((value) => {
-        return metricName.startsWith(value)
-      })
+      const matching = potentialSupportMetrics.filter((value) => metricName.startsWith(value))
 
       return matching > 0
     })

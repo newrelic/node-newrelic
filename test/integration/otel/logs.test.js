@@ -89,7 +89,7 @@ test('sends logs within transaction', (t, end) => {
   const { logs } = require('@opentelemetry/api-logs')
   const logger = logs.getLogger('testLogger')
 
-  helper.runInTransaction(agent, tx => {
+  helper.runInTransaction(agent, (tx) => {
     logger.emit({
       severityNumber: logsApi.SeverityNumber.INFO,
       body: 'test log in transaction',

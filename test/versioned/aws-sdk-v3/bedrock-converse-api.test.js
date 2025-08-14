@@ -38,8 +38,7 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.baseUrl = baseUrl
   ctx.nr.responses = responses
-  ctx.nr.expectedExternalPath = (modelId, method = 'converse') =>
-        `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
+  ctx.nr.expectedExternalPath = (modelId, method = 'converse') => `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
 
   const client = new bedrock.BedrockRuntimeClient({
     region: 'us-east-1',
