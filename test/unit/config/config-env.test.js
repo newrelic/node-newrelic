@@ -898,7 +898,7 @@ test('loads agent control settings from env', (t, end) => {
     NEW_RELIC_AGENT_CONTROL_HEALTH_DELIVERY_LOCATION: 'file://find/me',
     NEW_RELIC_AGENT_CONTROL_HEALTH_FREQUENCY: 1
   }
-  idempotentEnv(env, config => {
+  idempotentEnv(env, (config) => {
     assert.deepStrictEqual(config.agent_control, {
       enabled: true,
       health: {

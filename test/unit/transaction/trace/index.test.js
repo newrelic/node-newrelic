@@ -32,9 +32,7 @@ test('Trace', async (t) => {
 
   await t.test('should always be bound to a transaction', (t) => {
     const { agent } = t.nr
-    assert.throws(() => {
-      return new Trace()
-    }, /must be associated with a transaction/)
+    assert.throws(() => new Trace(), /must be associated with a transaction/)
 
     const transaction = new Transaction(agent)
     const tt = new Trace(transaction)
@@ -321,9 +319,7 @@ test('when serializing synchronously', async (t) => {
 
   await t.test('should send response time', (t) => {
     const { details } = t.nr
-    details.transaction.getResponseTimeInMillis = () => {
-      return 1234
-    }
+    details.transaction.getResponseTimeInMillis = () => 1234
 
     const json = details.trace.generateJSONSync()
     assert.equal(json[1], 1234)
@@ -395,9 +391,7 @@ test('when serializing asynchronously', async (t) => {
 
   await t.test('should send response time', async (t) => {
     const { details } = t.nr
-    details.transaction.getResponseTimeInMillis = () => {
-      return 1234
-    }
+    details.transaction.getResponseTimeInMillis = () => 1234
 
     // not using `trace.generateJSONAsync` because
     // util.promisify only returns 1st arg in callback

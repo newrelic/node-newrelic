@@ -28,11 +28,9 @@ test('can instrument the same module from multiple installs', async (t) => {
 
     let instrumentedCount = 0
     api.instrument('test-logger', (shim, mod) => {
-      shim.wrap(mod.prototype, 'info', (shim, fn) => {
-        return function wrappedInfo() {
-          instrumentedCount += 1
-          return fn.apply(this, arguments)
-        }
+      shim.wrap(mod.prototype, 'info', (shim, fn) => function wrappedInfo() {
+        instrumentedCount += 1
+        return fn.apply(this, arguments)
       })
     })
 

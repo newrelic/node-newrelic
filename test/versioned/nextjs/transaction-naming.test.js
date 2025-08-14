@@ -100,13 +100,8 @@ test('Next.js', async (t) => {
       assert.equal(res.statusCode, 200)
       const transactions = await txPromise
       assert.equal(transactions.length, 2)
-      const apiTransaction = transactions.find((transaction) => {
-        return transaction.name === `${NEXT_TRANSACTION_PREFIX}/api/person/[id]`
-      })
-
-      const pageTransaction = transactions.find((transaction) => {
-        return transaction.name === `${NEXT_TRANSACTION_PREFIX}/person/[id]`
-      })
+      const apiTransaction = transactions.find((transaction) => transaction.name === `${NEXT_TRANSACTION_PREFIX}/api/person/[id]`)
+      const pageTransaction = transactions.find((transaction) => transaction.name === `${NEXT_TRANSACTION_PREFIX}/person/[id]`)
 
       assert.ok(apiTransaction, 'should find transaction matching person API call')
       assert.ok(pageTransaction, 'should find transaction matching person page call')

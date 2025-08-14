@@ -429,15 +429,13 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
-      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
-        return Promise.resolve({
-          status: 200,
-          statusCode: 200,
-          statusDescription: 'Success',
-          isBase64Encoded: false,
-          headers: {}
-        })
-      })
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => Promise.resolve({
+        status: 200,
+        statusCode: 200,
+        statusDescription: 'Success',
+        isBase64Encoded: false,
+        headers: {}
+      }))
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 

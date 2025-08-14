@@ -283,7 +283,7 @@ test('disconnects on force disconnect (410)', async (t) => {
     const plan = tspl(t, { plan: 3 })
     const { agent, collector, collectorApi } = t.nr
 
-    agent.healthReporter.setStatus = status => {
+    agent.healthReporter.setStatus = (status) => {
       plan.equal(status, HealthReporter.STATUS_FORCED_DISCONNECT)
     }
 
@@ -414,7 +414,7 @@ test('retries on receiving invalid license key (401)', async (t) => {
     const { agent, collectorApi } = t.nr
 
     let invocation = 0
-    agent.healthReporter.setStatus = status => {
+    agent.healthReporter.setStatus = (status) => {
       invocation += 1
       if (invocation < 6) {
         plan.equal(status, HealthReporter.STATUS_INVALID_LICENSE_KEY)
@@ -501,7 +501,7 @@ test('retries on misconfigured proxy', async (t) => {
     const { agent, collectorApi } = t.nr
 
     let invocation = 0
-    agent.healthReporter.setStatus = status => {
+    agent.healthReporter.setStatus = (status) => {
       invocation += 1
       if (invocation === 1) {
         plan.equal(status, HealthReporter.STATUS_HTTP_PROXY_MISCONFIGURED)
@@ -600,7 +600,7 @@ test('non-specific error statuses', async (t) => {
       res.json({ code: 418, payload: 'bad stuff' })
     })
 
-    agent.healthReporter.setStatus = status => {
+    agent.healthReporter.setStatus = (status) => {
       plan.equal(status, HealthReporter.STATUS_BACKEND_ERROR)
       match(
         t.nr.logs,
@@ -622,7 +622,7 @@ test('non-specific error statuses', async (t) => {
       req.destroy()
     })
 
-    agent.healthReporter.setStatus = status => {
+    agent.healthReporter.setStatus = (status) => {
       plan.equal(status, HealthReporter.STATUS_BACKEND_ERROR)
       plan.match(t.nr.logs[0][0].message, /socket hang up/)
       plan.equal(t.nr.logs[0][1], 'Unexpected error communicating with New Relic backend.')

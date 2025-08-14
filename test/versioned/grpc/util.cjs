@@ -30,7 +30,7 @@ function buildMetrics(port) {
 
 function buildExpectedMetrics(port) {
   const metrics = buildMetrics(port)
-  return metrics.map((metric) => ({ name: metric }))
+  return metrics.map((metric) => { return { name: metric } })
 }
 
 /**

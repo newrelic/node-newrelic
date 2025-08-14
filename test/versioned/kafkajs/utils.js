@@ -16,9 +16,7 @@ const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
  * @param {string} [prefix] prefix for random string
  * @returns {string} prefix with random id appended
  */
-utils.randomString = (prefix = 'test-topic') => {
-  return `${prefix}-${makeId()}`
-}
+utils.randomString = (prefix = 'test-topic') => `${prefix}-${makeId()}`
 
 /**
  * Creates a topic with the admin class
@@ -48,24 +46,23 @@ utils.createTopic = async ({ kafka, topic }) => {
  * @returns {Promise}
  *
  */
-utils.waitForConsumersToJoinGroup = ({ consumer, maxWait = 10000 }) =>
-  new Promise((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      consumer.disconnect().then(() => {
-        reject(Error('boom'))
-      })
-    }, maxWait)
-    consumer.on(consumer.events.GROUP_JOIN, (event) => {
-      clearTimeout(timeoutId)
-      resolve(event)
+utils.waitForConsumersToJoinGroup = ({ consumer, maxWait = 10000 }) => new Promise((resolve, reject) => {
+  const timeoutId = setTimeout(() => {
+    consumer.disconnect().then(() => {
+      reject(Error('boom'))
     })
-    consumer.on(consumer.events.CRASH, (event) => {
-      clearTimeout(timeoutId)
-      consumer.disconnect().then(() => {
-        reject(event.payload.error)
-      })
+  }, maxWait)
+  consumer.on(consumer.events.GROUP_JOIN, (event) => {
+    clearTimeout(timeoutId)
+    resolve(event)
+  })
+  consumer.on(consumer.events.CRASH, (event) => {
+    clearTimeout(timeoutId)
+    consumer.disconnect().then(() => {
+      reject(event.payload.error)
     })
   })
+})
 
 /**
  * Verifies the metrics of the consume transaction. Also verifies the tx name of consme transaction
