@@ -1,6 +1,11 @@
 {
   "name": "cassandra-driver-tests",
-  "targets": [{"name":"cassandra-driver","minAgentVersion": "1.7.1"}],
+  "targets": [
+    {
+      "name": "cassandra-driver",
+      "minAgentVersion": "1.7.1"
+    }
+  ],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -26,5 +31,8 @@
         "query.test.js"
       ]
     }
-  ]
+  ],
+  "dependencies": {
+    "cassandra-driver": "^4.8.0"
+  }
 }
