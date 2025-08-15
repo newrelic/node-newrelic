@@ -180,16 +180,32 @@ test('executeBatch - slow query', (t, end) => {
   })
 })
 
+test('records manual connect and shutdown', async (t) => {
+  const { agent, client } = t.nr
+  await helper.runInTransaction(agent, async (tx) => {
+    const transaction = agent.getTransaction()
+    assert.ok(transaction, 'transaction should be visible')
+    assert.equal(tx, transaction, 'We got the same transaction')
+
+    await client.connect()
+    await client.shutdown()
+
+    const children = transaction?.trace?.segments?.root?.children
+    assert.equal(children[0]?.segment?.name, 'Datastore/operation/Cassandra/connect', 'should have connect segment')
+    assert.equal(children[1]?.segment?.name, 'Datastore/operation/Cassandra/shutdown', 'should have shutdown segment')
+    transaction.end()
+  })
+})
+
 function checkMetric(ctx, agent, scoped) {
   const agentMetrics = agent.metrics._metrics
 
   const expected = {
-    'Datastore/operation/Cassandra/connect': 1,
     'Datastore/operation/Cassandra/insert': 1,
-    'Datastore/allWeb': 3,
-    'Datastore/Cassandra/allWeb': 3,
-    'Datastore/Cassandra/all': 3,
-    'Datastore/all': 3,
+    'Datastore/allWeb': 2,
+    'Datastore/Cassandra/allWeb': 2,
+    'Datastore/Cassandra/all': 2,
+    'Datastore/all': 2,
     'Datastore/statement/Cassandra/test.testFamily/insert': 1,
     'Datastore/operation/Cassandra/select': 1,
     'Datastore/statement/Cassandra/test.testFamily/select': 1,
