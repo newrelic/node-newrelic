@@ -83,6 +83,18 @@ test('should create segment if active tx with proper parent', async (t) => {
   await plan.completed
 })
 
+test('should not create segment if no active tx', (t) => {
+  const { agent, subscriber } = t.nr
+  const ctx = agent.tracer.getContext()
+  const newCtx = subscriber.createSegment({
+    name: 'test-segment',
+    ctx,
+  })
+
+  assert.deepEqual(newCtx, ctx)
+  assert.ok(!newCtx.segment)
+})
+
 test('should touch segment when asyncEnd is called', (t, end) => {
   const { agent, subscriber } = t.nr
   helper.runInTransaction(agent, () => {
