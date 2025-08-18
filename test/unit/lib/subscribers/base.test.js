@@ -95,6 +95,37 @@ test('should not create segment if no active tx', (t) => {
   assert.ok(!newCtx.segment)
 })
 
+test('should not create segment if parent is opaque', async (t) => {
+  const { agent, subscriber } = t.nr
+  await helper.runInTransaction(agent, async () => {
+    const ctx = agent.tracer.getContext()
+    ctx.segment.opaque = true
+    const newCtx = subscriber.createSegment({
+      name: 'test-segment',
+      ctx,
+    })
+
+    assert.deepEqual(newCtx, ctx)
+    assert.equal(newCtx.segment.name, ctx.segment.name)
+  })
+})
+
+test('should not create segment if parent is of same package and subscriber is internal', async (t) => {
+  const { agent, subscriber } = t.nr
+  await helper.runInTransaction(agent, async () => {
+    const ctx = agent.tracer.getContext()
+    ctx.segment.shimId = 'test-package'
+    subscriber.internal = true
+    const newCtx = subscriber.createSegment({
+      name: 'test-segment',
+      ctx,
+    })
+
+    assert.deepEqual(newCtx, ctx)
+    assert.equal(newCtx.segment.name, ctx.segment.name)
+  })
+})
+
 test('should touch segment when asyncEnd is called', (t, end) => {
   const { agent, subscriber } = t.nr
   helper.runInTransaction(agent, () => {
