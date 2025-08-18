@@ -643,7 +643,7 @@ test('models should properly create errors on stream interruption', async (t) =>
     }
   }
   const http2Error = {
-    message: /Unexpected non-whitespace character/,
+    message: /Unterminated string in JSON|Unexpected non-whitespace character/,
     $response: {
       statusCode: 500
     }
