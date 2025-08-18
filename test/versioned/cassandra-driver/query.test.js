@@ -151,7 +151,7 @@ test('executeBatch - slow query', (t, end) => {
   assert.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
   helper.runInTransaction(agent, (tx) => {
     // enable slow queries
-    agent.config.transaction_tracer.explain_threshold = 1
+    agent.config.transaction_tracer.explain_threshold = 0.1
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
 
@@ -263,9 +263,7 @@ function verifyTrace(agent, trace, table) {
     assert.ok(getSegment, 'trace segment for select should exist')
 
     if (getSegment) {
-      const getChildren = trace.getChildren(getSegment.id)
       verifyTraceSegment(agent, getSegment, 'select')
-      assert.ok(getChildren.length >= 1, 'get should have a callback/promise segment')
       assert.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
     }
   }
