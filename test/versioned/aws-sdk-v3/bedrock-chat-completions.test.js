@@ -100,13 +100,12 @@ test.beforeEach(async (ctx) => {
   ctx.nr.responses = responses
   ctx.nr.expectedExternalPath = (modelId, method = 'invoke') => `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
 
-  const client = new bedrock.BedrockRuntimeClient({
+  ctx.nr.client = new bedrock.BedrockRuntimeClient({
     region: 'us-east-1',
     credentials: FAKE_CREDENTIALS,
     endpoint: baseUrl,
     maxAttempts: 1
   })
-  ctx.nr.client = client
 })
 
 test.afterEach(afterEach)
