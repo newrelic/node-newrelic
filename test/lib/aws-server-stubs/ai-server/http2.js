@@ -240,7 +240,7 @@ function handleConverse(payload, res) {
  * Creates a stream that will generate new stream messages until the stream
  * is destroyed.
  *
- * @returns {Readable}
+ * @returns {Readable} readable stream
  */
 function infiniteStream() {
   return new Readable({
