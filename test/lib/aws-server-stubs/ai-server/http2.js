@@ -29,10 +29,10 @@ function createAiResponseServer() {
   const server = http.createServer(handler)
   const sockets = new Set()
 
-  // server.on('connection', (socket) => {
-  //   sockets.add(socket)
-  //   socket.once('close', () => sockets.delete(socket))
-  // })
+  server.on('connection', (socket) => {
+    sockets.add(socket)
+    socket.once('close', () => sockets.delete(socket))
+  })
   server.destroy = function destroy() {
     sockets.forEach((s) => s.destroy())
     server.close()
