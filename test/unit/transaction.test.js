@@ -252,6 +252,7 @@ test('Transaction naming tests', async (t) => {
       })
       ctx.nr.agent.config.emit('attributes.include')
       ctx.nr.txn = new Transaction(ctx.nr.agent)
+      setTxUrl(ctx.nr.txn, '/test/string?do=thing&another=thing')
     })
 
     t.afterEach((ctx) => {
@@ -264,6 +265,8 @@ test('Transaction naming tests', async (t) => {
 
     await t.test('base test', (t) => {
       const { txn } = t.nr
+      // bookends sets a url so override this by setting url to null
+      txn.url = null
       assert.equal(
         txn.getName(),
         null,
@@ -273,7 +276,7 @@ test('Transaction naming tests', async (t) => {
 
     await t.test('partial name should remain unset if it was not set before', (t) => {
       const { txn } = t.nr
-      txn.url = '/some/pathname'
+      setTxUrl(txn, '/some/pathname')
       assert.equal(txn.nameState.getName(), null, 'should have no namestate')
       assert.equal(txn.getName(), 'NormalizedUri/*', 'should have a default partial name')
       assert.equal(txn.nameState.getName(), null, 'should still have no namestate')
@@ -313,6 +316,8 @@ test('Transaction naming tests', async (t) => {
 
     await t.test('should return null if it does not have name, partialName, or url', (t) => {
       const { txn } = t.nr
+      // bookends sets a url so override this by setting url to null
+      txn.url = null
       assert.equal(txn.getFullName(), null, 'should not have a full name')
     })
 
@@ -458,13 +463,16 @@ test('Transaction naming tests', async (t) => {
       agent.txSegmentNormalizer.load([
         { prefix: 'WebTransaction/NormalizedUri', terms: ['test', 'string'] }
       ])
+      setTxUrl(txn, url)
       txn.finalizeNameFromUri(url, 200)
       assert.equal(txn.name, 'WebTransaction/NormalizedUri/test/*/string/*')
     })
 
     await t.test('should not scope web transactions to their URL', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/1337?action=edit', 200)
+      const url = '/test/1337?action=edit'
+      setTxUrl(txn, url)
+      txn.finalizeNameFromUri(url, 200)
       assert.notEqual(txn.name, '/test/1337?action=edit')
       assert.notEqual(txn.name, 'WebTransaction/Uri/test/1337')
     })
@@ -484,6 +492,7 @@ test('Transaction naming tests', async (t) => {
       ctx.nr.txn.nameState.setPrefix('Custom')
       ctx.nr.txn.nameState.appendPath('test')
       ctx.nr.agent.transactionNameNormalizer.rules = []
+      setTxUrl(ctx.nr.txn, '/test/string?do=thing&another=thing')
     })
 
     t.afterEach((ctx) => {
@@ -593,6 +602,8 @@ test('Transaction naming tests', async (t) => {
 
     await t.test('should return null when no alternate pathHashes exist', (t) => {
       const { agent, txn } = t.nr
+      // bookends sets a url so override this by setting url to null
+      txn.url = null
       txn.nameState.setPrefix('/a/b/c')
       txn.referringPathHash = '/d/e/f'
 
@@ -1854,17 +1865,20 @@ test('when being named with finalizeNameFromUri', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should throw when called with no parameters', (t) => {
-    const { txn } = t.nr
-    assert.throws(() => txn.finalizeNameFromUri())
-  })
+  // TODO: this won't be the case anymore
+  // await t.test('should throw when called with no parameters', (t) => {
+  //   const { txn } = t.nr
+  //   assert.throws(() => txn.finalizeNameFromUri())
+  // })
 
   await t.test('should ignore a request path when told to by a rule', (t) => {
     const { agent, txn } = t.nr
     const api = new API(agent)
     api.addIgnoringRule('^/test/')
 
-    txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+    const url = '/test/string?do=thing&another=thing'
+    setTxUrl(txn, url)
+    txn.finalizeNameFromUri(url, 200)
 
     assert.equal(txn.isIgnored(), true)
   })
@@ -1873,7 +1887,9 @@ test('when being named with finalizeNameFromUri', async (t) => {
     const { agent, txn } = t.nr
     agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
 
-    txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+    const url = '/test/string?do=thing&another=thing'
+    setTxUrl(txn, url)
+    txn.finalizeNameFromUri(url, 200)
 
     assert.equal(txn.isIgnored(), true)
   })
@@ -1882,7 +1898,9 @@ test('when being named with finalizeNameFromUri', async (t) => {
     const { agent, txn } = t.nr
     agent.userNormalizer.addSimple('^/config', '/foobar')
 
-    txn.finalizeNameFromUri('/config', 200)
+    const url = '/config'
+    setTxUrl(txn, url)
+    txn.finalizeNameFromUri(url, 200)
 
     assert.equal(txn.name, 'WebTransaction/NormalizedUri/foobar')
   })
@@ -1893,7 +1911,9 @@ test('when being named with finalizeNameFromUri', async (t) => {
 
     addSegmentInContext(tracer, txn, 'test segment')
 
-    txn.finalizeNameFromUri('/config', 200)
+    const url = 'config'
+    setTxUrl(txn, url)
+    txn.finalizeNameFromUri(url, 200)
 
     const spanContext = agent.tracer.getSpanContext()
     const intrinsics = spanContext.intrinsicAttributes
@@ -1905,8 +1925,9 @@ test('when being named with finalizeNameFromUri', async (t) => {
   await t.test('when namestate populated should use name stack', (t) => {
     const { txn } = t.nr
     setupNameState(txn)
-
-    txn.finalizeNameFromUri('/some/random/path', 200)
+    const url = '/some/random/path'
+    setTxUrl(txn, url)
+    txn.finalizeNameFromUri(url, 200)
 
     assert.equal(txn.name, 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
   })
@@ -1914,8 +1935,9 @@ test('when being named with finalizeNameFromUri', async (t) => {
   await t.test('when namestate populated should copy parameters from the name stack', (t) => {
     const { txn } = t.nr
     setupNameState(txn)
-
-    txn.finalizeNameFromUri('/some/random/path', 200)
+    const url = '/some/random/path'
+    setTxUrl(txn, url)
+    txn.finalizeNameFromUri(url, 200)
 
     const attrs = txn.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
 
@@ -1932,8 +1954,9 @@ test('when being named with finalizeNameFromUri', async (t) => {
       const { agent, txn, tracer } = t.nr
       setupNameState(txn)
       addSegmentInContext(tracer, txn, 'test segment')
-
-      txn.finalizeNameFromUri('/some/random/path', 200)
+      const url = '/some/random/path'
+      setTxUrl(txn, url)
+      txn.finalizeNameFromUri(url, 200)
 
       const spanContext = agent.tracer.getSpanContext()
       const intrinsics = spanContext.intrinsicAttributes
@@ -1947,8 +1970,9 @@ test('when being named with finalizeNameFromUri', async (t) => {
     const { agent, txn } = t.nr
     setupNameState(txn)
     setupHighSecurity(agent)
-
-    txn.finalizeNameFromUri('/some/random/path', 200)
+    const url = '/some/random/path'
+    setTxUrl(txn, url)
+    txn.finalizeNameFromUri(url, 200)
 
     assert.equal(txn.name, 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
   })
@@ -1961,7 +1985,9 @@ test('when being named with finalizeNameFromUri', async (t) => {
       setupNameState(txn)
       setupHighSecurity(agent)
 
-      txn.finalizeNameFromUri('/some/random/path', 200)
+      const url = '/some/random/path'
+      setTxUrl(txn, url)
+      txn.finalizeNameFromUri(url, 200)
 
       const attrs = txn.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
       assert.deepEqual(attrs, {})
@@ -1997,8 +2023,9 @@ test('requestd', async (t) => {
     setupNameState(txn)
 
     addSegmentInContext(tracer, txn, 'test segment')
-
-    txn.finalizeNameFromUri('/some/random/path', 200)
+    const url = '/some/random/path'
+    setTxUrl(txn, url)
+    txn.finalizeNameFromUri(url, 200)
 
     const segment = tracer.getSegment()
 
@@ -2111,4 +2138,9 @@ function addSegmentInContext(tracer, transaction, name) {
   tracer.setSegment({ transaction, segment })
 
   return segment
+}
+
+function setTxUrl(transaction, url) {
+  const urlObj = new URL(url, 'http://localhost')
+  transaction.url = urlObj.pathname
 }
