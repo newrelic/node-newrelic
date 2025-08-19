@@ -218,18 +218,15 @@ test('eachRow', (t, end) => {
       assert.ifError(error, 'should not get an error inserting data')
 
       // Then call `eachRow`
-      client.eachRow(selectAllQuery, [],
-        (n, row) => {
-          // no op
-          assert.ok(row)
-        },
-        err => {
-          assert.ifError(err, 'should not get an error inserting data')
-          verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
-          transaction.end()
-          end()
-        }
-      )
+      client.eachRow(selectAllQuery, [], (n, row) => {
+        // no op
+        assert.ok(row)
+      }, (err) => {
+        assert.ifError(err, 'should not get an error inserting data')
+        verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
+        transaction.end()
+        end()
+      })
     })
   })
 })
