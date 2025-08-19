@@ -14,6 +14,7 @@ test('Transaction naming:', async function (t) {
   t.beforeEach(function (ctx) {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
+    ctx.nr.url = new URL('http://test.test.com/')
   })
 
   t.afterEach(function (ctx) {
@@ -21,10 +22,10 @@ test('Transaction naming:', async function (t) {
   })
 
   await t.test('Transaction should be named /* without any other naming source', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     helper.runInTransaction(agent, function (transaction) {
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 200)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/*')
       assert.equal(
         transaction.name,
@@ -36,11 +37,11 @@ test('Transaction naming:', async function (t) {
   })
 
   await t.test('Transaction should not be normalized when 404', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       transaction.nameState.setName('Expressjs', 'GET', '/', null)
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 404)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 404)
       assert.equal(transaction.name, 'WebTransaction/Expressjs/GET/(not found)')
       assert.equal(
         transaction.name,
@@ -52,11 +53,11 @@ test('Transaction naming:', async function (t) {
   })
 
   await t.test('Instrumentation should trump default naming', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       simulateInstrumentation(transaction)
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 200)
       assert.equal(transaction.name, 'WebTransaction/Expressjs/GET//setByInstrumentation')
       assert.equal(
         transaction.name,
@@ -68,12 +69,12 @@ test('Transaction naming:', async function (t) {
   })
 
   await t.test('API naming should trump default naming', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 200)
       assert.equal(transaction.name, 'WebTransaction/Custom/override')
       assert.equal(
         transaction.name,
@@ -85,13 +86,13 @@ test('Transaction naming:', async function (t) {
   })
 
   await t.test('API naming should trump instrumentation naming', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       simulateInstrumentation(transaction)
       api.setTransactionName('override')
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 200)
       assert.equal(transaction.name, 'WebTransaction/Custom/override')
       assert.equal(
         transaction.name,
@@ -105,13 +106,13 @@ test('Transaction naming:', async function (t) {
   await t.test(
     'API naming should trump instrumentation naming (order should not matter)',
     function (t, end) {
-      const { agent } = t.nr
+      const { agent, url } = t.nr
       const api = new API(agent)
       helper.runInTransaction(agent, function (transaction) {
         api.setTransactionName('override')
         simulateInstrumentation(transaction)
-        setupTxUrl(transaction)
-        transaction.finalizeNameFromUri('http://test.test.com/', 200)
+        setupTxUrl(transaction, url)
+        transaction.finalizeNameFromUri(url, 200)
         assert.equal(transaction.name, 'WebTransaction/Custom/override')
         assert.equal(
           transaction.name,
@@ -124,13 +125,13 @@ test('Transaction naming:', async function (t) {
   )
 
   await t.test('API should trump 404', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
       simulateInstrumentation(transaction)
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 404)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 404)
       assert.equal(transaction.name, 'WebTransaction/Custom/override')
       assert.equal(
         transaction.name,
@@ -142,11 +143,11 @@ test('Transaction naming:', async function (t) {
   })
 
   await t.test('Custom naming rules should trump default naming', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
     helper.runInTransaction(agent, function (transaction) {
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 200)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/test-transaction')
       assert.equal(
         transaction.name,
@@ -164,8 +165,9 @@ test('Transaction naming:', async function (t) {
       agent.urlNormalizer.addSimple(/\d+/, '*')
       agent.userNormalizer.addSimple(/123/, 'abc')
       helper.runInTransaction(agent, function (transaction) {
-        setupTxUrl(transaction, 'http://test.test.com/123/456')
-        transaction.finalizeNameFromUri('http://test.test.com/123/456', 200)
+        const url = 'http://test.test.com/123/456'
+        setupTxUrl(transaction, url)
+        transaction.finalizeNameFromUri(new URL(url), 200)
         assert.equal(transaction.name, 'WebTransaction/NormalizedUri/abc/*')
         assert.equal(
           transaction.name,
@@ -178,11 +180,11 @@ test('Transaction naming:', async function (t) {
   )
 
   await t.test('Custom naming rules should be cleaned up', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     agent.userNormalizer.addSimple(/\//, 'test-transaction')
     helper.runInTransaction(agent, function (transaction) {
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 200)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/test-transaction')
       assert.equal(
         transaction.name,
@@ -194,12 +196,12 @@ test('Transaction naming:', async function (t) {
   })
 
   await t.test('Custom naming rules should trump instrumentation naming', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
     helper.runInTransaction(agent, function (transaction) {
       simulateInstrumentation(transaction)
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 200)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/test-transaction')
       assert.equal(
         transaction.name,
@@ -211,13 +213,13 @@ test('Transaction naming:', async function (t) {
   })
 
   await t.test('API calls should trump Custom naming rules', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
     const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 200)
       assert.equal(transaction.name, 'WebTransaction/Custom/override')
       assert.equal(
         transaction.name,
@@ -229,11 +231,11 @@ test('Transaction naming:', async function (t) {
   })
 
   await t.test('Custom naming rules should trump 404', function (t, end) {
-    const { agent } = t.nr
+    const { agent, url } = t.nr
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
     helper.runInTransaction(agent, function (transaction) {
-      setupTxUrl(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 404)
+      setupTxUrl(transaction, url)
+      transaction.finalizeNameFromUri(url, 404)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/test-transaction')
       assert.equal(
         transaction.name,
@@ -250,6 +252,6 @@ function simulateInstrumentation(transaction) {
 }
 
 function setupTxUrl(transaction, fullUrl) {
-  const urlObj = new URL(fullUrl || 'http://test.test.com/')
+  const urlObj = new URL(fullUrl)
   transaction.url = urlObj.pathname
 }
