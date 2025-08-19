@@ -419,9 +419,13 @@ test('Elasticsearch instrumentation', async (t) => {
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
       const agentMetrics = agent.metrics._metrics.unscoped
+      let pkgName = '@elastic/elasticsearch'
+      if (semver.gte(pkgVersion, '8.0.0')) {
+        pkgName = '@elastic/transport'
+      }
       const expectedPkgMetrics = {
-        'Supportability/Features/Instrumentation/OnRequire/@elastic/elasticsearch': 1,
-        [`Supportability/Features/Instrumentation/OnRequire/@elastic/elasticsearch/Version/${semver.major(pkgVersion)}`]: 1,
+        [`Supportability/Features/Instrumentation/OnRequire/${pkgName}`]: 1,
+        [`Supportability/Features/Instrumentation/OnRequire/${pkgName}/Version/${semver.major(pkgVersion)}`]: 1,
       }
       checkMetrics(agentMetrics, expectedPkgMetrics)
     })
