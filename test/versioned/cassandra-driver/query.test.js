@@ -225,6 +225,7 @@ test('eachRow', (t, end) => {
         assert.ifError(err, 'should not get an error inserting data')
         verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
         transaction.end()
+        checkMetric(agent)
         end()
       })
     })
@@ -255,6 +256,7 @@ test('stream', (t, end) => {
           // Stream ended, there aren't any more rows
           verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
           transaction.end()
+          checkMetric(agent)
           end()
         })
         .on('error', function (err) {
