@@ -293,7 +293,7 @@ function otelBridgeAvailable() {
     try {
       otelRequire.resolve(p)
     } catch (error) {
-      if (error.code === 'ERR_MODULE_NOT_FOUND') {
+      if (error.code.includes('MODULE_NOT_FOUND')) {
         return false
       }
     }
