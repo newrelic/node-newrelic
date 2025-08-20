@@ -7,7 +7,8 @@
 
 const NR_KEY = process.env.NEW_RELIC_LICENSE_KEY
 if (NR_KEY === null) {
-  console.warn('Missing required environment variable: NEW_RELIC_LICENSE_KEY. Will not send metrics.')
+  console.error('Missing required environment variable: NEW_RELIC_LICENSE_KEY.')
+  process.exit(1)
 }
 
 const { MeterProvider, PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics')

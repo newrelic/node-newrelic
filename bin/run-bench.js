@@ -22,6 +22,9 @@ const globs = []
 const opts = Object.create(null)
 let hasFailures = false
 const SEND_METRICS = process.env.NEW_RELIC_LICENSE_KEY ? true : false
+if (SEND_METRICS === false) {
+  console.log('NEW_RELIC_LICENSE_KEY not set. Will not send metrics.')
+}
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file) && file.indexOf('=') > -1) {
