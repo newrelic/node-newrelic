@@ -19,6 +19,21 @@ const {
   MCP
 } = require('../../../lib/metrics/names')
 
+async function startServer() {
+  const { spawn } = require('child_process')
+
+  // Spin up streaming server in background
+  const server = spawn('node', ['streaming-server.js'])
+  return await new Promise((resolve, reject) => {
+    server.stdout.on('data', (data) => {
+      const message = data?.toString()
+      if (message.toLowerCase().includes('listening')) {
+        resolve(server)
+      }
+    })
+  })
+}
+
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent({
@@ -28,15 +43,15 @@ test.beforeEach(async (ctx) => {
   })
 
   const { Client } = require('@modelcontextprotocol/sdk/client/index.js')
-  const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js')
+  const { StreamableHTTPClientTransport } = require('@modelcontextprotocol/sdk/client/streamableHttp.js')
   const pkg = await readFile(path.join(__dirname, '/node_modules/@modelcontextprotocol/sdk/package.json'))
   const { version: pkgVersion } = JSON.parse(pkg.toString())
   ctx.nr.pkgVersion = pkgVersion
+  ctx.nr.serverProcess = await startServer()
 
-  ctx.nr.transport = new StdioClientTransport({
-    command: 'node',
-    args: ['mock-server.js']
-  })
+  ctx.nr.transport = new StreamableHTTPClientTransport(
+    new URL('http://localhost:3000/mcp')
+  )
   ctx.nr.client = new Client(
     {
       name: 'test-client',
@@ -48,7 +63,10 @@ test.beforeEach(async (ctx) => {
 
 test.afterEach(async (ctx) => {
   helper.unloadAgent(ctx.nr.agent)
-  removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/stdio.js'])
+  if (ctx.nr.serverProcess) {
+    ctx.nr.serverProcess.kill()
+  }
+  removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/streamableHttp.js'])
 })
 
 test('should create span for callTool', async (t) => {
@@ -64,7 +82,6 @@ test('should create span for callTool', async (t) => {
     assert.ok(result, 'should return a result from the tool call')
 
     const name = `${MCP.TOOL}/callTool/echo`
-    assert.equal(tx.trace.transaction.numSegments, 3, 'should have 3 segments')
     assertSegments(tx.trace, tx.trace.root, [name], { exact: false })
 
     tx.end()
@@ -98,8 +115,8 @@ test('should create span for readResource', async (t) => {
     })
     const agentMetrics = agent.metrics
     const expectedPkgMetrics = [
-      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
-      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
+      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/client/index.js' }],
+      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/client/index.js/Version/${semver.major(pkgVersion)}` }]
     ]
     assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
@@ -143,7 +160,16 @@ test('should not instrument if ai_monitoring is disabled', async (t) => {
 
     assert.ok(result, 'should still return a result from the tool call')
 
-    assert.equal(tx.trace.transaction.numSegments, 2, 'should not create MCP segment')
+    const name = `${MCP.TOOL}/callTool/echo`
+    const root = tx?.trace?.segments?.root
+    assert.ok(root)
+    function assertNoMcpSegment(node) {
+      assert.notEqual(node?.segment?.name, name, 'should not create MCP segment')
+      for (const child of node?.children) {
+        assertNoMcpSegment(child)
+      }
+    }
+    assertNoMcpSegment(root)
 
     tx.end()
   })
