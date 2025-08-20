@@ -2,6 +2,23 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.2.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed logic around detecting OTEL packages",
+          "Updated `shimmer.setupSubscribers` to properly setup and skip subscribers that are disabled"
+        ],
+        "features": [
+          "Added ability to register `Supportability/Features/Instrumentation/OnRequire/<pkg>` metrics for subscriber based instrumentation",
+          "Disable MCP if `ai_monitoring` disabled",
+          "Added instrumentation for `@modelcontextprotocol/sdk` client calls `client.callTool`, `client.readResource`, and `client.getPrompt`",
+          "Removed old `elasticsearch` instrumentation",
+          "Added esm loader hook and commonjs patch to work with orchestrion-js"
+        ]
+      }
+    },
+    {
       "version": "13.1.0",
       "changes": {
         "security": [],
