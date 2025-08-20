@@ -11,9 +11,7 @@
         ],
         "features": [
           "Added ability to register `Supportability/Features/Instrumentation/OnRequire/<pkg>` metrics for subscriber based instrumentation",
-          "Disable MCP if `ai_monitoring` disabled",
           "Added instrumentation for `@modelcontextprotocol/sdk` client calls `client.callTool`, `client.readResource`, and `client.getPrompt`",
-          "Removed old `elasticsearch` instrumentation",
           "Added esm loader hook and commonjs patch to work with orchestrion-js"
         ]
       }
