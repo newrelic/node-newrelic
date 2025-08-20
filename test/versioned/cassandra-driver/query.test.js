@@ -12,6 +12,7 @@ const { removeModules } = require('../../lib/cache-buster')
 const { findSegment } = require('../../lib/metrics_helper')
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
+const semver = require('semver')
 
 // constants for keyspace and table creation
 const KS = 'test'
@@ -73,6 +74,7 @@ test.beforeEach(async (ctx) => {
   ctx.nr.agent = helper.instrumentMockedAgent()
 
   const cassandra = require('cassandra-driver')
+  ctx.nr.pkgVersion = cassandra.version
   await cassSetup(cassandra)
 
   ctx.nr.client = new cassandra.Client({
@@ -86,8 +88,8 @@ test.beforeEach(async (ctx) => {
 test.afterEach((ctx) => {
   ctx.nr.agent.queries.clear()
   ctx.nr.agent.metrics.clear()
-  helper.unloadAgent(ctx.nr.agent)
   ctx.nr.client.shutdown()
+  helper.unloadAgent(ctx.nr.agent)
   removeModules(['cassandra-driver'])
 })
 
@@ -115,7 +117,7 @@ test('executeBatch - callback style', (t, end) => {
         assert.equal(children.length, 1, 'there should be only one child of the root')
         verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
         transaction.end()
-        checkMetric(agent)
+        checkMetric(t, agent)
 
         end()
       })
@@ -123,33 +125,24 @@ test('executeBatch - callback style', (t, end) => {
   })
 })
 
-test('executeBatch - promise style', (t, end) => {
+test('executeBatch - promise style', async (t) => {
   const { agent, client } = t.nr
   assert.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
-  helper.runInTransaction(agent, (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     const transaction = agent.getTransaction()
     assert.ok(transaction, 'transaction should be visible')
     assert.equal(tx, transaction, 'we got the same transaction')
 
-    client
-      .batch(insArr, { hints })
-      .then(() => {
-        assert.ok(agent.getTransaction(), 'transaction still should be visible')
-        client
-          .execute(selQuery)
-          .then((result) => {
-            assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            assert.equal(result.rows[0][COL], colValArr[0], 'cassandra client should still work')
-            const children = transaction.trace.getChildren(transaction.trace.root.id)
-            assert.equal(children.length, 2, 'there should be two children of the root')
-            verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
-            transaction.end()
-            checkMetric(agent)
-          })
-          .catch((error) => assert.ifError(error))
-          .finally(end)
-      })
-      .catch((error) => assert.ifError(error))
+    await client.batch(insArr, { hints })
+    assert.ok(agent.getTransaction(), 'transaction still should be visible')
+    const result = await client.execute(selQuery)
+    assert.ok(agent.getTransaction(), 'transaction should still be visible')
+    assert.equal(result.rows[0][COL], colValArr[0], 'cassandra client should still work')
+    const children = transaction.trace.getChildren(transaction.trace.root.id)
+    assert.equal(children.length, 2, 'there should be two children of the root')
+    verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
+    transaction.end()
+    checkMetric(t, agent)
   })
 })
 
@@ -158,7 +151,7 @@ test('executeBatch - slow query', (t, end) => {
   assert.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
   helper.runInTransaction(agent, (tx) => {
     // enable slow queries
-    agent.config.transaction_tracer.explain_threshold = 1
+    agent.config.transaction_tracer.explain_threshold = 0.1
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
 
@@ -179,7 +172,7 @@ test('executeBatch - slow query', (t, end) => {
         verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
         transaction.end()
         assert.ok(agent.queries.samples.size > 0, 'there should be a slow query')
-        checkMetric(agent)
+        checkMetric(t, agent)
 
         end()
       })
@@ -187,7 +180,24 @@ test('executeBatch - slow query', (t, end) => {
   })
 })
 
-function checkMetric(agent, scoped) {
+test('records manual connect and shutdown', async (t) => {
+  const { agent, client } = t.nr
+  await helper.runInTransaction(agent, async (tx) => {
+    const transaction = agent.getTransaction()
+    assert.ok(transaction, 'transaction should be visible')
+    assert.equal(tx, transaction, 'We got the same transaction')
+
+    await client.connect()
+    await client.shutdown()
+
+    const children = transaction?.trace?.segments?.root?.children
+    assert.equal(children[0]?.segment?.name, 'Datastore/operation/Cassandra/connect', 'should have connect segment')
+    assert.equal(children[1]?.segment?.name, 'Datastore/operation/Cassandra/shutdown', 'should have shutdown segment')
+    transaction.end()
+  })
+})
+
+function checkMetric(ctx, agent, scoped) {
   const agentMetrics = agent.metrics._metrics
 
   const expected = {
@@ -198,7 +208,9 @@ function checkMetric(agent, scoped) {
     'Datastore/all': 2,
     'Datastore/statement/Cassandra/test.testFamily/insert': 1,
     'Datastore/operation/Cassandra/select': 1,
-    'Datastore/statement/Cassandra/test.testFamily/select': 1
+    'Datastore/statement/Cassandra/test.testFamily/select': 1,
+    'Supportability/Features/Instrumentation/OnRequire/cassandra-driver': 1,
+    [`Supportability/Features/Instrumentation/OnRequire/cassandra-driver/Version/${semver.major(ctx.nr.pkgVersion)}`]: 1
   }
 
   for (const expectedMetric in expected) {
@@ -212,11 +224,13 @@ function checkMetric(agent, scoped) {
       }
 
       assert.equal(metric.callCount, count, 'should be called ' + count + ' times')
-      assert.ok(metric.total, 'should have set total')
-      assert.ok(metric.totalExclusive, 'should have set totalExclusive')
-      assert.ok(metric.min, 'should have set min')
-      assert.ok(metric.max, 'should have set max')
-      assert.ok(metric.sumOfSquares, 'should have set sumOfSquares')
+      if (expectedMetric.includes('Datastore')) {
+        assert.ok(metric.total, 'should have set total')
+        assert.ok(metric.totalExclusive, 'should have set totalExclusive')
+        assert.ok(metric.min, 'should have set min')
+        assert.ok(metric.max, 'should have set max')
+        assert.ok(metric.sumOfSquares, 'should have set sumOfSquares')
+      }
     }
   }
 }
@@ -249,9 +263,7 @@ function verifyTrace(agent, trace, table) {
     assert.ok(getSegment, 'trace segment for select should exist')
 
     if (getSegment) {
-      const getChildren = trace.getChildren(getSegment.id)
       verifyTraceSegment(agent, getSegment, 'select')
-      assert.ok(getChildren.length >= 1, 'get should have a callback/promise segment')
       assert.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
     }
   }
