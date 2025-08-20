@@ -1,3 +1,47 @@
+### v13.2.0 (2025-08-20)
+
+#### Features
+
+* Added ability to register `Supportability/Features/Instrumentation/OnRequire/<pkg>` metrics for subscriber based instrumentation ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([87bfa40](https://github.com/newrelic/node-newrelic/commit/87bfa400c216352f12bbbc500e74f8e58285a275))
+* Added esm loader hook and commonjs patch to work with orchestrion-js ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([415aeba](https://github.com/newrelic/node-newrelic/commit/415aeba6db04aa54cc1f44e64c0e6d2235d47108))
+* Added instrumentation for `@modelcontextprotocol/sdk` client calls `client.callTool`, `client.readResource`, and `client.getPrompt` ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([5d9790b](https://github.com/newrelic/node-newrelic/commit/5d9790b4bd9ab24db4a38618ef96c3b50fbadae7))
+
+#### Bug fixes
+
+* Fixed logic around detecting OTEL packages ([#3326](https://github.com/newrelic/node-newrelic/pull/3326)) ([4df30e5](https://github.com/newrelic/node-newrelic/commit/4df30e5c2021e0d933e4a77ccd4409405928fa39))
+* Updated `shimmer.setupSubscribers` to properly setup and skip subscribers that are disabled ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([cf5b3ec](https://github.com/newrelic/node-newrelic/commit/cf5b3ec39e2cad05c46ec7865f5b8b8377cb4710))
+
+#### Code refactoring
+
+* Added ability to disable subscribers via `config.instrumentation.<pkg-name>.enabled` ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([55f8fe7](https://github.com/newrelic/node-newrelic/commit/55f8fe7bc7035ab1822986eb51a228e266e3d3eb))
+* Added ability to prevent creation of segments in subscriber based instrumentation when parent is marked as internal and of the same package ([#3322](https://github.com/newrelic/node-newrelic/pull/3322)) ([91f91c2](https://github.com/newrelic/node-newrelic/commit/91f91c2c85f2715bb1c1db5847704623fd65851e))
+* Removed `id` parameter from `opensearch` class ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([8be00ce](https://github.com/newrelic/node-newrelic/commit/8be00cef67a2637f7d7a3ab33cccb6824ab34478))
+* Updated `opensearch` instrumentation to subscribe to events emitted ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([9a27a5d](https://github.com/newrelic/node-newrelic/commit/9a27a5daba8a82c350cf129e3b2548527868ae90))
+* Updated elasticsearch instrumentation to subscribe to events emitted ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([a3e2348](https://github.com/newrelic/node-newrelic/commit/a3e2348d9af62d12cb570c26f557096968d38daa))
+* Updated ioredis instrumentation to subscribe to events emitted ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([90b97d2](https://github.com/newrelic/node-newrelic/commit/90b97d28a9bbf5c1646ce3ca399bb6772c17c07c))
+* Updated pino instrumentation to subscribe to events emitted ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([28bbe9f](https://github.com/newrelic/node-newrelic/commit/28bbe9fee831d57d4fb77d01ef4cd2f6072bf9d8))
+* Updated subscribers to have a common createSegment that creates, assigns attributes, starts segment ([#3317](https://github.com/newrelic/node-newrelic/pull/3317)) ([aa3f8d9](https://github.com/newrelic/node-newrelic/commit/aa3f8d936aa9fd7ffdad1f771dc16da8782ad917))
+* Updated undici instrumentation to remove its reliance on shim. Also updated storing the relevant segments on context instead of symbols on the request object ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([ec17fa7](https://github.com/newrelic/node-newrelic/commit/ec17fa7ef431bf51c527d2c58cdf216fee641884))
+
+#### Documentation
+
+* Updated compatibility report ([#3313](https://github.com/newrelic/node-newrelic/pull/3313)) ([749ddc9](https://github.com/newrelic/node-newrelic/commit/749ddc9c050ee81f8969e8f173233dcb78826da1)) ([#3304](https://github.com/newrelic/node-newrelic/pull/3304)) ([cc000a7](https://github.com/newrelic/node-newrelic/commit/cc000a72870b508c929449b57a35d289ce093f42))
+
+#### Miscellaneous chores
+
+* change from ending segment to touching for feature parity with shim ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([4d39fc5](https://github.com/newrelic/node-newrelic/commit/4d39fc564a23798d42105398d0b8ea6c0e9280cc))
+* Updated eslint configuration ([#3296](https://github.com/newrelic/node-newrelic/pull/3296)) ([5c168a6](https://github.com/newrelic/node-newrelic/commit/5c168a657cddece16c0b1124307526ffb3588953))
+
+#### Tests
+
+* Fixed obtaining opensearch package version for older versions we instrument ([#3314](https://github.com/newrelic/node-newrelic/pull/3314)) ([e45ab27](https://github.com/newrelic/node-newrelic/commit/e45ab275109dd601945776c0de88ba954a8c57e2))
+* Removed unnecessary `prisma.$use` in tests to unpin ([#3303](https://github.com/newrelic/node-newrelic/pull/3303)) ([db20324](https://github.com/newrelic/node-newrelic/commit/db20324535ebf714237dc716c3f6718fd90cfb36))
+
+#### Continuous integration
+
+* Allow users to run benchmark tests even if not sending metrics ([#3307](https://github.com/newrelic/node-newrelic/pull/3307)) ([1be1514](https://github.com/newrelic/node-newrelic/commit/1be1514c9d49465a29e6b8fbc09c3bb5ebc1b112))
+* Change benchmark tests to use `TEST_LICENSE` ([#3325](https://github.com/newrelic/node-newrelic/pull/3325)) ([1f7f733](https://github.com/newrelic/node-newrelic/commit/1f7f733b2d10a5447662e159038fa32f1c036235))
+
 ### v13.1.0 (2025-08-13)
 
 #### Features
@@ -7767,3 +7811,5 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
+
