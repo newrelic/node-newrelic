@@ -23,18 +23,16 @@
 * Updated ioredis instrumentation to subscribe to events emitted ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([90b97d2](https://github.com/newrelic/node-newrelic/commit/90b97d28a9bbf5c1646ce3ca399bb6772c17c07c))
 * Updated pino instrumentation to subscribe to events emitted ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([28bbe9f](https://github.com/newrelic/node-newrelic/commit/28bbe9fee831d57d4fb77d01ef4cd2f6072bf9d8))
 * Updated subscribers to have a common createSegment that creates, assigns attributes, starts segment ([#3317](https://github.com/newrelic/node-newrelic/pull/3317)) ([aa3f8d9](https://github.com/newrelic/node-newrelic/commit/aa3f8d936aa9fd7ffdad1f771dc16da8782ad917))
-* Updated undici instrumentation to remove its reliance on shm. Also updating storing the relevant segments on context instead of symbols on the request object ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([ec17fa7](https://github.com/newrelic/node-newrelic/commit/ec17fa7ef431bf51c527d2c58cdf216fee641884))
+* Updated undici instrumentation to remove its reliance on shim. Also updated storing the relevant segments on context instead of symbols on the request object ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([ec17fa7](https://github.com/newrelic/node-newrelic/commit/ec17fa7ef431bf51c527d2c58cdf216fee641884))
 
 #### Documentation
 
-* Updated compatibility report ([#3313](https://github.com/newrelic/node-newrelic/pull/3313)) ([749ddc9](https://github.com/newrelic/node-newrelic/commit/749ddc9c050ee81f8969e8f173233dcb78826da1))
-* Updated compatibility report ([#3304](https://github.com/newrelic/node-newrelic/pull/3304)) ([cc000a7](https://github.com/newrelic/node-newrelic/commit/cc000a72870b508c929449b57a35d289ce093f42))
+* Updated compatibility report ([#3313](https://github.com/newrelic/node-newrelic/pull/3313)) ([749ddc9](https://github.com/newrelic/node-newrelic/commit/749ddc9c050ee81f8969e8f173233dcb78826da1)) ([#3304](https://github.com/newrelic/node-newrelic/pull/3304)) ([cc000a7](https://github.com/newrelic/node-newrelic/commit/cc000a72870b508c929449b57a35d289ce093f42))
 
 #### Miscellaneous chores
 
 * change from ending segment to touching for feature parity with shim ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([4d39fc5](https://github.com/newrelic/node-newrelic/commit/4d39fc564a23798d42105398d0b8ea6c0e9280cc))
 * Updated eslint configuration ([#3296](https://github.com/newrelic/node-newrelic/pull/3296)) ([5c168a6](https://github.com/newrelic/node-newrelic/commit/5c168a657cddece16c0b1124307526ffb3588953))
-* Updated eslint configuration on next ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([0fd99ef](https://github.com/newrelic/node-newrelic/commit/0fd99ef8c4f76976766d881b194ea40c1661741e))
 
 #### Tests
 
@@ -7815,3 +7813,4 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
