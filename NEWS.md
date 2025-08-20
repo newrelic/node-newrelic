@@ -5,8 +5,6 @@
 * Added ability to register `Supportability/Features/Instrumentation/OnRequire/<pkg>` metrics for subscriber based instrumentation ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([87bfa40](https://github.com/newrelic/node-newrelic/commit/87bfa400c216352f12bbbc500e74f8e58285a275))
 * Added esm loader hook and commonjs patch to work with orchestrion-js ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([415aeba](https://github.com/newrelic/node-newrelic/commit/415aeba6db04aa54cc1f44e64c0e6d2235d47108))
 * Added instrumentation for `@modelcontextprotocol/sdk` client calls `client.callTool`, `client.readResource`, and `client.getPrompt` ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([5d9790b](https://github.com/newrelic/node-newrelic/commit/5d9790b4bd9ab24db4a38618ef96c3b50fbadae7))
-* Disable MCP if `ai_monitoring` disabled ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([8eec568](https://github.com/newrelic/node-newrelic/commit/8eec568b10b0bafcdac1ec8ce83b2a3fcc53b8ee))
-* Removed old `elasticsearch` instrumentation ([#3312](https://github.com/newrelic/node-newrelic/pull/3312)) ([6956661](https://github.com/newrelic/node-newrelic/commit/6956661810b5b25d7ba1f1575f32b95c75d465e8))
 
 #### Bug fixes
 
@@ -7813,4 +7811,5 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
