@@ -1,3 +1,14 @@
+### v13.2.1 (2025-08-21)
+
+#### Code refactoring
+
+* Updated agent to use `@apm-js-collab/tracing-hooks` for the CJS/ESM registration for tracing channel based instrumentation ([#3324](https://github.com/newrelic/node-newrelic/pull/3324)) ([4b2c14f](https://github.com/newrelic/node-newrelic/commit/4b2c14f35d5c658160ad9420ca562f73ae55bbc0))
+
+#### Documentation
+
+* Updated compatibility report ([#3330](https://github.com/newrelic/node-newrelic/pull/3330)) ([2831a89](https://github.com/newrelic/node-newrelic/commit/2831a895e0278a05bed8e9f81245c7f9ae515eca))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+
 ### v13.2.0 (2025-08-20)
 
 #### Features
