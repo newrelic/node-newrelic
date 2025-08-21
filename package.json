@@ -201,7 +201,7 @@
     "#test/assert": "./test/lib/custom-assertions/index.js"
   },
   "dependencies": {
-    "@apm-js-collab/code-transformer": "^0.6.0",
+    "@apm-js-collab/tracing-hooks": "^0.1.0",
     "@grpc/grpc-js": "^1.13.2",
     "@grpc/proto-loader": "^0.7.5",
     "@newrelic/security-agent": "^2.4.2",
@@ -272,8 +272,7 @@
     "self-cert": "^2.0.0",
     "should": "*",
     "sinon": "^5.1.1",
-    "superagent": "^9.0.1",
-    "testdouble": "^3.20.2"
+    "superagent": "^9.0.1"
   },
   "repository": {
     "type": "git",
