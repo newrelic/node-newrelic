@@ -831,7 +831,7 @@ test('Shimmer with logger mock', async (t) => {
 
   await t.test(
     'should return Node.js version when it cannot obtain package version from package.json',
-    () => {
+    async (t) => {
       const version = shimmer.getPackageVersion('bogus')
       assert.equal(version, process.version)
       assert.deepEqual(loggerMock.debug.args[loggerMock.debug.args.length - 1], [

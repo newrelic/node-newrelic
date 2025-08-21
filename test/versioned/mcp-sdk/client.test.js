@@ -98,8 +98,8 @@ test('should create span for readResource', async (t) => {
     })
     const agentMetrics = agent.metrics
     const expectedPkgMetrics = [
-      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/client/index.js' }],
-      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/client/index.js/Version/${semver.major(pkgVersion)}` }]
+      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
+      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
     ]
     assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
