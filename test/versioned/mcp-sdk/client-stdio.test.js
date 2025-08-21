@@ -52,7 +52,7 @@ test.afterEach(async (ctx) => {
 })
 
 test('should create span for callTool', async (t) => {
-  const { agent, client } = t.nr
+  const { agent, client, pkgVersion } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
     const result = await client.callTool({
       name: 'echo',
@@ -73,6 +73,13 @@ test('should create span for callTool', async (t) => {
         { name, kind: 'internal' }
       ]
     })
+
+    const agentMetrics = agent.metrics
+    const expectedPkgMetrics = [
+      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
+      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
+    ]
+    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
 })
 
@@ -95,6 +102,7 @@ test('should create span for readResource', async (t) => {
         { name, kind: 'internal' }
       ]
     })
+
     const agentMetrics = agent.metrics
     const expectedPkgMetrics = [
       [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
@@ -105,7 +113,7 @@ test('should create span for readResource', async (t) => {
 })
 
 test('should create span for getPrompt', async (t) => {
-  const { agent, client } = t.nr
+  const { agent, client, pkgVersion } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
     const prompt = await client.getPrompt({
       name: 'echo',
@@ -126,6 +134,13 @@ test('should create span for getPrompt', async (t) => {
         { name, kind: 'internal' }
       ]
     })
+
+    const agentMetrics = agent.metrics
+    const expectedPkgMetrics = [
+      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
+      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
+    ]
+    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
 })
 
