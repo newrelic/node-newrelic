@@ -36,6 +36,7 @@ const hints = [
 ]
 
 const selQuery = `SELECT * FROM ${KS}.${FAM} WHERE ${PK} = 111;`
+const selectAllQuery = `SELECT * FROM ${KS}.${FAM};`
 
 async function cassSetup(cassandra) {
   const setupClient = new cassandra.Client({
@@ -183,6 +184,85 @@ test('executeBatch - slow query', (t, end) => {
 
         end()
       })
+    })
+  })
+})
+
+test('records manual connect and shutdown', async (t) => {
+  const { agent, client } = t.nr
+  await helper.runInTransaction(agent, async (tx) => {
+    const transaction = agent.getTransaction()
+    assert.ok(transaction, 'transaction should be visible')
+    assert.equal(tx, transaction, 'We got the same transaction')
+
+    await client.connect()
+    await client.shutdown()
+
+    const children = transaction?.trace?.segments?.root?.children
+    assert.equal(children[0]?.segment?.name, 'Datastore/operation/Cassandra/connect', 'should have connect segment')
+    assert.equal(children[1]?.segment?.name, 'Datastore/operation/Cassandra/shutdown', 'should have shutdown segment')
+    transaction.end()
+  })
+})
+
+test('eachRow', (t, end) => {
+  const { agent, client } = t.nr
+  assert.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
+  helper.runInTransaction(agent, (tx) => {
+    const transaction = agent.getTransaction()
+    assert.ok(transaction, 'transaction should be visible')
+    assert.equal(tx, transaction, 'We got the same transaction')
+
+    // First insert some data
+    client.batch(insArr, { hints }, (error) => {
+      assert.ifError(error, 'should not get an error inserting data')
+
+      // Then call `eachRow`
+      client.eachRow(selectAllQuery, [], (n, row) => {
+        // no op
+        assert.ok(row)
+      }, (err) => {
+        assert.ifError(err, 'should not get an error inserting data')
+        verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
+        transaction.end()
+        checkMetric(agent)
+        end()
+      })
+    })
+  })
+})
+
+test('stream', (t, end) => {
+  const { agent, client } = t.nr
+  assert.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
+  helper.runInTransaction(agent, (tx) => {
+    const transaction = agent.getTransaction()
+    assert.ok(transaction, 'transaction should be visible')
+    assert.equal(tx, transaction, 'We got the same transaction')
+
+    // First insert some data
+    client.batch(insArr, { hints }, (error) => {
+      assert.ifError(error, 'should not get an error inserting data')
+
+      // Then call `stream`
+      client.stream(selectAllQuery, [])
+        .on('readable', function () {
+          let row
+          while ((row = this.read())) {
+            assert.ok(row)
+          }
+        })
+        .on('end', function () {
+          // Stream ended, there aren't any more rows
+          verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
+          transaction.end()
+          checkMetric(agent)
+          end()
+        })
+        .on('error', function (err) {
+          // Something went wrong: err is a response error from Cassandra
+          assert.ifError(err, 'should not get an error inserting data')
+        })
     })
   })
 })
