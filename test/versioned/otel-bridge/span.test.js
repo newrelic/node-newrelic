@@ -58,7 +58,7 @@ const {
   EXCEPTION_STACKTRACE,
   MESSAGING_SYSTEM_KIND_VALUES,
   SPAN_STATUS_CODE
-} = require('../../../lib/otel/constants.js')
+} = require('../../../lib/otel/traces/constants.js')
 const { assertSpanKind } = require('../../lib/custom-assertions')
 
 test.beforeEach((ctx) => {

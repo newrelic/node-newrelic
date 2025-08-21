@@ -9,7 +9,7 @@ const assert = require('node:assert')
 
 const helper = require('#testlib/agent_helper.js')
 const { BasicTracerProvider } = require('@opentelemetry/sdk-trace-base')
-const SegmentSynthesizer = require('#agentlib/otel/segment-synthesis.js')
+const SegmentSynthesizer = require('#agentlib/otel/traces/segment-synthesis.js')
 const createMockLogger = require('../../mocks/logger')
 const {
   createConsumerSpan,
@@ -27,7 +27,7 @@ const {
 const {
   ATTR_MESSAGING_DESTINATION,
   ATTR_MESSAGING_SYSTEM,
-} = require('#agentlib/otel/constants.js')
+} = require('#agentlib/otel/traces/constants.js')
 const { SpanKind, TraceFlags } = require('@opentelemetry/api')
 const hashes = require('#agentlib/util/hashes.js')
 

@@ -12,7 +12,7 @@ const {
   ATTR_MESSAGING_DESTINATION_NAME,
   ATTR_MESSAGING_SYSTEM,
   ATTR_MESSAGING_OPERATION,
-} = require('#agentlib/otel/constants.js')
+} = require('#agentlib/otel/traces/constants.js')
 
 function createConsumerSpan({ tracer, name = 'test-span', spanContext }) {
   const span = createSpan({ name, kind: SpanKind.CONSUMER, tracer, spanContext })

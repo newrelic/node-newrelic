@@ -9,10 +9,11 @@ const test = require('node:test')
 const assert = require('node:assert')
 const { EventEmitter } = require('node:events')
 
-const bootstrapLogs = require('#agentlib/otel/logs/bootstrap-logs.js')
+const SetupLogs = require('#agentlib/otel/logs/index.js')
 
 test('logs notice when application logging is disabled', () => {
   const agent = {
+    get [Symbol.toStringTag]() { return 'Agent' },
     config: {
       entity_guid: 'guid-123456',
       license_key: 'license-123456',
@@ -36,7 +37,8 @@ test('logs notice when application logging is disabled', () => {
     }
   }
 
-  bootstrapLogs({ agent, logger })
+  const signal = new SetupLogs({ agent, logger })
+  assert.ok(signal)
 
   assert.deepStrictEqual(logs, [['application logging disabled, skipping otel logs setup']])
 })

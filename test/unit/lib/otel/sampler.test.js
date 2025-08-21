@@ -8,7 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('#testlib/agent_helper.js')
 const otel = require('@opentelemetry/api')
-const NewRelicSampler = require('#agentlib/otel/sampler.js')
+const NewRelicSampler = require('#agentlib/otel/traces/sampler.js')
 const { SpanKind } = require('@opentelemetry/api')
 const sinon = require('sinon')
 

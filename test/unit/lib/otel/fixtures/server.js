@@ -15,7 +15,7 @@ const {
   ATTR_RPC_METHOD,
   ATTR_RPC_SERVICE,
   ATTR_RPC_SYSTEM,
-} = require('#agentlib/otel/constants.js')
+} = require('#agentlib/otel/traces/constants.js')
 
 function createRpcServerSpan({ tracer, name = 'test-span', spanContext }) {
   const span = createSpan({ name, kind: SpanKind.SERVER, tracer, spanContext })

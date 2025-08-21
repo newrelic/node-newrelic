@@ -9,11 +9,12 @@ const test = require('node:test')
 const { once, EventEmitter } = require('node:events')
 const tspl = require('@matteo.collina/tspl')
 
-const bootstrapMetrics = require('#agentlib/otel/metrics/bootstrap-metrics.js')
+const SetupMetrics = require('#agentlib/otel/metrics/index.js')
 
 test('configures global provider after agent start', async (t) => {
-  const plan = tspl(t, { plan: 5 })
+  const plan = tspl(t, { plan: 6 })
   const agent = {
+    get [Symbol.toStringTag]() { return 'Agent' },
     config: {
       entity_guid: 'guid-123456',
       license_key: 'license-123456',
@@ -39,7 +40,8 @@ test('configures global provider after agent start', async (t) => {
   }
   Object.setPrototypeOf(agent, EventEmitter.prototype)
 
-  bootstrapMetrics(agent)
+  const signal = new SetupMetrics({ agent })
+  plan.ok(signal)
 
   plan.equal(1, agent.listenerCount('started'))
   process.nextTick(() => agent.emit('started'))

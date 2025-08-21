@@ -14,7 +14,7 @@ const {
   ATTR_URL_PATH,
   ATTR_URL_SCHEME,
   ATTR_URL_QUERY,
-} = require('#agentlib/otel/constants.js')
+} = require('#agentlib/otel/traces/constants.js')
 
 const defaultAttributes = {
   [ATTR_URL_SCHEME]: 'https',
