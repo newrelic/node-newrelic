@@ -98,7 +98,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @apm-js-collab/tracing-hooks
 
-This product includes source derived from [@apm-js-collab/tracing-hooks](https://github.com/apm-js-collab/tracing-hooks) ([v0.1.0](https://github.com/apm-js-collab/tracing-hooks/tree/v0.1.0)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/tracing-hooks/blob/v0.1.0/LICENSE):
+This product includes source derived from [@apm-js-collab/tracing-hooks](https://github.com/apm-js-collab/tracing-hooks) ([v0.1.1](https://github.com/apm-js-collab/tracing-hooks/tree/v0.1.1)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/tracing-hooks/blob/v0.1.1/LICENSE):
 
 ```
 
@@ -2964,7 +2964,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.864.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.864.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.864.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.872.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.872.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.872.0/LICENSE):
 
 ```
                                 Apache License
@@ -3173,7 +3173,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.864.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.864.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.864.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.872.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.872.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.872.0/LICENSE):
 
 ```
                                 Apache License
