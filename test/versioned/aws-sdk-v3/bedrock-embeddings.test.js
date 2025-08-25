@@ -8,10 +8,10 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const { assertSegments, match } = require('../../lib/custom-assertions')
-const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
-const { afterEach } = require('./common')
+const { afterEach, getAiResponseServer } = require('./common')
+const createAiResponseServer = getAiResponseServer()
 const requests = {
   amazon: (prompt, modelId) => {
     return {
