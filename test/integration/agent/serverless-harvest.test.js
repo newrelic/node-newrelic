@@ -63,6 +63,7 @@ test('simple harvest', async (t) => {
   let transaction
   const proxy = agent.tracer.transactionProxy(() => {
     transaction = agent.getTransaction()
+    transaction.parsedUrl = new URL('/nonexistent', 'http://localhost')
     transaction.finalizeNameFromUri('/nonexistent', 501)
   })
   proxy()
@@ -355,6 +356,9 @@ test('sending sql traces', async (t) => {
   helper.runInTransaction(agent, (tx) => {
     const expectedUrl = '/nonexistent'
 
+    // TODO: would this be a connection url?
+    tx.parsedUrl = new URL(expectedUrl, 'http://localhost')
+    tx.url = tx.parsedUrl.pathname
     tx.finalizeNameFromUri(expectedUrl, 501)
 
     agent.config.transaction_tracer.record_sql = 'raw'

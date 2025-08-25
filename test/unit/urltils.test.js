@@ -8,7 +8,6 @@ const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
-const url = require('url')
 
 test('NR URL utilities', async function (t) {
   t.beforeEach(function (ctx) {
@@ -28,29 +27,32 @@ test('NR URL utilities', async function (t) {
     'scrubbing URLs should return "/" if there\'s no leading slash on the path',
     function (t) {
       const { urltils } = t.nr
-      assert.equal(urltils.scrub('?t_u=http://some.com/o/p'), '/')
+      assert.equal(urltils.scrub('?t_u=http://some.com/o/p', 'http://some.com'), '/')
     }
   )
 
   await t.test('parsing parameters', async function (t) {
     await t.test('should find empty object of params in url lacking query', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters('/favicon.ico'), {})
+      const url = new URL('/favicon.ico', 'http://some.com')
+      assert.deepEqual(urltils.parseParameters(url), {})
     })
 
     await t.test('should find v param in url containing ?v with no value', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters('/status?v'), { v: true })
+      const url = new URL('/status?v', 'http://some.com')
+      assert.deepEqual(urltils.parseParameters(url), { v: true })
     })
 
     await t.test('should find v param with value in url containing ?v=1', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters('/status?v=1'), { v: '1' })
+      const url = new URL('/status?v=1', 'http://some.com')
+      assert.deepEqual(urltils.parseParameters(url), { v: '1' })
     })
-
     await t.test('should find v param when passing in an object', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters(url.parse('/status?v=1', true)), { v: '1' })
+      const url = new URL('/status?v=1', 'http://some.com')
+      assert.deepEqual(urltils.parseParameters(url), { v: '1' })
     })
   })
 
