@@ -18,18 +18,20 @@ const res = {
   },
   model: 'gpt-3.5-turbo-0613',
   usage: {
-    total_tokens: '30',
-    prompt_tokens: '10'
+    total_tokens: 30,
   }
 }
 
 const chatRes = {
   ...res,
   id: 'res-id',
-  choices: [{ finish_reason: 'stop', message: { content: 'a lot', role: 'know-it-all' } }]
+  choices: [{ finish_reason: 'stop', message: { content: 'a lot', role: 'know-it-all' } }],
+  usage: {
+    ...res.usage,
+    prompt_tokens: 10,
+    completion_tokens: 20
+  }
 }
-
-chatRes.usage.completion_tokens = 20
 
 const req = {
   model: 'gpt-3.5-turbo-0613',
@@ -72,10 +74,14 @@ function getExpectedResult(tx, event, type, completionId) {
 
   switch (type) {
     case 'embedding':
-      expected = { ...expected, ...resKeys }
+      expected = {
+        ...expected,
+        ...resKeys,
+        error: false,
+        'response.usage.total_tokens': 30,
+      }
       expected.input = 'This is my test input'
       expected.error = false
-      expected.token_count = undefined
       break
     case 'summary':
       expected = {
@@ -85,6 +91,9 @@ function getExpectedResult(tx, event, type, completionId) {
         'request.temperature': 'medium-rare',
         'response.number_of_messages': 3,
         'response.choices.finish_reason': 'stop',
+        'response.usage.prompt_tokens': 10,
+        'response.usage.completion_tokens': 20,
+        'response.usage.total_tokens': 30,
         error: false
       }
       break
@@ -95,7 +104,8 @@ function getExpectedResult(tx, event, type, completionId) {
         role: 'inquisitive-kid',
         sequence: 0,
         completion_id: completionId,
-        is_response: false
+        is_response: false,
+        token_count: 0
       }
   }
 

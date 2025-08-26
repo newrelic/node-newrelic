@@ -18,9 +18,9 @@ const res = {
   },
   model: 'gpt-4-0613',
   usage: {
-    total_tokens: '30',
-    input_tokens: '10',
-    output_tokens: '20'
+    total_tokens: 30,
+    input_tokens: 10,
+    output_tokens: 20
   }
 }
 
@@ -33,6 +33,11 @@ const chatRes = {
   object: 'response',
   output: [{ id: 'msg_id', role: 'assistant', status: 'completed', content: [{ text: 'a lot' }] }],
   output_text: 'a lot',
+  usage: {
+    ...res.usage,
+    prompt_tokens: 10,
+    completion_tokens: 20
+  }
 }
 
 const req = {
@@ -73,7 +78,7 @@ function getExpectedResult(tx, event, type, completionId) {
       expected = { ...expected, ...resKeys }
       expected.input = 'This is my test input'
       expected.error = false
-      expected.token_count = undefined
+      expected['response.usage.total_tokens'] = 30
       break
     case 'summary':
       expected = {
@@ -83,6 +88,9 @@ function getExpectedResult(tx, event, type, completionId) {
         'request.temperature': 1,
         'response.number_of_messages': 2,
         'response.choices.finish_reason': 'completed',
+        'response.usage.prompt_tokens': 10,
+        'response.usage.completion_tokens': 20,
+        'response.usage.total_tokens': 30,
         error: false
       }
       break
