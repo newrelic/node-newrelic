@@ -225,6 +225,6 @@ test('BatchSpanStreamer', async (t) => {
         `SENT metric incremented to ${SPANS + 1}`
       )
       end()
-    }, spanStreamer.queueInterval)
+    }, spanStreamer.queueInterval + 10) // delay a bit more than queueInterval to avoid clock skew
   })
 })
