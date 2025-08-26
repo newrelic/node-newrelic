@@ -408,7 +408,7 @@ function createTestData({ agent, names }) {
       segment.overwriteDurationInMillis(1)
     })
 
-    transaction.finalizeNameFromUri('/some/test/url', 200)
+    transaction.finalizeNameFromWeb(200)
     transaction.end()
   })
 }

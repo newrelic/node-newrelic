@@ -23,7 +23,8 @@ test('Transaction naming:', async function (t) {
   await t.test('Transaction should be named /* without any other naming source', function (t, end) {
     const { agent } = t.nr
     helper.runInTransaction(agent, function (transaction) {
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(200)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/*')
       assert.equal(
         transaction.name,
@@ -38,7 +39,8 @@ test('Transaction naming:', async function (t) {
     const { agent } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       transaction.nameState.setName('Expressjs', 'GET', '/', null)
-      transaction.finalizeNameFromUri('http://test.test.com/', 404)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(404)
       assert.equal(transaction.name, 'WebTransaction/Expressjs/GET/(not found)')
       assert.equal(
         transaction.name,
@@ -53,7 +55,8 @@ test('Transaction naming:', async function (t) {
     const { agent } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       simulateInstrumentation(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(200)
       assert.equal(transaction.name, 'WebTransaction/Expressjs/GET//setByInstrumentation')
       assert.equal(
         transaction.name,
@@ -69,7 +72,8 @@ test('Transaction naming:', async function (t) {
     const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(200)
       assert.equal(transaction.name, 'WebTransaction/Custom/override')
       assert.equal(
         transaction.name,
@@ -86,7 +90,8 @@ test('Transaction naming:', async function (t) {
     helper.runInTransaction(agent, function (transaction) {
       simulateInstrumentation(transaction)
       api.setTransactionName('override')
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(200)
       assert.equal(transaction.name, 'WebTransaction/Custom/override')
       assert.equal(
         transaction.name,
@@ -105,7 +110,8 @@ test('Transaction naming:', async function (t) {
       helper.runInTransaction(agent, function (transaction) {
         api.setTransactionName('override')
         simulateInstrumentation(transaction)
-        transaction.finalizeNameFromUri('http://test.test.com/', 200)
+        transaction.url = '/'
+        transaction.finalizeNameFromWeb(200)
         assert.equal(transaction.name, 'WebTransaction/Custom/override')
         assert.equal(
           transaction.name,
@@ -123,7 +129,8 @@ test('Transaction naming:', async function (t) {
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
       simulateInstrumentation(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 404)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(404)
       assert.equal(transaction.name, 'WebTransaction/Custom/override')
       assert.equal(
         transaction.name,
@@ -138,7 +145,8 @@ test('Transaction naming:', async function (t) {
     const { agent } = t.nr
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
     helper.runInTransaction(agent, function (transaction) {
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(200)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/test-transaction')
       assert.equal(
         transaction.name,
@@ -156,7 +164,8 @@ test('Transaction naming:', async function (t) {
       agent.urlNormalizer.addSimple(/\d+/, '*')
       agent.userNormalizer.addSimple(/123/, 'abc')
       helper.runInTransaction(agent, function (transaction) {
-        transaction.finalizeNameFromUri('http://test.test.com/123/456', 200)
+        transaction.url = '/123/456'
+        transaction.finalizeNameFromWeb(200)
         assert.equal(transaction.name, 'WebTransaction/NormalizedUri/abc/*')
         assert.equal(
           transaction.name,
@@ -172,7 +181,8 @@ test('Transaction naming:', async function (t) {
     const { agent } = t.nr
     agent.userNormalizer.addSimple(/\//, 'test-transaction')
     helper.runInTransaction(agent, function (transaction) {
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(200)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/test-transaction')
       assert.equal(
         transaction.name,
@@ -188,7 +198,8 @@ test('Transaction naming:', async function (t) {
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
     helper.runInTransaction(agent, function (transaction) {
       simulateInstrumentation(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(200)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/test-transaction')
       assert.equal(
         transaction.name,
@@ -205,7 +216,8 @@ test('Transaction naming:', async function (t) {
     const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(200)
       assert.equal(transaction.name, 'WebTransaction/Custom/override')
       assert.equal(
         transaction.name,
@@ -220,7 +232,8 @@ test('Transaction naming:', async function (t) {
     const { agent } = t.nr
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
     helper.runInTransaction(agent, function (transaction) {
-      transaction.finalizeNameFromUri('http://test.test.com/', 404)
+      transaction.url = '/'
+      transaction.finalizeNameFromWeb(404)
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/test-transaction')
       assert.equal(
         transaction.name,

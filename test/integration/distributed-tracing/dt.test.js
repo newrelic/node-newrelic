@@ -7,7 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const url = require('node:url')
 const tspl = require('@matteo.collina/tspl')
 
 const API = require('../../../api')
@@ -404,9 +403,8 @@ function get(uri, options, cb) {
     cb = options
     options = {}
   }
-  Object.assign(options, url.parse(uri))
 
-  require('http').get(options, (res) => {
+  require('http').get(uri, options, (res) => {
     let body = ''
     res.on('data', (data) => (body += data.toString('utf8')))
     res.on('error', (err) => cb(err))

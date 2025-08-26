@@ -8,7 +8,6 @@ const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
-const url = require('url')
 
 test('NR URL utilities', async function (t) {
   t.beforeEach(function (ctx) {
@@ -16,7 +15,7 @@ test('NR URL utilities', async function (t) {
     const loggerStub = {
       warn: sinon.stub()
     }
-    ctx.nr.urltils = proxyquire('../../lib/util/urltils', {
+    ctx.nr.urltils = proxyquire('../../../lib/util/urltils', {
       '../logger': {
         child: sinon.stub().returns(loggerStub)
       }
@@ -24,33 +23,59 @@ test('NR URL utilities', async function (t) {
     ctx.nr.loggerStub = loggerStub
   })
 
-  await t.test(
-    'scrubbing URLs should return "/" if there\'s no leading slash on the path',
-    function (t) {
-      const { urltils } = t.nr
-      assert.equal(urltils.scrub('?t_u=http://some.com/o/p'), '/')
-    }
-  )
-
   await t.test('parsing parameters', async function (t) {
     await t.test('should find empty object of params in url lacking query', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters('/favicon.ico'), {})
+      const url = new URL('http://example.com/favicon.ico')
+      assert.deepEqual(urltils.parseParameters(url), {})
     })
 
     await t.test('should find v param in url containing ?v with no value', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters('/status?v'), { v: true })
+      const url = new URL('http://example.com/status?v')
+      assert.deepEqual(urltils.parseParameters(url), { v: true })
     })
 
     await t.test('should find v param with value in url containing ?v=1', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters('/status?v=1'), { v: '1' })
+      const url = new URL('http://example.com/status?v=1')
+      assert.deepEqual(urltils.parseParameters(url), { v: '1' })
     })
 
-    await t.test('should find v param when passing in an object', function (t) {
+    await t.test('should parsed multiple params', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters(url.parse('/status?v=1', true)), { v: '1' })
+      const url = new URL('http://example.com/status?v=1&test=bar&empty=&t')
+      assert.deepEqual(urltils.parseParameters(url), { v: '1', test: 'bar', empty: '', t: true })
+    })
+  })
+
+  await t.test('scrub url', async function (t) {
+    await t.test('should scrub url if it contains session info in uri', function (t) {
+      const { urltils } = t.nr
+      const url = new URL('http://example.com/status;foo=bar;sessionid=1234;baz=quux?v=1&test=bar&empty=&t')
+      assert.equal(urltils.scrub(url), '/status')
+    })
+
+    await t.test('should not scrub url if it does not contain session info in uri', function (t) {
+      const { urltils } = t.nr
+      const url = new URL('http://example.com/status?v=1&test=bar&empty=&t')
+      assert.equal(urltils.scrub(url), '/status')
+    })
+
+    await t.test('should not scrub url if it does not contain session info in uri and no path', function (t) {
+      const { urltils } = t.nr
+      const url = new URL('http://example.com')
+      assert.equal(urltils.scrub(url), '/')
+    })
+  })
+
+  await t.test('should scrub and parse params', function (t) {
+    const { urltils } = t.nr
+    const url = new URL('http://example.com/status;foo=bar;sessionid=1234;baz=quux?v=1&test=bar&empty=&t')
+    assert.deepEqual(urltils.scrubAndParseParameters(url), {
+      protocol: 'http:',
+      path: '/status',
+      parameters: { v: '1', test: 'bar', empty: '', t: true }
     })
   })
 

@@ -13,6 +13,7 @@ const helper = require('#testlib/agent_helper.js')
 const TraceSegment = require('#agentlib/transaction/trace/segment.js')
 const Transaction = require('#agentlib/transaction/index.js')
 const hashes = require('#agentlib/util/hashes.js')
+const urltils = require('#agentlib/util/urltils.js')
 
 function beforeEach(ctx) {
   ctx.nr = {}
@@ -294,11 +295,13 @@ test('with children created from URLs', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
-    const url = '/test?test1=value1&test2&test3=50&test4='
+    const url = new URL('http://localhost/test?test1=value1&test2&test3=50&test4=')
+    transaction.url = url.pathname
 
     const webChild = trace.add(url)
     transaction.baseSegment = webChild
-    transaction.finalizeNameFromUri(url, 200)
+    transaction.addRequestParameters(urltils.parseParameters(url))
+    transaction.finalizeNameFromWeb(200)
 
     trace.setDurationInMillis(1, 0)
     webChild.setDurationInMillis(1, 0)
@@ -377,7 +380,8 @@ test('with parameters parsed out by framework', async (t) => {
     const webChild = trace.add(url)
     transaction.trace.attributes.addAttributes(DESTINATIONS.TRANS_SCOPE, params)
     transaction.baseSegment = webChild
-    transaction.finalizeNameFromUri(url, 200)
+    transaction.url = url
+    transaction.finalizeNameFromWeb(200)
 
     trace.setDurationInMillis(1, 0)
     webChild.setDurationInMillis(1, 0)
@@ -442,7 +446,8 @@ test('with attributes.enabled set to false', async (t) => {
     const webChild = trace.add(url)
     webChild.addAttribute('test', 'non-null value')
     transaction.baseSegment = webChild
-    transaction.finalizeNameFromUri(url, 200)
+    transaction.url = url
+    transaction.finalizeNameFromWeb(200)
 
     trace.setDurationInMillis(1, 0)
     webChild.setDurationInMillis(1, 0)
@@ -484,10 +489,14 @@ test('with attributes.enabled set', async (t) => {
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
     const url = '/test?test1=value1&test2&test3=50&test4='
+    const parsedUrl = new URL('http://localhost' + url)
 
     const webChild = trace.add(url)
     transaction.baseSegment = webChild
-    transaction.finalizeNameFromUri(url, 200)
+    const params = urltils.parseParameters(parsedUrl)
+    transaction.addRequestParameters(params)
+    transaction.url = url
+    transaction.finalizeNameFromWeb(200)
     webChild.markAsWeb(transaction)
 
     trace.setDurationInMillis(1, 0)

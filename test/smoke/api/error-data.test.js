@@ -37,7 +37,7 @@ test('Collector API should send errors to staging-collector.newrelic.com', (t, e
     let transaction
     const proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
-      transaction.finalizeNameFromUri('/nonexistent', 501)
+      transaction.finalizeNameFromWeb(501)
     })
     proxy()
     assert.ok(transaction, 'got a transaction')

@@ -520,6 +520,9 @@ test('when working with http.request', async (t) => {
     nock(host).post(path).reply(200)
 
     helper.runInTransaction(agent, function (transaction) {
+      // NOTE: This is to test the logic in `urlToOptions` that converts data from `url.parse`
+      // into relevant object
+      // See: https://github.com/newrelic/node-newrelic/blob/2077ce35db319d0128337faed0ff77b00f76d8f1/lib/instrumentation/core/http.js#L390
       const opts = url.parse(`${host}${path}`)
       opts.method = 'POST'
 

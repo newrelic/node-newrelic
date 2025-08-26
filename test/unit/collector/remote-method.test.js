@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const https = require('node:https')
 const events = require('node:events')
 const dns = require('node:dns')
-const url = require('node:url')
 const proxyquire = require('proxyquire')
 const helper = require('../../lib/agent_helper')
 const Config = require('../../../lib/config')
@@ -515,7 +514,7 @@ test('when generating headers request URL', async (t) => {
       ctx.nr.endpoint
     )
 
-    ctx.nr.parsed = url.parse(ctx.nr.method._path(), true, false)
+    ctx.nr.parsed = new URL(`http://${collector.host}:${collector.port}${ctx.nr.method._path()}`)
   })
 
   t.afterEach((ctx) => {
@@ -524,32 +523,34 @@ test('when generating headers request URL', async (t) => {
   })
 
   await t.test('should say that it supports protocol 17', (t) => {
-    assert.equal(t.nr.parsed.query.protocol_version, 17)
+    assert.equal(t.nr.parsed.searchParams.get('protocol_version'), 17)
   })
 
   await t.test('should tell the collector it is sending JSON', (t) => {
-    assert.equal(t.nr.parsed.query.marshal_format, 'json')
+    assert.equal(t.nr.parsed.searchParams.get('marshal_format'), 'json')
   })
 
   await t.test('should pass through the license key', (t) => {
-    assert.equal(t.nr.parsed.query.license_key, TEST_LICENSE)
+    assert.equal(t.nr.parsed.searchParams.get('license_key'), TEST_LICENSE)
   })
 
   await t.test('should include the method', (t) => {
-    assert.equal(t.nr.parsed.query.method, TEST_METHOD)
+    assert.equal(t.nr.parsed.searchParams.get('method'), TEST_METHOD)
   })
 
   await t.test('should not include the agent run ID when not set', (t) => {
-    const method = new RemoteMethod(TEST_METHOD, { config: t.nr.config }, t.nr.endpoint)
-    const parsed = url.parse(method._path(), true, false)
-    assert.equal(parsed.query.run_id, undefined)
+    const { config, endpoint } = t.nr
+    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
+    const parsed = new URL(`http://${endpoint.host}:${endpoint.port}${method._path()}`)
+    assert.equal(parsed.searchParams.has('run_id'), false)
   })
 
   await t.test('should include the agent run ID when set', (t) => {
-    t.nr.config.run_id = TEST_RUN_ID
-    const method = new RemoteMethod(TEST_METHOD, { config: t.nr.config }, t.nr.endpoint)
-    const parsed = url.parse(method._path(), true, false)
-    assert.equal(parsed.query.run_id, TEST_RUN_ID)
+    const { config, endpoint } = t.nr
+    config.run_id = TEST_RUN_ID
+    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
+    const parsed = new URL(`http://${endpoint.host}:${endpoint.port}${method._path()}`)
+    assert.equal(parsed.searchParams.get('run_id'), TEST_RUN_ID)
   })
 
   await t.test('should start with the (old-style) path', (t) => {

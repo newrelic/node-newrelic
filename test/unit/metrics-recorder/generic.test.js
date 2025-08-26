@@ -26,7 +26,8 @@ function record(options) {
   const segment = makeSegment(options)
   const transaction = options.transaction
 
-  transaction.finalizeNameFromUri(options.url, options.code)
+  transaction.url = options.url
+  transaction.finalizeNameFromWeb(options.code)
   recordGeneric(segment, options.transaction.name, options.transaction)
 }
 
