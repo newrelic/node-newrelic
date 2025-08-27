@@ -484,6 +484,64 @@ test('built-in http module instrumentation', async (t) => {
         end()
       }
     })
+
+    await t.test(
+      'proxy url',
+      (t, end) => {
+        const { http, serverPort } = t.nr
+        makeRequest(
+          http,
+          {
+            port: serverPort,
+            host: 'localhost',
+            path: 'http://www.google.com/proxy/path',
+            method: 'GET',
+            headers: {}
+          },
+          finish
+        )
+
+        function finish() {
+          const { transaction } = t.nr
+          assert.equal(transaction.url, '/proxy/path')
+          const segment = transaction.baseSegment
+          const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+          assert.equal(spanAttributes['request.uri'], '/proxy/path')
+
+          end()
+        }
+      }
+    )
+
+    await t.test(
+      'should default url to `/unknown` when it cannot be parsed',
+      (t, end) => {
+        const { http, serverPort } = t.nr
+        makeRequest(
+          http,
+          {
+            port: serverPort,
+            host: 'localhost',
+            path: 'http://///',
+            method: 'GET',
+            headers: {}
+          },
+          finish
+        )
+
+        function finish() {
+          const { transaction } = t.nr
+          assert.equal(transaction.url, '/unknown')
+          const segment = transaction.baseSegment
+          const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+          assert.equal(spanAttributes['request.uri'], '/unknown')
+
+          end()
+        }
+      }
+    )
   })
 
   await t.test('inbound http requests when cat is enabled', async (t) => {
