@@ -296,11 +296,12 @@ test('with children created from URLs', async (t) => {
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
     const url = new URL('http://localhost/test?test1=value1&test2&test3=50&test4=')
-    transaction.url = url.pathname
+    const data = urltils.scrubAndParseParameters(url)
+    transaction.url = data.path
 
     const webChild = trace.add(url)
     transaction.baseSegment = webChild
-    transaction.addRequestParameters(urltils.parseParameters(url))
+    transaction.addRequestParameters(data.parameters)
     transaction.finalizeNameFromWeb(200)
 
     trace.setDurationInMillis(1, 0)
@@ -493,9 +494,9 @@ test('with attributes.enabled set', async (t) => {
 
     const webChild = trace.add(url)
     transaction.baseSegment = webChild
-    const params = urltils.parseParameters(parsedUrl)
-    transaction.addRequestParameters(params)
-    transaction.url = url
+    const data = urltils.scrubAndParseParameters(parsedUrl)
+    transaction.addRequestParameters(data.parameters)
+    transaction.url = data.path
     transaction.finalizeNameFromWeb(200)
     webChild.markAsWeb(transaction)
 
