@@ -116,18 +116,17 @@ services:
 
   redis:
     container_name: nr_node_redis
-    image: bitnami/redis
+    image: redis
     ports:
       - "6379:6379"
       - "6380:6380"
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_TLS_ENABLED=yes
-      - REDIS_TLS_PORT=6380
-      - REDIS_TLS_CERT_FILE=/tls/redis.crt
-      - REDIS_TLS_KEY_FILE=/tls/redis.key
-      - REDIS_TLS_CA_FILE=/tls/ca.crt
-      - REDIS_TLS_AUTH_CLIENTS=no
+    command: >
+      redis-server
+      --tls-port 6380
+      --tls-auth-clients no
+      --tls-cert-file /tls/redis.crt
+      --tls-key-file /tls/redis.key
+      --tls-ca-cert-file /tls/ca.crt
     volumes:
       - "./docker/redis:/tls"
     healthcheck:
