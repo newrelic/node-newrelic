@@ -335,7 +335,7 @@ test('instrumentOutbound', async (t) => {
     })
   })
 
-  await t.test('should fallback to url.parse when href is malformed', (t, end) => {
+  await t.test('should construct url from protocol, host header and path when path is not a substring of href', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
@@ -520,8 +520,8 @@ test('when working with http.request', async (t) => {
     nock(host).post(path).reply(200)
 
     helper.runInTransaction(agent, function (transaction) {
-      // NOTE: This is to test the logic in `urlToOptions` that converts data from `url.parse`
-      // into relevant object
+      // We are purposefully using `url.parse` here in order to verify that our
+      // implementation results in the same shape data as that returned by `url.parse`.
       // See: https://github.com/newrelic/node-newrelic/blob/2077ce35db319d0128337faed0ff77b00f76d8f1/lib/instrumentation/core/http.js#L390
       const opts = url.parse(`${host}${path}`)
       opts.method = 'POST'

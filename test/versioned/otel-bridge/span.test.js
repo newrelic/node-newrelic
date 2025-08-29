@@ -365,7 +365,7 @@ test('fallback client is bridged accordingly', (t, end) => {
   const { agent, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'fallback-client-test'
-    tracer.startActiveSpan('unidic-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
+    tracer.startActiveSpan('undici-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'External/unknown')
       assert.equal(tx.traceId, span.spanContext().traceId)

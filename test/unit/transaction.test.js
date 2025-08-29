@@ -1878,14 +1878,6 @@ test('when being named with finalizeNameFromWeb', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  // TODO: test no longer valid
-  /*
-  await t.test('should throw when called with no parameters', (t) => {
-    const { txn } = t.nr
-    assert.throws(() => txn.finalizeNameFromWeb())
-  })
-  */
-
   await t.test('should ignore a request path when told to by a rule', (t) => {
     const { agent, txn } = t.nr
     const api = new API(agent)
