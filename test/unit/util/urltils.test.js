@@ -8,7 +8,6 @@ const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
-const url = require('url')
 
 test('NR URL utilities', async function (t) {
   t.beforeEach(function (ctx) {
@@ -16,7 +15,7 @@ test('NR URL utilities', async function (t) {
     const loggerStub = {
       warn: sinon.stub()
     }
-    ctx.nr.urltils = proxyquire('../../lib/util/urltils', {
+    ctx.nr.urltils = proxyquire('../../../lib/util/urltils', {
       '../logger': {
         child: sinon.stub().returns(loggerStub)
       }
@@ -24,33 +23,71 @@ test('NR URL utilities', async function (t) {
     ctx.nr.loggerStub = loggerStub
   })
 
-  await t.test(
-    'scrubbing URLs should return "/" if there\'s no leading slash on the path',
-    function (t) {
-      const { urltils } = t.nr
-      assert.equal(urltils.scrub('?t_u=http://some.com/o/p'), '/')
-    }
-  )
-
-  await t.test('parsing parameters', async function (t) {
+  await t.test('scrubAndParseParameters', async function (t) {
     await t.test('should find empty object of params in url lacking query', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters('/favicon.ico'), {})
+      const url = new URL('http://example.com/favicon.ico')
+      const data = urltils.scrubAndParseParameters(url)
+      assert.deepEqual(data, {
+        protocol: 'http:',
+        path: '/favicon.ico',
+        parameters: {}
+      })
     })
 
     await t.test('should find v param in url containing ?v with no value', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters('/status?v'), { v: true })
+      const url = new URL('http://example.com/status?v')
+      const data = urltils.scrubAndParseParameters(url)
+      assert.deepEqual(data, {
+        protocol: 'http:',
+        path: '/status',
+        parameters: { v: true }
+      })
     })
 
     await t.test('should find v param with value in url containing ?v=1', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters('/status?v=1'), { v: '1' })
+      const url = new URL('http://example.com/status?v=1')
+      const data = urltils.scrubAndParseParameters(url)
+      assert.deepEqual(data, {
+        protocol: 'http:',
+        path: '/status',
+        parameters: { v: '1' }
+      })
     })
 
-    await t.test('should find v param when passing in an object', function (t) {
+    await t.test('should parsed multiple params', function (t) {
       const { urltils } = t.nr
-      assert.deepEqual(urltils.parseParameters(url.parse('/status?v=1', true)), { v: '1' })
+      const url = new URL('http://example.com/status?v=1&test=bar&empty=&t')
+      const data = urltils.scrubAndParseParameters(url)
+      assert.deepEqual(data, {
+        protocol: 'http:',
+        path: '/status',
+        parameters: { v: '1', test: 'bar', empty: '', t: true }
+      })
+    })
+
+    await t.test('should scrub url if it contains session info in uri', function (t) {
+      const { urltils } = t.nr
+      const url = new URL('http://example.com/status;foo=bar;sessionid=1234;baz=quux?v=1&test=bar&empty=&t')
+      const data = urltils.scrubAndParseParameters(url)
+      assert.deepEqual(data, {
+        protocol: 'http:',
+        path: '/status',
+        parameters: { v: '1', test: 'bar', empty: '', t: true }
+      })
+    })
+
+    await t.test('should not scrub url if it does not contain session info in uri and no path', function (t) {
+      const { urltils } = t.nr
+      const url = new URL('http://example.com')
+      const data = urltils.scrubAndParseParameters(url)
+      assert.deepEqual(data, {
+        protocol: 'http:',
+        path: '/',
+        parameters: {}
+      })
     })
   })
 
@@ -231,95 +268,6 @@ test('NR URL utilities', async function (t) {
         assert.equal(urltils.isIgnoredError(config, code), false)
         config.error_collector.ignore_status_codes = [code]
         assert.equal(urltils.isIgnoredError(config, code), false)
-      })
-    })
-  })
-
-  await t.test('copying parameters from a query hash', async function (t) {
-    t.beforeEach(function (ctx) {
-      ctx.nr.source = {}
-      ctx.nr.dest = {}
-    })
-
-    await t.test("shouldn't not throw on missing configuration", function (t) {
-      const { urltils, source, dest } = t.nr
-      assert.doesNotThrow(function () {
-        urltils.copyParameters(null, source, dest)
-      })
-    })
-
-    await t.test('should not throw on missing source', function (t) {
-      const { urltils, dest } = t.nr
-      assert.doesNotThrow(function () {
-        urltils.copyParameters(null, dest)
-      })
-    })
-
-    await t.test('should not throw on missing destination', function (t) {
-      const { urltils, source } = t.nr
-      assert.doesNotThrow(function () {
-        urltils.copyParameters(source, null)
-      })
-    })
-
-    await t.test('should copy parameters from source to destination', function (t) {
-      const { urltils, source, dest } = t.nr
-      dest.existing = 'here'
-      source.firstNew = 'present'
-      source.secondNew = 'accounted for'
-
-      assert.doesNotThrow(function () {
-        urltils.copyParameters(source, dest)
-      })
-
-      assert.deepEqual(dest, {
-        existing: 'here',
-        firstNew: 'present',
-        secondNew: 'accounted for'
-      })
-    })
-
-    await t.test('should not overwrite existing parameters in destination', function (t) {
-      const { urltils, source, dest } = t.nr
-      dest.existing = 'here'
-      dest.firstNew = 'already around'
-      source.firstNew = 'present'
-      source.secondNew = 'accounted for'
-
-      urltils.copyParameters(source, dest)
-
-      assert.deepEqual(dest, {
-        existing: 'here',
-        firstNew: 'already around',
-        secondNew: 'accounted for'
-      })
-    })
-
-    await t.test('should not overwrite null parameters in destination', function (t) {
-      const { urltils, source, dest } = t.nr
-      dest.existing = 'here'
-      dest.firstNew = null
-      source.firstNew = 'present'
-
-      urltils.copyParameters(source, dest)
-
-      assert.deepEqual(dest, {
-        existing: 'here',
-        firstNew: null
-      })
-    })
-
-    await t.test('should not overwrite undefined parameters in destination', function (t) {
-      const { urltils, source, dest } = t.nr
-      dest.existing = 'here'
-      dest.firstNew = undefined
-      source.firstNew = 'present'
-
-      urltils.copyParameters(source, dest)
-
-      assert.deepEqual(dest, {
-        existing: 'here',
-        firstNew: undefined
       })
     })
   })

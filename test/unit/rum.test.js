@@ -85,7 +85,8 @@ test('the RUM API', async function (t) {
     const { agent, api } = t.nr
     agent.config.application_id = undefined
     helper.runInTransaction(agent, function (tx) {
-      tx.finalizeNameFromUri('hello')
+      tx.url = '/hello'
+      tx.finalizeNameFromWeb()
       assert.equal(api.getBrowserTimingHeader(), '<!-- NREUM: (4) -->')
       end()
     })
@@ -94,7 +95,8 @@ test('the RUM API', async function (t) {
   await t.test('should return the rum headers when in a named transaction', function (t, end) {
     const { agent, api } = t.nr
     helper.runInTransaction(agent, function (tx) {
-      tx.finalizeNameFromUri('hello')
+      tx.url = '/hello'
+      tx.finalizeNameFromWeb()
       assert.equal(api.getBrowserTimingHeader().indexOf('<script'), 0)
       end()
     })
@@ -104,7 +106,8 @@ test('the RUM API', async function (t) {
     const { agent, api } = t.nr
     agent.config.browser_monitoring.debug = true
     helper.runInTransaction(agent, function (tx) {
-      tx.finalizeNameFromUri('hello')
+      tx.url = '/hello'
+      tx.finalizeNameFromWeb()
       // there should be about 5 new lines here, this is a really *rough*
       // estimate if it's being pretty printed
       assert.ok(api.getBrowserTimingHeader().split('\n').length > 5)
@@ -115,7 +118,8 @@ test('the RUM API', async function (t) {
   await t.test('should be compact when not debugging', function (t, end) {
     const { agent, api } = t.nr
     helper.runInTransaction(agent, function (tx) {
-      tx.finalizeNameFromUri('hello')
+      tx.url = '/hello'
+      tx.finalizeNameFromWeb()
       const l = api.getBrowserTimingHeader().split('\n').length
       assert.equal(l, 1)
       end()
@@ -126,7 +130,8 @@ test('the RUM API', async function (t) {
     const { agent, api } = t.nr
     agent.config.browser_monitoring.browser_key = undefined
     helper.runInTransaction(agent, function (tx) {
-      tx.finalizeNameFromUri('hello')
+      tx.url = '/hello'
+      tx.finalizeNameFromWeb()
       assert.equal(api.getBrowserTimingHeader(), '<!-- NREUM: (5) -->')
       end()
     })
@@ -136,7 +141,8 @@ test('the RUM API', async function (t) {
     const { agent, api } = t.nr
     agent.config.browser_monitoring.js_agent_loader = ''
     helper.runInTransaction(agent, function (tx) {
-      tx.finalizeNameFromUri('hello')
+      tx.url = '/hello'
+      tx.finalizeNameFromWeb()
       assert.equal(api.getBrowserTimingHeader(), '<!-- NREUM: (6) -->')
       end()
     })
@@ -146,7 +152,8 @@ test('the RUM API', async function (t) {
     const { agent, api } = t.nr
     agent.config.browser_monitoring.loader = 'none'
     helper.runInTransaction(agent, function (tx) {
-      tx.finalizeNameFromUri('hello')
+      tx.url = '/hello'
+      tx.finalizeNameFromWeb()
       assert.equal(api.getBrowserTimingHeader(), '<!-- NREUM: (7) -->')
       end()
     })
@@ -155,7 +162,8 @@ test('the RUM API', async function (t) {
   await t.test('should get browser agent script with wrapping tag', function (t, end) {
     const { agent, api } = t.nr
     helper.runInTransaction(agent, function (tx) {
-      tx.finalizeNameFromUri('hello')
+      tx.url = '/hello'
+      tx.finalizeNameFromWeb()
       const timingHeader = api.getBrowserTimingHeader()
       assert.ok(
         timingHeader.startsWith(
@@ -186,7 +194,8 @@ test('the RUM API', async function (t) {
     function (t, end) {
       const { agent, api } = t.nr
       helper.runInTransaction(agent, function (tx) {
-        tx.finalizeNameFromUri('hello')
+        tx.url = '/hello'
+        tx.finalizeNameFromWeb()
         const timingHeader = api.getBrowserTimingHeader({ nonce: '12345' })
         assert.ok(
           timingHeader.startsWith(
@@ -204,7 +213,8 @@ test('the RUM API', async function (t) {
     function (t, end) {
       const { agent, api } = t.nr
       helper.runInTransaction(agent, function (tx) {
-        tx.finalizeNameFromUri('hello')
+        tx.url = '/hello'
+        tx.finalizeNameFromWeb()
         const timingHeader = api.getBrowserTimingHeader({ hasToRemoveScriptWrapper: true })
         assert.ok(
           timingHeader.startsWith(
@@ -221,7 +231,8 @@ test('the RUM API', async function (t) {
     const { agent, api } = t.nr
     helper.runInTransaction(agent, function (tx) {
       api.addCustomAttribute('hello', 1)
-      tx.finalizeNameFromUri('hello')
+      tx.url = '/hello'
+      tx.finalizeNameFromWeb()
       const payload = /"atts":"(.*)"/.exec(api.getBrowserTimingHeader())
       assert.ok(payload)
       const deobf = hashes.deobfuscateNameUsingKey(

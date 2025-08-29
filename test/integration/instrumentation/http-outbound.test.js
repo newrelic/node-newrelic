@@ -7,9 +7,9 @@
 
 const helper = require('../../lib/agent_helper')
 const test = require('node:test')
-const assert = require('node:assert')
 const symbols = require('../../../lib/symbols')
 const nock = require('nock')
+const { tspl } = require('@matteo.collina/tspl')
 
 test('external requests', async function (t) {
   t.beforeEach((ctx) => {
@@ -25,7 +25,8 @@ test('external requests', async function (t) {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('segments should end on error', function (t, end) {
+  await t.test('segments should end on error', async function (t) {
+    const plan = tspl(t, { plan: 3 })
     const { agent, http } = t.nr
     const notVeryReliable = http.createServer(function badHandler(req) {
       req.socket.end()
@@ -43,19 +44,21 @@ test('external requests', async function (t) {
       req.on('error', function onError() {
         const [segment] = tx.trace.getChildren(tx.trace.root.id)
 
-        assert.equal(
+        plan.equal(
           segment.name,
           'External/localhost:' + notVeryReliable.address().port + '/',
           'should be named'
         )
-        assert.ok(segment.timer.start, 'should have started')
-        assert.ok(segment.timer.hasEnd(), 'should have ended')
-        end()
+        plan.ok(segment.timer.start, 'should have started')
+        plan.ok(segment.timer.hasEnd(), 'should have ended')
       })
     })
+
+    await plan.completed
   })
 
-  await t.test('should have expected child segments', function (t, end) {
+  await t.test('should have expected child segments', async function (t) {
+    const plan = tspl(t, { plan: 7 })
     const { agent, http } = t.nr
     // The externals segment is based on the lifetime of the request and response.
     // These objects are event emitters and we consider the external to be
@@ -88,20 +91,20 @@ test('external requests', async function (t) {
 
     function check(tx) {
       const [external] = tx.trace.getChildren(tx.trace.root.id)
-      assert.equal(
+      plan.equal(
         external.name,
         'External/localhost:' + server.address().port + '/some/path',
         'should be named as an external'
       )
-      assert.ok(external.timer.start, 'should have started')
-      assert.ok(external.timer.hasEnd(), 'should have ended')
+      plan.ok(external.timer.start, 'should have started')
+      plan.ok(external.timer.hasEnd(), 'should have ended')
       const externalChildren = tx.trace.getChildren(external.id)
-      assert.ok(externalChildren.length, 'should have children')
+      plan.ok(externalChildren.length, 'should have children')
 
       let connect = externalChildren[0]
-      assert.equal(connect.name, 'http.Agent#createConnection', 'should be connect segment')
+      plan.equal(connect.name, 'http.Agent#createConnection', 'should be connect segment')
       let connectChildren = tx.trace.getChildren(connect.id)
-      assert.equal(connectChildren.length, 1, 'connect should have 1 child')
+      plan.equal(connectChildren.length, 1, 'connect should have 1 child')
 
       // as of Node 24.5.0 there's yet another layer of net segments
       if (connectChildren[0].name === 'net.createConnection') {
@@ -115,17 +118,18 @@ test('external requests', async function (t) {
       connectChildren = tx.trace.getChildren(connect.id)
 
       const dnsLookup = connectChildren[0]
-      assert.equal(dnsLookup.name, 'dns.lookup', 'should be dns.lookup segment')
-
-      end()
+      plan.equal(dnsLookup.name, 'dns.lookup', 'should be dns.lookup segment')
     }
+
+    await plan.completed
   })
 
-  await t.test('should recognize requests via proxy correctly', function (t, end) {
+  await t.test('should recognize requests via proxy correctly', async function (t) {
+    const plan = tspl(t, { plan: 2 })
     const { agent, http } = t.nr
     const proxyUrl = 'https://www.google.com/proxy/path'
     const proxyServer = http.createServer(function onRequest(req, res) {
-      assert.equal(req.url, proxyUrl)
+      plan.equal(req.url, proxyUrl)
       req.resume()
       res.end('ok')
     })
@@ -146,23 +150,24 @@ test('external requests', async function (t) {
         res.once('end', function () {
           const { trace } = agent.tracer.getTransaction()
           const [segment] = trace.getChildren(trace.root.id)
-          assert.equal(
+          plan.equal(
             segment.name,
             'External/www.google.com/proxy/path',
             'should name segment as an external service'
           )
-          end()
         })
       })
 
       req.on('error', function onError(err) {
-        assert.fail('Request should not error: ' + err.message)
-        end()
+        plan.fail('Request should not error: ' + err.message)
       })
     })
+
+    await plan.completed
   })
 
-  await t.test('NODE-1647 should not interfere with `got`', { timeout: 5000 }, function (t, end) {
+  await t.test('NODE-1647 should not interfere with `got`', { timeout: 5000 }, async function (t) {
+    const plan = tspl(t, { plan: 1 })
     const { agent } = t.nr
     // Our way of wrapping HTTP response objects caused `got` to hang. This was
     // resolved in agent 2.5.1.
@@ -172,24 +177,18 @@ test('external requests', async function (t) {
     })
     nock('https://example.com').get('/').reply(200)
     const got = require('got')
-    helper.runInTransaction(agent, function () {
+    await helper.runInTransaction(agent, async function () {
       const req = got('https://example.com/')
       t.after(function () {
         req.cancel()
       })
-      req.then(
-        function () {
-          end()
-        },
-        function (e) {
-          assert.ok(!e)
-          end()
-        }
-      )
+      await req
+      plan.ok(true)
     })
   })
 
-  await t.test('should record requests to default ports', (t, end) => {
+  await t.test('should record requests to default ports', async (t) => {
+    const plan = tspl(t, { plan: 1 })
     const { agent, http } = t.nr
     nock.disableNetConnect()
     t.after(() => {
@@ -201,14 +200,16 @@ test('external requests', async function (t) {
         res.resume()
         res.on('end', () => {
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
-          assert.equal(segment.name, 'External/example.com/', 'should create external segment')
-          end()
+          plan.equal(segment.name, 'External/example.com/', 'should create external segment')
         })
       })
     })
+
+    await plan.completed
   })
 
-  await t.test('should expose the external segment on the http request', (t, end) => {
+  await t.test('should expose the external segment on the http request', async (t) => {
+    const plan = tspl(t, { plan: 2 })
     const { agent, http } = t.nr
     nock.disableNetConnect()
     t.after(() => {
@@ -222,15 +223,16 @@ test('external requests', async function (t) {
         res.on('end', () => {
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
           const attrs = segment.getAttributes()
-          assert.deepEqual(attrs, {
+          plan.deepEqual(attrs, {
             url: 'http://example.com/',
             procedure: 'GET'
           })
-          assert.equal(reqSegment, segment, 'should expose external')
-          end()
+          plan.equal(reqSegment, segment, 'should expose external')
         })
       })
       reqSegment = req[symbols.segment]
     })
+
+    await plan.completed
   })
 })

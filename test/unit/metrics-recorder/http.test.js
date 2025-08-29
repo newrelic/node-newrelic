@@ -27,7 +27,8 @@ function record(options) {
   const segment = makeSegment(options)
   const transaction = options.transaction
 
-  transaction.finalizeNameFromUri(options.url, options.code)
+  transaction.url = options.url
+  transaction.finalizeNameFromWeb(options.code)
   segment.markAsWeb(transaction)
   recordWeb(segment, options.transaction.name, options.transaction)
 }
@@ -283,6 +284,7 @@ test('recordWeb when recording web transactions with distributed tracing enabled
     assertMetrics(trans.metrics, result, true, true)
   })
 
+  /* No longer valid as `transaction.url` is scrubbed before being set.
   await t.test('should chop query strings delimited by ? from request URLs', function (t) {
     const { trans } = t.nr
     record({
@@ -302,6 +304,7 @@ test('recordWeb when recording web transactions with distributed tracing enabled
 
     assert.equal(trans.url, '/test')
   })
+  */
 })
 
 test("recordWeb when recording web transactions with distributed tracing enabled when testing a web request's apdex", async function (t) {

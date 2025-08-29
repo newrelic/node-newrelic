@@ -731,8 +731,9 @@
     ],
     "segment": {
       "host": "server.address",
+      "url": "url.full",
       "name": {
-        "template": "External/${server.address}${url.path}"
+        "template": "External/${host}${path}"
       } 
     }
   },
@@ -798,7 +799,7 @@
       "host": "net.peer.name",
       "url": "http.url",
       "name": {
-        "template": "External/${net.peer.name}${path}"
+        "template": "External/${host}${path}"
       } 
     }
   },

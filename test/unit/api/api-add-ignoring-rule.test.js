@@ -101,7 +101,8 @@ test('Agent API - addIgnoringRule', async (t) => {
     api.addIgnoringRule('^/test/.*')
 
     agent.on('transactionFinished', function (transaction) {
-      transaction.finalizeNameFromUri(TEST_URL, 200)
+      transaction.url = TEST_URL
+      transaction.finalizeNameFromWeb(200)
 
       assert.equal(transaction.ignore, true)
 
