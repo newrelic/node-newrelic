@@ -69,21 +69,18 @@ test.afterEach(async (ctx) => {
   removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/streamableHttp.js'])
 })
 
-test('should create span for callTool', async (t) => {
+test('should create span for callTool', (t, end) => {
   const { agent, client, pkgVersion } = t.nr
-  await helper.runInTransaction(agent, async (tx) => {
+  helper.runInTransaction(agent, async (tx) => {
     const result = await client.callTool({
       name: 'echo',
       arguments: {
         message: 'example message'
       }
     })
-
     assert.ok(result, 'should return a result from the tool call')
-
     const name = `${MCP.TOOL}/callTool/echo`
     assertSegments(tx.trace, tx.trace.root, [name], { exact: false })
-
     tx.end()
     assertSpanKind({
       agent,
@@ -91,19 +88,20 @@ test('should create span for callTool', async (t) => {
         { name, kind: 'internal' }
       ]
     })
-
     const agentMetrics = agent.metrics
     const expectedPkgMetrics = [
       [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
       [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
     ]
     assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
+
+    end()
   })
 })
 
-test('should create span for readResource', async (t) => {
+test('should create span for readResource', (t, end) => {
   const { agent, client, pkgVersion } = t.nr
-  await helper.runInTransaction(agent, async (tx) => {
+  helper.runInTransaction(agent, async (tx) => {
     const resource = await client.readResource({
       uri: 'echo://hello-world',
     })
@@ -127,12 +125,14 @@ test('should create span for readResource', async (t) => {
       [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
     ]
     assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
+
+    end()
   })
 })
 
-test('should create span for getPrompt', async (t) => {
+test('should create span for getPrompt', (t, end) => {
   const { agent, client, pkgVersion } = t.nr
-  await helper.runInTransaction(agent, async (tx) => {
+  helper.runInTransaction(agent, async (tx) => {
     const prompt = await client.getPrompt({
       name: 'echo',
       arguments: {
@@ -159,13 +159,15 @@ test('should create span for getPrompt', async (t) => {
       [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
     ]
     assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
+
+    end()
   })
 })
 
-test('should not instrument if ai_monitoring is disabled', async (t) => {
+test('should not instrument if ai_monitoring is disabled', (t, end) => {
   const { agent, client } = t.nr
 
-  await helper.runInTransaction(agent, async (tx) => {
+  helper.runInTransaction(agent, async (tx) => {
     const result = await client.callTool({
       name: 'echo',
       arguments: {
@@ -187,5 +189,6 @@ test('should not instrument if ai_monitoring is disabled', async (t) => {
     assertNoMcpSegment(root)
 
     tx.end()
+    end()
   })
 })
