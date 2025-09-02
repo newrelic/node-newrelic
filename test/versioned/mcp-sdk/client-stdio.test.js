@@ -35,7 +35,7 @@ test.beforeEach(async (ctx) => {
 
   ctx.nr.transport = new StdioClientTransport({
     command: 'node',
-    args: ['mock-server.js']
+    args: ['stdio-server.js']
   })
   ctx.nr.client = new Client(
     {
@@ -52,7 +52,7 @@ test.afterEach(async (ctx) => {
 })
 
 test('should create span for callTool', async (t) => {
-  const { agent, client } = t.nr
+  const { agent, client, pkgVersion } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
     const result = await client.callTool({
       name: 'echo',
@@ -64,7 +64,6 @@ test('should create span for callTool', async (t) => {
     assert.ok(result, 'should return a result from the tool call')
 
     const name = `${MCP.TOOL}/callTool/echo`
-    assert.equal(tx.trace.transaction.numSegments, 3, 'should have 3 segments')
     assertSegments(tx.trace, tx.trace.root, [name], { exact: false })
 
     tx.end()
@@ -74,6 +73,13 @@ test('should create span for callTool', async (t) => {
         { name, kind: 'internal' }
       ]
     })
+
+    const agentMetrics = agent.metrics
+    const expectedPkgMetrics = [
+      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
+      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
+    ]
+    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
 })
 
@@ -96,6 +102,7 @@ test('should create span for readResource', async (t) => {
         { name, kind: 'internal' }
       ]
     })
+
     const agentMetrics = agent.metrics
     const expectedPkgMetrics = [
       [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
@@ -106,7 +113,7 @@ test('should create span for readResource', async (t) => {
 })
 
 test('should create span for getPrompt', async (t) => {
-  const { agent, client } = t.nr
+  const { agent, client, pkgVersion } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
     const prompt = await client.getPrompt({
       name: 'echo',
@@ -127,6 +134,13 @@ test('should create span for getPrompt', async (t) => {
         { name, kind: 'internal' }
       ]
     })
+
+    const agentMetrics = agent.metrics
+    const expectedPkgMetrics = [
+      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
+      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
+    ]
+    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
 })
 
@@ -143,7 +157,16 @@ test('should not instrument if ai_monitoring is disabled', async (t) => {
 
     assert.ok(result, 'should still return a result from the tool call')
 
-    assert.equal(tx.trace.transaction.numSegments, 2, 'should not create MCP segment')
+    const name = `${MCP.TOOL}/callTool/echo`
+    const root = tx?.trace?.segments?.root
+    assert.ok(root)
+    function assertNoMcpSegment(node) {
+      assert.notEqual(node?.segment?.name, name, 'should not create MCP segment')
+      for (const child of node?.children) {
+        assertNoMcpSegment(child)
+      }
+    }
+    assertNoMcpSegment(root)
 
     tx.end()
   })
