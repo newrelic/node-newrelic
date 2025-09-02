@@ -19,21 +19,6 @@ const {
   MCP
 } = require('../../../lib/metrics/names')
 
-async function startServer() {
-  const { spawn } = require('child_process')
-
-  // Spin up streaming server in background
-  const server = spawn('node', ['streaming-server.js'])
-  return await new Promise((resolve, reject) => {
-    server.stdout.on('data', (data) => {
-      const message = data?.toString()
-      if (message.toLowerCase().includes('listening')) {
-        resolve(server)
-      }
-    })
-  })
-}
-
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent({
@@ -47,8 +32,13 @@ test.beforeEach(async (ctx) => {
   const pkg = await readFile(path.join(__dirname, '/node_modules/@modelcontextprotocol/sdk/package.json'))
   const { version: pkgVersion } = JSON.parse(pkg.toString())
   ctx.nr.pkgVersion = pkgVersion
-  ctx.nr.serverProcess = await startServer()
 
+  // Set up server
+  const McpTestServer = require('./streaming-server')
+  ctx.nr.mcpServer = new McpTestServer()
+  await ctx.nr.mcpServer.start()
+
+  // Set up client
   ctx.nr.transport = new StreamableHTTPClientTransport(
     new URL('http://localhost:3000/mcp')
   )
@@ -62,11 +52,13 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(async (ctx) => {
+  await ctx.nr.mcpServer.stop()
   helper.unloadAgent(ctx.nr.agent)
-  if (ctx.nr.serverProcess) {
-    ctx.nr.serverProcess.kill()
-  }
-  removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/streamableHttp.js'])
+  removeModules([
+    '@modelcontextprotocol/sdk/client/index.js',
+    '@modelcontextprotocol/sdk/client/streamableHttp.js',
+    './streaming-server.js'
+  ])
 })
 
 test('should create span for callTool', (t, end) => {
