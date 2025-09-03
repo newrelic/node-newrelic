@@ -572,7 +572,7 @@ test('openai.responses.create', async (t) => {
     })
   })
 
-  await t.test('should not set token_count if response does not include total_tokens in response', (t, end) => {
+  await t.test('should not set token_count if response does not include token usage in response', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     helper.runInTransaction(agent, (tx) => {
@@ -581,7 +581,7 @@ test('openai.responses.create', async (t) => {
         const summaryId = 'chat-summary-id'
         const content = chatRes.output[0].content[0].text
         const role = chatRes.output[0].role
-        delete chatRes.usage
+        delete chatRes.usage // delete token usage information
         const chatMessageEvent = new LlmChatCompletionMessage({
           agent,
           segment,

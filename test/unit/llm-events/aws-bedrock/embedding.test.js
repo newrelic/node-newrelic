@@ -79,8 +79,49 @@ test('should not capture input when `ai_monitoring.record_content.enabled` is fa
   assert.equal(event.input, undefined, 'input should be empty')
 })
 
-test('should capture token_count when callback is defined', async (t) => {
-  t.nr.agent.llm.tokenCountCallback = () => 3
+test('capture token usage attributes when response object includes all token usage information', async (t) => {
+  t.nr.bedrockResponse.usage = {
+    input_tokens: 30,
+    output_tokens: 40,
+    total_tokens: 70
+  }
   const event = new LlmEmbedding(t.nr)
-  assert.equal(event.token_count, 3)
+  assert.equal(event['response.usage.prompt_tokens'], 30)
+  assert.equal(event['response.usage.completion_tokens'], 40)
+  assert.equal(event['response.usage.total_tokens'], 70)
+})
+
+test('capture token usage attributes when response object includes all token usage information - another format', async (t) => {
+  t.nr.bedrockResponse.usage = {
+    inputTokens: 30,
+    outputTokens: 40,
+    totalTokens: 70
+  }
+  const event = new LlmEmbedding(t.nr)
+  assert.equal(event['response.usage.prompt_tokens'], 30)
+  assert.equal(event['response.usage.completion_tokens'], 40)
+  assert.equal(event['response.usage.total_tokens'], 70)
+})
+
+test('capture token usage attributes when response headers include all token usage information', async (t) => {
+  t.nr.bedrockResponse.headers = {
+    'x-amzn-bedrock-input-token-count': 30,
+    'x-amzn-bedrock-output-token-count': 40,
+    'x-amzn-bedrock-total-token-count': 70
+  }
+  const event = new LlmEmbedding(t.nr)
+  assert.equal(event['response.usage.prompt_tokens'], 30)
+  assert.equal(event['response.usage.completion_tokens'], 40)
+  assert.equal(event['response.usage.total_tokens'], 70)
+})
+
+test('does not capture any token usage attributes when response is missing required usage information', async (t) => {
+  t.nr.bedrockResponse.headers = {
+    'x-amzn-bedrock-input-token-count': 30,
+    'x-amzn-bedrock-output-token-count': 40,
+  }
+  const event = new LlmEmbedding(t.nr)
+  assert.equal(event['response.usage.prompt_tokens'], undefined)
+  assert.equal(event['response.usage.completion_tokens'], undefined)
+  assert.equal(event['response.usage.total_tokens'], undefined)
 })
