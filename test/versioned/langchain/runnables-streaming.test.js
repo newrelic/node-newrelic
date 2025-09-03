@@ -44,6 +44,7 @@ async function beforeEach({ enabled, ctx }) {
 
   ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} response']])
   ctx.nr.model = new ChatOpenAI({
+    streaming: true,
     apiKey: 'fake-key',
     maxRetries: 0,
     configuration: {
