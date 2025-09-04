@@ -136,3 +136,75 @@ test('should not capture content when `ai_monitoring.record_content.enabled` is 
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.content, undefined, 'content should be empty')
 })
+
+test('should not capture token_count when `ai_monitoring.record_content.enabled` is false', async (t) => {
+  const { agent } = t.nr
+  agent.config.ai_monitoring.record_content.enabled = false
+  t.nr.agent.llm.tokenCountCallback = () => 3
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should capture token_count when callback is defined', async (t) => {
+  const { agent } = t.nr
+  agent.llm.tokenCountCallback = () => 3
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, 3)
+})
+
+test('should not set token_count if callback registered returns is less than 0', async (t) => {
+  const { agent } = t.nr
+  agent.llm.tokenCountCallback = () => -1
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should not set token_count if callback registered returns null', async (t) => {
+  const { agent } = t.nr
+  agent.llm.tokenCountCallback = () => null
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should not set token_count if not set in response nor a callback registered', async (t) => {
+  t.nr.bedrockResponse.usage = {}
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should not set token_count if not set in usage nor a callback registered returns count (empty)', async (t) => {
+  const { agent } = t.nr
+  t.nr.bedrockResponse.usage = {}
+  agent.llm.tokenCountCallback = () => {}
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should not set token_count if response does not include all 3 usage keys we need', async (t) => {
+  t.nr.bedrockResponse.usage = {
+    input_tokens: 30,
+    output_tokens: 40,
+  }
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should set token_count to 0 if response object includes all 3 usage keys we need', async (t) => {
+  t.nr.bedrockResponse.usage = {
+    input_tokens: 30,
+    output_tokens: 40,
+    total_tokens: 70
+  }
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, 0)
+})
+
+test('should set token_count to 0 if response headers includes all 3 usage keys we need', async (t) => {
+  t.nr.bedrockResponse.headers = {
+    'x-amzn-bedrock-input-token-count': 30,
+    'x-amzn-bedrock-output-token-count': 40,
+    'x-amzn-bedrock-total-token-count': 70
+  }
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, 0)
+})
