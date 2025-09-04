@@ -15,14 +15,7 @@ suite.add({
   agent: true,
   fn: function (agent) {
     return shimmer.setupSubscribers(agent)
-  }
-})
-
-suite.add({
-  name: 'shimmer.teardownSubscribers()',
-  fn: function () {
-    return shimmer.teardownSubscribers()
-  }
+  },
 })
 
 suite.run()
