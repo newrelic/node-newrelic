@@ -27,7 +27,7 @@ node ./bin/run-bench.js --filename=your-desired-filename
 
 Our benchmark tests now send metrics to New Relic through the OTLP metrics endpoint.
 
-You must provide a `NEW_RELIC_LICENSE_KEY` (specifically a ingest license key) in order for the benchmark metrics to be sent. One way to do this is with a `.env`:
+You must provide a `NEW_RELIC_LICENSE_KEY` (specifically an ingest license key) in order for the benchmark metrics to be sent. One way to do this is with a `.env`:
 
 ```zsh
 # Starting at node-newrelic (root directory)

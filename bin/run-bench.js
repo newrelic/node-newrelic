@@ -90,7 +90,6 @@ class Printer {
   async finish() {
     try {
       if (SEND_METRICS) {
-        await meterProvider.forceFlush()
         await meterProvider.shutdown()
         console.log('✅ Metrics flushed and provider shut down successfully.')
       }
