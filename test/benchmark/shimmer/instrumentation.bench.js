@@ -8,7 +8,7 @@
 const benchmark = require('../../lib/benchmark')
 const shimmer = require('../../../lib/shimmer')
 
-const suite = benchmark.createBenchmark({ name: 'shimmer wrapping', delay: 0.01 })
+const suite = benchmark.createBenchmark({ name: 'shimmer wrapping', runs: 100 })
 
 suite.add({
   name: 'shimmer.registerHooks()',
