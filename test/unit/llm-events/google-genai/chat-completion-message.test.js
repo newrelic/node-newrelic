@@ -18,6 +18,11 @@ test.beforeEach((ctx) => {
 
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
+  res.usageMetadata = {
+    promptTokenCount: 10,
+    candidatesTokenCount: 20,
+    totalTokenCount: 30
+  }
 })
 
 test('should create a LlmChatCompletionMessage event', (t, end) => {
@@ -124,7 +129,7 @@ test('should use token_count from tokenCountCallback for prompt message', (t, en
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
-      delete res.usage
+      delete res.usageMetadata
       const chatMessageEvent = new LlmChatCompletionMessage({
         transaction: tx,
         agent,
@@ -155,7 +160,7 @@ test('should use token_count from tokenCountCallback for completion messages', (
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
-      delete res.usage
+      delete res.usageMetadata
       const chatMessageEvent = new LlmChatCompletionMessage({
         agent,
         segment,
@@ -179,7 +184,7 @@ test('should not set token_count if it is not set in usage, or if no callback is
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
-      delete res.usage
+      delete res.usageMetadata
       const chatMessageEvent = new LlmChatCompletionMessage({
         agent,
         segment,
@@ -207,7 +212,86 @@ test('should not set token_count if not set in usage or if a callback registered
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const summaryId = 'chat-summary-id'
-      delete res.usage
+      delete res.usageMetadata
+      const chatMessageEvent = new LlmChatCompletionMessage({
+        agent,
+        segment,
+        transaction: tx,
+        request: req,
+        response: res,
+        completionId: summaryId,
+        message: res.candidates[0].content,
+        index: 2
+      })
+      assert.equal(chatMessageEvent.token_count, undefined)
+      end()
+    })
+  })
+})
+
+test('should not set token_count if callback registered returns is less than 0', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  function cb() {
+    return -1
+  }
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      const summaryId = 'chat-summary-id'
+      const chatMessageEvent = new LlmChatCompletionMessage({
+        agent,
+        segment,
+        transaction: tx,
+        request: req,
+        response: res,
+        completionId: summaryId,
+        message: res.candidates[0].content,
+        index: 2
+      })
+      assert.equal(chatMessageEvent.token_count, undefined)
+      end()
+    })
+  })
+})
+
+test('should not set token_count if callback registered returns null', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  function cb() {
+    return null
+  }
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      const summaryId = 'chat-summary-id'
+      const chatMessageEvent = new LlmChatCompletionMessage({
+        agent,
+        segment,
+        transaction: tx,
+        request: req,
+        response: res,
+        completionId: summaryId,
+        message: res.candidates[0].content,
+        index: 2
+      })
+      assert.equal(chatMessageEvent.token_count, undefined)
+      end()
+    })
+  })
+})
+
+test('should not set token_count if response does not include all 3 usage keys we need', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      const summaryId = 'chat-summary-id'
+      // delete one key that we need in usage object
+      delete res.usageMetadata.promptTokenCount
       const chatMessageEvent = new LlmChatCompletionMessage({
         agent,
         segment,

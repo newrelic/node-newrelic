@@ -125,7 +125,7 @@ test('respects record_content', (t, end) => {
   })
 })
 
-test('should calculate token count from tokenCountCallback', (t, end) => {
+test('does not capture any token usage attributes when response is missing required usage information', (t, end) => {
   const { agent } = t.nr
   const req = {
     contents: 'This is my test input',
@@ -133,46 +133,22 @@ test('should calculate token count from tokenCountCallback', (t, end) => {
   }
 
   const api = helper.getAgentApi()
-
-  function cb(model, content) {
-    if (model === req.model) {
-      return content.length
-    }
-  }
-
-  api.setLlmTokenCountCallback(cb)
-  helper.runInTransaction(agent, () => {
-    const segment = api.shim.getActiveSegment()
-    delete res.usage
-    const embeddingEvent = new LlmEmbedding({
-      agent,
-      segment,
-      request: req,
-      response: res
+  helper.runInTransaction(agent, (tx) => {
+    delete res.usageMetadata.promptTokenCount
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const embeddingEvent = new LlmEmbedding({
+        agent,
+        segment,
+        transaction: tx,
+        request: req,
+        response: res
+      })
+      assert.equal(embeddingEvent['response.usage.prompt_tokens'], undefined)
+      assert.equal(embeddingEvent['response.usage.completion_tokens'], undefined)
+      assert.equal(embeddingEvent['response.usage.total_tokens'], undefined)
+      end()
     })
-    assert.equal(embeddingEvent.token_count, 21)
-    end()
-  })
-})
-
-test('should not set token count when not present in usage or tokenCountCallback', (t, end) => {
-  const { agent } = t.nr
-  const req = {
-    input: 'This is my test input',
-    model: 'gemini-2.0-flash'
-  }
-
-  const api = helper.getAgentApi()
-  helper.runInTransaction(agent, () => {
-    const segment = api.shim.getActiveSegment()
-    delete res.usage
-    const embeddingEvent = new LlmEmbedding({
-      agent,
-      segment,
-      request: req,
-      response: res
-    })
-    assert.equal(embeddingEvent.token_count, undefined)
-    end()
   })
 })

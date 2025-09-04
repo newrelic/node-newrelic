@@ -25,7 +25,17 @@ const res = {
 }
 
 const chatRes = {
-  ...res,
+  headers: {
+    'x-request-id': 'req-id',
+    'openai-version': '1.0.0',
+    'openai-organization': 'new-relic',
+    'x-ratelimit-limit-requests': '100',
+    'x-ratelimit-limit-tokens': '100',
+    'x-ratelimit-reset-tokens': '100',
+    'x-ratelimit-remaining-tokens': '10',
+    'x-ratelimit-remaining-requests': '10'
+  },
+  model: 'gpt-4-0613',
   id: 'resp_id',
   temperature: 1,
   max_output_tokens: 1000000,
@@ -34,7 +44,7 @@ const chatRes = {
   output: [{ id: 'msg_id', role: 'assistant', status: 'completed', content: [{ text: 'a lot' }] }],
   output_text: 'a lot',
   usage: {
-    ...res.usage,
+    total_tokens: 30,
     prompt_tokens: 10,
     completion_tokens: 20
   }

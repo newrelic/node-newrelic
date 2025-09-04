@@ -102,3 +102,26 @@ test('should set `llm.` attributes from custom attributes', (t, end) => {
     end()
   })
 })
+
+test('does not capture any token usage attributes when response is missing required usage information', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, (tx) => {
+    delete Responses.chatRes.usage.prompt_tokens
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment,
+        transaction: tx,
+        request: Responses.req,
+        response: Responses.chatRes
+      })
+      assert.equal(chatSummaryEvent['response.usage.prompt_tokens'], undefined)
+      assert.equal(chatSummaryEvent['response.usage.completion_tokens'], undefined)
+      assert.equal(chatSummaryEvent['response.usage.total_tokens'], undefined)
+      end()
+    })
+  })
+})
