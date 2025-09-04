@@ -85,7 +85,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 **[optionalDependencies](#optionalDependencies)**
 
-* [@newrelic/fn-inspect](#newrelicfn-inspect)
+* [@contrast/fn-inspect](#contrastfn-inspect)
 * [@newrelic/native-metrics](#newrelicnative-metrics)
 * [@prisma/prisma-fmt-wasm](#prismaprisma-fmt-wasm)
 
@@ -1190,7 +1190,7 @@ This product includes source derived from [@opentelemetry/api](https://github.co
 
 ### @opentelemetry/core
 
-This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE):
+This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -1608,7 +1608,7 @@ This product includes source derived from [@opentelemetry/exporter-metrics-otlp-
 
 ### @opentelemetry/resources
 
-This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE):
+This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -2026,7 +2026,7 @@ This product includes source derived from [@opentelemetry/sdk-logs](https://gith
 
 ### @opentelemetry/sdk-metrics
 
-This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -2235,7 +2235,7 @@ This product includes source derived from [@opentelemetry/sdk-metrics](https://g
 
 ### @opentelemetry/sdk-trace-base
 
-This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -2964,7 +2964,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.872.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.872.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.872.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.879.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.879.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.879.0/LICENSE):
 
 ```
                                 Apache License
@@ -3173,7 +3173,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.872.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.872.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.872.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.879.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.879.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.879.0/LICENSE):
 
 ```
                                 Apache License
@@ -5033,7 +5033,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.33.0](https://github.com/eslint/eslint/tree/v9.33.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.33.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.34.0](https://github.com/eslint/eslint/tree/v9.34.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.34.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -5866,9 +5866,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## optionalDependencies
 
-### @newrelic/fn-inspect
+### @contrast/fn-inspect
 
-This product includes source derived from [@newrelic/fn-inspect](https://github.com/newrelic-forks/node-fn-inspect) ([v4.4.0](https://github.com/newrelic-forks/node-fn-inspect/tree/v4.4.0)), distributed under the [MIT License](https://github.com/newrelic-forks/node-fn-inspect/blob/v4.4.0/LICENSE):
+This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v5.0.2](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v5.0.2)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v5.0.2/LICENSE):
 
 ```
 Copyright 2022 Contrast Security, Inc

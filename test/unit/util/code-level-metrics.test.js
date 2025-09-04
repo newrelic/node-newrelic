@@ -127,7 +127,7 @@ test('failure cases', async (t) => {
     ctx.nr.segmentStub = {
       addAttribute: sinon.stub()
     }
-    const fnInspector = require('@newrelic/fn-inspect')
+    const fnInspector = require('@contrast/fn-inspect')
     sinon.stub(fnInspector, 'funcInfo')
     ctx.nr.fnInspector = fnInspector
   })

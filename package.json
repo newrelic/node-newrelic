@@ -226,7 +226,7 @@
     "winston-transport": "^4.5.0"
   },
   "optionalDependencies": {
-    "@newrelic/fn-inspect": "^4.4.0",
+    "@contrast/fn-inspect": "^5.0.0",
     "@newrelic/native-metrics": "^12.0.0",
     "@prisma/prisma-fmt-wasm": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085"
   },
