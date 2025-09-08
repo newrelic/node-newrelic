@@ -2,7 +2,7 @@
 
 #### Features
 
-* MCP `StreamableHTTPClientTransport` support ([#3337](https://github.com/newrelic/node-newrelic/pull/3337)) ([7189a35](https://github.com/newrelic/node-newrelic/commit/7189a35d0676a01d995420b2c6f27a54f8eb0307))
+* Added MCP `StreamableHTTPClientTransport` support ([#3337](https://github.com/newrelic/node-newrelic/pull/3337)) ([7189a35](https://github.com/newrelic/node-newrelic/commit/7189a35d0676a01d995420b2c6f27a54f8eb0307))
 
 #### Code refactoring
 
@@ -12,19 +12,17 @@
 #### Documentation
 
 * Updated compatibility report ([#3344](https://github.com/newrelic/node-newrelic/pull/3344)) ([e422919](https://github.com/newrelic/node-newrelic/commit/e4229195318b2d2e33cc753b7898357daf72a372))
-    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
-* Updated compatibility report ([#3335](https://github.com/newrelic/node-newrelic/pull/3335)) ([14ec0d3](https://github.com/newrelic/node-newrelic/commit/14ec0d3f0c390943f10f5a25413d94fc11916bad))
 
 #### Miscellaneous chores
 
-* Refactor OTEL bridge signals setup ([#3244](https://github.com/newrelic/node-newrelic/pull/3244)) ([ec8edef](https://github.com/newrelic/node-newrelic/commit/ec8edefdc49de276f30a1fc778f09b0d3042c392))
+* Refactored OTEL bridge signals setup ([#3244](https://github.com/newrelic/node-newrelic/pull/3244)) ([ec8edef](https://github.com/newrelic/node-newrelic/commit/ec8edefdc49de276f30a1fc778f09b0d3042c392))
 
 #### Tests
 
-* Add more cassandra-driver tests ([#3323](https://github.com/newrelic/node-newrelic/pull/3323)) ([d2e9d10](https://github.com/newrelic/node-newrelic/commit/d2e9d103ee74358e88e53ab89c498f261f387ae5))
-* Fix long running benchmark test and add `shimmer.subscribers` benchmark test ([#3349](https://github.com/newrelic/node-newrelic/pull/3349)) ([15253c0](https://github.com/newrelic/node-newrelic/commit/15253c08f6d8381f516040e339a0aedaf04e365e))
+* Added more cassandra-driver tests ([#3323](https://github.com/newrelic/node-newrelic/pull/3323)) ([d2e9d10](https://github.com/newrelic/node-newrelic/commit/d2e9d103ee74358e88e53ab89c498f261f387ae5))
+* Fixed long running benchmark test and add `shimmer.subscribers` benchmark test ([#3349](https://github.com/newrelic/node-newrelic/pull/3349)) ([15253c0](https://github.com/newrelic/node-newrelic/commit/15253c08f6d8381f516040e339a0aedaf04e365e))
 * Fixed langchain openai streaming tests by explicitly passing `streaming: true` to chat model ([#3346](https://github.com/newrelic/node-newrelic/pull/3346)) ([4f12499](https://github.com/newrelic/node-newrelic/commit/4f12499c2c9248b7f510c76f19cc8d54eb53da2e))
-* fixed openai test after migration to tracing channel ([#3336](https://github.com/newrelic/node-newrelic/pull/3336)) ([0d01e29](https://github.com/newrelic/node-newrelic/commit/0d01e299cb84c9715f3136ab458534c72eea3145))
+* Fixed openai test after migration to tracing channel ([#3336](https://github.com/newrelic/node-newrelic/pull/3336)) ([0d01e29](https://github.com/newrelic/node-newrelic/commit/0d01e299cb84c9715f3136ab458534c72eea3145))
 * Hardened `batch-span-streamer.test.js` to avoid random failures in CI ([#3338](https://github.com/newrelic/node-newrelic/pull/3338)) ([2077ce3](https://github.com/newrelic/node-newrelic/commit/2077ce35db319d0128337faed0ff77b00f76d8f1))
 
 #### Continuous integration
@@ -7856,5 +7854,6 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
