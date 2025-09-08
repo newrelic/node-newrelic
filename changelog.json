@@ -7,7 +7,7 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "MCP `StreamableHTTPClientTransport` support"
+          "Added MCP `StreamableHTTPClientTransport` support"
         ]
       }
     },
