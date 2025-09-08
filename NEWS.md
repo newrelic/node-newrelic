@@ -1,3 +1,35 @@
+### v13.3.0 (2025-09-08)
+
+#### Features
+
+* Added MCP `StreamableHTTPClientTransport` support ([#3337](https://github.com/newrelic/node-newrelic/pull/3337)) ([7189a35](https://github.com/newrelic/node-newrelic/commit/7189a35d0676a01d995420b2c6f27a54f8eb0307))
+
+#### Code refactoring
+
+* Removed instances of `url.parse`. Streamlined how http instrumentation creates relevant attributes. ([#3340](https://github.com/newrelic/node-newrelic/pull/3340)) ([1fc1e1a](https://github.com/newrelic/node-newrelic/commit/1fc1e1a4086200bd3fd76081913498d7ca344a3a))
+* Updated `openai` instrumentation to subscribe to events emitted ([#3331](https://github.com/newrelic/node-newrelic/pull/3331)) ([04dd677](https://github.com/newrelic/node-newrelic/commit/04dd6774df87489cce41b0bb2b60c56b79e2265d))
+
+#### Documentation
+
+* Updated compatibility report ([#3344](https://github.com/newrelic/node-newrelic/pull/3344)) ([e422919](https://github.com/newrelic/node-newrelic/commit/e4229195318b2d2e33cc753b7898357daf72a372))
+
+#### Miscellaneous chores
+
+* Refactored OTEL bridge signals setup ([#3244](https://github.com/newrelic/node-newrelic/pull/3244)) ([ec8edef](https://github.com/newrelic/node-newrelic/commit/ec8edefdc49de276f30a1fc778f09b0d3042c392))
+
+#### Tests
+
+* Added more cassandra-driver tests ([#3323](https://github.com/newrelic/node-newrelic/pull/3323)) ([d2e9d10](https://github.com/newrelic/node-newrelic/commit/d2e9d103ee74358e88e53ab89c498f261f387ae5))
+* Fixed long running benchmark test and add `shimmer.subscribers` benchmark test ([#3349](https://github.com/newrelic/node-newrelic/pull/3349)) ([15253c0](https://github.com/newrelic/node-newrelic/commit/15253c08f6d8381f516040e339a0aedaf04e365e))
+* Fixed langchain openai streaming tests by explicitly passing `streaming: true` to chat model ([#3346](https://github.com/newrelic/node-newrelic/pull/3346)) ([4f12499](https://github.com/newrelic/node-newrelic/commit/4f12499c2c9248b7f510c76f19cc8d54eb53da2e))
+* Fixed openai test after migration to tracing channel ([#3336](https://github.com/newrelic/node-newrelic/pull/3336)) ([0d01e29](https://github.com/newrelic/node-newrelic/commit/0d01e299cb84c9715f3136ab458534c72eea3145))
+* Hardened `batch-span-streamer.test.js` to avoid random failures in CI ([#3338](https://github.com/newrelic/node-newrelic/pull/3338)) ([2077ce3](https://github.com/newrelic/node-newrelic/commit/2077ce35db319d0128337faed0ff77b00f76d8f1))
+
+#### Continuous integration
+
+* Set benchmark host default to staging ([#3332](https://github.com/newrelic/node-newrelic/pull/3332)) ([55f6b8d](https://github.com/newrelic/node-newrelic/commit/55f6b8d757afc1632f1be1c0ef1a4ccab23ca3c4))
+* Updated the redis container to use the official `redis` image as `bitnami/redis` is moving and no reason to use a 3rd party image ([#3342](https://github.com/newrelic/node-newrelic/pull/3342)) ([8ffb393](https://github.com/newrelic/node-newrelic/commit/8ffb393ef5e84b188d899580061b2b57171e8166))
+
 ### v13.2.1 (2025-08-21)
 
 #### Code refactoring
@@ -7821,5 +7853,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
+
 
 

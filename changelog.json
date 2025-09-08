@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.3.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added MCP `StreamableHTTPClientTransport` support"
+        ]
+      }
+    },
+    {
       "version": "13.2.1",
       "changes": {
         "security": [],
