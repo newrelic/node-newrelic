@@ -5,10 +5,10 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
+const benchmark = require('#testlib/benchmark.js')
 
-const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('../../../lib/prioritized-attributes')
-const AttributeFilter = require('../../../lib/config/attribute-filter')
+const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('#agentlib/prioritized-attributes.js')
+const AttributeFilter = require('#agentlib/config/attribute-filter.js')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
 const SEGMENT_SCOPE = 'segment'

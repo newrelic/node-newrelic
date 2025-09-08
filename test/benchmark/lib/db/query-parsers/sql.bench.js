@@ -5,8 +5,8 @@
 
 'use strict'
 
-const parseSql = require('../../../../../lib/db/query-parsers/sql')
-const benchmark = require('../../../../lib/benchmark')
+const parseSql = require('#agentlib/db/query-parsers/sql.js')
+const benchmark = require('#testlib/benchmark.js')
 const suite = benchmark.createBenchmark({ name: 'parseSql', runs: 200_000 })
 
 const tests = [

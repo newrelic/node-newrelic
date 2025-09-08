@@ -5,8 +5,8 @@
 
 'use strict'
 
-const benchmark = require('../../../lib/benchmark')
-const PriorityQueue = require('../../../../lib/priority-queue')
+const benchmark = require('#testlib/benchmark.js')
+const PriorityQueue = require('#agentlib/priority-queue.js')
 
 const poolSize = 10000
 let queue1 = new PriorityQueue(poolSize)
