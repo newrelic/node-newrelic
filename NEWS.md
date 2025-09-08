@@ -28,8 +28,6 @@
 #### Continuous integration
 
 * Set benchmark host default to staging ([#3332](https://github.com/newrelic/node-newrelic/pull/3332)) ([55f6b8d](https://github.com/newrelic/node-newrelic/commit/55f6b8d757afc1632f1be1c0ef1a4ccab23ca3c4))
-
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
 * Updated the redis container to use the official `redis` image as `bitnami/redis` is moving and no reason to use a 3rd party image ([#3342](https://github.com/newrelic/node-newrelic/pull/3342)) ([8ffb393](https://github.com/newrelic/node-newrelic/commit/8ffb393ef5e84b188d899580061b2b57171e8166))
 
 ### v13.2.1 (2025-08-21)
@@ -7855,6 +7853,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
