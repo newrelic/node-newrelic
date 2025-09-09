@@ -2,8 +2,9 @@ name: Benchmark Tests
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron:  '0 10 * * 1'
+   push:
+    branches:
+      - main
 
 env:
   # Enable versioned runner quiet mode to make CI output easier to read:
