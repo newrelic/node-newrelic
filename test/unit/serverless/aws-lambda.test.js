@@ -317,6 +317,33 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       }
     })
 
+    await t.test('should not capture request parameters', (t, end) => {
+      const { agent, awsLambda, stubContext, stubCallback } = t.nr
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      agent.config.attributes.enabled = true
+      agent.config.attributes.include = ['request.parameters.*']
+      agent.config.emit('attributes.include')
+
+      const apiGatewayProxyEvent = { ...lambdaSampleEvents.apiGatewayProxyEvent }
+      apiGatewayProxyEvent.queryStringParameters = null
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = Object.keys(transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT))
+
+        const requestParams = agentAttributes.filter((attr) => attr.startsWith('request.parameters'))
+        assert.equal(requestParams.length, 0, 'should not create any request.parameters trace attributes')
+
+        end()
+      }
+    })
+
     await t.test('should capture request headers', (t, end) => {
       const { agent, awsLambda, stubContext, stubCallback } = t.nr
       agent.on('transactionFinished', confirmAgentAttribute)
