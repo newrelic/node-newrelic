@@ -16,6 +16,7 @@ const Transaction = require('#agentlib/transaction/index.js')
 const Segment = require('#agentlib/transaction/trace/segment.js')
 const hashes = require('#agentlib/util/hashes.js')
 const sinon = require('sinon')
+const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 
 test('Transaction unit tests', async (t) => {
   t.beforeEach(function (ctx) {
@@ -2101,6 +2102,36 @@ test('when being named with finalizeName', async (t) => {
 
     assert.ok(intrinsics)
     assert.equal(intrinsics['transaction.name'], 'WebTransaction//config')
+  })
+
+  await t.test('should add request.parameters to tx', (t) => {
+    const { agent, txn } = t.nr
+    agent.config.attributes.enabled = true
+    agent.config.attributes.include = ['request.parameters.*']
+    const segment = new Segment({
+      config: txn.agent.config,
+      name: 'test',
+      root: txn.trace.root
+    })
+    txn.baseSegment = segment
+    txn.addRequestParameters({ key: 'value', test: 'me' })
+    const attrs = txn.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+    assert.equal(attrs['request.parameters.key'], 'value')
+    assert.equal(attrs['request.parameters.test'], 'me')
+  })
+
+  await t.test('should not crash when adding null query parameters', (t) => {
+    const { txn } = t.nr
+    assert.doesNotThrow(() => {
+      txn.addRequestParameters(null)
+    })
+  })
+
+  await t.test('should not crash when adding undefined query parameters', (t) => {
+    const { txn } = t.nr
+    assert.doesNotThrow(() => {
+      txn.addRequestParameters(undefined)
+    })
   })
 })
 
