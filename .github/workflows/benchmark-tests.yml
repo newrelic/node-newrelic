@@ -1,10 +1,10 @@
 name: Benchmark Tests
 
 on:
-  workflow_dispatch:
-   push:
+  push:
     branches:
       - main
+  workflow_dispatch:
 
 env:
   # Enable versioned runner quiet mode to make CI output easier to read:
