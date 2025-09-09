@@ -5,8 +5,8 @@
 
 'use strict'
 
-const { RecorderSpec } = require('../../../lib/shim/specs')
-const helper = require('../../lib/agent_helper')
+const { RecorderSpec } = require('#agentlib/shim/specs/index.js')
+const helper = require('#testlib/agent_helper.js')
 const shared = require('./shared')
 
 const s = shared.makeSuite('Shim segments')

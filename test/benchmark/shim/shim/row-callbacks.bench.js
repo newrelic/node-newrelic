@@ -5,11 +5,11 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
+const benchmark = require('#testlib/benchmark.js')
 const EventEmitter = require('events').EventEmitter
-const helper = require('../../lib/agent_helper')
-const Shim = require('../../../lib/shim/shim')
-const { RecorderSpec } = require('../../../lib/shim/specs')
+const helper = require('#testlib/agent_helper.js')
+const Shim = require('#agentlib/shim/shim.js')
+const { RecorderSpec } = require('#agentlib/shim/specs/index.js')
 
 const CYCLES = 1000
 

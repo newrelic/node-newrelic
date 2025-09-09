@@ -5,12 +5,12 @@
 
 'use strict'
 
-const AttributeFilter = require('../../../lib/config/attribute-filter')
-const benchmark = require('../../lib/benchmark')
-const { makeAttributeFilterConfig } = require('../../lib/agent_helper')
+const AttributeFilter = require('#agentlib/config/attribute-filter.js')
+const benchmark = require('#testlib/benchmark.js')
+const { makeAttributeFilterConfig } = require('#testlib/agent_helper.js')
 
 const suite = benchmark.createBenchmark({
-  name: 'config.filter'
+  name: 'filterTransaction'
 })
 
 const filter = makeFilter({

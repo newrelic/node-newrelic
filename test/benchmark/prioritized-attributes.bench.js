@@ -5,10 +5,10 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
+const benchmark = require('#testlib/benchmark.js')
 
-const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('../../../lib/prioritized-attributes')
-const AttributeFilter = require('../../../lib/config/attribute-filter')
+const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('#agentlib/prioritized-attributes.js')
+const AttributeFilter = require('#agentlib/config/attribute-filter.js')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
 const SEGMENT_SCOPE = 'segment'
@@ -23,7 +23,7 @@ const halfLowHalfHighPriorityAttributes = new PrioritizedAttributes(SEGMENT_SCOP
 batchAddAttributes(halfLowHalfHighPriorityAttributes, 32, ATTRIBUTE_PRIORITY.LOW)
 batchAddAttributes(halfLowHalfHighPriorityAttributes, 32, ATTRIBUTE_PRIORITY.HIGH)
 
-const suite = benchmark.createBenchmark({ name: 'priority attributes', runs: 100000 })
+const suite = benchmark.createBenchmark({ name: 'addAttribute', runs: 100000 })
 
 let iterationCount = 0
 suite.add({

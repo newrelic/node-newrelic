@@ -5,9 +5,9 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const helper = require('../../lib/agent_helper')
-const SpanEvent = require('../../../lib/spans/span-event')
+const benchmark = require('#testlib/benchmark.js')
+const helper = require('#testlib/agent_helper.js')
+const SpanEvent = require('#agentlib/spans/span-event.js')
 
 const suite = benchmark.createBenchmark({ name: 'SpanEvent' })
 let segment = null

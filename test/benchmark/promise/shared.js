@@ -5,7 +5,7 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
+const benchmark = require('#testlib/benchmark.js')
 
 function makeSuite(name) {
   return benchmark.createBenchmark({ name })

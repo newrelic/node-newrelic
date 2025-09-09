@@ -5,8 +5,8 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const helper = require('../../lib/agent_helper')
+const benchmark = require('#testlib/benchmark.js')
+const helper = require('#testlib/agent_helper.js')
 
 function makeSuite(name) {
   const agent = helper.loadMockedAgent()

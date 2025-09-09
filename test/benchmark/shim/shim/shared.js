@@ -5,9 +5,9 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const helper = require('../../lib/agent_helper')
-const Shim = require('../../../lib/shim/shim')
+const benchmark = require('#testlib/benchmark.js')
+const helper = require('#testlib/agent_helper.js')
+const Shim = require('#agentlib/shim/shim.js')
 
 function makeSuite(name) {
   const agent = helper.loadMockedAgent()

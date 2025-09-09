@@ -5,8 +5,8 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const truncate = require('../../../lib/util/byte-limit').truncate
+const benchmark = require('#testlib/benchmark.js')
+const truncate = require('#agentlib/util/byte-limit.js').truncate
 
 const suite = benchmark.createBenchmark({
   name: 'util.byte-limit'

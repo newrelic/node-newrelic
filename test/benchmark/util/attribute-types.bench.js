@@ -5,8 +5,8 @@
 
 'use strict'
 
-const isValidType = require('../../../lib/util/attribute-types')
-const benchmark = require('../../lib/benchmark')
+const isValidType = require('#agentlib/util/attribute-types.js')
+const benchmark = require('#testlib/benchmark.js')
 
 const types = {
   symbol: Symbol('test'),

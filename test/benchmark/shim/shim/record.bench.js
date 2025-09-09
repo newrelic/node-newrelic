@@ -5,10 +5,10 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const helper = require('../../lib/agent_helper')
-const Shim = require('../../../lib/shim/shim')
-const { RecorderSpec } = require('../../../lib/shim/specs')
+const benchmark = require('#testlib/benchmark.js')
+const helper = require('#testlib/agent_helper.js')
+const Shim = require('#agentlib/shim/shim.js')
+const { RecorderSpec } = require('#agentlib/shim/specs/index.js')
 
 const agent = helper.loadMockedAgent()
 const tracer = helper.getTracer()

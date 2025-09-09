@@ -5,9 +5,9 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const DatastoreShim = require('../../../lib/shim/datastore-shim')
-const { OperationSpec, QuerySpec } = require('../../../lib/shim/specs')
+const benchmark = require('#testlib/benchmark.js')
+const DatastoreShim = require('#agentlib/shim/datastore-shim.js')
+const { OperationSpec, QuerySpec } = require('#agentlib/shim/specs/index.js')
 
 const TestDatastore = require('./test-datastore')
 

@@ -6,7 +6,7 @@
 'use strict'
 
 const shared = require('./shared')
-const symbols = require('../../../lib/symbols')
+const symbols = require('#agentlib/symbols.js')
 
 const s = shared.makeSuite('Shim segments')
 const suite = s.suite

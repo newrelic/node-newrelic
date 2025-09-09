@@ -5,15 +5,15 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const helper = require('../../lib/agent_helper')
-const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
-const symbols = require('../../../lib/symbols')
+const benchmark = require('#testlib/benchmark.js')
+const helper = require('#testlib/agent_helper.js')
+const WebFrameworkShim = require('#agentlib/shim/webframework-shim/index.js')
+const symbols = require('#agentlib/symbols.js')
 
 const agent = helper.loadMockedAgent()
 const tracer = helper.getTracer()
 const shim = new WebFrameworkShim(agent, 'test-module', './')
-const { MiddlewareSpec } = require('../../../lib/shim/specs')
+const { MiddlewareSpec } = require('#agentlib/shim/specs/index.js')
 const suite = benchmark.createBenchmark({ name: 'recordMiddleware' })
 
 const transaction = helper.runInTransaction(agent, function (tx) {

@@ -5,10 +5,10 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const NameState = require('../../../lib/transaction/name-state')
+const benchmark = require('#testlib/benchmark.js')
+const NameState = require('#agentlib/transaction/name-state.js')
 
-const suite = benchmark.createBenchmark({ name: 'Namestate#getPath' })
+const suite = benchmark.createBenchmark({ name: 'NameState#getPath' })
 
 suite.add({
   name: 'empty',
