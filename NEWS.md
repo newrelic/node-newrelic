@@ -1,3 +1,9 @@
+### v13.3.1 (2025-09-09)
+
+#### Bug fixes
+
+* Default `requestParameters` to an object to avoid crash in `transaction.addRequestParameters` ([#3361](https://github.com/newrelic/node-newrelic/pull/3361)) ([ecd0d1d](https://github.com/newrelic/node-newrelic/commit/ecd0d1db70f9e9b3011af08ffe99ea3d6d56def9))
+
 ### v13.3.0 (2025-09-08)
 
 #### Features
