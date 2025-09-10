@@ -44,7 +44,7 @@ test('CLM Meta', async (t) => {
     assertExactClmAttrs(segmentStub, {
       'code.filepath': __filename,
       'code.function': 'testFunction',
-      'code.lineno': 38,
+      'code.lineno': 41,
       'code.column': 26
     })
   })
@@ -57,7 +57,7 @@ test('CLM Meta', async (t) => {
     assertExactClmAttrs(segmentStub, {
       'code.filepath': __filename,
       'code.function': 'testFunction',
-      'code.lineno': 51,
+      'code.lineno': 54,
       'code.column': 35
     })
   })

@@ -51,7 +51,7 @@ const jsdocConfig = {
     'jsdoc/tag-lines': 'off',
     'jsdoc/check-types': 'off',
     'jsdoc/no-undefined-types': [
-      'off',
+      'warn',
       {
         definedTypes: [
           'Logger',
@@ -70,18 +70,8 @@ const jsdocConfig = {
     'jsdoc/require-param-description': 'warn',
     'jsdoc/require-param-type': 'warn',
     'jsdoc/require-returns': 'warn',
-    'jsdoc/valid-types': 'warn',
-    'jsdoc/check-param-names': 'warn'
-  }
-}
-const jsdocOverrides = {
-  files: [
-    './lib/shim/*.js',
-    'lib/transaction/handle.js',
-    'api.js'
-  ],
-  rules: {
-    'jsdoc/require-jsdoc': 'warn'
+    'jsdoc/valid-types': 'error',
+    'jsdoc/check-param-names': 'error'
   }
 }
 
@@ -103,7 +93,6 @@ module.exports = [
 
   jsdoc.configs['flat/recommended'],
   jsdocConfig,
-  jsdocOverrides,
 
   {
     ...sharedConfig.configs.nodeRecommended,

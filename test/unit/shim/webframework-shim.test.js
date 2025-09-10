@@ -16,9 +16,9 @@ const tsplan = require('@matteo.collina/tspl')
 
 /**
  *
- * @param root0
- * @param root0.ctx
- * @param root0.path
+ * @param params
+ * @param params.ctx test context
+ * @param params.path
  */
 function createMiddleware({ ctx, path }) {
   const { txInfo, shim } = ctx.nr
@@ -680,7 +680,7 @@ test('WebFrameworkShim', async function (t) {
         const filePathSplit = attrs['code.filepath'].split('/')
         assert.equal(filePathSplit[filePathSplit.length - 1], 'webframework-shim.test.js')
         assert.equal(attrs['code.function'], 'getActiveSegment')
-        assert.equal(attrs['code.lineno'], 74)
+        assert.equal(attrs['code.lineno'], 84)
         assert.equal(attrs['code.column'], 50)
         end()
       })
