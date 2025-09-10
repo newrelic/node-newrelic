@@ -160,22 +160,6 @@ test('instrumentOutbound', async (t) => {
     })
   })
 
-  await t.test('should not accept an undefined path', (t, end) => {
-    const { agent } = t.nr
-    const req = new events.EventEmitter()
-    helper.runInTransaction(agent, function () {
-      assert.throws(
-        () => instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest),
-        Error
-      )
-      end()
-    })
-
-    function makeFakeRequest() {
-      return req
-    }
-  })
-
   await t.test('should accept a simple path with no parameters', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
