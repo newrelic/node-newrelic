@@ -115,6 +115,30 @@ test('content will not be recorded if record_content is not enabled', (t, end) =
   })
 })
 
+test('should capture token_count even when `ai_monitoring.record_content.enabled` is false', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  agent.config.ai_monitoring.record_content.enabled = false
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      const summaryId = 'chat-summary-id'
+      const chatMessageEvent = new LlmChatCompletionMessage({
+        transaction: tx,
+        agent,
+        segment,
+        request: req,
+        response: res,
+        completionId: summaryId,
+        message: req.contents,
+        index: 0
+      })
+      assert.deepEqual(chatMessageEvent.token_count, 0)
+      end()
+    })
+  })
+})
+
 test('should use token_count from tokenCountCallback for prompt message', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()

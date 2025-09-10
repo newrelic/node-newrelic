@@ -137,12 +137,12 @@ test('should not capture content when `ai_monitoring.record_content.enabled` is 
   assert.equal(event.content, undefined, 'content should be empty')
 })
 
-test('should not capture token_count when `ai_monitoring.record_content.enabled` is false', async (t) => {
+test('should capture token_count even when `ai_monitoring.record_content.enabled` is false', async (t) => {
   const { agent } = t.nr
   agent.config.ai_monitoring.record_content.enabled = false
   t.nr.agent.llm.tokenCountCallback = () => 3
   const event = new LlmChatCompletionMessage(t.nr)
-  assert.equal(event.token_count, undefined)
+  assert.equal(event.token_count, 3)
 })
 
 test('should capture token_count when callback is defined', async (t) => {
