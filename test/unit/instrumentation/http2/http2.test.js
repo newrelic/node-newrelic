@@ -10,22 +10,6 @@ const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINAT
 const helper = require('../../../lib/agent_helper')
 const Shim = require('../../../../lib/shim').Shim
 const createHttp2ResponseServer = require('./fixtures/http2')
-// const Segment = require('../../../../lib/transaction/trace/segment')
-// const EventEmitter = require('events').EventEmitter
-// const hashes = require('../../../../lib/util/hashes')
-// const NEWRELIC_ID_HEADER = 'x-newrelic-id'
-// const NEWRELIC_APP_DATA_HEADER = 'x-newrelic-app-data'
-// const NEWRELIC_TRANSACTION_HEADER = 'x-newrelic-transaction'
-
-// function addSegment({ agent }) {
-//   const transaction = agent.getTransaction()
-//   transaction.type = 'web'
-//   transaction.baseSegment = new Segment({
-//     config: agent.config,
-//     name: 'base-segment',
-//     root: transaction.trace.root
-//   })
-// }
 
 test.beforeEach(async (ctx) => {
   const { server, baseUrl, responses, host, port } = await createHttp2ResponseServer()
@@ -298,93 +282,51 @@ test('built-in http2 module instrumentation', async (t) => {
       }
     })
 
-    //   await t.test('successful request', (t, end) => {
-    //     const { agent, http2, host, port, path, protocol } = t.nr
-    //     const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
-    //     const userAgent = 'Palm680/RC1'
-    //     helper.runInTransaction(agent, function () {
-    //       t.nr.transaction = agent.getTransaction()
-    //       makeRequest(
-    //         http2,
-    //         {
-    //           port,
-    //           host,
-    //           path,
-    //           protocol,
-    //           method: 'GET',
-    //           headers: {
-    //             referer: refererUrl,
-    //             'User-Agent': userAgent
-    //           }
-    //         },
-    //         finish
-    //       )
-    //     })
-    //
-    //     function finish(err, statusCode, body) {
-    //       assert.ifError(err)
-    //       const { transaction, transaction2 } = t.nr
-    //       const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-    //       const segment = transaction.baseSegment
-    //       const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
-    //       const callStats = agent.metrics.getOrCreateMetric('WebTransaction/NormalizedUri/*')
-    //       const dispatcherStats = agent.metrics.getOrCreateMetric('HttpDispatcher')
-    //       const reqStats = transaction.metrics.getOrCreateMetric(
-    //         `External/${host}:${port}/http`,
-    //         'WebTransaction/NormalizedUri/*'
-    //       )
-    //
-    //       assert.equal(statusCode, 200, 'response status code')
-    //       // need to listen to response event for these:
-    //       // ;[attributes, spanAttributes].forEach((attrs) => {
-    //       //   assert.equal(
-    //       //     attrs['request.headers.referer'],
-    //       //     'https://www.google.com/search/cats',
-    //       //     'headers.referer'
-    //       //   )
-    //       //   assert.equal(attrs['http.statusCode'], '200')
-    //       //   assert.equal(attrs['http.statusText'], 'OK')
-    //       //   assert.equal(attrs['request.headers.userAgent'], userAgent)
-    //       // })
-    //
-    //       assert.equal(callStats.callCount, 2, 'records unscoped path stats after a normal request')
-    //       assert.ok(
-    //         dispatcherStats.callCount,
-    //         2,
-    //         'record unscoped HTTP dispatcher stats after a normal request'
-    //       )
-    //       assert.ok(
-    //         agent.environment.get('Dispatcher').includes('http'),
-    //         'http dispatcher is in play'
-    //       )
-    //       assert.equal(
-    //         reqStats.callCount,
-    //         1,
-    //         'associates outbound HTTP requests with the inbound transaction'
-    //       )
-    //       assert.equal(transaction.port, port, 'set transaction.port to the server\'s port')
-    //       assert.equal(transaction2.id, transaction.id, 'only create one transaction for the request')
-    //
-    //       end()
-    //     }
-    //   })
-    // })
-
-    await t.test('Should accept w3c traceparent header when present on request', async (t) => {
-      t.beforeEach((ctx) => {
-        ctx.nr = {}
-        ctx.nr.agent = helper.instrumentMockedAgent({
-          distributed_tracing: {
-            enabled: true
+    await t.test('successful request', (t, end) => {
+      const { agent, http2, host, port, path, protocol } = t.nr
+      const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
+      const userAgent = 'Palm680/RC1'
+      helper.runInTransaction(agent, function () {
+        t.nr.transaction = agent.getTransaction()
+        makeRequest(
+          http2,
+          {
+            port,
+            host,
+            path,
+            protocol,
+            method: 'GET',
+            headers: {
+              referer: refererUrl,
+              'User-Agent': userAgent
+            }
           },
-          feature_flag: {}
-        })
-        ctx.nr.http = require('http')
+          finish
+        )
       })
 
-      t.afterEach((ctx) => {
-        helper.unloadAgent(ctx.nr.agent)
-      })
+      function finish(err, headers) {
+        assert.ifError(err)
+        const { transaction } = t.nr
+        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        const segment = transaction.baseSegment
+        const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+        const statusCode = headers[':status']
+
+        assert.equal(statusCode, 200, 'response status code')
+        ;[attributes, spanAttributes].forEach((attrs) => {
+          assert.equal(
+            attrs['request.headers.referer'],
+            'https://www.google.com/search/cats',
+            'headers.referer'
+          )
+          assert.equal(attrs['response.headers.status'], '200')
+          assert.equal(attrs['request.headers.userAgent'], userAgent)
+        })
+
+        end()
+      }
     })
   })
 })
@@ -407,7 +349,6 @@ async function makeRequest(http2, params, cb) {
     if (params.abort && err.code === 'ECONNRESET') {
       cb()
     } else {
-      console.error('error from server', err)
       cb(err)
     }
   })
@@ -416,10 +357,11 @@ async function makeRequest(http2, params, cb) {
   let data = ''
 
   req.on('response', (headers) => {
+    const responseHeaders = headers
     req.on('data', (chunk) => { data += chunk })
     req.on('end', () => {
       session.close()
-      cb(null, headers[':status:'], data)
+      cb(null, responseHeaders, data)
     })
   })
 
