@@ -10,6 +10,9 @@ const test = require('node:test')
 const symbols = require('../../../lib/symbols')
 const nock = require('nock')
 const { tspl } = require('@matteo.collina/tspl')
+const net = require('net')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const fs = require('node:fs/promises')
 
 test('external requests', async function (t) {
   t.beforeEach((ctx) => {
@@ -185,6 +188,50 @@ test('external requests', async function (t) {
       await req
       plan.ok(true)
     })
+  })
+
+  await t.test('unix sockets', async function(t) {
+    const { agent, http } = t.nr
+    const plan = tspl(t, { plan: 2 })
+    const socketPath = './test.sock'
+    try {
+      await fs.unlink(socketPath)
+    } catch {
+      // this is defensive code in case a socket was dangling
+    }
+    const server = net.createServer((socket) => {
+      socket.on('data', () => {
+        socket.end('HTTP/1.1 200 OK\r\n\r\n')
+      })
+    })
+
+    await new Promise((resolve) => {
+      server.listen(socketPath, resolve)
+    })
+    t.after(() => {
+      server.close()
+    })
+
+    await helper.runInTransaction(agent, async function () {
+      await new Promise((resolve) => {
+        http.get({ host: '::1', socketPath }, (res) => {
+          const segment = agent.tracer.getSegment()
+          plan.equal(segment.name, 'External/::1')
+          const attributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+          plan.deepEqual(attributes, {
+            hostname: '::1',
+            port: 80,
+            url: 'http://::1/',
+            procedure: 'GET',
+            'http.statusCode': 200,
+            'http.statusText': 'OK'
+          })
+          res.resume()
+          resolve()
+        })
+      })
+    })
+    await plan.completed
   })
 
   await t.test('should record requests to default ports', async (t) => {
