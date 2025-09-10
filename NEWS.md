@@ -1,3 +1,24 @@
+### v13.3.2 (2025-09-10)
+
+#### Bug fixes
+
+* Added defensive code for obtaining `protocol` in outbound http calls ([#3367](https://github.com/newrelic/node-newrelic/pull/3367)) ([ecda4e8](https://github.com/newrelic/node-newrelic/commit/ecda4e8fd3e2b4695bd900ba56f11babff186269))
+
+#### Code refactoring
+
+* Benchmark test names ([#3357](https://github.com/newrelic/node-newrelic/pull/3357)) ([229ff0d](https://github.com/newrelic/node-newrelic/commit/229ff0d1f1926ae937b8a1c54975c5ee8b1f0d2c))
+
+#### Documentation
+
+* Updated compatibility report ([#3351](https://github.com/newrelic/node-newrelic/pull/3351)) ([cf9f95d](https://github.com/newrelic/node-newrelic/commit/cf9f95db6339db793a15f9d19e2a29832bcb917e))
+
+#### Continuous integration
+
+* Benchmark tests run on push on main ([#3359](https://github.com/newrelic/node-newrelic/pull/3359)) ([c0f81c3](https://github.com/newrelic/node-newrelic/commit/c0f81c3562312c83330825c9c6fcdb969ab4da74))
+* Changed NUGET_SOURCE workflow to variable ([#3364](https://github.com/newrelic/node-newrelic/pull/3364)) ([10692db](https://github.com/newrelic/node-newrelic/commit/10692db65ce0c3218d6ab2d494f0ab7f426ff817))
+* Fix benchmark workflow ([#3365](https://github.com/newrelic/node-newrelic/pull/3365)) ([7da99b5](https://github.com/newrelic/node-newrelic/commit/7da99b5fd4c20d817222ffa66e08166f1c8a1785))
+* Updated the `GH_RELEASE_TOKEN` to point to our bot user PAT instead of python agent ([#3363](https://github.com/newrelic/node-newrelic/pull/3363)) ([06eb5c1](https://github.com/newrelic/node-newrelic/commit/06eb5c1be0da5ffea4853e521223a711cc7b1805))
+
 ### v13.3.1 (2025-09-09)
 
 #### Bug fixes
@@ -7859,6 +7880,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
