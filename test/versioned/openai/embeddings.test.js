@@ -122,7 +122,6 @@ test('should create an embedding message', (t, end) => {
       'request.model': 'text-embedding-ada-002',
       duration: segment.getDurationInMillis(),
       'response.organization': 'new-relic-nkmd8b',
-      token_count: undefined,
       'response.headers.llmVersion': '2020-10-01',
       'response.headers.ratelimitLimitRequests': '200',
       'response.headers.ratelimitLimitTokens': '150000',
