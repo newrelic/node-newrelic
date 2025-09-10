@@ -28,6 +28,9 @@ module.exports = async function testServer() {
 
   return { address, server, stopServer }
 
+  /**
+   *
+   */
   async function stopServer() {
     await new Promise((resolve, reject) => {
       if (server.closeAllConnections) {

@@ -804,10 +804,22 @@ for (const enabled of codeLevelMetrics) {
     const { app, agent } = t.nr
     agent.config.code_level_metrics.enabled = enabled
 
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
     function mw1(req, res, next) {
       next()
     }
 
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
     function mw2(req, res, next) {
       next()
     }
@@ -851,6 +863,12 @@ for (const enabled of codeLevelMetrics) {
   })
 }
 
+/**
+ *
+ * @param t
+ * @param options
+ * @param callback
+ */
 function runTest(t, options, callback) {
   const { agent, port } = t.nr
   let errors
@@ -881,6 +899,12 @@ function runTest(t, options, callback) {
   })
 }
 
+/**
+ *
+ * @param metrics
+ * @param expected
+ * @param path
+ */
 function checkMetrics(metrics, expected, path) {
   if (path === undefined) {
     path = '/test'

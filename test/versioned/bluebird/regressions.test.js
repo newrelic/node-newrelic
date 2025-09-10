@@ -18,6 +18,10 @@ test('bluebird', async function (t) {
     })
     const Promise = require('bluebird')
 
+    /**
+     *
+     * @param count
+     */
     function Provider(count) {
       this._count = count
     }
@@ -26,11 +30,19 @@ test('bluebird', async function (t) {
       return Promise.resolve(--this._count > 0 ? this._count : null)
     }
 
+    /**
+     *
+     * @param dataProvider
+     */
     function getData(dataProvider) {
       const results = []
 
       return dataProvider.getNext().then(collectResults)
 
+      /**
+       *
+       * @param result
+       */
       function collectResults(result) {
         if (!result) {
           return results

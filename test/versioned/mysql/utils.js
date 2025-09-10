@@ -4,6 +4,12 @@
  */
 
 'use strict'
+/**
+ *
+ * @param pool
+ * @param callback
+ * @param counter
+ */
 function getClient(pool, callback, counter = 1) {
   counter++
 
@@ -21,6 +27,15 @@ function getClient(pool, callback, counter = 1) {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.pool
+ * @param root0.params
+ * @param root0.database
+ * @param root0.table
+ * @param callback
+ */
 function lookup({ pool, params, database, table }, callback) {
   if (!params.id) {
     return callback(new Error('Must include ID to look up.'))

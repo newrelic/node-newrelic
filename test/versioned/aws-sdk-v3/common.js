@@ -17,6 +17,14 @@ const assert = require('node:assert')
 const SEGMENT_DESTINATION = TRANS_SEGMENT
 const helper = require('../../lib/agent_helper')
 
+/**
+ *
+ * @param root0
+ * @param root0.trace
+ * @param root0.segment
+ * @param root0.pattern
+ * @param root0.markedSegments
+ */
 function checkAWSAttributes({ trace, segment, pattern, markedSegments = [] }) {
   const expectedAttrs = {
     'aws.operation': String,
@@ -38,6 +46,14 @@ function checkAWSAttributes({ trace, segment, pattern, markedSegments = [] }) {
   return markedSegments
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.trace
+ * @param root0.segment
+ * @param root0.pattern
+ * @param root0.markedSegments
+ */
 function getMatchingSegments({ trace, segment, pattern, markedSegments = [] }) {
   if (pattern.test(segment.name)) {
     markedSegments.push(segment)
@@ -51,6 +67,14 @@ function getMatchingSegments({ trace, segment, pattern, markedSegments = [] }) {
   return markedSegments
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.service
+ * @param root0.operations
+ * @param root0.tx
+ * @param root0.end
+ */
 function checkExternals({ service, operations, tx, end }) {
   const externals = checkAWSAttributes({
     trace: tx.trace,
@@ -76,6 +100,16 @@ function checkExternals({ service, operations, tx, end }) {
   end()
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.chatMsgs
+ * @param root0.expectedId
+ * @param root0.modelId
+ * @param root0.prompt
+ * @param root0.resContent
+ */
 function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, prompt, resContent }) {
   chatMsgs.forEach((msg) => {
     if (msg[1].sequence > 1) {
@@ -97,6 +131,17 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.message
+ * @param root0.expectedId
+ * @param root0.modelId
+ * @param root0.expectedContent
+ * @param root0.isResponse
+ * @param root0.expectedRole
+ */
 function assertChatCompletionMessage({
   tx,
   message,
@@ -135,6 +180,15 @@ function assertChatCompletionMessage({
   match(messageData, expectedChatMsg)
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.modelId
+ * @param root0.chatSummary
+ * @param root0.error
+ * @param root0.numMsgs
+ */
 function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, numMsgs = 2 }) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {

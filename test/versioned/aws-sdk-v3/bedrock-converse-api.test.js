@@ -416,6 +416,12 @@ test('should not instrument stream when disabled', async (t) => {
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.metricPrefix
+ */
 function getPrefixedMetric({ agent, metricPrefix }) {
   for (const [key, value] of Object.entries(agent.metrics._metrics.unscoped)) {
     if (key.startsWith(metricPrefix) === false) {
@@ -425,6 +431,9 @@ function getPrefixedMetric({ agent, metricPrefix }) {
   }
 }
 
+/**
+ *
+ */
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.
 }

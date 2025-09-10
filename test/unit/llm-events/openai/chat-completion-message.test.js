@@ -126,6 +126,11 @@ test('openai.chat.completions.create', async (t) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     const expectedCount = 4
+    /**
+     *
+     * @param model
+     * @param content
+     */
     function cb(model, content) {
       assert.equal(model, 'gpt-3.5-turbo-0613')
       assert.equal(content, 'What is a woodchuck?')
@@ -157,6 +162,11 @@ test('openai.chat.completions.create', async (t) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     const expectedCount = 4
+    /**
+     *
+     * @param model
+     * @param content
+     */
     function cb(model, content) {
       assert.equal(model, 'gpt-3.5-turbo-0613')
       assert.equal(content, 'a lot')
@@ -211,6 +221,9 @@ test('openai.chat.completions.create', async (t) => {
   await t.test('should not set token_count if not set in usage nor a callback registered returns count', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
+    /**
+     *
+     */
     function cb() {
     // empty cb
     }
@@ -308,6 +321,11 @@ test('openai.responses.create', async (t) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     const expectedCount = 4
+    /**
+     *
+     * @param model
+     * @param content
+     */
     function cb(model, content) {
       assert.equal(model, req.model)
       assert.equal(content, req.input)
@@ -341,6 +359,11 @@ test('openai.responses.create', async (t) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     const expectedCount = 4
+    /**
+     *
+     * @param model
+     * @param content
+     */
     function cb(model, content) {
       assert.equal(model, 'gpt-4-0613')
       assert.equal(content, 'a lot')
@@ -399,6 +422,9 @@ test('openai.responses.create', async (t) => {
   await t.test('should not set token_count if not set in usage nor a callback registered returns count', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
+    /**
+     *
+     */
     function cb() {
     // empty cb
     }

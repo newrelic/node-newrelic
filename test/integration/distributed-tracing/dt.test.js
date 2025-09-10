@@ -43,6 +43,9 @@ test('distributed tracing full integration', async (t) => {
   let secondExternalId
 
   let serversToStart = 3
+  /**
+   *
+   */
   function started() {
     serversToStart -= 1
     if (serversToStart === 0) {
@@ -223,6 +226,9 @@ test('distributed tracing full integration', async (t) => {
 
   await plan.completed
 
+  /**
+   *
+   */
   function runTest() {
     http.get(generateUrl(START_PORT, 'start'), (res) => {
       res.resume()
@@ -336,6 +342,13 @@ test('distributed tracing', async (t) => {
   }
 })
 
+/**
+ *
+ * @param http
+ * @param api
+ * @param started
+ * @param responseHandler
+ */
 function generateServer(http, api, started, responseHandler) {
   const server = http.createServer((req, res) => {
     const tx = api.agent.getTransaction()
@@ -347,10 +360,20 @@ function generateServer(http, api, started, responseHandler) {
   return server
 }
 
+/**
+ *
+ * @param port
+ * @param endpoint
+ */
 function generateUrl(port, endpoint) {
   return 'http://localhost:' + port + '/' + endpoint
 }
 
+/**
+ *
+ * @param plan
+ * @param a
+ */
 function currySampled(plan, a) {
   return (b) => {
     b = b || a
@@ -363,6 +386,14 @@ function currySampled(plan, a) {
   }
 }
 
+/**
+ *
+ * @param plan
+ * @param intrinsic
+ * @param reqName
+ * @param type
+ * @param parentSpanId
+ */
 function validateIntrinsics(plan, intrinsic, reqName, type, parentSpanId) {
   reqName = reqName || 'start'
   type = type || 'event'
@@ -398,6 +429,12 @@ function validateIntrinsics(plan, intrinsic, reqName, type, parentSpanId) {
   )
 }
 
+/**
+ *
+ * @param uri
+ * @param options
+ * @param cb
+ */
 function get(uri, options, cb) {
   if (typeof options === 'function') {
     cb = options

@@ -240,6 +240,10 @@ test('Transaction unit tests', async (t) => {
 })
 
 test('Transaction naming tests', async (t) => {
+  /**
+   *
+   * @param t
+   */
   function bookends(t) {
     t.beforeEach((ctx) => {
       ctx.nr = {}
@@ -637,6 +641,10 @@ test('Transaction naming tests', async (t) => {
 })
 
 test('Transaction methods', async (t) => {
+  /**
+   *
+   * @param t
+   */
   function bookends(t) {
     t.beforeEach((ctx) => {
       ctx.nr = {}
@@ -2135,6 +2143,10 @@ test('when being named with finalizeName', async (t) => {
   })
 })
 
+/**
+ *
+ * @param transaction
+ */
 function setupNameState(transaction) {
   transaction.baseSegment = transaction.trace.add('basesegment')
   transaction.nameState.setPrefix('Restify')
@@ -2144,16 +2156,28 @@ function setupNameState(transaction) {
   transaction.nameState.appendPath('/bar/:bar', { 'request.parameters.bar': 'bang' })
 }
 
+/**
+ *
+ * @param agent
+ */
 function setupHighSecurity(agent) {
   agent.config.high_security = true
   agent.config._applyHighSecurity()
   agent.config.emit('attributes.include')
 }
 
+/**
+ *
+ * @param agent
+ */
 function getMetrics(agent) {
   return agent.metrics._metrics
 }
 
+/**
+ *
+ * @param transaction
+ */
 function createHeadersAndInsertTrace(transaction) {
   const headers = {}
   transaction.insertDistributedTraceHeaders(headers)
@@ -2161,6 +2185,12 @@ function createHeadersAndInsertTrace(transaction) {
   return headers
 }
 
+/**
+ *
+ * @param tracer
+ * @param transaction
+ * @param name
+ */
 function addSegmentInContext(tracer, transaction, name) {
   const segment = new Segment({
     config: transaction.agent.config,

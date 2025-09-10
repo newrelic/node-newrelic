@@ -18,6 +18,17 @@ module.exports = function init({ t, agent, Promise }) {
   }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.agent
+ * @param root0.Promise
+ * @param root0.name
+ * @param root0.resolve
+ * @param root0.reject
+ * @param root0.inTx
+ */
 async function doPerformTests({ t, agent, Promise, name, resolve, reject, inTx }) {
   name += ' ' + (inTx ? 'with' : 'without') + ' transaction'
 
@@ -33,6 +44,10 @@ async function doPerformTests({ t, agent, Promise, name, resolve, reject, inTx }
           test(null)
         }
 
+        /**
+         *
+         * @param transaction
+         */
         function test(transaction) {
           const p = resolve(Promise).then(end(transaction, cb), end(transaction, cb))
           const d = p.domain
@@ -62,6 +77,10 @@ async function doPerformTests({ t, agent, Promise, name, resolve, reject, inTx }
           test(null)
         }
 
+        /**
+         *
+         * @param transaction
+         */
         function test(transaction) {
           resolve(Promise)
             .then(function step() {
@@ -94,6 +113,10 @@ async function doPerformTests({ t, agent, Promise, name, resolve, reject, inTx }
           test(null)
         }
 
+        /**
+         *
+         * @param transaction
+         */
         function test(transaction) {
           const err = new Error('some error ' + i)
           reject(Promise, err)

@@ -20,6 +20,12 @@ const {
   DB_SYSTEM_VALUES
 } = require('#agentlib/otel/traces/constants.js')
 
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.name
+ */
 function createDbClientSpan({ tracer, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.CLIENT, tracer })
   span.setAttribute(ATTR_DB_SYSTEM, 'custom-db')
@@ -29,6 +35,12 @@ function createDbClientSpan({ tracer, name = 'test-span' }) {
   return span
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.name
+ */
 function createDbSpan({ tracer, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.CLIENT, tracer })
   span.setAttribute(ATTR_DB_SYSTEM, 'custom-db')
@@ -37,6 +49,12 @@ function createDbSpan({ tracer, name = 'test-span' }) {
   return span
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.name
+ */
 function createMemcachedDbSpan({ tracer, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.CLIENT, tracer })
   span.setAttribute(ATTR_DB_SYSTEM, DB_SYSTEM_VALUES.MEMCACHED)
@@ -46,6 +64,12 @@ function createMemcachedDbSpan({ tracer, name = 'test-span' }) {
   return span
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.name
+ */
 function createMongoDbSpan({ tracer, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.CLIENT, tracer })
   span.setAttribute(ATTR_DB_SYSTEM, DB_SYSTEM_VALUES.MONGODB)
@@ -56,6 +80,12 @@ function createMongoDbSpan({ tracer, name = 'test-span' }) {
   return span
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.name
+ */
 function createRedisDbSpan({ tracer, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.CLIENT, tracer })
   span.setAttribute(ATTR_DB_SYSTEM, DB_SYSTEM_VALUES.REDIS)

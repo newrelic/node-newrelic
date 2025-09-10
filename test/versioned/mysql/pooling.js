@@ -46,6 +46,10 @@ module.exports = function ({ factory, poolFactory, constants }) {
 
     await plan.completed
 
+    /**
+     *
+     * @param row
+     */
     function inspect(row) {
       const transaction = agent.getTransaction()
       plan.ok(transaction, 'transaction should be visible')

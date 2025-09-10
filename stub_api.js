@@ -9,6 +9,10 @@ const logger = require('./lib/logger.js')
 const RealAPI = require('./api.js')
 const TransactionHandle = require('./lib/transaction/handle')
 
+/**
+ *
+ * @param name
+ */
 function stubFunction(name) {
   // eslint-disable-next-line sonarjs/code-eval, no-eval
   return eval(
@@ -22,6 +26,9 @@ function stubFunction(name) {
   )
 }
 
+/**
+ *
+ */
 function Stub() {}
 
 const keys = Object.keys(RealAPI.prototype)
@@ -47,20 +54,37 @@ Stub.prototype.getTraceMetadata = getTraceMetadata
 
 // This code gets injected into HTML templates
 // and we don't want it to return undefined/null.
+/**
+ *
+ */
 function getBrowserTimingHeader() {
   logger.debug('Not calling getBrowserTimingHeader because New Relic is disabled.')
   return ''
 }
 
+/**
+ *
+ */
 function getTransaction() {
   return new TransactionHandle.Stub()
 }
 
+/**
+ *
+ * @param callback
+ */
 function setLambdaHandler(callback) {
   logger.debug('Not calling setLambdaHandler because New Relic is disabled.')
   return callback
 }
 
+/**
+ *
+ * @param name
+ * @param record
+ * @param handler
+ * @param callback
+ */
 function startSegment(name, record, handler, callback) {
   logger.debug('Not calling `startSegment` because New Relic is disabled.')
   if (typeof handler === 'function') {
@@ -69,10 +93,16 @@ function startSegment(name, record, handler, callback) {
   return null
 }
 
+/**
+ *
+ */
 function getLinkingMetadata() {
   return {}
 }
 
+/**
+ *
+ */
 function getTraceMetadata() {
   return {
     traceId: '',
@@ -80,6 +110,11 @@ function getTraceMetadata() {
   }
 }
 
+/**
+ *
+ * @param url
+ * @param callback
+ */
 function startWebTransaction(url, callback) {
   logger.debug('Not calling startWebTransaction because New Relic is disabled.')
   if (typeof callback === 'function') {
@@ -89,6 +124,12 @@ function startWebTransaction(url, callback) {
   return null
 }
 
+/**
+ *
+ * @param name
+ * @param group
+ * @param callback
+ */
 function startBackgroundTransaction(name, group, callback) {
   logger.debug('Not calling startBackgroundTransaction because New Relic is disabled.')
   if (typeof callback === 'function') {
@@ -103,6 +144,11 @@ function startBackgroundTransaction(name, group, callback) {
 }
 
 // Normally the following call executes callback asynchronously
+/**
+ *
+ * @param options
+ * @param cb
+ */
 function shutdown(options, cb) {
   logger.debug('Not calling shutdown because New Relic is disabled.')
 

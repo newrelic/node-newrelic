@@ -114,6 +114,11 @@ test('should use token_count from tokenCountCallback for prompt message', (t, en
   const { agent } = t.nr
   const api = helper.getAgentApi()
   const expectedCount = 4
+  /**
+   *
+   * @param model
+   * @param content
+   */
   function cb(model, content) {
     assert.equal(model, req.model)
     assert.equal(content, req.contents)
@@ -145,6 +150,11 @@ test('should use token_count from tokenCountCallback for completion messages', (
   const { agent } = t.nr
   const api = helper.getAgentApi()
   const expectedCount = 4
+  /**
+   *
+   * @param model
+   * @param content
+   */
   function cb(model, content) {
     assert.equal(model, req.model)
     assert.equal(content, res.candidates[0].content.parts[0].text)
@@ -199,6 +209,9 @@ test('should not set token_count if it is not set in usage, or if no callback is
 test('should not set token_count if not set in usage or if a callback registered does not return count', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
+  /**
+   *
+   */
   function cb() {
     // no-op so we don't return a token count
   }

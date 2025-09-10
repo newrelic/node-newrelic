@@ -12,6 +12,10 @@ const Transaction = require('#agentlib/transaction/index.js')
 const hashes = require('#agentlib/util/hashes.js')
 
 const notRunningStates = ['stopped', 'stopping', 'errored']
+/**
+ *
+ * @param ctx
+ */
 function beforeEach(ctx) {
   ctx.nr = {}
   const agent = helper.loadMockedAgent()
@@ -19,6 +23,10 @@ function beforeEach(ctx) {
   ctx.nr.agent = agent
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
 }
@@ -113,6 +121,9 @@ test('Tracer', async function (t) {
         const expectErrMsg = 'FIREBOMB'
         const { tracer, agent } = t.nr
         helper.runInTransaction(agent, function (trans) {
+          /**
+           *
+           */
           function wrapMe() {
             const err = new Error(expectErrMsg)
             Object.freeze(err)

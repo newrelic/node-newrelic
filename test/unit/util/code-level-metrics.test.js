@@ -35,13 +35,16 @@ test('CLM Meta', async (t) => {
 
   await t.test('should return function name as code.function from function reference', (t) => {
     const { segmentStub } = t.nr
+    /**
+     *
+     */
     function testFunction() {}
     testFunction[symbols.clm] = true
     addCLMAttributes(testFunction, segmentStub)
     assertExactClmAttrs(segmentStub, {
       'code.filepath': __filename,
       'code.function': 'testFunction',
-      'code.lineno': 38,
+      'code.lineno': 41,
       'code.column': 26
     })
   })
@@ -54,7 +57,7 @@ test('CLM Meta', async (t) => {
     assertExactClmAttrs(segmentStub, {
       'code.filepath': __filename,
       'code.function': 'testFunction',
-      'code.lineno': 51,
+      'code.lineno': 54,
       'code.column': 35
     })
   })
@@ -103,6 +106,9 @@ test('CLM Meta', async (t) => {
 
   await t.test('should not add CLM attrs when filePath is null', (t) => {
     const { segmentStub } = t.nr
+    /**
+     *
+     */
     function fn() {}
     // This is testing Express router.route which binds a function thus breaking any function metadata
     const boundFn = fn.bind(null)
@@ -157,6 +163,9 @@ test('failure cases', async (t) => {
     const { fnInspector, segmentStub } = t.nr
     const err = new Error('failed to get function meta')
     fnInspector.funcInfo.throws(err)
+    /**
+     *
+     */
     function testFn() {}
     testFn[symbols.clm] = true
     addCLMAttributes(testFn, segmentStub)

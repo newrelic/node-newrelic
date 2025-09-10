@@ -9,6 +9,10 @@ const { INSTRUMENTED_LIBRARIES, MIN_NODE_VERSION } = require('./constants')
 const { makeDashboard, makePage, makeWidget, libraryUsageQuery } = require('./utils')
 const REPORT_NAME = process.env.REPORT_NAME || 'library-usage.json'
 
+/**
+ *
+ * @param libs
+ */
 function makeLibraryWidgets(libs) {
   const width = 4
   const height = 3
@@ -35,6 +39,9 @@ function makeLibraryWidgets(libs) {
   })
 }
 
+/**
+ *
+ */
 async function main() {
   const widgets = makeLibraryWidgets(INSTRUMENTED_LIBRARIES)
   const page = makePage({

@@ -77,6 +77,12 @@ test('Express route param', async function (t) {
   })
 })
 
+/**
+ *
+ * @param port
+ * @param param
+ * @param cb
+ */
 function testRequest(port, param, cb) {
   const url = 'http://localhost:' + port + '/a/b/' + param + '/c'
   helper.makeGetRequest(url, function (err, _response, body) {
@@ -84,6 +90,12 @@ function testRequest(port, param, cb) {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.express
+ * @param root0.app
+ */
 function createServer({ express, app }) {
   const aRouter = new express.Router()
   const bRouter = new express.Router()

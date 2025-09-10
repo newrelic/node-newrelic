@@ -38,6 +38,10 @@ test('The TxSegmentNormalizer', async (t) => {
   })
 })
 
+/**
+ *
+ * @param data
+ */
 function runTest(data) {
   const normalizer = new TxSegmentNormalizer()
   normalizer.load(data.transaction_segment_terms)

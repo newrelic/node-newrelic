@@ -14,6 +14,12 @@ const API = require('../../api')
 const Config = require('../../lib/config')
 
 // simplified version of lodash set()
+/**
+ *
+ * @param obj
+ * @param path
+ * @param value
+ */
 function setPath(obj, path, value) {
   const paths = path.split('.')
   while (paths.length - 1) {
@@ -27,6 +33,11 @@ function setPath(obj, path, value) {
 }
 
 // simplified version of lodash get()
+/**
+ *
+ * @param obj
+ * @param path
+ */
 function getPath(obj, path) {
   const paths = path.split('.')
   while (paths.length - 1) {
@@ -36,6 +47,12 @@ function getPath(obj, path) {
   return obj[paths[0]]
 }
 
+/**
+ *
+ * @param key
+ * @param before
+ * @param after
+ */
 function check(key, before, after) {
   const fromFile = { high_security: true }
   setPath(fromFile, key, before)
@@ -44,6 +61,13 @@ function check(key, before, after) {
   assert.deepEqual(getPath(config, key), after)
 }
 
+/**
+ *
+ * @param config
+ * @param key
+ * @param expected
+ * @param server
+ */
 function checkServer(config, key, expected, server) {
   setPath(config, key, expected)
   const fromServer = { high_security: true }

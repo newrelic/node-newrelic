@@ -20,6 +20,11 @@ if (import.meta.dirname) {
   modPath = path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'foo.cjs')
 }
 
+/**
+ *
+ * @param shim
+ * @param resolvedModule
+ */
 function instrumentation(shim, resolvedModule) {
   shim.wrapExport(resolvedModule, function wrapModule(shim, fn) {
     return function wrappedModule() {

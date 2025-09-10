@@ -38,6 +38,10 @@ const hints = [
 const selQuery = `SELECT * FROM ${KS}.${FAM} WHERE ${PK} = 111;`
 const selectAllQuery = `SELECT * FROM ${KS}.${FAM};`
 
+/**
+ *
+ * @param cassandra
+ */
 async function cassSetup(cassandra) {
   const setupClient = new cassandra.Client({
     contactPoints: [params.cassandra_host],
@@ -45,6 +49,10 @@ async function cassSetup(cassandra) {
     localDataCenter: 'datacenter1'
   })
 
+  /**
+   *
+   * @param cmd
+   */
   function runCommand(cmd) {
     return new Promise((resolve, reject) => {
       setupClient.execute(cmd, function (err) {
@@ -267,6 +275,11 @@ test('stream', (t, end) => {
   })
 })
 
+/**
+ *
+ * @param agent
+ * @param scoped
+ */
 function checkMetric(agent, scoped) {
   const agentMetrics = agent.metrics._metrics
 
@@ -301,6 +314,12 @@ function checkMetric(agent, scoped) {
   }
 }
 
+/**
+ *
+ * @param agent
+ * @param trace
+ * @param table
+ */
 function verifyTrace(agent, trace, table) {
   assert.ok(trace, 'trace should exist')
   assert.ok(trace.root, 'root element should exist')
@@ -337,6 +356,12 @@ function verifyTrace(agent, trace, table) {
   }
 }
 
+/**
+ *
+ * @param agent
+ * @param segment
+ * @param queryType
+ */
 function verifyTraceSegment(agent, segment, queryType) {
   assert.equal(
     segment.name,

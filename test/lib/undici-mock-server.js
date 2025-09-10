@@ -9,6 +9,9 @@ const http = require('http')
 const https = require('https')
 const cert = fakeCert({ commonName: 'localhost' })
 
+/**
+ *
+ */
 function createServer() {
   const server = http.createServer((req, res) => {
     if (req.url.includes('/delay')) {
@@ -44,6 +47,9 @@ function createServer() {
   return { server, PORT, HOST, REQUEST_URL }
 }
 
+/**
+ *
+ */
 function createHttpsServer() {
   const httpsServer = https.createServer(
     { key: cert.privateKey, cert: cert.certificate },
@@ -57,6 +63,9 @@ function createHttpsServer() {
   return { httpsServer, cert }
 }
 
+/**
+ *
+ */
 function createSocketServer() {
   const socketEndServer = http.createServer(function badHandler(req) {
     req.socket.end()

@@ -68,7 +68,13 @@ test('middleware tracking', async (t) => {
   })
 })
 
+/**
+ *
+ */
 function createMockServer() {
+  /**
+   *
+   */
   function FakeServer() {}
   FakeServer.prototype.renderToResponseWithComponents = sinon.stub()
   FakeServer.prototype.runApi = sinon.stub()

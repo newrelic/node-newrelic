@@ -29,6 +29,10 @@ const record = (opts) => {
   recordDistributedTrace(tx, opts.type, duration, exclusive)
 }
 
+/**
+ *
+ * @param ctx
+ */
 function beforeEach(ctx) {
   ctx.nr = {}
   const agent = helper.loadMockedAgent({
@@ -46,6 +50,10 @@ function beforeEach(ctx) {
   ctx.nr.agent = agent
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
 }

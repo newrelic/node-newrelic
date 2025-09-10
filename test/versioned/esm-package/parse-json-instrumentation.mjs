@@ -3,6 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ *
+ * @param shim
+ * @param parseJson
+ */
 export default function initialize(shim, parseJson) {
   shim.wrap(parseJson, 'default', function wrappedParseJsonLib(_shim, orig) {
     return function wrappedParseJsonFunc() {

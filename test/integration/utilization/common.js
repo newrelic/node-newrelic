@@ -10,6 +10,11 @@ const glob = require('glob')
 const JSONbig = require('json-bigint')({ useNativeBigInt: true })
 const path = require('path')
 
+/**
+ *
+ * @param agent
+ * @param expectedMetrics
+ */
 function checkMetrics(agent, expectedMetrics) {
   if (!expectedMetrics) {
     assert.equal(agent.metrics._metrics.toJSON().length, 0, 'should not have any metrics')
@@ -26,6 +31,10 @@ function checkMetrics(agent, expectedMetrics) {
   })
 }
 
+/**
+ *
+ * @param vendor
+ */
 async function getTestCases(vendor) {
   const testFile = path.resolve(
     __dirname,
@@ -36,6 +45,10 @@ async function getTestCases(vendor) {
   return JSONbig.parse(data)
 }
 
+/**
+ *
+ * @param type
+ */
 async function getProcTests(type) {
   const testDir = path.resolve(__dirname, '../../lib/cross_agent_tests', type)
   return new Promise((resolve, reject) => {

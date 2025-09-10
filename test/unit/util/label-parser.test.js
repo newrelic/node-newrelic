@@ -17,6 +17,11 @@ test('label parser should pass cross-agent tests', () => {
   })
 })
 
+/**
+ *
+ * @param a
+ * @param b
+ */
 function byType(a, b) {
   return a.label_type < b.label_type
 }

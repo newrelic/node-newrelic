@@ -72,6 +72,10 @@ test('Datastore instance metrics collected via the datastore shim', async functi
   }
 })
 
+/**
+ *
+ * @param agent
+ */
 function getMetrics(agent) {
   return agent.metrics._metrics
 }

@@ -6,6 +6,9 @@
 'use strict'
 const asyncHooks = require('async_hooks')
 
+/**
+ *
+ */
 function createHook() {
   const testMetrics = {
     initCalled: 0,
@@ -50,6 +53,11 @@ function createHook() {
   return testMetrics
 }
 
+/**
+ *
+ * @param plan
+ * @param testMetrics
+ */
 function checkCallMetrics(plan, testMetrics) {
   plan.ok(testMetrics.initCalled, 2, 'two promises were created')
   plan.equal(testMetrics.beforeCalled, 1, 'before hook called for all async promises')

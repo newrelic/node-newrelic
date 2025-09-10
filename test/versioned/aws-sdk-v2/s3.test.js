@@ -81,6 +81,11 @@ test('S3 buckets', async (t) => {
   })
 })
 
+/**
+ *
+ * @param end
+ * @param tx
+ */
 function finish(end, tx) {
   const externals = common.checkAWSAttributes({
     trace: tx.trace,
@@ -96,6 +101,11 @@ function finish(end, tx) {
   end()
 }
 
+/**
+ *
+ * @param segment
+ * @param operation
+ */
 function checkAttrs(segment, operation) {
   const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
   match(attrs, {

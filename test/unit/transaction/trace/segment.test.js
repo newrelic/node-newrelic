@@ -15,12 +15,20 @@ const Transaction = require('#agentlib/transaction/index.js')
 const hashes = require('#agentlib/util/hashes.js')
 const urltils = require('#agentlib/util/urltils.js')
 
+/**
+ *
+ * @param ctx
+ */
 function beforeEach(ctx) {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent()
   ctx.nr.agent.config.logging.diagnostics = true
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
 }

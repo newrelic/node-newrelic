@@ -31,6 +31,10 @@ test.afterEach((ctx) => {
   ctx.nr.server.stop()
 })
 
+/**
+ *
+ * @param uri
+ */
 function makeRequest(uri) {
   helper.makeGetRequest(uri, {}, function (_err, res, body) {
     assert.equal(res.statusCode, 200, 'nothing exploded')

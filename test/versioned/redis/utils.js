@@ -6,6 +6,13 @@
 'use strict'
 const assert = require('node:assert')
 
+/**
+ *
+ * @param root0
+ * @param root0.check
+ * @param root0.metrics
+ * @param root0.expected
+ */
 function checkMetrics({ check = assert, metrics, expected }) {
   Object.keys(expected).forEach(function (name) {
     check.ok(metrics[name], 'should have metric ' + name)

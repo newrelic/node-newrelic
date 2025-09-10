@@ -11,6 +11,10 @@ const common = require('./collection-common')
 const semver = require('semver')
 const { STATEMENT_PREFIX, COLLECTIONS, DB_NAME } = require('./common')
 
+/**
+ *
+ * @param data
+ */
 function verifyAggregateData(data) {
   assert.equal(data.length, 3, 'should have expected amount of results')
   assert.deepStrictEqual(
@@ -134,6 +138,11 @@ if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
     }
     /* eslint-enable */
 
+    /**
+     *
+     * @param _key
+     * @param vals
+     */
     function reduce(_key, vals) {
       return vals.reduce(function sum(prev, val) {
         return prev + val

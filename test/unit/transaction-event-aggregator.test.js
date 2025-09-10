@@ -15,6 +15,10 @@ const LIMIT = 5
 const EXPECTED_METHOD = 'analytic_event_data'
 const SPLIT_THRESHOLD = 3
 
+/**
+ *
+ * @param ctx
+ */
 function beforeEach(ctx) {
   const fakeCollectorApi = { send: sinon.stub() }
   const fakeHarvester = { add: sinon.stub() }
@@ -207,6 +211,11 @@ test('Transaction Event Aggregator - when data over split threshold', async (t) 
   })
 })
 
+/**
+ *
+ * @param event1
+ * @param event2
+ */
 function sortEventsByNum(event1, event2) {
   const num1 = event1[1].num
   const num2 = event2[1].num

@@ -38,6 +38,10 @@ test.afterEach((ctx) => {
   clearInterval(ctx.nr.tasksInterval)
 })
 
+/**
+ *
+ * @param tx
+ */
 function id(tx) {
   return tx?.id
 }
@@ -92,6 +96,10 @@ test('context maintenance', (t, end) => {
 
   drain()
 
+  /**
+   *
+   * @param n
+   */
   async function run(n) {
     return helper.runInTransaction(agent, async (tx) => {
       const conn = await p.acquire()
@@ -105,6 +113,9 @@ test('context maintenance', (t, end) => {
     })
   }
 
+  /**
+   *
+   */
   function drain() {
     run('drain')
 

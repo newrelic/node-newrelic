@@ -257,6 +257,11 @@ test('PrismaClient unit.tests', async (t) => {
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.sandbox
+ */
 function getMockModule({ sandbox }) {
   const PrismaClient = function () {
     this._engine = { datamodel: {}, datasourceOverrides: {} }

@@ -10,6 +10,13 @@ const Logger = require('../../../lib/util/logger')
 const { Transform } = require('stream')
 const DEFAULT_KEYS = ['hostname', 'level', 'msg', 'name', 'pid', 'time', 'v']
 
+/**
+ *
+ * @param entry
+ * @param msg
+ * @param level
+ * @param keys
+ */
 function expectEntry(entry, msg, level, keys) {
   assert.equal(entry.hostname, 'my-host')
   assert.equal(entry.name, 'my-logger')
@@ -20,6 +27,13 @@ function expectEntry(entry, msg, level, keys) {
   assert.deepEqual(Object.keys(entry).sort(), keys || DEFAULT_KEYS)
 }
 
+/**
+ *
+ * @param ctx
+ * @param data
+ * @param encoding
+ * @param done
+ */
 function addResult(ctx, data, encoding, done) {
   ctx.nr.results = ctx.nr.results.concat(
     data.toString().split('\n').filter(Boolean).map(JSON.parse)

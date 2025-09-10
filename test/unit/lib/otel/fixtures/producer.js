@@ -14,6 +14,12 @@ const {
   ATTR_MESSAGING_OPERATION,
 } = require('#agentlib/otel/traces/constants.js')
 
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.name
+ */
 function createProducerSpan({ tracer, name = 'test-span' }) {
   const span = createSpan({ name, kind: SpanKind.PRODUCER, tracer })
   span.setAttribute(ATTR_MESSAGING_SYSTEM, 'messaging-lib')

@@ -5,6 +5,10 @@
 
 import winston from 'winston'
 
+/**
+ *
+ * @param sink
+ */
 export function doLog(sink) {
   const logger = winston.createLogger({
     transports: sink

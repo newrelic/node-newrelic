@@ -80,6 +80,10 @@ test('should create a web transaction', async (t) => {
 
   wrappedHandler(event, functionContext, () => {})
 
+  /**
+   *
+   * @param tx
+   */
   function verifyAttributes(tx) {
     const agentAttributes = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
     const segment = tx.baseSegment
@@ -165,6 +169,10 @@ test('should capture request parameters', async (t) => {
 
   wrappedHandler(event, functionContext, () => {})
 
+  /**
+   *
+   * @param tx
+   */
   function verifyAttributes(tx) {
     const agentAttributes = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
     plan.equal(agentAttributes['request.parameters.name'], 'me')
@@ -190,6 +198,10 @@ test('should capture request headers', async (t) => {
   })
   wrappedHandler(event, functionContext, () => {})
 
+  /**
+   *
+   * @param tx
+   */
   function verifyAttributes(tx) {
     const attrs = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
     plan.equal(attrs['http.statusCode'], 200)

@@ -10,6 +10,9 @@ const exec = promisify(require('node:child_process').exec)
 
 const params = require('../../lib/params')
 
+/**
+ *
+ */
 function getPostgresUrl() {
   const pgUser = params.postgres_user
   const pgPassword = params.postgres_pass ? `:${params.postgres_pass}` : ':postgres'
@@ -18,6 +21,9 @@ function getPostgresUrl() {
   const pgDb = params.postgres_db
   return `postgresql://${pgUser}${pgPassword}@${pgHost}:${pgPort}/${pgDb}`
 }
+/**
+ *
+ */
 async function initPrismaApp() {
   process.env.DATABASE_URL = getPostgresUrl()
   const { version } = require('@prisma/client/package.json')

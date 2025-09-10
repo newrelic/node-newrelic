@@ -13,6 +13,10 @@ const headerAttributes = require('../../lib/header-attributes')
 
 const { DESTINATIONS } = require('../../lib/config/attribute-filter')
 
+/**
+ *
+ * @param ctx
+ */
 function beforeEach(ctx) {
   ctx.nr = {}
 
@@ -35,6 +39,10 @@ function beforeEach(ctx) {
   ctx.nr.agent = helper.loadMockedAgent(config)
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
 }

@@ -530,6 +530,10 @@ test('receiving 200 response to connect but no data', async (t) => {
   })
 })
 
+/**
+ *
+ * @param ctx
+ */
 async function beforeEach(ctx) {
   ctx.nr = {}
 
@@ -547,6 +551,10 @@ async function beforeEach(ctx) {
   ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.collector.close()

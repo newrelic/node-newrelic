@@ -13,6 +13,9 @@ const helper = require('../../lib/agent_helper')
 const standardResponse = require('./aws-ecs-api-response.json')
 const fetchEcsInfo = require('../../../lib/utilization/ecs-info')
 
+/**
+ *
+ */
 async function getServer() {
   const server = http.createServer((req, res) => {
     res.writeHead(200, { 'content-type': 'application/json' })
@@ -107,6 +110,11 @@ test('returns null if error encountered', (t, end) => {
     }
   )
 
+  /**
+   *
+   * @param root0
+   * @param root0.callback
+   */
   function getEcsContainerId({ callback }) {
     callback(Error('boom'))
   }
@@ -115,6 +123,11 @@ test('returns null if error encountered', (t, end) => {
 test('skips if not in ecs container', (ctx, end) => {
   const { agent, logs, logger } = ctx.nr
 
+  /**
+   *
+   * @param err
+   * @param data
+   */
   function callback(err, data) {
     assert.ifError(err)
     assert.deepEqual(logs, [[{ utilization: 'ecs' }, 'ECS API not available, omitting ECS container id info']])
@@ -135,6 +148,11 @@ test('records request error', (ctx, end) => {
   const info = server.address()
   process.env.ECS_CONTAINER_METADATA_URI_V4 = `http://${info.address}:0`
 
+  /**
+   *
+   * @param err
+   * @param data
+   */
   function callback(err, data) {
     assert.ifError(err)
     assert.deepEqual(logs, [[{ utilization: 'ecs' }, 'Failed to query ECS endpoint, omitting boot info']])
@@ -155,6 +173,11 @@ test('records json parsing error', (ctx, end) => {
   const info = server.address()
   process.env.ECS_CONTAINER_METADATA_URI_V4 = `http://${info.address}:${info.port}/json-error`
 
+  /**
+   *
+   * @param err
+   * @param data
+   */
   function callback(err, data) {
     assert.ifError(err)
     assert.equal(logs.length, 1)
@@ -179,6 +202,11 @@ test('records error for no id in response', (ctx, end) => {
   const info = server.address()
   process.env.ECS_CONTAINER_METADATA_URI_V4 = `http://${info.address}:${info.port}/no-id`
 
+  /**
+   *
+   * @param err
+   * @param data
+   */
   function callback(err, data) {
     assert.ifError(err)
     assert.deepEqual(logs, [[{ utilization: 'ecs' }, 'Failed to find DockerId in response, omitting boot info']])
@@ -200,6 +228,11 @@ test('records found id', (ctx, end) => {
   // Cover the non-V4 case:
   process.env.ECS_CONTAINER_METADATA_URI = `http://${info.address}:${info.port}/success`
 
+  /**
+   *
+   * @param err
+   * @param data
+   */
   function callback(err, data) {
     assert.ifError(err)
     assert.deepEqual(logs, [])

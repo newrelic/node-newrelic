@@ -28,6 +28,15 @@ test.afterEach((ctx) => {
   removeModules(['koa'])
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.expected
+ * @param root0.cb
+ * @param root0.end
+ * @param root0.plan
+ */
 function run({ t, expected = 'done', cb, end, plan }) {
   t.nr.server = t.nr.app.listen(0, () => {
     http.get({ port: t.nr.server.address().port }, (res) => {
@@ -52,6 +61,11 @@ function run({ t, expected = 'done', cb, end, plan }) {
   })
 }
 
+/**
+ *
+ * @param plan
+ * @param tx
+ */
 function checkSegments(plan, tx) {
   assertSegments(
     tx.trace,

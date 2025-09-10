@@ -13,6 +13,11 @@ const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { makeSink, logStuff, originalMsgAssertion, logForwardingMsgAssertion } = require('./helpers')
 
+/**
+ *
+ * @param testContext
+ * @param config
+ */
 function setup(testContext, config) {
   testContext.agent = helper.instrumentMockedAgent(config)
   testContext.agent.config.entity_guid = 'test-guid'

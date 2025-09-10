@@ -7,6 +7,11 @@
 
 const { exec } = require('child_process')
 
+/**
+ *
+ * @param typeOrVersion
+ * @param shouldCommitAndTag
+ */
 async function version(typeOrVersion, shouldCommitAndTag) {
   let command = `npm version ${typeOrVersion}`
 
@@ -15,6 +20,10 @@ async function version(typeOrVersion, shouldCommitAndTag) {
   await execAsPromise(command)
 }
 
+/**
+ *
+ * @param command
+ */
 function execAsPromise(command) {
   return new Promise((resolve, reject) => {
     console.log(`Executing: '${command}'`)

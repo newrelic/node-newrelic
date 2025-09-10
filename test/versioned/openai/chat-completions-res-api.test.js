@@ -363,6 +363,11 @@ test('responses.create', async (t) => {
     const promptContent2 = 'What does 1 plus 1 equal?'
     const res = 'Test stream'
     const api = helper.getAgentApi()
+    /**
+     *
+     * @param model
+     * @param content
+     */
     function cb(model, content) {
       // could be gpt-4 or gpt-4-0613
       assert.ok(model === 'gpt-4' || model === 'gpt-4-0613', 'should be gpt-4 or gpt-4-0613')

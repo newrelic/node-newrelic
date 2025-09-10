@@ -44,6 +44,9 @@ test('ending segment after transaction', (t, end) => {
       finish
     )
 
+    /**
+     *
+     */
     function finish() {
       assert.ok(!segment.timer.isActive(), 'segment timer should have been stopped by tx end')
 
@@ -77,6 +80,9 @@ test('segment ended before tx ends should not have Truncated prefix', (t, end) =
       finish
     )
 
+    /**
+     *
+     */
     function finish() {
       tx.end()
       assert.ok(!segment.timer.isActive(), 'segment timer should have been stopped by tx end')
@@ -113,6 +119,9 @@ test('touching a segment', (t, end) => {
       finish
     )
 
+    /**
+     *
+     */
     function finish() {
       tx.end()
       assert.ok(!segment.timer.isActive(), 'segment timer should have been stopped by tx end')

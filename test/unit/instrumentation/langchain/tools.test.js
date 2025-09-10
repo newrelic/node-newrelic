@@ -32,7 +32,13 @@ test('langchain/core/tools unit.tests', async (t) => {
     ctx.nr.sandbox.restore()
   })
 
+  /**
+   *
+   */
   function getMockModule() {
+    /**
+     *
+     */
     function StructuredTool() {}
     StructuredTool.prototype.call = async function call() {}
     return { StructuredTool }

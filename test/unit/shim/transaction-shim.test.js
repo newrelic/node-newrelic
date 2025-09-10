@@ -53,6 +53,10 @@ function createCATHeaders(config, altNames) {
 }
 
 test('TransactionShim', async function (t) {
+  /**
+   *
+   * @param ctx
+   */
   function beforeEach(ctx) {
     ctx.nr = {}
     const agent = helper.loadMockedAgent()
@@ -82,6 +86,10 @@ test('TransactionShim', async function (t) {
     ctx.nr.agent = agent
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterEach(ctx) {
     helper.unloadAgent(ctx.nr.agent)
   }

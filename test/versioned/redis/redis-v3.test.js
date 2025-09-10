@@ -115,6 +115,9 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
 
       triggerError()
 
+      /**
+       *
+       */
       function triggerError() {
         // When the redis service responds, the command is dequeued and then
         // the command callback is executed, if exists. Since we don't have a callback,
@@ -328,6 +331,9 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
     })
     await plan.completed
 
+    /**
+     *
+     */
     function verify() {
       const [setSegment1] = transaction.trace.getChildren(transaction.trace.root.id)
       const [selectSegment] = transaction.trace.getChildren(

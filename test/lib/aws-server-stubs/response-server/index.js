@@ -21,6 +21,9 @@ const {
 const { parseBody } = require('./common')
 const { patchDestroy } = require('../common')
 
+/**
+ *
+ */
 function createResponseServer() {
   const server = http.createServer(function (req, res) {
     if (req.method === 'POST') {
@@ -56,6 +59,11 @@ function createResponseServer() {
   return server
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ */
 function handlePost(req, res) {
   let body = ''
 
@@ -85,6 +93,12 @@ function handlePost(req, res) {
   })
 }
 
+/**
+ *
+ * @param endpoint
+ * @param body
+ * @param isJson
+ */
 function createGetDataFromAction(endpoint, body, isJson) {
   switch (body.Action) {
     case 'Publish':

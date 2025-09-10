@@ -36,6 +36,11 @@ test('instrument', async (t) => {
     let firstShim
     let secondShim
 
+    /**
+     *
+     * @param shim
+     * @param TestMod
+     */
     function onRequire(shim, TestMod) {
       firstShim = shim
       shim.wrap(TestMod.prototype, 'foo', function wrapFoo(shim, orig) {
@@ -49,6 +54,11 @@ test('instrument', async (t) => {
       assert.ok(shim.isWrapped(TestMod.prototype.foo))
     }
 
+    /**
+     *
+     * @param shim
+     * @param TestMod
+     */
     function onRequire2(shim, TestMod) {
       secondShim = shim
       shim.wrap(TestMod.prototype, 'foo', function wrapFoo(shim, orig) {
@@ -78,6 +88,11 @@ test('instrument', async (t) => {
       api.instrument(moduleName, onRequire)
       api.instrument(moduleName, onRequire2)
 
+      /**
+       *
+       * @param shim
+       * @param TestMod
+       */
       function onRequire(shim, TestMod) {
         const isWrapped = shim.isWrapped(TestMod.prototype.foo)
         if (!isWrapped) {
@@ -90,6 +105,11 @@ test('instrument', async (t) => {
         }
       }
 
+      /**
+       *
+       * @param shim
+       * @param TestMod
+       */
       function onRequire2(shim, TestMod) {
         const isWrapped = shim.isWrapped(TestMod.prototype.foo)
         if (!isWrapped) {
@@ -116,6 +136,11 @@ test('instrument', async (t) => {
     const { api } = t.nr
     api.instrument(moduleName, onRequire)
 
+    /**
+     *
+     * @param shim
+     * @param TestMod
+     */
     function onRequire(shim, TestMod) {
       shim.wrap(TestMod.prototype, 'foo', function wrapStuff(shim, orig) {
         return function wrapped1(...args) {
@@ -144,6 +169,11 @@ test('instrument', async (t) => {
       let shim1
       let shim2
 
+      /**
+       *
+       * @param shim
+       * @param TestMod
+       */
       function onRequire(shim, TestMod) {
         shim1 = shim
         shim.wrap(TestMod.prototype, 'foo', function wrapFoo(shim, orig) {
@@ -154,6 +184,11 @@ test('instrument', async (t) => {
         })
       }
 
+      /**
+       *
+       * @param shim
+       * @param TestMod
+       */
       function onRequire2(shim, TestMod) {
         shim2 = shim
         shim.wrap(TestMod.prototype, 'foo', function wrapStuff(shim, orig) {

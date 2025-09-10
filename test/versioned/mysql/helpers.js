@@ -15,6 +15,11 @@ module.exports = async function setupDb(user, db, table, mysql) {
   removeMatchedModules(regex)
 }
 
+/**
+ *
+ * @param client
+ * @param cmd
+ */
 function runCommand(client, cmd) {
   return new Promise((resolve, reject) => {
     client.query(cmd, function (err) {
@@ -27,6 +32,12 @@ function runCommand(client, cmd) {
   })
 }
 
+/**
+ *
+ * @param mysql
+ * @param user
+ * @param db
+ */
 async function createDb(mysql, user, db) {
   const client = mysql.createConnection({
     host: params.mysql_host,
@@ -43,6 +54,13 @@ async function createDb(mysql, user, db) {
   client.end()
 }
 
+/**
+ *
+ * @param mysql
+ * @param user
+ * @param db
+ * @param table
+ */
 async function createTable(mysql, user, db, table) {
   const client = mysql.createConnection({
     host: params.mysql_host,

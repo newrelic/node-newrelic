@@ -14,6 +14,13 @@ const {
   ATTR_MESSAGING_OPERATION,
 } = require('#agentlib/otel/traces/constants.js')
 
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.name
+ * @param root0.spanContext
+ */
 function createConsumerSpan({ tracer, name = 'test-span', spanContext }) {
   const span = createSpan({ name, kind: SpanKind.CONSUMER, tracer, spanContext })
   span.setAttribute(ATTR_MESSAGING_SYSTEM, 'messaging-lib')

@@ -137,6 +137,12 @@ test('Agent API - addNamingRule', async (t) => {
   })
 })
 
+/**
+ *
+ * @param agent
+ * @param api
+ * @param cb
+ */
 function addNamingRuleGoldenPath(agent, api, cb) {
   agent.urlNormalizer.load([
     {

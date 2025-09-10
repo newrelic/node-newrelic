@@ -160,6 +160,10 @@ test('should not instrument if ai_monitoring is disabled', async (t) => {
     const name = `${MCP.TOOL}/callTool/echo`
     const root = tx?.trace?.segments?.root
     assert.ok(root)
+    /**
+     *
+     * @param node
+     */
     function assertNoMcpSegment(node) {
       assert.notEqual(node?.segment?.name, name, 'should not create MCP segment')
       for (const child of node?.children) {

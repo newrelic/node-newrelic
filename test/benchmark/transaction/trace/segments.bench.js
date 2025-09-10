@@ -15,6 +15,11 @@ const suite = benchmark.createBenchmark({
 })
 
 let trace
+/**
+ *
+ * @param trace
+ * @param numChildren
+ */
 function addChildren(trace, numChildren) {
   const queue = [trace.root]
   for (let numSegments = 1; numSegments < 900; numSegments += numChildren) {

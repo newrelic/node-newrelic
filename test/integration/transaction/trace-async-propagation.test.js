@@ -24,6 +24,9 @@ test('asynchronous state propagation', async function (t) {
     const { agent } = t.nr
     const plan = tspl(t, { plan: 2 })
 
+    /**
+     *
+     */
     function handler() {
       plan.ok(agent.getTransaction(), 'transaction should be visible')
     }
@@ -43,6 +46,9 @@ test('asynchronous state propagation', async function (t) {
     let count = 0
     let handle
 
+    /**
+     *
+     */
     function handler() {
       count += 1
       if (count > 2) {
@@ -63,6 +69,9 @@ test('asynchronous state propagation', async function (t) {
     const { agent } = t.nr
     const plan = tspl(t, { plan: 2 })
 
+    /**
+     *
+     */
     function handler() {
       plan.ok(agent.getTransaction(), 'transaction should be visible')
     }
@@ -81,6 +90,9 @@ test('asynchronous state propagation', async function (t) {
 
     const ee = new EventEmitter()
 
+    /**
+     *
+     */
     function handler() {
       plan.ok(agent.getTransaction(), 'transaction should be visible')
     }
@@ -103,6 +115,10 @@ test('asynchronous state propagation', async function (t) {
       let first
       let second
 
+      /**
+       *
+       * @param id
+       */
       function handler(id) {
         plan.ok(agent.getTransaction(), 'transaction should be visible')
         plan.equal(agent.getTransaction().id, id, 'transaction matches')
@@ -132,11 +148,17 @@ test('asynchronous state propagation', async function (t) {
       const { agent } = t.nr
       const plan = tspl(t, { plan: 15 })
 
+      /**
+       *
+       */
       function runInterval() {
         let count = 0
         let handle
         let id
 
+        /**
+         *
+         */
         function handler() {
           count += 1
           if (count > 2) {
@@ -146,6 +168,9 @@ test('asynchronous state propagation', async function (t) {
           plan.equal(id, agent.getTransaction().id, 'transaction ID should be immutable')
         }
 
+        /**
+         *
+         */
         function run() {
           plan.ok(agent.getTransaction(), 'transaction should have been created')
           id = agent.getTransaction().id
@@ -171,6 +196,10 @@ test('asynchronous state propagation', async function (t) {
       let first
       let second
 
+      /**
+       *
+       * @param id
+       */
       function handler(id) {
         const transaction = agent.getTransaction()
         plan.ok(transaction, 'transaction should be visible')
@@ -202,10 +231,16 @@ test('asynchronous state propagation', async function (t) {
 
       const ee = new EventEmitter()
 
+      /**
+       *
+       */
       function handler() {
         plan.ok(agent.getTransaction(), 'transaction should be visible')
       }
 
+      /**
+       *
+       */
       function lifecycle() {
         ee.once('transaction', process.nextTick.bind(process, handler))
         ee.emit('transaction')
@@ -222,6 +257,10 @@ test('asynchronous state propagation', async function (t) {
     const { agent } = t.nr
     const plan = tspl(t, { plan: 5 })
 
+    /**
+     *
+     * @param callback
+     */
     function inner(callback) {
       setTimeout(function () {
         plan.ok(agent.getTransaction(), 'transaction should -- yep -- still be visible')
@@ -229,6 +268,9 @@ test('asynchronous state propagation', async function (t) {
       }, 50)
     }
 
+    /**
+     *
+     */
     function outer() {
       plan.ok(agent.getTransaction(), 'transaction should be visible')
       setTimeout(function () {
@@ -251,6 +293,10 @@ test('asynchronous state propagation', async function (t) {
     let outerHandle
     let innerHandle
 
+    /**
+     *
+     * @param callback
+     */
     function inner(callback) {
       innerHandle = setInterval(function () {
         clearInterval(innerHandle)
@@ -259,6 +305,9 @@ test('asynchronous state propagation', async function (t) {
       }, 50)
     }
 
+    /**
+     *
+     */
     function outer() {
       plan.ok(agent.getTransaction(), 'transaction should be visible')
       outerHandle = setInterval(function () {
@@ -281,6 +330,10 @@ test('asynchronous state propagation', async function (t) {
       const { agent } = t.nr
       const plan = tspl(t, { plan: 5 })
 
+      /**
+       *
+       * @param callback
+       */
       function inner(callback) {
         process.nextTick(function cbNextTick() {
           plan.ok(agent.getTransaction(), 'transaction should -- yep -- still be visible')
@@ -288,6 +341,9 @@ test('asynchronous state propagation', async function (t) {
         })
       }
 
+      /**
+       *
+       */
       function outer() {
         plan.ok(agent.getTransaction(), 'transaction should be visible')
         process.nextTick(function cbNextTick() {
@@ -325,6 +381,9 @@ test('asynchronous state propagation', async function (t) {
         callback()
       })
 
+      /**
+       *
+       */
       function outerCallback() {
         plan.ok(agent.getTransaction(), 'transaction should even still be visible')
       }

@@ -22,6 +22,10 @@ const {
 } = require('../../lib/custom-assertions')
 
 test('MessageShim', async function (t) {
+  /**
+   *
+   * @param ctx
+   */
   function beforeEach(ctx) {
     ctx.nr = {}
     const agent = helper.instrumentMockedAgent({
@@ -61,6 +65,10 @@ test('MessageShim', async function (t) {
     ctx.nr.shim = shim
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterEach(ctx) {
     helper.unloadAgent(ctx.nr.agent)
   }
@@ -559,6 +567,9 @@ test('MessageShim', async function (t) {
       let segment = null
       const DELAY = 25
 
+      /**
+       *
+       */
       function wrapMe() {
         segment = shim.getSegment()
         return new Promise((resolve) => {

@@ -11,6 +11,10 @@ const { assertMetrics } = require('../../lib/custom-assertions')
 const recordWeb = require('../../../lib/metrics/recorders/http')
 const Transaction = require('../../../lib/transaction')
 
+/**
+ *
+ * @param options
+ */
 function makeSegment(options) {
   const segment = options.transaction.trace.add('placeholder')
   segment.setDurationInMillis(options.duration)
@@ -19,6 +23,10 @@ function makeSegment(options) {
   return segment
 }
 
+/**
+ *
+ * @param options
+ */
 function record(options) {
   if (options.apdexT) {
     options.transaction.metrics.apdexT = options.apdexT
@@ -33,12 +41,20 @@ function record(options) {
   recordWeb(segment, options.transaction.name, options.transaction)
 }
 
+/**
+ *
+ * @param ctx
+ */
 function beforeEach(ctx) {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent()
   ctx.nr.trans = new Transaction(ctx.nr.agent)
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
 }

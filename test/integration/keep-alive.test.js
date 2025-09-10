@@ -64,6 +64,11 @@ test('RemoteMethod makes two requests with one connection', async (t) => {
   plan.equal(connections, 1, 'should not have established more than 1 connection')
 })
 
+/**
+ *
+ * @param port
+ * @param cert
+ */
 function createRemoteMethod(port, cert) {
   const config = {
     ssl: true,

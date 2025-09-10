@@ -126,6 +126,9 @@ test('Should create usage metric onRequire', (t, end) => {
 
   require(CUSTOM_MODULE_PATH)
 
+  /**
+   *
+   */
   function onRequireHandler() {
     const onRequireMetric = agent.metrics._metrics.unscoped[EXPECTED_REQUIRE_METRIC_NAME]
 
@@ -144,6 +147,9 @@ test('Should create usage version metric onRequire', (t, end) => {
 
   require(CUSTOM_MODULE_PATH)
 
+  /**
+   *
+   */
   function onRequireHandler() {
     const expectedVersionMetricName = `${EXPECTED_REQUIRE_METRIC_NAME}/Version/3`
 
@@ -178,6 +184,12 @@ test('should instrument a local package', (t, end) => {
 
   require('./local-package')
 
+  /**
+   *
+   * @param shim
+   * @param localPkg
+   * @param name
+   */
   function onRequireHandler(shim, localPkg, name) {
     assert.equal(
       shim.pkgVersion,

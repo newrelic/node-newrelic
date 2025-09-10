@@ -51,6 +51,9 @@ tests.forEach((test) => suite.add(test))
 
 suite.run()
 
+/**
+ *
+ */
 function runBenchmark() {
   let p = Promise.resolve()
   for (let i = 0; i < 300; ++i) {

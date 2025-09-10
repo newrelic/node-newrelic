@@ -38,7 +38,7 @@ const globalIgnores = {
 }
 
 const newrelicConfigOverrides = {
-  files: ['**/newrelic.js', '**/newrelic.mjs'],
+  files: ['**/newrelic.js', '**/newrelic.mjs', '**/newrelic.cjs'],
   rules: {
     'header/header': 'off'
   }
@@ -47,7 +47,7 @@ const newrelicConfigOverrides = {
 const jsdocConfig = {
   plugins: { jsdoc },
   rules: {
-    'jsdoc/require-jsdoc': 'off',
+    'jsdoc/require-jsdoc': 'error',
     'jsdoc/tag-lines': 'off',
     'jsdoc/check-types': 'off',
     'jsdoc/no-undefined-types': [
@@ -66,17 +66,12 @@ const jsdocConfig = {
           'EventEmitter'
         ]
       }
-    ]
-  }
-}
-const jsdocOverrides = {
-  files: [
-    './lib/shim/*.js',
-    'lib/transaction/handle.js',
-    'api.js'
-  ],
-  rules: {
-    'jsdoc/require-jsdoc': 'warn'
+    ],
+    'jsdoc/require-param-description': 'warn',
+    'jsdoc/require-param-type': 'warn',
+    'jsdoc/require-returns': 'warn',
+    'jsdoc/valid-types': 'error',
+    'jsdoc/check-param-names': 'error'
   }
 }
 
@@ -98,7 +93,6 @@ module.exports = [
 
   jsdoc.configs['flat/recommended'],
   jsdocConfig,
-  jsdocOverrides,
 
   {
     ...sharedConfig.configs.nodeRecommended,

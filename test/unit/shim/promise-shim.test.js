@@ -10,6 +10,11 @@ const helper = require('../../lib/agent_helper')
 const PromiseShim = require('../../../lib/shim/promise-shim')
 const Shim = require('../../../lib/shim/shim')
 
+/**
+ *
+ * @param tx1
+ * @param tx2
+ */
 function sameTransaction(tx1, tx2) {
   assert.ok(tx1, 'current transaction exists')
   assert.ok(tx2, 'active transaction exists')
@@ -27,6 +32,10 @@ test('PromiseShim', async (t) => {
     helper.outOfContextQueueInterval.unref()
   })
 
+  /**
+   *
+   * @param ctx
+   */
   function beforeTest(ctx) {
     ctx.nr = {}
     ctx.nr.TestPromise = require('./promise-shim')()
@@ -36,6 +45,10 @@ test('PromiseShim', async (t) => {
     ctx.nr.agent = agent
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterTest(ctx) {
     helper.unloadAgent(ctx.nr.agent)
   }
@@ -554,7 +567,13 @@ test('PromiseShim', async (t) => {
       const { shim, TestPromise } = t.nr
       shim.setClass(TestPromise)
       shim.wrapThen(TestPromise.prototype, 'then')
+      /**
+       *
+       */
       function resolve() {}
+      /**
+       *
+       */
       function reject() {}
 
       const p = TestPromise.resolve()
@@ -636,6 +655,9 @@ test('PromiseShim', async (t) => {
       shim.wrapCatch(TestPromise.prototype, 'catch')
 
       const p = TestPromise.reject()
+      /**
+       *
+       */
       function reject() {}
       p.catch(Error, reject)
 

@@ -32,7 +32,13 @@ test('langchain/core/runnables unit.tests', async (t) => {
     ctx.nr.sandbox.restore()
   })
 
+  /**
+   *
+   */
   function getMockModule() {
+    /**
+     *
+     */
     function RunnableSequence() {}
     RunnableSequence.prototype.invoke = async function call() {}
     return { RunnableSequence }

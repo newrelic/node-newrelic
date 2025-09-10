@@ -17,6 +17,11 @@ delete process.env.NODE_ENV
 
 const environment = require('../../lib/environment')
 
+/**
+ *
+ * @param settings
+ * @param name
+ */
 function find(settings, name) {
   const items = settings.filter((candidate) => candidate[0] === name)
   return items?.[0]?.[1]
@@ -185,6 +190,10 @@ test('should not crash when given a file in NODE_PATH', (t, end) => {
 test('with symlinks', async (t) => {
   const nmod = path.resolve(__dirname, '../helpers/node_modules')
 
+  /**
+   *
+   * @param dirp
+   */
   function makeDir(dirp) {
     try {
       return fs.mkdir(dirp)
@@ -196,6 +205,11 @@ test('with symlinks', async (t) => {
     }
   }
 
+  /**
+   *
+   * @param pkg
+   * @param dep
+   */
   async function makePackage(pkg, dep) {
     const dir = path.join(nmod, pkg)
 
@@ -213,6 +227,10 @@ test('with symlinks', async (t) => {
     return fs.symlink(path.join(nmod, dep), depModule, 'dir')
   }
 
+  /**
+   *
+   * @param cb
+   */
   function execChild(cb) {
     const opt = {
       stdio: 'pipe',

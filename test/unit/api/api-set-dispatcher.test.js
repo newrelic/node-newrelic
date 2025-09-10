@@ -69,11 +69,21 @@ test('Agent API - dispatch setter', async (t) => {
   })
 })
 
+/**
+ *
+ * @param agent
+ * @param expected
+ */
 function dispatcherIncludes(agent, expected) {
   const dispatcher = agent.environment.get('Dispatcher')
   return dispatcher.includes(expected)
 }
 
+/**
+ *
+ * @param agent
+ * @param expected
+ */
 function dispatcherVersionIncludes(agent, expected) {
   const dispatcherVersion = agent.environment.get('Dispatcher Version')
   return dispatcherVersion.includes(expected)

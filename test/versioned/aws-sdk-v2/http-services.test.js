@@ -237,6 +237,13 @@ test('AWS HTTP Services', async (t) => {
   })
 })
 
+/**
+ *
+ * @param end
+ * @param service
+ * @param operation
+ * @param tx
+ */
 function finish(end, service, operation, tx) {
   const externals = common.checkAWSAttributes({
     trace: tx.trace,

@@ -11,6 +11,10 @@ const suite = shared.makeSuite('recordOperation')
 
 let testDatastore = null
 
+/**
+ *
+ * @param instrumented
+ */
 function makeInit(instrumented) {
   return function setDatastore(agent) {
     testDatastore = shared.getTestDatastore(agent, instrumented)

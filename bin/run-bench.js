@@ -122,6 +122,9 @@ class Printer {
 
 run()
 
+/**
+ *
+ */
 async function run() {
   const printer = new Printer()
   let currentTest = 0
@@ -136,11 +139,19 @@ async function run() {
         return errorAndExit(new Error('Failed to glob'), 'Failed to glob', -1)
       }
 
+      /**
+       *
+       * @param file
+       */
       function mergeFile(file) {
         if (tests.indexOf(file) === -1) {
           tests.push(file)
         }
       }
+      /**
+       *
+       * @param files
+       */
       function mergeResolved(files) {
         files.forEach(mergeFile)
       }

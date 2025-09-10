@@ -31,6 +31,9 @@ test.afterEach((ctx) => {
 test('should wrap handlers with proxies', (t) => {
   const { app } = t.nr
 
+  /**
+   *
+   */
   function nop() {}
   app.use(nop)
 
@@ -77,6 +80,12 @@ test('should trace errors that occur while executing middleware', (t, end) => {
   })
 
   helper.runInTransaction(agent, () => {
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
     function wiggleware(req, res, next) {
       const harbl = null
       harbl.bargl() // Induce error.

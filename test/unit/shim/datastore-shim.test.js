@@ -15,6 +15,10 @@ const { QuerySpec, OperationSpec } = require('../../../lib/shim/specs')
 const { checkWrappedCb } = require('../../lib/custom-assertions')
 
 test('DatastoreShim', async function (t) {
+  /**
+   *
+   * @param ctx
+   */
   function beforeEach(ctx) {
     ctx.nr = {}
     const agent = helper.loadMockedAgent()
@@ -43,6 +47,10 @@ test('DatastoreShim', async function (t) {
     ctx.nr.shim = shim
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterEach(ctx) {
     helper.unloadAgent(ctx.nr.agent)
   }
@@ -464,6 +472,12 @@ test('DatastoreShim', async function (t) {
     })
     t.afterEach(afterEach)
 
+    /**
+     *
+     * @param ctx
+     * @param parameters
+     * @param cb
+     */
     function run(ctx, parameters, cb) {
       const { agent, wrappable } = ctx.nr
       helper.runInTransaction(agent, function () {

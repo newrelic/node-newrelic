@@ -125,6 +125,9 @@ test('Utilization Common Components', async function (t) {
       // totally faked synchronously.
       setTimeout(verifyInvocations, 250)
 
+      /**
+       *
+       */
       function verifyInvocations() {
         assert.equal(invocationCount, 1)
         end()
@@ -154,6 +157,9 @@ test('Utilization Common Components', async function (t) {
       // totally faked synchronously.
       setTimeout(verifyInvocations, 200)
 
+      /**
+       *
+       */
       function verifyInvocations() {
         assert.equal(invocationCount, 1)
         end()

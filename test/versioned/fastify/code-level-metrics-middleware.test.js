@@ -32,6 +32,11 @@ test.afterEach((ctx) => {
   removeModules(['fastify', '@fastify/middie', 'middie'])
 })
 
+/**
+ *
+ * @param t
+ * @param config
+ */
 async function setup(t, config) {
   t.nr.agent = helper.instrumentMockedAgent(config)
   t.nr.fastify = require('fastify')()
@@ -47,6 +52,14 @@ async function setup(t, config) {
   common.registerMiddlewares({ fastify, calls })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.trace
+ * @param root0.baseSegment
+ * @param root0.isCLMEnabled
+ */
 function assertSegments({ t, trace, baseSegment, isCLMEnabled }) {
   const { agent } = t.nr
   let children = trace.getChildren(baseSegment.id)
@@ -71,6 +84,10 @@ function assertSegments({ t, trace, baseSegment, isCLMEnabled }) {
   })
 }
 
+/**
+ *
+ * @param t
+ */
 async function performTest(t) {
   const { agent, fastify, calls } = t.nr
   const uri = common.routesToTest[0]

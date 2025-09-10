@@ -220,6 +220,13 @@ test('Restify router', async function (t) {
     })
   }
 
+  /**
+   *
+   * @param root0
+   * @param root0.server
+   * @param root0.plan
+   * @param root0.route
+   */
   function _listenAndRequest({ server, plan, route }) {
     server.listen(0, function () {
       const port = server.address().port

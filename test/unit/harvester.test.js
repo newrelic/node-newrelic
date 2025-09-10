@@ -30,6 +30,11 @@ class FakeAggregator extends EventEmitter {
   reconfigure() {}
 }
 
+/**
+ *
+ * @param sandbox
+ * @param opts
+ */
 function createAggregator(sandbox, opts) {
   const aggregator = new FakeAggregator(opts)
   sandbox.stub(aggregator, 'start')

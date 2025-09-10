@@ -29,6 +29,9 @@ if (arrayContainsAny(process.argv, '-h', '-?', '--help')) {
 
 run(options)
 
+/**
+ *
+ */
 function printHelp() {
   console.log('Usage:')
   console.log('    newrelic-naming-rules (-h|--help|-?)')
@@ -57,6 +60,10 @@ function printHelp() {
   process.exit(0)
 }
 
+/**
+ *
+ * @param opts
+ */
 function run(opts) {
   const config = require('../lib/config').initialize()
   const runtimeRules = opts.rules ? require(opts.rules) : null
@@ -107,6 +114,12 @@ function run(opts) {
     reader.close()
   })
 
+  /**
+   *
+   * @param rule
+   * @param newValue
+   * @param oldValue
+   */
   function onAppliedRule(rule, newValue, oldValue) {
     appliedRules.push({
       rule,
@@ -116,6 +129,10 @@ function run(opts) {
   }
 }
 
+/**
+ *
+ * @param config
+ */
 function loadDefaultNormalizer(config) {
   // Load the normalizer.
   const normalizer = new MetricNormalizer(config, 'URL')
@@ -156,6 +173,11 @@ function loadDefaultNormalizer(config) {
   return normalizer
 }
 
+/**
+ *
+ * @param config
+ * @param rules
+ */
 function loadUserNormalizer(config, rules) {
   // Load the normalizer.
   const normalizer = new MetricNormalizer(config, 'user')
@@ -171,6 +193,10 @@ function loadUserNormalizer(config, rules) {
   return normalizer
 }
 
+/**
+ *
+ * @param array
+ */
 function arrayContainsAny(array) {
   for (let i = 1; i < arguments.length; ++i) {
     if (array.indexOf(arguments[i]) !== -1) {

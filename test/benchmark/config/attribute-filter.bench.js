@@ -76,6 +76,10 @@ attributes.forEach(function (attr) {
 
 suite.run()
 
+/**
+ *
+ * @param rules
+ */
 function makeFilter(rules) {
   const config = makeAttributeFilterConfig(rules)
   config.attributes.filter_cache_limit = 1000

@@ -25,6 +25,11 @@ const getDescendantValue = function (object, descendants) {
   return object
 }
 
+/**
+ *
+ * @param object
+ * @param descendants
+ */
 function hasNestedProperty(object, descendants) {
   const arrayDescendants = descendants.split('.')
 
@@ -129,6 +134,11 @@ test('distributed tracing trace context', async (t) => {
   }
 })
 
+/**
+ *
+ * @param eventType
+ * @param agent
+ */
 function getEventsToCheck(eventType, agent) {
   let toCheck
   switch (eventType) {
@@ -147,6 +157,11 @@ function getEventsToCheck(eventType, agent) {
   return toCheck
 }
 
+/**
+ *
+ * @param testCase
+ * @param eventType
+ */
 function getExactExpectedUnexpectedFromIntrinsics(testCase, eventType) {
   const common = testCase.intrinsics.common
   const specific = testCase.intrinsics[eventType] || {}
@@ -161,6 +176,12 @@ function getExactExpectedUnexpectedFromIntrinsics(testCase, eventType) {
   }
 }
 
+/**
+ *
+ * @param event
+ * @param eventType
+ * @param fixture
+ */
 function testSingleEvent(event, eventType, fixture) {
   const { exact, expected, unexpected } = fixture
   const attributes = event[0]
@@ -197,6 +218,11 @@ const testExpectedFixtureKeys = function (thingWithKeys, expectedKeys) {
   }
 }
 
+/**
+ *
+ * @param testCase
+ * @param context
+ */
 function runTestCaseOutboundPayloads(testCase, context) {
   if (!testCase.outbound_payloads) {
     return
@@ -227,6 +253,11 @@ function runTestCaseOutboundPayloads(testCase, context) {
   }
 }
 
+/**
+ *
+ * @param testCase
+ * @param agent
+ */
 function runTestCaseMetrics(testCase, agent) {
   if (!testCase.expected_metrics) {
     return
@@ -241,6 +272,11 @@ function runTestCaseMetrics(testCase, agent) {
   }
 }
 
+/**
+ *
+ * @param testCase
+ * @param agent
+ */
 function runTestCaseTargetEvents(testCase, agent) {
   if (!testCase.intrinsics) {
     return
@@ -260,6 +296,11 @@ function runTestCaseTargetEvents(testCase, agent) {
   }
 }
 
+/**
+ *
+ * @param testCase
+ * @param parentTest
+ */
 async function runTestCase(testCase, parentTest) {
   // validates the test case data has what we're looking for.  Good for
   // catching any changes to the test format over time, as well as becoming

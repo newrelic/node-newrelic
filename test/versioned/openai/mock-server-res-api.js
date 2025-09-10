@@ -46,6 +46,11 @@ async function openaiMockServer() {
   })
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ */
 function handler(req, res) {
   let receivedData = ''
 
@@ -118,6 +123,10 @@ function finiteStream() {
   }).pause()
 }
 
+/**
+ *
+ * @param reqBody
+ */
 function getShortenedPrompt(reqBody) {
   const prompt = reqBody.input?.[0]?.content || reqBody.input?.badContent || reqBody.input
 

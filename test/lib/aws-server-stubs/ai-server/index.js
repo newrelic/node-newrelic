@@ -53,6 +53,11 @@ function createAiResponseServer() {
   })
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ */
 function handler(req, res) {
   if (req.method !== 'POST') {
     res.statusCode = 400
@@ -181,6 +186,11 @@ function handler(req, res) {
   })
 }
 
+/**
+ *
+ * @param payload
+ * @param res
+ */
 function handleConverse(payload, res) {
   const prompt = payload.messages?.[0]?.content?.[0]?.text
   const response = responses.converse.get(prompt)

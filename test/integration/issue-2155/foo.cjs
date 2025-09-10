@@ -10,6 +10,9 @@
 // needs to recognize the "original" export in order to pass it in to the
 // instrumentation.
 
+/**
+ *
+ */
 function foo() {
   return Object.create({
     name() {

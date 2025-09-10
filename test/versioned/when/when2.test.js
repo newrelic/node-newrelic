@@ -17,6 +17,10 @@ const testTransactionState = require('../../lib/promises/transaction-state')
 // the mocked agent, this causes cascading failures that would be too difficult
 // to resolve.
 
+/**
+ *
+ * @param t
+ */
 function setupAgent(t) {
   const agent = helper.instrumentMockedAgent()
   t.after(() => {

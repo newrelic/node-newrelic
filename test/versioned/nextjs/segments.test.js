@@ -19,6 +19,10 @@ const {
 const agentHelper = require('../../lib/agent_helper')
 const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
+/**
+ *
+ * @param uri
+ */
 function getChildSegments(uri) {
   const segments = [
     {

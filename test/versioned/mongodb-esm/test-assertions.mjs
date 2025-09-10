@@ -11,6 +11,16 @@ const { DB_NAME, STATEMENT_PREFIX } = common.ESM
 
 export { getValidatorCallback, matchObject }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.tx
+ * @param root0.segments
+ * @param root0.metrics
+ * @param root0.end
+ * @param root0.childrenLength
+ */
 function getValidatorCallback({ t, tx, segments, metrics, end, childrenLength = 1 }) {
   const { agent, METRIC_HOST_NAME, METRIC_HOST_PORT } = t.nr
   return function done(error) {
@@ -69,6 +79,12 @@ function getValidatorCallback({ t, tx, segments, metrics, end, childrenLength = 
   }
 }
 
+/**
+ *
+ * @param segment
+ * @param host
+ * @param port
+ */
 function checkSegmentParams(segment, host, port) {
   let dbName = DB_NAME
   if (/\/rename$/.test(segment.name) === true) {
@@ -81,6 +97,15 @@ function checkSegmentParams(segment, host, port) {
   assert.equal(attributes.port_path_or_id, port, 'should have correct port')
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.host
+ * @param root0.port
+ * @param root0.metrics
+ * @param root0.prefix
+ */
 function checkMetrics({ agent, host, port, metrics = [], prefix = STATEMENT_PREFIX }) {
   const agentMetrics = agent.metrics._metrics
   const unscopedMetrics = agentMetrics.unscoped
@@ -145,6 +170,11 @@ function checkMetrics({ agent, host, port, metrics = [], prefix = STATEMENT_PREF
   }
 }
 
+/**
+ *
+ * @param obj
+ * @param expected
+ */
 function matchObject(obj, expected) {
   for (const key of Object.keys(expected)) {
     if (Object.prototype.toString.call(obj[key]) === '[object Object]') {

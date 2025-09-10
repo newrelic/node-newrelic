@@ -38,6 +38,12 @@ class TestConfigLogger {
   }
 }
 
+/**
+ *
+ * @param envConfig
+ * @param initialConfig
+ * @param callback
+ */
 function idempotentEnv(envConfig, initialConfig, callback) {
   const saved = {}
 

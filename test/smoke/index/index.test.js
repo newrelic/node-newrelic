@@ -29,6 +29,9 @@ test('loading the application via index.js', { timeout: 15000 }, (t, end) => {
   metric = agent.metrics.getMetric('Supportability/Nodejs/FeatureFlag/internal_test_only/enabled')
   assert.ok(metric, 'should create metric for changed feature flags')
 
+  /**
+   *
+   */
   function shutdown() {
     assert.equal(agent._state, 'started', "agent didn't error connecting to staging")
     assert.deepEqual(agent.config.applications(), ['My Application'], 'app name is valid')

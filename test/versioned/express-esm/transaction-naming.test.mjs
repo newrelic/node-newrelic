@@ -494,11 +494,23 @@ test(
     const plan = tspl(t, { plan: 2 })
     const { agent, app, server } = t.nr
 
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
     function mid1(req, res, next) {
       plan.ok('mid1 is executed')
       next()
     }
 
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
     function mid2(req, res, next) {
       plan.ok('mid2 is executed')
       next()
@@ -522,11 +534,22 @@ test(
     const plan = tspl(t, { plan: 2 })
     const { agent, app, server } = t.nr
 
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
     function mid1(req, res, next) {
       plan.ok('mid1 is executed')
       next()
     }
 
+    /**
+     *
+     * @param req
+     * @param res
+     */
     function mid2(req, res) {
       plan.ok('mid2 is executed')
       res.end()
@@ -541,6 +564,15 @@ test(
   }
 )
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.endpoint
+ * @param root0.expectedName
+ * @param root0.numTests
+ * @param root0.server
+ */
 function makeMultiRunner({ agent, endpoint, expectedName, numTests, server }) {
   let done = 0
   const seen = new Set()
@@ -569,6 +601,15 @@ function makeMultiRunner({ agent, endpoint, expectedName, numTests, server }) {
   return { promise, transactionHandler }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.server
+ * @param root0.endpoint
+ * @param root0.expectedName
+ * @param root0.txPrefix
+ */
 async function runTest({
   agent,
   server,

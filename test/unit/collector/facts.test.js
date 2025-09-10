@@ -452,6 +452,11 @@ test('utilization facts', async (t) => {
         end()
       })
 
+      /**
+       *
+       * @param tCase
+       * @param type
+       */
       function makeMockCommonRequest(tCase, type) {
         return (opts, _agent, cb) => {
           assert.equal(_agent, agent)
@@ -601,6 +606,11 @@ test('boot id facts', async (t) => {
     })
   }
 
+  /**
+   *
+   * @param expectedMetrics
+   * @param agent
+   */
   function checkMetrics(expectedMetrics, agent) {
     if (!expectedMetrics) {
       return
@@ -886,6 +896,10 @@ test('host facts', async (t) => {
   })
 })
 
+/**
+ *
+ * @param values
+ */
 function mockIpAddresses(values) {
   os.networkInterfaces = () => {
     return {

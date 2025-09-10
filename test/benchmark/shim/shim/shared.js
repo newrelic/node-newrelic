@@ -9,6 +9,10 @@ const benchmark = require('#testlib/benchmark.js')
 const helper = require('#testlib/agent_helper.js')
 const Shim = require('#agentlib/shim/shim.js')
 
+/**
+ *
+ * @param name
+ */
 function makeSuite(name) {
   const agent = helper.loadMockedAgent()
   const shim = new Shim(agent, 'test-module', './')
@@ -16,6 +20,9 @@ function makeSuite(name) {
   return { agent, suite, shim }
 }
 
+/**
+ *
+ */
 function getTest() {
   return {
     func: function testFunc(a, b, c) {

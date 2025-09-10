@@ -98,6 +98,11 @@ test('Redis instrumentation', async function (t) {
 
       client.set('testkey', 'arglbargle', setCallback)
 
+      /**
+       *
+       * @param error
+       * @param value
+       */
       function setCallback(error, value) {
         assert.equal(error, undefined)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
@@ -106,6 +111,11 @@ test('Redis instrumentation', async function (t) {
         client.get('testkey', getCallback)
       }
 
+      /**
+       *
+       * @param error
+       * @param value
+       */
       function getCallback(error, value) {
         assert.equal(error, undefined)
         assert.ok(agent.getTransaction(), 'transaction should still still be visible')
@@ -146,11 +156,20 @@ test('Redis instrumentation', async function (t) {
       const transaction = agent.getTransaction()
       client.set('testkey', 'arglbargle', setCallback)
 
+      /**
+       *
+       * @param error
+       */
       function setCallback(error) {
         assert.equal(error, undefined)
         client.get('testkey', getCallback)
       }
 
+      /**
+       *
+       * @param error
+       * @param value
+       */
       function getCallback(error, value) {
         assert.equal(error, undefined)
         transaction.end()
@@ -269,18 +288,30 @@ test('Redis instrumentation', async function (t) {
       client.set('select:test:key', 'foo', set1Callback)
     })
 
+    /**
+     *
+     * @param error
+     */
     function set1Callback(error) {
       assert.equal(error, undefined)
       assert.ok(agent.getTransaction(), 'should not lose transaction state')
       client.select(SELECTED_DB, selectCallback)
     }
 
+    /**
+     *
+     * @param error
+     */
     function selectCallback(error) {
       assert.equal(error, undefined)
       assert.ok(agent.getTransaction(), 'should not lose transaction state')
       client.set('select:test:key:2', 'bar', set2Callback)
     }
 
+    /**
+     *
+     * @param error
+     */
     function set2Callback(error) {
       assert.equal(error, undefined)
       assert.ok(agent.getTransaction(), 'should not lose transaction state')
@@ -289,6 +320,9 @@ test('Redis instrumentation', async function (t) {
       end()
     }
 
+    /**
+     *
+     */
     function verify() {
       const [setSegment1, selectSegment, setSegment2] = transaction.trace.getChildren(
         transaction.trace.root.id
