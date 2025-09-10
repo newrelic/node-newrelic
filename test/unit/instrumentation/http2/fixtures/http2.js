@@ -26,14 +26,15 @@ function createHttp2ResponseServer() {
     sockets.add(socket)
     socket.once('close', () => sockets.delete(socket))
     socket.once('error', (err) => {
-      console.log('servererror', err)
+      console.error('servererror', err)
+      server.destroy()
     })
   })
   server.destroy = function destroy() {
     sockets.forEach((s) => s.destroy())
     server.close()
   }
-  server.on('stream', (stream, headers) => {
+  server.on('stream', (stream) => {
     sockets.add(stream)
     stream.on('close', () => {
       sockets.delete(stream)
@@ -64,7 +65,6 @@ function handler(req, res) {
     data = Buffer.concat([data, chunk])
   })
   req.on('error', (err) => {
-    console.error('o no', err)
     response = {
       statusCode: 500,
       body: err
@@ -87,16 +87,6 @@ function handler(req, res) {
         res.setHeader(k, req.headers[k])
       }
     }
-    // for (const [key, value] of Object.entries(req.headers)) {
-    //   if (key[0] !== ':') { // can't set pseudoheaders
-    //     try {
-    //       res.setHeader(key, value)
-    //     } catch (e) {
-    //       console.error('error setting header', e)
-    //     }
-    //   }
-    // }
-
     if (payload?.data === 'bad stream') {
       const stream = infiniteStream()
       let count = 0
