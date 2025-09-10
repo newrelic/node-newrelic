@@ -11,6 +11,10 @@ const Metrics = require('../../../lib/metrics')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 
+/**
+ *
+ * @param ctx
+ */
 function beforeEach(ctx) {
   ctx.nr = {}
   const agent = helper.loadMockedAgent()
@@ -18,6 +22,10 @@ function beforeEach(ctx) {
   ctx.nr.agent = agent
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
 }

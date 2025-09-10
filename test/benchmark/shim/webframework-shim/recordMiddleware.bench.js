@@ -32,6 +32,11 @@ setTimeout(function () {
   suite.run()
 }, 500)
 
+/**
+ *
+ * @param name
+ * @param speccer
+ */
 function addTests(name, speccer) {
   const middleware = recordFunc(speccer())
 
@@ -73,6 +78,9 @@ function addTests(name, speccer) {
   })
 }
 
+/**
+ *
+ */
 function getTest() {
   return {
     func: function (req, res, next) {
@@ -81,6 +89,9 @@ function getTest() {
   }
 }
 
+/**
+ *
+ */
 function getReqd() {
   return {
     params: { a: 1, b: 2, c: 3 },
@@ -93,10 +104,16 @@ function getReqd() {
   }
 }
 
+/**
+ *
+ */
 function implicitSpec() {
   return new MiddlewareSpec({})
 }
 
+/**
+ *
+ */
 function partialSpec() {
   return new MiddlewareSpec({
     next: shim.LAST,
@@ -104,6 +121,9 @@ function partialSpec() {
   })
 }
 
+/**
+ *
+ */
 function explicitSpec() {
   return new MiddlewareSpec({
     req: shim.FIRST,
@@ -116,6 +136,9 @@ function explicitSpec() {
   })
 }
 
+/**
+ *
+ */
 function randomSpec() {
   const n = Math.random()
   if (n > 0.666) {
@@ -126,14 +149,26 @@ function randomSpec() {
   return explicitSpec()
 }
 
+/**
+ *
+ * @param spec
+ */
 function recordFunc(spec) {
   return shim.recordMiddleware(getTest().func, spec)
 }
 
+/**
+ *
+ * @param spec
+ */
 function recordProperty(spec) {
   return shim.recordMiddleware(getTest(), 'func', spec)
 }
 
+/**
+ *
+ * @param spec
+ */
 function randomRecord(spec) {
   if (Math.random() > 0.5) {
     return recordFunc(spec)
@@ -141,8 +176,14 @@ function randomRecord(spec) {
   return recordProperty(spec)
 }
 
+/**
+ *
+ */
 function noop() {}
 
+/**
+ *
+ */
 function preOptRecordMiddleware() {
   for (let i = 0; i < 1000; ++i) {
     let m = randomRecord(randomSpec())

@@ -48,6 +48,11 @@ test('should apply transaction name as active span intrinsic on transaction end'
   })
 })
 
+/**
+ *
+ * @param agent
+ * @param name
+ */
 function findSpanByName(agent, name) {
   const spans = agent.spanEventAggregator.getEvents()
 

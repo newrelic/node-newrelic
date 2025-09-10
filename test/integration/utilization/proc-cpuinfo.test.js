@@ -26,6 +26,10 @@ test('pricing proc_cpuinfo', async function (t) {
 
   await plan.completed
 
+  /**
+   *
+   * @param name
+   */
   function parseName(name) {
     const pattern = /^((\d+|X)pack_(\d+|X)core_(\d+|X)logical).txt$/
     let arr = name.split('/')

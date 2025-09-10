@@ -46,7 +46,13 @@ test('Agent API - instrumentWebframework', async (t) => {
 
   await t.test('should convert separate args into an options object', (t, end) => {
     const { api } = t.nr
+    /**
+     *
+     */
     function onRequire() {}
+    /**
+     *
+     */
     function onError() {}
     api.instrumentWebframework('foobar', onRequire, onError)
 

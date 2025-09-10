@@ -13,6 +13,14 @@ const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions'
 const helper = require('../../lib/agent_helper')
 
 // simulates a function that returns a promise and has a segment created for itself
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.Promise
+ * @param root0.segmentName
+ * @param root0.shouldReject
+ */
 function doSomeWork({ tracer, Promise = global.Promise, segmentName, shouldReject } = {}) {
   const ctx = tracer.getContext()
   const segment = tracer.createSegment({
@@ -23,6 +31,9 @@ function doSomeWork({ tracer, Promise = global.Promise, segmentName, shouldRejec
   const newCtx = ctx.enterSegment({ segment })
   return tracer.bindFunction(actualWork, newCtx)()
 
+  /**
+   *
+   */
   function actualWork() {
     segment.touch()
 

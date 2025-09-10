@@ -11,10 +11,19 @@ const { OperationSpec, QuerySpec } = require('#agentlib/shim/specs/index.js')
 
 const TestDatastore = require('./test-datastore')
 
+/**
+ *
+ * @param name
+ */
 function makeSuite(name) {
   return benchmark.createBenchmark({ name, runs: 10000 })
 }
 
+/**
+ *
+ * @param agent
+ * @param instrumented
+ */
 function getTestDatastore(agent, instrumented) {
   const testDatastore = new TestDatastore()
   if (instrumented) {

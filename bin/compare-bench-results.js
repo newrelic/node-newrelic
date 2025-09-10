@@ -135,10 +135,20 @@ const iterate = async () => {
 
 iterate()
 
+/**
+ *
+ * @param a
+ * @param b
+ */
 function diffArrays(a, b) {
   return a.filter((elem) => !b.includes(elem))
 }
 
+/**
+ *
+ * @param base
+ * @param down
+ */
 function compareResults(base, down) {
   const delta = down.mean - base.mean
   const deltaPercent = delta / base.mean
@@ -148,10 +158,19 @@ function compareResults(base, down) {
   return deltaPercent < 2
 }
 
+/**
+ *
+ * @param passes
+ */
 function passMark(passes) {
   return passes ? '✔' : '✘'
 }
 
+/**
+ *
+ * @param base
+ * @param down
+ */
 function formatResults(base, down) {
   return [
     'Field | Upstream (ms) | Downstream (ms) | Delta (ms) | Delta (%)',
@@ -166,6 +185,10 @@ function formatResults(base, down) {
     formatField('median')
   ].join('\n')
 
+  /**
+   *
+   * @param field
+   */
   function formatField(field) {
     const baseValue = base[field]
     const downValue = down[field]
@@ -179,6 +202,10 @@ function formatResults(base, down) {
     )
   }
 
+  /**
+   *
+   * @param value
+   */
   function fixValue(value) {
     return value % 1 ? value.toFixed(5) : value
   }

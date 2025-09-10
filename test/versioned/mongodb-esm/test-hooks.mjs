@@ -13,6 +13,10 @@ const { DB_NAME, COLLECTIONS } = common.ESM
 
 export { beforeEach, afterEach, dropTestCollections }
 
+/**
+ *
+ * @param ctx
+ */
 async function beforeEach(ctx) {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent()
@@ -30,11 +34,20 @@ async function beforeEach(ctx) {
   await populate(conn.db, ctx.nr.collection)
 }
 
+/**
+ *
+ * @param ctx
+ */
 async function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
   await common.close(ctx.nr.client, ctx.nr.db)
 }
 
+/**
+ *
+ * @param db
+ * @param collection
+ */
 async function populate(db, collection) {
   const items = []
   for (let i = 0; i < 30; ++i) {

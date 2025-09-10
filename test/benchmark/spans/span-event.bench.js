@@ -45,6 +45,10 @@ suite.add({
 
 suite.run()
 
+/**
+ *
+ * @param agent
+ */
 function makeSegment(agent) {
   const transaction = helper.runInTransaction(agent, (tx) => tx)
   const segment = transaction.trace.root

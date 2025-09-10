@@ -220,6 +220,11 @@ test('Agent API LLM methods', async (t) => {
 
   await t.test('setLlmTokenCount should register callback to calculate token counts', async (t) => {
     const { api, agent } = t.nr
+    /**
+     *
+     * @param model
+     * @param content
+     */
     function callback(model, content) {
       if (model === 'foo' && content === 'bar') {
         return 10
@@ -233,6 +238,11 @@ test('Agent API LLM methods', async (t) => {
 
   await t.test('should not store token count callback if it is async', async (t) => {
     const { api, agent } = t.nr
+    /**
+     *
+     * @param model
+     * @param content
+     */
     async function callback(model, content) {
       return await new Promise((resolve) => {
         if (model === 'foo' && content === 'bar') {

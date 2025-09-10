@@ -29,6 +29,10 @@ test.afterEach((ctx) => {
   ctx.nr.server.stop()
 })
 
+/**
+ *
+ * @param verb
+ */
 function verifier(verb = 'GET') {
   return function (transaction) {
     assert.equal(
@@ -228,6 +232,10 @@ test('using custom handler defaults', (t, end) => {
   const { agent, server } = t.nr
   agent.on('transactionFinished', verifier('POST'))
 
+  /**
+   *
+   * @param route
+   */
   function handler(route) {
     assert.equal(route.settings.payload.parse, false, 'should set the payload parse setting')
     assert.equal(route.settings.payload.output, 'stream', 'should set the payload output setting')

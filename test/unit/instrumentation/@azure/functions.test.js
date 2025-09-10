@@ -35,6 +35,11 @@ test.afterEach((ctx) => {
   delete process.env.WEBSITE_SITE_NAME
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ */
 function bootstrapModule({ t }) {
   t.nr.initialize = require('#agentlib/instrumentation/@azure/functions.js')
 }

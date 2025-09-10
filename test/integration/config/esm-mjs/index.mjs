@@ -5,6 +5,10 @@
 
 import newrelic from '../../../../index.js'
 
+/**
+ *
+ * @param name
+ */
 export default function greeter(name) {
   return `Hello ${name}`
 }

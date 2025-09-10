@@ -11,6 +11,10 @@ const symbols = require('../../../lib/symbols')
 const helper = require('../../lib/agent_helper')
 const { setImmediate } = require('timers/promises')
 
+/**
+ *
+ * @param ctx
+ */
 async function beforeEach(ctx) {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent()
@@ -25,6 +29,10 @@ async function beforeEach(ctx) {
   await setImmediate()
 }
 
+/**
+ *
+ * @param ctx
+ */
 async function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
   clearInterval(ctx.nr.interval)
@@ -32,10 +40,17 @@ async function afterEach(ctx) {
   await setImmediate()
 }
 
+/**
+ *
+ * @param tx
+ */
 function id(tx) {
   return tx && tx.id
 }
 
+/**
+ *
+ */
 function addTask() {
   const args = [].slice.apply(arguments)
   const { tasks } = args.shift() // Pop test context
@@ -45,10 +60,26 @@ function addTask() {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.count
+ * @param root0.testFunc
+ * @param root0.end
+ */
 function testPromiseClassMethod({ t, count, testFunc, end }) {
   testPromiseMethod({ t, count, factory: testFunc, end })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.count
+ * @param root0.testFunc
+ * @param root0.end
+ */
 function testPromiseInstanceMethod({ t, count, testFunc, end }) {
   const { Promise } = t.nr
   testPromiseMethod({
@@ -62,6 +93,14 @@ function testPromiseInstanceMethod({ t, count, testFunc, end }) {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.count
+ * @param root0.factory
+ * @param root0.end
+ */
 function testPromiseMethod({ t, count, factory, end }) {
   const { agent } = t.nr
   const COUNT = 2
@@ -87,6 +126,9 @@ function testPromiseMethod({ t, count, factory, end }) {
     isAsync = true
   }, '[no tx] should not throw out of a transaction')
 
+  /**
+   *
+   */
   function testInTransaction() {
     runMultiple(
       COUNT,
@@ -123,6 +165,10 @@ function testPromiseMethod({ t, count, factory, end }) {
   }
 }
 
+/**
+ *
+ * @param source
+ */
 function areMethodsWrapped(source) {
   const methods = Object.keys(source).sort()
   methods.forEach((method) => {

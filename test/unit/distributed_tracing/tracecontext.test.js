@@ -16,6 +16,10 @@ const sinon = require('sinon')
 test('TraceContext', async function (t) {
   const supportabilitySpy = sinon.spy()
 
+  /**
+   *
+   * @param ctx
+   */
   function beforeEach(ctx) {
     const agent = helper.loadMockedAgent({
       attributes: { enabled: true }
@@ -35,6 +39,10 @@ test('TraceContext', async function (t) {
     ctx.nr.agent = agent
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterEach(ctx) {
     supportabilitySpy.resetHistory()
     helper.unloadAgent(ctx.nr.agent)
@@ -795,6 +803,10 @@ test('TraceContext', async function (t) {
   })
 })
 
+/**
+ *
+ * @param transaction
+ */
 function getTraceContextHeaders(transaction) {
   const headers = {}
   transaction.traceContext.addTraceContextHeaders(headers)

@@ -143,6 +143,16 @@ test('SQS API', async (t) => {
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.end
+ * @param root0.transaction
+ * @param root0.queueName
+ * @param root0.sendMessageRequestId
+ * @param root0.sendMessageBatchRequestId
+ * @param root0.receiveMessageRequestId
+ */
 function finish({
   end,
   transaction,
@@ -187,12 +197,24 @@ function finish({
   end()
 }
 
+/**
+ *
+ * @param name
+ * @param action
+ * @param queueName
+ */
 function checkName(name, action, queueName) {
   const specificName = `/${action}/Named/${queueName}`
 
   match(name, specificName)
 }
 
+/**
+ *
+ * @param segment
+ * @param operation
+ * @param expectedRequestId
+ */
 function checkAttributes(segment, operation, expectedRequestId) {
   const actualAttributes = segment.attributes.get(common.SEGMENT_DESTINATION)
 
@@ -206,10 +228,18 @@ function checkAttributes(segment, operation, expectedRequestId) {
   match(actualAttributes, expectedAttributes)
 }
 
+/**
+ *
+ * @param data
+ */
 function getRequestId(data) {
   return data?.$response?.requestId
 }
 
+/**
+ *
+ * @param queueName
+ */
 function getCreateParams(queueName) {
   return {
     QueueName: queueName,
@@ -219,6 +249,10 @@ function getCreateParams(queueName) {
   }
 }
 
+/**
+ *
+ * @param queueUrl
+ */
 function getSendMessageParams(queueUrl) {
   return {
     MessageAttributes: {
@@ -232,6 +266,10 @@ function getSendMessageParams(queueUrl) {
   }
 }
 
+/**
+ *
+ * @param queueUrl
+ */
 function getSendMessageBatchParams(queueUrl) {
   return {
     Entries: [
@@ -256,6 +294,10 @@ function getSendMessageBatchParams(queueUrl) {
   }
 }
 
+/**
+ *
+ * @param queueUrl
+ */
 function getReceiveMessageParams(queueUrl) {
   return {
     AttributeNames: ['SentTimestamp'],

@@ -15,6 +15,9 @@ exports.getScope = getScope
 exports.getMaybeUnscoped = getMaybeUnscoped
 exports.getMetric = getMetric
 
+/**
+ *
+ */
 function fillMetrics() {
   for (let i = 0; i < 10; ++i) {
     scopeNames.push('scope/' + i)
@@ -24,18 +27,31 @@ function fillMetrics() {
   }
 }
 
+/**
+ *
+ * @param max
+ */
 function getNumber(max) {
   return Math.floor(Math.random() * max)
 }
 
+/**
+ *
+ */
 function getScope() {
   return scopeNames[getNumber(scopeNames.length)]
 }
 
+/**
+ *
+ */
 function getMaybeUnscoped() {
   return scopeNames[getNumber(scopeNames.length * 3)]
 }
 
+/**
+ *
+ */
 function getMetric() {
   return metricNames[getNumber(metricNames.length)]
 }

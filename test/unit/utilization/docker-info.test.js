@@ -67,6 +67,11 @@ test('error if not on linux', (t, end) => {
   os.platform = () => false
   getBootId(agent, callback, logger)
 
+  /**
+   *
+   * @param error
+   * @param data
+   */
   function callback(error, data) {
     assert.equal(error, null)
     assert.equal(data, null)
@@ -79,6 +84,11 @@ test('error if no proc file', (t, end) => {
   const { agent, logger, getBootId } = t.nr
   getBootId(agent, callback, logger)
 
+  /**
+   *
+   * @param error
+   * @param data
+   */
   function callback(error, data) {
     assert.equal(error, null)
     assert.equal(data, null)
@@ -95,6 +105,11 @@ test('data on success', (t, end) => {
 
   getBootId(agent, callback, logger)
 
+  /**
+   *
+   * @param error
+   * @param data
+   */
   function callback(error, data) {
     assert.equal(error, null)
     assert.equal(data, 'docker-1')
@@ -117,6 +132,11 @@ test('falls back to v1 correctly', (t, end) => {
 
   getVendorInfo(agent, gotInfo, logger)
 
+  /**
+   *
+   * @param error
+   * @param info
+   */
   function gotInfo(error, info) {
     assert.ifError(error)
     assert.deepStrictEqual(info, {

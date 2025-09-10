@@ -51,6 +51,10 @@ test('remote_parent_sampled: always_on', async (t) => {
   const result = await doRequest({ host, port })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -75,6 +79,10 @@ test('remote_parent_sampled: always_off', async (t) => {
   const result = await doRequest({ host, port })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -99,6 +107,10 @@ test('remote_parent_sampled: default', async (t) => {
   const result = await doRequest({ host, port })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -124,6 +136,10 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag
   const result = await doRequest({ host, port })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -149,6 +165,10 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag
   const result = await doRequest({ host, port, traceparent: `00-${TRACE_ID}-${SPAN_ID}-00` })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -174,6 +194,10 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (fla
   const result = await doRequest({ host, port })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -199,6 +223,10 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (fla
   const result = await doRequest({ host, port, traceparent: `00-${TRACE_ID}-${SPAN_ID}-00` })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -224,6 +252,10 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag t
   const result = await doRequest({ host, port })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -249,6 +281,10 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag f
   const result = await doRequest({ host, port, traceparent: `00-${TRACE_ID}-${SPAN_ID}-00` })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -281,6 +317,10 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag f
   })
   assert.equal(result, 'ok')
 
+  /**
+   *
+   * @param tx
+   */
   function validator(tx) {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
@@ -311,6 +351,12 @@ async function beforeEach(
   ctx.port = port
 }
 
+/**
+ *
+ * @param http
+ * @param agent
+ * @param validator
+ */
 async function createServer(http, agent, validator) {
   const server = http.createServer((req, res) => {
     try {
@@ -336,6 +382,14 @@ async function createServer(http, agent, validator) {
   }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.host
+ * @param root0.port
+ * @param root0.traceparent
+ * @param root0.tracestate
+ */
 async function doRequest({
   host,
   port,

@@ -50,6 +50,10 @@ test.after(() => {
 })
 
 test('should track unary client requests as an external when in a transaction', (t, end) => {
+  /**
+   *
+   * @param transaction
+   */
   function transactionFinished(transaction) {
     if (transaction.name === 'clientTransaction') {
       // Make sure we're in the client and not server transaction
@@ -139,6 +143,10 @@ for (const config of grpcConfigs) {
     agent.config.grpc.record_errors = config.record_errors
     agent.config.grpc.ignore_status_codes = config.ignore_status_codes
 
+    /**
+     *
+     * @param transaction
+     */
     function transactionFinished(transaction) {
       if (transaction.name === 'clientTransaction') {
         assertError({

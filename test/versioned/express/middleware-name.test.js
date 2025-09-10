@@ -21,6 +21,12 @@ test('should name middleware correctly', function (t) {
   const router = app._router || app.router
   const mwLayer = router.stack.filter((layer) => layer.name === 'testMiddleware')
   assert.equal(mwLayer.length, 1, 'should only find one testMiddleware function')
+  /**
+   *
+   * @param req
+   * @param res
+   * @param next
+   */
   function testMiddleware(req, res, next) {
     next()
   }

@@ -11,6 +11,10 @@ const { assertMetricValues } = require('../../lib/custom-assertions')
 const recordWeb = require('../../../lib/metrics/recorders/http')
 const Transaction = require('../../../lib/transaction')
 
+/**
+ *
+ * @param options
+ */
 function makeSegment(options) {
   const segment = options.transaction.trace.add('placeholder')
   segment.setDurationInMillis(options.duration)
@@ -19,6 +23,10 @@ function makeSegment(options) {
   return segment
 }
 
+/**
+ *
+ * @param options
+ */
 function record(options) {
   if (options.apdexT) {
     options.transaction.metrics.apdexT = options.apdexT

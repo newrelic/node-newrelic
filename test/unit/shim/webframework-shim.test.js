@@ -14,6 +14,12 @@ const symbols = require('../../../lib/symbols')
 const { MiddlewareSpec, RenderSpec } = require('../../../lib/shim/specs')
 const tsplan = require('@matteo.collina/tspl')
 
+/**
+ *
+ * @param root0
+ * @param root0.ctx
+ * @param root0.path
+ */
 function createMiddleware({ ctx, path }) {
   const { txInfo, shim } = ctx.nr
   const unwrappedTimeout = shim.unwrap(setTimeout)
@@ -56,6 +62,10 @@ function createMiddleware({ ctx, path }) {
 }
 
 test('WebFrameworkShim', async function (t) {
+  /**
+   *
+   * @param ctx
+   */
   function beforeEach(ctx) {
     ctx.nr = {}
     const agent = helper.loadMockedAgent()
@@ -88,6 +98,10 @@ test('WebFrameworkShim', async function (t) {
     ctx.nr.txInfo = txInfo
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterEach(ctx) {
     helper.unloadAgent(ctx.nr.agent)
   }
@@ -521,6 +535,11 @@ test('WebFrameworkShim', async function (t) {
         const { agent, req, shim, txInfo, wrappable } = t.nr
         testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
 
+        /**
+         *
+         * @param type
+         * @param expectedName
+         */
         function testType(type, expectedName) {
           const wrapped = shim.recordMiddleware(
             wrappable.getActiveSegment,
@@ -554,6 +573,11 @@ test('WebFrameworkShim', async function (t) {
       testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
       testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
 
+      /**
+       *
+       * @param type
+       * @param expectedName
+       */
       function testType(type, expectedName) {
         const wrapped = shim.recordMiddleware(
           wrappable.getActiveSegment,
@@ -581,6 +605,11 @@ test('WebFrameworkShim', async function (t) {
       testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
       testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
 
+      /**
+       *
+       * @param type
+       * @param expectedName
+       */
       function testType(type, expectedName) {
         const wrapped = shim.recordMiddleware(
           wrappable.getActiveSegment,
@@ -608,6 +637,11 @@ test('WebFrameworkShim', async function (t) {
       testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//one,/two')
       testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//one,/two')
 
+      /**
+       *
+       * @param type
+       * @param expectedName
+       */
       function testType(type, expectedName) {
         const wrapped = shim.recordMiddleware(
           wrappable.getActiveSegment,
@@ -1124,6 +1158,11 @@ test('WebFrameworkShim', async function (t) {
       const { agent, req, shim, wrappable, txInfo } = t.nr
       testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//[param handler :foo]')
 
+      /**
+       *
+       * @param type
+       * @param expectedName
+       */
       function testType(type, expectedName) {
         const wrapped = shim.recordParamware(
           wrappable.getActiveSegment,

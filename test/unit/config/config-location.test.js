@@ -194,6 +194,11 @@ test('Selecting config file path', async (t) => {
     assert.deepStrictEqual(configuration.app_name, [filename])
   })
 
+  /**
+   *
+   * @param dir
+   * @param filename
+   */
   function createSampleConfig(dir, filename) {
     CONFIG_PATH = path.join(dir, filename)
 
@@ -204,6 +209,11 @@ test('Selecting config file path', async (t) => {
     fs.writeFileSync(CONFIG_PATH, `exports.config = ${JSON.stringify(config)}`)
   }
 
+  /**
+   *
+   * @param dir
+   * @param filename
+   */
   function createInvalidConfig(dir, filename) {
     CONFIG_PATH = path.join(dir, filename)
 

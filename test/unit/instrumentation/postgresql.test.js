@@ -112,13 +112,26 @@ test('Lazy loading of native PG client', async (t) => {
   })
 })
 
+/**
+ *
+ */
 function getMockModuleNoNative() {
+  /**
+   *
+   * @param clientConstructor
+   */
   function PG(clientConstructor) {
     this.Client = clientConstructor
   }
 
+  /**
+   *
+   */
   function DefaultClient() {}
   DefaultClient.prototype.query = function () {}
+  /**
+   *
+   */
   function NativeClient() {}
   NativeClient.prototype.query = function () {}
 
@@ -129,13 +142,26 @@ function getMockModuleNoNative() {
   return mockPg
 }
 
+/**
+ *
+ */
 function getMockModule() {
+  /**
+   *
+   * @param clientConstructor
+   */
   function PG(clientConstructor) {
     this.Client = clientConstructor
   }
 
+  /**
+   *
+   */
   function DefaultClient() {}
   DefaultClient.prototype.query = function () {}
+  /**
+   *
+   */
   function NativeClient() {}
   NativeClient.prototype.query = function () {}
 

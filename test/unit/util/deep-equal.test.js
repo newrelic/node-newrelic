@@ -9,6 +9,10 @@ const test = require('node:test')
 const assert = require('node:assert')
 const deepEqual = require('../../../lib/util/deep-equal')
 
+/**
+ *
+ * @param a
+ */
 function functionA(a) {
   a = a + 1
   return a

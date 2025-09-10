@@ -44,6 +44,11 @@ async function GoogleGenAIMockServer() {
   })
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ */
 function handler(req, res) {
   let receivedData = ''
 
@@ -93,6 +98,10 @@ function handler(req, res) {
   })
 }
 
+/**
+ *
+ * @param reqBody
+ */
 function getShortenedPrompt(reqBody) {
   try {
     const prompt = reqBody.contents?.[0]?.parts?.[0]?.text ||

@@ -164,6 +164,15 @@ test('createInflateRaw', function (t, end) {
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.end
+ * @param root0.method
+ * @param root0.src
+ * @param root0.out
+ */
 function testStream({ agent, end, method, src, out }) {
   helper.runInTransaction(agent, function (transaction) {
     const concatStream = concat(check)
@@ -173,6 +182,10 @@ function testStream({ agent, end, method, src, out }) {
     stream.pipe(concatStream)
     stream.end(src)
 
+    /**
+     *
+     * @param result
+     */
     function check(result) {
       assert.equal(result.toString('base64'), out, 'should have correct result')
       assert.equal(agent.getTransaction(), transaction)

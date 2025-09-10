@@ -61,6 +61,10 @@ test('bind in transaction', async function testBind(t) {
     plan.equal(tracer.getSegment(), root, 'should be back to root segment')
     bound.call(context, null)
 
+    /**
+     *
+     * @param expected
+     */
     function compare(expected) {
       plan.equal(this, context, 'should pass through context')
       plan.equal(tracer.getSegment(), expected, 'should have expected segment')
@@ -92,6 +96,10 @@ test('bind outside transaction', async function testBind(t) {
   bound(root)
   compare(null)
 
+  /**
+   *
+   * @param expected
+   */
   function compare(expected) {
     plan.equal(tracer.getSegment(), expected)
   }
@@ -116,6 +124,11 @@ test('bind + throw', async function testThrows(t) {
     compare(dangerous(new Context(), null), null)
   })
 
+  /**
+   *
+   * @param run
+   * @param expected
+   */
   function compare(run, expected) {
     try {
       run()
@@ -125,6 +138,11 @@ test('bind + throw', async function testThrows(t) {
     }
   }
 
+  /**
+   *
+   * @param ctx
+   * @param expected
+   */
   function dangerous(ctx, expected) {
     return tracer.bindFunction(function bound() {
       plan.equal(tracer.getSegment(), expected, 'should have expected segment')
@@ -145,6 +163,10 @@ test('bind + capture error', async function testThrows(t) {
     helper.runInTransaction(agent, inTrans)
   })
 
+  /**
+   *
+   * @param transaction
+   */
   function inTrans(transaction) {
     const other = tracer.createSegment({
       name: 'other',
@@ -169,6 +191,11 @@ test('bind + capture error', async function testThrows(t) {
     dangerous(otherCtx, other)()
   }
 
+  /**
+   *
+   * @param ctx
+   * @param segment
+   */
   function dangerous(ctx, segment) {
     return tracer.bindFunction(function bound() {
       plan.equal(tracer.getSegment(), segment)
@@ -209,12 +236,18 @@ test('bind + full', async function testThrows(t) {
     bound()
     plan.ok(!notStarted.timer.hrDuration)
 
+    /**
+     *
+     */
     function check() {
       plan.ok(segment.timer.hrstart)
       plan.equal(tracer.getSegment(), segment)
       plan.ok(!segment.timer.hrDuration)
     }
 
+    /**
+     *
+     */
     function checkNotStarted() {
       plan.ok(!notStarted.timer.hrstart)
       plan.equal(tracer.getSegment(), notStarted)
@@ -357,6 +390,10 @@ test('createSegment + recorder', async function testCreateSegment(t) {
     plan.equal(segment.name, 'inside transaction')
     transaction.end()
 
+    /**
+     *
+     * @param seg
+     */
     function recorder(seg) {
       plan.equal(seg, segment)
     }
@@ -388,6 +425,10 @@ test('addSegment', async function addSegmentTest(t) {
     plan.equal(child, outside)
   })
 
+  /**
+   *
+   * @param segment
+   */
   function check(segment) {
     plan.equal(segment, tracer.getSegment())
     return tracer.getSegment()
@@ -414,6 +455,10 @@ test('addSegment + recorder', async function addSegmentTest(t) {
     transaction.end()
   })
 
+  /**
+   *
+   * @param seg
+   */
   function check(seg) {
     plan.equal(seg, tracer.getSegment())
     plan.equal(seg.timer.hrstart, null)
@@ -421,6 +466,10 @@ test('addSegment + recorder', async function addSegmentTest(t) {
     return tracer.getSegment()
   }
 
+  /**
+   *
+   * @param seg
+   */
   function record(seg) {
     plan.equal(seg, segment)
     return tracer.getSegment()
@@ -446,6 +495,10 @@ test('addSegment + full', async function addSegmentTest(t) {
     transaction.end()
   })
 
+  /**
+   *
+   * @param segment
+   */
   function check(segment) {
     plan.equal(segment, tracer.getSegment())
     plan.ok(segment.timer.hrstart)
@@ -467,6 +520,9 @@ test('transactionProxy', async function testTransactionProxy(t) {
   plan.equal(tracer.transactionProxy('test'), 'test')
   tracer.transactionProxy(handler)(1, 2, 3)
 
+  /**
+   *
+   */
   function handler() {
     const transaction = tracer.getTransaction()
     const root = transaction.trace.root
@@ -477,6 +533,9 @@ test('transactionProxy', async function testTransactionProxy(t) {
     plan.ok(transaction)
     tracer.transactionProxy(handler2)()
 
+    /**
+     *
+     */
     function handler2() {
       plan.equal(tracer.getTransaction(), transaction)
       plan.equal(root, tracer.getSegment())
@@ -497,6 +556,9 @@ test('transactionNestProxy', async function testTransactionNestProxy(t) {
   plan.equal(tracer.transactionNestProxy('web', 'test'), 'test', 'should not wrap strings')
   tracer.transactionNestProxy('web', handler)(1, 2, 3)
 
+  /**
+   *
+   */
   function handler() {
     const transaction = tracer.getTransaction()
     const root = transaction.trace.root
@@ -514,11 +576,17 @@ test('transactionNestProxy', async function testTransactionNestProxy(t) {
     transaction.baseSegment = root
     tracer.transactionNestProxy('web', handler3)()
 
+    /**
+     *
+     */
     function handler2() {
       plan.equal(tracer.getTransaction(), transaction)
       plan.equal(root, tracer.getSegment())
     }
 
+    /**
+     *
+     */
     function handler3() {
       const transaction3 = tracer.getTransaction()
       const root3 = transaction3.trace.root
@@ -574,6 +642,10 @@ test('bindEmitter', async function testbindEmitter(t) {
   emitter3.emit('before', data)
   emitter3.emit('after', data)
 
+  /**
+   *
+   * @param expected
+   */
   function check(expected) {
     return function onEvent(eventData) {
       plan.equal(eventData, data, 'should pass through event data')
@@ -591,6 +663,9 @@ test('tracer.slice', async function testSlice(t) {
 
   check(1, 2, 3)
 
+  /**
+   *
+   */
   function check() {
     const args = tracer.slice(arguments)
     plan.deepEqual(args, [1, 2, 3])
@@ -622,6 +697,10 @@ test('wrapFunction', async function testwrapFunction(t) {
   plan.equal(wrapped.apply(outer, [null].concat(args)), returnVal)
   await plan.completed
 
+  /**
+   *
+   * @param val
+   */
   function makeCallback(val) {
     return function callback(parent, arg) {
       const segment = tracer.getSegment()
@@ -639,6 +718,13 @@ test('wrapFunction', async function testwrapFunction(t) {
     }
   }
 
+  /**
+   *
+   * @param name
+   * @param a
+   * @param b
+   * @param c
+   */
   function callAll(name, a, b, c) {
     const segment = tracer.getSegment()
     const transaction = tracer.getTransaction()
@@ -677,11 +763,21 @@ test('wrapFunction', async function testwrapFunction(t) {
     return returnVal
   }
 
+  /**
+   *
+   * @param seg
+   */
   function record(seg) {
     plan.ok(seg.timer.hrDuration)
     plan.equal(seg.name, 'my segment')
   }
 
+  /**
+   *
+   * @param seg
+   * @param callbacks
+   * @param bindFunction
+   */
   function wrapArgs(seg, callbacks, bindFunction) {
     plan.equal(this, outer)
     plan.equal(seg.name, 'my segment')
@@ -693,6 +789,11 @@ test('wrapFunction', async function testwrapFunction(t) {
     })
   }
 
+  /**
+   *
+   * @param seg
+   * @param value
+   */
   function wrapReturn(seg, value) {
     plan.equal(this, outer)
     plan.equal(seg.name, 'my segment')
@@ -722,6 +823,11 @@ test('wrapFunctionLast', async function testwrapFunctionLast(t) {
   plan.equal(wrapped.apply(outer, [null].concat(args)), returnVal)
   await plan.completed
 
+  /**
+   *
+   * @param parent
+   * @param callbackArgs
+   */
   function callback(parent, callbackArgs) {
     const segment = tracer.getSegment()
     const transaction = tracer.getTransaction()
@@ -738,6 +844,10 @@ test('wrapFunctionLast', async function testwrapFunctionLast(t) {
     return innerReturn
   }
 
+  /**
+   *
+   * @param name
+   */
   function takesCallback(name) {
     const segment = tracer.getSegment()
     const transaction = tracer.getTransaction()
@@ -775,6 +885,10 @@ test('wrapFunctionLast', async function testwrapFunctionLast(t) {
     return returnVal
   }
 
+  /**
+   *
+   * @param seg
+   */
   function record(seg) {
     plan.ok(seg.timer.hrDuration)
     plan.equal(seg.name, 'my segment')
@@ -802,6 +916,11 @@ test('wrapFunctionFirst', async function testwrapFunctionFirst(t) {
   plan.equal(wrapped.call(outer, callback, null, 1, 2, 3), returnVal)
   await plan.completed
 
+  /**
+   *
+   * @param parent
+   * @param args
+   */
   function callback(parent, args) {
     const segment = tracer.getSegment()
     const transaction = tracer.getTransaction()
@@ -818,6 +937,11 @@ test('wrapFunctionFirst', async function testwrapFunctionFirst(t) {
     return innerReturn
   }
 
+  /**
+   *
+   * @param cb
+   * @param name
+   */
   function takesCallback(cb, name) {
     const segment = tracer.getSegment()
     const transaction = tracer.getTransaction()
@@ -854,6 +978,10 @@ test('wrapFunctionFirst', async function testwrapFunctionFirst(t) {
     return returnVal
   }
 
+  /**
+   *
+   * @param seg
+   */
   function record(seg) {
     plan.ok(seg.timer.hrDuration)
     plan.equal(seg.name, 'my segment')
@@ -879,6 +1007,11 @@ test('wrapSyncFunction', async function testwrapSyncFunction(t) {
 
   await plan.completed
 
+  /**
+   *
+   * @param trans
+   * @param expected
+   */
   function doSomething(trans, expected) {
     plan.deepEqual([].slice.call(arguments, 2), expected)
     plan.equal(tracer.getTransaction(), trans)
@@ -887,6 +1020,12 @@ test('wrapSyncFunction', async function testwrapSyncFunction(t) {
     }
   }
 
+  /**
+   *
+   * @param segment
+   * @param scope
+   * @param transaction
+   */
   function record(segment, scope, transaction) {
     const [child] = transaction.trace.getChildren(transaction.trace.root.id)
     plan.equal(segment, child)

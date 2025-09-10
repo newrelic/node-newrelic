@@ -137,6 +137,11 @@ test('background transactions should not blow up with DT', async (t) => {
   await plan.completed
 })
 
+/**
+ *
+ * @param plan
+ * @param a
+ */
 function currySampled(plan, a) {
   return (b) => {
     b = b || a

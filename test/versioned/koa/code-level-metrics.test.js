@@ -13,6 +13,14 @@ const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
 const assertClmAttrs = require('../../lib/custom-assertions/assert-clm-attrs')
 
+/**
+ *
+ * @param root0
+ * @param root0.ctx
+ * @param root0.useKoaRouter
+ * @param root0.useAtKoaRouter
+ * @param root0.isCLMEnabled
+ */
 async function setupApp({ ctx, useKoaRouter, useAtKoaRouter, isCLMEnabled }) {
   const agent = helper.instrumentMockedAgent({ code_level_metrics: { enabled: isCLMEnabled } })
   let router
@@ -37,12 +45,20 @@ async function setupApp({ ctx, useKoaRouter, useAtKoaRouter, isCLMEnabled }) {
   ctx.server = server
 }
 
+/**
+ *
+ * @param app
+ */
 async function startServer(app) {
   return new Promise((resolve) => {
     const server = app.listen(0, () => resolve(server))
   })
 }
 
+/**
+ *
+ * @param params
+ */
 async function makeRequest(params) {
   return new Promise((resolve, reject) => {
     const req = http.request(params, (res) => {

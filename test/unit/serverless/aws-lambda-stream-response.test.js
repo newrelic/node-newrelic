@@ -31,6 +31,10 @@ const REQ_ID = 'aws.requestId'
 const LAMBDA_ARN = 'aws.lambda.arn'
 const COLDSTART = 'aws.lambda.coldStart'
 
+/**
+ *
+ * @param agent
+ */
 function getMetrics(agent) {
   return agent.metrics._metrics
 }
@@ -43,6 +47,11 @@ const defaultConfig = {
   serverless_mode: { enabled: true }
 }
 
+/**
+ *
+ * @param ctx
+ * @param agentConfig
+ */
 async function beforeEach(ctx, agentConfig = defaultConfig) {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent(agentConfig)
@@ -71,6 +80,10 @@ async function beforeEach(ctx, agentConfig = defaultConfig) {
   ctx.nr.error = new SyntaxError(errorMessage)
 }
 
+/**
+ *
+ * @param ctx
+ */
 async function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
   if (ctx.nr.responseStream.writableFinished !== true) {
@@ -376,6 +389,9 @@ test('should record standard background metrics', async (t) => {
   await responseDone
   await plan.completed
 
+  /**
+   *
+   */
   function confirmMetrics() {
     const unscopedMetrics = getMetrics(agent).unscoped
     plan.ok(unscopedMetrics)

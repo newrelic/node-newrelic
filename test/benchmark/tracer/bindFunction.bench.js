@@ -46,12 +46,18 @@ setTimeout(function () {
   suite.run()
 }, 15)
 
+/**
+ *
+ */
 function allParamBind() {
   const test = shared.getTest()
   const ctx = tracer.getContext()
   test.func = tracer.bindFunction(test.func, ctx, Math.random() > 0.5)
 }
 
+/**
+ *
+ */
 function twoParamBind() {
   const test = shared.getTest()
   // eslint-disable-next-line no-unused-expressions
@@ -60,6 +66,9 @@ function twoParamBind() {
   test.func = tracer.bindFunction(test.func, ctx)
 }
 
+/**
+ *
+ */
 function randomBind() {
   const n = Math.random()
   if (n >= 0.75) {
@@ -69,6 +78,9 @@ function randomBind() {
   }
 }
 
+/**
+ *
+ */
 function preOptBind() {
   for (let i = 0; i < 1000000; ++i) {
     randomBind()

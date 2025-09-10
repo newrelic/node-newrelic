@@ -8,6 +8,12 @@ const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const WebShim = require('../../../lib/shim/webframework-shim')
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
 function nextulator(req, res, next) {
   return next()
 }
@@ -108,6 +114,13 @@ test('for Connect 1 (stubbed)', async function (t) {
 
   await t.test("shouldn't break use", async function (t) {
     const { app } = t.nr
+    /**
+     *
+     * @param err
+     * @param req
+     * @param res
+     * @param next
+     */
     function errulator(err, req, res, next) {
       return next(err)
     }
@@ -188,6 +201,13 @@ test('for Connect 2 (stubbed)', async function(t) {
 
   await t.test("shouldn't break use", async function(t) {
     const { app } = t.nr
+    /**
+     *
+     * @param err
+     * @param req
+     * @param res
+     * @param next
+     */
     function errulator(err, req, res, next) {
       return next(err)
     }

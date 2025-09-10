@@ -44,6 +44,13 @@ const req = {
   ]
 }
 
+/**
+ *
+ * @param tx
+ * @param event
+ * @param type
+ * @param completionId
+ */
 function getExpectedResult(tx, event, type, completionId) {
   const trace = tx.trace.root
   const [child] = tx.trace.getChildren(trace.id)

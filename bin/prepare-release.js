@@ -40,6 +40,10 @@ program.option(
   'generate notes with a corresponding changelog.json(only for node-newrelic)'
 )
 
+/**
+ *
+ * @param err
+ */
 function stopOnError(err) {
   if (err) {
     console.error(err)
@@ -49,10 +53,18 @@ function stopOnError(err) {
   process.exit(1)
 }
 
+/**
+ *
+ * @param step
+ */
 function logStep(step) {
   console.log(`\n ----- [Step]: ${step} -----\n`)
 }
 
+/**
+ *
+ * @param options
+ */
 async function isValid(options) {
   if (options.force) {
     console.log('--force set. Skipping validation logic')
@@ -66,6 +78,9 @@ async function isValid(options) {
   )
 }
 
+/**
+ *
+ */
 async function prepareReleaseNotes() {
   // Parse commandline options inputs
   program.parse()
@@ -175,6 +190,10 @@ async function prepareReleaseNotes() {
   }
 }
 
+/**
+ *
+ * @param remote
+ */
 async function validateRemote(remote) {
   try {
     const remotes = await git.getPushRemotes()
@@ -197,6 +216,9 @@ async function validateRemote(remote) {
   }
 }
 
+/**
+ *
+ */
 async function validateLocalChanges() {
   try {
     const localChanges = await git.getLocalChanges()
@@ -213,6 +235,10 @@ async function validateLocalChanges() {
   }
 }
 
+/**
+ *
+ * @param branch
+ */
 async function validateCurrentBranch(branch) {
   try {
     const currentBranch = await git.getCurrentBranch()

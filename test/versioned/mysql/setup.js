@@ -10,6 +10,14 @@ const setup = require('./helpers')
 module.exports = exports = setup
 exports.pool = setupPool
 
+/**
+ *
+ * @param user
+ * @param database
+ * @param mysql
+ * @param generic
+ * @param logger
+ */
 function setupPool(user, database, mysql, generic, logger) {
   return new generic.Pool({
     name: 'mysql',

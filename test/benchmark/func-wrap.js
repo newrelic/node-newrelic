@@ -16,6 +16,9 @@ const suite = benchmark.createBenchmark({
   name: 'function wrapping'
 })
 
+/**
+ *
+ */
 function getTest() {
   return {
     func: function testFunc(a, b, c) {

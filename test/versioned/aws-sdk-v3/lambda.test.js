@@ -18,6 +18,13 @@ const {
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
 
+/**
+ *
+ * @param root0
+ * @param root0.operations
+ * @param root0.tx
+ * @param root0.end
+ */
 function checkEntityLinkingSegments({ operations, tx, end }) {
   const root = tx.trace.root
 
@@ -43,6 +50,13 @@ function checkEntityLinkingSegments({ operations, tx, end }) {
   end()
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.operations
+ * @param root0.tx
+ * @param root0.end
+ */
 function checkNonLinkableSegments({ operations, tx, end }) {
   // When no account ID or ARN is available, make sure not to set cloud resource id or platform
   const root = tx.trace.root

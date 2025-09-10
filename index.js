@@ -44,6 +44,11 @@ if (require.cache.__NR_cache) {
   initialize()
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ */
 function initApi({ agent }) {
   const API = agent != null ? require('./api.js') : require('./stub_api.js')
 
@@ -52,6 +57,9 @@ function initApi({ agent }) {
   return api
 }
 
+/**
+ * Initializes the agent.
+ */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 function initialize() {
   logger.debug('Loading agent from %s', __dirname)
@@ -144,6 +152,10 @@ function initialize() {
   }
 }
 
+/**
+ *
+ * @param config
+ */
 function createAgent(config) {
   /* Only load the rest of the module if configuration is available and the
    * configurator didn't throw.
@@ -195,6 +207,10 @@ function createAgent(config) {
   return agent
 }
 
+/**
+ *
+ * @param agent
+ */
 function addStartupSupportabilities(agent) {
   recordLoaderMetric(agent)
   recordNodeVersionMetric(agent)
@@ -288,6 +304,9 @@ function recordDisabledPackages(agent) {
   }
 }
 
+/**
+ *
+ */
 function otelBridgeAvailable() {
   for (const p of otelPackages) {
     try {

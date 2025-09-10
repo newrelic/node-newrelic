@@ -110,6 +110,9 @@ test('#isHarvestConfigValid', async (t) => {
   })
 })
 
+/**
+ *
+ */
 function getValidHarvestConfig() {
   return {
     report_period_ms: 5000,

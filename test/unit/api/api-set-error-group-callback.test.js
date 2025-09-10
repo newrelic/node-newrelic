@@ -86,6 +86,9 @@ test('Agent API = set Error Group callback', async (t) => {
 
   await t.test('should not attach the callback when async function', (t, end) => {
     const { api } = t.nr
+    /**
+     *
+     */
     async function callback() {
       return await new Promise((resolve) => {
         setTimeout(() => {

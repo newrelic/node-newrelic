@@ -9,6 +9,12 @@ const test = require('node:test')
 const tests = require('../../lib/cross_agent_tests/sql_obfuscation/sql_obfuscation')
 const obfuscate = require('../../../lib/util/sql/obfuscate')
 
+/**
+ *
+ * @param t
+ * @param testCase
+ * @param dialect
+ */
 function runTest(t, testCase, dialect) {
   const obfuscated = obfuscate(testCase.sql, dialect)
   if (testCase.obfuscated.length === 1) {

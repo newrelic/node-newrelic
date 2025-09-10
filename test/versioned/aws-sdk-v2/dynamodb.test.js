@@ -90,6 +90,12 @@ test('DynamoDB', async (t) => {
   })
 })
 
+/**
+ *
+ * @param end
+ * @param tests
+ * @param tx
+ */
 function finish(end, tests, tx) {
   const root = tx.trace.root
   const segments = common.checkAWSAttributes({
@@ -131,6 +137,12 @@ function finish(end, tests, tx) {
   end()
 }
 
+/**
+ *
+ * @param ddb
+ * @param docClient
+ * @param tableName
+ */
 function createTests(ddb, docClient, tableName) {
   const ddbUniqueArtist = `DELETE_One You Know ${Math.floor(Math.random() * 100000)}`
   const createTblParams = getCreateTableParams(tableName)
@@ -164,6 +176,10 @@ function createTests(ddb, docClient, tableName) {
   ]
 }
 
+/**
+ *
+ * @param tableName
+ */
 function getCreateTableParams(tableName) {
   return {
     AttributeDefinitions: [
@@ -182,6 +198,11 @@ function getCreateTableParams(tableName) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getPutItemParams(tableName, uniqueArtist) {
   return {
     Item: {
@@ -193,6 +214,11 @@ function getPutItemParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getItemParams(tableName, uniqueArtist) {
   return {
     Key: {
@@ -203,6 +229,11 @@ function getItemParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getQueryParams(tableName, uniqueArtist) {
   return {
     ExpressionAttributeValues: {
@@ -213,12 +244,21 @@ function getQueryParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ */
 function getDeleteTableParams(tableName) {
   return {
     TableName: tableName
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getDocPutItemParams(tableName, uniqueArtist) {
   return {
     Item: {
@@ -230,6 +270,11 @@ function getDocPutItemParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getDocItemParams(tableName, uniqueArtist) {
   return {
     Key: {
@@ -240,6 +285,11 @@ function getDocItemParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getDocQueryParams(tableName, uniqueArtist) {
   return {
     ExpressionAttributeValues: {

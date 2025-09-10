@@ -117,6 +117,9 @@ test('runInContext()', async (t) => {
 
     contextManager.runInContext(context, functionRunInContext, expectedThis)
 
+    /**
+     *
+     */
     function functionRunInContext() {
       assert.equal(this, expectedThis)
       end()
@@ -133,6 +136,11 @@ test('runInContext()', async (t) => {
 
     contextManager.runInContext(context, functionRunInContext, null, args)
 
+    /**
+     *
+     * @param arg1
+     * @param arg2
+     */
     function functionRunInContext(arg1, arg2) {
       assert.equal(arg1, expectedArg1)
       assert.equal(arg2, expectedArg2)
@@ -148,6 +156,9 @@ test('runInContext()', async (t) => {
 
     executingFunction(expectedArg1, expectedArg2)
 
+    /**
+     *
+     */
     function executingFunction() {
       contextManager.runInContext(
         context,

@@ -92,6 +92,11 @@ test('amazon-dax-client', async (t) => {
   })
 })
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getDocItemParams(tableName, uniqueArtist) {
   return {
     Key: {

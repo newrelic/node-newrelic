@@ -34,6 +34,9 @@ program.option(
 )
 program.option('-f --force', 'bypass validation')
 
+/**
+ *
+ */
 async function createRelease() {
   // Parse commandline options inputs
   program.parse()
@@ -76,6 +79,11 @@ async function createRelease() {
   }
 }
 
+/**
+ *
+ * @param tagName
+ * @param releaseNotesFile
+ */
 async function getReleaseNotes(tagName, releaseNotesFile) {
   console.log('Retrieving release notes from file: ', releaseNotesFile)
 
@@ -99,6 +107,10 @@ async function getReleaseNotes(tagName, releaseNotesFile) {
   return headingRemoved + SUPPORT_STATEMENT
 }
 
+/**
+ *
+ * @param file
+ */
 async function readReleaseNoteFile(file) {
   return new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', (err, data) => {
@@ -111,6 +123,10 @@ async function readReleaseNoteFile(file) {
   })
 }
 
+/**
+ *
+ * @param err
+ */
 function stopOnError(err) {
   if (err) {
     console.error(err)
@@ -120,6 +136,10 @@ function stopOnError(err) {
   process.exit(1)
 }
 
+/**
+ *
+ * @param step
+ */
 function logStep(step) {
   console.log(`\n ----- [Step]: ${step} -----\n`)
 }

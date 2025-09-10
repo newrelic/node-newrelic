@@ -97,6 +97,9 @@ test('Log Aggregator', async (t) => {
     (t) => {
       const { commonAttrs, logEventAggregator, log } = t.nr
       const log2 = JSON.stringify(log)
+      /**
+       *
+       */
       function formatLog() {
         return JSON.parse(log2)
       }
@@ -112,9 +115,15 @@ test('Log Aggregator', async (t) => {
   await t.test('toPayload() should only return logs that have data', (t) => {
     const { commonAttrs, logEventAggregator, log } = t.nr
     const log2 = JSON.stringify(log)
+    /**
+     *
+     */
     function formatLog() {
       return JSON.parse(log2)
     }
+    /**
+     *
+     */
     function formatLog2() {
 
     }
@@ -135,6 +144,9 @@ test('Log Aggregator', async (t) => {
 
   await t.test('toPayload() should return nothing when log functions return no data', (t) => {
     const { logEventAggregator } = t.nr
+    /**
+     *
+     */
     function formatLog() {}
     logEventAggregator.add(formatLog)
     const payload = logEventAggregator._toPayloadSync()

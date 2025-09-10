@@ -37,6 +37,12 @@ test('collector host name', async (t) => {
   }
 })
 
+/**
+ *
+ * @param conf
+ * @param envObj
+ * @param callback
+ */
 function runWithEnv(conf, envObj, callback) {
   let saved = {}
 

@@ -22,6 +22,12 @@ const DEST_TO_ID = {
 }
 
 // simplified version of lodash set()
+/**
+ *
+ * @param obj
+ * @param path
+ * @param value
+ */
 function setPath(obj, path, value) {
   const paths = path.split('.')
   while (paths.length - 1) {
@@ -49,6 +55,11 @@ test('Attribute include/exclude configurations', async (t) => {
   await plan.completed
 })
 
+/**
+ *
+ * @param plan
+ * @param test
+ */
 function runTest(plan, test) {
   // The tests list the configurations in flat, dot notation (i.e.
   // `transaction_tracer.attributes.enabled`). We need to expand that into a

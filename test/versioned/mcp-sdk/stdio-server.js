@@ -8,6 +8,9 @@ const { McpServer, ResourceTemplate } = require('@modelcontextprotocol/sdk/serve
 const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js')
 const { z } = require('zod')
 
+/**
+ *
+ */
 async function main() {
   const server = new McpServer({
     name: 'test-server',

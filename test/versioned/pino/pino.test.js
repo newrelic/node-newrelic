@@ -22,6 +22,11 @@ const { assertMetrics } = require('../../lib/custom-assertions')
 
 const { version: pinoVersion } = require('pino/package')
 
+/**
+ *
+ * @param testContext
+ * @param config
+ */
 function setup(testContext, config) {
   testContext.logs = []
   const sink = new stream.Writable({

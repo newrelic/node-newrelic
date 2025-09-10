@@ -23,6 +23,14 @@ const TEST_MODULE_RELATIVE_PATH = `../helpers/node_modules/${TEST_MODULE_PATH}`
 const TEST_MODULE = 'sinon'
 const TEST_PATH_WITHIN = `${TEST_MODULE}/lib/sinon/spy`
 
+/**
+ *
+ * @param root0
+ * @param root0.moduleName
+ * @param root0.relativePath
+ * @param root0.throwsError
+ * @param t
+ */
 async function makeModuleTests({ moduleName, relativePath, throwsError }, t) {
   t.beforeEach(function (ctx) {
     ctx.nr = {}
@@ -257,6 +265,9 @@ test('shimmer', async function (t) {
       })
 
       require.cache[insPath].exports = wrappedInst
+      /**
+       *
+       */
       function wrappedInst() {
         const ret = oldInstrumentations()
         ret['../lib/broken_instrumentation_module'] = {
@@ -888,6 +899,10 @@ test('Shimmer subscriber setup/teardown', async (t) => {
   })
 })
 
+/**
+ *
+ * @param modules
+ */
 function clearCachedModules(modules) {
   modules.forEach((moduleName) => {
     try {
@@ -900,6 +915,10 @@ function clearCachedModules(modules) {
   })
 }
 
+/**
+ *
+ * @param thing
+ */
 function getNRSymbols(thing) {
   const knownSymbols = Object.values(symbols)
   return Object.getOwnPropertySymbols(thing)

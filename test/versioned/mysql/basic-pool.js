@@ -21,6 +21,10 @@ module.exports = function ({ factory, constants, pkgVersion }) {
   const { USER, DATABASE, TABLE } = constants
 
   const config = getConfig({})
+  /**
+   *
+   * @param extras
+   */
   function getConfig(extras) {
     const conf = {
       connectionLimit: 10,
@@ -689,6 +693,9 @@ module.exports = function ({ factory, constants, pkgVersion }) {
   })
 }
 
+/**
+ *
+ */
 async function getDomainSocketPath() {
   try {
     const { stdout, stderr } = await execAsync('mysql_config --socket')
@@ -704,6 +711,12 @@ async function getDomainSocketPath() {
   }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.segment
+ * @param root0.trace
+ */
 function getDatastoreSegment({ segment, trace }) {
   return trace.getChildren(trace.getParent(segment.parentId).id).filter(function (s) {
     return /^Datastore/.test(s && s.name)

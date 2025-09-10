@@ -46,6 +46,11 @@ async function openaiMockServer() {
   })
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ */
 function handler(req, res) {
   let receivedData = ''
 
@@ -147,6 +152,10 @@ function randomStream(chunkTemplate) {
   }).pause()
 }
 
+/**
+ *
+ * @param reqBody
+ */
 function getShortenedPrompt(reqBody) {
   const prompt =
     reqBody.prompt || reqBody.input || reqBody.messages.map((m) => m.content).join('\n')

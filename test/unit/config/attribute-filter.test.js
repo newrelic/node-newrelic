@@ -134,6 +134,10 @@ test('#filter', async (t) => {
   })
 })
 
+/**
+ *
+ * @param filter
+ */
 function validateFilter(filter) {
   // Filters down from global rules
   assert.equal(filter.filterTransaction(DESTS.TRANS_SCOPE, 'a'), DESTS.TRANS_COMMON, 'a -> common')

@@ -10,6 +10,11 @@ const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const { assertCLMAttrs, assertSpanKind } = require('../../lib/custom-assertions')
 
+/**
+ *
+ * @param root0
+ * @param root0.api
+ */
 function nested({ api }) {
   api.startBackgroundTransaction('nested', function nestedHandler() {})
 }
@@ -274,6 +279,9 @@ test('Agent API - startBackgroundTransaction', async (t) => {
   await t.test('should allow nesting startBackgroundTransaction', function(t, end) {
     const { api, tracer } = t.nr
     let called = false
+    /**
+     *
+     */
     function bg() {
       if (!called) {
         called = true
@@ -285,6 +293,10 @@ test('Agent API - startBackgroundTransaction', async (t) => {
       }
     }
 
+    /**
+     *
+     * @param name
+     */
     function wrap(name) {
       api.startBackgroundTransaction(name, () => {
         const tx = tracer.getTransaction()

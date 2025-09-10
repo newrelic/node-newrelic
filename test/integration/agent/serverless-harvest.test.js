@@ -247,6 +247,9 @@ test('sending span events', async (t) => {
 
   await plan.completed
 
+  /**
+   *
+   */
   function end() {
     checkCompressedPayload(
       plan,
@@ -405,6 +408,11 @@ test('sending sql traces', async (t) => {
   await plan.completed
 })
 
+/**
+ *
+ * @param metrics
+ * @param name
+ */
 function findMetric(metrics, name) {
   for (let i = 0; i < metrics.length; i++) {
     const metric = metrics[i]
@@ -414,6 +422,13 @@ function findMetric(metrics, name) {
   }
 }
 
+/**
+ *
+ * @param plan
+ * @param payload
+ * @param prop
+ * @param cb
+ */
 function checkCompressedPayload(plan, payload, prop, cb) {
   helper.decodeServerlessPayload(payload, (err, decoded) => {
     plan.ifError(err)
@@ -431,6 +446,10 @@ function checkCompressedPayload(plan, payload, prop, cb) {
   })
 }
 
+/**
+ *
+ * @param args
+ */
 function findPayload(args) {
   for (let i = 0; i < args.length; ++i) {
     const arg = args[i]

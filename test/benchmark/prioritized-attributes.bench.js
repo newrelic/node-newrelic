@@ -73,6 +73,12 @@ suite.add({
 
 suite.run()
 
+/**
+ *
+ * @param attributes
+ * @param attributeCount
+ * @param priority
+ */
 function batchAddAttributes(attributes, attributeCount, priority) {
   for (let i = 0; i < attributeCount; i++) {
     const name = `attr: ${i}`

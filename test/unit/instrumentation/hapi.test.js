@@ -45,6 +45,9 @@ test('an instrumented Hapi application', async function (t) {
       const agent = helper.instrumentMockedAgent()
       agent.environment.clearFramework()
 
+      /**
+       *
+       */
       function Server() {}
       Server.prototype.route = () => {}
       Server.prototype.start = () => {}

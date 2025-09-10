@@ -226,6 +226,11 @@ test('Error handling tests', async (t) => {
   })
 })
 
+/**
+ *
+ * @param t
+ * @param callback
+ */
 function runTest(t, callback) {
   let statusCode
   let errors

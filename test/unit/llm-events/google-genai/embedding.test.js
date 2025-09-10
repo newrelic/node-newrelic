@@ -134,6 +134,11 @@ test('should calculate token count from tokenCountCallback', (t, end) => {
 
   const api = helper.getAgentApi()
 
+  /**
+   *
+   * @param model
+   * @param content
+   */
   function cb(model, content) {
     if (model === req.model) {
       return content.length

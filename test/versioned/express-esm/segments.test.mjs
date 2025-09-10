@@ -718,6 +718,14 @@ test('when using a regular expression in path', async (t) => {
   checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler//a/'], '/a/')
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.server
+ * @param root0.endpoint
+ * @param root0.errors
+ */
 async function runTest({ agent, server, endpoint = '/test', errors = 0 }) {
   const transaction = await makeRequestAndFinishTransaction({ server, agent, endpoint })
   const [rootSegment] = transaction.trace.getChildren(transaction.trace.root.id)
@@ -726,6 +734,12 @@ async function runTest({ agent, server, endpoint = '/test', errors = 0 }) {
   return { rootSegment, transaction }
 }
 
+/**
+ *
+ * @param metrics
+ * @param expected
+ * @param path
+ */
 function checkMetrics(metrics, expected, path) {
   if (path === undefined) {
     path = '/test'

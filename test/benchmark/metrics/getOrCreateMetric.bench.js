@@ -62,6 +62,9 @@ suite.add({
 
 suite.run()
 
+/**
+ *
+ */
 function preOptMetrics() {
   const m = new Metrics(1, {}, {})
   for (let i = 0; i < 100000; ++i) {

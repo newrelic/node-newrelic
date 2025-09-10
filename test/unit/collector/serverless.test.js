@@ -20,6 +20,10 @@ const serverfulAPI = require('../../../lib/collector/api')
 const RUN_ID = 1337
 
 test('ServerlessCollector API', async (t) => {
+  /**
+   *
+   * @param ctx
+   */
   async function beforeEach(ctx) {
     ctx.nr = {}
 
@@ -45,6 +49,10 @@ test('ServerlessCollector API', async (t) => {
     process.env.NEWRELIC_PIPE_PATH = os.devNull
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterEach(ctx) {
     helper.unloadAgent(ctx.nr.agent)
     ctx.nr.collector.close()

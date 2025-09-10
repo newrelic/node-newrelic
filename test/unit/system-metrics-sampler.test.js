@@ -268,12 +268,19 @@ test('environmental sampler', async function (t) {
   })
 })
 
+/**
+ *
+ * @param cb
+ */
 function spinLoop(cb) {
   const DELAY = 5
   const COUNT = 20
   let spins = 0
 
   timeout()
+  /**
+   *
+   */
   function timeout() {
     setTimeout(function () {
       let trash = []

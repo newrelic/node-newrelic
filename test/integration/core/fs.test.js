@@ -22,6 +22,12 @@ fs.mkdirSync(tempDir)
 // Set umask before fs tests (for normalizing create mode on OS X and linux)
 process.umask('0000')
 
+/**
+ *
+ * @param names
+ * @param agent
+ * @param scope
+ */
 function checkMetric(names, agent, scope) {
   let res = true
   const agentMetrics = agent.metrics._metrics
@@ -444,6 +450,9 @@ test('realpath', async function (t) {
         end: afterVerify
       })
 
+      /**
+       *
+       */
       function afterVerify() {
         trans.end()
         const expectedMetrics = ['realpath']
@@ -479,6 +488,9 @@ test('realpath.native', async (t) => {
         end: afterVerify
       })
 
+      /**
+       *
+       */
       function afterVerify() {
         trans.end()
         const expectedMetrics = ['realpath.native']
@@ -984,6 +996,11 @@ test('watchFile', async function (t) {
     helper.runInTransaction(agent, function (trans) {
       fs.watchFile(name, onChange)
 
+      /**
+       *
+       * @param cur
+       * @param prev
+       */
       function onChange(cur, prev) {
         plan.ok(cur.mtime > prev.mtime, 'modified date incremented')
         plan.ok(cur.size > prev.size, 'content modified')

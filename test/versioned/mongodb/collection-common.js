@@ -353,6 +353,10 @@ function collectionTest(name, run) {
   })
 }
 
+/**
+ *
+ * @param segment
+ */
 function checkSegmentParams(segment) {
   let dbName = common.DB_NAME
   if (/\/rename$/.test(segment.name)) {
@@ -365,6 +369,10 @@ function checkSegmentParams(segment) {
   assert.equal(attributes.port_path_or_id, METRIC_HOST_PORT, 'should have correct port')
 }
 
+/**
+ *
+ * @param collection
+ */
 async function populate(collection) {
   const items = []
   for (let i = 0; i < 30; ++i) {

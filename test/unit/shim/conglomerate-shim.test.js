@@ -77,6 +77,9 @@ test('ConglomerateShim', async (t) => {
     assert.equal(shim.moduleName, mod)
     assert.equal(agent, shim._agent)
     assert.equal(shim.pkgVersion, version)
+    /**
+     *
+     */
     function childFn() {}
     const childShim = shim.makeSpecializedShim(shim.DATASTORE, childFn)
     assert.deepEqual(shim._agent, childShim._agent)

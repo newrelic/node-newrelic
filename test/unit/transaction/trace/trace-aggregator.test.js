@@ -11,6 +11,13 @@ const configurator = require('../../../../lib/config')
 const TraceAggregator = require('../../../../lib/transaction/trace/aggregator')
 const Transaction = require('../../../../lib/transaction')
 
+/**
+ *
+ * @param agent
+ * @param name
+ * @param duration
+ * @param synth
+ */
 function createTransaction(agent, name, duration, synth) {
   const transaction = new Transaction(agent)
   // gotta create the trace
@@ -32,6 +39,10 @@ function createTransaction(agent, name, duration, synth) {
   return transaction.end()
 }
 
+/**
+ *
+ * @param ctx
+ */
 function beforeEach(ctx) {
   ctx.nr = {}
   const agent = helper.loadMockedAgent({ run_id: 1337 })
@@ -41,6 +52,10 @@ function beforeEach(ctx) {
   ctx.nr.agent = agent
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
 }

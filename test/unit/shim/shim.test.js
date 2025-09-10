@@ -24,6 +24,10 @@ const Transaction = require('../../../lib/transaction')
 const TraceSegment = require('../../../lib/transaction/trace/segment')
 
 test('Shim', async function (t) {
+  /**
+   *
+   * @param ctx
+   */
   function beforeEach(ctx) {
     ctx.nr = {}
     const agent = helper.loadMockedAgent()
@@ -43,6 +47,10 @@ test('Shim', async function (t) {
     ctx.nr.agent = agent
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterEach(ctx) {
     helper.unloadAgent(ctx.nr.agent)
   }
@@ -222,6 +230,11 @@ test('Shim', async function (t) {
     await t.test('should match the arity and name of the original when specified', function (t) {
       const { shim } = t.nr
 
+      /**
+       *
+       * @param a
+       * @param b
+       */
       function toWrap(a, b) {}
       const wrapped = shim.wrap(toWrap, {
         wrapper: function () {
@@ -484,6 +497,9 @@ test('Shim', async function (t) {
 
     await t.test('should not blow up when wrapping a non-object prototype', function (t) {
       const { shim } = t.nr
+      /**
+       *
+       */
       function noProto() {}
       noProto.prototype = undefined
       const instance = shim.wrapReturn(noProto, function () {}).bind({})
@@ -494,6 +510,9 @@ test('Shim', async function (t) {
       'should not blow up when wrapping a non-object prototype, null bind',
       function (t) {
         const { shim } = t.nr
+        /**
+         *
+         */
         function noProto() {}
         noProto.prototype = undefined
         const instance = shim.wrapReturn(noProto, function () {}).bind(null)
@@ -658,6 +677,9 @@ test('Shim', async function (t) {
 
     await t.test('should invoke the spec with `new` if itself is invoked with `new`', function (t) {
       const { shim } = t.nr
+      /**
+       *
+       */
       function Foo() {
         assert.equal(this instanceof Foo, true)
       }
@@ -937,6 +959,9 @@ test('Shim', async function (t) {
       function (t, end) {
         const { agent, shim } = t.nr
         helper.runInTransaction(agent, function (tx) {
+          /**
+           *
+           */
           function testAfter() {
             return 'result'
           }
@@ -970,6 +995,9 @@ test('Shim', async function (t) {
         const { agent, shim } = t.nr
         const err = new Error('test err')
         helper.runInTransaction(agent, function (tx) {
+          /**
+           *
+           */
           function testAfter() {
             throw err
           }
@@ -2701,6 +2729,9 @@ test('Shim', async function (t) {
       assert.ok(strToArray instanceof Array)
 
       argumentsTest.apply(null, res)
+      /**
+       *
+       */
       function argumentsTest() {
         const argsToArray = shim.toArray(arguments)
         assert.deepEqual(argsToArray, res)

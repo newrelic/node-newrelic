@@ -14,6 +14,10 @@ const tspl = require('@matteo.collina/tspl')
 const Config = require('#agentlib/config/index.js')
 const HealthReporter = require('#agentlib/health-reporter.js')
 
+/**
+ *
+ * @param method
+ */
 function simpleInterval(method) {
   method.call()
   return {
@@ -126,6 +130,11 @@ test('initializes and writes to destination', async (t) => {
 
   await plan.completed
 
+  /**
+   *
+   * @param method
+   * @param delay
+   */
   function localInterval(method, delay) {
     plan.equal(delay, 1_000)
     plan.equal(method.name, 'bound #healthCheck')
@@ -150,6 +159,10 @@ test('logs error if writing failed', async (t) => {
 
   await plan.completed
 
+  /**
+   *
+   * @param method
+   */
   function localInterval(method) {
     method.call()
     return {

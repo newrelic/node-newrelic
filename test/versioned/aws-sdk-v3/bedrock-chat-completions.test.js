@@ -20,6 +20,9 @@ const { assertSegments, match } = require('../../lib/custom-assertions')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const { tspl } = require('@matteo.collina/tspl')
 
+/**
+ *
+ */
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.
 }
@@ -752,6 +755,12 @@ test('should utilize tokenCountCallback when set', async (t) => {
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.metricPrefix
+ */
 function getPrefixedMetric({ agent, metricPrefix }) {
   for (const [key, value] of Object.entries(agent.metrics._metrics.unscoped)) {
     if (key.startsWith(metricPrefix) === false) {

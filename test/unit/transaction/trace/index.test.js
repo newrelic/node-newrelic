@@ -749,6 +749,9 @@ test('when inserting segments', async (t) => {
     assert.equal(transaction.numSegments, 951)
     assert.equal(transaction._recorders.length, 950)
     trace.end()
+    /**
+     *
+     */
     function noop() {}
   })
 
@@ -968,6 +971,10 @@ test('infinite tracing', async (t) => {
   )
 })
 
+/**
+ *
+ * @param transaction
+ */
 function addTwoSegments(transaction) {
   const trace = transaction.trace
   const child1 = (transaction.baseSegment = trace.add('test'))
@@ -979,6 +986,10 @@ function addTwoSegments(transaction) {
   trace.root.end()
 }
 
+/**
+ *
+ * @param agent
+ */
 async function makeTrace(agent) {
   const DURATION = 33
   const url = '/test'

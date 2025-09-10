@@ -11,6 +11,9 @@ const params = require('../../lib/params')
 const crypto = require('crypto')
 const DB_INDEX = `test-${randomString()}`
 
+/**
+ *
+ */
 function randomString() {
   return crypto.randomBytes(5).toString('hex')
 }

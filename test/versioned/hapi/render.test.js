@@ -102,6 +102,11 @@ test('using EJS templates', { timeout: 2000 }, (t, end) => {
     verifyEnded(tx.trace.root, tx)
   })
 
+  /**
+   *
+   * @param root
+   * @param tx
+   */
   function verifyEnded(root, tx) {
     const children = tx.trace.getChildren(root.id)
     for (let i = 0, len = children.length; i < len; i++) {

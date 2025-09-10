@@ -81,6 +81,10 @@ function unreleasedPRs() {
   }
 }
 
+/**
+ *
+ * @param err
+ */
 function stopOnError(err) {
   if (err) {
     console.error(err)
@@ -90,6 +94,10 @@ function stopOnError(err) {
   process.exit(1)
 }
 
+/**
+ *
+ * @param dryRun
+ */
 function areEnvVarsSet(dryRun) {
   if (dryRun) {
     return Object.prototype.hasOwnProperty.call(process.env, 'GITHUB_TOKEN')
@@ -98,6 +106,12 @@ function areEnvVarsSet(dryRun) {
   return missingEnvVars.length === 0
 }
 
+/**
+ *
+ * @param prs
+ * @param latestRelease
+ * @param repo
+ */
 function createSlackMessage(prs, latestRelease, repo) {
   return `
     *${repo}*
@@ -114,6 +128,11 @@ function createSlackMessage(prs, latestRelease, repo) {
     `
 }
 
+/**
+ *
+ * @param repo
+ * @param ignoredLabels
+ */
 async function findMergedPRs(repo, ignoredLabels) {
   const github = new Github('newrelic', repo)
   const latestRelease = await github.getLatestRelease()

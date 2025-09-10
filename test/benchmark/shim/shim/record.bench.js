@@ -56,6 +56,9 @@ suite.add({
 
 suite.run()
 
+/**
+ *
+ */
 function getTest() {
   return {
     func: function (cb) {
@@ -64,4 +67,7 @@ function getTest() {
   }
 }
 
+/**
+ *
+ */
 function noop() {}

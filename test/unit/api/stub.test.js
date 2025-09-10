@@ -74,6 +74,9 @@ test('Agent API - Stubbed Agent API', async (t) => {
 
   await t.test('should return a function when calling setLambdaHandler', (t, end) => {
     const { api } = t.nr
+    /**
+     *
+     */
     function myNop() {}
     const retVal = api.setLambdaHandler(myNop)
     assert.equal(retVal, myNop)

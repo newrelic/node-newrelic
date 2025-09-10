@@ -24,6 +24,9 @@ program.option(
   'ci-workflow.yml'
 )
 
+/**
+ *
+ */
 async function createReleaseTag() {
   // Parse commandline options inputs
   program.parse()
@@ -71,6 +74,9 @@ async function createReleaseTag() {
   }
 }
 
+/**
+ *
+ */
 async function validateLocalChanges() {
   try {
     const localChanges = await git.getLocalChanges()
@@ -87,6 +93,10 @@ async function validateLocalChanges() {
   }
 }
 
+/**
+ *
+ * @param branch
+ */
 async function validateCurrentBranch(branch) {
   try {
     const currentBranch = await git.getCurrentBranch()

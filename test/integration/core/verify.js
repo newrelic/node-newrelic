@@ -7,6 +7,15 @@
 
 module.exports = verifySegments
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.name
+ * @param root0.children
+ * @param root0.end
+ * @param root0.assert
+ */
 function verifySegments({ agent, name, children = [], end, assert = require('node:assert') }) {
   const { trace } = agent.getTransaction()
   const traceChildren = trace.getChildren(trace.root.id)

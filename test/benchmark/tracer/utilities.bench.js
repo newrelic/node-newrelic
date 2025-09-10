@@ -21,6 +21,9 @@ tracer.setSegment({ transaction: tx, segment: tx.root })
 suite.add({
   name: 'tracer.slice',
   fn: function () {
+    /**
+     *
+     */
     function toSlice() {
       return tracer.slice(arguments)
     }

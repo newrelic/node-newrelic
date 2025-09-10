@@ -8,6 +8,11 @@ const assert = require('node:assert')
 const test = require('node:test')
 const Stats = require('../../lib/stats')
 
+/**
+ *
+ * @param actualStats
+ * @param expectedStats
+ */
 function verifyStats(actualStats, expectedStats) {
   assert.equal(actualStats.callCount, expectedStats.callCount)
   assert.equal(actualStats.total, expectedStats.totalTime)

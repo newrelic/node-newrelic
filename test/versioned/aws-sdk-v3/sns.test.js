@@ -204,6 +204,13 @@ test('SNS', async (t) => {
   })
 })
 
+/**
+ *
+ * @param end
+ * @param tx
+ * @param destName
+ * @param setLibrarySpy
+ */
 function finish(end, tx, destName, setLibrarySpy) {
   const root = tx.trace.root
 

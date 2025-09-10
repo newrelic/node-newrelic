@@ -10,6 +10,12 @@ const urltils = require('../../lib/util/urltils')
 exports.findSegment = findSegment
 exports.getMetricHostName = getMetricHostName
 
+/**
+ *
+ * @param trace
+ * @param root
+ * @param name
+ */
 function findSegment(trace, root, name) {
   const children = trace.getChildren(root.id)
   if (root.name === name) {
@@ -25,6 +31,11 @@ function findSegment(trace, root, name) {
   }
 }
 
+/**
+ *
+ * @param agent
+ * @param host
+ */
 function getMetricHostName(agent, host) {
   return urltils.isLocalhost(host) ? agent.config.getHostnameSafe() : host
 }

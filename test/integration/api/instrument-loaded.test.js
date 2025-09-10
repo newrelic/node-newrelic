@@ -46,6 +46,9 @@ test('manual instrumenting', async (t) => {
     const moduleName = 'express'
     api.instrument(moduleName, onRequire)
 
+    /**
+     *
+     */
     function onRequire() {
       plan.ok(1, 'should hit the onRequire')
       throw new Error('Oh No!')
@@ -66,6 +69,9 @@ test('manual instrumenting', async (t) => {
       const moduleName = 'express'
       api.instrument(moduleName, onRequire)
 
+      /**
+       *
+       */
       function onRequire() {
         plan.ok(1, 'should hit the onRequire')
         return false
@@ -87,6 +93,9 @@ test('manual instrumenting', async (t) => {
       const moduleName = 'express'
       api.instrument(moduleName, onRequire)
 
+      /**
+       *
+       */
       function onRequire() {
         plan.ok(1, 'should hit the onRequire')
       }

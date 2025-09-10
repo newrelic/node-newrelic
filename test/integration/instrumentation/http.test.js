@@ -207,6 +207,11 @@ test('built-in http instrumentation should not swallow errors', async function (
     server.listen(1337, makeRequest)
   })
 
+  /**
+   *
+   * @param req
+   * @param res
+   */
   function handleRequest(req, res) {
     process.once('uncaughtException', function (error) {
       plan.ok(error, 'got error in uncaughtException handler.')
@@ -220,6 +225,9 @@ test('built-in http instrumentation should not swallow errors', async function (
     const x = x.dieshere.ohno
   }
 
+  /**
+   *
+   */
   function makeRequest() {
     const options = {
       host: 'localhost',
@@ -266,6 +274,12 @@ test('built-in http instrumentation making outbound requests', function (t, end)
     server.close()
   })
 
+  /**
+   *
+   * @param type
+   * @param options
+   * @param next
+   */
   function request(type, options, next) {
     http
       .request(options, function (res) {
@@ -285,6 +299,10 @@ test('built-in http instrumentation making outbound requests', function (t, end)
       .end()
   }
 
+  /**
+   *
+   * @param next
+   */
   function requestWithHost(next) {
     request(
       'options.host',
@@ -298,6 +316,10 @@ test('built-in http instrumentation making outbound requests', function (t, end)
     )
   }
 
+  /**
+   *
+   * @param next
+   */
   function requestWithHostname(next) {
     request(
       'options.hostname',
@@ -311,6 +333,10 @@ test('built-in http instrumentation making outbound requests', function (t, end)
     )
   }
 
+  /**
+   *
+   * @param next
+   */
   function requestWithNOTHING(next) {
     request(
       'nothing',
@@ -375,6 +401,10 @@ test(
       })
     })
 
+    /**
+     *
+     * @param callback
+     */
     function makeRequest(callback) {
       const options = {
         hostname: 'localhost',
@@ -418,6 +448,10 @@ test('built-in http instrumentation should not crash when server does not have a
     })
   })
 
+  /**
+   *
+   * @param callback
+   */
   function makeRequest(callback) {
     const options = {
       hostname: 'localhost',

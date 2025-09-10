@@ -29,6 +29,10 @@ test.afterEach((ctx) => {
   removeModules(['fastify'])
 })
 
+/**
+ *
+ * @param t
+ */
 async function performTest(t) {
   const { agent, fastify } = t.nr
   fastify.addHook('onRequest', function testOnRequest(...args) {

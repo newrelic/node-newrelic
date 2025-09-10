@@ -25,6 +25,11 @@ const {
 const { MESSAGE } = require('triple-beam')
 const concat = require('concat-stream')
 
+/**
+ *
+ * @param testContext
+ * @param config
+ */
 function setup(testContext, config) {
   testContext.agent = helper.instrumentMockedAgent(config)
   testContext.agent.config.entity_guid = 'test-guid'

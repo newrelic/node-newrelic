@@ -10,12 +10,9 @@
  * and re-adds them subsequent to a test completing.
  *
  * @param {object} params
- * @param params.t
- * @param {TestContext} t A `node:test` test context.
- * @param {EventEmitter} emitter The emitter to manipulate.
- * @param {string} event The event name to target.
- * @param params.emitter
- * @param params.event
+ * @param {TestContext} params.t A `node:test` test context.
+ * @param {EventEmitter} params.emitter The emitter to manipulate.
+ * @param {string} params.event The event name to target.
  */
 module.exports = function tempRemoveListeners({ t, emitter, event }) {
   if (!emitter) {

@@ -26,6 +26,12 @@ exports.verifySendToQueue = verifySendToQueue
 exports.verifyTransaction = verifyTransaction
 exports.getChannel = getChannel
 
+/**
+ *
+ * @param tx
+ * @param exchange
+ * @param routingKey
+ */
 function verifySubscribe(tx, exchange, routingKey) {
   const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
 
@@ -58,6 +64,11 @@ function verifySubscribe(tx, exchange, routingKey) {
   assert.equal(consume.getAttributes().routing_key, routingKey, 'should store routing key')
 }
 
+/**
+ *
+ * @param produceTransaction
+ * @param consumeTransaction
+ */
 function verifyCAT(produceTransaction, consumeTransaction) {
   assert.equal(
     consumeTransaction.incomingCatId,
@@ -80,6 +91,11 @@ function verifyCAT(produceTransaction, consumeTransaction) {
   )
 }
 
+/**
+ *
+ * @param produceTransaction
+ * @param consumeTransaction
+ */
 function verifyDistributedTrace(produceTransaction, consumeTransaction) {
   assert.ok(produceTransaction.isDistributedTrace, 'should mark producer as distributed')
   assert.ok(consumeTransaction.isDistributedTrace, 'should mark consumer as distributed')
@@ -101,6 +117,13 @@ function verifyDistributedTrace(produceTransaction, consumeTransaction) {
   assert.equal(consumeTransaction.parentTransportType, 'AMQP', 'should have correct transport type')
 }
 
+/**
+ *
+ * @param tx
+ * @param exchange
+ * @param queue
+ * @param routingKey
+ */
 function verifyConsumeTransaction(tx, exchange, queue, routingKey) {
   assertMetrics(
     tx.metrics,
@@ -152,6 +175,10 @@ function verifyConsumeTransaction(tx, exchange, queue, routingKey) {
   }
 }
 
+/**
+ *
+ * @param tx
+ */
 function verifySendToQueue(tx) {
   assertSegments(tx.trace, tx.trace.root, ['MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'])
 
@@ -175,6 +202,12 @@ function verifySendToQueue(tx) {
   assert.equal(attributes.correlation_id, 'correlation-id', 'should store correlation id')
 }
 
+/**
+ *
+ * @param tx
+ * @param exchangeName
+ * @param routingKey
+ */
 function verifyProduce(tx, exchangeName, routingKey) {
   const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
   let segments = []
@@ -233,6 +266,15 @@ function verifyProduce(tx, exchangeName, routingKey) {
   assert.equal(attributes.port, params.rabbitmq_port, 'should have port on segment')
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.exchangeName
+ * @param root0.routingKey
+ * @param root0.queue
+ * @param root0.assertAttr
+ */
 function verifyGet({ tx, exchangeName, routingKey, queue, assertAttr }) {
   const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
   const produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
@@ -259,6 +301,10 @@ function verifyGet({ tx, exchangeName, routingKey, queue, assertAttr }) {
   })
 }
 
+/**
+ *
+ * @param tx
+ */
 function verifyPurge(tx) {
   const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
   let segments = []
@@ -296,11 +342,22 @@ function verifyPurge(tx) {
   assertMetrics(tx.metrics, [[{ name: 'MessageBroker/RabbitMQ/Queue/Purge/Temp' }]], false, false)
 }
 
+/**
+ *
+ * @param agent
+ * @param tx
+ * @param msg
+ */
 function verifyTransaction(agent, tx, msg) {
   const transaction = agent.getTransaction()
   assert.equal(transaction.id, tx.id, 'should have correct transaction in ' + msg)
 }
 
+/**
+ *
+ * @param amqplib
+ * @param cb
+ */
 function getChannel(amqplib, cb) {
   if (cb) {
     amqplib.connect(CON_STRING, null, function (err, conn) {

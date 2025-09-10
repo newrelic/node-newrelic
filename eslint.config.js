@@ -38,7 +38,7 @@ const globalIgnores = {
 }
 
 const newrelicConfigOverrides = {
-  files: ['**/newrelic.js', '**/newrelic.mjs'],
+  files: ['**/newrelic.js', '**/newrelic.mjs', '**/newrelic.cjs'],
   rules: {
     'header/header': 'off'
   }
@@ -47,11 +47,11 @@ const newrelicConfigOverrides = {
 const jsdocConfig = {
   plugins: { jsdoc },
   rules: {
-    'jsdoc/require-jsdoc': 'off',
+    'jsdoc/require-jsdoc': 'error',
     'jsdoc/tag-lines': 'off',
     'jsdoc/check-types': 'off',
     'jsdoc/no-undefined-types': [
-      'warn',
+      'off',
       {
         definedTypes: [
           'Logger',
@@ -66,7 +66,12 @@ const jsdocConfig = {
           'EventEmitter'
         ]
       }
-    ]
+    ],
+    'jsdoc/require-param-description': 'warn',
+    'jsdoc/require-param-type': 'warn',
+    'jsdoc/require-returns': 'warn',
+    'jsdoc/valid-types': 'warn',
+    'jsdoc/check-param-names': 'warn'
   }
 }
 const jsdocOverrides = {

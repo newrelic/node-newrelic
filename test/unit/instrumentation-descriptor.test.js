@@ -33,6 +33,12 @@ test('constructs instances', async () => {
   const desc2 = new InstrumentationDescriptor({ moduleName: 'foo' })
   assert.equal(desc2.instrumentationId, 1)
 
+  /**
+   *
+   */
   function onRequire() {}
+  /**
+   *
+   */
   function onError() {}
 })

@@ -69,6 +69,11 @@ test('SNS', async (t) => {
   })
 })
 
+/**
+ *
+ * @param end
+ * @param tx
+ */
 function finish(end, tx) {
   const root = tx.trace.root
 

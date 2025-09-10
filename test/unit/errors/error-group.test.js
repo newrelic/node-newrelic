@@ -36,6 +36,9 @@ test('Error Group functionality', async (t) => {
     })
     assert.deepEqual(errorEvents[0][2], { 'error.group.name': 'error-group-test-1' })
 
+    /**
+     *
+     */
     function myCallback() {
       return 'error-group-test-1'
     }
@@ -55,6 +58,9 @@ test('Error Group functionality', async (t) => {
     assert.deepEqual(errorTraces[0][4].agentAttributes, {})
     assert.deepEqual(errorEvents[0][2], {})
 
+    /**
+     *
+     */
     function myCallback() {
       throw Error('boom')
     }
@@ -76,6 +82,9 @@ test('Error Group functionality', async (t) => {
       assert.deepEqual(errorTraces[0][4].agentAttributes, {})
       assert.deepEqual(errorEvents[0][2], {})
 
+      /**
+       *
+       */
       function myCallback() {
         return ''
       }
@@ -98,6 +107,9 @@ test('Error Group functionality', async (t) => {
       assert.deepEqual(errorTraces[0][4].agentAttributes, {})
       assert.deepEqual(errorEvents[0][2], {})
 
+      /**
+       *
+       */
       function myCallback() {
         return { 'error.group.name': 'blah' }
       }
@@ -105,10 +117,18 @@ test('Error Group functionality', async (t) => {
   )
 })
 
+/**
+ *
+ * @param errorCollector
+ */
 function getErrorTraces(errorCollector) {
   return errorCollector.traceAggregator.errors
 }
 
+/**
+ *
+ * @param errorCollector
+ */
 function getErrorEvents(errorCollector) {
   return errorCollector.eventAggregator.getEvents()
 }

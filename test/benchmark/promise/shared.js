@@ -7,6 +7,10 @@
 
 const benchmark = require('#testlib/benchmark.js')
 
+/**
+ *
+ * @param name
+ */
 function makeSuite(name) {
   return benchmark.createBenchmark({ name })
 }

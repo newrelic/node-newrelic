@@ -14,6 +14,11 @@
 const OUTPUT_MODE = process.env.OUTPUT_MODE?.toLowerCase() ?? 'simple'
 const isSilent = OUTPUT_MODE === 'quiet' || OUTPUT_MODE === 'silent'
 
+/**
+ *
+ * @param type
+ * @param text
+ */
 function colorize(type, text) {
   if (type === 'pass') {
     const blackText = `\x1b[30m${text}`
@@ -95,6 +100,10 @@ class Tracker extends Map {
   }
 }
 
+/**
+ *
+ * @param source
+ */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 async function * reporter(source) {
   const tracker = new Tracker()

@@ -56,6 +56,10 @@ test.after(() => {
 
 test('should track unary server requests', async (t) => {
   let transaction
+  /**
+   *
+   * @param tx
+   */
   function transactionFinished(tx) {
     transaction = tx
   }
@@ -79,6 +83,10 @@ test('should track unary server requests', async (t) => {
 test('should add DT headers when `distributed_tracing` is enabled', async (t) => {
   let serverTransaction
   let clientTransaction
+  /**
+   *
+   * @param tx
+   */
   function transactionFinished(tx) {
     if (tx.name === getServerTransactionName('SayHello')) {
       serverTransaction = tx
@@ -106,6 +114,10 @@ test('should add DT headers when `distributed_tracing` is enabled', async (t) =>
 
 test('should not include distributed trace headers when there is no client transaction', async (t) => {
   let serverTransaction
+  /**
+   *
+   * @param tx
+   */
   function transactionFinished(tx) {
     serverTransaction = tx
   }
@@ -188,6 +200,10 @@ for (const config of grpcConfigs) {
     const expectedStatusCode = ERR_CODE
     const expectedStatusText = ERR_SERVER_MSG
     let transaction
+    /**
+     *
+     * @param tx
+     */
     function transactionFinished(tx) {
       if (tx.name === getServerTransactionName('SayError')) {
         transaction = tx

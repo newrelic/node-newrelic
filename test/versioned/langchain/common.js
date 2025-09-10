@@ -7,6 +7,10 @@
 
 const { match } = require('../../lib/custom-assertions')
 
+/**
+ *
+ * @param events
+ */
 function filterLangchainEvents(events) {
   return events.filter((event) => {
     const [, chainEvent] = event
@@ -14,6 +18,11 @@ function filterLangchainEvents(events) {
   })
 }
 
+/**
+ *
+ * @param events
+ * @param msgType
+ */
 function filterLangchainEventsByType(events, msgType) {
   return events.filter((event) => {
     const [{ type }] = event
@@ -21,6 +30,15 @@ function filterLangchainEventsByType(events, msgType) {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.vectorSearch
+ * @param root0.responseDocumentSize
+ * @param root1
+ * @param root1.assert
+ */
 function assertLangChainVectorSearch(
   { tx, vectorSearch, responseDocumentSize },
   { assert = require('node:assert') } = {}
@@ -44,6 +62,15 @@ function assertLangChainVectorSearch(
   match(vectorSearch[1], expectedSearch, { assert })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.vectorSearchResult
+ * @param root0.vectorSearchId
+ * @param root1
+ * @param root1.assert
+ */
 function assertLangChainVectorSearchResult(
   { tx, vectorSearchResult, vectorSearchId },
   { assert = require('node:assert') } = {}
@@ -76,6 +103,15 @@ function assertLangChainVectorSearchResult(
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.chatSummary
+ * @param root0.withCallback
+ * @param root1
+ * @param root1.assert
+ */
 function assertLangChainChatCompletionSummary(
   { tx, chatSummary, withCallback },
   { assert = require('node:assert') } = {}
@@ -106,6 +142,18 @@ function assertLangChainChatCompletionSummary(
   match(chatSummary[1], expectedSummary, { assert })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.chatMsgs
+ * @param root0.chatSummary
+ * @param root0.withCallback
+ * @param root0.input
+ * @param root0.output
+ * @param root1
+ * @param root1.assert
+ */
 function assertLangChainChatCompletionMessages(
   {
     tx,

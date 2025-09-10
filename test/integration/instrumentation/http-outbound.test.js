@@ -89,6 +89,10 @@ test('external requests', async function (t) {
       })
     })
 
+    /**
+     *
+     * @param tx
+     */
     function check(tx) {
       const [external] = tx.trace.getChildren(tx.trace.root.id)
       plan.equal(
