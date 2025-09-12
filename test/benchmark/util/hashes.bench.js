@@ -5,8 +5,8 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const makeId = require('../../../lib/util/hashes').makeId
+const benchmark = require('#testlib/benchmark.js')
+const makeId = require('#agentlib/util/hashes.js').makeId
 
 const suite = benchmark.createBenchmark({
   name: 'util.hashes',

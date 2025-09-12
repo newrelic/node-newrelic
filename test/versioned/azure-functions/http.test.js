@@ -39,7 +39,7 @@ class AzureFunctionHttpResponse {
   cookies // array of cookie strings
 }
 
-test.beforeEach(ctx => {
+test.beforeEach((ctx) => {
   ctx.nr = {}
 
   ctx.nr.agent = helper.loadMockedAgent()
@@ -57,7 +57,7 @@ test.beforeEach(ctx => {
   process.env.WEBSITE_SITE_NAME = 'test-site'
 })
 
-test.afterEach(ctx => {
+test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   removeMatchedModules(/lib\/instrumentation\/@azure\/functions\.js/)
 
@@ -113,7 +113,7 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
   t.nr.mockApi = mockApi
 }
 
-test('warns for missing env vars', t => {
+test('warns for missing env vars', (t) => {
   process.env.WEBSITE_OWNER_NAME = 'foo'
   delete process.env.WEBSITE_RESOURCE_GROUP
   delete process.env.WEBSITE_SITE_NAME
@@ -134,7 +134,7 @@ test('warns for missing env vars', t => {
   ])
 })
 
-test('wraps expected methods', t => {
+test('wraps expected methods', (t) => {
   bootstrapModule({ t })
   const { agent, initialize, mockApi, shim } = t.nr
 

@@ -68,7 +68,7 @@ test('should assign span key to agent', (t) => {
   assert.ok(agent.otelSpanKey)
 })
 
-test('should log message if traces is not enabled', async t => {
+test('should log message if traces is not enabled', async (t) => {
   const { agent, loggerMock } = t.nr
   agent.config.opentelemetry_bridge.enabled = true
   agent.config.opentelemetry_bridge.traces.enabled = false
@@ -77,7 +77,18 @@ test('should log message if traces is not enabled', async t => {
   assert.equal(loggerMock.debug.args[0][0], ['`opentelemetry_bridge.traces` is not enabled, skipping'])
 })
 
-test('should log message if metrics is not enabled', async t => {
+test('should log message if logs is not enabled', async (t) => {
+  const { agent, loggerMock } = t.nr
+  agent.config.opentelemetry_bridge.enabled = true
+  agent.config.opentelemetry_bridge.traces.enabled = true
+  agent.config.opentelemetry_bridge.metrics.enabled = true
+  agent.config.opentelemetry_bridge.logs.enabled = false
+  setupOtel(agent, loggerMock)
+
+  assert.equal(loggerMock.debug.args[0][0], '`opentelemetry_bridge.logs` is not enabled, skipping')
+})
+
+test('should log message if metrics is not enabled', async (t) => {
   const { agent, loggerMock } = t.nr
   agent.config.opentelemetry_bridge.enabled = true
   agent.config.opentelemetry_bridge.traces.enabled = true
@@ -86,7 +97,7 @@ test('should log message if metrics is not enabled', async t => {
   assert.equal(loggerMock.debug.args[0][0], '`opentelemetry_bridge.metrics` is not enabled, skipping')
 })
 
-test('should bootstrap metrics', async t => {
+test('should bootstrap metrics', async (t) => {
   const { agent, loggerMock } = t.nr
   agent.config.opentelemetry_bridge.enabled = true
   agent.config.opentelemetry_bridge.traces.enabled = true

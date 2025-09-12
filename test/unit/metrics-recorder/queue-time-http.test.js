@@ -27,7 +27,8 @@ function record(options) {
   const segment = makeSegment(options)
   const transaction = options.transaction
 
-  transaction.finalizeNameFromUri(options.url, options.code)
+  transaction.url = options.url
+  transaction.finalizeNameFromWeb(options.code)
   transaction.queueTime = options.queueTime
   segment.markAsWeb(transaction)
   recordWeb(segment, options.transaction.name, options.transaction)

@@ -10,7 +10,7 @@ const assert = require('node:assert')
 
 const Traceparent = require('#agentlib/w3c/traceparent.js')
 
-test('instances from header values', async t => {
+test('instances from header values', async (t) => {
   await t.test('rejects non-string values', () => {
     const expected = /header value must be a string/
     assert.throws(() => Traceparent.fromHeader(Buffer.from('')), expected)

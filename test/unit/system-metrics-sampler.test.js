@@ -23,7 +23,7 @@ test('environmental sampler', async function (t) {
     // process.cpuUsage return values in cpu microseconds (1^-6)
     sandbox
       .stub(process, 'cpuUsage')
-      .callsFake(() => ({ user: 1e6 * numCpus, system: 1e6 * numCpus }))
+      .callsFake(() => { return { user: 1e6 * numCpus, system: 1e6 * numCpus } })
     // process.uptime returns values in seconds
     sandbox.stub(process, 'uptime').callsFake(() => 1)
     ctx.nr.agent = new Agent(configurator.initialize())

@@ -1,0 +1,434 @@
+{
+  "name": "Node Agent Benchmark Test Metrics",
+  "description": null,
+  "permissions": "PUBLIC_READ_ONLY",
+  "pages": [
+    {
+      "guid": "MXxWSVp8REFTSEJPQVJEfDEwNTY2NDI",
+      "name": "Node Agent Benchmark Test Metrics",
+      "description": null,
+      "widgets": [
+        {
+          "id": "453069022",
+          "title": "Mean time",
+          "layout": {
+            "column": 1,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": [],
+          "visualization": {
+            "id": "viz.line"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "legend": {
+              "enabled": true
+            },
+            "markers": {
+              "displayedTypes": {
+                "criticalViolations": false,
+                "deployments": true,
+                "relatedDeployments": true,
+                "warningViolations": false
+              }
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'mean' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+              }
+            ],
+            "nullValues": {
+              "nullValue": "remove"
+            },
+            "platformOptions": {
+              "ignoreTimeRange": false
+            },
+            "refreshRate": {
+              "frequency": 30000
+            },
+            "thresholds": {
+              "isLabelVisible": true
+            },
+            "units": {
+              "unit": "SECONDS"
+            },
+            "yAxisLeft": {
+              "zero": false
+            },
+            "yAxisRight": {
+              "zero": true
+            }
+          }
+        },
+        {
+          "id": "453070880",
+          "title": "Median time",
+          "layout": {
+            "column": 5,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": [],
+          "visualization": {
+            "id": "viz.line"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "legend": {
+              "enabled": true
+            },
+            "markers": {
+              "displayedTypes": {
+                "criticalViolations": false,
+                "deployments": true,
+                "relatedDeployments": true,
+                "warningViolations": false
+              }
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'median' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+              }
+            ],
+            "nullValues": {
+              "nullValue": "remove"
+            },
+            "platformOptions": {
+              "ignoreTimeRange": false
+            },
+            "refreshRate": {
+              "frequency": 30000
+            },
+            "thresholds": {
+              "isLabelVisible": true
+            },
+            "units": {
+              "unit": "SECONDS"
+            },
+            "yAxisLeft": {
+              "zero": false
+            },
+            "yAxisRight": {
+              "zero": true
+            }
+          }
+        },
+        {
+          "id": "453073421",
+          "title": "95th percentile time",
+          "layout": {
+            "column": 9,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": [],
+          "visualization": {
+            "id": "viz.line"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "legend": {
+              "enabled": true
+            },
+            "markers": {
+              "displayedTypes": {
+                "criticalViolations": false,
+                "deployments": true,
+                "relatedDeployments": true,
+                "warningViolations": false
+              }
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = '95thPercentile' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+              }
+            ],
+            "nullValues": {
+              "nullValue": "remove"
+            },
+            "platformOptions": {
+              "ignoreTimeRange": false
+            },
+            "refreshRate": {
+              "frequency": 30000
+            },
+            "thresholds": {
+              "isLabelVisible": true
+            },
+            "units": {
+              "unit": "SECONDS"
+            },
+            "yAxisLeft": {
+              "zero": false
+            },
+            "yAxisRight": {
+              "zero": true
+            }
+          }
+        },
+        {
+          "id": "453071784",
+          "title": "Max time",
+          "layout": {
+            "column": 1,
+            "row": 4,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": [],
+          "visualization": {
+            "id": "viz.line"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "legend": {
+              "enabled": true
+            },
+            "markers": {
+              "displayedTypes": {
+                "criticalViolations": false,
+                "deployments": true,
+                "relatedDeployments": true,
+                "warningViolations": false
+              }
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'max' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+              }
+            ],
+            "nullValues": {
+              "nullValue": "remove"
+            },
+            "platformOptions": {
+              "ignoreTimeRange": false
+            },
+            "refreshRate": {
+              "frequency": 1800000
+            },
+            "thresholds": {
+              "isLabelVisible": true
+            },
+            "units": {
+              "unit": "SECONDS"
+            },
+            "yAxisLeft": {
+              "zero": false
+            },
+            "yAxisRight": {
+              "zero": true
+            }
+          }
+        },
+        {
+          "id": "453072024",
+          "title": "Min time",
+          "layout": {
+            "column": 5,
+            "row": 4,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": [],
+          "visualization": {
+            "id": "viz.line"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "legend": {
+              "enabled": true
+            },
+            "markers": {
+              "displayedTypes": {
+                "criticalViolations": false,
+                "deployments": true,
+                "relatedDeployments": true,
+                "warningViolations": false
+              }
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'min' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+              }
+            ],
+            "nullValues": {
+              "nullValue": "remove"
+            },
+            "platformOptions": {
+              "ignoreTimeRange": false
+            },
+            "refreshRate": {
+              "frequency": 30000
+            },
+            "thresholds": {
+              "isLabelVisible": true
+            },
+            "units": {
+              "unit": "SECONDS"
+            },
+            "yAxisLeft": {
+              "zero": false
+            },
+            "yAxisRight": {
+              "zero": true
+            }
+          }
+        },
+        {
+          "id": "453073427",
+          "title": "5th percentile time",
+          "layout": {
+            "column": 9,
+            "row": 4,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": [],
+          "visualization": {
+            "id": "viz.line"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": true
+            },
+            "legend": {
+              "enabled": true
+            },
+            "markers": {
+              "displayedTypes": {
+                "criticalViolations": false,
+                "deployments": true,
+                "relatedDeployments": true,
+                "warningViolations": false
+              }
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = '5thPercentile' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+              }
+            ],
+            "nullValues": {
+              "nullValue": "remove"
+            },
+            "platformOptions": {
+              "ignoreTimeRange": false
+            },
+            "refreshRate": {
+              "frequency": 30000
+            },
+            "thresholds": {
+              "isLabelVisible": true
+            },
+            "units": {
+              "unit": "SECONDS"
+            },
+            "yAxisLeft": {
+              "zero": false
+            },
+            "yAxisRight": {
+              "zero": true
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "node_version_match",
+      "items": [
+        {
+          "title": null,
+          "value": "v20%"
+        },
+        {
+          "title": null,
+          "value": "v22%"
+        },
+        {
+          "title": null,
+          "value": "v24%"
+        },
+        {
+          "title": null,
+          "value": "v%"
+        }
+      ],
+      "defaultValues": [
+        {
+          "value": {
+            "string": "v22%"
+          }
+        }
+      ],
+      "nrqlQuery": null,
+      "options": {
+        "excluded": false
+      },
+      "title": "Node runtime version",
+      "type": "ENUM",
+      "isMultiSelection": false,
+      "replacementStrategy": "STRING"
+    },
+    {
+      "name": "agent_version_match",
+      "items": [
+        {
+          "title": null,
+          "value": "13%"
+        },
+        {
+          "title": null,
+          "value": "%"
+        }
+      ],
+      "defaultValues": [
+        {
+          "value": {
+            "string": "13%"
+          }
+        }
+      ],
+      "nrqlQuery": null,
+      "options": {
+        "excluded": false
+      },
+      "title": "Agent package version",
+      "type": "ENUM",
+      "isMultiSelection": false,
+      "replacementStrategy": "STRING"
+    }
+  ]
+}

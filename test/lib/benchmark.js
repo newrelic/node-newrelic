@@ -7,9 +7,7 @@
 
 const helper = require('./agent_helper')
 
-exports.createBenchmark = (opts) => {
-  return new Benchmark(opts)
-}
+exports.createBenchmark = (opts) => new Benchmark(opts)
 
 /**
  * Represents the benchmark test; created in test/benchmark/*.bench.js files

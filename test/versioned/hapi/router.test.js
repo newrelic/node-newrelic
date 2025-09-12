@@ -340,7 +340,7 @@ test('using shared `pre` config option', (t, end) => {
       config: {
         auth: false,
         pre: [assignStuff],
-        handler: async () => ({ success: 'TRUE' })
+        handler: async () => { return { success: 'TRUE' } }
       }
     },
     {
@@ -349,7 +349,7 @@ test('using shared `pre` config option', (t, end) => {
       config: {
         auth: false,
         pre: [assignStuff],
-        handler: async () => ({ success: 'TRUE' })
+        handler: async () => { return { success: 'TRUE' } }
       }
     },
     {
@@ -358,7 +358,7 @@ test('using shared `pre` config option', (t, end) => {
       config: {
         auth: false,
         pre: [assignStuff],
-        handler: async () => ({ success: 'TRUE' })
+        handler: async () => { return { success: 'TRUE' } }
       }
     },
     {
@@ -367,7 +367,7 @@ test('using shared `pre` config option', (t, end) => {
       config: {
         auth: false,
         pre: [assignStuff, assignMoreStuff],
-        handler: async () => ({ success: 'TRUE' })
+        handler: async () => { return { success: 'TRUE' } }
       }
     }
   ])

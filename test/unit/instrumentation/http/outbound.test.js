@@ -160,22 +160,6 @@ test('instrumentOutbound', async (t) => {
     })
   })
 
-  await t.test('should not accept an undefined path', (t, end) => {
-    const { agent } = t.nr
-    const req = new events.EventEmitter()
-    helper.runInTransaction(agent, function () {
-      assert.throws(
-        () => instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest),
-        Error
-      )
-      end()
-    })
-
-    function makeFakeRequest() {
-      return req
-    }
-  })
-
   await t.test('should accept a simple path with no parameters', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
@@ -313,6 +297,46 @@ test('instrumentOutbound', async (t) => {
       }
     })
     end()
+  })
+
+  await t.test('should pritortize using href', (t, end) => {
+    const { agent } = t.nr
+    const req = new events.EventEmitter()
+    helper.runInTransaction(agent, function (transaction) {
+      const path = '/someother/path'
+      const href = `http://${HOSTNAME}:${PORT}/someother/path/more?query=string`
+
+      instrumentOutbound(agent, { href, host: HOSTNAME, port: PORT }, makeFakeRequest)
+
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.ok(child.name.includes('someother/path/more'), 'should use href over request.path')
+
+      function makeFakeRequest(opts) {
+        req.path = path
+        return req
+      }
+      end()
+    })
+  })
+
+  await t.test('should construct url from protocol, host header and path when path is not a substring of href', (t, end) => {
+    const { agent } = t.nr
+    const req = new events.EventEmitter()
+    helper.runInTransaction(agent, function (transaction) {
+      const path = '/fallback/path'
+      const href = 'not-a-valid-url'
+
+      instrumentOutbound(agent, { href, host: HOSTNAME, port: PORT }, makeFakeRequest)
+
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.ok(child.name.includes(path), 'should use request.path when href is invalid')
+
+      function makeFakeRequest(opts) {
+        req.path = path
+        return req
+      }
+      end()
+    })
   })
 })
 
@@ -480,6 +504,9 @@ test('when working with http.request', async (t) => {
     nock(host).post(path).reply(200)
 
     helper.runInTransaction(agent, function (transaction) {
+      // We are purposefully using `url.parse` here in order to verify that our
+      // implementation results in the same shape data as that returned by `url.parse`.
+      // See: https://github.com/newrelic/node-newrelic/blob/2077ce35db319d0128337faed0ff77b00f76d8f1/lib/instrumentation/core/http.js#L390
       const opts = url.parse(`${host}${path}`)
       opts.method = 'POST'
 

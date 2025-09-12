@@ -2,6 +2,84 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.3.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Added defensive code for obtaining `protocol` in outbound http calls"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.3.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Default `requestParameters` to an object to avoid crash in `transaction.addRequestParameters`"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.3.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added MCP `StreamableHTTPClientTransport` support"
+        ]
+      }
+    },
+    {
+      "version": "13.2.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
+      "version": "13.2.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed logic around detecting OTEL packages",
+          "Updated `shimmer.setupSubscribers` to properly setup and skip subscribers that are disabled"
+        ],
+        "features": [
+          "Added ability to register `Supportability/Features/Instrumentation/OnRequire/<pkg>` metrics for subscriber based instrumentation",
+          "Added instrumentation for `@modelcontextprotocol/sdk` client calls `client.callTool`, `client.readResource`, and `client.getPrompt`",
+          "Added esm loader hook and commonjs patch to work with orchestrion-js"
+        ]
+      }
+    },
+    {
+      "version": "13.1.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed `transaction.url` obfuscation"
+        ],
+        "features": [
+          "Disabled timers instrumentation by default in the sample configuration",
+          "Added supportability metrics when instrumentation has been disabled for a package",
+          "Added support for OTEL logs API"
+        ]
+      }
+    },
+    {
+      "version": "13.0.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Dropped support for Node.js 18",
+          "Updated min supported version for `fastify` to 3.0.0, `pino` to 8.0.0, and `koa-router` to 12.0.0"
+        ]
+      }
+    },
+    {
       "version": "12.25.0",
       "changes": {
         "security": [],

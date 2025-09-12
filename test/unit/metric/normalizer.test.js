@@ -172,9 +172,7 @@ test('MetricNormalizer', async function (t) {
       ]
 
       assert.deepEqual(
-        normalizer.rules.map((r) => {
-          return r.toJSON()
-        }),
+        normalizer.rules.map((r) => r.toJSON()),
         reduced
       )
     })
@@ -217,9 +215,7 @@ test('MetricNormalizer', async function (t) {
         replacement: '$1'
       }
       assert.deepEqual(
-        normalizer.rules.map((r) => {
-          return r.toJSON()
-        }),
+        normalizer.rules.map((r) => r.toJSON()),
         [expected]
       )
     })

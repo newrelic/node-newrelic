@@ -18,6 +18,7 @@ const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { originalMsgAssertion } = require('./helpers')
 const { validateLogLine, validateCommonAttrs } = require('../../lib/logging-helper')
+const { assertMetrics } = require('../../lib/custom-assertions')
 
 const { version: pinoVersion } = require('pino/package')
 
@@ -72,9 +73,27 @@ test('logging disabled', async (t) => {
 
 test('logging enabled', (t) => {
   setup(t.nr, { application_logging: { enabled: true } })
-  const { agent } = t.nr
-  const metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
+  const { agent, pino, sink } = t.nr
+
+  const logger = pino({ level: 'info' }, sink)
+  const message = 'logs are not enriched'
+  logger.info(message)
+  const line = t.nr.logs[0]
+  originalMsgAssertion({
+    logLine: line,
+    hostname: agent.config.getHostnameSafe()
+  })
+  assert.equal(line.msg, message, 'msg should not change')
+  let metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
   assert.equal(metric.callCount, 1, `should create ${LOGGING.LIBS.PINO} metric`)
+  logger.info(message)
+  metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
+  assert.equal(metric.callCount, 1, `should create ${LOGGING.LIBS.PINO} metric`)
+  const expectedPkgMetrics = [
+    [{ name: 'Supportability/Features/Instrumentation/OnRequire/pino' }],
+    [{ name: `Supportability/Features/Instrumentation/OnRequire/pino/Version/${semver.major(pinoVersion)}` }]
+  ]
+  assertMetrics(agent.metrics, expectedPkgMetrics, false, false)
 })
 
 test('local_decorating', (t, end) => {

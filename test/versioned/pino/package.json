@@ -6,7 +6,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "dependencies": {
         "pino": ">=8.0.0",
@@ -20,7 +20,7 @@
 
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "dependencies": {
         "pino": ">=8.0.0",

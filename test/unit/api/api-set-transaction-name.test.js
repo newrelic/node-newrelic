@@ -52,7 +52,8 @@ test('Agent API - setTransactionName', async (t) => {
   await t.test('uses the last name set when called multiple times', (t, end) => {
     const { agent, api } = t.nr
     agent.on('transactionFinished', function (transaction) {
-      transaction.finalizeNameFromUri(TEST_URL, 200)
+      transaction.url = TEST_URL
+      transaction.finalizeNameFromWeb(200)
 
       assert.equal(transaction.name, 'WebTransaction/Custom/List')
 
@@ -79,7 +80,8 @@ function setTranasactionNameGoldenPath({ agent, api }) {
   let segment = null
   return new Promise((resolve) => {
     agent.on('transactionFinished', function (finishedTransaction) {
-      finishedTransaction.finalizeNameFromUri(TEST_URL, 200)
+      finishedTransaction.url = TEST_URL
+      finishedTransaction.finalizeNameFromWeb(200)
       segment.markAsWeb(finishedTransaction)
       resolve({ transaction: finishedTransaction, segment })
     })

@@ -5,13 +5,27 @@
   "tests": [
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "dependencies": {
         "@opentelemetry/api": ">=1.0.0"
       },
       "files": [
         "span.test.js"
+      ]
+    },
+
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "@opentelemetry/instrumentation": "^0.203.0",
+        "@opentelemetry/instrumentation-pino": "^0.50.0",
+        "pino": "^9.7.0"
+      },
+      "files": [
+        "logs.test.js"
       ]
     }
   ]

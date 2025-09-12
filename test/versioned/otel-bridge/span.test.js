@@ -58,7 +58,7 @@ const {
   EXCEPTION_STACKTRACE,
   MESSAGING_SYSTEM_KIND_VALUES,
   SPAN_STATUS_CODE
-} = require('../../../lib/otel/constants.js')
+} = require('../../../lib/otel/traces/constants.js')
 const { assertSpanKind } = require('../../lib/custom-assertions')
 
 test.beforeEach((ctx) => {
@@ -365,7 +365,7 @@ test('fallback client is bridged accordingly', (t, end) => {
   const { agent, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'fallback-client-test'
-    tracer.startActiveSpan('unidic-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
+    tracer.startActiveSpan('undici-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'External/unknown')
       assert.equal(tx.traceId, span.spanContext().traceId)
@@ -617,7 +617,6 @@ test('server span is bridged accordingly', (t, end) => {
     assert.equal(tx.traceId, span.spanContext().traceId)
     span.setAttribute(ATTR_HTTP_RES_STATUS_CODE, 200)
     span.end()
-    assert.equal(tx.parsedUrl.href, 'http://newrelic.com/foo/bar?key=value&key2=value2')
     assert.ok(!tx.isDistributedTrace)
     const segment = agent.tracer.getSegment()
     assert.equal(segment.name, 'WebTransaction/WebFrameworkUri//GET/foo/:param')
@@ -639,6 +638,8 @@ test('server span is bridged accordingly', (t, end) => {
     assert.equal(attrs['url.path'], '/foo/bar')
     assert.equal(attrs['url.scheme'], 'http')
     assert.equal(attrs['http.statusCode'], 200)
+    const spanAttrs = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
+    assert.equal(spanAttrs['request.uri'], '/foo/bar')
 
     const unscopedMetrics = tx.metrics.unscoped
     const expectedMetrics = [
@@ -696,8 +697,10 @@ test('server span(rpc) is bridged accordingly', (t, end) => {
     assert.equal(attrs['rpc.service'], 'test.service')
     assert.equal(attrs['url.path'], '/foo/bar')
     assert.equal(attrs['request.method'], 'getData')
-    assert.equal(attrs['request.uri'], 'test.service/getData')
     assert.equal(attrs['response.status'], 0)
+
+    const spanAttrs = segment.attributes.get(ATTR_DESTINATION.SPAN_EVENT)
+    assert.equal(spanAttrs['request.uri'], 'test.service/getData')
 
     const unscopedMetrics = tx.metrics.unscoped
     const expectedMetrics = [

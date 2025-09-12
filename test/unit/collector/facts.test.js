@@ -76,9 +76,7 @@ test('fun facts about apps that New Relic is interested in including', async (t)
     ctx.nr.agent = helper.loadMockedAgent(Object.assign(config, DISABLE_ALL_DETECTIONS))
 
     // Undo agent helper override.
-    ctx.nr.agent.config.applications = () => {
-      return config.app_name
-    }
+    ctx.nr.agent.config.applications = () => config.app_name
   })
 
   t.afterEach((ctx) => {
@@ -514,9 +512,7 @@ test('boot id facts', async (t) => {
     ctx.nr.startingOsPlatform = os.platform
     ctx.nr.startingFsAccess = fs.access
 
-    os.platform = () => {
-      return 'linux'
-    }
+    os.platform = () => 'linux'
     fs.access = (file, mode, cb) => {
       cb(null)
     }

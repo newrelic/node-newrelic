@@ -6,6 +6,8 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
+const { readFile } = require('node:fs/promises')
+const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
@@ -13,6 +15,7 @@ const crypto = require('crypto')
 const DB_INDEX = `test-${randomString()}`
 const DB_INDEX_2 = `test2-${randomString()}`
 const SEARCHTERM_1 = randomString()
+const semver = require('semver')
 
 function randomString() {
   return crypto.randomBytes(5).toString('hex')
@@ -47,10 +50,13 @@ test('opensearch instrumentation', async (t) => {
     const client = new Client({
       node: `http://${params.opensearch_host}:${params.opensearch_port}`
     })
+    const pkg = await readFile(path.join(__dirname, '/node_modules/@opensearch-project/opensearch/package.json'))
+    const { version: pkgVersion } = JSON.parse(pkg.toString())
 
     ctx.nr = {
       agent,
       client,
+      pkgVersion,
       METRIC_HOST_NAME,
       HOST_ID
     }
@@ -187,8 +193,6 @@ test('opensearch instrumentation', async (t) => {
       assert.equal(attrs.product, 'OpenSearch')
       assert.equal(attrs.host, METRIC_HOST_NAME)
       assert.equal(attrs.port_path_or_id, `${params.opensearch_port}`)
-      // TODO: update once instrumentation is properly setting database name
-      assert.equal(attrs.database_name, 'unknown')
       transaction.end()
       assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
@@ -316,7 +320,7 @@ test('opensearch instrumentation', async (t) => {
   })
 
   await t.test('should create correct metrics', async function (t) {
-    const { agent, client, HOST_ID } = t.nr
+    const { agent, client, pkgVersion, HOST_ID } = t.nr
     const id = `key-${randomString()}`
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const documentProp = setRequestBody({
@@ -357,6 +361,12 @@ test('opensearch instrumentation', async (t) => {
       }
       expected['Datastore/instance/OpenSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
+      const agentMetrics = agent.metrics._metrics.unscoped
+      const expectedPkgMetrics = {
+        'Supportability/Features/Instrumentation/OnRequire/@opensearch-project/opensearch': 1,
+        [`Supportability/Features/Instrumentation/OnRequire/@opensearch-project/opensearch/Version/${semver.major(pkgVersion)}`]: 1,
+      }
+      checkMetrics(agentMetrics, expectedPkgMetrics)
     })
   })
 
@@ -440,9 +450,7 @@ function getBulkData(includeIndex) {
   ]
 
   if (includeIndex) {
-    operations = operations.flatMap((doc, i) => {
-      return [{ index: { _index: i < 4 ? DB_INDEX : DB_INDEX_2 } }, doc]
-    })
+    operations = operations.flatMap((doc, i) => [{ index: { _index: i < 4 ? DB_INDEX : DB_INDEX_2 } }, doc])
   }
 
   return operations

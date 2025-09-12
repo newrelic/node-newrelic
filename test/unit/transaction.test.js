@@ -16,6 +16,7 @@ const Transaction = require('#agentlib/transaction/index.js')
 const Segment = require('#agentlib/transaction/trace/segment.js')
 const hashes = require('#agentlib/util/hashes.js')
 const sinon = require('sinon')
+const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 
 test('Transaction unit tests', async (t) => {
   t.beforeEach(function (ctx) {
@@ -31,9 +32,7 @@ test('Transaction unit tests', async (t) => {
   await t.test('basic transaction tests', (t, end) => {
     const { agent, txn } = t.nr
     assert.throws(
-      () => {
-        return new Transaction()
-      },
+      () => new Transaction(),
       /must be bound to the agent/,
       'should require an agent to create new transactions'
     )
@@ -303,7 +302,8 @@ test('Transaction naming tests', async (t) => {
       const { agent, txn } = t.nr
       const api = new API(agent)
       api.addIgnoringRule('^/test/')
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(200)
       assert.ok(txn.isIgnored(), 'should ignore the transaction')
     })
   })
@@ -362,91 +362,105 @@ test('Transaction naming tests', async (t) => {
 
     await t.test('produces a normalized (backstopped) name when status is 200', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(200)
       assert.equal(txn.name, 'WebTransaction/NormalizedUri/*')
     })
 
     await t.test('produces a normalized partial name when status is 200', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(200)
       assert.equal(txn._partialName, 'NormalizedUri/*')
     })
 
     await t.test('passes through status code when status is 200', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(200)
       assert.equal(txn.statusCode, 200)
     })
 
     await t.test('produces a non-error name when status code is ignored', (t) => {
       const { agent, txn } = t.nr
       agent.config.error_collector.ignore_status_codes = [404, 500]
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 500)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(500)
       assert.equal(txn.name, 'WebTransaction/NormalizedUri/*')
     })
 
     await t.test('produces a non-error partial name when status code is ignored', (t) => {
       const { agent, txn } = t.nr
       agent.config.error_collector.ignore_status_codes = [404, 500]
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 500)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(500)
       assert.equal(txn._partialName, 'NormalizedUri/*')
     })
 
     await t.test('passes through status code when status is 404', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(404)
       assert.equal(txn.statusCode, 404)
     })
 
     await t.test('produces a `not found` partial name when status is 404', (t) => {
       const { txn } = t.nr
       txn.nameState.setName('Expressjs', 'GET', '/')
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(404)
       assert.equal(txn._partialName, 'Expressjs/GET/(not found)')
     })
 
     await t.test('produces a `not found` name when status is 404', (t) => {
       const { txn } = t.nr
       txn.nameState.setName('Expressjs', 'GET', '/')
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(404)
       assert.equal(txn.name, 'WebTransaction/Expressjs/GET/(not found)')
     })
 
     await t.test('passes through status code when status is 405', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 405)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(405)
       assert.equal(txn.statusCode, 405)
     })
 
     await t.test('produces a `method not allowed` partial name when status is 405', (t) => {
       const { txn } = t.nr
       txn.nameState.setName('Expressjs', 'GET', '/')
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 405)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(405)
       assert.equal(txn._partialName, 'Expressjs/GET/(method not allowed)')
     })
 
     await t.test('produces a `method not allowed` name when status is 405', (t) => {
       const { txn } = t.nr
       txn.nameState.setName('Expressjs', 'GET', '/')
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 405)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(405)
       assert.equal(txn.name, 'WebTransaction/Expressjs/GET/(method not allowed)')
     })
 
     await t.test('produces a name based on 501 status code message', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(501)
       assert.equal(txn.name, 'WebTransaction/WebFrameworkUri/(not implemented)')
     })
 
     await t.test('produces a regular partial name based on 501 status code message', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(501)
       assert.equal(txn._partialName, 'WebFrameworkUri/(not implemented)')
     })
 
     await t.test('passes through status code when status is 501', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(501)
       assert.equal(txn.statusCode, 501)
     })
 
@@ -458,13 +472,14 @@ test('Transaction naming tests', async (t) => {
       agent.txSegmentNormalizer.load([
         { prefix: 'WebTransaction/NormalizedUri', terms: ['test', 'string'] }
       ])
-      txn.finalizeNameFromUri(url, 200)
+      txn.finalizeNameFromWeb(200)
       assert.equal(txn.name, 'WebTransaction/NormalizedUri/test/*/string/*')
     })
 
     await t.test('should not scope web transactions to their URL', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/1337?action=edit', 200)
+      txn.url = '/test/1337?action=edit'
+      txn.finalizeNameFromWeb(200)
       assert.notEqual(txn.name, '/test/1337?action=edit')
       assert.notEqual(txn.name, 'WebTransaction/Uri/test/1337')
     })
@@ -492,70 +507,81 @@ test('Transaction naming tests', async (t) => {
 
     await t.test('produces a custom name when status is 200', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(200)
       assert.equal(txn.name, 'WebTransaction/Custom/test')
     })
 
     await t.test('produces a partial name when status is 200', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(200)
       assert.equal(txn.nameState.getName(), 'Custom/test')
     })
 
     await t.test('should rename a transaction when told to by a rule', (t) => {
       const { agent, txn } = t.nr
       agent.transactionNameNormalizer.addSimple('^(WebTransaction/Custom)/test$', '$1/*')
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(200)
       assert.equal(txn.name, 'WebTransaction/Custom/*')
     })
 
     await t.test('passes through status code when status is 200', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(200)
       assert.equal(txn.statusCode, 200)
     })
 
     await t.test('keeps the custom name when error status is ignored', (t) => {
       const { agent, txn } = t.nr
       agent.config.error_collector.ignore_status_codes = [404, 500]
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 500)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(500)
       assert.equal(txn.name, 'WebTransaction/Custom/test')
     })
 
     await t.test('keeps the custom partial name when error status is ignored', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(404)
       assert.equal(txn.nameState.getName(), 'Custom/test')
     })
 
     await t.test('passes through status code when status is 404', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(404)
       assert.equal(txn.statusCode, 404)
     })
 
     await t.test('produces the custom name even when status is 501', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(501)
       assert.equal(txn.name, 'WebTransaction/Custom/test')
     })
 
     await t.test('produces the custom partial name even when status is 501', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(501)
       assert.equal(txn.nameState.getName(), 'Custom/test')
     })
 
     await t.test('passes through status code when status is 501', (t) => {
       const { txn } = t.nr
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
+      txn.url = '/test/string?do=thing&another=thing'
+      txn.finalizeNameFromWeb(501)
       assert.equal(txn.statusCode, 501)
     })
 
     await t.test('should ignore a transaction when told to by a rule', (t) => {
       const { agent, txn } = t.nr
+      txn.url = '/test/string?do=thing&another=thing'
       agent.transactionNameNormalizer.addSimple('^WebTransaction/Custom/test$')
-      txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+      txn.finalizeNameFromWeb(200)
       assert.ok(txn.isIgnored())
     })
   })
@@ -1591,7 +1617,6 @@ test('insertDistributedTraceHeaders', async (t) => {
     const txn = new Transaction(agent)
     const headers = {}
     txn.insertDistributedTraceHeaders(headers)
-    console.log(headers)
     assert.ok(headers.traceparent)
     assert.ok(!Object.prototype.hasOwnProperty.call(headers, 'tracestate'))
     assert.ok(!Object.prototype.hasOwnProperty.call(headers, 'newrelic'))
@@ -1834,7 +1859,7 @@ test('transaction end', async (t) => {
   })
 })
 
-test('when being named with finalizeNameFromUri', async (t) => {
+test('when being named with finalizeNameFromWeb', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent({
@@ -1854,17 +1879,13 @@ test('when being named with finalizeNameFromUri', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should throw when called with no parameters', (t) => {
-    const { txn } = t.nr
-    assert.throws(() => txn.finalizeNameFromUri())
-  })
-
   await t.test('should ignore a request path when told to by a rule', (t) => {
     const { agent, txn } = t.nr
     const api = new API(agent)
     api.addIgnoringRule('^/test/')
 
-    txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+    txn.url = '/test/string?do=thing&another=thing'
+    txn.finalizeNameFromWeb(200)
 
     assert.equal(txn.isIgnored(), true)
   })
@@ -1873,7 +1894,8 @@ test('when being named with finalizeNameFromUri', async (t) => {
     const { agent, txn } = t.nr
     agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
 
-    txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+    txn.url = '/test/string?do=thing&another=thing'
+    txn.finalizeNameFromWeb(200)
 
     assert.equal(txn.isIgnored(), true)
   })
@@ -1882,7 +1904,8 @@ test('when being named with finalizeNameFromUri', async (t) => {
     const { agent, txn } = t.nr
     agent.userNormalizer.addSimple('^/config', '/foobar')
 
-    txn.finalizeNameFromUri('/config', 200)
+    txn.url = '/config'
+    txn.finalizeNameFromWeb(200)
 
     assert.equal(txn.name, 'WebTransaction/NormalizedUri/foobar')
   })
@@ -1893,7 +1916,8 @@ test('when being named with finalizeNameFromUri', async (t) => {
 
     addSegmentInContext(tracer, txn, 'test segment')
 
-    txn.finalizeNameFromUri('/config', 200)
+    txn.url = '/config'
+    txn.finalizeNameFromWeb(200)
 
     const spanContext = agent.tracer.getSpanContext()
     const intrinsics = spanContext.intrinsicAttributes
@@ -1906,7 +1930,8 @@ test('when being named with finalizeNameFromUri', async (t) => {
     const { txn } = t.nr
     setupNameState(txn)
 
-    txn.finalizeNameFromUri('/some/random/path', 200)
+    txn.url = '/some/random/path'
+    txn.finalizeNameFromWeb(200)
 
     assert.equal(txn.name, 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
   })
@@ -1915,7 +1940,8 @@ test('when being named with finalizeNameFromUri', async (t) => {
     const { txn } = t.nr
     setupNameState(txn)
 
-    txn.finalizeNameFromUri('/some/random/path', 200)
+    txn.url = '/some/random/path'
+    txn.finalizeNameFromWeb(200)
 
     const attrs = txn.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
 
@@ -1933,7 +1959,8 @@ test('when being named with finalizeNameFromUri', async (t) => {
       setupNameState(txn)
       addSegmentInContext(tracer, txn, 'test segment')
 
-      txn.finalizeNameFromUri('/some/random/path', 200)
+      txn.url = '/some/random/path'
+      txn.finalizeNameFromWeb(200)
 
       const spanContext = agent.tracer.getSpanContext()
       const intrinsics = spanContext.intrinsicAttributes
@@ -1948,7 +1975,8 @@ test('when being named with finalizeNameFromUri', async (t) => {
     setupNameState(txn)
     setupHighSecurity(agent)
 
-    txn.finalizeNameFromUri('/some/random/path', 200)
+    txn.url = '/some/random/path'
+    txn.finalizeNameFromWeb(200)
 
     assert.equal(txn.name, 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
   })
@@ -1961,7 +1989,8 @@ test('when being named with finalizeNameFromUri', async (t) => {
       setupNameState(txn)
       setupHighSecurity(agent)
 
-      txn.finalizeNameFromUri('/some/random/path', 200)
+      txn.url = '/some/random/path'
+      txn.finalizeNameFromWeb(200)
 
       const attrs = txn.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
       assert.deepEqual(attrs, {})
@@ -1998,7 +2027,7 @@ test('requestd', async (t) => {
 
     addSegmentInContext(tracer, txn, 'test segment')
 
-    txn.finalizeNameFromUri('/some/random/path', 200)
+    txn.finalizeNameFromWeb(200)
 
     const segment = tracer.getSegment()
 
@@ -2030,11 +2059,11 @@ test('when being named with finalizeName', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should call finalizeNameFromUri if no name is given for a web txn', (t) => {
+  await t.test('should call finalizeNameFromWeb if no name is given for a web txn', (t) => {
     const { txn } = t.nr
     let called = false
 
-    txn.finalizeNameFromUri = () => {
+    txn.finalizeNameFromWeb = () => {
       called = true
     }
     txn.type = 'web'
@@ -2073,6 +2102,36 @@ test('when being named with finalizeName', async (t) => {
 
     assert.ok(intrinsics)
     assert.equal(intrinsics['transaction.name'], 'WebTransaction//config')
+  })
+
+  await t.test('should add request.parameters to tx', (t) => {
+    const { agent, txn } = t.nr
+    agent.config.attributes.enabled = true
+    agent.config.attributes.include = ['request.parameters.*']
+    const segment = new Segment({
+      config: txn.agent.config,
+      name: 'test',
+      root: txn.trace.root
+    })
+    txn.baseSegment = segment
+    txn.addRequestParameters({ key: 'value', test: 'me' })
+    const attrs = txn.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+    assert.equal(attrs['request.parameters.key'], 'value')
+    assert.equal(attrs['request.parameters.test'], 'me')
+  })
+
+  await t.test('should not crash when adding null query parameters', (t) => {
+    const { txn } = t.nr
+    assert.doesNotThrow(() => {
+      txn.addRequestParameters(null)
+    })
+  })
+
+  await t.test('should not crash when adding undefined query parameters', (t) => {
+    const { txn } = t.nr
+    assert.doesNotThrow(() => {
+      txn.addRequestParameters(undefined)
+    })
   })
 })
 

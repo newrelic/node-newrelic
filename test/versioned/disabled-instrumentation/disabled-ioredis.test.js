@@ -11,7 +11,7 @@ const params = require('../../lib/params')
 const { assertSegments } = require('../../lib/custom-assertions')
 const mongoCommon = require('../mongodb/common')
 
-test('Disabled PG scenarios', async (t) => {
+test('Disabled ioredis scenarios', async (t) => {
   t.beforeEach(async (ctx) => {
     ctx.nr = {}
     const agent = helper.instrumentMockedAgent({

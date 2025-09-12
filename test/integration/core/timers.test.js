@@ -14,7 +14,13 @@ const verifySegments = require('./verify')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-  ctx.nr.agent = helper.instrumentMockedAgent()
+  ctx.nr.agent = helper.instrumentMockedAgent({
+    instrumentation: {
+      timers: {
+        enabled: true
+      }
+    }
+  })
 })
 
 test.afterEach((ctx) => {

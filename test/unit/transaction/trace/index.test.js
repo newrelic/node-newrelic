@@ -32,9 +32,7 @@ test('Trace', async (t) => {
 
   await t.test('should always be bound to a transaction', (t) => {
     const { agent } = t.nr
-    assert.throws(() => {
-      return new Trace()
-    }, /must be associated with a transaction/)
+    assert.throws(() => new Trace(), /must be associated with a transaction/)
 
     const transaction = new Transaction(agent)
     const tt = new Trace(transaction)
@@ -321,9 +319,7 @@ test('when serializing synchronously', async (t) => {
 
   await t.test('should send response time', (t) => {
     const { details } = t.nr
-    details.transaction.getResponseTimeInMillis = () => {
-      return 1234
-    }
+    details.transaction.getResponseTimeInMillis = () => 1234
 
     const json = details.trace.generateJSONSync()
     assert.equal(json[1], 1234)
@@ -395,9 +391,7 @@ test('when serializing asynchronously', async (t) => {
 
   await t.test('should send response time', async (t) => {
     const { details } = t.nr
-    details.transaction.getResponseTimeInMillis = () => {
-      return 1234
-    }
+    details.transaction.getResponseTimeInMillis = () => 1234
 
     // not using `trace.generateJSONAsync` because
     // util.promisify only returns 1st arg in callback
@@ -987,14 +981,13 @@ function addTwoSegments(transaction) {
 
 async function makeTrace(agent) {
   const DURATION = 33
-  const URL = '/test?test=value'
+  const url = '/test'
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
   agent.config.emit('attributes.include')
 
   const transaction = new Transaction(agent)
-  transaction.trace.attributes.addAttribute(DESTINATIONS.TRANS_COMMON, 'request.uri', URL)
-  transaction.url = URL
+  transaction.url = url
   transaction.verb = 'GET'
 
   const trace = transaction.trace
@@ -1008,7 +1001,8 @@ async function makeTrace(agent) {
 
   const web = trace.add(URL)
   transaction.baseSegment = web
-  transaction.finalizeNameFromUri(URL, 200)
+  transaction.addRequestParameters({ test: 'value' })
+  transaction.finalizeNameFromWeb(200)
   // top-level element will share a duration with the quasi-ROOT node
   web.setDurationInMillis(DURATION, 0)
 
@@ -1052,7 +1046,6 @@ async function makeTrace(agent) {
         DURATION,
         'WebTransaction/NormalizedUri/*',
         {
-          'request.uri': '/test?test=value',
           'request.parameters.test': 'value',
           nr_exclusive_duration_millis: 8
         },
@@ -1067,7 +1060,6 @@ async function makeTrace(agent) {
     rootSegment,
     {
       agentAttributes: {
-        'request.uri': '/test?test=value',
         'request.parameters.test': 'value'
       },
       userAttributes: {},

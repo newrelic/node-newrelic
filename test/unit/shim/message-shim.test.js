@@ -399,19 +399,18 @@ test('MessageShim', async function (t) {
       shim.recordProduce(
         wrappable,
         'sendMessages',
-        () =>
-          new MessageSpec({
-            messageHeaders(inject) {
-              for (const msg of messages) {
-                if (msg.headers) {
-                  inject(msg.headers)
-                  continue
-                }
-                msg.headers = {}
+        () => new MessageSpec({
+          messageHeaders(inject) {
+            for (const msg of messages) {
+              if (msg.headers) {
                 inject(msg.headers)
+                continue
               }
+              msg.headers = {}
+              inject(msg.headers)
             }
-          })
+          }
+        })
       )
 
       let called = 0

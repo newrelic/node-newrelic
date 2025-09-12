@@ -66,7 +66,7 @@ function createTestData(agent, callback) {
       trace: new Error().stack
     })
 
-    transaction.finalizeNameFromUri('/some/test/url', 200)
+    transaction.finalizeNameFromWeb(200)
     transaction.end()
     callback()
   })

@@ -76,32 +76,28 @@ test('aws-sdk', async (t) => {
       endpoint
     })
 
-    const req1 = helper.runInTransaction(agent, (tx) => {
-      return service
-        .cloneReceiptRuleSet({
-          OriginalRuleSetName: 'RuleSetToClone',
-          RuleSetName: 'RuleSetToCreate'
-        })
-        .promise()
-        .then(() => {
-          assert.equal(tx.id, agent.getTransaction().id)
-          tx.end()
-        })
-    })
+    const req1 = helper.runInTransaction(agent, (tx) => service
+      .cloneReceiptRuleSet({
+        OriginalRuleSetName: 'RuleSetToClone',
+        RuleSetName: 'RuleSetToCreate'
+      })
+      .promise()
+      .then(() => {
+        assert.equal(tx.id, agent.getTransaction().id)
+        tx.end()
+      }))
 
     // Run two concurrent promises to check for conflation
-    const req2 = helper.runInTransaction(agent, (tx) => {
-      return service
-        .cloneReceiptRuleSet({
-          OriginalRuleSetName: 'RuleSetToClone',
-          RuleSetName: 'RuleSetToCreate'
-        })
-        .promise()
-        .then(() => {
-          assert.equal(tx.id, agent.getTransaction().id)
-          tx.end()
-        })
-    })
+    const req2 = helper.runInTransaction(agent, (tx) => service
+      .cloneReceiptRuleSet({
+        OriginalRuleSetName: 'RuleSetToClone',
+        RuleSetName: 'RuleSetToCreate'
+      })
+      .promise()
+      .then(() => {
+        assert.equal(tx.id, agent.getTransaction().id)
+        tx.end()
+      }))
 
     await Promise.all([req1, req2])
   })

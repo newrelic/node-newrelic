@@ -102,8 +102,7 @@ responses.set('Invalid input.', {
       code: 'invalid_type'
     }
   }
-}
-)
+})
 
 // The last chunk event in a streamed response.
 responses.set('Streamed response', {

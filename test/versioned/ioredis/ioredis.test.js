@@ -12,6 +12,8 @@ const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 const { tspl } = require('@matteo.collina/tspl')
 const { assertMetrics } = require('../../lib/custom-assertions')
+const { removeModules } = require('../../lib/cache-buster')
+const semver = require('semver')
 
 // Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 3
@@ -19,38 +21,34 @@ const DB_INDEX = 3
 test('ioredis instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
     const agent = helper.instrumentMockedAgent()
+    const { version: pkgVersion } = require('ioredis/package.json')
     const Redis = require('ioredis')
     const redisClient = new Redis(params.redis_port, params.redis_host)
-    await helper.flushRedisDb(redisClient, DB_INDEX)
+    await redisClient.flushall()
     const METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
       ? agent.config.getHostnameSafe()
       : params.redis_host
     const HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
 
-    await new Promise((resolve, reject) => {
-      redisClient.select(DB_INDEX, (err) => {
-        if (err) {
-          return reject(err)
-        }
-
-        resolve()
-      })
-    })
+    await redisClient.select(DB_INDEX)
     ctx.nr = {
       agent,
+      pkgVersion,
       redisClient,
-      HOST_ID
+      HOST_ID,
+      METRIC_HOST_NAME
     }
   })
 
   t.afterEach((ctx) => {
     const { agent, redisClient } = ctx.nr
     helper.unloadAgent(agent)
+    removeModules(['ioredis'])
     redisClient.disconnect()
   })
 
   await t.test('creates expected metrics', async (t) => {
-    const { agent, redisClient, HOST_ID } = t.nr
+    const { agent, pkgVersion, redisClient, HOST_ID } = t.nr
     const plan = tspl(t, { plan: 6 })
     agent.on('transactionFinished', function (tx) {
       const expected = [
@@ -61,6 +59,12 @@ test('ioredis instrumentation', async (t) => {
       expected['Datastore/instance/Redis/' + HOST_ID] = 2
 
       assertMetrics(tx.metrics, expected, false, false, { assert: plan })
+      const expectedPkgMetrics = [
+        [{ name: 'Supportability/Features/Instrumentation/OnRequire/ioredis' }],
+        [{ name: `Supportability/Features/Instrumentation/OnRequire/ioredis/Version/${semver.major(pkgVersion)}` }]
+      ]
+
+      assertMetrics(agent.metrics, expectedPkgMetrics, false, false)
     })
 
     helper.runInTransaction(agent, async (transaction) => {
@@ -95,6 +99,106 @@ test('ioredis instrumentation', async (t) => {
       await redisClient.set('testkey', 'testvalue')
       const value = await redisClient.get('testkey')
       plan.equal(value, 'testvalue', 'should have expected value')
+      transaction.end()
+    })
+    await plan.completed
+  })
+
+  await t.test('should add instance attributes to all redis segments', async (t) => {
+    const { agent, redisClient, METRIC_HOST_NAME } = t.nr
+    agent.config.datastore_tracer.instance_reporting.enabled = true
+    agent.config.datastore_tracer.database_name_reporting.enabled = true
+    const plan = tspl(t, { plan: 12 })
+
+    agent.on('transactionFinished', function (tx) {
+      const root = tx.trace.root
+      const children = tx.trace.getChildren(root.id)
+      plan.equal(children.length, 2, 'root has two children')
+
+      const [setSegment, getSegment] = children
+      const setAttrs = setSegment.getAttributes()
+      const getAttrs = getSegment.getAttributes()
+      plan.equal(setAttrs.host, METRIC_HOST_NAME)
+      plan.equal(setAttrs.product, 'Redis')
+      plan.equal(setAttrs.key, '"testkey"')
+      plan.equal(setAttrs.port_path_or_id, params.redis_port.toString())
+      plan.equal(setAttrs.database_name, String(DB_INDEX))
+      plan.equal(getAttrs.host, METRIC_HOST_NAME)
+      plan.equal(getAttrs.product, 'Redis')
+      plan.equal(getAttrs.key, '"testkey"')
+      plan.equal(getAttrs.port_path_or_id, params.redis_port.toString())
+      plan.equal(getAttrs.database_name, String(DB_INDEX))
+    })
+
+    helper.runInTransaction(agent, async (transaction) => {
+      await redisClient.set('testkey', 'testvalue')
+      const value = await redisClient.get('testkey')
+      plan.equal(value, 'testvalue', 'should have expected value')
+      transaction.end()
+    })
+    await plan.completed
+  })
+
+  await t.test('should not add instance attributes to redis segments when disabled', async (t) => {
+    const { agent, redisClient, HOST_ID } = t.nr
+    const plan = tspl(t, { plan: 13 })
+    agent.config.datastore_tracer.instance_reporting.enabled = false
+    agent.config.datastore_tracer.database_name_reporting.enabled = false
+
+    agent.on('transactionFinished', function (tx) {
+      const root = tx.trace.root
+      const children = tx.trace.getChildren(root.id)
+      plan.equal(children.length, 2, 'root has two children')
+
+      const [setSegment, getSegment] = children
+      const setAttrs = setSegment.getAttributes()
+      const getAttrs = getSegment.getAttributes()
+      plan.equal(setAttrs.host, undefined)
+      plan.equal(setAttrs.product, 'Redis')
+      plan.equal(setAttrs.key, '"testkey"')
+      plan.equal(setAttrs.port_path_or_id, undefined)
+      plan.equal(setAttrs.database_name, undefined)
+      plan.equal(getAttrs.host, undefined)
+      plan.equal(getAttrs.product, 'Redis')
+      plan.equal(getAttrs.key, '"testkey"')
+      plan.equal(getAttrs.port_path_or_id, undefined)
+      plan.equal(getAttrs.database_name, undefined)
+      const unscoped = tx.metrics.unscoped
+      plan.equal(unscoped[`Datastore/instance/Redis/${HOST_ID}`], undefined)
+    })
+
+    helper.runInTransaction(agent, async (transaction) => {
+      await redisClient.set('testkey', 'testvalue')
+      const value = await redisClient.get('testkey')
+      plan.equal(value, 'testvalue', 'should have expected value')
+      transaction.end()
+    })
+    await plan.completed
+  })
+
+  await t.test('should follow selected database', async (t) => {
+    const { agent, redisClient } = t.nr
+    const plan = tspl(t, { plan: 7 })
+    const SELECTED_DB = 5
+
+    agent.on('transactionFinished', function (tx) {
+      const root = tx.trace.root
+      const children = tx.trace.getChildren(root.id)
+      plan.equal(children.length, 3, 'root has two children')
+
+      const [setSegment, selectSegment, setSegment2] = children
+      plan.equal(setSegment.name, 'Datastore/operation/Redis/set')
+      plan.equal(setSegment.getAttributes().database_name, String(DB_INDEX))
+      plan.equal(selectSegment.name, 'Datastore/operation/Redis/select')
+      plan.equal(selectSegment.getAttributes().database_name, String(DB_INDEX))
+      plan.equal(setSegment2.name, 'Datastore/operation/Redis/set')
+      plan.equal(setSegment2.getAttributes().database_name, String(SELECTED_DB))
+    })
+
+    helper.runInTransaction(agent, async (transaction) => {
+      await redisClient.set('testkey', 'testvalue')
+      await redisClient.select(SELECTED_DB)
+      await redisClient.set('testkey2', 'testvalue')
       transaction.end()
     })
     await plan.completed

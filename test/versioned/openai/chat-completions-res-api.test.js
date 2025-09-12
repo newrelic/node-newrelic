@@ -18,7 +18,6 @@ const helper = require('../../lib/agent_helper')
 const {
   AI: { OPENAI }
 } = require('../../../lib/metrics/names')
-// have to read and not require because openai does not export the package.json
 const { version: pkgVersion } = JSON.parse(
   fs.readFileSync(path.join(__dirname, '/node_modules/openai/package.json'))
 )
@@ -203,9 +202,7 @@ test('responses.create', async (t) => {
         }
       })
 
-      const summary = agent.customEventAggregator.events.toArray().find((e) => {
-        return e[0].type === 'LlmChatCompletionSummary'
-      })
+      const summary = agent.customEventAggregator.events.toArray().find((e) => e[0].type === 'LlmChatCompletionSummary')
       assert.ok(summary)
       assert.equal(summary[1].error, true)
 

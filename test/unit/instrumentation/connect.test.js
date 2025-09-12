@@ -132,7 +132,8 @@ test('for Connect 1 (stubbed)', async function (t) {
       const fn = new Function('function static(req, res, next) { return next() }')
       app.stack = []
       assert.doesNotThrow(function () { app.use('/', fn) })
-    })
+    }
+  )
 })
 
 test('for Connect 2 (stubbed)', async function(t) {

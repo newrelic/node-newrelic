@@ -24,12 +24,10 @@ test('when error events are disabled', async (t) => {
   await t.test('collector can override', (t) => {
     const { agent } = t.nr
     agent.config.error_collector.capture_events = false
-    assert.doesNotThrow(() =>
-      agent.config.onConnect({
-        'error_collector.capture_events': true,
-        'error_collector.max_event_samples_stored': 42
-      })
-    )
+    assert.doesNotThrow(() => agent.config.onConnect({
+      'error_collector.capture_events': true,
+      'error_collector.max_event_samples_stored': 42
+    }))
     assert.equal(agent.config.error_collector.capture_events, true)
     assert.equal(agent.config.error_collector.max_event_samples_stored, 42)
   })

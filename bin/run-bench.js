@@ -11,6 +11,7 @@ const glob = require('glob')
 const path = require('path')
 const { errorAndExit } = require('./utils')
 const fs = require('fs/promises')
+const { sendBenchmarkTestMetrics, meterProvider } = require('./otel-metrics-sender')
 
 const cwd = path.resolve(__dirname, '..')
 const benchpath = path.resolve(cwd, 'test/benchmark')
@@ -19,6 +20,11 @@ const tests = []
 const testPromises = []
 const globs = []
 const opts = Object.create(null)
+let hasFailures = false
+const SEND_METRICS = process.env.NEW_RELIC_LICENSE_KEY ? true : false
+if (SEND_METRICS === false) {
+  console.log('NEW_RELIC_LICENSE_KEY not set. Will not send metrics.')
+}
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file) && file.indexOf('=') > -1) {
@@ -47,6 +53,13 @@ if (tests.length === 0 && globs.length === 0) {
 class Printer {
   constructor() {
     this._tests = Object.create(null)
+    this.attributes = {
+      node_version: process.version,
+      agent_version: require(path.resolve(cwd, './package.json')).version,
+      run_id: process.env.GITHUB_RUN_ID
+        ? `gh-run-${process.env.GITHUB_RUN_ID}`
+        : `local-run-${Date.now()}`
+    }
   }
 
   addTest(name, child) {
@@ -57,17 +70,33 @@ class Printer {
     this._tests[name] = new Promise((resolve) => {
       child.stdout.on('end', () => {
         try {
-          this._tests[name] = JSON.parse(output)
+          const parsedOutput = JSON.parse(output)
+          this._tests[name] = parsedOutput
+
+          // Send OTel metrics to NR for this benchmark test
+          if (SEND_METRICS) {
+            sendBenchmarkTestMetrics({ name, parsedOutput }, this.attributes)
+          }
         } catch (e) {
           console.error(`Error parsing test results for ${name}`, e)
           this._tests[name] = output
+        } finally {
+          resolve()
         }
-        resolve()
       })
     })
   }
 
   async finish() {
+    try {
+      if (SEND_METRICS) {
+        await meterProvider.shutdown()
+        console.log('✅ Metrics flushed and provider shut down successfully.')
+      }
+    } catch (e) {
+      console.error('Error shutting down metrics provider:', e)
+    }
+
     if (opts.console) {
       console.log(JSON.stringify(this._tests, null, 2))
     }
@@ -82,6 +111,12 @@ class Printer {
     const fileName = `${resultPath}/${filePrefix}_${new Date().getTime()}.json`
     await fs.writeFile(fileName, content)
     console.log(`Done! Test output written to ${fileName}`)
+
+    // Exit with code 1 to propagate failure to GH Actions
+    // if any test failed.
+    if (hasFailures) {
+      process.exit(1)
+    }
   }
 }
 
@@ -130,12 +165,14 @@ async function run() {
 
     child.on('error', (err) => {
       console.error(`Error in child test ${test}`, err)
+      hasFailures = true
       throw err
     })
     child.on('exit', function onChildExit(code) {
       currentTest = currentTest + 1
       if (code) {
         console.error(`(${currentTest}/${tests.length}) FAILED: ${test} exited with code ${code}`)
+        hasFailures = true
         return
       }
       console.log(`(${currentTest}/${tests.length}) ${file} has completed`)
@@ -156,7 +193,7 @@ async function run() {
     }
   }
 
-  await resolveGlobs()
+  resolveGlobs()
   await runBenchmarks()
   await Promise.all(testPromises)
   printer.finish()

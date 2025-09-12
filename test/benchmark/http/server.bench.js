@@ -5,12 +5,12 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
+const benchmark = require('#testlib/benchmark.js')
 const http = require('http')
 
 const suite = benchmark.createBenchmark({ name: 'http', runs: 5000 })
 
-const HOST = 'localhost'
+const HOST = '127.0.0.1'
 // manage the servers separately
 // since we have to enqueue the server.close
 // to avoid net connect errors

@@ -5,16 +5,19 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const shimmer = require('../../../lib/shimmer')
+const benchmark = require('#testlib/benchmark.js')
+const shimmer = require('#agentlib/shimmer.js')
 
-const suite = benchmark.createBenchmark({ name: 'shimmer wrapping', delay: 0.01 })
+const suite = benchmark.createBenchmark({ name: 'shimmer wrapping' })
 
 suite.add({
   name: 'shimmer.registerHooks()',
   agent: true,
   fn: function (agent) {
     return shimmer.registerHooks(agent)
+  },
+  after: function() {
+    return shimmer.removeHooks()
   }
 })
 
@@ -30,6 +33,9 @@ suite.add({
   agent: true,
   fn: function (agent) {
     return shimmer.bootstrapInstrumentation(agent)
+  },
+  after: function() {
+    return shimmer.removeHooks()
   }
 })
 

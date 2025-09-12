@@ -26,6 +26,10 @@ logger.info(
   pkgJSON.version,
   process.version
 )
+const path = require('node:path')
+const Module = require('node:module')
+const otelPackages = Object.keys(pkgJSON.dependencies).filter((d) => d.startsWith('@opentelemetry'))
+const otelRequire = Module.createRequire(path.join(__dirname, __filename))
 
 if (require.cache.__NR_cache) {
   logger.warn(
@@ -40,14 +44,15 @@ if (require.cache.__NR_cache) {
   initialize()
 }
 
-function initApi({ agent, apiPath }) {
-  const API = require(`./${apiPath}`)
+function initApi({ agent }) {
+  const API = agent != null ? require('./api.js') : require('./stub_api.js')
 
   const api = new API(agent)
   require.cache.__NR_cache = module.exports = api
   return api
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 function initialize() {
   logger.debug('Loading agent from %s', __dirname)
   let agent = null
@@ -97,6 +102,10 @@ function initialize() {
       logger.warn(
         'New Relic for Node.js in worker_threads is not officially supported. Not starting! To bypass this, set `config.worker_threads.enabled` to true in configuration.'
       )
+    } else if (config.opentelemetry_bridge.enabled === true && otelBridgeAvailable() === false) {
+      logger.warn(
+        'OpenTelemetry bridge enabled, but packages are missing. Not starting!'
+      )
     } else {
       if (!isMainThread && config.worker_threads.enabled) {
         logger.warn(
@@ -114,7 +123,7 @@ function initialize() {
     console.error(error.stack)
   }
 
-  const api = agent ? initApi({ agent, apiPath: 'api' }) : initApi({ apiPath: 'stub_api' })
+  const api = initApi({ agent })
 
   // If we loaded an agent, record a startup time for the agent.
   // NOTE: Metrics are recorded in seconds, so divide the value by 1000.
@@ -191,6 +200,7 @@ function addStartupSupportabilities(agent) {
   recordNodeVersionMetric(agent)
   recordFeatureFlagMetrics(agent)
   recordSourceMapMetric(agent)
+  recordDisabledPackages(agent)
 }
 
 /**
@@ -264,4 +274,29 @@ function recordSourceMapMetric(agent) {
   if (isSourceMapsEnabled) {
     agent.metrics.getOrCreateMetric(NAMES.FEATURES.SOURCE_MAPS).incrementCallCount()
   }
+}
+
+/**
+ * Records supportability metrics for disabled instrumentation packages.
+ * @param {Agent} agent active NR agent
+ */
+function recordDisabledPackages(agent) {
+  for (const [pkg, config] of Object.entries(agent.config.instrumentation)) {
+    if (config.enabled === false) {
+      agent.recordSupportability(`Nodejs/Instrumentation/${pkg}/disabled`)
+    }
+  }
+}
+
+function otelBridgeAvailable() {
+  for (const p of otelPackages) {
+    try {
+      otelRequire.resolve(p)
+    } catch (error) {
+      if (error.code.includes('MODULE_NOT_FOUND')) {
+        return false
+      }
+    }
+  }
+  return true
 }

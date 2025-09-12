@@ -5,7 +5,7 @@
 
 'use strict'
 
-const helper = require('../../lib/agent_helper')
+const helper = require('#testlib/agent_helper.js')
 const shared = require('./shared')
 
 const s = shared.makeSuite('Tracer segments')

@@ -337,6 +337,62 @@ test('built-in http module instrumentation', async (t) => {
       }
     )
 
+    await t.test(
+      'when url_obfuscation regex pattern is set, obfuscate transaction url',
+      (t, end) => {
+        const { agent, http, serverPort } = t.nr
+        agent.config.url_obfuscation = {
+          enabled: true,
+          regex: {
+            pattern: '.*',
+            replacement: '/***'
+          }
+        }
+        makeRequest(
+          http,
+          {
+            port: serverPort,
+            host: 'localhost',
+            path: '/foo4/bar4',
+            method: 'GET'
+          },
+          finish
+        )
+
+        function finish() {
+          const { transaction } = t.nr
+          assert.equal(transaction.url, '/***')
+
+          end()
+        }
+      }
+    )
+
+    await t.test(
+      'when url_obfuscation regex pattern is not set, url is only scrubbed',
+      (t, end) => {
+        const { agent, http, serverPort } = t.nr
+        agent.config.url_obfuscation = { enabled: false }
+        makeRequest(
+          http,
+          {
+            port: serverPort,
+            host: 'localhost',
+            path: '/foo4/bar4?someParam=test',
+            method: 'GET'
+          },
+          finish
+        )
+
+        function finish() {
+          const { transaction } = t.nr
+          assert.equal(transaction.url, '/foo4/bar4')
+
+          end()
+        }
+      }
+    )
+
     await t.test('request.uri should not contain request params', (t, end) => {
       const { http, serverPort } = t.nr
       makeRequest(
@@ -428,6 +484,64 @@ test('built-in http module instrumentation', async (t) => {
         end()
       }
     })
+
+    await t.test(
+      'proxy url',
+      (t, end) => {
+        const { http, serverPort } = t.nr
+        makeRequest(
+          http,
+          {
+            port: serverPort,
+            host: 'localhost',
+            path: 'http://www.google.com/proxy/path',
+            method: 'GET',
+            headers: {}
+          },
+          finish
+        )
+
+        function finish() {
+          const { transaction } = t.nr
+          assert.equal(transaction.url, '/proxy/path')
+          const segment = transaction.baseSegment
+          const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+          assert.equal(spanAttributes['request.uri'], '/proxy/path')
+
+          end()
+        }
+      }
+    )
+
+    await t.test(
+      'should default url to `/unknown` when it cannot be parsed',
+      (t, end) => {
+        const { http, serverPort } = t.nr
+        makeRequest(
+          http,
+          {
+            port: serverPort,
+            host: 'localhost',
+            path: 'http://///',
+            method: 'GET',
+            headers: {}
+          },
+          finish
+        )
+
+        function finish() {
+          const { transaction } = t.nr
+          assert.equal(transaction.url, '/unknown')
+          const segment = transaction.baseSegment
+          const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+          assert.equal(spanAttributes['request.uri'], '/unknown')
+
+          end()
+        }
+      }
+    )
   })
 
   await t.test('inbound http requests when cat is enabled', async (t) => {

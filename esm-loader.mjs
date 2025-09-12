@@ -3,4 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export * from 'import-in-the-middle/hook.mjs'
+// eslint-disable-next-line n/no-unsupported-features/node-builtins
+import { register } from 'node:module'
+import subscriptions from './lib/subscriber-configs.js'
+import createSubscriberConfigs from './lib/subscribers/create-config.js'
+// Exclusions must be regexes
+const exclusions = [/@openai\/agents.*/]
+const { packages, instrumentations } = createSubscriberConfigs(subscriptions)
+
+register('@apm-js-collab/tracing-hooks/hook.mjs', import.meta.url, {
+  data: { instrumentations, packages }
+})
+register('import-in-the-middle/hook.mjs', import.meta.url, {
+  data: { exclude: exclusions }
+})
