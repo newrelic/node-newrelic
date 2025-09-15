@@ -7,6 +7,7 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const NAMES = require('../../../../lib/metrics/names')
 const helper = require('../../../lib/agent_helper')
 const Shim = require('../../../../lib/shim').Shim
 const createHttp2ResponseServer = require('./fixtures/http2')
@@ -61,201 +62,9 @@ test('built-in http2 module instrumentation', async (t) => {
       helper.unloadAgent(ctx.nr.agent)
     })
 
-    await t.test(
-      'when allow_all_headers is false, only collect allowed agent-specified headers',
-      (t, end) => {
-        const { agent, http2, port, host, protocol, method, path } = t.nr
-        agent.config.allow_all_headers = false
-        helper.runInTransaction(agent, function () {
-          t.nr.transaction = agent.getTransaction()
-          makeRequest(
-            http2,
-            {
-              port,
-              protocol,
-              host,
-              path,
-              method,
-              headers: {
-                invalid: 'header',
-                referer: 'valid-referer',
-                'content-type': 'valid-type'
-              },
-              body: JSON.stringify({ foo: 'bar' })
-            },
-            finish
-          )
-        })
-
-        function finish() {
-          const { transaction } = t.nr
-          const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          assert.ok(!attributes['request.headers.invalid'])
-          assert.equal(attributes['request.headers.referer'], 'valid-referer')
-          assert.equal(attributes['request.headers.contentType'], 'valid-type')
-          end()
-        }
-      }
-    )
-
-    await t.test(
-      'when allow_all_headers is true, collect all headers not filtered by `exclude` rules',
-      (t, end) => {
-        const { agent, http2, port, host, protocol, method, path } = t.nr
-        agent.config.allow_all_headers = true
-        agent.config.attributes.exclude = ['request.headers.x*']
-        // have to emit attributes getting updated so all filters get updated
-        agent.config.emit('attributes.exclude')
-        helper.runInTransaction(agent, function () {
-          t.nr.transaction = agent.getTransaction()
-          makeRequest(
-            http2,
-            {
-              port,
-              protocol,
-              host,
-              path,
-              method,
-              headers: {
-                valid: 'header',
-                referer: 'valid-referer',
-                'content-type': 'valid-type',
-                'X-filtered-out': 'invalid'
-              },
-              body: JSON.stringify({ bar: 'baz' })
-            },
-            finish
-          )
-        })
-
-        function finish() {
-          const { transaction } = t.nr
-          const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          const segment = transaction.baseSegment
-          const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
-
-          assert.ok(!attributes['request.headers.x-filtered-out'])
-          assert.ok(!attributes['request.headers.xFilteredOut'])
-          ;[attributes, spanAttributes].forEach((attrs) => {
-            assert.equal(attrs['request.headers.valid'], 'header')
-            assert.equal(attrs['request.headers.referer'], 'valid-referer')
-            assert.equal(attrs['request.headers.contentType'], 'valid-type')
-          })
-          end()
-        }
-      }
-    )
-
-    await t.test(
-      'when url_obfuscation regex pattern is set, obfuscate segment url attributes',
-      (t, end) => {
-        const { agent, http2, host, port, protocol } = t.nr
-        agent.config.url_obfuscation = {
-          enabled: true,
-          regex: {
-            pattern: '.*',
-            replacement: '/***'
-          }
-        }
-        helper.runInTransaction(agent, function () {
-          t.nr.transaction = agent.getTransaction()
-          makeRequest(
-            http2,
-            {
-              port,
-              protocol,
-              host,
-              path: '/foo4/bar4',
-              method: 'GET',
-              headers: {
-                valid: 'header',
-                referer: 'valid-referer',
-                'content-type': 'valid-type',
-                'X-filtered-out': 'invalid'
-              }
-            },
-            finish
-          )
-        })
-
-        function finish() {
-          const { transaction } = t.nr
-          const segment = transaction.baseSegment
-          const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
-
-          assert.equal(spanAttributes['request.uri'], '/***')
-
-          end()
-        }
-      }
-    )
-
-    await t.test(
-      'when url_obfuscation regex pattern is set, obfuscate transaction url',
-      (t, end) => {
-        const { agent, http2, host, port, protocol } = t.nr
-        agent.config.url_obfuscation = {
-          enabled: true,
-          regex: {
-            pattern: '.*',
-            replacement: '/***'
-          }
-        }
-        helper.runInTransaction(agent, function () {
-          t.nr.transaction = agent.getTransaction()
-          makeRequest(
-            http2,
-            {
-              port,
-              host,
-              protocol,
-              path: '/foo4/bar4',
-              method: 'GET'
-            },
-            finish
-          )
-
-          function finish() {
-            const { transaction } = t.nr
-            assert.equal(transaction.url, '/***')
-
-            end()
-          }
-        })
-      }
-    )
-
-    await t.test(
-      'when url_obfuscation regex pattern is not set, url is only scrubbed',
-      (t, end) => {
-        const { agent, http2, host, port, protocol } = t.nr
-        agent.config.url_obfuscation = { enabled: false }
-        helper.runInTransaction(agent, function () {
-          t.nr.transaction = agent.getTransaction()
-          makeRequest(
-            http2,
-            {
-              port,
-              host,
-              protocol,
-              path: '/foo4/bar4?someParam=test',
-              method: 'GET'
-            },
-            finish
-          )
-        })
-
-        function finish() {
-          const { transaction } = t.nr
-          assert.equal(transaction.url, '/foo4/bar4')
-
-          end()
-        }
-      }
-    )
-
-    await t.test('request.uri should not contain request params', (t, end) => {
+    await t.test('should omit query parameters from path if attributes.enabled is false', (t, end) => {
       const { agent, http2, port, protocol, host } = t.nr
+      agent.config.attributes.enabled = false
       helper.runInTransaction(agent, function () {
         t.nr.transaction = agent.getTransaction()
         makeRequest(
@@ -264,7 +73,7 @@ test('built-in http2 module instrumentation', async (t) => {
             port,
             protocol,
             host,
-            path: '/foo5/bar5?region=here&auth=secretString',
+            path: '/asdf?a=b&another=yourself&thing&grownup=true',
             method: 'GET'
           },
           finish
@@ -273,57 +82,137 @@ test('built-in http2 module instrumentation', async (t) => {
 
       function finish() {
         const { transaction } = t.nr
-        const segment = transaction.baseSegment
-        const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
-
-        assert.equal(spanAttributes['request.uri'], '/foo5/bar5')
-
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.deepEqual(child.getAttributes(), {})
         end()
       }
     })
 
-    await t.test('successful request', (t, end) => {
-      const { agent, http2, host, port, path, protocol } = t.nr
-      const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
-      const userAgent = 'Palm680/RC1'
+    await t.test('should omit query parameters from path if high_security is true', (t, end) => {
+      const { agent, http2, port, protocol, host } = t.nr
+      agent.config.high_security = true
       helper.runInTransaction(agent, function () {
         t.nr.transaction = agent.getTransaction()
         makeRequest(
           http2,
           {
             port,
-            host,
-            path,
             protocol,
-            method: 'GET',
-            headers: {
-              referer: refererUrl,
-              'User-Agent': userAgent
-            }
+            host,
+            path: '/asdf?a=b&another=yourself&thing&grownup=true',
+            method: 'GET'
           },
           finish
         )
       })
 
-      function finish(err, headers) {
-        assert.ifError(err)
+      function finish() {
         const { transaction } = t.nr
-        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        const segment = transaction.baseSegment
-        const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
-
-        const statusCode = headers[':status']
-
-        assert.equal(statusCode, 200, 'response status code')
-        ;[attributes, spanAttributes].forEach((attrs) => {
-          assert.equal(
-            attrs['request.headers.referer'],
-            'https://www.google.com/search/cats',
-            'headers.referer'
-          )
-          assert.equal(attrs['response.headers.status'], '200')
-          assert.equal(attrs['request.headers.userAgent'], userAgent)
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.deepEqual(child.getAttributes(), {
+          procedure: 'GET',
+          url: `http://${host}:${port}/asdf`
         })
+        end()
+      }
+    })
+
+    await t.test('should obfuscate url path if url_obfuscation regex pattern is set', (t, end) => {
+      const { agent, http2, port, protocol, host } = t.nr
+      agent.config.url_obfuscation = {
+        enabled: true,
+        regex: {
+          pattern: '.*',
+          replacement: '/***'
+        }
+      }
+      helper.runInTransaction(agent, function () {
+        t.nr.transaction = agent.getTransaction()
+        makeRequest(
+          http2,
+          {
+            port,
+            protocol,
+            host,
+            path: '/asdf/foo/bar/baz?test=123&test2=456',
+            method: 'GET'
+          },
+          finish
+        )
+      })
+
+      function finish() {
+        const { transaction } = t.nr
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.deepEqual(child.getAttributes(), {
+          procedure: 'GET',
+          url: `http://${host}:${port}/***`
+        })
+        end()
+      }
+    })
+
+    await t.test('should strip query parameters from path in transaction trace segment', (t, end) => {
+      const { agent, http2, port, protocol, host } = t.nr
+      const name = NAMES.EXTERNAL.PREFIX + host + ':' + port + '/asdf'
+      helper.runInTransaction(agent, function () {
+        t.nr.transaction = agent.getTransaction()
+        makeRequest(
+          http2,
+          {
+            port,
+            protocol,
+            host,
+            path: '/asdf?a=b&another=yourself&thing&grownup=true6',
+            method: 'GET'
+          },
+          finish
+        )
+      })
+
+      function finish() {
+        const { transaction } = t.nr
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.equal(child.name, name)
+        end()
+      }
+    })
+
+    await t.test('should save query parameters from path if attributes.enabled is true', (t, end) => {
+      const { agent, http2, port, protocol, host } = t.nr
+      agent.config.attributes.enabled = true
+      helper.runInTransaction(agent, function () {
+        t.nr.transaction = agent.getTransaction()
+        makeRequest(
+          http2,
+          {
+            port,
+            protocol,
+            host,
+            path: '/asdf?a=b&another=yourself&thing&grownup=true',
+            method: 'GET'
+          },
+          finish
+        )
+      })
+
+      function finish() {
+        const { transaction } = t.nr
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.deepEqual(
+          child.attributes.get(DESTINATIONS.SPAN_EVENT),
+          {
+            hostname: host,
+            port,
+            url: `http://${host}:${port}/asdf`,
+            procedure: 'GET',
+            'request.parameters.a': 'b',
+            'request.parameters.another': 'yourself',
+            'request.parameters.thing': true,
+            'request.parameters.grownup': 'true'
+          },
+          'adds attributes to spans'
+        )
 
         end()
       }
