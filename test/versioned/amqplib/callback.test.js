@@ -105,7 +105,7 @@ test('amqplib callback instrumentation', async function (t) {
     const exchange = amqpUtils.FANOUT_EXCHANGE
 
     agent.on('transactionFinished', function (tx) {
-      amqpUtils.verifyProduce(tx, exchange)
+      amqpUtils.verifyProduce(tx, exchange, null, true)
       end()
     })
 
@@ -138,7 +138,7 @@ test('amqplib callback instrumentation', async function (t) {
     const exchange = amqpUtils.DIRECT_EXCHANGE
 
     agent.on('transactionFinished', function (tx) {
-      amqpUtils.verifyProduce(tx, exchange, 'key1')
+      amqpUtils.verifyProduce(tx, exchange, 'key1', true)
       end()
     })
 
@@ -171,7 +171,7 @@ test('amqplib callback instrumentation', async function (t) {
     let queueName = null
 
     agent.on('transactionFinished', function (tx) {
-      amqpUtils.verifyPurge(tx)
+      amqpUtils.verifyPurge(tx, true)
       end()
     })
 
