@@ -175,26 +175,18 @@ function verifySendToQueue(tx) {
   assert.equal(attributes.correlation_id, 'correlation-id', 'should store correlation id')
 }
 
-function verifyProduce(tx, exchangeName, routingKey) {
-  const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
+function verifyProduce(tx, exchangeName, routingKey, isCallback) {
   let segments = []
 
   if (isCallback) {
     segments = [
       'Channel#assertExchange',
       [
-        'Callback: <anonymous>',
+        'Channel#assertQueue',
         [
-          'Channel#assertQueue',
+          'Channel#bindQueue',
           [
-            'Callback: <anonymous>',
-            [
-              'Channel#bindQueue',
-              [
-                'Callback: <anonymous>',
-                ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName]
-              ]
-            ]
+            'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
           ]
         ]
       ]
@@ -234,14 +226,9 @@ function verifyProduce(tx, exchangeName, routingKey) {
 }
 
 function verifyGet({ tx, exchangeName, routingKey, queue, assertAttr }) {
-  const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
   const produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   const consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
-  if (isCallback) {
-    assertSegments(tx.trace, tx.trace.root, [produceName, consumeName, ['Callback: <anonymous>']])
-  } else {
-    assertSegments(tx.trace, tx.trace.root, [produceName, consumeName])
-  }
+  assertSegments(tx.trace, tx.trace.root, [produceName, consumeName])
   assertMetrics(tx.metrics, [[{ name: produceName }], [{ name: consumeName }]], false, false)
   if (assertAttr) {
     const segment = metrics.findSegment(tx.trace, tx.trace.root, consumeName)
@@ -259,26 +246,18 @@ function verifyGet({ tx, exchangeName, routingKey, queue, assertAttr }) {
   })
 }
 
-function verifyPurge(tx) {
-  const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
+function verifyPurge(tx, isCallback) {
   let segments = []
 
   if (isCallback) {
     segments = [
       'Channel#assertExchange',
       [
-        'Callback: <anonymous>',
+        'Channel#assertQueue',
         [
-          'Channel#assertQueue',
+          'Channel#bindQueue',
           [
-            'Callback: <anonymous>',
-            [
-              'Channel#bindQueue',
-              [
-                'Callback: <anonymous>',
-                ['MessageBroker/RabbitMQ/Queue/Purge/Temp', ['Callback: <anonymous>']]
-              ]
-            ]
+            'MessageBroker/RabbitMQ/Queue/Purge/Temp',
           ]
         ]
       ]
