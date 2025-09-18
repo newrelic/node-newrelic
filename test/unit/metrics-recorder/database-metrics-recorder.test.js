@@ -15,6 +15,12 @@ const Transaction = require('../../../lib/transaction')
 const ParsedStatement = require('../../../lib/db/parsed-statement')
 const recordQueryMetrics = require('../../../lib/metrics/recorders/database')
 
+/**
+ *
+ * @param metrics
+ * @param name
+ * @param scope
+ */
 function checkMetric(metrics, name, scope) {
   match(metrics.getMetric(name, scope), { total: 0.333 })
 }

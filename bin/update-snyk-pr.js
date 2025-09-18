@@ -8,6 +8,9 @@
 const Github = require('./github')
 const SECURITY_PREFIX = 'security:'
 
+/**
+ *
+ */
 async function updateSnykPR() {
   const org = process.env.RELEASE_ORG || 'newrelic'
   const repo = process.env.RELEASE_REPO || 'node-newrelic'

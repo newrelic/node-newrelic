@@ -864,6 +864,12 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
       }
     })
 
+    /**
+     *
+     * @param segment
+     * @param host
+     * @param port
+     */
     function checkParams(segment, host, port) {
       const attributes = segment.getAttributes()
       assert.equal(attributes.host, host, 'should have correct host (' + host + ')')
@@ -912,6 +918,10 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
   })
 })
 
+/**
+ *
+ * @param agent
+ */
 function getMetrics(agent) {
   return agent.metrics._metrics
 }

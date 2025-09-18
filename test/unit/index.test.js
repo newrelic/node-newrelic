@@ -219,6 +219,10 @@ test('index tests', async (t) => {
     delete require.cache.__NR_cache
   })
 
+  /**
+   *
+   * @param ctx
+   */
   function loadIndex(ctx) {
     return proxyquire('../../index', {
       worker_threads: ctx.nr.workerThreadsStub,

@@ -56,6 +56,12 @@ tests.forEach(({ name, testsDir }) => {
   })
 })
 
+/**
+ *
+ * @param testCase
+ * @param testFile
+ * @param v2
+ */
 function makeTest(testCase, testFile, v2) {
   return async function (t) {
     const { agent } = t.nr
@@ -77,6 +83,11 @@ function makeTest(testCase, testFile, v2) {
   }
 }
 
+/**
+ *
+ * @param data
+ * @param v2
+ */
 function mockProcRead(data, v2) {
   if (!v2) {
     common.readProc.onCall(0).yields(null, null)

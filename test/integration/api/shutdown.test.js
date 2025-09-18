@@ -74,6 +74,10 @@ test('#shutdown should force harvest and callback after agent restart', (t, end)
   })
 })
 
+/**
+ *
+ * @param runId
+ */
 function setupShutdownEndpoints(runId) {
   // Final harvest
   return {
@@ -82,6 +86,10 @@ function setupShutdownEndpoints(runId) {
   }
 }
 
+/**
+ *
+ * @param runId
+ */
 function setupConnectionEndpoints(runId) {
   return {
     preconnect: nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN }),
@@ -94,6 +102,11 @@ function setupConnectionEndpoints(runId) {
   }
 }
 
+/**
+ *
+ * @param endpointMethod
+ * @param runId
+ */
 function nockRequest(endpointMethod, runId) {
   const relativepath = helper.generateCollectorPath(endpointMethod, runId)
   return nock(TEST_COLLECTOR_URL).post(relativepath)

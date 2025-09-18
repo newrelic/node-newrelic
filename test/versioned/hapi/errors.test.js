@@ -24,6 +24,12 @@ test.afterEach((ctx) => {
   ctx.nr.server.stop()
 })
 
+/**
+ *
+ * @param agent
+ * @param server
+ * @param callback
+ */
 function runTest(agent, server, callback) {
   let statusCode
   let errors
@@ -47,6 +53,12 @@ function runTest(agent, server, callback) {
   })
 }
 
+/**
+ *
+ * @param path
+ * @param port
+ * @param callback
+ */
 function makeRequest(path, port, callback) {
   http.request({ port, path }, callback).end()
 }

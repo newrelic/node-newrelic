@@ -11,15 +11,29 @@ const promiseResolvers = require('../../lib/promise-resolvers')
 const TEST_HOST = 'localhost'
 const TEST_URL = `http://${TEST_HOST}`
 
+/**
+ *
+ */
 function isExpress5() {
   const { version } = require('express/package')
   return semver.gte(version, '5.0.0')
 }
 
+/**
+ *
+ * @param port
+ * @param path
+ * @param callback
+ */
 function makeRequest(port, path, callback) {
   http.request({ port, path }, callback).end()
 }
 
+/**
+ *
+ * @param ctx
+ * @param config
+ */
 async function setup(ctx, config = {}) {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent(config)
@@ -35,6 +49,10 @@ async function setup(ctx, config = {}) {
   ctx.nr.port = server.address().port
 }
 
+/**
+ *
+ * @param ctx
+ */
 function teardown(ctx) {
   const { server, agent } = ctx.nr
   server.close()

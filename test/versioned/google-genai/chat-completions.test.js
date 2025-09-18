@@ -224,6 +224,11 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
   const expectedModel = 'gemini-2.0-flash'
   const api = helper.getAgentApi()
   let cbCalled = false
+  /**
+   *
+   * @param model
+   * @param content
+   */
   function cb(model, content) {
     assert.equal(model, expectedModel)
     cbCalled = true

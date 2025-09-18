@@ -130,6 +130,12 @@ test('DynamoDB', async (t) => {
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.lib
+ * @param root0.tableName
+ */
 function createCommands({ lib, tableName }) {
   const {
     CreateTableCommand,
@@ -188,6 +194,13 @@ function createCommands({ lib, tableName }) {
   ]
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.commands
+ * @param root0.tx
+ * @param root0.setDatastoreSpy
+ */
 function finish({ commands, tx, setDatastoreSpy }) {
   const root = tx.trace.root
   const segments = common.checkAWSAttributes({
@@ -237,6 +250,10 @@ function finish({ commands, tx, setDatastoreSpy }) {
   assert.equal(setDatastoreSpy.callCount, 1, 'should only call setDatastore once and not per call')
 }
 
+/**
+ *
+ * @param tableName
+ */
 function getCreateTableParams(tableName) {
   return {
     AttributeDefinitions: [
@@ -255,6 +272,11 @@ function getCreateTableParams(tableName) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getPutItemParams(tableName, uniqueArtist) {
   return {
     Item: {
@@ -266,6 +288,11 @@ function getPutItemParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getItemParams(tableName, uniqueArtist) {
   return {
     Key: {
@@ -276,6 +303,11 @@ function getItemParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getQueryParams(tableName, uniqueArtist) {
   return {
     ExpressionAttributeValues: {
@@ -286,12 +318,21 @@ function getQueryParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ */
 function getDeleteTableParams(tableName) {
   return {
     TableName: tableName
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getBatchWriteItemCommandParams(tableName, uniqueArtist) {
   const params = {}
   params[tableName] = {
@@ -310,6 +351,11 @@ function getBatchWriteItemCommandParams(tableName, uniqueArtist) {
   return params
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getBatchGetItemCommandParams(tableName, uniqueArtist) {
   const params = {}
   params[tableName] = {
@@ -323,6 +369,11 @@ function getBatchGetItemCommandParams(tableName, uniqueArtist) {
   return params
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getBatchExecuteStatementCommandParams(tableName, uniqueArtist) {
   const Statement = `SELECT * FROM ${tableName} x WHERE x.Artist = ${uniqueArtist}`
   return {
@@ -330,6 +381,10 @@ function getBatchExecuteStatementCommandParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ */
 function getUpdateTableCommandParams(tableName) {
   return {
     AttributeDefinitions: [{ AttributeName: 'AlbumTitle', AttributeType: 'S' }],

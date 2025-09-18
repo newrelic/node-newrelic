@@ -171,6 +171,10 @@ test('should revert to standard aggregator when it fails to create streaming agg
   )
 })
 
+/**
+ *
+ * @param aggregator
+ */
 function assertStandardSpanAggregator(aggregator) {
   const isSpanEventAggregator = aggregator instanceof SpanEventAggregator
   const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator

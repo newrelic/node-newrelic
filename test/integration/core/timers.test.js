@@ -82,6 +82,10 @@ test('setImmediate: overlapping transactions', async function (t) {
     })
   })
 
+  /**
+   *
+   * @param tx
+   */
   function check(tx) {
     timers.setImmediate(function () {
       plan.ok(agent.getTransaction(), 'should be in a transaction')
@@ -212,6 +216,10 @@ test('nextTick with extra args', async function testNextTick(t) {
     )
   })
 
+  /**
+   *
+   * @param fn
+   */
   function multiArgNextTick(fn) {
     const args = [].slice.call(arguments, 1)
     original(function callFn() {

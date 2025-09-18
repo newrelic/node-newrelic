@@ -25,6 +25,10 @@ test('pricing proc_meminfo', async function (t) {
 
   await plan.completed
 
+  /**
+   *
+   * @param name
+   */
   function parseName(name) {
     const pattern = /^meminfo_(\d+)MB.txt$/
     let arr = name.split('/')

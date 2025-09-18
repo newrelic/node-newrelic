@@ -123,6 +123,12 @@ test('Agent API - setControllerName', async (t) => {
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.api
+ */
 function goldenPathRenameControllerInTransaction({ agent, api }) {
   let segment = null
   return new Promise((resolve) => {

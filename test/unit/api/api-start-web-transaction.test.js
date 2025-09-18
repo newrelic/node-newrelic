@@ -9,6 +9,11 @@ const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const { assertCLMAttrs, assertSpanKind } = require('../../lib/custom-assertions')
+/**
+ *
+ * @param root0
+ * @param root0.api
+ */
 function nested({ api }) {
   api.startWebTransaction('nested', function nestedHandler() {})
 }

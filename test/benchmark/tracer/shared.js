@@ -8,12 +8,19 @@
 const benchmark = require('#testlib/benchmark.js')
 const helper = require('#testlib/agent_helper.js')
 
+/**
+ *
+ * @param name
+ */
 function makeSuite(name) {
   const agent = helper.loadMockedAgent()
   const suite = benchmark.createBenchmark({ name, delay: 0.01 })
   return { agent, suite }
 }
 
+/**
+ *
+ */
 function getTest() {
   return {
     func: function testFunc(a, b, c) {

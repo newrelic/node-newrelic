@@ -20,6 +20,13 @@ test("adding 'handle' middleware", async function (t) {
   const { app, port } = t.nr
   const plan = tsplan(t, { plan: 2 })
 
+  /**
+   *
+   * @param err
+   * @param req
+   * @param res
+   * @param next
+   */
   function handle(err, req, res, next) {
     plan.ok(err, 'error should exist')
 

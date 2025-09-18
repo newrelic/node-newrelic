@@ -197,6 +197,9 @@ test('Should reconnect even when data sent back', async (t) => {
   })
 })
 
+/**
+ *
+ */
 async function setupSsl() {
   return {
     ca: null,
@@ -209,6 +212,12 @@ async function setupSsl() {
   }
 }
 
+/**
+ *
+ * @param t
+ * @param sslOpts
+ * @param recordSpan
+ */
 function setupServer(t, sslOpts, recordSpan) {
   const packageDefinition = protoLoader.loadSync(
     path.join(__dirname, '/../../../lib/grpc/endpoints/infinite-tracing/v1.proto'),
@@ -235,6 +244,9 @@ function setupServer(t, sslOpts, recordSpan) {
   })
 }
 
+/**
+ *
+ */
 function createMetricAggregatorForTests() {
   const mapper = new MetricMapper()
   const normalizer = new MetricNormalizer({}, 'metric name')

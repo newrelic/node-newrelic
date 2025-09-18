@@ -212,15 +212,28 @@ test('#addCustomSpanAttribute', async (t) => {
   )
 })
 
+/**
+ *
+ * @param agent
+ */
 function getCustomSpanAttributes(agent) {
   const spanContext = agent.tracer.getSpanContext()
   return spanContext && spanContext.customAttributes.get(DESTINATIONS.SPAN_EVENT)
 }
 
+/**
+ *
+ * @param transaction
+ */
 function getCustomTransactionAttributes(transaction) {
   return transaction.trace.custom.get(DESTINATIONS.TRANS_SCOPE)
 }
 
+/**
+ *
+ * @param api
+ * @param attributeCount
+ */
 function batchAddCustomAttributes(api, attributeCount) {
   let addedName = null
   for (let i = 0; i < attributeCount; i++) {
@@ -231,6 +244,11 @@ function batchAddCustomAttributes(api, attributeCount) {
   return addedName
 }
 
+/**
+ *
+ * @param api
+ * @param attributeCount
+ */
 function batchAddCustomSpanAttributes(api, attributeCount) {
   for (let i = 0; i < attributeCount; i++) {
     api.addCustomSpanAttribute(`custom-span-${i}`, i)

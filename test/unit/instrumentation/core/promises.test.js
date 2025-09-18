@@ -131,6 +131,11 @@ test('Promise trace', async (t) => {
   })
 })
 
+/**
+ *
+ * @param n
+ * @param rejection
+ */
 function start(n, rejection) {
   return new Promise(function startExecutor(resolve, reject) {
     name(n)
@@ -138,6 +143,11 @@ function start(n, rejection) {
   })
 }
 
+/**
+ *
+ * @param n
+ * @param rejection
+ */
 function step(n, rejection) {
   return function thenStep() {
     name(n)
@@ -147,12 +157,21 @@ function step(n, rejection) {
   }
 }
 
+/**
+ *
+ * @param newName
+ */
 function name(newName) {
   const tracer = helper.getTracer()
   const segment = tracer.getSegment()
   segment.name = newName
 }
 
+/**
+ *
+ * @param t
+ * @param tx
+ */
 function checkTrace(t, tx) {
   const tracer = helper.getTracer()
   const expectedSegment = tracer.getSegment()

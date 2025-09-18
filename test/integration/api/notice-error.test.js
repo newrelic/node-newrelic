@@ -31,17 +31,29 @@ test('http errors are noticed correctly', async function testError(t) {
 
   await plan.completed
 
+  /**
+   *
+   * @param req
+   * @param res
+   */
   function handler(req, res) {
     agent.errors.add(agent.getTransaction(), new Error('notice me!'))
     req.resume()
     res.end('done!')
   }
 
+  /**
+   *
+   * @param res
+   */
   function close(res) {
     res.resume()
     server.close(check)
   }
 
+  /**
+   *
+   */
   function check() {
     plan.equal(agent.errors.traceAggregator.errors.length, 1, 'should be 1 error')
     const error = agent.errors.traceAggregator.errors[0]

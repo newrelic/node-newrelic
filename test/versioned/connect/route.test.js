@@ -45,6 +45,11 @@ test('should properly name transaction from route name', async (t) => {
     plan.equal(web.partialName, 'Connect/GET//foo', 'should have partial name for apdex')
   })
 
+  /**
+   *
+   * @param req
+   * @param res
+   */
   function middleware(req, res) {
     plan.ok(agent.getTransaction(), 'transaction should be available')
     res.end('foo')
@@ -79,6 +84,11 @@ test('should default to `/` when no route is specified', async (t) => {
     plan.equal(web.partialName, 'Connect/GET//', 'should have partial name for apdex')
   })
 
+  /**
+   *
+   * @param req
+   * @param res
+   */
   function middleware(req, res) {
     plan.ok(agent.getTransaction(), 'transaction should be available')
     res.end('root')
@@ -105,11 +115,9 @@ test('should default to `/` when no route is specified', async (t) => {
  * @param {Object} params
  * @param {string} params.url url to make request
  * @param {string} params.expectedData expected response data
- * @param {Object} app connect app
- *
- * @param params.plan
- * @param params.app
- * @param params.pkgVersion
+ * @param {Object} params.plan
+ * @param {Object} params.app connect app
+ * @param {string} params.pkgVersion package version
  * @returns {http.Server}
  */
 function createServerAndMakeRequest({ url, expectedData, plan, app, pkgVersion }) {

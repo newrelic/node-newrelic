@@ -25,6 +25,11 @@ const NAMES = require('../../../../lib/metrics/names')
 const HOSTNAME = 'localhost'
 const PORT = 8890
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ */
 function addSegment({ agent }) {
   const transaction = agent.getTransaction()
   transaction.type = 'web'
@@ -56,6 +61,9 @@ test('instrumentOutbound', async (t) => {
         const [child] = transaction.trace.getChildren(transaction.trace.root.id)
         assert.deepEqual(child.getAttributes(), {})
 
+        /**
+         *
+         */
         function makeFakeRequest() {
           req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
           return req
@@ -77,6 +85,9 @@ test('instrumentOutbound', async (t) => {
         url: `http://${HOSTNAME}:${PORT}/asdf`
       })
 
+      /**
+       *
+       */
       function makeFakeRequest() {
         req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
         return req
@@ -103,6 +114,9 @@ test('instrumentOutbound', async (t) => {
         url: `http://${HOSTNAME}:${PORT}/***`
       })
 
+      /**
+       *
+       */
       function makeFakeRequest() {
         req.path = '/asdf/foo/bar/baz?test=123&test2=456'
         return req
@@ -122,6 +136,9 @@ test('instrumentOutbound', async (t) => {
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(child.name, name)
 
+      /**
+       *
+       */
       function makeFakeRequest() {
         req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
         return req
@@ -152,6 +169,9 @@ test('instrumentOutbound', async (t) => {
         'adds attributes to spans'
       )
 
+      /**
+       *
+       */
       function makeFakeRequest() {
         req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
         return req
@@ -173,6 +193,9 @@ test('instrumentOutbound', async (t) => {
       end()
     })
 
+    /**
+     *
+     */
     function makeFakeRequest() {
       req.path = path
       return req
@@ -191,6 +214,9 @@ test('instrumentOutbound', async (t) => {
       assert.equal(child.name, name)
     })
 
+    /**
+     *
+     */
     function makeFakeRequest() {
       req.path = path
       return req
@@ -212,6 +238,9 @@ test('instrumentOutbound', async (t) => {
       assert.ok(!req2[symbols.transactionInfo])
     })
 
+    /**
+     *
+     */
     function makeFakeRequest() {
       req.path = '/newrelic'
       return req
@@ -233,6 +262,9 @@ test('instrumentOutbound', async (t) => {
       assert.ok(!req2[symbols.transactionInfo])
     })
 
+    /**
+     *
+     */
     function makeFakeRequest() {
       req.path = '/newrelic'
       return req
@@ -253,6 +285,9 @@ test('instrumentOutbound', async (t) => {
       assert.ok(!req2[symbols.transactionInfo])
     })
 
+    /**
+     *
+     */
     function makeFakeRequest() {
       req.path = '/newrelic'
       return req
@@ -274,6 +309,9 @@ test('instrumentOutbound', async (t) => {
       assert.ok(!req2[symbols.transactionInfo])
     })
 
+    /**
+     *
+     */
     function makeFakeRequest() {
       req.path = '/newrelic'
       return req
@@ -289,6 +327,10 @@ test('instrumentOutbound', async (t) => {
 
       instrumentOutbound(agent, { headers: null, host: HOSTNAME, port: PORT }, makeFakeRequest)
 
+      /**
+       *
+       * @param opts
+       */
       function makeFakeRequest(opts) {
         assert.ok(opts.headers, 'should assign headers when null')
         assert.ok(opts.headers.traceparent, 'traceparent should exist')
@@ -311,6 +353,10 @@ test('instrumentOutbound', async (t) => {
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.ok(child.name.includes('someother/path/more'), 'should use href over request.path')
 
+      /**
+       *
+       * @param opts
+       */
       function makeFakeRequest(opts) {
         req.path = path
         return req
@@ -331,6 +377,10 @@ test('instrumentOutbound', async (t) => {
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.ok(child.name.includes(path), 'should use request.path when href is invalid')
 
+      /**
+       *
+       * @param opts
+       */
       function makeFakeRequest(opts) {
         req.path = path
         return req
@@ -436,6 +486,10 @@ test('should add data from cat header to segment', async (t) => {
     helper.runInTransaction(agent, handled)
     const expectedCode = 'ECONNREFUSED'
 
+    /**
+     *
+     * @param transaction
+     */
     function handled(transaction) {
       const req = http.get({ host: 'localhost', port: 12345 }, function () {})
 
@@ -451,6 +505,10 @@ test('should add data from cat header to segment', async (t) => {
       req.end()
     }
 
+    /**
+     *
+     * @param transaction
+     */
     function unhandled(transaction) {
       const req = http.get({ host: 'localhost', port: 12345 }, function () {})
 
@@ -659,6 +717,10 @@ test('when working with http.request', async (t) => {
 })
 
 test('Should properly handle http(s) get and request signatures', async (t) => {
+  /**
+   *
+   * @param ctx
+   */
   function beforeTest(ctx) {
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent()
@@ -666,6 +728,10 @@ test('Should properly handle http(s) get and request signatures', async (t) => {
     nock.disableNetConnect()
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterTest(ctx) {
     nock.enableNetConnect()
     helper.unloadAgent(ctx.nr.agent)

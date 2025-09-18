@@ -10,6 +10,9 @@ const helper = require('../../lib/agent_helper')
 const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 const sinon = require('sinon')
 
+/**
+ *
+ */
 function getMockModule() {
   class BaseExceptionFilter {}
   BaseExceptionFilter.prototype.handleUnknownError = sinon.stub()

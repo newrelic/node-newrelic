@@ -61,6 +61,9 @@ test('AsyncLocalStorage based tracking', async (t) => {
 
       createdTransaction.end()
 
+      /**
+       *
+       */
       async function firstFunction() {
         await childFunction()
 
@@ -68,6 +71,9 @@ test('AsyncLocalStorage based tracking', async (t) => {
         assert.equal(transaction && transaction.id, createdTransaction.id)
       }
 
+      /**
+       *
+       */
       async function childFunction() {
         await new Promise((resolve) => {
           transaction = agent.getTransaction()
@@ -77,6 +83,9 @@ test('AsyncLocalStorage based tracking', async (t) => {
         })
       }
 
+      /**
+       *
+       */
       async function secondFunction() {
         await new Promise((resolve) => {
           setImmediate(resolve)
@@ -106,10 +115,16 @@ test('AsyncLocalStorage based tracking', async (t) => {
           createdTransaction.end()
         })
 
+      /**
+       *
+       */
       function firstFunction() {
         return childFunction()
       }
 
+      /**
+       *
+       */
       function childFunction() {
         return new Promise((resolve) => {
           transaction = agent.getTransaction()
@@ -119,6 +134,9 @@ test('AsyncLocalStorage based tracking', async (t) => {
         })
       }
 
+      /**
+       *
+       */
       function secondFunction() {
         return new Promise((resolve) => {
           setImmediate(resolve)
@@ -238,6 +256,10 @@ test('AsyncLocalStorage based tracking', async (t) => {
         return three()
       }, ctx)
 
+      /**
+       *
+       * @param resolve
+       */
       function executor(resolve) {
         setImmediate(() => {
           next().then(() => {
@@ -248,18 +270,30 @@ test('AsyncLocalStorage based tracking', async (t) => {
         })
       }
 
+      /**
+       *
+       */
       function next() {
         return Promise.resolve(wrapperTwo())
       }
 
+      /**
+       *
+       */
       function two() {
         return nextTwo()
       }
 
+      /**
+       *
+       */
       function nextTwo() {
         return Promise.resolve(wrapperThree())
       }
 
+      /**
+       *
+       */
       function three() {}
     })
 
@@ -288,6 +322,10 @@ test('AsyncLocalStorage based tracking', async (t) => {
         return three()
       }, ctx)
 
+      /**
+       *
+       * @param resolve
+       */
       function executor(resolve) {
         process.nextTick(() => {
           next().then(() => {
@@ -298,18 +336,30 @@ test('AsyncLocalStorage based tracking', async (t) => {
         })
       }
 
+      /**
+       *
+       */
       function next() {
         return Promise.resolve(wrapperTwo())
       }
 
+      /**
+       *
+       */
       function two() {
         return nextTwo()
       }
 
+      /**
+       *
+       */
       function nextTwo() {
         return Promise.resolve(wrapperThree())
       }
 
+      /**
+       *
+       */
       function three() {}
     })
 
@@ -338,6 +388,10 @@ test('AsyncLocalStorage based tracking', async (t) => {
         return three()
       }, ctx)
 
+      /**
+       *
+       * @param resolve
+       */
       function executor(resolve) {
         setTimeout(() => {
           next().then(() => {
@@ -348,18 +402,30 @@ test('AsyncLocalStorage based tracking', async (t) => {
         }, 1)
       }
 
+      /**
+       *
+       */
       function next() {
         return Promise.resolve(wrapperTwo())
       }
 
+      /**
+       *
+       */
       function two() {
         return nextTwo()
       }
 
+      /**
+       *
+       */
       function nextTwo() {
         return Promise.resolve(wrapperThree())
       }
 
+      /**
+       *
+       */
       function three() {}
     })
 
@@ -388,6 +454,10 @@ test('AsyncLocalStorage based tracking', async (t) => {
         return three()
       }, ctx)
 
+      /**
+       *
+       * @param resolve
+       */
       function executor(resolve) {
         const ref = setInterval(() => {
           clearInterval(ref)
@@ -400,18 +470,30 @@ test('AsyncLocalStorage based tracking', async (t) => {
         }, 1)
       }
 
+      /**
+       *
+       */
       function next() {
         return Promise.resolve(wrapperTwo())
       }
 
+      /**
+       *
+       */
       function two() {
         return nextTwo()
       }
 
+      /**
+       *
+       */
       function nextTwo() {
         return Promise.resolve(wrapperThree())
       }
 
+      /**
+       *
+       */
       function three() {}
     })
 
@@ -448,6 +530,9 @@ test('AsyncLocalStorage based tracking', async (t) => {
         return three()
       }, ctx)
 
+      /**
+       *
+       */
       function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
@@ -455,6 +540,10 @@ test('AsyncLocalStorage based tracking', async (t) => {
         })
       }
 
+      /**
+       *
+       * @param resolve
+       */
       function executor(resolve) {
         tasks.push(() => {
           next().then(() => {
@@ -468,18 +557,30 @@ test('AsyncLocalStorage based tracking', async (t) => {
         })
       }
 
+      /**
+       *
+       */
       function next() {
         return Promise.resolve(wrapperTwo())
       }
 
+      /**
+       *
+       */
       function two() {
         return nextTwo()
       }
 
+      /**
+       *
+       */
       function nextTwo() {
         return Promise.resolve(wrapperThree())
       }
 
+      /**
+       *
+       */
       function three() {}
     })
 

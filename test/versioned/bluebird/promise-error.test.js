@@ -20,6 +20,10 @@ test('Promise#error', async function (t) {
   t.beforeEach(beforeEach)
   t.afterEach(afterEach)
 
+  /**
+   *
+   * @param message
+   */
   function OperationalError(message) {
     this.message = message
     this.isOperational = true

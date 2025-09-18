@@ -10,6 +10,11 @@ const assert = require('node:assert')
 
 const ApdexStats = require('../../lib/stats/apdex')
 
+/**
+ *
+ * @param actualStats
+ * @param expectedStats
+ */
 function verifyApdexStats(actualStats, expectedStats) {
   assert.equal(actualStats.satisfying, expectedStats.satisfying)
   assert.equal(actualStats.tolerating, expectedStats.tolerating)

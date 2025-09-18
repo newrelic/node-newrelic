@@ -245,6 +245,10 @@ test('Transaction naming:', async function (t) {
   })
 })
 
+/**
+ *
+ * @param transaction
+ */
 function simulateInstrumentation(transaction) {
   transaction.nameState.setName('Expressjs', 'GET', '/', 'setByInstrumentation')
 }

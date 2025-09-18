@@ -312,10 +312,18 @@ test('Agent API - recordCustomEvent', async (t) => {
   })
 })
 
+/**
+ *
+ * @param agent
+ */
 function popTopCustomEvent(agent) {
   return getCustomEvents(agent).pop()
 }
 
+/**
+ *
+ * @param agent
+ */
 function getCustomEvents(agent) {
   return agent.customEventAggregator.events.toArray()
 }

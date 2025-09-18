@@ -12,6 +12,13 @@ const cp = require('node:child_process')
 const { Transform } = require('stream')
 
 const tempRemoveListeners = require('../lib/temp-remove-listeners')
+/**
+ *
+ * @param entry
+ * @param msg
+ * @param level
+ * @param component
+ */
 function expectEntry(entry, msg, level, component) {
   assert.equal(entry.hostname, 'my-host')
   assert.equal(entry.name, 'test-logger')
@@ -25,6 +32,13 @@ function expectEntry(entry, msg, level, component) {
 }
 
 const Logger = require('../../lib/util/logger')
+/**
+ *
+ * @param ctx
+ * @param data
+ * @param encoding
+ * @param done
+ */
 function addResult(ctx, data, encoding, done) {
   ctx.nr.results = ctx.nr.results.concat(
     data.toString().split('\n').filter(Boolean).map(JSON.parse)

@@ -9,6 +9,11 @@ const Github = require('./github')
 
 const SUCCESS_MSG = '*** [OK] ***'
 
+/**
+ *
+ * @param array
+ * @param checkWorkflowSuccess
+ */
 async function filterAsync(array, checkWorkflowSuccess) {
   const filterMap = await Promise.all(array.map(checkWorkflowSuccess))
   return array.filter((_, index) => filterMap[index])
@@ -27,6 +32,13 @@ const formatRun = (run) => {
   }
 }
 
+/**
+ *
+ * @param repoOwner
+ * @param repo
+ * @param branch
+ * @param workflows
+ */
 async function checkWorkflowRun(repoOwner, repo, branch, workflows) {
   const github = new Github(repoOwner, repo)
 

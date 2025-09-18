@@ -32,6 +32,14 @@ exports.checkMetrics = checkMetrics
 exports.getHostName = getHostName
 exports.getPort = getPort
 
+/**
+ *
+ * @param root0
+ * @param root0.mongodb
+ * @param root0.host
+ * @param root0.replicaSet
+ * @param root0.name
+ */
 async function connect({ mongodb, host, replicaSet = false, name = DB_NAME }) {
   if (host) {
     host = encodeURIComponent(host)
@@ -51,6 +59,11 @@ async function connect({ mongodb, host, replicaSet = false, name = DB_NAME }) {
   return { db, client }
 }
 
+/**
+ *
+ * @param client
+ * @param db
+ */
 async function close(client, db) {
   if (db && typeof db.close === 'function') {
     await db.close()
@@ -59,15 +72,33 @@ async function close(client, db) {
   }
 }
 
+/**
+ *
+ * @param agent
+ */
 function getHostName(agent) {
   const host = params.mongodb_host
   return urltils.isLocalhost(host) ? agent.config.getHostnameSafe() : host
 }
 
+/**
+ *
+ */
 function getPort() {
   return String(params.mongodb_port)
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.host
+ * @param root0.port
+ * @param root0.metrics
+ * @param root0.prefix
+ * @param root1
+ * @param root1.assert
+ */
 function checkMetrics(
   { agent, host, port, metrics = [], prefix = STATEMENT_PREFIX },
   { assert = require('node:assert') } = {}
@@ -138,6 +169,10 @@ function checkMetrics(
   })
 }
 
+/**
+ *
+ * @param agent
+ */
 function getMetrics(agent) {
   return agent.metrics._metrics
 }

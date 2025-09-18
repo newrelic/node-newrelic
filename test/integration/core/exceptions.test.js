@@ -177,6 +177,10 @@ test('Report exceptions handled in setUncaughtExceptionCaptureCallback', async (
   await plan.completed
 })
 
+/**
+ *
+ * @param env
+ */
 function startProc(env) {
   return cp.fork(path.join(helpersDir, 'exceptions.js'), {
     stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
@@ -184,6 +188,10 @@ function startProc(env) {
   })
 }
 
+/**
+ *
+ * @param rawLogData
+ */
 function findLambdaPayload(rawLogData) {
   const logLines = rawLogData.split('\n')
   for (let i = 0; i < logLines.length; i++) {

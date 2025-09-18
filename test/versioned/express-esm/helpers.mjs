@@ -9,9 +9,18 @@ const helpers = Object.create(null)
 
 /**
  * Imports express, creates an express app and returns both as an object
- * @returns { app, express }
+ * @returns { Object } { app, express }
  */
 helpers.setup = async function setup() {
+  /**
+   * The default export from the 'express' package.
+   *
+   * This is the factory function used to create an Express application instance.
+   * It is obtained via a dynamic ESM import (await import('express')).
+   *
+   * @constant
+   * @type {typeof import('express').default}
+   */
   const { default: express } = await import('express')
   const app = express()
   return { app, express }

@@ -37,6 +37,11 @@ test('addUser, authenticate, removeUser', async (t) => {
     })
   })
 
+  /**
+   *
+   * @param db
+   * @param done
+   */
   function doWork(db, done) {
     const username = 'user-test'
     const password = 'user-test-pass'
@@ -46,6 +51,10 @@ test('addUser, authenticate, removeUser', async (t) => {
       db.addUser(username, password, { roles: ['readWrite'] }, added)
     })
 
+    /**
+     *
+     * @param error
+     */
     function added(error) {
       assert.equal(error, undefined, 'addUser should not have error')
       if (typeof db.authenticate === 'function') {
@@ -56,11 +65,19 @@ test('addUser, authenticate, removeUser', async (t) => {
       }
     }
 
+    /**
+     *
+     * @param error
+     */
     function authed(error) {
       assert.equal(error, undefined, 'authenticate should not have errored')
       db.removeUser(username, removed)
     }
 
+    /**
+     *
+     * @param error
+     */
     function removed(error) {
       assert.equal(error, undefined, 'removeUser should not have errored')
       const expectedSegments = [
@@ -76,6 +93,10 @@ test('addUser, authenticate, removeUser', async (t) => {
       done(expectedSegments)
     }
 
+    /**
+     *
+     * @param error
+     */
     function removedNoAuth(error) {
       assert.equal(error, undefined, 'removeUser should not have errored')
       const expectedSegments = [
@@ -452,6 +473,13 @@ test('stats', async (t) => {
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.tx
+ * @param root0.expectedSegments
+ */
 function verifyMongoSegments({ t, tx, expectedSegments }) {
   const { agent, METRIC_HOST_NAME, METRIC_HOST_PORT } = t.nr
   assert.notEqual(agent.getTransaction(), undefined, 'should not lose transaction state')
@@ -501,6 +529,10 @@ function verifyMongoSegments({ t, tx, expectedSegments }) {
   assert.equal(current, segment, `current segment is ${segment.name}`)
 }
 
+/**
+ *
+ * @param segment
+ */
 function isBadSegment(segment) {
   const nameParts = segment.name.split('/')
   const command = nameParts.at(-1)

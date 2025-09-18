@@ -248,6 +248,9 @@ test('Redis instrumentation', async function (t) {
       end()
     })
 
+    /**
+     *
+     */
     function verify() {
       const [setSegment1, selectSegment, setSegment2] = transaction.trace.getChildren(
         transaction.trace.root.id

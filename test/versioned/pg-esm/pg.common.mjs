@@ -11,6 +11,11 @@ import params from '../../lib/params.js'
 import helper from '../../lib/agent_helper.js'
 import { findSegment, getMetricHostName } from '../../lib/metrics_helper.js'
 
+/**
+ *
+ * @param client
+ * @param cmd
+ */
 function runCommand(client, cmd) {
   return new Promise((resolve, reject) => {
     client.query(cmd, function (err) {
@@ -23,6 +28,11 @@ function runCommand(client, cmd) {
   })
 }
 
+/**
+ *
+ * @param name
+ * @param clientFactory
+ */
 export default function runTests(name, clientFactory) {
   // constants for table creation and db connection
   const TABLE = 'esmTestTable-post'
@@ -66,12 +76,24 @@ export default function runTests(name, clientFactory) {
     return pg
   }
 
+  /**
+   *
+   * @param expect
+   * @param transaction
+   * @param selectTable
+   */
   function verify(expect = assert, transaction, selectTable) {
     verifyMetrics(expect, transaction, selectTable)
     verifyTrace(expect, transaction, selectTable)
     verifyInstanceParameters(expect, transaction)
   }
 
+  /**
+   *
+   * @param expect
+   * @param transaction
+   * @param selectTable
+   */
   function verifyMetrics(expect = assert, transaction, selectTable) {
     const agent = transaction.agent
     selectTable = selectTable || TABLE
@@ -120,6 +142,12 @@ export default function runTests(name, clientFactory) {
     )
   }
 
+  /**
+   *
+   * @param expect
+   * @param transaction
+   * @param selectTable
+   */
   function verifyTrace(expect = assert, transaction, selectTable) {
     selectTable = selectTable || TABLE
     const trace = transaction.trace
@@ -155,6 +183,11 @@ export default function runTests(name, clientFactory) {
     expect.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
   }
 
+  /**
+   *
+   * @param expect
+   * @param transaction
+   */
   function verifyInstanceParameters(expect = assert, transaction) {
     const agent = transaction.agent
     const trace = transaction.trace
@@ -181,6 +214,11 @@ export default function runTests(name, clientFactory) {
     expect.equal(attributes.product, 'Postgres', 'should add the product attribute')
   }
 
+  /**
+   *
+   * @param expect
+   * @param agent
+   */
   function verifySlowQueries(expect = assert, agent) {
     const metricHostName = getMetricHostName(agent, params.postgres_host)
 
@@ -533,6 +571,9 @@ export default function runTests(name, clientFactory) {
           const colVal = 'Sianara'
           const pkVal = 444
 
+          /**
+           *
+           */
           function CustomConfigClass() {
             this._text = `insert into ${TABLE_PREPARED} (${PK}, ${COL}) values($1, $2)`
           }

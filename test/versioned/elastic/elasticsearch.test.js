@@ -17,17 +17,30 @@ const DB_INDEX = `test-${randomString()}`
 const DB_INDEX_2 = `test2-${randomString()}`
 const SEARCHTERM_1 = randomString()
 
+/**
+ *
+ */
 function randomString() {
   return crypto.randomBytes(5).toString('hex')
 }
 
 // request bodies are structured differently in ElasticSearch v7.x vs v8.x
+/**
+ *
+ * @param body
+ * @param version
+ */
 function setRequestBody(body, version) {
   if (semver.lt(version, '8.0.0')) {
     return { body }
   }
   return body
 }
+/**
+ *
+ * @param body
+ * @param version
+ */
 function setBulkBody(body, version) {
   if (semver.lt(version, '8.0.0')) {
     return {
@@ -40,6 +53,11 @@ function setBulkBody(body, version) {
     operations: body
   }
 }
+/**
+ *
+ * @param body
+ * @param version
+ */
 function setMsearch(body, version) {
   if (semver.lt(version, '8.0.0')) {
     return { body }
@@ -498,6 +516,10 @@ test('Elasticsearch instrumentation', async (t) => {
   })
 })
 
+/**
+ *
+ * @param includeIndex
+ */
 function getBulkData(includeIndex) {
   let operations = [
     { title: 'First Bulk Doc', body: 'Content of first bulk document' },
@@ -520,11 +542,22 @@ function getBulkData(includeIndex) {
   return operations
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.client
+ * @param root0.pkgVersion
+ */
 async function bulkInsert({ client, pkgVersion }) {
   const operations = getBulkData(true)
   await client.bulk(setBulkBody(operations, pkgVersion))
 }
 
+/**
+ *
+ * @param metrics
+ * @param expected
+ */
 function checkMetrics(metrics, expected) {
   Object.keys(expected).forEach(function (name) {
     assert.ok(metrics[name], 'should have metric ' + name)

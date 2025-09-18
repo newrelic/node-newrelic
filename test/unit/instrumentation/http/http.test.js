@@ -17,6 +17,11 @@ const NEWRELIC_APP_DATA_HEADER = 'x-newrelic-app-data'
 const NEWRELIC_TRANSACTION_HEADER = 'x-newrelic-transaction'
 const encKey = 'gringletoes'
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ */
 function addSegment({ agent }) {
   const transaction = agent.getTransaction()
   transaction.type = 'web'
@@ -249,6 +254,9 @@ test('built-in http module instrumentation', async (t) => {
           finish
         )
 
+        /**
+         *
+         */
         function finish() {
           const { transaction } = t.nr
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
@@ -285,6 +293,9 @@ test('built-in http module instrumentation', async (t) => {
           finish
         )
 
+        /**
+         *
+         */
         function finish() {
           const { transaction } = t.nr
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
@@ -325,6 +336,9 @@ test('built-in http module instrumentation', async (t) => {
           finish
         )
 
+        /**
+         *
+         */
         function finish() {
           const { transaction } = t.nr
           const segment = transaction.baseSegment
@@ -359,6 +373,9 @@ test('built-in http module instrumentation', async (t) => {
           finish
         )
 
+        /**
+         *
+         */
         function finish() {
           const { transaction } = t.nr
           assert.equal(transaction.url, '/***')
@@ -384,6 +401,9 @@ test('built-in http module instrumentation', async (t) => {
           finish
         )
 
+        /**
+         *
+         */
         function finish() {
           const { transaction } = t.nr
           assert.equal(transaction.url, '/foo4/bar4')
@@ -406,6 +426,9 @@ test('built-in http module instrumentation', async (t) => {
         finish
       )
 
+      /**
+       *
+       */
       function finish() {
         const { transaction } = t.nr
         const segment = transaction.baseSegment
@@ -437,6 +460,12 @@ test('built-in http module instrumentation', async (t) => {
         finish
       )
 
+      /**
+       *
+       * @param err
+       * @param statusCode
+       * @param body
+       */
       function finish(err, statusCode, body) {
         assert.ifError(err)
         const { transaction, transaction2 } = t.nr
@@ -501,6 +530,9 @@ test('built-in http module instrumentation', async (t) => {
           finish
         )
 
+        /**
+         *
+         */
         function finish() {
           const { transaction } = t.nr
           assert.equal(transaction.url, '/proxy/path')
@@ -530,6 +562,9 @@ test('built-in http module instrumentation', async (t) => {
           finish
         )
 
+        /**
+         *
+         */
         function finish() {
           const { transaction } = t.nr
           assert.equal(transaction.url, '/unknown')
@@ -1106,6 +1141,9 @@ test('built-in http module instrumentation', async (t) => {
 
       helper.startServerWithRandomPortRetry(server)
 
+      /**
+       *
+       */
       function objRequest() {
         addSegment({ agent })
 
@@ -1120,6 +1158,9 @@ test('built-in http module instrumentation', async (t) => {
         req.end()
       }
 
+      /**
+       *
+       */
       function arrayRequest() {
         addSegment({ agent })
 
@@ -1141,6 +1182,9 @@ test('built-in http module instrumentation', async (t) => {
         req.end()
       }
 
+      /**
+       *
+       */
       function expectRequest() {
         addSegment({ agent })
 
@@ -1159,6 +1203,9 @@ test('built-in http module instrumentation', async (t) => {
         req.end()
       }
 
+      /**
+       *
+       */
       function endTest() {
         assert.equal(hadExpect, 1)
         agent.getTransaction().end()
@@ -1176,6 +1223,10 @@ test('http.request should trace errors in listeners', () => {
   helper.execSync({ cwd: __dirname, script: './fixtures/http-request-uncaught-exception.js' })
 })
 
+/**
+ *
+ * @param transaction
+ */
 function createHeadersAndInsertTrace(transaction) {
   const headers = {}
   transaction.insertDistributedTraceHeaders(headers)
@@ -1183,6 +1234,12 @@ function createHeadersAndInsertTrace(transaction) {
   return headers
 }
 
+/**
+ *
+ * @param http
+ * @param params
+ * @param cb
+ */
 function makeRequest(http, params, cb) {
   const req = http.request(params, function (res) {
     if (res.statusCode !== 200) {

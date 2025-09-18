@@ -5,6 +5,12 @@
 
 'use strict'
 
+/**
+ *
+ * @param count
+ * @param fn
+ * @param cb
+ */
 function runMultiple(count, fn, cb) {
   let finished = 0
   for (let i = 0; i < count; ++i) {
@@ -16,6 +22,12 @@ function runMultiple(count, fn, cb) {
   }
 }
 
+/**
+ *
+ * @param plan
+ * @param agent
+ * @param transaction
+ */
 function checkTransaction(plan, agent, transaction) {
   const currentTransaction = agent.getTransaction()
 
@@ -31,6 +43,11 @@ function checkTransaction(plan, agent, transaction) {
   }
 }
 
+/**
+ *
+ * @param tx
+ * @param cb
+ */
 function end(tx, cb) {
   return function () {
     if (tx) {

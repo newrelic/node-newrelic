@@ -23,6 +23,12 @@ const NAMES = require('../../../lib/metrics/names')
 const http = require('http')
 const Segment = require('#agentlib/transaction/trace/segment.js')
 
+/**
+ *
+ * @param agent
+ * @param code
+ * @param isWeb
+ */
 function createTransaction(agent, code, isWeb) {
   if (typeof isWeb === 'undefined') {
     isWeb = true
@@ -41,48 +47,93 @@ function createTransaction(agent, code, isWeb) {
   return transaction
 }
 
+/**
+ *
+ * @param agent
+ * @param code
+ */
 function createWebTransaction(agent, code) {
   return createTransaction(agent, code)
 }
 
+/**
+ *
+ * @param agent
+ */
 function createBackgroundTransaction(agent) {
   return createTransaction(agent, null, false)
 }
 
+/**
+ *
+ * @param errorCollector
+ */
 function getErrorTraces(errorCollector) {
   return errorCollector.traceAggregator.errors
 }
 
+/**
+ *
+ * @param errorCollector
+ */
 function getErrorEvents(errorCollector) {
   return errorCollector.eventAggregator.getEvents()
 }
 
+/**
+ *
+ * @param aggregator
+ */
 function getFirstErrorIntrinsicAttributes(aggregator) {
   return getFirstError(aggregator)[4].intrinsics
 }
 
+/**
+ *
+ * @param aggregator
+ */
 function getFirstErrorCustomAttributes(aggregator) {
   return getFirstError(aggregator)[4].userAttributes
 }
 
+/**
+ *
+ * @param aggregator
+ */
 function getFirstError(aggregator) {
   const errors = getErrorTraces(aggregator)
   assert.equal(errors.length, 1)
   return errors[0]
 }
 
+/**
+ *
+ * @param aggregator
+ */
 function getFirstEventIntrinsicAttributes(aggregator) {
   return getFirstEvent(aggregator)[0]
 }
 
+/**
+ *
+ * @param aggregator
+ */
 function getFirstEventCustomAttributes(aggregator) {
   return getFirstEvent(aggregator)[1]
 }
 
+/**
+ *
+ * @param aggregator
+ */
 function getFirstEventAgentAttributes(aggregator) {
   return getFirstEvent(aggregator)[2]
 }
 
+/**
+ *
+ * @param aggregator
+ */
 function getFirstEvent(aggregator) {
   const events = getErrorEvents(aggregator)
   assert.equal(events.length, 1)
@@ -90,6 +141,10 @@ function getFirstEvent(aggregator) {
 }
 
 test('Errors', async (t) => {
+  /**
+   *
+   * @param ctx
+   */
   function beforeEach(ctx) {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent({ attributes: { enabled: true } })
@@ -100,6 +155,10 @@ test('Errors', async (t) => {
     ctx.nr.errors = ctx.nr.agent.errors
   }
 
+  /**
+   *
+   * @param ctx
+   */
   function afterEach(ctx) {
     helper.unloadAgent(ctx.nr.agent)
   }

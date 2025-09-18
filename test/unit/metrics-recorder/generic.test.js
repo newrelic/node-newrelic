@@ -10,6 +10,10 @@ const helper = require('../../lib/agent_helper')
 const recordGeneric = require('../../../lib/metrics/recorders/generic')
 const Transaction = require('../../../lib/transaction')
 
+/**
+ *
+ * @param options
+ */
 function makeSegment(options) {
   const segment = options.transaction.trace.add('placeholder')
   segment.setDurationInMillis(options.duration)
@@ -18,6 +22,10 @@ function makeSegment(options) {
   return segment
 }
 
+/**
+ *
+ * @param options
+ */
 function record(options) {
   if (options.apdexT) {
     options.transaction.metrics.apdexT = options.apdexT

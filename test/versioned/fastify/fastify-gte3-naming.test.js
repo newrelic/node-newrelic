@@ -32,6 +32,11 @@ function getExpectedSegments(uri) {
   ]
 }
 
+/**
+ *
+ * @param fastify
+ * @param calls
+ */
 async function setupFastifyServer(fastify, calls) {
   common.setupRoutes(fastify)
 

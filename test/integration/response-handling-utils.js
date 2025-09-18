@@ -72,6 +72,11 @@ function createTestData(agent, callback) {
   })
 }
 
+/**
+ *
+ * @param t
+ * @param error
+ */
 function verifyAgentStart(t, error) {
   const { startEndpoints } = t.nr
   if (error) {
@@ -83,6 +88,10 @@ function verifyAgentStart(t, error) {
   assert.ok(startEndpoints.settings.isDone(), 'requested settings')
 }
 
+/**
+ *
+ * @param t
+ */
 function verifyRunBehavior(t) {
   const { connecting, disconnected, restartEndpoints, shutdown, started, testCase } = t.nr
   if (testCase.disconnect) {
@@ -104,6 +113,13 @@ function verifyRunBehavior(t) {
   }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.checkHasTestData
+ * @param root0.endpointName
+ */
 function verifyDataRetention({ t, checkHasTestData, endpointName }) {
   const { agent, testCase } = t.nr
   const hasDataPostHarvest = checkHasTestData(agent)
@@ -114,6 +130,10 @@ function verifyDataRetention({ t, checkHasTestData, endpointName }) {
   }
 }
 
+/**
+ *
+ * @param agent
+ */
 function whenAllAggregatorsSend(agent) {
   const metricPromise = new Promise((resolve) => {
     agent.metrics.once('finished_data_send-metric_data', function onMetricsFinished() {
@@ -192,6 +212,9 @@ function whenAllAggregatorsSend(agent) {
   return Promise.all(promises)
 }
 
+/**
+ *
+ */
 function setupConnectionEndpoints() {
   return {
     preconnect: nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN }),
@@ -200,6 +223,12 @@ function setupConnectionEndpoints() {
   }
 }
 
+/**
+ *
+ * @param endpointMethod
+ * @param runId
+ * @param bodyMatcher
+ */
 function nockRequest(endpointMethod, runId, bodyMatcher) {
   const relativepath = helper.generateCollectorPath(endpointMethod, runId)
   return nock(TEST_COLLECTOR_URL).post(relativepath, bodyMatcher)

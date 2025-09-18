@@ -20,6 +20,11 @@ const intervalId = setInterval(function () {
   }
 }, 10)
 
+/**
+ *
+ * @param ctx
+ * @param end
+ */
 function addRouteAndGet(ctx, end) {
   const { agent, server } = ctx
   server.route({
@@ -45,6 +50,10 @@ function addRouteAndGet(ctx, end) {
     })
 }
 
+/**
+ *
+ * @param val
+ */
 function resolveOutOfScope(val) {
   return new Promise(function (resolve) {
     tasks.push(function () {

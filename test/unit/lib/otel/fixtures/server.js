@@ -17,6 +17,13 @@ const {
   ATTR_RPC_SYSTEM,
 } = require('#agentlib/otel/traces/constants.js')
 
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.name
+ * @param root0.spanContext
+ */
 function createRpcServerSpan({ tracer, name = 'test-span', spanContext }) {
   const span = createSpan({ name, kind: SpanKind.SERVER, tracer, spanContext })
   span.setAttribute(ATTR_RPC_SYSTEM, 'grpc')
@@ -25,6 +32,13 @@ function createRpcServerSpan({ tracer, name = 'test-span', spanContext }) {
   return span
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tracer
+ * @param root0.name
+ * @param root0.spanContext
+ */
 function createHttpServerSpan({ tracer, name = 'test-span', spanContext }) {
   const span = createSpan({ name, kind: SpanKind.SERVER, tracer, spanContext })
   span.setAttribute(ATTR_HTTP_METHOD, 'PUT')

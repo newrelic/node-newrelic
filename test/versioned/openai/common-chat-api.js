@@ -12,6 +12,19 @@ module.exports = {
 
 const { match } = require('../../lib/custom-assertions')
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.chatMsgs
+ * @param root0.id
+ * @param root0.model
+ * @param root0.reqContent
+ * @param root0.resContent
+ * @param root0.tokenUsage
+ * @param root1
+ * @param root1.assert
+ */
 function assertChatCompletionMessages(
   { tx, chatMsgs, id, model, reqContent, resContent, tokenUsage },
   { assert = require('node:assert') } = {}
@@ -62,6 +75,16 @@ function assertChatCompletionMessages(
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.model
+ * @param root0.chatSummary
+ * @param root0.error
+ * @param root1
+ * @param root1.assert
+ */
 function assertChatCompletionSummary(
   { tx, model, chatSummary, error = false },
   { assert = require('node:assert') } = {}

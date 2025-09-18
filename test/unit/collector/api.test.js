@@ -54,6 +54,10 @@ test('reportSettings', async (t) => {
   await t.test('handles excessive payload sizes without blocking subsequent sends', (t, end) => {
     const { agent } = t.nr
     const tstamp = 1_707_756_300_000 // 2024-02-12T11:45:00.000-05:00
+    /**
+     *
+     * @param data
+     */
     function log(data) {
       return JSON.stringify({
         level: 30,

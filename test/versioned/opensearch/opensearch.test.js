@@ -17,19 +17,34 @@ const DB_INDEX_2 = `test2-${randomString()}`
 const SEARCHTERM_1 = randomString()
 const semver = require('semver')
 
+/**
+ *
+ */
 function randomString() {
   return crypto.randomBytes(5).toString('hex')
 }
 
+/**
+ *
+ * @param body
+ */
 function setRequestBody(body) {
   return { body }
 }
+/**
+ *
+ * @param body
+ */
 function setBulkBody(body) {
   return {
     refresh: true,
     body
   }
 }
+/**
+ *
+ * @param body
+ */
 function setMsearch(body) {
   return { body }
 }
@@ -434,6 +449,10 @@ test('opensearch instrumentation', async (t) => {
   })
 })
 
+/**
+ *
+ * @param includeIndex
+ */
 function getBulkData(includeIndex) {
   let operations = [
     { title: 'First Bulk Doc', body: 'Content of first bulk document' },
@@ -456,11 +475,21 @@ function getBulkData(includeIndex) {
   return operations
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.client
+ */
 async function bulkInsert({ client }) {
   const operations = getBulkData(true)
   await client.bulk(setBulkBody(operations))
 }
 
+/**
+ *
+ * @param metrics
+ * @param expected
+ */
 function checkMetrics(metrics, expected) {
   Object.keys(expected).forEach(function (name) {
     assert.ok(metrics[name], 'should have metric ' + name)

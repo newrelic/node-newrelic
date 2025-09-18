@@ -70,6 +70,13 @@ function dbTest(name, run) {
   })
 }
 
+/**
+ *
+ * @param agent
+ * @param transaction
+ * @param names
+ * @param opts
+ */
 function verifyMongoSegments(agent, transaction, names, opts) {
   assert.ok(agent.getTransaction(), 'should not lose transaction state')
   assert.equal(agent.getTransaction().id, transaction.id, 'transaction is correct')
@@ -123,6 +130,10 @@ function verifyMongoSegments(agent, transaction, names, opts) {
   }
 }
 
+/**
+ *
+ * @param segment
+ */
 function isBadSegment(segment) {
   const nameParts = segment.name.split('/')
   const command = nameParts[nameParts.length - 1]

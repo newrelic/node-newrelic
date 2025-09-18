@@ -28,6 +28,10 @@ test('The API supportability metrics', async (t) => {
     await testMetricCalls(key)
   }
 
+  /**
+   *
+   * @param name
+   */
   async function testMetricCalls(name) {
     await t.test(`should create a metric for API#${name}`, (t, end) => {
       const { agent, api } = t.nr

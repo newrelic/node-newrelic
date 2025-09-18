@@ -31,6 +31,10 @@ const DEFAULT_CONFIG = {
   }
 }
 
+/**
+ *
+ * @param securityPolicies
+ */
 function getPreconnectReply(securityPolicies) {
   return {
     return_value: {
@@ -42,6 +46,11 @@ function getPreconnectReply(securityPolicies) {
 
 const CONNECT_REPLY = { return_value: { agent_run_id: RUN_ID } }
 
+/**
+ *
+ * @param t
+ * @param testCase
+ */
 function beforeTest(t, testCase) {
   const initialConfig = createTestConfiguration(testCase)
   const agent = helper.loadMockedAgent(initialConfig)
@@ -104,6 +113,11 @@ test('LASP/CSP - Cross Agent Tests', async (t) => {
   }
 })
 
+/**
+ *
+ * @param testCase
+ * @param connectData
+ */
 function verifyConnectData(testCase, connectData) {
   assert.ok(connectData.security_policies)
 
@@ -120,6 +134,11 @@ function verifyConnectData(testCase, connectData) {
   }
 }
 
+/**
+ *
+ * @param testCase
+ * @param config
+ */
 function verifyEndingConfigPolicySettings(testCase, config) {
   for (const [policyName, policyValue] of Object.entries(testCase.ending_policy_settings)) {
     const matchingConfigPath = LASP_MAP[policyName].path
@@ -144,6 +163,12 @@ function verifyEndingConfigPolicySettings(testCase, config) {
   }
 }
 
+/**
+ *
+ * @param testCase
+ * @param agent
+ * @param error
+ */
 function verifyAgentBehavior(testCase, agent, error) {
   if (testCase.should_shutdown) {
     assert.ok(error)
@@ -156,6 +181,12 @@ function verifyAgentBehavior(testCase, agent, error) {
   }
 }
 
+/**
+ *
+ * @param config
+ * @param path
+ * @param value
+ */
 function initConfigurationItem(config, path, value) {
   const nestedKeys = path.split('.')
 
@@ -177,6 +208,10 @@ function initConfigurationItem(config, path, value) {
   })
 }
 
+/**
+ *
+ * @param testCase
+ */
 function createTestConfiguration(testCase) {
   const initialPolicies = testCase.starting_policy_settings
   const initialConfig = Object.assign({}, DEFAULT_CONFIG)
@@ -193,6 +228,10 @@ function createTestConfiguration(testCase) {
   return initialConfig
 }
 
+/**
+ *
+ * @param requiredFeatures
+ */
 function hasRequiredFeatures(requiredFeatures) {
   const unsupportedFeatures = requiredFeatures.filter((featureName) => {
     const mapping = LASP_MAP[featureName]

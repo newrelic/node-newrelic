@@ -88,6 +88,11 @@ test('synthetics outbound header', async (t) => {
 })
 
 test('should add synthetics inbound header to transaction', async (t) => {
+  /**
+   *
+   * @param cb
+   * @param requestHandler
+   */
   function createServer(cb, requestHandler) {
     const http = require('http')
     const s = http.createServer(function (req, res) {

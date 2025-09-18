@@ -227,6 +227,11 @@ test('chat.completions.create', async (t) => {
       let res = ''
       const expectedModel = 'gpt-4'
       const api = helper.getAgentApi()
+      /**
+       *
+       * @param model
+       * @param content
+       */
       function cb(model, content) {
         assert.equal(model, expectedModel)
         if (content === promptContent || content === promptContent2) {

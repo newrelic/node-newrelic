@@ -54,6 +54,9 @@ test('should not reuse transactions with non-awaited promise', async (t) => {
     return { hello: 'world' }
   })
 
+  /**
+   *
+   */
   function doWork() {
     return new Promise((resolve) => {
       // async hop w/o context tracking

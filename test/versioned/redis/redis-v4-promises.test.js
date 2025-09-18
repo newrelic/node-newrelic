@@ -234,6 +234,9 @@ test('should follow selected database', function (t, end) {
     end()
   })
 
+  /**
+   *
+   */
   function verify() {
     const [setSegment1, selectSegment, setSegment2] = transaction.trace.getChildren(
       transaction.trace.root.id

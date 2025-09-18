@@ -10,6 +10,10 @@ const assert = require('node:assert')
 const net = require('net')
 const helper = require('../../lib/agent_helper')
 
+/**
+ *
+ * @param tx
+ */
 function id(tx) {
   return tx && tx.id
 }
@@ -36,6 +40,10 @@ test('createServer', function createServerTest(t, end) {
       socket.end()
     })
 
+    /**
+     *
+     * @param socket
+     */
     function handler(socket) {
       assert.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.end('test')
@@ -53,6 +61,9 @@ test('createServer', function createServerTest(t, end) {
       })
     }
 
+    /**
+     *
+     */
     function onClose() {
       const children = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(children.length, 2, 'should have a single child')
@@ -84,6 +95,10 @@ test('connect', function connectTest(t, end) {
     helper.runInTransaction(agent, transactionWrapper)
   })
 
+  /**
+   *
+   * @param transaction
+   */
   function transactionWrapper(transaction) {
     let count = 0
     const socket = net.createConnection({ port: 4123 })
@@ -104,6 +119,9 @@ test('connect', function connectTest(t, end) {
       socket.end()
     })
 
+    /**
+     *
+     */
     function verify() {
       const transaction = agent.getTransaction()
       const children = transaction.trace.getChildren(transaction.trace.root.id)
@@ -148,6 +166,10 @@ test('createServer and connect', function createServerTest(t, end) {
       socket.end()
     })
 
+    /**
+     *
+     * @param socket
+     */
     function handler(socket) {
       assert.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.end('test')
@@ -165,6 +187,9 @@ test('createServer and connect', function createServerTest(t, end) {
       })
     }
 
+    /**
+     *
+     */
     function onClose() {
       const transaction = agent.getTransaction()
       const children = transaction.trace.getChildren(transaction.trace.root.id)

@@ -16,6 +16,12 @@ const {
   testPromiseInstanceMethod
 } = require('./helpers')
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.factory
+ */
 async function testPromiseContext({ t, factory }) {
   await t.test('context switch', async function (t) {
     const { agent, Promise } = t.nr
@@ -125,6 +131,10 @@ async function testPromiseContext({ t, factory }) {
   })
 }
 
+/**
+ *
+ * @param method
+ */
 function testTryBehavior(method) {
   test('Promise.' + method, async function (t) {
     t.beforeEach(beforeEach)
@@ -176,6 +186,10 @@ function testTryBehavior(method) {
   })
 }
 
+/**
+ *
+ * @param methodName
+ */
 async function testThrowBehavior(methodName) {
   test('Promise#' + methodName, async function (t) {
     t.beforeEach(beforeEach)
@@ -218,10 +232,24 @@ async function testThrowBehavior(methodName) {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.count
+ * @param root0.testFunc
+ */
 function testPromiseClassCastMethod({ t, count, testFunc }) {
   return testAllCastTypes({ t, count, factory: testFunc })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.count
+ * @param root0.testFunc
+ */
 function testPromiseInstanceCastMethod({ t, count, testFunc }) {
   return testAllCastTypes({
     t,
@@ -232,6 +260,13 @@ function testPromiseInstanceCastMethod({ t, count, testFunc }) {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.count
+ * @param root0.factory
+ */
 async function testAllCastTypes({ t, count, factory }) {
   const values = [42, 'foobar', {}, [], function () {}]
 
@@ -258,6 +293,14 @@ async function testAllCastTypes({ t, count, factory }) {
       .then(end)
   })
 
+  /**
+   *
+   * @param root0
+   * @param root0.plan
+   * @param root0.t
+   * @param root0.name
+   * @param root0.i
+   */
   function _test({ plan, t, name, i }) {
     const { Promise } = t.nr
     const value = values[i]
@@ -269,6 +312,10 @@ async function testAllCastTypes({ t, count, factory }) {
   }
 }
 
+/**
+ *
+ * @param method
+ */
 function testResolveBehavior(method) {
   test('Promise.' + method, async function (t) {
     t.beforeEach(beforeEach)
@@ -307,6 +354,10 @@ function testResolveBehavior(method) {
   })
 }
 
+/**
+ *
+ * @param methodName
+ */
 function testFromCallbackBehavior(methodName) {
   test('Promise.' + methodName, async function (t) {
     t.beforeEach(beforeEach)
@@ -357,6 +408,10 @@ function testFromCallbackBehavior(methodName) {
   })
 }
 
+/**
+ *
+ * @param methodName
+ */
 function testFinallyBehavior(methodName) {
   test('Promise#' + methodName, async function (t) {
     t.beforeEach(beforeEach)
@@ -403,6 +458,10 @@ function testFinallyBehavior(methodName) {
   })
 }
 
+/**
+ *
+ * @param method
+ */
 function testRejectBehavior(method) {
   test('Promise.' + method, async function (t) {
     t.beforeEach(beforeEach)
@@ -451,6 +510,10 @@ function testRejectBehavior(method) {
   })
 }
 
+/**
+ *
+ * @param methodName
+ */
 function testAsCallbackBehavior(methodName) {
   test('Promise#' + methodName, async function (t) {
     t.beforeEach(beforeEach)
@@ -511,6 +574,10 @@ function testAsCallbackBehavior(methodName) {
   })
 }
 
+/**
+ *
+ * @param methodName
+ */
 function testCatchBehavior(methodName) {
   test('Promise#' + methodName, async function (t) {
     t.beforeEach(beforeEach)

@@ -85,6 +85,11 @@ test.afterEach((ctx) => {
 
 test('mix internal and NR span tests', (t, end) => {
   const { agent, api, tracer } = t.nr
+  /**
+   *
+   * @param mainSegment
+   * @param tx
+   */
   function main(mainSegment, tx) {
     tracer.startActiveSpan('hi', (span) => {
       const segment = agent.tracer.getSegment()
@@ -1235,6 +1240,10 @@ test('aws sqs span has correct entity linking attributes', (t, end) => {
   })
 })
 
+/**
+ *
+ * @param agent
+ */
 function setupDtHeaders(agent) {
   agent.config.trusted_account_key = 1
   agent.config.primary_application_id = 2
@@ -1252,6 +1261,14 @@ function setupDtHeaders(agent) {
   return { ctx, traceId, spanId }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tx
+ * @param root0.traceId
+ * @param root0.spanId
+ * @param root0.transportType
+ */
 function assertDtAttrs({ tx, traceId, spanId, transportType }) {
   assert.equal(tx.acceptedDistributedTrace, true)
   assert.equal(tx.isDistributedTrace, true)

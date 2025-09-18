@@ -91,6 +91,10 @@ test('custom naming rules should be applied early for RUM', async function (t) {
 
     http.request({ port, path: '/test' }, done).end()
 
+    /**
+     *
+     * @param res
+     */
     function done(res) {
       res.pipe(
         new StreamSink(function (_, header) {

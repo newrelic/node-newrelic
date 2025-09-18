@@ -273,6 +273,10 @@ test('on transaction finished', async (t) => {
   })
 })
 
+/**
+ *
+ * @param agent
+ */
 function getTransactionEvents(agent) {
   return agent.transactionEventAggregator.getEvents()
 }

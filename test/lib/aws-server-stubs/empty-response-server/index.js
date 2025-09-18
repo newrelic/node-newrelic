@@ -8,6 +8,9 @@
 const http = require('http')
 const { patchDestroy } = require('../common')
 
+/**
+ *
+ */
 function createEmptyResponseServer() {
   const server = http.createServer(function (req, res) {
     if (
@@ -34,6 +37,11 @@ function createEmptyResponseServer() {
   return server
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ */
 function handlePost(req, res) {
   req.on('data', () => {})
 

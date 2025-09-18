@@ -76,6 +76,12 @@ test('Agent API - setTransactionName', async (t) => {
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.api
+ */
 function setTranasactionNameGoldenPath({ agent, api }) {
   let segment = null
   return new Promise((resolve) => {

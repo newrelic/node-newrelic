@@ -36,6 +36,9 @@ test('cross application tracing full integration', async function (t) {
   const api = new API(agent)
 
   let serversToStart = 3
+  /**
+   *
+   */
   function started() {
     serversToStart -= 1
     if (serversToStart === 0) {
@@ -277,6 +280,9 @@ test('cross application tracing full integration', async function (t) {
       )
     }
   ]
+  /**
+   *
+   */
   function runTest() {
     http.get(generateUrl(START_PORT, 'start'), function (res) {
       res.resume()
@@ -298,6 +304,14 @@ test('cross application tracing full integration', async function (t) {
   await plan.completed
 })
 
+/**
+ *
+ * @param http
+ * @param api
+ * @param port
+ * @param started
+ * @param responseHandler
+ */
 function generateServer(http, api, port, started, responseHandler) {
   const server = http.createServer(function (req, res) {
     const tx = api.agent.getTransaction()
@@ -309,6 +323,11 @@ function generateServer(http, api, port, started, responseHandler) {
   return server
 }
 
+/**
+ *
+ * @param port
+ * @param endpoint
+ */
 function generateUrl(port, endpoint) {
   return 'http://localhost:' + port + '/' + endpoint
 }

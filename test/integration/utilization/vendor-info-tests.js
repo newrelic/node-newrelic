@@ -36,6 +36,12 @@ module.exports = async function (t, vendor) {
   }
 }
 
+/**
+ *
+ * @param testCase
+ * @param vendor
+ * @param getInfo
+ */
 function makeTest(testCase, vendor, getInfo) {
   // aws splits the timeout between token and metadata
   // let's be efficient as possible and assign a lower

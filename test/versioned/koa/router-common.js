@@ -62,6 +62,10 @@ module.exports = (pkg) => {
       return spanName
     }
 
+    /**
+     *
+     * @param ctx
+     */
     function testSetup(ctx) {
       ctx.nr = {}
       ctx.nr.agent = helper.instrumentMockedAgent()
@@ -73,6 +77,10 @@ module.exports = (pkg) => {
       ctx.nr.Router = Router
     }
 
+    /**
+     *
+     * @param ctx
+     */
     function tearDown(ctx) {
       ctx.nr?.server?.close()
       helper.unloadAgent(ctx.nr.agent)

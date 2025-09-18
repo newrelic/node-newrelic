@@ -55,6 +55,11 @@ test('collection misc tests', async (t) => {
         onWrite
       )
 
+      /**
+       *
+       * @param error
+       * @param data
+       */
       function onWrite(error, data) {
         assert.equal(error, undefined)
         assert.equal(data.insertedCount, 1)
@@ -133,6 +138,11 @@ test('collection misc tests', async (t) => {
       tx.name = common.TRANSACTION_NAME
       collection.mapReduce(map, reduce, { out: { inline: 1 } }, done)
 
+      /**
+       *
+       * @param error
+       * @param data
+       */
       function done(error, data) {
         assert.equal(error, undefined)
         const expectedData = [
@@ -162,6 +172,11 @@ test('collection misc tests', async (t) => {
       }
       /* eslint-enable */
 
+      /**
+       *
+       * @param key
+       * @param vals
+       */
       function reduce(key, vals) {
         return vals.reduce(function sum(prev, val) {
           return prev + val

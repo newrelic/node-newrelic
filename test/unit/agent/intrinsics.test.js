@@ -231,6 +231,14 @@ test('when CAT is enabled', async (t) => {
   }
 })
 
+/**
+ *
+ * @param agent
+ * @param test
+ * @param start
+ * @param durationInSeconds
+ * @param totalTimeInSeconds
+ */
 function getMockTransaction(agent, test, start, durationInSeconds, totalTimeInSeconds) {
   const transaction = new Transaction(agent)
 

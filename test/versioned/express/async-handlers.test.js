@@ -67,6 +67,11 @@ test('async handlers', { skip: !isExpress5() }, async (t) => {
   })
 })
 
+/**
+ *
+ * @param t
+ * @param endpoint
+ */
 async function runTest(t, endpoint) {
   const { agent, port } = t.nr
   return new Promise((resolve) => {

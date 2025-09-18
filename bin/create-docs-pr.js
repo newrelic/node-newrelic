@@ -54,6 +54,9 @@ We recommend updating to the latest agent version as soon as it's available. If 
 
 See the New Relic Node.js agent EOL policy for information about agent releases and support dates. (https://docs.newrelic.com/docs/apm/agents/nodejs-agent/getting-started/nodejs-agent-eol-policy/)`
 
+/**
+ *
+ */
 async function createReleaseNotesPr() {
   // Parse commandline options inputs
   program.parse()
@@ -278,6 +281,10 @@ function addReleaseNotesFile(body, version) {
   })
 }
 
+/**
+ *
+ * @param version
+ */
 function getFileName(version) {
   // change `v0.0.0` to `0-0-0`
   version = version.substring(1).replace(/\./g, '-')

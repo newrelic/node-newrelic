@@ -470,11 +470,23 @@ if (semver.satisfies(pkgVersion, '>=4.9.2')) {
     const plan = tsplan(t, { plan: 3 })
     const { app } = t.nr
 
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
     function mid1(req, res, next) {
       plan.ok(1, 'mid1 is executed')
       next()
     }
 
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
     function mid2(req, res, next) {
       plan.ok(1, 'mid2 is executed')
       next()
@@ -494,11 +506,22 @@ if (semver.satisfies(pkgVersion, '>=4.9.2')) {
     const plan = tsplan(t, { plan: 3 })
     const { app } = t.nr
 
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
     function mid1(req, res, next) {
       plan.ok(1, 'mid1 is executed')
       next()
     }
 
+    /**
+     *
+     * @param req
+     * @param res
+     */
     function mid2(req, res) {
       plan.ok(1, 'mid2 is executed')
       res.end()
@@ -513,6 +536,15 @@ if (semver.satisfies(pkgVersion, '>=4.9.2')) {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.endpoint
+ * @param root0.expectedName
+ * @param root0.numTests
+ * @param root0.end
+ */
 function makeMultiRunner({ t, endpoint, expectedName, numTests, end }) {
   const { agent, port } = t.nr
   let done = 0

@@ -10,6 +10,11 @@ const https = require('https')
 const nock = require('nock')
 const helper = require('../../../lib/agent_helper')
 
+/**
+ *
+ * @param nodule
+ * @param method
+ */
 function getMethodFromName(nodule, method) {
   let _nodule
 
@@ -23,6 +28,10 @@ function getMethodFromName(nodule, method) {
   return _nodule[method]
 }
 
+/**
+ *
+ * @param testOpts
+ */
 async function testSignature(testOpts) {
   const { nodule, urlType, headers, callback, swapHost, t, method } = testOpts
   const host = 'www.newrelic.com'
@@ -101,6 +110,18 @@ async function testSignature(testOpts) {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.res
+ * @param root0.headers
+ * @param root0.swapHost
+ * @param root0.end
+ * @param root0.host
+ * @param root0.port
+ * @param root0.path
+ * @param root0.tracer
+ */
 function testResult({ res, headers, swapHost, end, host, port, path, tracer }) {
   let external = `External/${host}${port}${path}`
   let str = 'Hello from New Relic'

@@ -10,6 +10,9 @@ const shimmer = require('#agentlib/shimmer.js')
 
 const suite = benchmark.createBenchmark({ name: 'shimmer wrapping', delay: 0.01 })
 
+/**
+ *
+ */
 function getTest() {
   return {
     func: function testFunc(a, b, c) {

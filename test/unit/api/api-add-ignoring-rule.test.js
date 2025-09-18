@@ -119,6 +119,12 @@ test('Agent API - addIgnoringRule', async (t) => {
   })
 })
 
+/**
+ *
+ * @param agent
+ * @param api
+ * @param cb
+ */
 function addIgnoringRuleGoldenPath(agent, api, cb) {
   agent.urlNormalizer.load([
     {

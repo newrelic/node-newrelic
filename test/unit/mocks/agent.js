@@ -11,6 +11,10 @@ const sinon = require('sinon')
 const HealthReporter = require('#agentlib/health-reporter.js')
 
 module.exports = (sandbox = sinon, metricsMock) => {
+  /**
+   *
+   * @param config
+   */
   function MockAgent(config = {}) {
     EventEmitter.call(this)
     this.config = config

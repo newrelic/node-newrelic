@@ -29,6 +29,12 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.t
+ * @param root0.config
+ */
 function initAgent({ t, config = BASE_AGENT_CONFIG }) {
   t.nr.agent = helper.instrumentMockedAgent(config)
   t.nr.agent.config.entity_guid = 'guid-123456'

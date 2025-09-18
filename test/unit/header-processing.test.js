@@ -90,6 +90,10 @@ test('#getQueueTime', async (t) => {
     assert.equal(didLogHighLevel, false)
     assert.equal(didLogLowLevel, true)
 
+    /**
+     *
+     * @param args
+     */
     function didLogRawQueueTime(args) {
       let didLog = false
 
@@ -103,12 +107,20 @@ test('#getQueueTime', async (t) => {
       return didLog
     }
 
+    /**
+     *
+     * @param {...any} args
+     */
     function checkLogRawQueueTimeHighLevel(...args) {
       if (didLogRawQueueTime(args)) {
         didLogHighLevel = true
       }
     }
 
+    /**
+     *
+     * @param {...any} args
+     */
     function checkLogRawQueueTimeLowLevel(...args) {
       if (didLogRawQueueTime(args)) {
         didLogLowLevel = true

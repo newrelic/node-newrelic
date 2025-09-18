@@ -31,7 +31,13 @@ test('@google/genai unit tests', async (t) => {
     ctx.nr.sandbox.restore()
   })
 
+  /**
+   *
+   */
   function getMockModule() {
+    /**
+     *
+     */
     function GoogleGenAi() {}
     GoogleGenAi.Models = function () {}
     GoogleGenAi.Models.prototype.generateContentInternal = async function () {}

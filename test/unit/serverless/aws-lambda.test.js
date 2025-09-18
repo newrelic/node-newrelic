@@ -30,6 +30,10 @@ const groupName = 'Function'
 const functionName = 'testName'
 const errorMessage = 'sad day'
 
+/**
+ *
+ * @param agent
+ */
 function getMetrics(agent) {
   return agent.metrics._metrics
 }
@@ -49,6 +53,11 @@ const defaultAgentConfig = {
   serverless_mode: { enabled: true }
 }
 
+/**
+ *
+ * @param ctx
+ * @param agentConfig
+ */
 function beforeTests(ctx, agentConfig = defaultAgentConfig) {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent(agentConfig)
@@ -78,6 +87,10 @@ function beforeTests(ctx, agentConfig = defaultAgentConfig) {
   ctx.nr.agent.setState('started')
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterTests(ctx) {
   delete process.env.AWS_EXECUTION_ENV
   helper.unloadAgent(ctx.nr.agent)
@@ -144,6 +157,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
         wrappedHandler(nonApiGatewayProxyEvent, stubContext, stubCallback)
 
+        /**
+         *
+         * @param transaction
+         */
         function confirmAgentAttribute(transaction) {
           const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
           const segment = transaction.baseSegment
@@ -179,6 +196,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
         const segment = transaction.baseSegment
@@ -280,6 +301,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
@@ -306,6 +331,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const segment = transaction.baseSegment
         const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
@@ -334,6 +363,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = Object.keys(transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT))
 
@@ -356,6 +389,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
@@ -404,6 +441,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
@@ -438,6 +479,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
         const segment = transaction.agent.tracer.getSegment()
@@ -466,6 +511,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
         const segment = transaction.baseSegment
@@ -490,6 +539,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
@@ -515,6 +568,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
@@ -536,6 +593,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
@@ -557,6 +618,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       * @param transaction
+       */
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
         const segment = transaction.agent.tracer.getSegment()
@@ -590,6 +655,9 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
+      /**
+       *
+       */
       function confirmMetrics() {
         const unscopedMetrics = getMetrics(agent).unscoped
         assert.ok(unscopedMetrics)
@@ -645,6 +713,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmColdStart(transaction) {
       const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
       assert.equal(attributes['aws.lambda.coldStart'], true)
@@ -667,6 +739,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       end()
     })
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmNoAdditionalColdStart(transaction) {
       if (transactionNum > 1) {
         const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
@@ -694,6 +770,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvt, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttributes(transaction) {
       // verify attributes exist in correct destinations
       const txTrace = _verifyDestinations(transaction)
@@ -705,6 +785,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       end()
     }
 
+    /**
+     *
+     * @param tx
+     */
     function _verifyDestinations(tx) {
       const txTrace = tx.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const errEvent = tx.trace.attributes.get(ATTR_DEST.ERROR_EVENT)
@@ -732,6 +816,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -757,6 +845,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -782,6 +874,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -809,6 +905,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -835,6 +935,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -858,6 +962,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -887,6 +995,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -912,6 +1024,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -938,6 +1054,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -972,6 +1092,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -1004,6 +1128,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -1030,6 +1158,10 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
     })
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
+    /**
+     *
+     * @param transaction
+     */
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
       const segment = transaction.agent.tracer.getSegment()
@@ -1094,6 +1226,9 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
+      /**
+       *
+       */
       function confirmErrorCapture() {
         assert.equal(agent.errors.traceAggregator.errors.length, 1)
         const noticedError = agent.errors.traceAggregator.errors[0]
@@ -1116,6 +1251,9 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
+      /**
+       *
+       */
       function confirmErrorCapture() {
         assert.equal(agent.errors.traceAggregator.errors.length, 1)
         const noticedError = agent.errors.traceAggregator.errors[0]
@@ -1147,6 +1285,9 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
+      /**
+       *
+       */
       function confirmEndCallback() {
         assert.equal(transaction.isActive(), false)
 
@@ -1384,6 +1525,9 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
         end()
       })
 
+    /**
+     *
+     */
     function confirmErrorCapture() {
       const errors = agent.errors.traceAggregator.errors
       assert.equal(errors.length, 1)
@@ -1563,6 +1707,9 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
+    /**
+     *
+     */
     function confirmMetrics() {
       const unscopedMetrics = getMetrics(agent).unscoped
       assert.ok(unscopedMetrics)

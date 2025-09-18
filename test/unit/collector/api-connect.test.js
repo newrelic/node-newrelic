@@ -696,6 +696,10 @@ test('in a LASP/CSP enabled agent', async (t) => {
   })
 })
 
+/**
+ *
+ * @param ctx
+ */
 async function beforeEach(ctx) {
   ctx.nr = {}
 
@@ -713,11 +717,19 @@ async function beforeEach(ctx) {
   ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
 }
 
+/**
+ *
+ * @param ctx
+ */
 function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.collector.close()
 }
 
+/**
+ *
+ * @param ctx
+ */
 function patchSetTimeout(ctx) {
   ctx.nr.setTimeout = global.setTimeout
   global.setTimeout = function (cb) {
@@ -732,6 +744,10 @@ function patchSetTimeout(ctx) {
   }
 }
 
+/**
+ *
+ * @param ctx
+ */
 function restoreTimeout(ctx) {
   global.setTimeout = ctx.nr.setTimeout
 }

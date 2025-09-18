@@ -398,6 +398,10 @@ test('systemInfo edge cases', async (t) => {
     }
   })
 
+  /**
+   *
+   * @param config
+   */
   async function callSystemInfo(config) {
     const agentMock = {
       config: {

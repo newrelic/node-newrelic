@@ -74,6 +74,9 @@ test('should not break removeListener for single event', (t, end) => {
   helper.runInTransaction(agent, function () {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
+    /**
+     *
+     */
     function onMessage() {}
 
     child.on('message', onMessage)
@@ -94,7 +97,13 @@ test('should not break removeListener for multiple events down to single', (t, e
   helper.runInTransaction(agent, function () {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
+    /**
+     *
+     */
     function onMessage() {}
+    /**
+     *
+     */
     function onMessage2() {}
 
     child.on('message', onMessage)
@@ -117,8 +126,17 @@ test('should not break removeListener for multiple events down to multiple', (t,
   helper.runInTransaction(agent, function () {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
+    /**
+     *
+     */
     function onMessage() {}
+    /**
+     *
+     */
     function onMessage2() {}
+    /**
+     *
+     */
     function onMessage3() {}
 
     child.on('message', onMessage)
@@ -171,6 +189,9 @@ test('should not break multiple once() for multiple events down to single', (t, 
       invokedMessage2 = true
     })
 
+    /**
+     *
+     */
     function onMessage3() {}
     child.on('message', onMessage3)
 
@@ -224,6 +245,9 @@ test('should not break removal of non-wrapped listener', (t, end) => {
 
     // Avoid our instrumentation via private method.
     // TODO: should we also be instrumenting addListener?
+    /**
+     *
+     */
     function nonWrappedListener() {}
     child.addListener('message', nonWrappedListener)
 
@@ -249,6 +273,9 @@ test('should not break when non-wrapped listener exists', (t, end) => {
     })
 
     // Avoid our instrumentation via private method.
+    /**
+     *
+     */
     function nonWrappedListener() {}
     child.addListener('message', nonWrappedListener)
 
@@ -307,6 +334,9 @@ test('should not break removeAllListeners', (t, end) => {
   helper.runInTransaction(agent, function () {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
+    /**
+     *
+     */
     function onMessage() {}
 
     child.on('message', onMessage)

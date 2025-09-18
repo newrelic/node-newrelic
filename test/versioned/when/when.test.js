@@ -13,6 +13,11 @@ const { removeModules } = require('../../lib/cache-buster')
 const tempOverrideUncaught = require('../../lib/temp-override-uncaught')
 const helper = require('../../lib/agent_helper')
 
+/**
+ *
+ * @param t
+ * @param enableSegments
+ */
 function setupTest(t, enableSegments) {
   t.nr.agent = helper.instrumentMockedAgent({
     feature_flag: { promise_segments: enableSegments }
@@ -189,18 +194,30 @@ test('when.iterate', async (t) => {
 
     return when.iterate(iterator, predicate, handler, 0)
 
+    /**
+     *
+     * @param seed
+     */
     function iterator(seed) {
       plan.equal(agent.getTransaction(), tx, `${name} iterator has correct transaction state`)
       plan.equal(incrementerCount++, seed++, `${name} should iterate as expected`)
       return seed
     }
 
+    /**
+     *
+     * @param iteration
+     */
     function predicate(iteration) {
       plan.equal(agent.getTransaction(), tx, `${name} predicate has correct transaction state`)
       plan.equal(predicateCount++, iteration, `${name} should execute predicate each time`)
       return iteration >= COUNT
     }
 
+    /**
+     *
+     * @param value
+     */
     function handler(value) {
       plan.equal(agent.getTransaction(), tx, `${name} body has correct transaction state`)
       plan.equal(bodyCount++, value, `${name} should execute each time`)
@@ -310,6 +327,10 @@ for (const method of ['try', 'attempt']) {
           .catch((error) => plan.equal(error.message, `${name} error message`, `${name} should have correct error`))
       })
 
+      /**
+       *
+       * @param value
+       */
       function handler(value) {
         plan.equal(value, `${name}${method}`, `${name} should receive values`)
         return `${name} return value`
@@ -848,6 +869,9 @@ test('fn.apply', (t, end) => {
   setupTest(t)
   const fn = require('when/function')
 
+  /**
+   *
+   */
   function noop() {}
 
   const args = [1, 2, 3]
@@ -858,6 +882,11 @@ test('node.apply', (t, end) => {
   setupTest(t)
   const nodefn = require('when/node')
 
+  /**
+   *
+   * @param arg1
+   * @param cb
+   */
   function nodeStyleFunction(arg1, cb) {
     process.nextTick(cb)
   }
@@ -870,15 +899,12 @@ test('node.apply', (t, end) => {
  * Tests a `when` library method outside of an agent transaction.
  *
  * @param {object} params
- * @param params.plan
- * @param {object} plan The assertion library that expects a set number of
+ * @param {object} params.plan The assertion library that expects a set number of
  * assertions to be completed during the test.
- * @param {object} agent A mocked agent instance.
- * @param {function} testFunc A function that accepts a "name" parameter and
+ * @param {object} params.agent A mocked agent instance.
+ * @param {function} params.testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
- * @param params.agent
- * @param params.testFunc
  * @returns {Promise<void>}
  */
 async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
@@ -905,15 +931,12 @@ async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
  * Tests a `when` library method inside of an agent transaction.
  *
  * @param {object} params
- * @param params.plan
- * @param {object} plan The assertion library that expects a set number of
+ * @param {object} params.plan The assertion library that expects a set number of
  * assertions to be completed during the test.
- * @param {object} agent A mocked agent instance.
- * @param {function} testFunc A function that accepts a "name" parameter and
+ * @param {object} params.agent A mocked agent instance.
+ * @param {function} params.testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
- * @param params.agent
- * @param params.testFunc
  * @returns {Promise<void>}
  */
 async function testInsideTransaction({ plan, agent, testFunc }) {

@@ -26,6 +26,12 @@ test.afterEach((ctx) => {
   ctx.nr.server.stop()
 })
 
+/**
+ *
+ * @param agent
+ * @param server
+ * @param callback
+ */
 function runTest(agent, server, callback) {
   agent.on('transactionFinished', function (tx) {
     const [baseSegment] = tx.trace.getChildren(tx.trace.root.id)
@@ -42,6 +48,12 @@ function runTest(agent, server, callback) {
   })
 }
 
+/**
+ *
+ * @param metrics
+ * @param expected
+ * @param path
+ */
 function checkMetrics(metrics, expected, path) {
   path = path || '/test'
   const expectedAll = [

@@ -460,6 +460,9 @@ test('Query Trace Aggregator', async (t) => {
             nextSample()
           })
 
+          /**
+           *
+           */
           function nextSample() {
             const sample2 = data[1]
 
@@ -810,6 +813,9 @@ test('Query Trace Aggregator', async (t) => {
             nextSample()
           })
 
+          /**
+           *
+           */
           function nextSample() {
             const sample2 = data[1]
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
@@ -1093,6 +1099,13 @@ test('Query Trace Aggregator', async (t) => {
   })
 })
 
+/**
+ *
+ * @param queries
+ * @param duration
+ * @param url
+ * @param query
+ */
 function addQuery(queries, duration, url, query) {
   const transaction = new FakeTransaction(null, url)
   const segment = new FakeSegment(transaction, duration)
@@ -1108,6 +1121,12 @@ function addQuery(queries, duration, url, query) {
   return segment
 }
 
+/**
+ *
+ * @param sample
+ * @param count
+ * @param segment
+ */
 function verifySample(sample, count, segment) {
   assert.equal(sample.callCount, count, 'should have correct callCount')
   assert.ok(sample.max, 'max should be set')
@@ -1119,6 +1138,11 @@ function verifySample(sample, count, segment) {
   verifyTrace(sample.trace, segment)
 }
 
+/**
+ *
+ * @param trace
+ * @param segment
+ */
 function verifyTrace(trace, segment) {
   assert.equal(trace.duration, segment.getDurationInMillis(), 'should save duration')
   assert.equal(trace.segment, segment, 'should hold onto segment')

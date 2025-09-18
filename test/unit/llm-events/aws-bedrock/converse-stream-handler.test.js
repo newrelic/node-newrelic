@@ -227,6 +227,10 @@ test('Can start new chunks whether or not an explicit start event is seen', asyn
   assert.deepEqual(handler.response.output, { output: { message: { content: [{ text: 'Hello world' }] } } })
 })
 
+/**
+ *
+ * @param chunks
+ */
 function asyncGeneratorFromChunks(chunks) {
   return (async function * originalStream() {
     for (const chunk of chunks) {

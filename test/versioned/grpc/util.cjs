@@ -21,6 +21,10 @@ const CLIENT_ADDR = 'localhost'
 const SERVER_TX_PREFIX = 'WebTransaction/WebFrameworkUri/gRPC/'
 const { EXTERNAL } = require('../../../lib/metrics/names')
 
+/**
+ *
+ * @param port
+ */
 function buildMetrics(port) {
   const clientAddr = `${CLIENT_ADDR}:${port}`
   const rollupHost = `${EXTERNAL.PREFIX}${clientAddr}/all`
@@ -28,6 +32,10 @@ function buildMetrics(port) {
   return [grpcMetricName, rollupHost, EXTERNAL.WEB, EXTERNAL.ALL]
 }
 
+/**
+ *
+ * @param port
+ */
 function buildExpectedMetrics(port) {
   const metrics = buildMetrics(port)
   return metrics.map((metric) => { return { name: metric } })
@@ -181,12 +189,11 @@ util.assertExternalSegment = function assertExternalSegment(
  * request.method, request.uri
  *
  * @param {Object} params
- * @param {Object} params.tx transaction under test
+ * @param {Object} params.transaction transaction under test
  * @param {string} params.fnName gRPC method name
  * @param {number} [params.expectedStatusCode] expected status code for test
- * @param params.transaction
- * @param root1
- * @param root1.assert
+ * @param {Object} [root1]
+ * @param {Object} [root1.assert] defaults to node:assert
  */
 util.assertServerTransaction = function assertServerTransaction(
   { transaction, fnName, expectedStatusCode = 0 },

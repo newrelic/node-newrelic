@@ -28,6 +28,11 @@ test('pricing pcf info', async function (t) {
   }
 })
 
+/**
+ *
+ * @param testCase
+ * @param getInfo
+ */
 function makeTest(testCase, getInfo) {
   return function (t, end) {
     const { agent } = t.nr

@@ -318,6 +318,10 @@ if (semver.satisfies(pkgVersion, '>=2.3.0')) {
   })
 }
 
+/**
+ *
+ * @param agent
+ */
 function checkQueries(agent) {
   const querySamples = agent.queries.samples
   assert.ok(querySamples.size > 0, 'there should be a query sample')

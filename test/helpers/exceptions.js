@@ -90,6 +90,9 @@ const commands = {
   }
 }
 
+/**
+ *
+ */
 function sendErrors() {
   const errData = {
     count: newrelic.agent.errors.traceAggregator.errors.length,

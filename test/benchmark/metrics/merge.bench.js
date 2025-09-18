@@ -57,6 +57,10 @@ suite.add({
 
 suite.run()
 
+/**
+ *
+ * @param num
+ */
 function makeMetrics(num) {
   const metrics = new Metrics(1, {}, {})
 
@@ -67,6 +71,9 @@ function makeMetrics(num) {
   return metrics
 }
 
+/**
+ *
+ */
 function preOptMetrics() {
   for (let i = 0; i < 1000; ++i) {
     const m1 = makeMetrics(i * 10)

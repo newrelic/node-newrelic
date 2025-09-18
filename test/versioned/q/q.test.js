@@ -13,6 +13,12 @@ const { removeModules } = require('../../lib/cache-buster')
 const tempRemoveListeners = require('../../lib/temp-remove-listeners')
 const helper = require('../../lib/agent_helper')
 
+/**
+ *
+ * @param agent
+ * @param tx
+ * @param expect
+ */
 function assertTransaction(agent, tx, expect = assert) {
   expect.equal(agent.getTransaction(), tx)
   const children = tx.trace.getChildren(tx.trace.root.id)

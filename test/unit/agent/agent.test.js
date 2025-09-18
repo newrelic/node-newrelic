@@ -58,6 +58,9 @@ test('should not throw with valid config', (t, end) => {
 
   agent.start(() => setTimeout(check, 1_500))
 
+  /**
+   *
+   */
   function check() {
     const data = fs.readFileSync(agent.healthReporter.destFile)
     assert.equal(data.toString().includes('NR-APM-008'), true, 'should have disabled error')
@@ -96,6 +99,9 @@ test('agent control writes to file uri destinations', (t, end) => {
 
   setTimeout(check, 1_500)
 
+  /**
+   *
+   */
   function check() {
     const data = fs.readFileSync(agent.healthReporter.destFile)
     // Since the agent wasn't started, it's in a "healthy" state.
@@ -391,6 +397,9 @@ test('when starting', async (t) => {
     })
     setTimeout(check, 1_500)
 
+    /**
+     *
+     */
     function check() {
       const report = fs.readFileSync(agent.healthReporter.destFile).toString()
       assert.equal(report.startsWith('healthy: false'), true, 'should have a unhealthy report')
@@ -747,6 +756,13 @@ test('when connected', async (t) => {
     })
   })
 
+  /**
+   *
+   * @param root0
+   * @param root0.enableAggregator
+   * @param root0.agent
+   * @param root0.collector
+   */
   function setupAggregators({ enableAggregator = true, agent, collector }) {
     agent.config.application_logging.enabled = enableAggregator
     agent.config.application_logging.forwarding.enabled = enableAggregator

@@ -193,10 +193,18 @@ test('does not collect logs when high security mode is on', (_t, end) => {
   end()
 })
 
+/**
+ *
+ * @param agent
+ */
 function popTopLogMessage(agent) {
   return getLogMessages(agent).pop()
 }
 
+/**
+ *
+ * @param agent
+ */
 function getLogMessages(agent) {
   return agent.logs.events.toArray()
 }

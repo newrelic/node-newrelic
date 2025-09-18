@@ -14,6 +14,9 @@ const path = require('node:path')
 const APP_DIR = path.join(__dirname, 'test-app')
 const PATCH_DIR = path.join(__dirname, 'test-app-replacements')
 
+/**
+ *
+ */
 async function initNestApp() {
   if (fs.existsSync(APP_DIR)) {
     // The `nest new` command will complain if the path already exists
@@ -35,6 +38,9 @@ async function initNestApp() {
   await exec('npx nest build', { cwd: APP_DIR })
 }
 
+/**
+ *
+ */
 async function deleteNestApp() {
   await fsPromises.rm(APP_DIR, { recursive: true })
 }

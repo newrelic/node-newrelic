@@ -10,6 +10,10 @@ const Config = require('../../../lib/config')
 const Normalizer = require('../../../lib/metrics/normalizer')
 
 const stagingRules = require('./staging-rules')
+/**
+ *
+ * @param ctx
+ */
 function beforeEach(ctx) {
   ctx.nr = {}
   const config = { enforce_backstop: true }

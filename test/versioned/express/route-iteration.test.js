@@ -39,6 +39,11 @@ test('new relic should not break route iteration', async function (t) {
   plan.end()
 })
 
+/**
+ *
+ * @param router
+ * @param path
+ */
 function findAllRoutes(router, path) {
   if (!router.stack) {
     return path

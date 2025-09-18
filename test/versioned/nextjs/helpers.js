@@ -137,6 +137,10 @@ helpers.setupTransactionHandler = function setupTransactionHandler({
 }) {
   const transactions = []
   return new Promise((resolve) => {
+    /**
+     *
+     * @param transaction
+     */
     function txHandler(transaction) {
       transactions.push(transaction)
       if (expectedCount === transactions.length) {

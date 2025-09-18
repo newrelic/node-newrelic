@@ -36,6 +36,10 @@ suite.add({
 
 suite.run()
 
+/**
+ *
+ * @param port
+ */
 function createServer(port) {
   return async function makeServer() {
     return new Promise((resolve, reject) => {
@@ -52,6 +56,10 @@ function createServer(port) {
   }
 }
 
+/**
+ *
+ * @param port
+ */
 function closeServer(port) {
   return function close() {
     setImmediate(() => {
@@ -60,6 +68,10 @@ function closeServer(port) {
   }
 }
 
+/**
+ *
+ * @param port
+ */
 function setupRequest(port) {
   return async function makeRequest() {
     return new Promise((resolve) => {

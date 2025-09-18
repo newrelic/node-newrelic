@@ -34,6 +34,13 @@ const packageDefinition = protoLoader.fromJSON(PROTO, {
   oneofs: true
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.spans
+ * @param root0.names
+ * @param root0.plan
+ */
 function assertBatch({ spans, names, plan }) {
   spans.forEach((span, i) => {
     const { name } = span.intrinsics
@@ -41,6 +48,14 @@ function assertBatch({ spans, names, plan }) {
   })
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.span
+ * @param root0.i
+ * @param root0.names
+ * @param root0.plan
+ */
 function assertSpan({ span, i, names, plan }) {
   const { name } = span.intrinsics
 
@@ -275,6 +290,16 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
   })
 })
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.calls
+ * @param root0.config
+ * @param root0.expectedRunId
+ * @param root0.expectedSessionId
+ * @param root0.plan
+ */
 function defaultSpanListener({ agent, calls, config, expectedRunId, expectedSessionId, plan }) {
   let req = 0
   let spans = 0
@@ -309,6 +334,11 @@ function defaultSpanListener({ agent, calls, config, expectedRunId, expectedSess
   }
 }
 
+/**
+ *
+ * @param ctx
+ * @param stream
+ */
 function recordSpan(ctx, stream) {
   const { error, spanReceivedListener } = ctx.nr
   stream.on('data', function (span) {
@@ -328,6 +358,11 @@ function recordSpan(ctx, stream) {
   })
 }
 
+/**
+ *
+ * @param ctx
+ * @param stream
+ */
 function recordSpanBatch(ctx, stream) {
   const { error, spanReceivedListener } = ctx.nr
   stream.on('data', function ({ spans }) {
@@ -347,6 +382,11 @@ function recordSpanBatch(ctx, stream) {
   })
 }
 
+/**
+ *
+ * @param ctx
+ * @param config
+ */
 async function testSetup(ctx, config) {
   nock.disableNetConnect()
   ctx.nr.startingEndpoints = setupConnectionEndpoints(INITIAL_RUN_ID, INITIAL_SESSION_ID)
@@ -401,6 +441,12 @@ async function testSetup(ctx, config) {
   ctx.nr.server = server
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.names
+ */
 function createTestData({ agent, names }) {
   helper.runInTransaction(agent, (transaction) => {
     names.forEach((name) => {
@@ -413,6 +459,11 @@ function createTestData({ agent, names }) {
   })
 }
 
+/**
+ *
+ * @param runId
+ * @param sessionId
+ */
 function setupConnectionEndpoints(runId, sessionId) {
   return {
     preconnect: nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN }),
@@ -428,6 +479,13 @@ function setupConnectionEndpoints(runId, sessionId) {
   }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.error
+ * @param root0.endpoints
+ * @param root0.plan
+ */
 function verifyAgentStart({ error, endpoints, plan }) {
   if (error) {
     throw error

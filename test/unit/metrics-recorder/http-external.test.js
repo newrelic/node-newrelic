@@ -10,10 +10,20 @@ const helper = require('../../lib/agent_helper')
 const generateRecorder = require('../../../lib/metrics/recorders/http_external')
 const Transaction = require('../../../lib/transaction')
 
+/**
+ *
+ * @param segment
+ * @param scope
+ * @param transaction
+ */
 function recordExternal(segment, scope, transaction) {
   return generateRecorder('test.example.com', 'http')(segment, scope, transaction)
 }
 
+/**
+ *
+ * @param options
+ */
 function makeSegment(options) {
   const segment = options.transaction.trace.add('placeholder')
   segment.setDurationInMillis(options.duration)
@@ -22,6 +32,10 @@ function makeSegment(options) {
   return segment
 }
 
+/**
+ *
+ * @param options
+ */
 function record(options) {
   if (options.apdexT) {
     options.transaction.metrics.apdexT = options.apdexT

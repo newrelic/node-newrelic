@@ -134,6 +134,12 @@ test('DynamoDB', async (t) => {
   })
 })
 
+/**
+ *
+ * @param end
+ * @param tests
+ * @param tx
+ */
 function finish(end, tests, tx) {
   const root = tx.trace.root
   const segments = common.checkAWSAttributes({
@@ -178,6 +184,10 @@ function finish(end, tests, tx) {
   end()
 }
 
+/**
+ *
+ * @param tableName
+ */
 function createTests(tableName) {
   const docUniqueArtist = `DELETE_One You Know ${Math.floor(Math.random() * 100000)}`
   const docPutParams = getDocPutItemParams(tableName, docUniqueArtist)
@@ -194,6 +204,11 @@ function createTests(tableName) {
   ]
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getDocPutItemParams(tableName, uniqueArtist) {
   return {
     Item: {
@@ -205,6 +220,11 @@ function getDocPutItemParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getDocItemParams(tableName, uniqueArtist) {
   return {
     Key: {
@@ -215,6 +235,11 @@ function getDocItemParams(tableName, uniqueArtist) {
   }
 }
 
+/**
+ *
+ * @param tableName
+ * @param uniqueArtist
+ */
 function getDocQueryParams(tableName, uniqueArtist) {
   return {
     ExpressionAttributeValues: {

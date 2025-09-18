@@ -117,6 +117,11 @@ test('app should be at top of stack when mounted', async function (t) {
     })
   })
 
+  /**
+   *
+   * @param req
+   * @param res
+   */
   function respond(req, res) {
     const tx = agent.getTransaction()
     res.send(tx.id)

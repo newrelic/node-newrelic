@@ -4,6 +4,10 @@
  */
 
 'use strict'
+/**
+ *
+ * @param prisma
+ */
 async function upsertUsers(prisma) {
   const users = await prisma.user.findMany()
 

@@ -32,7 +32,13 @@ test('langchain/core/vectorstore unit.tests', async (t) => {
     ctx.nr.sandbox.restore()
   })
 
+  /**
+   *
+   */
   function getMockModule() {
+    /**
+     *
+     */
     function VectorStore() {}
     VectorStore.prototype.similaritySearch = async function call() {}
     return { VectorStore }

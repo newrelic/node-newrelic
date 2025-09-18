@@ -28,10 +28,19 @@ const config = {
 }
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
+/**
+ *
+ */
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.enabled
+ * @param root0.ctx
+ */
 async function beforeEach({ enabled, ctx }) {
   ctx.nr = {}
   const { host, port, server } = await createOpenAIMockServer()
@@ -54,6 +63,10 @@ async function beforeEach({ enabled, ctx }) {
   ctx.nr.outputParser = new StringOutputParser()
 }
 
+/**
+ *
+ * @param ctx
+ */
 async function afterEach(ctx) {
   ctx.nr?.server?.close()
   helper.unloadAgent(ctx.nr.agent)
