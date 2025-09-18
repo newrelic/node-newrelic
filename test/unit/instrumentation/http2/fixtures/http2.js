@@ -81,12 +81,19 @@ function handler(req, res) {
       body: payload
     }
     res.statusCode = response.statusCode
-    const headersForResponse = ['content-type', 'traceparent', 'referer', 'user-agent']
-    for (const k of headersForResponse) {
-      if (req.headers[k]) {
-        res.setHeader(k, req.headers[k])
+    // Echo back incoming headers to test which ones we add, particularly
+    // 'traceparent', 'x-newrelic-transaction'
+    // but also 'tracestate', synthetics, 'content-type', 'referer', 'user-agent'
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (key[0] !== ':') { // can't set pseudoheaders
+        try {
+          res.setHeader(key, value)
+        } catch (e) {
+          console.error(`Unable to set header ${key}`, e)
+        }
       }
     }
+
     if (payload?.data === 'bad stream') {
       const stream = infiniteStream()
       let count = 0
