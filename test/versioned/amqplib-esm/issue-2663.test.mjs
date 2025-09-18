@@ -5,22 +5,14 @@
 
 import test from 'node:test'
 import assert from 'node:assert'
+// need to load the agent before importing amqplib
+// this is because all imports are done async
+// if we were to just create a fake agent here it would run after
+// all the imports, so instead we put the setup of agent in a diff
+// file and export the agent
+import { agent } from './setup-agent.js'
 import helper from '../../lib/agent_helper.js'
 import promiseResolvers from '../../lib/promise-resolvers.js'
-
-const agent = helper.instrumentMockedAgent({
-  attributes: {
-    enabled: true
-  }
-})
-const params = {
-  encoding_key: 'this is an encoding key',
-  cross_process_id: '1234#4321'
-}
-agent.config._fromServer(params, 'encoding_key')
-agent.config._fromServer(params, 'cross_process_id')
-agent.config.trusted_account_ids = [1234]
-
 import amqpUtils from '../amqplib/amqp-utils.js'
 import amqplib from 'amqplib'
 
