@@ -354,10 +354,11 @@ test('built-in http2 module instrumentation', async (t) => {
       })
 
       async function finish() {
-        await new Promise((resolve) => setTimeout(resolve, 100))
         const { transaction } = t.nr
-        assert.ok(segment.timer.hrDuration instanceof Array)
-        assert.ok(segment.timer.getDurationInMillis() > 0)
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+
+        assert.ok(child.timer.hrDuration instanceof Array)
+        assert.ok(child.timer.getDurationInMillis() > 0)
         transaction.end()
         end()
       }
@@ -396,9 +397,6 @@ test('built-in http2 module instrumentation', async (t) => {
         assert.equal(segment.name, 'ParentSegment')
 
         const attributes = segment.getAttributes()
-
-        // assert.ok(!attributes.url)
-
         assert.ok(!attributes['request.parameters.a'])
         assert.ok(!attributes['request.parameters.b'])
         end()
