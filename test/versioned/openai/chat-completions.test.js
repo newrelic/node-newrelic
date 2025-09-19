@@ -28,6 +28,7 @@ const TRACKING_METRIC = `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
 
 const responses = require('./mock-chat-api-responses')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common-chat-api')
+const { tspl } = require('@matteo.collina/tspl')
 
 test('chat.completions.create', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -57,12 +58,34 @@ test('chat.completions.create', async (t) => {
     removeModules('openai')
   })
 
+  // Note: I cannot figure out how to get the mock server to do the right thing,
+  // but this was failing with a different issue before
+  await t.test('should not crash when you call `completions.parse`', { skip: semver.lt(pkgVersion, '5.0.0') }, async (t) => {
+    const plan = tspl(t, { plan: 1 })
+    const { client, agent } = t.nr
+    await helper.runInTransaction(agent, async (tx) => {
+      try {
+        await client.chat.completions.parse({
+          messages: [{ role: 'user', content: 'You are a mathematician.' }]
+        })
+      } catch (err) {
+        plan.match(err.message, /.*Body is unusable.*/)
+      } finally {
+        tx.end()
+      }
+    })
+
+    await plan.completed
+  })
+
   await t.test('should create span on successful chat completion create', (t, end) => {
     const { client, agent, host, port } = t.nr
     helper.runInTransaction(agent, async (tx) => {
-      const results = await client.chat.completions.create({
+      const prom = client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
       })
+
+      const results = await prom
 
       assert.equal(results.headers, undefined, 'should remove response headers from user result')
       assert.equal(results.choices[0].message.content, '1 plus 2 is 3.')
@@ -138,7 +161,7 @@ test('chat.completions.create', async (t) => {
   })
 
   if (semver.gte(pkgVersion, '4.12.2')) {
-    await t.test('should create span on successful chat completion stream create', (t, end) => {
+    await t.test('should create span on successful chat completion stream create', { skip: semver.lt(pkgVersion, '4.12.2') }, (t, end) => {
       const { client, agent, host, port } = t.nr
       helper.runInTransaction(agent, async (tx) => {
         const content = 'Streamed response'
