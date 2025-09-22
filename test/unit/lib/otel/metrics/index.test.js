@@ -30,7 +30,7 @@ test('configures global provider after agent start', async (t) => {
     },
     metrics: {
       getOrCreateMetric(name) {
-        plan.equal(name, 'Supportability/Nodejs/OpenTelemetryBridge/Metrics')
+        plan.equal(name, 'Supportability/Metrics/Nodejs/OpenTelemetryBridge/enabled')
         return this
       },
       incrementCallCount() {
