@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.3.3",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `openai` instrumentation to properly return APIPromise to avoid crashing when using `completions.parse` or `responses.parse`"
+        ],
+        "features": [
+          "Added support for tracing callback on subscribers"
+        ]
+      }
+    },
+    {
       "version": "13.3.2",
       "changes": {
         "security": [],

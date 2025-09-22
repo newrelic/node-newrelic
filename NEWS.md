@@ -1,3 +1,24 @@
+### v13.3.3 (2025-09-22)
+
+#### Features
+
+* Added support for tracing callback on subscribers ([#3371](https://github.com/newrelic/node-newrelic/pull/3371)) ([e6ad52e](https://github.com/newrelic/node-newrelic/commit/e6ad52e1f897ec757e90f9fc12f592e1c6eec2fe))
+
+#### Bug fixes
+
+* Updated `openai` instrumentation to properly return APIPromise to avoid crashing when using `completions.parse` or `responses.parse` ([#3382](https://github.com/newrelic/node-newrelic/pull/3382)) ([c7ccf26](https://github.com/newrelic/node-newrelic/commit/c7ccf260ffc9c788bde73b43231b716199724d09))
+
+#### Documentation
+
+* Updated compatibility report ([#3370](https://github.com/newrelic/node-newrelic/pull/3370)) ([754c2f0](https://github.com/newrelic/node-newrelic/commit/754c2f089339268fb73a3ff7765a630ea8982d0d))
+    * Co-authored-by: svetlanabrennan <50715937+svetlanabrennan@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Removed unused `loader.mjs` ([#3376](https://github.com/newrelic/node-newrelic/pull/3376)) ([66a9fd5](https://github.com/newrelic/node-newrelic/commit/66a9fd543d1a7854b7405c7b5b884d8a71773b85))
+* Updated metrics for OTel Bridge enablement/disablement ([#3381](https://github.com/newrelic/node-newrelic/pull/3381)) ([b976c37](https://github.com/newrelic/node-newrelic/commit/b976c376fe187bda5bde1b8cd4b86a7de86fe4f9))
+* Updated supportability metric names for OTel Bridge enablement… ([#3383](https://github.com/newrelic/node-newrelic/pull/3383)) ([c7c1d6c](https://github.com/newrelic/node-newrelic/commit/c7c1d6c942c6b53fd944e2259b42d1e7e7be483a))
+
 ### v13.3.2 (2025-09-10)
 
 #### Bug fixes
