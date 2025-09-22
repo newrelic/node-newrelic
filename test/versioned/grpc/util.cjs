@@ -36,11 +36,11 @@ function buildExpectedMetrics(port) {
 /**
  * Iterates over all metrics created during a transaction and asserts no gRPC metrics were created
  *
- * @param {Object} params
- * @param {Object} params.agent test agent
- * @param params.port
- * @param root1
- * @param root1.assert
+ * @param {Object} params1 first params object
+ * @param {Object} params1.agent test agent
+ * @param {number} params1.port port
+ * @param {Object} params2 second params object
+ * @param {Object} params2.assert the assert library to use
  */
 util.assertMetricsNotExisting = function assertMetricsNotExisting(
   { agent, port },
@@ -104,7 +104,7 @@ util.createServer = async function createServer(grpc) {
  *
  * @param {Object} grpc grpc module
  * @param {Object} proto protobuf API example.proto
- * @param port
+ * @param {number} port client port
  * @returns {Object} client grpc client for Greeter service
  */
 util.getClient = function getClient(grpc, proto, port) {
@@ -136,14 +136,14 @@ util.getServerTransactionName = function getRPCName(fnName) {
  * Asserts the gRPC external segment and its relevant attributes: url,
  * procedure, grpc.statusCode, grpc.statusText
  *
- * @param {Object} params
- * @param {Object} params.tx transaction under test
- * @param {string} params.fnName gRPC method name
- * @param {number} [params.expectedStatusCode] expected status code for test
- * @param {string} [params.expectedStatusText] expected status text for test
- * @param params.port
- * @param root1
- * @param root1.assert
+ * @param {Object} params1 first params object
+ * @param {Object} params1.tx transaction under test
+ * @param {string} params1.fnName gRPC method name
+ * @param {number} [params1.expectedStatusCode] expected status code for test
+ * @param {string} [params1.expectedStatusText] expected status text for test
+ * @param {number} params1.port port
+ * @param {Object} params2 second params object
+ * @param {*} params2.assert assert library to use
  */
 util.assertExternalSegment = function assertExternalSegment(
   { tx, fnName, expectedStatusCode = 0, expectedStatusText = 'OK', port },
@@ -180,12 +180,12 @@ util.assertExternalSegment = function assertExternalSegment(
  * Asserts the gRPC server segment and its relevant attributes: response.status
  * request.method, request.uri
  *
- * @param {Object} params1
+ * @param {Object} params1 first params object
  * @param {Object} params1.transaction transaction under test
  * @param {string} params1.fnName gRPC method name
  * @param {number} [params1.expectedStatusCode] expected status code for test
- * @param {Object} params2
- * @param {Object} params2.assert assert library to use
+ * @param {Object} [params2] second params object
+ * @param {Object} [params2.assert] assert library to use
  */
 util.assertServerTransaction = function assertServerTransaction(
   { transaction, fnName, expectedStatusCode = 0 },
@@ -249,7 +249,7 @@ util.assertDistributedTracing = function assertDistributedTracing(
 /**
  * Helper to make a unary client request
  *
- * @param {Object} params
+ * @param {Object} params params object
  * @param {Object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
@@ -270,11 +270,11 @@ util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload }) {
 /**
  * Helper to make a streaming client request
  *
- * @param {Object} params
+ * @param {Object} params params object
  * @param {Object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
- * @param params.endStream
+ * @param {boolean} [params.endStream] defaults to true
  * @returns {Promise}
  */
 util.makeClientStreamingRequest = function makeClientStreamingRequest({
@@ -304,7 +304,7 @@ util.makeClientStreamingRequest = function makeClientStreamingRequest({
 /**
  * Helper to make a streaming server client request
  *
- * @param {Object} params
+ * @param {Object} params params object
  * @param {Object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
@@ -329,7 +329,7 @@ util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, 
 /**
  * Helper to make a bidirectional client request
  *
- * @param {Object} params
+ * @param {Object} params params object
  * @param {Object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
@@ -360,18 +360,18 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
  * If the server use case it will also assert the transaction and metrics
  * If the client use case it will assert the external call segment
  *
- * @param {Object} params
- * @param {Object} params.transaction transaction under test
- * @param {Array} params.errors agent errors array
- * @param {boolean} [params.expectErrors] flag to indicate if errors will exist
- * @param {boolean} [params.clientError] flag to indicate if error is client side
- * @param {Array} params.agentMetrics agent metrics array
- * @param {string} params.fnName gRPC method name
- * @param {number} params.expectedStatusCode expected status code for test
- * @param {string} params.expectedStatusText expected status text for test
- * @param params.port
- * @param root1
- * @param root1.assert
+ * @param {Object} params1 first params object
+ * @param {Object} params1.transaction transaction under test
+ * @param {Array} params1.errors agent errors array
+ * @param {boolean} [params1.expectErrors] flag to indicate if errors will exist
+ * @param {boolean} [params1.clientError] flag to indicate if error is client side
+ * @param {Array} params1.agentMetrics agent metrics array
+ * @param {string} params1.fnName gRPC method name
+ * @param {number} params1.expectedStatusCode expected status code for test
+ * @param {string} params1.expectedStatusText expected status text for test
+ * @param {number} params1.port port
+ * @param {Object} params2 second params object
+ * @param {Object} params2.assert the assert library to use
  */
 util.assertError = function assertError(
   {

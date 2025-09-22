@@ -8,7 +8,7 @@
 /**
  * Patches in a server.destroy method, which closes a server immediately
  * by destroying any remaining open sockets.
- * @param server An HTTP(S) server, from http(s).createServer
+ * @param {Object} server An HTTP(S) server, from http(s).createServer
  */
 exports.patchDestroy = function (server) {
   const sockets = new Set()

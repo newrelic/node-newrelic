@@ -25,7 +25,7 @@ helpers.makeSink = function makeSink() {
 
 /**
  * Log lines in and out of a transaction for every logger.
- * @param {object} opts
+ * @param {object} opts options object
  * @param {Logger} opts.logger instance of bunyan
  * @param {object} opts.helper test helpers
  * @param {object} opts.agent new relic agent
@@ -45,11 +45,11 @@ helpers.logStuff = function logStuff({ logger, helper, agent }) {
  * Assert function to verify the original log line is untouched by our instrumentation unless
  * local log decoration is enabled.  Local log decoration asserts `NR-LINKING` string exists on msg
  *
- * @param {Object} opts
+ * @param {Object} opts options object
  * @param {boolean} [opts.includeLocalDecorating] is local log decoration enabled
  * @param {string} [opts.level] level to assert is on message
- * @param opts.logLine
- * @param opts.hostname
+ * @param {Object} opts.logLine log line object
+ * @param {string} opts.hostname hostname
  */
 helpers.originalMsgAssertion = function originalMsgAssertion({
   includeLocalDecorating = false,

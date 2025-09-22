@@ -73,7 +73,7 @@ helper.getTracer = () => _agent?.tracer
  *                      See agent.js for details, but so far this includes
  *                      passing in a config object and the connection stub
  *                      created in this function.
- * @param setState
+ * @param {boolean} setState defaults to true
  * @returns {Agent} Agent with a stubbed configuration.
  */
 helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
@@ -177,7 +177,7 @@ helper.generateAllPaths = (runId) => {
  * @param {boolean} [setState]
  *  Initializes agent's state to 'started', enabling data collection.
  *
- * @param shimmer
+ * @param {object} shimmer shimmer instance; defaults to #agentlib/shimmer
  * @returns {Agent} Agent with a stubbed configuration.
  */
 helper.instrumentMockedAgent = (conf, setState = true, shimmer = require('../../lib/shimmer')) => {
@@ -304,9 +304,9 @@ helper.runInTransaction = (agent, type, callback) => {
 /**
  * Proxy for runInTransaction that names the transaction that the
  * callback is executed in
- * @param agent
- * @param type
- * @param callback
+ * @param {Agent} agent instance
+ * @param {string} type the class of the transaction
+ * @param {function} callback function to be called within the transaction
  */
 helper.runInNamedTransaction = (agent, type, callback) => {
   if (!callback && typeof type === 'function') {
@@ -330,7 +330,7 @@ helper.runInSegment = (agent, name, callback) => {
 /**
  * Select Redis DB index and flush entries in it.
  *
- * @param {redis} client
+ * @param {Object} client Redis client
  * @param {number} dbIndex
  *  The operations to be performed while the server is running.
  */
@@ -406,7 +406,7 @@ helper.startServerWithRandomPortRetry = (server, maxAttempts = 5) => {
  * request is made after instrumentation is registered
  * we want to make sure we get the original library and not
  * our instrumented one
- * @param ca
+ * @param {Object} ca certificate authority
  */
 helper.getRequestLib = function getRequestLib(ca) {
   const request = ca ? https.request : http.request
