@@ -9,6 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const fs = require('node:fs')
 const path = require('node:path')
+const { tspl } = require('@matteo.collina/tspl')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
@@ -53,6 +54,26 @@ test('responses.create', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
     ctx.nr.server?.close()
     removeModules('openai')
+  })
+
+  // Note: I cannot figure out how to get the mock server to do the right thing,
+  // but this was failing with a different issue before
+  await t.test('should not crash when you call `responses.parse`', async (t) => {
+    const plan = tspl(t, { plan: 1 })
+    const { client, agent } = t.nr
+    await helper.runInTransaction(agent, async (tx) => {
+      try {
+        await client.responses.parse({
+          input: [{ role: 'user', content: 'You are a mathematician.' }]
+        })
+      } catch (err) {
+        plan.match(err.message, /Body is unusable|body used already for/)
+      } finally {
+        tx.end()
+      }
+    })
+
+    await plan.completed
   })
 
   await t.test('should create span on successful chat completion create', (t, end) => {
