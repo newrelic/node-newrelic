@@ -139,7 +139,7 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   const supportMetrics = agent.metrics._metrics.unscoped
   const expectedMetricNames = [
     'Supportability/Nodejs/OpenTelemetryBridge/Setup',
-    'Supportability/Metrics/Nodejs/OpenTelemetryBridge',
+    'Supportability/Metrics/Nodejs/OpenTelemetryBridge/enabled',
     'Supportability/Metrics/Nodejs/OpenTelemetryBridge/getMeter',
     'Supportability/Metrics/Nodejs/OpenTelemetryBridge/meter/createCounter'
   ]
