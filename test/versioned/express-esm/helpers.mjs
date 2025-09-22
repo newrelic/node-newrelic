@@ -9,7 +9,7 @@ const helpers = Object.create(null)
 
 /**
  * Imports express, creates an express app and returns both as an object
- * @returns { app, express }
+ * @returns { Object } object containing `app` and `express`
  */
 helpers.setup = async function setup() {
   const { default: express } = await import('express')

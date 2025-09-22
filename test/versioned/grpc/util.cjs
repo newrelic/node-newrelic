@@ -180,13 +180,12 @@ util.assertExternalSegment = function assertExternalSegment(
  * Asserts the gRPC server segment and its relevant attributes: response.status
  * request.method, request.uri
  *
- * @param {Object} params
- * @param {Object} params.tx transaction under test
- * @param {string} params.fnName gRPC method name
- * @param {number} [params.expectedStatusCode] expected status code for test
- * @param params.transaction
- * @param root1
- * @param root1.assert
+ * @param {Object} params1
+ * @param {Object} params1.transaction transaction under test
+ * @param {string} params1.fnName gRPC method name
+ * @param {number} [params1.expectedStatusCode] expected status code for test
+ * @param {Object} params2
+ * @param {Object} params2.assert assert library to use
  */
 util.assertServerTransaction = function assertServerTransaction(
   { transaction, fnName, expectedStatusCode = 0 },

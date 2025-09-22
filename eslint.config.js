@@ -66,7 +66,9 @@ const jsdocConfig = {
           'EventEmitter'
         ]
       }
-    ]
+    ],
+    'jsdoc/valid-types': 'error',
+    'jsdoc/check-param-names': 'error'
   }
 }
 const jsdocOverrides = {

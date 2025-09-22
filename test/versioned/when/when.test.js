@@ -869,16 +869,13 @@ test('node.apply', (t, end) => {
 /**
  * Tests a `when` library method outside of an agent transaction.
  *
- * @param {object} params
- * @param params.plan
- * @param {object} plan The assertion library that expects a set number of
+ * @param {object} params The params object
+ * @param {object} params.plan The assertion library that expects a set number of
  * assertions to be completed during the test.
- * @param {object} agent A mocked agent instance.
- * @param {function} testFunc A function that accepts a "name" parameter and
+ * @param {object} params.agent A mocked agent instance.
+ * @param {function} params.testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
- * @param params.agent
- * @param params.testFunc
  * @returns {Promise<void>}
  */
 async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
@@ -904,16 +901,13 @@ async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
 /**
  * Tests a `when` library method inside of an agent transaction.
  *
- * @param {object} params
- * @param params.plan
- * @param {object} plan The assertion library that expects a set number of
+ * @param {object} params The params object
+ * @param {object} params.plan The assertion library that expects a set number of
  * assertions to be completed during the test.
- * @param {object} agent A mocked agent instance.
- * @param {function} testFunc A function that accepts a "name" parameter and
+ * @param {object} params.agent A mocked agent instance.
+ * @param {function} params.testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
- * @param params.agent
- * @param params.testFunc
  * @returns {Promise<void>}
  */
 async function testInsideTransaction({ plan, agent, testFunc }) {
