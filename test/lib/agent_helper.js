@@ -129,10 +129,8 @@ helper.getAgentApi = function getAgentApi() {
  * specific format. Useful with nock.
  *
  * @param {String} method The method being invoked on the collector.
- * @param number runID  Agent run ID (optional).
- *
- * @param runID
- * @param protocolVersion
+ * @param {number} runID  Agent run ID (optional).
+ * @param {number} [protocolVersion] defaults to 17
  * @returns {String} URL path for the collector.
  */
 helper.generateCollectorPath = function generateCollectorPath(method, runID, protocolVersion) {
@@ -197,8 +195,7 @@ helper.instrumentMockedAgent = (conf, setState = true, shimmer = require('../../
 /**
  * Helper to check if security agent should be loaded
  *
- * @param {Agent} Agent with a stubbed configuration
- * @param agent
+ * @param {Agent} agent with a stubbed configuration
  * @returns {boolean}
  */
 helper.isSecurityAgentEnabled = function isSecurityAgentEnabled(agent) {
@@ -209,8 +206,7 @@ helper.isSecurityAgentEnabled = function isSecurityAgentEnabled(agent) {
  * Checks if security agent _should_ be loaded
  * and requires it and calls start
  *
- * @param {Agent} Agent with a stubbed configuration
- * @param agent
+ * @param {Agent} agent with a stubbed configuration
  */
 helper.maybeLoadSecurityAgent = function maybeLoadSecurityAgent(agent) {
   if (helper.isSecurityAgentEnabled(agent)) {
@@ -224,8 +220,7 @@ helper.maybeLoadSecurityAgent = function maybeLoadSecurityAgent(agent) {
  * Checks if security agent is loaded and deletes all
  * files in its require cache so it can be re-loaded
  *
- * @param {Agent} Agent with a stubbed configuration
- * @param agent
+ * @param {Agent} agent with a stubbed configuration
  */
 helper.maybeUnloadSecurityAgent = function maybeUnloadSecurityAgent(agent) {
   if (helper.isSecurityAgentEnabled(agent)) {
@@ -237,9 +232,8 @@ helper.maybeUnloadSecurityAgent = function maybeUnloadSecurityAgent(agent) {
  * Shut down the agent, ensuring that any instrumentation scaffolding
  * is shut down.
  *
- * @param Agent agent The agent to shut down.
- * @param agent
- * @param shimmer
+ * @param {Agent} agent The agent to shut down.
+ * @param {object} [shimmer] The shimmer to use.
  */
 helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
   agent.emit('unload')
@@ -336,10 +330,8 @@ helper.runInSegment = (agent, name, callback) => {
 /**
  * Select Redis DB index and flush entries in it.
  *
- * @param {redis} [redis]
- * @param client
+ * @param {redis} client
  * @param {number} dbIndex
- * @param {function} callback
  *  The operations to be performed while the server is running.
  */
 helper.flushRedisDb = (client, dbIndex) => new Promise((resolve, reject) => {
@@ -533,8 +525,7 @@ helper.getMetrics = function getMetrics(agent) {
  * It also verifies it does not throw an error
  *
  * @param {object} shim shim lib
- * @param {Function} original callback
- * @param cb
+ * @param {Function} cb original callback
  */
 helper.checkWrappedCb = function checkWrappedCb(shim, cb) {
   // The wrapped calledback is always the last argument

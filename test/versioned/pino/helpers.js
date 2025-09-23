@@ -15,10 +15,9 @@ const { CONTEXT_KEYS } = require('../../lib/logging-helper')
  *
  * @param {Object} opts
  * @param {boolean} [opts.includeLocalDecorating] is local log decoration enabled
- * @param {boolean} [opts.timestamp] does timestamp exist on original message
  * @param {string} [opts.level] level to assert is on message
- * @param opts.logLine
- * @param opts.hostname
+ * @param {Object} opts.logLine
+ * @param {string} opts.hostname
  */
 helpers.originalMsgAssertion = function originalMsgAssertion({
   includeLocalDecorating = false,

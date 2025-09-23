@@ -68,6 +68,7 @@
  * @param {Array} expected          Array of strings that represent segment names.
  *                                  If an item in the array is another array, it
  *                                  represents children of the previous item.
+ * @param {object} [options]        Options object
  * @param {boolean} options.exact   If true, then the expected segments must match
  *                                  exactly, including their position and children on all
  *                                  levels.  When false, then only check that each child
@@ -78,10 +79,6 @@
  *                                  directly under test.  Only used when `exact` is true.
  * @param {object} [deps] Injected dependencies.
  * @param {object} [deps.assert] Assertion library to use.
- * @param options
- * @param root0
- * @param root0.assert
- * @param options.assert
  */
 module.exports = function assertSegments( // eslint-disable-line sonarjs/cognitive-complexity
   trace,

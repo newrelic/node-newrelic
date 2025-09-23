@@ -110,11 +110,11 @@ common.registerMiddlewares = ({ fastify, calls }) => {
 /**
  * Helper to make a request and parse the json body
  *
- * @param address.address
  * @param {Object} address fastify address contains address/port/family
- * @param address.port
+ * @param {string} address.address
+ * @param {number} address.port
+ * @param {string} address.family
  * @param {string} uri to make request to
- * @param address.family
  * @returns {Object} parsed json body
  */
 common.makeRequest = async ({ address, port, family }, uri) => {
