@@ -102,11 +102,11 @@ test('should default to `/` when no route is specified', async (t) => {
  * It then makes a request to specified url and asserts the response
  * data is correct.
  *
- * @param {Object} params params object
+ * @param {object} params params object
  * @param {string} params.url url to make request
  * @param {string} params.expectedData expected response data
- * @param {Object} params.plan plan object
- * @param {Object} params.app connect app
+ * @param {object} params.plan plan object
+ * @param {object} params.app connect app
  * @param {string} params.pkgVersion connect package version
  * @returns {http.Server}
  */

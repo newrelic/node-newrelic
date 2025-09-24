@@ -18,8 +18,8 @@ const sinon = require('sinon')
  * Creates CAT headers to be used in handleMqTracingHeaders
  * tests below
  *
- * @param {Object} config agent config
- * @param {Boolean} altNames runs the non x-NewRelic headers
+ * @param {object} config agent config
+ * @param {boolean} altNames runs the non x-NewRelic headers
  */
 function createCATHeaders(config, altNames) {
   const idHeader = hashes.obfuscateNameUsingKey('9876#id', config.encoding_key)

@@ -55,7 +55,7 @@ const jsdocConfig = {
   rules: {
     'jsdoc/require-jsdoc': 'off',
     'jsdoc/tag-lines': 'off',
-    'jsdoc/check-types': 'off',
+    'jsdoc/check-types': 'error',
     'jsdoc/no-undefined-types': [
       'warn',
       {
@@ -79,6 +79,7 @@ const jsdocConfig = {
     'jsdoc/check-param-names': 'error',
     'jsdoc/require-param-description': 'error',
     'jsdoc/require-param-type': 'error',
+    'jsdoc/require-returns-type': 'error'
   }
 }
 const jsdocOverrides = {

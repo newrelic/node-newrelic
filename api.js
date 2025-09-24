@@ -1937,7 +1937,7 @@ API.prototype.ignoreApdex = function ignoreApdex() {
  *      { role: 'user', content: 'Tell me about Node.js.'}
  *    ]})
  * })
- * @param {Object} context LLM custom attributes context
+ * @param {object} context LLM custom attributes context
  * @param {Function} callback The function to execute in context.
  */
 API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context, callback) {

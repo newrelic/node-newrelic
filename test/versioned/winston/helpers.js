@@ -14,7 +14,7 @@ const { CONTEXT_KEYS, validateLogLine, validateCommonAttrs } = require('../../li
  * Stream factory for a test.  Iterates over every message and calls an assertFn.
  * When all messages have been emitted it calls the callback function
  *
- * @param {function} cb callback after all messages have been emitted
+ * @param {Function} cb callback after all messages have been emitted
  */
 helpers.makeStreamTest = function makeStreamTest(cb) {
   let toBeClosed = 0
@@ -108,11 +108,11 @@ helpers.logWithAggregator = function logWithAggregator({ logger, loggers, stream
  * Assert function to verify the original log line is untouched by our instrumentation unless
  * local log decoration is enabled.  Local log decoration asserts `NR-LINKING` string exists on msg
  *
- * @param {Object} opts options object
+ * @param {object} opts options object
  * @param {boolean} [opts.includeLocalDecorating] is local log decoration enabled
  * @param {boolean} [opts.timestamp] does timestamp exist on original message
  * @param {string} [opts.level] level to assert is on message
- * @param {Object} msg message object
+ * @param {object} msg message object
  */
 helpers.originalMsgAssertion = function originalMsgAssertion(
   { includeLocalDecorating = false, timestamp = false, level = 'info' },

@@ -173,7 +173,7 @@ class Collector {
    * The most basic `agent_settings` handler. Useful when you do not need to
    * customize the handler.
    *
-   * @returns {function}
+   * @returns {Function}
    */
   get agentSettingsHandler() {
     return function (req, res) {
@@ -185,7 +185,7 @@ class Collector {
    * the most basic `connect` handler. Useful when you do not need to
    * customize the handler.
    *
-   * @returns {function}
+   * @returns {Function}
    */
   get connectHandler() {
     const runId = this.#runId
@@ -198,7 +198,7 @@ class Collector {
    * The most basic `preconnect` handler. Useful when you do not need to
    * customize the handler.
    *
-   * @returns {function}
+   * @returns {Function}
    */
   get preconnectHandler() {
     const host = this.host
@@ -233,7 +233,7 @@ class Collector {
    * string with the `method` parameter is present. This is required, as the
    * value of `method` will be used to look up the handler when receiving
    * requests.
-   * @param {function} handler A typical `(req, res) => {}` handler. For
+   * @param {Function} handler A typical `(req, res) => {}` handler. For
    * convenience, `res` is extended with a `json({ payload, code = 200 })`
    * method for easily sending JSON responses. Also, `req` is extended with
    * a `body()` method that returns a promise which resolves to the string

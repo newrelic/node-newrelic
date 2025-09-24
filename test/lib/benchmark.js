@@ -12,7 +12,7 @@ exports.createBenchmark = (opts) => new Benchmark(opts)
 /**
  * Represents the benchmark test; created in test/benchmark/*.bench.js files
  * @class
- * @param {Object} opts test suite configuration options
+ * @param {object} opts test suite configuration options
  * @param {string} [opts.name='Anonymous Suite'] name of test suite
  * @param {number} [opts.runs=1000] number of test iterations to run
  */
@@ -32,9 +32,9 @@ class Benchmark {
 
   /**
    * Adds a test to the suite in a *.bench.js file
-   * @param {Object} opts benchmark test configuration options
+   * @param {object} opts benchmark test configuration options
    * @param {string} opts.name name of benchmark test in the suite
-   * @param {function} opts.fn A function invoking the agent method or behavior that is the target of the test.
+   * @param {Function} opts.fn A function invoking the agent method or behavior that is the target of the test.
    *   Depending on what the test requires, this function can return a function invocation (see `events/span-event.bench.js`,
    *   or `shim` `is<Type>` tests), an object defining functions to test (see `shim/wrapped.bench.js`), a promise (see
    *   many tests in `datastore-shim`), or have no return value at all, being used for its side effects (see
@@ -45,19 +45,19 @@ class Benchmark {
    *   shared between tests in imported files. (See the `shim` directory's `shared.js` for an example.
    *
    *   Any precondition or post-test cleanup can be handled in before/after or initialize/ teardown parameters.
-   * @param {function} [opts.initialize] Executed before tests run, to instantiate resources used by the test suite.
+   * @param {Function} [opts.initialize] Executed before tests run, to instantiate resources used by the test suite.
    *   The function supplied to `initialize` could return a promise (as with `createServer` in `http`), it can also *not* return
    *   anything, instead using side effects to create resources (see `makeInit` in `datastore-shim`) or fill queues (see
    *   the anonymous for loop in `events`).
-   * @param {function} [opts.teardown] Executed after the tests run, typically to clean up resources or listeners.
+   * @param {Function} [opts.teardown] Executed after the tests run, typically to clean up resources or listeners.
    *   This could return a promise or function invocation. See `closeServer` in `http` for an example.
-   * @param {function} [opts.before] Executed before each test run. This could return a value--for example, see
+   * @param {Function} [opts.before] Executed before each test run. This could return a value--for example, see
    *   the `shim/shared.js` function `getTest`, which is returned by the `before` properties in `shim/wrapped.bench.js`
    *   tests, after some pre-test configuration. In other cases, such as `shim/merged.bench.js`, `before` is used to fill
    *   queues shared by the tests, and there is no returned value--it's used only to produce side effects.
-   * @param {function} [opts.after] Executed after each test run to reset any changes to test resources. This does not
+   * @param {Function} [opts.after] Executed after each test run to reset any changes to test resources. This does not
    *   need to return any value. See `metrics/getOrCreateMetric.js`, `async-hooks.bench.js`, or `events/merge.bench.js`
-   * @param {Object} [opts.agent] agent configuration object, or a configured agent
+   * @param {object} [opts.agent] agent configuration object, or a configured agent
    * @param {boolean} [opts.runInTransaction] if the agent code path under test must be run in a transaction, set to true.
    * @param {boolean} [opts.runGC] if GC should be run before each test, set to true
    */
@@ -101,14 +101,14 @@ class Benchmark {
 
     /**
      * Function that calculates CPU usage after a test, and calls any defined after/callback
-     * @param {Object} test Object defining the current test configuration
-     * @param {function} next anonymous function defined in the `startTest` for loop;
+     * @param {object} test Object defining the current test configuration
+     * @param {Function} next anonymous function defined in the `startTest` for loop;
      *   its second parameter is the delta between the current CPU usage and the previous CPU usage.
-     * @param {?function} [executeCb] If the test is run in a transaction, `executeCb` is defined,
+     * @param {?Function} [executeCb] If the test is run in a transaction, `executeCb` is defined,
      *   and will run after any user-defined `after` function. If `executeCb` is defined, the result of
      *   that is the `after` function's return value.
      * @param {{user: number, system: number}} prevCpu Output of process.cpuUsage() in the previous test
-     * @returns {function} an invocation of `executeCb`, if defined, or `next(null, delta)`
+     * @returns {Function} an invocation of `executeCb`, if defined, or `next(null, delta)`
      */
     const after = async (test, next, executeCb, prevCpu) => {
       // The cpu delta is reported in microseconds, so we turn them into
@@ -130,13 +130,13 @@ class Benchmark {
 
     /**
      * `execute` gets the CPU usage prior to the test and runs the test.
-     * @param {Object} test configuration for the test, including the function to be tested
-     * @param {function} next anonymous function defined in the `startTest` for loop;
+     * @param {object} test configuration for the test, including the function to be tested
+     * @param {Function} next anonymous function defined in the `startTest` for loop;
      *   its second parameter is the delta between the current CPU usage and the previous CPU usage.
-     * @param {function} [executeCb] If the test is run in a transaction, `executeCb` is defined,
+     * @param {Function} [executeCb] If the test is run in a transaction, `executeCb` is defined,
      *   and will run after any user-defined `after` function. If `executeCb` is defined, the result of
      *   that is the `after` function's return value.
-     * @returns {function} an invocation of the `after` function
+     * @returns {Function} an invocation of the `after` function
      */
     const execute = async (test, next, executeCb) => {
       const prevCpu = process.cpuUsage()
@@ -150,9 +150,9 @@ class Benchmark {
      * `runTest` performs one execution of a benchmark test
      * @param {number} n Index of the test in the sequence of tests to be run
      * @param {object} test Test configuration as defined in the *.bench.js file for this suite
-     * @param {function} next anonymous function defined in the `startTest` for loop;
+     * @param {Function} next anonymous function defined in the `startTest` for loop;
      *   its second parameter is the delta between the current CPU usage and the previous CPU usage.
-     * @returns {function} If this test is run in a transaction, this returns an invocation of
+     * @returns {Function} If this test is run in a transaction, this returns an invocation of
      *    helper.runInTransaction. Otherwise, this returns an invocation of `execute`.
      */
     const runTest = async (n, test, next) => {
@@ -181,7 +181,7 @@ class Benchmark {
 
     /**
      *
-     * @param {function} initiator Function to begin the test process--`startTest`
+     * @param {Function} initiator Function to begin the test process--`startTest`
      * @param {number} idx Index of the current test run
      * @returns {Promise<*|boolean>} resolves to the return value of the recursive chain of
      *   initiators (`startTest`) and returned functions (`afterTestRuns`)
@@ -195,11 +195,11 @@ class Benchmark {
 
     /**
      *
-     * @param {function} initiator The test runner `startTest`
+     * @param {Function} initiator The test runner `startTest`
      * @param {object} test configuration for the test
      * @param {Array} samples Array of the CPU deltas from this test
      * @param {number} idx Index of the current test run
-     * @returns {function} The next instance in the recursive chain of initiators (`startTest`)
+     * @returns {Function} The next instance in the recursive chain of initiators (`startTest`)
      *   and returned functions (`afterTestRuns`)
      */
     const afterTestRuns = (initiator, test, samples, idx) => {
@@ -219,11 +219,11 @@ class Benchmark {
 
     /**
      * `startTest` begins the suite of tests, passing its initiator argument to subsequent tests.
-     * @param {function} initiator Sets up and executes tests, and is passed to the
+     * @param {Function} initiator Sets up and executes tests, and is passed to the
      *   afterTestRuns function to be passed on to subsequent tests
      * @param {object} test Configuration object for this suite's test
      * @param {number} idx Integer for tracking progress through the recursive tests
-     * @returns {function} invocation of `afterTestRuns`, which continues the chain of recursion.
+     * @returns {Function} invocation of `afterTestRuns`, which continues the chain of recursion.
      */
     const startTest = async (initiator, test, idx) => {
       if (test.agent) {

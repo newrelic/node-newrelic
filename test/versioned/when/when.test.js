@@ -873,7 +873,7 @@ test('node.apply', (t, end) => {
  * @param {object} params.plan The assertion library that expects a set number of
  * assertions to be completed during the test.
  * @param {object} params.agent A mocked agent instance.
- * @param {function} params.testFunc A function that accepts a "name" parameter and
+ * @param {Function} params.testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
  * @returns {Promise<void>}
@@ -905,7 +905,7 @@ async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
  * @param {object} params.plan The assertion library that expects a set number of
  * assertions to be completed during the test.
  * @param {object} params.agent A mocked agent instance.
- * @param {function} params.testFunc A function that accepts a "name" parameter and
+ * @param {Function} params.testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
  * @returns {Promise<void>}

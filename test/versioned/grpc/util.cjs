@@ -36,11 +36,11 @@ function buildExpectedMetrics(port) {
 /**
  * Iterates over all metrics created during a transaction and asserts no gRPC metrics were created
  *
- * @param {Object} params params object
- * @param {Object} params.agent test agent
+ * @param {object} params params object
+ * @param {object} params.agent test agent
  * @param {number} params.port port
- * @param {Object} [deps] optional dependencies
- * @param {Object} [deps.assert] the assert library to use
+ * @param {object} [deps] optional dependencies
+ * @param {object} [deps.assert] the assert library to use
  */
 util.assertMetricsNotExisting = function assertMetricsNotExisting(
   { agent, port },
@@ -56,8 +56,8 @@ util.assertMetricsNotExisting = function assertMetricsNotExisting(
 /**
  * Helper for loading our example protobuf API
  *
- * @param {Object} grpc @grpc/grpc-js pkg
- * @returns {Object} helloworld protobuf pkg
+ * @param {object} grpc @grpc/grpc-js pkg
+ * @returns {object} helloworld protobuf pkg
  */
 function loadProtobufApi(grpc) {
   const PROTO_PATH = path.join(__dirname, 'example.proto')
@@ -75,8 +75,8 @@ function loadProtobufApi(grpc) {
  * Creates a gRPC server with the Greeter service and the server methods
  * from `./grpc-server`
  *
- * @param {Object} grpc grpc module
- * @returns {Object} { server, proto } grpc server and protobuf api
+ * @param {object} grpc grpc module
+ * @returns {object} { server, proto } grpc server and protobuf api
  */
 util.createServer = async function createServer(grpc) {
   const server = new grpc.Server()
@@ -102,10 +102,10 @@ util.createServer = async function createServer(grpc) {
 /**
  * Gets the client for the Greeter service
  *
- * @param {Object} grpc grpc module
- * @param {Object} proto protobuf API example.proto
+ * @param {object} grpc grpc module
+ * @param {object} proto protobuf API example.proto
  * @param {number} port client port
- * @returns {Object} client grpc client for Greeter service
+ * @returns {object} client grpc client for Greeter service
  */
 util.getClient = function getClient(grpc, proto, port) {
   const credentials = grpc.credentials.createInsecure()
@@ -136,14 +136,14 @@ util.getServerTransactionName = function getRPCName(fnName) {
  * Asserts the gRPC external segment and its relevant attributes: url,
  * procedure, grpc.statusCode, grpc.statusText
  *
- * @param {Object} params params object
- * @param {Object} params.tx transaction under test
+ * @param {object} params params object
+ * @param {object} params.tx transaction under test
  * @param {string} params.fnName gRPC method name
  * @param {number} [params.expectedStatusCode] expected status code for test
  * @param {string} [params.expectedStatusText] expected status text for test
  * @param {number} params.port port
- * @param {Object} [deps] optional dependencies
- * @param {Object} [deps.assert] the assert library to use
+ * @param {object} [deps] optional dependencies
+ * @param {object} [deps.assert] the assert library to use
  */
 util.assertExternalSegment = function assertExternalSegment(
   { tx, fnName, expectedStatusCode = 0, expectedStatusText = 'OK', port },
@@ -180,12 +180,12 @@ util.assertExternalSegment = function assertExternalSegment(
  * Asserts the gRPC server segment and its relevant attributes: response.status
  * request.method, request.uri
  *
- * @param {Object} params params object
- * @param {Object} params.transaction transaction under test
+ * @param {object} params params object
+ * @param {object} params.transaction transaction under test
  * @param {string} params.fnName gRPC method name
  * @param {number} [params.expectedStatusCode] expected status code for test
- * @param {Object} [deps] optional dependencies
- * @param {Object} [deps.assert] the assert library to use
+ * @param {object} [deps] optional dependencies
+ * @param {object} [deps.assert] the assert library to use
  */
 util.assertServerTransaction = function assertServerTransaction(
   { transaction, fnName, expectedStatusCode = 0 },
@@ -249,8 +249,8 @@ util.assertDistributedTracing = function assertDistributedTracing(
 /**
  * Helper to make a unary client request
  *
- * @param {Object} params params object
- * @param {Object} params.client gRPC client
+ * @param {object} params params object
+ * @param {object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
  * @returns {Promise}
@@ -270,8 +270,8 @@ util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload }) {
 /**
  * Helper to make a streaming client request
  *
- * @param {Object} params params object
- * @param {Object} params.client gRPC client
+ * @param {object} params params object
+ * @param {object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
  * @param {boolean} [params.endStream] defaults to true
@@ -304,8 +304,8 @@ util.makeClientStreamingRequest = function makeClientStreamingRequest({
 /**
  * Helper to make a streaming server client request
  *
- * @param {Object} params params object
- * @param {Object} params.client gRPC client
+ * @param {object} params params object
+ * @param {object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
  * @returns {Promise}
@@ -329,8 +329,8 @@ util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, 
 /**
  * Helper to make a bidirectional client request
  *
- * @param {Object} params params object
- * @param {Object} params.client gRPC client
+ * @param {object} params params object
+ * @param {object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
  * @returns {Promise}
@@ -360,8 +360,8 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
  * If the server use case it will also assert the transaction and metrics
  * If the client use case it will assert the external call segment
  *
- * @param {Object} params params object
- * @param {Object} params.transaction transaction under test
+ * @param {object} params params object
+ * @param {object} params.transaction transaction under test
  * @param {Array} params.errors agent errors array
  * @param {boolean} [params.expectErrors] flag to indicate if errors will exist
  * @param {boolean} [params.clientError] flag to indicate if error is client side
@@ -370,8 +370,8 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
  * @param {number} params.expectedStatusCode expected status code for test
  * @param {string} params.expectedStatusText expected status text for test
  * @param {number} params.port port
- * @param {Object} [deps] optional dependencies
- * @param {Object} [deps.assert] the assert library to use
+ * @param {object} [deps] optional dependencies
+ * @param {object} [deps.assert] the assert library to use
  */
 util.assertError = function assertError(
   {

@@ -22,7 +22,7 @@ const BAD_MONGO_COMMANDS = ['collection']
  * docblocks there for clarification.
  *
  * @param {string} name Parent test name.
- * @param {function} run Provided a db instance and a verify callback.
+ * @param {Function} run Provided a db instance and a verify callback.
  */
 function dbTest(name, run) {
   test(name, async (t) => {

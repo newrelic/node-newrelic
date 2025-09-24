@@ -125,9 +125,9 @@ function createAwsResponseStream() {
  * Decorate the provided AWS Lambda handler in the manner AWS Lambda expects
  * streaming capable handlers to be decorated.
  *
- * @param {function} handler The user's Lambda application entry point
+ * @param {Function} handler The user's Lambda application entry point
  * @param {object} options An object which optionally may contain a highWaterMark key
- * @returns {function} The same function, decorated with a symbol to indicate response streaming
+ * @returns {Function} The same function, decorated with a symbol to indicate response streaming
  */
 function decorateHandler(handler, options) {
   handler[Symbol.for('aws.lambda.runtime.handler.streaming')] = 'response'

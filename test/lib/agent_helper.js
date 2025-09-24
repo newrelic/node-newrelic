@@ -128,10 +128,10 @@ helper.getAgentApi = function getAgentApi() {
  * Generate the URLs used to talk to the collector, which have a very
  * specific format. Useful with nock.
  *
- * @param {String} method The method being invoked on the collector.
+ * @param {string} method The method being invoked on the collector.
  * @param {number} runID  Agent run ID (optional).
  * @param {number} [protocolVersion] defaults to 17
- * @returns {String} URL path for the collector.
+ * @returns {string} URL path for the collector.
  */
 helper.generateCollectorPath = function generateCollectorPath(method, runID, protocolVersion) {
   protocolVersion = protocolVersion || 17
@@ -306,7 +306,7 @@ helper.runInTransaction = (agent, type, callback) => {
  * callback is executed in
  * @param {Agent} agent instance
  * @param {string} type the class of the transaction
- * @param {function} callback function to be called within the transaction
+ * @param {Function} callback function to be called within the transaction
  */
 helper.runInNamedTransaction = (agent, type, callback) => {
   if (!callback && typeof type === 'function') {
@@ -330,7 +330,7 @@ helper.runInSegment = (agent, name, callback) => {
 /**
  * Select Redis DB index and flush entries in it.
  *
- * @param {Object} client Redis client
+ * @param {object} client Redis client
  * @param {number} dbIndex
  *  The operations to be performed while the server is running.
  */
@@ -406,7 +406,7 @@ helper.startServerWithRandomPortRetry = (server, maxAttempts = 5) => {
  * request is made after instrumentation is registered
  * we want to make sure we get the original library and not
  * our instrumented one
- * @param {Object} ca certificate authority
+ * @param {object} ca certificate authority
  */
 helper.getRequestLib = function getRequestLib(ca) {
   const request = ca ? https.request : http.request
@@ -591,7 +591,7 @@ helper.isSupportedVersion = function isSupportedVersion(version) {
 /**
  * Gets a shim instance for a package.
  * @param {object} pkg exported obj that is instrumented
- * @returns The existing or newly created shim.
+ * @returns {Shim} The existing or newly created shim.
  */
 helper.getShim = function getShim(pkg) {
   return pkg?.[symbols.shim]
