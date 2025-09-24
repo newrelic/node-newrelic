@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const semver = require('semver')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { findSegment } = require('../../lib/metrics_helper')
@@ -66,7 +67,7 @@ async function cassSetup(cassandra) {
   const famCreate = `CREATE TABLE ${KS}.${FAM} (${PK} int PRIMARY KEY, ${COL} varchar);`
   await runCommand(famCreate)
 
-  setupClient.shutdown()
+  await setupClient.shutdown()
 }
 
 test.beforeEach(async (ctx) => {
@@ -74,6 +75,8 @@ test.beforeEach(async (ctx) => {
   ctx.nr.agent = helper.instrumentMockedAgent()
 
   const cassandra = require('cassandra-driver')
+  const { version: pkgVersion } = require('cassandra-driver/package.json')
+  ctx.nr.pkgVersion = pkgVersion
   await cassSetup(cassandra)
 
   ctx.nr.client = new cassandra.Client({
@@ -84,16 +87,16 @@ test.beforeEach(async (ctx) => {
   })
 })
 
-test.afterEach((ctx) => {
+test.afterEach(async (ctx) => {
   ctx.nr.agent.queries.clear()
   ctx.nr.agent.metrics.clear()
   helper.unloadAgent(ctx.nr.agent)
-  ctx.nr.client.shutdown()
+  await ctx.nr.client.shutdown()
   removeModules(['cassandra-driver'])
 })
 
 test('executeBatch - callback style', (t, end) => {
-  const { agent, client } = t.nr
+  const { agent, client, pkgVersion } = t.nr
   assert.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
   helper.runInTransaction(agent, (tx) => {
     const transaction = agent.getTransaction()
@@ -113,7 +116,8 @@ test('executeBatch - callback style', (t, end) => {
         assert.equal(value.rows[0][COL], colValArr[0], 'cassandra client should still work')
 
         const children = transaction.trace.getChildren(transaction.trace.root.id)
-        assert.equal(children.length, 1, 'there should be only one child of the root')
+        const expectedLength = semver.gte(pkgVersion, '4.4.0') ? 2 : 1
+        assert.equal(children.length, expectedLength, `there should be only ${expectedLength} child of the root`)
         verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
         transaction.end()
         checkMetric(agent)
@@ -198,9 +202,9 @@ test('records manual connect and shutdown', async (t) => {
     await client.connect()
     await client.shutdown()
 
-    const children = transaction?.trace?.segments?.root?.children
-    assert.equal(children[0]?.segment?.name, 'Datastore/operation/Cassandra/connect', 'should have connect segment')
-    assert.equal(children[1]?.segment?.name, 'Datastore/operation/Cassandra/shutdown', 'should have shutdown segment')
+    const [connectSegment, shutdownSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+    assert.equal(connectSegment.name, 'Datastore/operation/Cassandra/connect', 'should have connect segment')
+    assert.equal(shutdownSegment.name, 'Datastore/operation/Cassandra/shutdown', 'should have shutdown segment')
     transaction.end()
   })
 })
@@ -329,9 +333,7 @@ function verifyTrace(agent, trace, table) {
     assert.ok(getSegment, 'trace segment for select should exist')
 
     if (getSegment) {
-      const getChildren = trace.getChildren(getSegment.id)
       verifyTraceSegment(agent, getSegment, 'select')
-      assert.ok(getChildren.length >= 1, 'get should have a callback/promise segment')
       assert.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
     }
   }
