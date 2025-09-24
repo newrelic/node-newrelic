@@ -981,14 +981,13 @@ function addTwoSegments(transaction) {
 
 async function makeTrace(agent) {
   const DURATION = 33
-  const URL = '/test?test=value'
+  const url = '/test'
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
   agent.config.emit('attributes.include')
 
   const transaction = new Transaction(agent)
-  transaction.trace.attributes.addAttribute(DESTINATIONS.TRANS_COMMON, 'request.uri', URL)
-  transaction.url = URL
+  transaction.url = url
   transaction.verb = 'GET'
 
   const trace = transaction.trace
@@ -1002,7 +1001,8 @@ async function makeTrace(agent) {
 
   const web = trace.add(URL)
   transaction.baseSegment = web
-  transaction.finalizeNameFromUri(URL, 200)
+  transaction.addRequestParameters({ test: 'value' })
+  transaction.finalizeNameFromWeb(200)
   // top-level element will share a duration with the quasi-ROOT node
   web.setDurationInMillis(DURATION, 0)
 
@@ -1046,7 +1046,6 @@ async function makeTrace(agent) {
         DURATION,
         'WebTransaction/NormalizedUri/*',
         {
-          'request.uri': '/test?test=value',
           'request.parameters.test': 'value',
           nr_exclusive_duration_millis: 8
         },
@@ -1061,7 +1060,6 @@ async function makeTrace(agent) {
     rootSegment,
     {
       agentAttributes: {
-        'request.uri': '/test?test=value',
         'request.parameters.test': 'value'
       },
       userAttributes: {},

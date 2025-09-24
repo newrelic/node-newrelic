@@ -63,7 +63,7 @@ test('simple harvest', async (t) => {
   let transaction
   const proxy = agent.tracer.transactionProxy(() => {
     transaction = agent.getTransaction()
-    transaction.finalizeNameFromUri('/nonexistent', 501)
+    transaction.finalizeNameFromWeb(501)
   })
   proxy()
 
@@ -133,7 +133,7 @@ test('sending error traces', async (t) => {
   const { agent } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
-    tx.finalizeNameFromUri('/nonexistent', 501)
+    tx.finalizeNameFromWeb(501)
     tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
     tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
     agent.errors.add(tx, new Error('test error'))
@@ -171,7 +171,7 @@ test('sending traces', async (t) => {
   let transaction
   const proxy = agent.tracer.transactionProxy(() => {
     transaction = agent.getTransaction()
-    transaction.finalizeNameFromUri('/nonexistent', 200)
+    transaction.finalizeNameFromWeb(200)
   })
   proxy()
 
@@ -204,7 +204,7 @@ test('serverless_mode harvest should disregard sampling limits', async (t) => {
   let transaction
   const proxy = agent.tracer.transactionProxy(() => {
     transaction = agent.getTransaction()
-    transaction.finalizeNameFromUri('/nonexistent', 200)
+    transaction.finalizeNameFromWeb(200)
   })
   proxy()
 
@@ -238,7 +238,7 @@ test('sending span events', async (t) => {
   helper.runInTransaction(agent, (tx) => {
     setTimeout(() => {
       // Just to create an extra span.
-      tx.finalizeNameFromUri('/some/path', 200)
+      tx.finalizeNameFromWeb(200)
       tx.end()
       agent.once('harvestFinished', end)
       agent.harvestSync()
@@ -266,7 +266,7 @@ test('sending error events', async (t) => {
   const { agent } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
-    tx.finalizeNameFromUri('/nonexistent', 501)
+    tx.finalizeNameFromWeb(501)
     tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
     tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
     agent.errors.add(tx, new Error('test error'))
@@ -313,7 +313,7 @@ test('sending custom events', async (t) => {
   const { agent } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
-    tx.finalizeNameFromUri('/nonexistent', 501)
+    tx.finalizeNameFromWeb(501)
 
     const expectedEventType = 'myEvent'
     const expectedAttributes = { foo: 'bar' }
@@ -355,7 +355,8 @@ test('sending sql traces', async (t) => {
   helper.runInTransaction(agent, (tx) => {
     const expectedUrl = '/nonexistent'
 
-    tx.finalizeNameFromUri(expectedUrl, 501)
+    tx.url = expectedUrl
+    tx.finalizeNameFromWeb(501)
 
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.transaction_tracer.explain_threshold = 0

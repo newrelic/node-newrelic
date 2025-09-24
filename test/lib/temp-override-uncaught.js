@@ -21,14 +21,11 @@ const oldListeners = {
  * restoring the original listeners upon test completion.
  *
  * @param {object} params
- * @param params.t
- * @param {TestContext} t A `node:test` context object.
- * @param {function} handler An error handler function that will replace all
+ * @param {TestContext} params.t A `node:test` context object.
+ * @param {function} params.handler An error handler function that will replace all
  * current listeners.
- * @param {string} [type] The kind of uncaught event to
+ * @param {string} [params.type] The kind of uncaught event to
  * override.
- * @param params.handler
- * @param params.type
  * @property {string} EXCEPTION Constant value usable for `type`.
  * @property {string} REJECTION Constant value usable for `type`.
  */

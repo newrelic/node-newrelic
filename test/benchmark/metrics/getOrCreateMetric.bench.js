@@ -5,8 +5,8 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const Metrics = require('../../../lib/metrics')
+const benchmark = require('#testlib/benchmark.js')
+const Metrics = require('#agentlib/metrics/index.js')
 const shared = require('./shared')
 
 let metrics = new Metrics(1, {}, {})

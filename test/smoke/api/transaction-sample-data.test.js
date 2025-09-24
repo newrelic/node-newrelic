@@ -37,7 +37,7 @@ test('Collector API should send transaction traces to staging-collector.newrelic
     let transaction
     const proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
-      transaction.finalizeNameFromUri('/nonexistent', 200)
+      transaction.finalizeNameFromWeb(200)
     })
     proxy()
 

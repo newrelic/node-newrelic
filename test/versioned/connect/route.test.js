@@ -105,11 +105,9 @@ test('should default to `/` when no route is specified', async (t) => {
  * @param {Object} params
  * @param {string} params.url url to make request
  * @param {string} params.expectedData expected response data
- * @param {Object} app connect app
- *
- * @param params.plan
- * @param params.app
- * @param params.pkgVersion
+ * @param {Object} params.plan
+ * @param {Object} params.app connect app
+ * @param {string} params.pkgVersion
  * @returns {http.Server}
  */
 function createServerAndMakeRequest({ url, expectedData, plan, app, pkgVersion }) {

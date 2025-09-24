@@ -5,10 +5,10 @@
 
 'use strict'
 
-const benchmark = require('../lib/benchmark')
-const helper = require('../lib/agent_helper')
-const Shim = require('../../lib/shim/shim')
-const shimmer = require('../../lib/shimmer')
+const benchmark = require('#testlib/benchmark.js')
+const helper = require('#testlib/agent_helper.js')
+const Shim = require('#agentlib/shim/shim.js')
+const shimmer = require('#agentlib/shimmer.js')
 
 const agent = helper.loadMockedAgent()
 const shim = new Shim(agent, 'test-module')

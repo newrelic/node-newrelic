@@ -97,7 +97,8 @@ test('Agent API - addNamingRule', async (t) => {
     api.addNamingRule('^/test/.*', 'Test')
 
     agent.on('transactionFinished', function (transaction) {
-      transaction.finalizeNameFromUri(TEST_URL, 200)
+      transaction.url = TEST_URL
+      transaction.finalizeNameFromWeb(200)
 
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/Test')
 
@@ -118,7 +119,8 @@ test('Agent API - addNamingRule', async (t) => {
     api.addNamingRule(/^\/test\/(.*)\/(.*)/, 'Test/$2')
 
     agent.on('transactionFinished', function (transaction) {
-      transaction.finalizeNameFromUri('/test/31337/related', 200)
+      transaction.url = '/test/31337/related'
+      transaction.finalizeNameFromWeb(200)
 
       assert.equal(transaction.name, 'WebTransaction/NormalizedUri/Test/related')
 

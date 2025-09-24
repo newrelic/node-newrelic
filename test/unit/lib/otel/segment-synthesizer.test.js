@@ -9,7 +9,7 @@ const assert = require('node:assert')
 
 const helper = require('#testlib/agent_helper.js')
 const { BasicTracerProvider } = require('@opentelemetry/sdk-trace-base')
-const SegmentSynthesizer = require('#agentlib/otel/segment-synthesis.js')
+const SegmentSynthesizer = require('#agentlib/otel/traces/segment-synthesis.js')
 const createMockLogger = require('../../mocks/logger')
 const {
   createConsumerSpan,
@@ -27,7 +27,7 @@ const {
 const {
   ATTR_MESSAGING_DESTINATION,
   ATTR_MESSAGING_SYSTEM,
-} = require('#agentlib/otel/constants.js')
+} = require('#agentlib/otel/traces/constants.js')
 const { SpanKind, TraceFlags } = require('@opentelemetry/api')
 const hashes = require('#agentlib/util/hashes.js')
 
@@ -58,6 +58,41 @@ test('should create http external segment from otel http client span', (t, end) 
     assert.equal(segment.id, span.spanContext().spanId)
     assert.equal(segment.name, 'External/www.newrelic.com/search')
     assert.equal(segment.parentId, tx.trace.root.id)
+    assert.equal(synthesizer.logger.debug.callCount, 0)
+    tx.end()
+    end()
+  })
+})
+
+test('should create http external segment with url as /unknown when it cannot parse url', (t, end) => {
+  const { agent, synthesizer, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createHttpClientSpan({ tracer })
+    span.attributes['url.full'] = 'bogus'
+    const { segment, transaction } = synthesizer.synthesize(span)
+    assert.equal(tx.id, transaction.id)
+    assert.equal(segment.id, span.spanContext().spanId)
+    assert.equal(segment.name, 'External/www.newrelic.com/unknown')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    assert.equal(synthesizer.logger.debug.callCount, 1)
+    const [call] = synthesizer.logger.debug.args
+    assert.deepEqual(call, ['Could not parse URL %s: %s', 'bogus', 'Invalid URL'])
+    tx.end()
+    end()
+  })
+})
+
+test('should create http external segment with url as /unknown when url.full does not exist', (t, end) => {
+  const { agent, synthesizer, tracer } = t.nr
+  helper.runInTransaction(agent, (tx) => {
+    const span = createHttpClientSpan({ tracer })
+    delete span.attributes['url.full']
+    const { segment, transaction } = synthesizer.synthesize(span)
+    assert.equal(tx.id, transaction.id)
+    assert.equal(segment.id, span.spanContext().spanId)
+    assert.equal(segment.name, 'External/www.newrelic.com/unknown')
+    assert.equal(segment.parentId, tx.trace.root.id)
+    assert.equal(synthesizer.logger.debug.callCount, 0)
     tx.end()
     end()
   })

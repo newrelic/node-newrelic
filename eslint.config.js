@@ -45,6 +45,12 @@ const newrelicConfigOverrides = {
 }
 
 const jsdocConfig = {
+  settings: {
+    jsdoc: {
+      // This is explicity set, so we don't get TypeScript-specific linting errors.
+      mode: 'jsdoc'
+    }
+  },
   plugins: { jsdoc },
   rules: {
     'jsdoc/require-jsdoc': 'off',
@@ -66,7 +72,9 @@ const jsdocConfig = {
           'EventEmitter'
         ]
       }
-    ]
+    ],
+    'jsdoc/valid-types': 'error',
+    'jsdoc/check-param-names': 'error'
   }
 }
 const jsdocOverrides = {

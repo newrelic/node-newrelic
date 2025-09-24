@@ -11,6 +11,8 @@ if (NR_KEY === null) {
   process.exit(1)
 }
 
+const HOST = process.env.NEW_RELIC_METRICS_HOST || 'staging-collector.newrelic.com'
+
 const { MeterProvider, PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics')
 const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-proto')
 const { diag, DiagConsoleLogger, DiagLogLevel } = require('@opentelemetry/api')
@@ -24,8 +26,8 @@ const resource = resourceFromAttributes({
 })
 
 const exporter = new OTLPMetricExporter({
-  url: 'https://otlp.nr-data.net:443/v1/metrics',
-  headers: { 'api-key': NR_KEY } // Prod ingest license key
+  url: `https://${HOST}:443/v1/metrics`,
+  headers: { 'api-key': NR_KEY }
 })
 
 const meterProvider = new MeterProvider({

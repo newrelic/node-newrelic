@@ -5,8 +5,8 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const shimmer = require('../../../lib/shimmer')
+const benchmark = require('#testlib/benchmark.js')
+const shimmer = require('#agentlib/shimmer.js')
 
 const suite = benchmark.createBenchmark({ name: 'shimmer wrapping', delay: 0.01 })
 

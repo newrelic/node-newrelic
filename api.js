@@ -1133,7 +1133,7 @@ API.prototype.endTransaction = function endTransaction() {
   if (tx) {
     if (tx.baseSegment) {
       if (tx.type === 'web') {
-        tx.finalizeNameFromUri(tx.url, 0)
+        tx.finalizeNameFromWeb(0)
       }
       tx.baseSegment.end()
     }

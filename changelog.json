@@ -2,6 +2,56 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.3.3",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `openai` instrumentation to properly return APIPromise to avoid crashing when using `completions.parse` or `responses.parse`"
+        ],
+        "features": [
+          "Added support for tracing callback on subscribers"
+        ]
+      }
+    },
+    {
+      "version": "13.3.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Added defensive code for obtaining `protocol` in outbound http calls"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.3.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Default `requestParameters` to an object to avoid crash in `transaction.addRequestParameters`"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.3.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added MCP `StreamableHTTPClientTransport` support"
+        ]
+      }
+    },
+    {
+      "version": "13.2.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
       "version": "13.2.0",
       "changes": {
         "security": [],

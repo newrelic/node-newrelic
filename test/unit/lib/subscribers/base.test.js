@@ -6,10 +6,12 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
+const sinon = require('sinon')
 const Subscriber = require('#agentlib/subscribers/base.js')
 const helper = require('#testlib/agent_helper.js')
 const loggerMock = require('../../mocks/logger')
 const { tspl } = require('@matteo.collina/tspl')
+const assertMetrics = require('#testlib/custom-assertions/assert-metrics.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
@@ -19,6 +21,11 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
+  const { subscriber } = ctx.nr
+  subscriber.disable()
+  if (subscriber.subscriptions) {
+    subscriber.unsubscribe()
+  }
   helper.unloadAgent(ctx.nr.agent)
 })
 
@@ -158,4 +165,170 @@ test('should subscribe/unsubscribe to specific events on channel', (t) => {
   assert.equal(subscriber.channel.end.hasSubscribers, false)
   assert.ok(!subscriber.channel.bogus)
   assert.equal(subscriber.subscriptions, null)
+})
+
+test('should call handler in start if transaction is active and create a new segment', async (t) => {
+  const plan = tspl(t, { plan: 8 })
+  const { agent, subscriber } = t.nr
+  const name = 'test-segment'
+  const expectedMetrics = [
+    [{ name: 'Supportability/Features/Instrumentation/OnRequire/test-package' }],
+    [{ name: 'Supportability/Features/Instrumentation/OnRequire/test-package/Version/1' }],
+  ]
+  subscriber.enable()
+  subscriber.handler = function handler(data, ctx) {
+    plan.equal(data.name, name)
+    return subscriber.createSegment({
+      name: data?.name,
+      ctx
+    })
+  }
+
+  helper.runInTransaction(agent, () => {
+    const event = { name, moduleVersion: '1.0.0' }
+    subscriber.channel.start.runStores(event, () => {
+      const ctx = agent.tracer.getContext()
+      plan.equal(ctx.segment.name, name)
+      plan.ok(!event.segment, 'segment not added to event')
+      assertMetrics(agent.metrics, expectedMetrics, false, false, { assert: plan })
+    })
+  })
+
+  await plan.completed
+})
+
+test('should not call handler in start if transaction is not active and return existing context', async (t) => {
+  const plan = tspl(t, { plan: 1 })
+  const { agent, subscriber } = t.nr
+  subscriber.enable()
+  subscriber.handler = function handler() {
+    plan.ok(0, 'should not call handler')
+  }
+
+  const event = {}
+  subscriber.channel.start.runStores(event, (data) => {
+    const ctx = agent.tracer.getContext()
+    plan.ok(!ctx?.segment)
+  })
+
+  await plan.completed
+})
+
+test('should bind callback and invoke asyncStart/asyncEnd events', async (t) => {
+  const plan = tspl(t, { plan: 8 })
+  const { agent, subscriber } = t.nr
+  const name = 'test-segment'
+  const expectedResult = 'test-result'
+  subscriber.callback = -1
+  subscriber.enable()
+  subscriber.error = (err) => {
+    plan.ifError(err)
+  }
+  subscriber.events = ['asyncStart', 'asyncEnd', 'error']
+  subscriber.subscribe()
+  subscriber.handler = function handler(data, ctx) {
+    plan.equal(data.name, name)
+    return subscriber.createSegment({
+      name: data?.name,
+      ctx
+    })
+  }
+
+  function testCb(err, result) {
+    plan.equal(result, expectedResult)
+    plan.equal(err, null)
+  }
+
+  helper.runInTransaction(agent, () => {
+    const event = { name, arguments: [testCb] }
+    subscriber.channel.start.runStores(event, () => {
+      const touchSpy = sinon.spy(event.segment, 'touch')
+      const ctx = agent.tracer.getContext()
+      plan.equal(ctx.segment.name, name)
+      plan.equal(event.segment.timer.touched, false)
+      plan.equal(event.segment.name, name, 'segment not added to event')
+      event.arguments[0](null, expectedResult)
+      plan.equal(touchSpy.callCount, 2, 'should call touch in asyncStart and asyncEnd')
+      plan.equal(event.segment.timer.touched, true)
+    })
+  })
+
+  await plan.completed
+})
+
+test('should bind callback and invoke the asyncStart/error/asyncError events when callback fails', async (t) => {
+  const plan = tspl(t, { plan: 9 })
+  const { agent, subscriber } = t.nr
+  const name = 'test-segment'
+  const expectedErr = new Error('cb failed')
+  subscriber.callback = -1
+  subscriber.error = (data) => {
+    plan.equal(data.callback, true)
+    plan.deepEqual(data.error, expectedErr)
+  }
+  subscriber.enable()
+  subscriber.events = ['asyncStart', 'asyncEnd', 'error']
+  subscriber.subscribe()
+  subscriber.handler = function handler(data, ctx) {
+    plan.equal(data.name, name)
+    return subscriber.createSegment({
+      name: data?.name,
+      ctx
+    })
+  }
+
+  function testCb(err, result) {
+    plan.deepEqual(err, expectedErr)
+    plan.equal(result, undefined)
+  }
+
+  helper.runInTransaction(agent, () => {
+    const event = { name, arguments: [testCb] }
+    subscriber.channel.start.runStores(event, () => {
+      const ctx = agent.tracer.getContext()
+      plan.equal(ctx.segment.name, name)
+      plan.equal(event.segment.timer.touched, false)
+      plan.equal(event.segment.name, name, 'segment not added to event')
+      event.arguments[0](expectedErr)
+      plan.equal(event.segment.timer.touched, true)
+    })
+  })
+
+  await plan.completed
+})
+
+test('should not wrap callback if position is not a function thus not touching segment in asyncStart/asyncEnd', async (t) => {
+  const plan = tspl(t, { plan: 7 })
+  const { agent, subscriber } = t.nr
+  const name = 'test-segment'
+  subscriber.callback = 0
+  subscriber.enable()
+  subscriber.events = ['asyncStart', 'asyncEnd']
+  subscriber.subscribe()
+  subscriber.handler = function handler(data, ctx) {
+    plan.equal(data.name, name)
+    return subscriber.createSegment({
+      name: data?.name,
+      ctx
+    })
+  }
+
+  function testCb(err, result) {
+    plan.deepEqual(err, null)
+    plan.equal(result, 'data')
+  }
+
+  helper.runInTransaction(agent, () => {
+    const event = { name, arguments: ['string', testCb] }
+    subscriber.channel.start.runStores(event, () => {
+      const ctx = agent.tracer.getContext()
+      plan.equal(ctx.segment.name, name)
+      plan.equal(event.segment.timer.touched, false)
+      plan.equal(event.segment.name, name, 'segment not added to event')
+      event.arguments[1](null, 'data')
+      plan.equal(event.segment.timer.touched, false)
+    })
+  })
+
+  await plan.completed
 })

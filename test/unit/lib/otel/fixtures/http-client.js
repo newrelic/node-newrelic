@@ -11,18 +11,18 @@ const {
   ATTR_HTTP_REQUEST_METHOD,
   ATTR_SERVER_ADDRESS,
   ATTR_SERVER_PORT,
+  ATTR_FULL_URL,
   ATTR_URL_PATH,
   ATTR_URL_SCHEME,
-  ATTR_URL_QUERY,
-} = require('#agentlib/otel/constants.js')
+} = require('#agentlib/otel/traces/constants.js')
 
 const defaultAttributes = {
   [ATTR_URL_SCHEME]: 'https',
   [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
   [ATTR_HTTP_REQUEST_METHOD]: 'GET',
   [ATTR_SERVER_PORT]: 8080,
-  [ATTR_URL_QUERY]: 'q=test',
   [ATTR_URL_PATH]: '/search',
+  [ATTR_FULL_URL]: 'https://www.newrelic.com:8080/search?q=test'
 }
 
 module.exports = function createHttpClientSpan({ tracer, attributes = defaultAttributes }) {

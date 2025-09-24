@@ -49,7 +49,7 @@ test('LASP-enabled agent', async (t) => {
     let transaction
     const proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
-      transaction.finalizeNameFromUri('/nonexistent', 200)
+      transaction.finalizeNameFromWeb(200)
       // ensure it's slow enough to get traced
       transaction.trace.setDurationInMillis(5001)
       api.addCustomAttribute('foo', 'bar')
@@ -85,7 +85,7 @@ test('LASP-enabled agent', async (t) => {
     let transaction
     const proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
-      transaction.finalizeNameFromUri('/nonexistent', 200)
+      transaction.finalizeNameFromWeb(200)
       // ensure it's slow enough to get traced
       transaction.trace.setDurationInMillis(5001)
       api.addCustomAttribute('foo', 'bar')

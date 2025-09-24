@@ -221,7 +221,8 @@ test('when forcing transaction ignore status', async (t) => {
     const { agent } = t.nr
     const tx = new Transaction(agent)
     tx.forceIgnore = true
-    tx.finalizeNameFromUri('/ham_snadwich/attend', 200)
+    tx.url = '/ham_snadwich/attend'
+    tx.finalizeNameFromWeb(200)
 
     assert.equal(tx.ignore, true)
     // Should not throw:
@@ -232,14 +233,15 @@ test('when forcing transaction ignore status', async (t) => {
     const { agent } = t.nr
     const tx = new Transaction(agent)
     tx.forceIgnore = false
-    tx.finalizeNameFromUri('/ham_snadwich/ignore', 200)
+    tx.url = '/ham_snadwich/ignore'
+    tx.finalizeNameFromWeb(200)
 
     assert.equal(tx.ignore, false)
     // Should not throw:
     tx.end()
   })
 
-  await t.test('should ignore when finalizeNameFromUri is not called', (t) => {
+  await t.test('should ignore when finalizeNameFromWeb is not called', (t) => {
     const { agent } = t.nr
     const tx = new Transaction(agent)
     tx.forceIgnore = true

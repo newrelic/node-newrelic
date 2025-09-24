@@ -5,8 +5,8 @@
 
 'use strict'
 
-const benchmark = require('../../lib/benchmark')
-const properties = require('../../../lib/util/properties')
+const benchmark = require('#testlib/benchmark.js')
+const properties = require('#agentlib/util/properties.js')
 
 const suite = benchmark.createBenchmark({
   runs: 100000,
