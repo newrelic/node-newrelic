@@ -103,25 +103,13 @@ test('executeBatch - callback style', (t, end) => {
     assert.ok(transaction, 'transaction should be visible')
     assert.equal(tx, transaction, 'we got the same transaction')
 
-    const s = process.hrtime()
-    console.log('before cb batch')
     client.batch(insArr, { hints }, (error, ok) => {
-      const e = process.hrtime(s)
-      const duration = e[0] * 1e3 + e[1] / 1e6
-      console.log('duration of batch', duration)
-      console.log('after cb batch')
       assert.ifError(error, 'should not get an error')
 
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
       assert.ok(ok, 'everything should be peachy after setting')
 
-      console.log('before cb execute')
-      const start = process.hrtime()
       client.execute(selQuery, (error, value) => {
-        console.log('after cb execute')
-        const e = process.hrtime(start)
-        const duration = e[0] * 1e3 + e[1] / 1e6
-        console.log('duration of execute', duration)
         assert.ifError(error, 'should not get an error')
 
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
@@ -148,25 +136,13 @@ test('executeBatch - promise style', (t, end) => {
     assert.ok(transaction, 'transaction should be visible')
     assert.equal(tx, transaction, 'we got the same transaction')
 
-    console.log('before promise batch')
-    const s = process.hrtime()
     client
       .batch(insArr, { hints })
       .then(() => {
-        const e = process.hrtime(s)
-        const duration = e[0] * 1e3 + e[1] / 1e6
-        console.log('duration of batch', duration)
-        console.log('after promise batch')
         assert.ok(agent.getTransaction(), 'transaction still should be visible')
-        console.log('before promise execute')
-        const start = process.hrtime()
         client
           .execute(selQuery)
           .then((result) => {
-            console.log('after promise execute')
-            const e = process.hrtime(start)
-            const duration = e[0] * 1e3 + e[1] / 1e6
-            console.log('duration of execute', duration)
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
             assert.equal(result.rows[0][COL], colValArr[0], 'cassandra client should still work')
             const children = transaction.trace.getChildren(transaction.trace.root.id)
@@ -187,7 +163,7 @@ test('executeBatch - slow query', (t, end) => {
   assert.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
   helper.runInTransaction(agent, (tx) => {
     // enable slow queries
-    agent.config.transaction_tracer.explain_threshold = 0.1
+    agent.config.transaction_tracer.explain_threshold = 1
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
 
@@ -195,26 +171,14 @@ test('executeBatch - slow query', (t, end) => {
     assert.ok(transaction, 'transaction should be visible')
     assert.equal(tx, transaction, 'We got the same transaction')
 
-    console.log('before cb batch')
-    const s = process.hrtime()
     client.batch(insArr, { hints }, (error, ok) => {
-      const e = process.hrtime(s)
-      const duration = e[0] * 1e3 + e[1] / 1e6
-      console.log('duration of batch', duration)
-      console.log('after cb batch')
       assert.ifError(error, 'should not get an error')
 
       const slowQuery = `SELECT * FROM ${KS}.${FAM}`
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
       assert.ok(ok, 'everything should be peachy after setting')
 
-      console.log('before cb execute')
-      const start = process.hrtime()
       client.execute(slowQuery, (error) => {
-        console.log('after cb execute')
-        const e = process.hrtime(start)
-        const duration = e[0] * 1e3 + e[1] / 1e6
-        console.log('duration of execute', duration)
         assert.ifError(error, 'should not get an error')
 
         verifyTrace(agent, transaction.trace, `${KS}.${FAM}`)
@@ -235,19 +199,10 @@ test('records manual connect and shutdown', async (t) => {
     assert.ok(transaction, 'transaction should be visible')
     assert.equal(tx, transaction, 'We got the same transaction')
 
-    const start = process.hrtime()
     await client.connect()
-    const e = process.hrtime(start)
-    const duration = e[0] * 1e3 + e[1] / 1e6
-    console.log('duration of connect', duration)
-    const s = process.hrtime()
     await client.shutdown()
-    const end = process.hrtime(s)
-    const shutdownDuration = end[0] * 1e3 + end[1] / 1e6
-    console.log('duration of shutdown', shutdownDuration)
 
     const [connectSegment, shutdownSegment] = transaction.trace.getChildren(transaction.trace.root.id)
-    console.log('connect and shutdown duration', connectSegment.getDurationInMillis(), shutdownSegment.getDurationInMillis())
     assert.equal(connectSegment.name, 'Datastore/operation/Cassandra/connect', 'should have connect segment')
     assert.equal(shutdownSegment.name, 'Datastore/operation/Cassandra/shutdown', 'should have shutdown segment')
     transaction.end()
@@ -359,7 +314,6 @@ function verifyTrace(agent, trace, table) {
     trace.root,
     'Datastore/statement/Cassandra/' + table + '/insert/batch'
   )
-  console.log('duration of setSegment', setSegment.getDurationInMillis())
 
   assert.ok(setSegment, 'trace segment for insert should exist')
 
@@ -379,11 +333,8 @@ function verifyTrace(agent, trace, table) {
     assert.ok(getSegment, 'trace segment for select should exist')
 
     if (getSegment) {
-      // const getChildren = trace.getChildren(getSegment.id)
       verifyTraceSegment(agent, getSegment, 'select')
-      // assert.ok(getChildren.length >= 1, 'get should have a callback/promise segment')
       assert.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
-      console.log('select time', getSegment.getDurationInMillis())
     }
   }
 }
