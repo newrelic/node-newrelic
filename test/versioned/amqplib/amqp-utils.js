@@ -12,6 +12,7 @@ const { assertMetrics, assertSegments, assertSpanKind } = require('./../../lib/c
 
 const CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
 exports.CON_STRING = CON_STRING
+exports.CON_OBJECT = { protocol: 'amqp', hostname: params.rabbitmq_host, port: params.rabbitmq_port }
 exports.DIRECT_EXCHANGE = 'test-direct-exchange'
 exports.FANOUT_EXCHANGE = 'test-fanout-exchange'
 
@@ -26,18 +27,8 @@ exports.verifySendToQueue = verifySendToQueue
 exports.verifyTransaction = verifyTransaction
 exports.getChannel = getChannel
 
-function verifySubscribe(tx, exchange, routingKey) {
-  const isCallback = !!metrics.findSegment(tx.trace, tx.trace.root, 'Callback: <anonymous>')
-
-  let segments = []
-
-  if (isCallback) {
-    segments = [
-      ['Callback: <anonymous>', ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]]
-    ]
-  } else {
-    segments = ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]
-  }
+function verifySubscribe(tx, exchange, routingKey, segments) {
+  segments = segments ?? [`MessageBroker/RabbitMQ/Exchange/Produce/Named/${exchange}`]
 
   assertSegments(tx.trace, tx.trace.root, segments)
 
@@ -226,16 +217,21 @@ function verifyProduce(tx, exchangeName, routingKey, isCallback) {
 }
 
 function verifyGet({ tx, exchangeName, routingKey, queue, assertAttr }) {
+  console.log(exchangeName)
   const produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   const consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
   assertSegments(tx.trace, tx.trace.root, [produceName, consumeName])
   assertMetrics(tx.metrics, [[{ name: produceName }], [{ name: consumeName }]], false, false)
+  const segment = metrics.findSegment(tx.trace, tx.trace.root, consumeName)
+  const attributes = segment.getAttributes()
   if (assertAttr) {
-    const segment = metrics.findSegment(tx.trace, tx.trace.root, consumeName)
-    const attributes = segment.getAttributes()
     assert.equal(attributes.host, params.rabbitmq_host, 'should have host on segment')
     assert.equal(attributes.port, params.rabbitmq_port, 'should have port on segment')
     assert.equal(attributes.routing_key, routingKey, 'should have routing key on get')
+  } else {
+    assert.ok(!attributes.host, 'should not have host on segment')
+    assert.ok(!attributes.port, 'should not have port on segment')
+    assert.ok(!attributes.routing_key, 'should not have routing key on get')
   }
   assertSpanKind({
     agent: tx.agent,

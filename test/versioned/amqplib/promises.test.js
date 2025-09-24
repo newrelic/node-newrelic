@@ -11,6 +11,8 @@ const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const promiseResolvers = require('../../lib/promise-resolvers')
+const metrics = require('../../lib/metrics_helper')
+const { assertMetrics, assertSegments } = require('./../../lib/custom-assertions')
 
 /*
 TODO:
@@ -123,6 +125,25 @@ test('amqplib promise instrumentation', async function (t) {
     })
   })
 
+  await t.test('publish to pre-declared exchange', async function (t) {
+    const { agent, channel } = t.nr
+    const fanoutExchange = 'amq.fanout'
+    await helper.runInTransaction(agent, async function (tx) {
+      await channel.assertExchange(fanoutExchange, 'fanout')
+      const result = await channel.assertQueue('', { exclusive: true })
+      const queueName = result.queue
+      await channel.bindQueue(queueName, fanoutExchange, 'key1')
+      channel.publish(fanoutExchange, 'key1', Buffer.from('hello'))
+      tx.end()
+      const segment = metrics.findSegment(
+        tx.trace,
+        tx.trace.root,
+        'MessageBroker/RabbitMQ/Exchange/Produce/Temp'
+      )
+      assert.ok(segment, 'should create temp produce segment')
+    })
+  })
+
   await t.test('purge queue', async function (t) {
     const { agent, channel } = t.nr
 
@@ -138,6 +159,22 @@ test('amqplib promise instrumentation', async function (t) {
       amqpUtils.verifyTransaction(agent, tx, 'purgeQueue')
       tx.end()
       amqpUtils.verifyPurge(tx)
+    })
+  })
+
+  await t.test('purge named queue', async function (t) {
+    const { agent, channel } = t.nr
+
+    await helper.runInTransaction(agent, async function (tx) {
+      await channel.purgeQueue('testQueue')
+      amqpUtils.verifyTransaction(agent, tx, 'purgeQueue')
+      tx.end()
+      const segments = [
+        'MessageBroker/RabbitMQ/Queue/Purge/Named/testQueue'
+      ]
+      assertSegments(tx.trace, tx.trace.root, segments, 'should have expected segments')
+
+      assertMetrics(tx.metrics, [[{ name: 'MessageBroker/RabbitMQ/Queue/Purge/Named/testQueue' }]], false, false)
     })
   })
 
@@ -165,6 +202,22 @@ test('amqplib promise instrumentation', async function (t) {
         queue,
         assertAttr: true
       })
+    })
+  })
+
+  await t.test('should not capture segment parameters from get when there is no message to retrieve', async function (t) {
+    const { agent, channel } = t.nr
+    const queue = 'no-msg-queue'
+    await helper.runInTransaction(agent, async function (tx) {
+      await channel.assertQueue(queue, { durable: false })
+      const msg = await channel.get(queue)
+      assert.equal(msg, false)
+      amqpUtils.verifyTransaction(agent, tx, 'get')
+      const consumeName = `MessageBroker/RabbitMQ/Exchange/Consume/Named/${queue}`
+      const segment = metrics.findSegment(tx.trace, tx.trace.root, consumeName)
+      const attributes = segment.getAttributes()
+      assert.deepEqual(attributes, {})
+      tx.end()
     })
   })
 
@@ -208,7 +261,7 @@ test('amqplib promise instrumentation', async function (t) {
     let publishTx
     let consumeTx
     // set up consume, this creates its own transaction
-    channel.consume(queue, function (msg) {
+    await channel.consume(queue, function (msg) {
       const consumeTxnHandle = api.getTransaction()
       consumeTx = consumeTxnHandle._transaction
       assert.ok(msg, 'should receive a message')
@@ -247,7 +300,7 @@ test('amqplib promise instrumentation', async function (t) {
     let publishTx
     let consumeTx
     // set up consume, this creates its own transaction
-    channel.consume(queue, function (msg) {
+    await channel.consume(queue, function (msg) {
       const consumeTxnHandle = api.getTransaction()
       consumeTx = consumeTxnHandle._transaction
       assert.ok(msg, 'should receive a message')
@@ -280,7 +333,7 @@ test('amqplib promise instrumentation', async function (t) {
     const { queue } = await channel.assertQueue('', { exclusive: true })
     await channel.bindQueue(queue, amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key')
     let tx
-    channel.consume(queue, function (msg) {
+    await channel.consume(queue, function (msg) {
       ;({ _transaction: tx } = api.getTransaction())
       assert.ok(msg, 'should receive a message')
 
@@ -304,7 +357,7 @@ test('amqplib promise instrumentation', async function (t) {
     const { queue } = await channel.assertQueue('', { exclusive: true })
     await channel.bindQueue(queue, amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key')
     let tx
-    channel.consume(queue, function (msg) {
+    await channel.consume(queue, function (msg) {
       api.setTransactionName('foobar')
 
       channel.ack(msg)
@@ -319,5 +372,126 @@ test('amqplib promise instrumentation', async function (t) {
       'OtherTransaction/Message/Custom/foobar',
       'should have specified name'
     )
+  })
+
+  await t.test('should create consume segment if consume is happening with an existing transaction', async function (t) {
+    const { agent, api, channel } = t.nr
+    const { promise, resolve } = promiseResolvers()
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+
+    let publishTx
+    let consumeTx
+    const { queue } = await channel.assertQueue('', { exclusive: true })
+    await channel.bindQueue(queue, amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key')
+    await helper.runInTransaction(agent, async function (tx) {
+      publishTx = tx
+      // set up consume, this creates its own transaction
+      await channel.consume(queue, function (msg) {
+        const consumeTxnHandle = api.getTransaction()
+        consumeTx = consumeTxnHandle._transaction
+        assert.ok(msg, 'should receive a message')
+
+        const body = msg.content.toString('utf8')
+        assert.equal(body, 'hello', 'should receive expected body')
+
+        channel.ack(msg)
+        publishTx.end()
+        consumeTx.end()
+        resolve()
+      }, { noAck: true })
+      amqpUtils.verifyTransaction(agent, tx, 'consume')
+      channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+    })
+    await promise
+    assert.notStrictEqual(consumeTx, publishTx, 'should not be in original transaction')
+    const segments = ['amqplib.Channel#consume', 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]
+    amqpUtils.verifySubscribe(publishTx, exchange, 'consume-tx-key', segments)
+    amqpUtils.verifyConsumeTransaction(consumeTx, exchange, queue, 'consume-tx-key')
+  })
+
+  await t.test('publish to pre-declared exchange', async function (t) {
+    const { api, channel } = t.nr
+    const { promise, resolve } = promiseResolvers()
+    const fanoutExchange = 'amq.fanout'
+    await channel.assertExchange(fanoutExchange, 'fanout')
+    const { queue } = await channel.assertQueue('', { exclusive: true })
+    let tx
+    await channel.consume(queue, function (msg) {
+      ;({ _transaction: tx } = api.getTransaction())
+      assert.ok(msg, 'should receive a message')
+
+      const body = msg.content.toString('utf8')
+      assert.equal(body, 'hello', 'should receive expected body')
+
+      channel.ack(msg)
+      tx.end()
+      resolve()
+    })
+    await channel.bindQueue(queue, fanoutExchange, 'key1')
+    channel.publish(fanoutExchange, 'key1', Buffer.from('hello'))
+
+    await promise
+    assert.equal(
+      tx.getFullName(),
+      'OtherTransaction/Message/RabbitMQ/Exchange/Temp',
+      'should not set transaction name'
+    )
+  })
+
+  await t.test('should connect with object', async function (t) {
+    const { agent, amqplib } = t.nr
+    await helper.runInTransaction(agent, async function (tx) {
+      const _conn = await amqplib.connect(amqpUtils.CON_OBJECT)
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
+      assert.equal(segment.name, 'amqplib.connect')
+      const attrs = segment.getAttributes()
+      assert.equal(attrs.host, 'localhost')
+      assert.equal(attrs.port_path_or_id, 5672)
+      await _conn.close()
+    })
+  })
+
+  await t.test('should connect with object and default port if not specified', async function (t) {
+    const { agent, amqplib } = t.nr
+    await helper.runInTransaction(agent, async function (tx) {
+      const connectObject = { ...amqpUtils.CON_OBJECT }
+      delete connectObject.port
+      const _conn = await amqplib.connect(connectObject)
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
+      assert.equal(segment.name, 'amqplib.connect')
+      const attrs = segment.getAttributes()
+      assert.equal(attrs.host, 'localhost')
+      assert.equal(attrs.port_path_or_id, 5672)
+      await _conn.close()
+    })
+  })
+
+  await t.test('should connect with object and default port to 5671 if protocol/port is not specified', async function (t) {
+    const { agent, amqplib } = t.nr
+    await helper.runInTransaction(agent, async function (tx) {
+      const connectObject = { ...amqpUtils.CON_OBJECT }
+      delete connectObject.port
+      delete connectObject.protocol
+      const _conn = await amqplib.connect(connectObject)
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
+      assert.equal(segment.name, 'amqplib.connect')
+      const attrs = segment.getAttributes()
+      assert.equal(attrs.host, 'localhost')
+      assert.equal(attrs.port_path_or_id, 5671)
+      await _conn.close()
+    })
+  })
+
+  await t.test('should not assign port/host if string is malformed URL', async function (t) {
+    const { agent, amqplib } = t.nr
+    await helper.runInTransaction(agent, async function (tx) {
+      assert.rejects(async () => {
+        await amqplib.connect('invalidhost')
+      })
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
+      assert.equal(segment.name, 'amqplib.connect')
+      const attrs = segment.getAttributes()
+      assert.deepEqual(attrs, {})
+    })
   })
 })
