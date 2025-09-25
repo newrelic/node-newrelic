@@ -307,7 +307,7 @@ test('should not set token_count if callback registered returns null', (t, end) 
   })
 })
 
-test('should not set token_count if response does not include all 3 usage keys we need', (t, end) => {
+test('should not set token_count if response does not include usage keys we need - input and output tokens', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {

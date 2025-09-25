@@ -17,6 +17,7 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
+  res.usageMetadata.promptTokenCount = 10
   helper.unloadAgent(ctx.nr.agent)
 })
 

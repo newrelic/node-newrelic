@@ -180,30 +180,27 @@ test('should not set token_count if not set in usage nor a callback registered r
   assert.equal(event.token_count, undefined)
 })
 
-test('should not set token_count if response does not include all 3 usage keys we need', async (t) => {
+test('should not set token_count if response does not include usage keys we need - input and output tokens', async (t) => {
   t.nr.bedrockResponse.usage = {
     input_tokens: 30,
-    output_tokens: 40,
   }
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, undefined)
 })
 
-test('should set token_count to 0 if response object includes all 3 usage keys we need', async (t) => {
+test('should set token_count to 0 if response object includes usage keys we need - input and output tokens', async (t) => {
   t.nr.bedrockResponse.usage = {
     input_tokens: 30,
     output_tokens: 40,
-    total_tokens: 70
   }
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, 0)
 })
 
-test('should set token_count to 0 if response headers includes all 3 usage keys we need', async (t) => {
+test('should set token_count to 0 if response headers includes usage keys we need - input and output tokens', async (t) => {
   t.nr.bedrockResponse.headers = {
     'x-amzn-bedrock-input-token-count': 30,
     'x-amzn-bedrock-output-token-count': 40,
-    'x-amzn-bedrock-total-token-count': 70
   }
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, 0)

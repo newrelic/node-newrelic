@@ -295,12 +295,12 @@ test('openai.chat.completions.create', async (t) => {
     })
   })
 
-  await t.test('should not set token_count if response does not include all 3 usage keys we need', (t, end) => {
+  await t.test('should not set token_count if response does not include usage keys we need - input and output tokens', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     helper.runInTransaction(agent, (tx) => {
       // delete one key that we need in usage object
-      delete chatRes.usage.total_tokens
+      delete chatRes.usage.prompt_tokens
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
         const summaryId = 'chat-summary-id'

@@ -18,6 +18,7 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
+  Responses.chatRes.usage.prompt_tokens = 10
   helper.unloadAgent(ctx.nr.agent)
 })
 
@@ -103,7 +104,7 @@ test('should set `llm.` attributes from custom attributes', (t, end) => {
   })
 })
 
-test('does not capture any token usage attributes when response is missing required usage information', (t, end) => {
+test('does not capture any token usage attributes when response is missing prompt or completion tokens', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {
@@ -121,6 +122,29 @@ test('does not capture any token usage attributes when response is missing requi
       assert.equal(chatSummaryEvent['response.usage.prompt_tokens'], undefined)
       assert.equal(chatSummaryEvent['response.usage.completion_tokens'], undefined)
       assert.equal(chatSummaryEvent['response.usage.total_tokens'], undefined)
+      end()
+    })
+  })
+})
+
+test('should capture any token usage attributes when response is missing total tokens and calculates it instead', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, (tx) => {
+    delete Responses.chatRes.usage.total_tokens
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment,
+        transaction: tx,
+        request: Responses.req,
+        response: Responses.chatRes
+      })
+      assert.equal(chatSummaryEvent['response.usage.prompt_tokens'], 10)
+      assert.equal(chatSummaryEvent['response.usage.completion_tokens'], 20)
+      assert.equal(chatSummaryEvent['response.usage.total_tokens'], 30)
       end()
     })
   })
