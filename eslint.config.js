@@ -69,7 +69,8 @@ const jsdocConfig = {
           'Tracer',
           'Exception',
           'MetricAggregator',
-          'EventEmitter'
+          'EventEmitter',
+          'Context'
         ]
       }
     ],
