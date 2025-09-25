@@ -12,6 +12,21 @@ const helper = require('#testlib/agent_helper.js')
 const loggerMock = require('../../mocks/logger')
 const { tspl } = require('@matteo.collina/tspl')
 const assertMetrics = require('#testlib/custom-assertions/assert-metrics.js')
+const hashes = require('#agentlib/util/hashes.js')
+
+// Used for insertDTHeaders tests below
+function setupCATConfig(subscriber) {
+  subscriber.config.cross_application_tracer.enabled = true
+  subscriber.config.distributed_tracing.enabled = false
+  const key = 'this is an encoding key'
+  subscriber.config.encoding_key = key
+  subscriber.config.obfuscatedId = hashes.obfuscateNameUsingKey('1234#4321', key)
+}
+
+function setupDTConfig(subscriber) {
+  subscriber.config.cross_application_tracer.enabled = false
+  subscriber.config.distributed_tracing.enabled = true
+}
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
@@ -168,7 +183,7 @@ test('should subscribe/unsubscribe to specific events on channel', (t) => {
 })
 
 test('should call handler in start if transaction is active and create a new segment', async (t) => {
-  const plan = tspl(t, { plan: 8 })
+  const plan = tspl(t, { plan: 9 })
   const { agent, subscriber } = t.nr
   const name = 'test-segment'
   const expectedMetrics = [
@@ -189,6 +204,7 @@ test('should call handler in start if transaction is active and create a new seg
     subscriber.channel.start.runStores(event, () => {
       const ctx = agent.tracer.getContext()
       plan.equal(ctx.segment.name, name)
+      plan.ok(!event.transaction, 'transaction not added to event')
       plan.ok(!event.segment, 'segment not added to event')
       assertMetrics(agent.metrics, expectedMetrics, false, false, { assert: plan })
     })
@@ -209,6 +225,26 @@ test('should not call handler in start if transaction is not active and return e
   subscriber.channel.start.runStores(event, (data) => {
     const ctx = agent.tracer.getContext()
     plan.ok(!ctx?.segment)
+  })
+
+  await plan.completed
+})
+
+test('should add transaction to event if propagateTx is true', async (t) => {
+  const plan = tspl(t, { plan: 2 })
+  const { agent, subscriber } = t.nr
+  subscriber.enable()
+  subscriber.handler = function handler(data, ctx) {
+    plan.ok(1, 'should not call handler')
+    return ctx
+  }
+  subscriber.propagateTx = true
+
+  helper.runInTransaction(agent, (tx) => {
+    const event = {}
+    subscriber.channel.start.runStores(event, () => {
+      plan.equal(event.transaction.id, tx.id)
+    })
   })
 
   await plan.completed
@@ -332,3 +368,191 @@ test('should not wrap callback if position is not a function thus not touching s
 
   await plan.completed
 })
+
+test('should not run if disabled', function (t, end) {
+  const { agent, subscriber } = t.nr
+  subscriber.config.cross_application_tracer.enabled = false
+  subscriber.config.distributed_tracing.enabled = false
+  helper.runInTransaction(agent, function () {
+    const headers = {}
+    const ctx = agent.tracer.getContext()
+
+    subscriber.insertDTHeaders({ ctx, headers })
+
+    assert.ok(!headers.NewRelicID)
+    assert.ok(!headers.NewRelicTransaction)
+    assert.ok(!headers['X-NewRelic-Id'])
+    assert.ok(!headers['X-NewRelic-Transaction'])
+    end()
+  })
+})
+
+test('should not run if the encoding key is missing', function (t, end) {
+  const { agent, subscriber } = t.nr
+  subscriber.config.cross_application_tracer.enabled = true
+  subscriber.config.distributed_tracing.enabled = false
+  helper.runInTransaction(agent, function () {
+    const headers = {}
+    const ctx = agent.tracer.getContext()
+
+    subscriber.insertDTHeaders({ ctx, headers })
+
+    assert.ok(!headers.NewRelicID)
+    assert.ok(!headers.NewRelicTransaction)
+    assert.ok(!headers['X-NewRelic-Id'])
+    assert.ok(!headers['X-NewRelic-Transaction'])
+    end()
+  })
+})
+
+test('should fail gracefully when no headers are given', function (t) {
+  const { agent, subscriber } = t.nr
+  setupCATConfig(subscriber)
+  helper.runInTransaction(agent, function () {
+    assert.doesNotThrow(function () {
+      subscriber.insertDTHeaders()
+    })
+  })
+})
+
+test(
+  'should use MessageQueueStyleHeaders',
+  function (t, end) {
+    const { agent, subscriber } = t.nr
+    setupCATConfig(subscriber)
+    helper.runInTransaction(agent, function () {
+      const headers = {}
+      const ctx = agent.tracer.getContext()
+      subscriber.insertDTHeaders({ ctx, headers, useMqNames: true })
+
+      assert.ok(!headers['X-NewRelic-Id'])
+      assert.ok(!headers['X-NewRelic-Transaction'])
+      assert.equal(headers.NewRelicID, 'RVpaRwNdQBJQ')
+      assert.match(headers.NewRelicTransaction, /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
+      end()
+    })
+  }
+)
+
+test(
+  'should append the current path hash to the transaction - DT disabled',
+  function (t, end) {
+    const { agent, subscriber } = t.nr
+    setupCATConfig(subscriber)
+    helper.runInTransaction(agent, function (tx) {
+      tx.nameState.appendPath('foobar')
+      assert.equal(tx.pathHashes.length, 0)
+
+      const headers = {}
+      const ctx = agent.tracer.getContext()
+      subscriber.insertDTHeaders({ ctx, headers })
+
+      assert.equal(tx.pathHashes.length, 1)
+      assert.equal(tx.pathHashes[0], '0f9570a6')
+      end()
+    })
+  }
+)
+
+test('should be an obfuscated value - DT disabled, id header', function (t, end) {
+  const { agent, subscriber } = t.nr
+  setupCATConfig(subscriber)
+  helper.runInTransaction(agent, function () {
+    const headers = {}
+    const ctx = agent.tracer.getContext()
+    subscriber.insertDTHeaders({ ctx, headers })
+
+    assert.match(headers['X-NewRelic-Id'], /^[a-zA-Z0-9/-]+={0,2}$/)
+    end()
+  })
+})
+
+test('should deobfuscate to the app id - DT disabled, id header', function (t, end) {
+  const { agent, subscriber } = t.nr
+  setupCATConfig(subscriber)
+  helper.runInTransaction(agent, function () {
+    const headers = {}
+    const ctx = agent.tracer.getContext()
+    subscriber.insertDTHeaders({ ctx, headers })
+
+    const id = hashes.deobfuscateNameUsingKey(
+      headers['X-NewRelic-Id'],
+      subscriber.config.encoding_key
+    )
+    assert.equal(id, '1234#4321')
+    end()
+  })
+})
+
+test(
+  'should be an obfuscated value - DT disabled, transaction header',
+  function (t, end) {
+    const { agent, subscriber } = t.nr
+    setupCATConfig(subscriber)
+    helper.runInTransaction(agent, function () {
+      const headers = {}
+      const ctx = agent.tracer.getContext()
+      subscriber.insertDTHeaders({ ctx, headers })
+
+      assert.match(headers['X-NewRelic-Transaction'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
+      end()
+    })
+  }
+)
+
+test(
+  'should deobfuscate to transaction information - DT disabled, transaction header',
+  function (t, end) {
+    const { agent, subscriber } = t.nr
+    setupCATConfig(subscriber)
+    helper.runInTransaction(agent, function () {
+      const headers = {}
+      const ctx = agent.tracer.getContext()
+      subscriber.insertDTHeaders({ ctx, headers })
+
+      let txInfo = hashes.deobfuscateNameUsingKey(
+        headers['X-NewRelic-Transaction'],
+        subscriber.config.encoding_key
+      )
+
+      assert.doesNotThrow(function () {
+        txInfo = JSON.parse(txInfo)
+      })
+
+      assert.ok(Array.isArray(txInfo))
+      assert.equal(txInfo.length, 4)
+      end()
+    })
+  }
+)
+
+test(
+  'should assign traceparent header to transaction when tx is not sampled',
+  function (t, end) {
+    const { agent, subscriber } = t.nr
+    setupDTConfig(subscriber)
+    helper.runInTransaction(agent, function (tx) {
+      const headers = {}
+      const ctx = agent.tracer.getContext()
+      subscriber.insertDTHeaders({ ctx, headers })
+      assert.equal(headers.traceparent, `00-${tx.traceId}-${ctx?.segment.id}-00`)
+      end()
+    })
+  }
+)
+
+test(
+  'should assign traceparent header to transaction when tx is sampled',
+  function (t, end) {
+    const { agent, subscriber } = t.nr
+    setupDTConfig(subscriber)
+    helper.runInTransaction(agent, function (tx) {
+      tx.sampled = true
+      const headers = {}
+      const ctx = agent.tracer.getContext()
+      subscriber.insertDTHeaders({ ctx, headers })
+      assert.equal(headers.traceparent, `00-${tx.traceId}-${ctx?.segment.id}-01`)
+      end()
+    })
+  }
+)
