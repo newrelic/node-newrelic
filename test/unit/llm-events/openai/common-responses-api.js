@@ -18,9 +18,9 @@ const res = {
   },
   model: 'gpt-4-0613',
   usage: {
-    total_tokens: 30,
-    input_tokens: 10,
-    output_tokens: 20
+    total_tokens: '30',
+    input_tokens: '10',
+    output_tokens: '20'
   }
 }
 
