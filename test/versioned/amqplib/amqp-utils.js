@@ -217,7 +217,6 @@ function verifyProduce(tx, exchangeName, routingKey, isCallback) {
 }
 
 function verifyGet({ tx, exchangeName, routingKey, queue, assertAttr }) {
-  console.log(exchangeName)
   const produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   const consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
   assertSegments(tx.trace, tx.trace.root, [produceName, consumeName])
