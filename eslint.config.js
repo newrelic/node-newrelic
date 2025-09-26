@@ -70,7 +70,8 @@ const jsdocConfig = {
           'Exception',
           'MetricAggregator',
           'Metrics',
-          'EventEmitter'
+          'EventEmitter',
+          'Context'
         ]
       }
     ],
