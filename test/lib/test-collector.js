@@ -57,7 +57,7 @@ class Collector {
       /**
        * Send the response as serialized JSON.
        *
-       * @param {object} params
+       * @param {object} params params object
        * @param {object} params.payload The object to serialize into a response.
        * @param {number} [params.code] The status code to use for the
        * response.
@@ -107,7 +107,7 @@ class Collector {
        * Get the value of a specific header.
        *
        * @memberof CollectorIncomingRequest
-       * @param {string} name
+       * @param {string} name header name
        * @returns {*}
        */
       req.getHeader = function (name) {

@@ -50,7 +50,8 @@ module.exports = (pkg) => {
      * and handle the differences.
      *
      * See original issue: https://github.com/newrelic/node-newrelic-koa/issues/35
-     * @param mwName
+     *
+     * @param {string} mwName middleware name
      */
     function getNestedSpanName(mwName) {
       let spanName = `Nodejs/Middleware/Koa/${mwName}/`

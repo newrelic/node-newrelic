@@ -69,13 +69,16 @@ const jsdocConfig = {
           'Tracer',
           'Exception',
           'MetricAggregator',
+          'Metrics',
           'EventEmitter',
           'Context'
         ]
       }
     ],
     'jsdoc/valid-types': 'error',
-    'jsdoc/check-param-names': 'error'
+    'jsdoc/check-param-names': 'error',
+    'jsdoc/require-param-description': 'error',
+    'jsdoc/require-param-type': 'error',
   }
 }
 const jsdocOverrides = {

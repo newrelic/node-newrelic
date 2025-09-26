@@ -72,8 +72,7 @@ utils.waitForConsumersToJoinGroup = ({ consumer, maxWait = 10000 }) => new Promi
  * @param {object} params.plan assertion library instance with plan support
  * @param {object} params.tx consumer transaction
  * @param {string} params.topic topic name
- * @param params.clientId
- * @params {string} params.clientId client id
+ * @param {string} params.clientId client id
  */
 utils.verifyConsumeTransaction = ({ plan, tx, topic, clientId }) => {
   const expectedName = `OtherTransaction/Message/Kafka/Topic/Consume/Named/${topic}`

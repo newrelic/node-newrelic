@@ -22,8 +22,8 @@ test('Agent API - Stubbed Agent API', async (t) => {
 
   /**
    * This tests that every API method is a function and
-   * does not throw when calling it
-   * @param name
+   * does not throw when calling it.
+   * @param {string} name method name to test
    */
   async function testApiStubMethod(name) {
     await t.test(`should export a stub of API#${name}`, (t, end) => {

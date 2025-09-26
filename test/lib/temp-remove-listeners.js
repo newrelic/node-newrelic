@@ -9,7 +9,7 @@
  * Temporarily removes all event listeners on an emitter for a specific event
  * and re-adds them subsequent to a test completing.
  *
- * @param {object} params
+ * @param {object} params params object
  * @param {TestContext} params.t A `node:test` test context.
  * @param {EventEmitter} params.emitter The emitter to manipulate.
  * @param {string} params.event The event name to target.

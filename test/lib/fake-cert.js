@@ -23,7 +23,7 @@ const selfCert = require('self-cert')
  * common name. It always adds all local interfaces's IP addresses as
  * subject alternate names.
  *
- * @param {object} params
+ * @param {object} [params] params object
  * @param {string|null} [params.commonName] The subject name for the
  * certificate. This is useful when generating a certificate for remote hosts,
  * e.g. when generating a proxy certificate for staging-collector.newrelic.com.

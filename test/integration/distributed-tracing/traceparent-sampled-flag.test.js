@@ -294,7 +294,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag f
  *
  * @param {object} ctx The `t.nr` object that we use as local test context.
  * @param {object} agentConfig The agent configuration to use for the test.
- * @param {function} validator
+ * @param {function} validator The function to validate the transaction.
  * @returns {Promise<void>}
  */
 async function beforeEach(

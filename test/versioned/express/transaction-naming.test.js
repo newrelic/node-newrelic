@@ -547,10 +547,10 @@ function makeMultiRunner({ t, endpoint, expectedName, numTests, end }) {
  *
  * @param {object} params to function
  * @param {object} params.t test context
- * @param {string} params.endpoint
+ * @param {string} params.endpoint endpoint
  * @param {string} [params.expectedName] defaults to endpoint if not specified
  * @param {function} [params.end] function that tells test to end
- * @param {object} params.localAssert library for assertions, defaults to `node:assert`
+ * @param {object} [params.localAssert] library for assertions, defaults to `node:assert`
  *
  */
 function runTest({ t, endpoint, expectedName, end, localAssert = require('node:assert') }) {

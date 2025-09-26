@@ -443,10 +443,10 @@ function verifyAgentStart({ error, endpoints, plan }) {
  *
  * Does not start the server.
  *
- * @param {object} [sslOptions]
- * @param {Buffer | null} [sslOptions.ca]
- * @param {Array<{private_key: Buffer, cert_chain: Buffer}>} [sslOptions.authPairs]
- * @param {Array<{serviceDefinition: ServiceDefinition, implementation: object}>} services
+ * @param {object} [sslOptions] SSL options
+ * @param {Buffer | null} [sslOptions.ca] Certificate authority
+ * @param {Array<{private_key: Buffer, cert_chain: Buffer}>} [sslOptions.authPairs] Authentication pairs
+ * @param {Array<{serviceDefinition: ServiceDefinition, implementation: object}>} services Services
  */
 async function createGrpcServer(sslOptions, services) {
   const server = new grpc.Server()

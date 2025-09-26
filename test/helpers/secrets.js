@@ -6,8 +6,8 @@
 'use strict'
 
 /**
- * A helper function to get secrets needed by tests
- * @param secretName
+ * A helper function to get secrets needed by tests.
+ * @param {string} secretName Environment secret name
  */
 function getTestSecret(secretName) {
   const envVar = process.env[secretName] || ''

@@ -98,16 +98,16 @@ test('should default to `/` when no route is specified', async (t) => {
 })
 
 /**
- * Sets up HTTP server and binds a connect instance
+ * Sets up HTTP server and binds a connect instance.
  * It then makes a request to specified url and asserts the response
- * data is correct
+ * data is correct.
  *
- * @param {Object} params
+ * @param {Object} params params object
  * @param {string} params.url url to make request
  * @param {string} params.expectedData expected response data
- * @param {Object} params.plan
+ * @param {Object} params.plan plan object
  * @param {Object} params.app connect app
- * @param {string} params.pkgVersion
+ * @param {string} params.pkgVersion connect package version
  * @returns {http.Server}
  */
 function createServerAndMakeRequest({ url, expectedData, plan, app, pkgVersion }) {

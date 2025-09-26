@@ -18,7 +18,7 @@ const runTests = require('./naming-common')
 /**
  * Helper to return the list of expected segments
  *
- * @param {Array} uri
+ * @param {Array} uri the request URI
  * @returns {Array} formatted list of expected segments
  */
 function getExpectedSegments(uri) {

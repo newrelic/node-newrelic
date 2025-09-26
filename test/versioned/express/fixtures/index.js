@@ -7,7 +7,7 @@
 
 /**
  * Created by lmarkus on 11/24/14.
- * @param router
+ * @param {Object} router express router instance
  */
 const routes = function (router) {
   router.get('/', function (req, res) {

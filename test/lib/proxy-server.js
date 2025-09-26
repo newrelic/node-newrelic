@@ -31,7 +31,7 @@ const connectResponse = [
  * configuration. The passed in certificate details should have a common name
  * that matches the upstream proxied host.
  *
- * @param {object} params
+ * @param {object} params params object
  * @param {string} params.privateKey A PEM formatted TLS certificate private key.
  * @param {string} params.certificate A PEM formatted TLS public certificate.
  *
