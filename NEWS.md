@@ -1,3 +1,23 @@
+### v13.4.0 (2025-09-29)
+
+#### Code refactoring
+
+* Update `amqplib` instrumentation to subscribe to events emitted ([#3377](https://github.com/newrelic/node-newrelic/pull/3377)) ([fecbb08](https://github.com/newrelic/node-newrelic/commit/fecbb08d3e3ddc31049aae07537da5d44efaa9e7))
+* Updated `cassandra-driver` instrumentation to subscribe to events emitted. ([#3372](https://github.com/newrelic/node-newrelic/pull/3372)) ([bb87cd8](https://github.com/newrelic/node-newrelic/commit/bb87cd829aacbc66e9caee4f7c494babab742f86))
+
+#### Documentation
+
+* Updated compatibility report ([#3385](https://github.com/newrelic/node-newrelic/pull/3385)) ([b79be72](https://github.com/newrelic/node-newrelic/commit/b79be723abd29a81c9fa2b635118de44be78c69b))
+
+#### Miscellaneous chores
+
+* Updated `@apm-js-collab/tracing-hooks` to latest to take advantage of wasm optimizations ([#3398](https://github.com/newrelic/node-newrelic/pull/3398)) ([cda56cc](https://github.com/newrelic/node-newrelic/commit/cda56cc074c421064150163a02a561e69b23a6cb))
+
+#### Styles
+
+* Require `jsdoc/valid-types` and `jsdoc/check-param-names` ([#3368](https://github.com/newrelic/node-newrelic/pull/3368)) ([5d1b1d9](https://github.com/newrelic/node-newrelic/commit/5d1b1d94a82aaeb877a6fe783becbc8aea6582d6))
+* Require jsdoc `require-param-description` and `require-param-type` ([#3391](https://github.com/newrelic/node-newrelic/pull/3391)) ([3785d0c](https://github.com/newrelic/node-newrelic/commit/3785d0c06cfcc6ac85e23ad4ad21d357e334207b))
+
 ### v13.3.3 (2025-09-22)
 
 #### Features
@@ -7900,6 +7920,8 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
+
 
 
 
