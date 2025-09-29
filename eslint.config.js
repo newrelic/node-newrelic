@@ -61,26 +61,29 @@ const jsdocConfig = {
     'jsdoc/implements-on-classes': 'error',
     // Types rules
     'jsdoc/check-types': 'error',
-    'jsdoc/valid-types': 'error',
     'jsdoc/no-undefined-types': [
       'warn',
       {
         definedTypes: [
-          'Logger',
           'Agent',
-          'Shim',
-          'MessageShim',
-          'TraceSegment',
-          'Transaction',
-          'Tracer',
+          'Context',
+          'EventEmitter',
           'Exception',
+          'Logger',
+          'MessageShim',
           'MetricAggregator',
           'Metrics',
-          'EventEmitter',
-          'Context'
+          'Segment',
+          'Shim',
+          'Trace',
+          'TraceSegment',
+          'Tracer',
+          'Transaction',
+          'WebFrameworkShim'
         ]
       }
     ],
+    'jsdoc/valid-types': 'error',
     // Parameter rules
     'jsdoc/require-param-description': 'error',
     'jsdoc/check-param-names': 'error',

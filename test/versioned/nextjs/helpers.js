@@ -21,7 +21,7 @@ const { findSegment } = require('../../lib/metrics_helper')
 
 /**
  * Builds a Next.js app
- * @param {sting} dir directory to run next cli in
+ * @param {string} dir directory to run next cli in
  * @param {string} [path] path to app
  * @returns {Promise}
  *
