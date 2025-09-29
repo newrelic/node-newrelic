@@ -18,12 +18,6 @@
 * Require `jsdoc/valid-types` and `jsdoc/check-param-names` ([#3368](https://github.com/newrelic/node-newrelic/pull/3368)) ([5d1b1d9](https://github.com/newrelic/node-newrelic/commit/5d1b1d94a82aaeb877a6fe783becbc8aea6582d6))
 * Require jsdoc `require-param-description` and `require-param-type` ([#3391](https://github.com/newrelic/node-newrelic/pull/3391)) ([3785d0c](https://github.com/newrelic/node-newrelic/commit/3785d0c06cfcc6ac85e23ad4ad21d357e334207b))
 
-#### Continuous integration
-
-* Reverted value of GH_RELEASE_TOKEN to the previous classic token ([#3390](https://github.com/newrelic/node-newrelic/pull/3390)) ([6ff70e4](https://github.com/newrelic/node-newrelic/commit/6ff70e435387b942e306f9c69a2a0b398f1d5f1b))
-* Updated `release-lambda-init-containers.yml` workflow to allow manual runs ([#3392](https://github.com/newrelic/node-newrelic/pull/3392)) ([0abad35](https://github.com/newrelic/node-newrelic/commit/0abad35d74a58d5059b616e0ddc29f850398f41b))
-* Updated release-lambda-init-containers.yml to use shared machine user token ([#3399](https://github.com/newrelic/node-newrelic/pull/3399)) ([56d3c95](https://github.com/newrelic/node-newrelic/commit/56d3c950df7f1f0e4a55e4292a26a26592e740ef))
-
 ### v13.3.3 (2025-09-22)
 
 #### Features
@@ -7926,6 +7920,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
