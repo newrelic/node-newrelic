@@ -18,13 +18,15 @@ const CollectorValidators = require('./test-collector-validators')
 /**
  * Extends {@link http.IncomingMessage} with convenience properties and methods.
  * @typedef {object} CollectorIncomingRequest
- * @property
+ * @property {object} query The parsed query string.
+ * @property {Function} body A function that returns a promise resolving to the request body.
+ * @property {Function} getHeader A function that returns the value of a specific header.
  */
 
 /**
  * Extends {@link http.OutgoingMessage} with convenience properties and methods.
  * @typedef {object} CollectorOutgoingResponse
- * @property
+ * @property {Function} json A function that sends a JSON response.
  */
 
 /**

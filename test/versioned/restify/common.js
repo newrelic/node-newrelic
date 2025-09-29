@@ -8,15 +8,22 @@ const common = module.exports
 const helper = require('../../lib/agent_helper')
 
 /**
- * @param {object} cfg config
- * @property {object} cfg.t
- * @property {string} cfg.endpoint
- * @property {string} [cfg.prefix='Restify']
- * @property {string} cfg.expectedName
- * @property {Function} [cfg.cb=t.end]
- * @property {object} [cfg.requestOpts=null]
- * @property {object} cfg.agent
- * @property {object} cfg.server
+ * Defines the configuration for the Restify test utility.
+ * @typedef {object} TestConfig
+ * @property {object} t test context
+ * @property {object} [assert=require('node:assert')] the assert library to use
+ * @property {string} endpoint url endpoint
+ * @property {string} [prefix='Restify'] prefix for the transaction name
+ * @property {string} expectedName expected transaction name
+ * @property {Function} [cb=t.end] callback function
+ * @property {object} [requestOpts=null] request options
+ * @property {object} agent New Relic agent instance
+ * @property {object} server Restify server instance
+ */
+
+/**
+ * Runs the Restify test.
+ * @param {TestConfig} cfg The Restify test configuration object.
  */
 common.runTest = function runTest(cfg) {
   const {

@@ -53,9 +53,12 @@ const jsdocConfig = {
   },
   plugins: { jsdoc },
   rules: {
+    // General rules
     'jsdoc/require-jsdoc': 'off',
     'jsdoc/tag-lines': 'off',
+    // Types rules
     'jsdoc/check-types': 'error',
+    'jsdoc/valid-types': 'error',
     'jsdoc/no-undefined-types': [
       'warn',
       {
@@ -75,11 +78,17 @@ const jsdocConfig = {
         ]
       }
     ],
-    'jsdoc/valid-types': 'error',
-    'jsdoc/check-param-names': 'error',
+    // Parameter rules
     'jsdoc/require-param-description': 'error',
+    'jsdoc/check-param-names': 'error',
     'jsdoc/require-param-type': 'error',
-    'jsdoc/require-returns-type': 'error'
+    // Returns rules
+    'jsdoc/require-returns-check': 'error',
+    'jsdoc/require-returns-type': 'error',
+    // Property rules
+    'jsdoc/require-property-description': 'error',
+    'jsdoc/require-property-name': 'error',
+    'jsdoc/require-property-type': 'error',
   }
 }
 const jsdocOverrides = {
