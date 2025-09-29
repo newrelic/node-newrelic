@@ -22,7 +22,7 @@ const connectResponse = [
  *
  * @augments http.Server
  * @typedef {object} ProxyServer
- * @property
+ * @property {boolean} proxyUsed indicates if the proxy has serviced any connections
  */
 
 /**
