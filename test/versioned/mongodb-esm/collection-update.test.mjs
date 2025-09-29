@@ -17,7 +17,7 @@ const { STATEMENT_PREFIX } = ESM
  * The response from the methods in this file differ between versions
  * This helper decides which pieces to assert
  *
- * @param {Object} params
+ * @param {Object} params params object
  * @param {Object} params.data result from callback used to assert
  * @param {Number} [params.count] optional count
  * @param {string} params.keyPrefix prefix where the count exists

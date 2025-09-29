@@ -20,7 +20,7 @@ const oldListeners = {
  * either `uncaughtException` (default) or `unhandledRejection`, subsequently
  * restoring the original listeners upon test completion.
  *
- * @param {object} params
+ * @param {object} params params object
  * @param {TestContext} params.t A `node:test` context object.
  * @param {function} params.handler An error handler function that will replace all
  * current listeners.

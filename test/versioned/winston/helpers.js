@@ -33,7 +33,7 @@ helpers.makeStreamTest = function makeStreamTest(cb) {
 
 /**
  * Log lines in and out of a transaction for every logger.
- * @param {object} opts
+ * @param {object} opts options object
  * @param {DerivedLogger} opts.logger instance of winston
  * @param {Array} opts.loggers an array of winston loggers
  * @param {Stream} opts.stream stream used to end test
@@ -62,7 +62,7 @@ helpers.logStuff = function logStuff({ loggers, logger, stream, helper, agent })
  * aggregator.  The log line in transaction context should not be added to aggregator
  * until after the transaction ends
  *
- * @param {object} opts
+ * @param {object} opts options object
  * @param {DerivedLogger} opts.logger instance of winston
  * @param {Array} opts.loggers an array of winston loggers
  * @param {Stream} opts.stream stream used to end test
@@ -108,11 +108,11 @@ helpers.logWithAggregator = function logWithAggregator({ logger, loggers, stream
  * Assert function to verify the original log line is untouched by our instrumentation unless
  * local log decoration is enabled.  Local log decoration asserts `NR-LINKING` string exists on msg
  *
- * @param {Object} opts
+ * @param {Object} opts options object
  * @param {boolean} [opts.includeLocalDecorating] is local log decoration enabled
  * @param {boolean} [opts.timestamp] does timestamp exist on original message
  * @param {string} [opts.level] level to assert is on message
- * @param msg
+ * @param {Object} msg message object
  */
 helpers.originalMsgAssertion = function originalMsgAssertion(
   { includeLocalDecorating = false, timestamp = false, level = 'info' },

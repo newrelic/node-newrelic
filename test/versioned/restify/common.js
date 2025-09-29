@@ -8,7 +8,7 @@ const common = module.exports
 const helper = require('../../lib/agent_helper')
 
 /**
- * @param {object} cfg
+ * @param {object} cfg config
  * @property {object} cfg.t
  * @property {string} cfg.endpoint
  * @property {string} [cfg.prefix='Restify']

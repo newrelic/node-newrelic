@@ -46,9 +46,9 @@ helpers.build = function build(dir, path = 'app') {
 
 /**
  * Bootstraps and starts the Next.js app
- * @param {sting} dir directory to run next cli in
+ * @param {string} dir directory to run next cli in
  * @param {string} [path] path to app
- * @param {number} [port]
+ * @param {number} [port] port; defaults to 3001
  * @returns {Promise}
  */
 helpers.start = async function start(dir, path = 'app', port = 3001) {
@@ -82,7 +82,7 @@ helpers.start = async function start(dir, path = 'app', port = 3001) {
  * Makes a http GET request to uri specified
  *
  * @param {string} uri make sure to include `/`
- * @param {number} [port]
+ * @param {number} [port] port; defaults to 3001
  * @returns {Promise}
  */
 helpers.makeRequest = function (uri, port = 3001) {
@@ -99,7 +99,7 @@ helpers.makeRequest = function (uri, port = 3001) {
 /**
  * Registers all instrumentation for Next.js
  *
- * @param {Agent} agent
+ * @param {Agent} agent New Relic agent instance
  */
 helpers.registerInstrumentation = function (agent) {
   const hooks = require('../../nr-hooks')

@@ -9,7 +9,7 @@ module.exports = {
   /**
    * Removes explicitly named modules from the require cache.
    *
-   * @param {string[]} modules
+   * @param {string[]} modules explicitly named modules
    *
    * @returns {number} The number of cache entries removed.
    */
@@ -31,7 +31,7 @@ module.exports = {
   /**
    * Removes modules from the require cache that are identified by a matcher.
    *
-   * @param {RegExp} matcher
+   * @param {RegExp} matcher regex matcher
    *
    * @returns {number} The number of cache entries removed.
    */

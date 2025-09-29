@@ -8,7 +8,7 @@
 /**
  * Asserts the appropriate Code Level Metrics attributes on a segment
  *
- * @param {object} params
+ * @param {object} params params object
  * @param {object} params.segments list of segments to assert { segment, filepath, name }
  * @param {boolean} params.enabled if CLM is enabled or not
  * @param {boolean} params.skipFull flag to skip asserting `code.lineno` and `code.column`

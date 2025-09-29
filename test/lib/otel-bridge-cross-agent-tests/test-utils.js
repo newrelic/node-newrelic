@@ -97,8 +97,8 @@ function logger() {
 
 /**
  * Runs the agentOutput assertion
- * @param agent
- * @param output
+ * @param {Agent} agent instance
+ * @param {Object} output collection that asserts all transactions/spans created during test run
  */
 function assertAgentOutput(agent, output) {
   logger('ASSERTING AGENT OUTPUT')
