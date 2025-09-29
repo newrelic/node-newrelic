@@ -56,6 +56,9 @@ const jsdocConfig = {
     // General rules
     'jsdoc/require-jsdoc': 'off',
     'jsdoc/tag-lines': 'off',
+    'jsdoc/check-tag-names': 'error',
+    'jsdoc/check-access': 'error',
+    'jsdoc/implements-on-classes': 'error',
     // Types rules
     'jsdoc/check-types': 'error',
     'jsdoc/valid-types': 'error',
@@ -98,7 +101,8 @@ const jsdocOverrides = {
     'api.js'
   ],
   rules: {
-    'jsdoc/require-jsdoc': 'warn'
+    // Public-facing functions should always have jsdoc
+    'jsdoc/require-jsdoc': 'error'
   }
 }
 
