@@ -73,12 +73,15 @@ const jsdocConfig = {
           'MessageShim',
           'MetricAggregator',
           'Metrics',
+          'OperationSpec',
           'Segment',
           'Shim',
+          'Spec',
           'Trace',
           'TraceSegment',
           'Tracer',
           'Transaction',
+          'QuerySpec',
           'WebFrameworkShim'
         ]
       }
