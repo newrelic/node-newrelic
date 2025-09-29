@@ -50,7 +50,7 @@ function performOperation({ agent, api, tracer, data, operation }) {
  * @param {object} params to function
  * @param {Agent} params.agent agent instance
  * @param {object} params.assertion assertion object that defines the assertion to run
- * @returns {function} deferred function to run
+ * @returns {Function} deferred function to run
  */
 function getActionForAssertion({ agent, assertion }) {
   const childActions = []
@@ -74,7 +74,7 @@ function getActionForAssertion({ agent, assertion }) {
  * @param {Tracer} params.tracer otel tracer
  * @param {object} params.data data passed from previous callback
  * @param {object} params.operation operation object that defines childOperations and assertions
- * @returns {function} deferred function to run
+ * @returns {Function} deferred function to run
  */
 function getActionForOperation({ agent, api, tracer, data, operation }) {
   const { command, parameters } = operation
@@ -98,7 +98,7 @@ function logger() {
 /**
  * Runs the agentOutput assertion
  * @param {Agent} agent instance
- * @param {Object} output collection that asserts all transactions/spans created during test run
+ * @param {object} output collection that asserts all transactions/spans created during test run
  */
 function assertAgentOutput(agent, output) {
   logger('ASSERTING AGENT OUTPUT')

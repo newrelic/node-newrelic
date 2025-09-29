@@ -33,7 +33,7 @@ const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions'
 /**
  * Asserts all the expected datastore metrics for a given query
  *
- * @param {Object} agent mocked NR agent
+ * @param {object} agent mocked NR agent
  */
 function verifyMetrics(agent) {
   for (const [metricName, expectedCount] of Object.entries(expectedUpsertMetrics)) {
@@ -50,8 +50,8 @@ function verifyMetrics(agent) {
  * Asserts all relevant prisma segments and their associative datastore attributes.
  * It also asserts that every segment has a hrDuration which means it has ended
  *
- * @param {Object} agent mocked NR agent
- * @param {Object} transaction active NR transaction
+ * @param {object} agent mocked NR agent
+ * @param {object} transaction active NR transaction
  */
 function verifyTraces(agent, transaction) {
   const host = getMetricHostName(agent, params.postgres_host)
@@ -92,8 +92,8 @@ function verifyTraces(agent, transaction) {
  * Gets the sql traces from the agent query trace aggregator.  It then asserts all their
  * associative datastore attributes + backtrace.
  *
- * @param {Object} agent mocked NR agent
- * @param {Number} [queries] queries it expects in aggregator
+ * @param {object} agent mocked NR agent
+ * @param {number} [queries] queries it expects in aggregator
  */
 utils.verifySlowQueries = function verifySlowQueries(agent, queries = []) {
   const metricHostName = getMetricHostName(agent, params.postgres_host)
@@ -130,8 +130,8 @@ utils.verifySlowQueries = function verifySlowQueries(agent, queries = []) {
 /**
  * Helper that verifies both metrics and relevant segments on trace
  *
- * @param {Object} agent mocked NR agent
- * @param {Object} transaction active NR transaction
+ * @param {object} agent mocked NR agent
+ * @param {object} transaction active NR transaction
  */
 utils.verify = function verify(agent, transaction) {
   verifyMetrics(agent)

@@ -549,7 +549,7 @@ function makeMultiRunner({ t, endpoint, expectedName, numTests, end }) {
  * @param {object} params.t test context
  * @param {string} params.endpoint endpoint
  * @param {string} [params.expectedName] defaults to endpoint if not specified
- * @param {function} [params.end] function that tells test to end
+ * @param {Function} [params.end] function that tells test to end
  * @param {object} [params.localAssert] library for assertions, defaults to `node:assert`
  *
  */

@@ -9,7 +9,7 @@ const helpers = Object.create(null)
 
 /**
  * Imports express, creates an express app and returns both as an object
- * @returns { Object } object containing `app` and `express`
+ * @returns {object} object containing `app` and `express`
  */
 helpers.setup = async function setup() {
   const { default: express } = await import('express')
@@ -32,10 +32,10 @@ helpers.makeRequest = function makeRequest(server, endpoint) {
 /**
  * Listens to express app, makes request, and returns transaction when `transactionFinished` event fires
  *
- * @param {Object} params params object
- * @param {Object} params.server the underlying core server instance of the
+ * @param {object} params params object
+ * @param {object} params.server the underlying core server instance of the
  * express app
- * @param {Object} params.agent mocked agent
+ * @param {object} params.agent mocked agent
  * @param {string} params.endpoint URI
  */
 helpers.makeRequestAndFinishTransaction = async function makeRequestAndFinishTransaction({

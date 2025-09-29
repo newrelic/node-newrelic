@@ -22,7 +22,7 @@ const oldListeners = {
  *
  * @param {object} params params object
  * @param {TestContext} params.t A `node:test` context object.
- * @param {function} params.handler An error handler function that will replace all
+ * @param {Function} params.handler An error handler function that will replace all
  * current listeners.
  * @param {string} [params.type] The kind of uncaught event to
  * override.

@@ -8,8 +8,8 @@
 /**
  * assertion to test if a property is non-writable
  *
- * @param {Object} params params object
- * @param {Object} params.obj obj to assign value
+ * @param {object} params params object
+ * @param {object} params.obj obj to assign value
  * @param {string} params.key key to assign value
  * @param {string} params.value expected value of obj[key]
  * @param {object} [deps] Injected dependencies.

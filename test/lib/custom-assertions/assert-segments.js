@@ -73,7 +73,7 @@
  *                                  exactly, including their position and children on all
  *                                  levels.  When false, then only check that each child
  *                                  exists.
- * @param {array} options.exclude   Array of segment names that should be excluded from
+ * @param {Array} options.exclude   Array of segment names that should be excluded from
  *                                  validation.  This is useful, for example, when a
  *                                  segment may or may not be created by code that is not
  *                                  directly under test.  Only used when `exact` is true.
