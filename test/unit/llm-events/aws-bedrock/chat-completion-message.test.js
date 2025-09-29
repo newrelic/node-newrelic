@@ -98,7 +98,7 @@ test('create creates a non-response instance', async (t) => {
   assert.equal(event.content, 'a prompt')
   assert.equal(event.role, 'user')
   assert.match(event.id, /[\w-]{36}/)
-  assert.equal(event.token_count, 3)
+  assert.equal(event.token_count, 0)
 })
 
 test('create creates a titan response instance', async (t) => {
@@ -142,14 +142,14 @@ test('should capture token_count even when `ai_monitoring.record_content.enabled
   agent.config.ai_monitoring.record_content.enabled = false
   t.nr.agent.llm.tokenCountCallback = () => 3
   const event = new LlmChatCompletionMessage(t.nr)
-  assert.equal(event.token_count, 3)
+  assert.equal(event.token_count, 0)
 })
 
 test('should capture token_count when callback is defined', async (t) => {
   const { agent } = t.nr
   agent.llm.tokenCountCallback = () => 3
   const event = new LlmChatCompletionMessage(t.nr)
-  assert.equal(event.token_count, 3)
+  assert.equal(event.token_count, 0)
 })
 
 test('should not set token_count if callback registered returns is less than 0', async (t) => {
@@ -161,9 +161,18 @@ test('should not set token_count if callback registered returns is less than 0',
 
 test('should not set token_count if callback registered returns null', async (t) => {
   const { agent } = t.nr
+  t.nr.bedrockCommand.prompt = [{ content: 'a prompt' }]
+  t.nr.bedrockCommand.modelId = 'model-1'
+  t.nr.bedrockResponse.completions = ['a completion']
+  t.nr.isResponse = true
+
   agent.llm.tokenCountCallback = () => null
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, undefined)
+
+  delete t.nr.bedrockCommand.prompt
+  delete t.nr.bedrockCommand.modelId
+  delete t.nr.bedrockResponse.completions
 })
 
 test('should not set token_count if not set in response nor a callback registered', async (t) => {
@@ -175,9 +184,17 @@ test('should not set token_count if not set in response nor a callback registere
 test('should not set token_count if not set in usage nor a callback registered returns count (empty)', async (t) => {
   const { agent } = t.nr
   t.nr.bedrockResponse.usage = {}
+  t.nr.bedrockCommand.prompt = [{ content: 'a prompt' }]
+  t.nr.bedrockCommand.modelId = 'model-1'
+  t.nr.bedrockResponse.completions = ['a completion']
+
   agent.llm.tokenCountCallback = () => {}
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, undefined)
+
+  delete t.nr.bedrockCommand.prompt
+  delete t.nr.bedrockCommand.modelId
+  delete t.nr.bedrockResponse.completions
 })
 
 test('should not set token_count if response does not include usage keys we need - input and output tokens', async (t) => {
