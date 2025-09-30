@@ -152,6 +152,7 @@ test('built-in http2 module instrumentation', async (t) => {
       function finish() {
         const { transaction } = t.nr
         const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.equal(child.name, `External/${host}:${port}/***`)
         assert.deepEqual(child.getAttributes(), {
           procedure: 'GET',
           url: `http://${host}:${port}/***`
@@ -525,7 +526,13 @@ test('built-in http2 module instrumentation', async (t) => {
 // Unlike http, http2 requests take place after an explicit connect is invoked
 async function makeRequest(http2, params, cb) {
   const { protocol, host, port, path, method, headers: requestHeaders, body = '', testing = {} } = params
-  const connectUrl = port ? `${protocol}://${host}:${port}` : `${protocol}://${host}`
+  let connectUrl
+  // URL options for testing incorrectly-formed URLs
+  if (!protocol) {
+    connectUrl = port ? `${host}:${port}` : `${host}`
+  } else {
+    connectUrl = port ? `${protocol}://${host}:${port}` : `${protocol}://${host}`
+  }
   const authority = port ? `${host}:${port}` : host
   const session = await http2.connect(connectUrl)
   const http2Headers = {
