@@ -207,6 +207,7 @@ test('built-in http2 module instrumentation', async (t) => {
             hostname: host,
             port,
             url: `http://${host}:${port}/asdf`,
+            'http.statusCode': 200,
             procedure: 'GET',
             'request.parameters.a': 'b',
             'request.parameters.another': 'yourself',
