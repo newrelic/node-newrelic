@@ -58,7 +58,12 @@ function createMiddleware({ ctx, path }) {
 test('WebFrameworkShim', async function (t) {
   function beforeEach(ctx) {
     ctx.nr = {}
-    const agent = helper.loadMockedAgent()
+    const agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
     const shim = new WebFrameworkShim(agent, 'test-restify')
     shim.setFramework(WebFrameworkShim.RESTIFY)
     ctx.nr.wrappable = {
@@ -632,22 +637,18 @@ test('WebFrameworkShim', async function (t) {
         wrappable.getActiveSegment,
         new MiddlewareSpec({
           type: shim.MIDDLEWARE,
-          route: ['/one', '/two']
+          route: ['/one', '/two'],
+          next() {}
         })
       )
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
         const segment = wrapped(req)
-
-        assert.ok(segment.attributes)
-        const attrs = segment.getAttributes()
+        tx.baseSegment = segment
+        tx.finalizeWeb({ statusCode: 200 })
+        const attrs = tx.trace.root.getAttributes()
         assert.equal(attrs['request.parameters.route.foo'], 'bar')
         assert.equal(attrs['request.parameters.route.biz'], 'bang')
-        const filePathSplit = attrs['code.filepath'].split('/')
-        assert.equal(filePathSplit[filePathSplit.length - 1], 'webframework-shim.test.js')
-        assert.equal(attrs['code.function'], 'getActiveSegment')
-        assert.equal(attrs['code.lineno'], 74)
-        assert.equal(attrs['code.column'], 50)
         end()
       })
     })
@@ -659,15 +660,16 @@ test('WebFrameworkShim', async function (t) {
         wrappable.getActiveSegment,
         new MiddlewareSpec({
           type: shim.MIDDLEWARE,
-          route: ['/one', '/two']
+          route: ['/one', '/two'],
+          next() {}
         })
       )
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
         const segment = wrapped(req)
-
-        assert.ok(segment.attributes)
-        const attrs = Object.keys(segment.getAttributes())
+        tx.baseSegment = segment
+        tx.finalizeWeb({ statusCode: 200 })
+        const attrs = Object.keys(tx.trace.root.getAttributes())
         const requestParameters = /request\.parameters.*/
 
         assert.ok(!attrs.some((attr) => requestParameters.test(attr)))

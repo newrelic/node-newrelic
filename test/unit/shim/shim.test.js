@@ -2951,29 +2951,6 @@ test('Shim', async function (t) {
     })
   })
 
-  await t.test('prefixRouteParameters', async (t) => {
-    t.beforeEach(beforeEach)
-    t.afterEach(afterEach)
-
-    await t.test('should not prefix parameters when given invalid input', (t) => {
-      const { shim } = t.nr
-      const resultNull = shim.prefixRouteParameters(null)
-      assert.equal(resultNull, undefined)
-
-      const resultString = shim.prefixRouteParameters('parameters')
-      assert.equal(resultString, undefined)
-    })
-
-    await t.test('should return the object with route param prefix applied to keys', (t) => {
-      const { shim } = t.nr
-      const result = shim.prefixRouteParameters({ id: '123abc', foo: 'bar' })
-      assert.deepEqual(result, {
-        'request.parameters.route.id': '123abc',
-        'request.parameters.route.foo': 'bar'
-      })
-    })
-  })
-
   await t.test('getOriginalOnce', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)

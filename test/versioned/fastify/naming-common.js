@@ -10,6 +10,7 @@ const assert = require('node:assert')
 const { routesToTest, makeRequest } = require('./common')
 const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 module.exports = async function runTests(t, getExpectedSegments) {
   // Since we have spawned these sub-tests from another sub-test we must
@@ -23,9 +24,8 @@ module.exports = async function runTests(t, getExpectedSegments) {
       agent.on('transactionFinished', (transaction) => {
         calls.test++
         assert.equal(
-          `WebFrameworkUri/Fastify/GET/${uri}`,
           transaction.getName(),
-          `transaction name matched for ${uri}`
+          `WebFrameworkUri/Fastify/GET/${uri}`
         )
 
         let expectedSegments
@@ -74,12 +74,21 @@ module.exports = async function runTests(t, getExpectedSegments) {
       )
       assert.equal(transaction.url, '/params/id/parent/edit')
 
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      assert.equal(attributes['request.parameters.route.id'], 'id')
+      assert.equal(attributes['request.parameters.route.parent'], 'parent')
+      assert.equal(attributes['request.parameters.id'], '6')
+      const [web] = transaction.trace.getChildren(transaction.trace.root.id)
+      const segmentAttrs = web.getAttributes()
+      assert.equal(segmentAttrs['request.parameters.route.id'], 'id')
+      assert.equal(segmentAttrs['request.parameters.route.parent'], 'parent')
+      assert.equal(segmentAttrs['request.parameters.id'], '6')
       txPassed = true
     })
 
     await fastify.listen()
     const address = fastify.server.address()
-    const result = await makeRequest(address, '/params/id/parent/edit')
+    const result = await makeRequest(address, '/params/id/parent/edit?id=6')
     assert.deepEqual(result, { id: 'id', parent: 'parent' })
 
     assert.equal(txPassed, true, 'transactionFinished assertions passed')

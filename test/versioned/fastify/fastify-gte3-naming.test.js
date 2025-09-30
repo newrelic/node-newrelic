@@ -47,7 +47,12 @@ async function setupFastifyServer(fastify, calls) {
 test('standard export', async (t) => {
   test.beforeEach(async (ctx) => {
     ctx.nr = {}
-    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
 
     const calls = { test: 0, middleware: 0 }
     const fastify = require('fastify')()
@@ -71,7 +76,12 @@ test('standard export', async (t) => {
 test('fastify property', async (t) => {
   test.beforeEach(async (ctx) => {
     ctx.nr = {}
-    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
 
     const calls = { test: 0, middleware: 0 }
     const fastify = require('fastify').fastify()
@@ -95,7 +105,12 @@ test('fastify property', async (t) => {
 test('default property', async (t) => {
   test.beforeEach(async (ctx) => {
     ctx.nr = {}
-    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
 
     const calls = { test: 0, middleware: 0 }
     const fastify = require('fastify').default()
