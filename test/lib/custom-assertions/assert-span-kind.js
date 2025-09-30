@@ -17,7 +17,7 @@
  *
  * @param {object} params to function
  * @param {Agent} params.agent instance of agent
- * @param {Array<object>} params.segments collection of span names and their respective span kind
+ * @param {object[]} params.segments collection of span names and their respective span kind
  * @param {object} params.assert assertion library
  */
 module.exports = function assertSpanKind({ agent, segments, assert = require('node:assert') }) {
