@@ -517,7 +517,7 @@ test('agent instrumentation of Express', async function (t) {
  * Wraps a layer in a proxy with all of the layer's prototype's methods directly
  * on itself.
  *
- * @param {express.Layer} layer - The layer to proxy.
+ * @param {Express.Layer} layer - The layer to proxy.
  *
  * @returns {object} A POD object with all the fields of the layer copied over.
  */

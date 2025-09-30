@@ -56,28 +56,37 @@ const jsdocConfig = {
     // General rules
     'jsdoc/require-jsdoc': 'off',
     'jsdoc/tag-lines': 'off',
+    'jsdoc/check-tag-names': 'error',
+    'jsdoc/check-access': 'error',
+    'jsdoc/implements-on-classes': 'error',
     // Types rules
     'jsdoc/check-types': 'error',
-    'jsdoc/valid-types': 'error',
     'jsdoc/no-undefined-types': [
       'warn',
       {
         definedTypes: [
-          'Logger',
           'Agent',
-          'Shim',
-          'MessageShim',
-          'TraceSegment',
-          'Transaction',
-          'Tracer',
+          'Context',
+          'EventEmitter',
           'Exception',
+          'Logger',
+          'MessageShim',
           'MetricAggregator',
           'Metrics',
-          'EventEmitter',
-          'Context'
+          'OperationSpec',
+          'Segment',
+          'Shim',
+          'Spec',
+          'Trace',
+          'TraceSegment',
+          'Tracer',
+          'Transaction',
+          'QuerySpec',
+          'WebFrameworkShim'
         ]
       }
     ],
+    'jsdoc/valid-types': 'error',
     // Parameter rules
     'jsdoc/require-param-description': 'error',
     'jsdoc/check-param-names': 'error',
@@ -98,7 +107,8 @@ const jsdocOverrides = {
     'api.js'
   ],
   rules: {
-    'jsdoc/require-jsdoc': 'warn'
+    // Public-facing functions should always have jsdoc
+    'jsdoc/require-jsdoc': 'error'
   }
 }
 

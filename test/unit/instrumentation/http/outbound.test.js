@@ -507,6 +507,7 @@ test('when working with http.request', async (t) => {
       // We are purposefully using `url.parse` here in order to verify that our
       // implementation results in the same shape data as that returned by `url.parse`.
       // See: https://github.com/newrelic/node-newrelic/blob/2077ce35db319d0128337faed0ff77b00f76d8f1/lib/instrumentation/core/http.js#L390
+      // eslint-disable-next-line n/no-deprecated-api
       const opts = url.parse(`${host}${path}`)
       opts.method = 'POST'
 
