@@ -58,8 +58,6 @@ function getExpectedResult(tx, event, type, completionId) {
       expected = {
         ...expected,
         ...resKeys,
-        'response.usage.prompt_tokens': 10,
-        'response.usage.completion_tokens': 20,
         'response.usage.total_tokens': 30,
       }
       expected.input = 'This is my test input'

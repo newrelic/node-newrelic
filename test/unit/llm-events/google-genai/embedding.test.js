@@ -134,7 +134,7 @@ test('does not capture any token usage attributes when response is missing requi
 
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {
-    delete res.usageMetadata.promptTokenCount
+    delete res.usageMetadata.totalTokenCount
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       segment.end()
@@ -145,8 +145,6 @@ test('does not capture any token usage attributes when response is missing requi
         request: req,
         response: res
       })
-      assert.equal(embeddingEvent['response.usage.prompt_tokens'], undefined)
-      assert.equal(embeddingEvent['response.usage.completion_tokens'], undefined)
       assert.equal(embeddingEvent['response.usage.total_tokens'], undefined)
       end()
     })

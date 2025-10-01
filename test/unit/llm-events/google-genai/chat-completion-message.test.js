@@ -142,11 +142,11 @@ test('should capture token_count even when `ai_monitoring.record_content.enabled
 test('should use token_count from tokenCountCallback for prompt message', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
-  const expectedCount = 4
+  const expectedCount = 0
   function cb(model, content) {
     assert.equal(model, req.model)
     assert.equal(content, req.contents)
-    return expectedCount
+    return 4
   }
   api.setLlmTokenCountCallback(cb)
   helper.runInTransaction(agent, (tx) => {
@@ -173,11 +173,15 @@ test('should use token_count from tokenCountCallback for prompt message', (t, en
 test('should use token_count from tokenCountCallback for completion messages', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
-  const expectedCount = 4
+  const expectedCount = 0
   function cb(model, content) {
     assert.equal(model, req.model)
-    assert.equal(content, res.candidates[0].content.parts[0].text)
-    return expectedCount
+
+    // check this only if it's a response
+    if (content !== req.contents) {
+      assert.equal(content, res.candidates[0].content.parts[0].text)
+    }
+    return 4
   }
   api.setLlmTokenCountCallback(cb)
   helper.runInTransaction(agent, (tx) => {

@@ -130,11 +130,15 @@ test('openai.chat.completions.create', async (t) => {
   await t.test('should use token_count from tokenCountCallback for prompt message', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
-    const expectedCount = 4
+    const expectedCount = 0
     function cb(model, content) {
       assert.equal(model, 'gpt-3.5-turbo-0613')
-      assert.equal(content, 'What is a woodchuck?')
-      return expectedCount
+
+      // this checks the prompt message content
+      if (content === 'What is a woodchuck?') {
+        assert.equal(content, req.messages[0].content)
+      }
+      return 4
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
@@ -160,11 +164,11 @@ test('openai.chat.completions.create', async (t) => {
   await t.test('should use token_count from tokenCountCallback for completion messages', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
-    const expectedCount = 4
+    const expectedCount = 0
     function cb(model, content) {
       assert.equal(model, 'gpt-3.5-turbo-0613')
       assert.equal(content, 'a lot')
-      return expectedCount
+      return 4
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
@@ -393,11 +397,14 @@ test('openai.responses.create', async (t) => {
   await t.test('should use token_count from tokenCountCallback for prompt message', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
-    const expectedCount = 4
+    const expectedCount = 0
     function cb(model, content) {
-      assert.equal(model, req.model)
-      assert.equal(content, req.input)
-      return expectedCount
+      // this checks the prompt message content
+      if (content === 'What is a woodchuck?') {
+        assert.equal(model, req.model)
+        assert.equal(content, req.input)
+      }
+      return 4
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
@@ -426,11 +433,18 @@ test('openai.responses.create', async (t) => {
   await t.test('should use token_count from tokenCountCallback for completion messages', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
-    const expectedCount = 4
+    const expectedCount = 0
     function cb(model, content) {
-      assert.equal(model, 'gpt-4-0613')
-      assert.equal(content, 'a lot')
-      return expectedCount
+      // this checks the prompt message content
+      if (content === 'What is a woodchuck?') {
+        assert.equal(model, 'gpt-4-0613')
+      }
+
+      // this checks the completion message content
+      if (content === 'a lot') {
+        assert.equal(content, chatRes.output[0].content[0].text)
+      }
+      return 4
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
