@@ -329,6 +329,10 @@ test('with default properties', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
   })
 
+  await t.test('adaptive sampling target should default to 10 transactions/min', () => {
+    assert.equal(configuration.distributed_tracing.sampler.adaptive_sampling_target, 10)
+  })
+
   await t.test('opentelemetry', () => {
     const otel = configuration.opentelemetry_bridge
     assert.equal(otel.enabled, false)
