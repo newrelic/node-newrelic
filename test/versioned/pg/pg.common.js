@@ -276,8 +276,12 @@ module.exports = function runTests(name, clientFactory) {
               assert.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
-              verify(assert, transaction)
-              end()
+              try {
+                verify(assert, transaction)
+                end()
+              } catch (err) {
+                end(err)
+              }
             })
           })
         })
