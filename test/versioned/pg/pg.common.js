@@ -275,8 +275,12 @@ module.exports = function runTests(name, clientFactory) {
               assert.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
-              verify(assert, transaction)
-              end()
+              try {
+                verify(assert, transaction)
+                end()
+              } catch (err) {
+                end(err)
+              }
             })
           })
         })
@@ -352,6 +356,7 @@ module.exports = function runTests(name, clientFactory) {
 
           pgQuery.on('end', () => {
             const finalTx = agent.getTransaction()
+            // TODO: why is finalTx null?
             assert.ok(finalTx, 'transaction should still be visible')
 
             transaction.end()
@@ -359,7 +364,7 @@ module.exports = function runTests(name, clientFactory) {
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
             assert.ok(
               metrics.total > 2.0,
-              'Submittable style Query pg_sleep of 2 seconds should result in > 2 seßc timing'
+              'Submittable style Query pg_sleep of 2 seconds should result in > 2 sec timing'
             )
 
             end()
