@@ -12,6 +12,7 @@ const hashes = require('../../../../lib/util/hashes')
 const helper = require('../../../lib/agent_helper')
 const Shim = require('../../../../lib/shim').Shim
 const createHttp2ResponseServer = require('./fixtures/http2')
+const events = require('node:events')
 
 test.beforeEach(async (ctx) => {
   const { server, baseUrl, responses, host, port } = await createHttp2ResponseServer()
@@ -537,7 +538,7 @@ test('handling errors', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('agent should not crash if server returns an error', (t, end) => {
+  await t.test('agent should record if server returns an error', (t, end) => {
     const { agent, http2, protocol, host, port } = t.nr
     helper.runInTransaction(agent, async function () {
       t.nr.transaction = agent.getTransaction()
@@ -551,37 +552,77 @@ test('handling errors', async (t) => {
             path: '/errorCode?code=500',
             method: 'GET'
           },
-          (err) => {
-            assert.ok(err)
-            // todo: check error traces
-            end()
-          }
+          finish
         )
       })
+      function finish(err, headers, body) {
+        const transaction = agent.getTransaction()
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        const spanAttributes = child.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+        assert.ok(err)
+        assert.equal(err.code, 'ERR_HTTP2_STREAM_ERROR')
+        assert.equal(spanAttributes['request.parameters.code'], 500)
+        end()
+      }
     })
   })
 
-  await t.test('agent should not crash connect is given an unparseable URL', (t, end) => {
-    const { agent, http2 } = t.nr
-    helper.runInTransaction(agent, async function () {
-      t.nr.transaction = agent.getTransaction()
-      assert.doesNotThrow(() => {
-        makeRequest(
-          http2,
-          {
-            protocol: 'badProtocol',
-            host: ':-)',
-            port: 'abcde',
-            path: ' ... ',
-            method: 'GET'
-          },
-          (err) => {
-            assert.ok(err)
-            end()
-          }
-        )
-      })
+  await t.test('should collect errors only if they are not being handled', (t, end) => {
+    const { agent, http2, protocol, host, port, path } = t.nr
+    const emit = events.EventEmitter.prototype.emit
+    events.EventEmitter.prototype.emit = function (evnt) {
+      if (evnt === 'error') {
+        this.once('error', function () {})
+      }
+      return emit.apply(this, arguments)
+    }
+
+    t.afterEach(() => {
+      events.EventEmitter.prototype.emit = emit
     })
+
+    helper.runInTransaction(agent, handled)
+    const expectedCode = 'ERR_HTTP2_STREAM_ERROR'
+
+    async function handled(transaction) {
+      const session = await http2.connect(`${protocol}://${host}:${port}`)
+      const authority = `${host}:${port}`
+      const req = await session.request({
+        ':authority': authority,
+        ':path': '/destroy',
+        ':method': 'GET'
+      })
+
+      req.on('close', function () {
+        assert.equal(transaction.exceptions.length, 0)
+        unhandled(transaction)
+      })
+
+      req.on('error', function (err) {
+        assert.equal(err.code, expectedCode)
+      })
+
+      req.end()
+    }
+
+    async function unhandled(transaction) {
+      const session = await http2.connect(`${protocol}://${host}:${port}${path}`)
+      const authority = `${host}:${port}`
+      const req = await session.request({
+        ':authority': authority,
+        ':path': '/destroy',
+        ':method': 'GET'
+      })
+
+      req.on('close', function () {
+        assert.equal(transaction.exceptions.length, 1)
+        assert.equal(transaction.exceptions[0].error.code, expectedCode)
+        end()
+      })
+
+      req.end()
+    }
   })
 })
 
