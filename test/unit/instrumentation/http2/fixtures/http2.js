@@ -105,6 +105,10 @@ function handler(req, res) {
       const message = path.searchParams.get('reason')
       response.body = message ? message : 'Error triggered by test request'
       shouldError = true
+    } else if (path.pathname === '/destroy') {
+      response.statusCode = 500
+      response.body = 'Destroying stream'
+      shouldError = true
     }
 
     res.statusCode = response.statusCode
@@ -125,6 +129,7 @@ function handler(req, res) {
     if (shouldError) {
       res.destroy(response.body, response.statusCode)
     }
+
     if (payload?.data === 'infinite stream') {
       const stream = infiniteStream()
       let count = 0
