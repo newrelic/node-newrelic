@@ -26,8 +26,8 @@ function createHttp2ResponseServer() {
     sockets.add(socket)
     socket.once('close', () => sockets.delete(socket))
     socket.once('error', (err) => {
-      console.error('servererror', err)
-      server.destroy()
+      console.error('server error', err)
+      server.destroy(err)
     })
   })
   server.destroy = function destroy() {
@@ -39,6 +39,11 @@ function createHttp2ResponseServer() {
     stream.on('close', () => {
       sockets.delete(stream)
     })
+  })
+  server.on('error', (stream) => {
+    stream.end()
+    server.close()
+    sockets.delete(stream)
   })
 
   return new Promise((resolve, reject) => {
@@ -58,9 +63,21 @@ function createHttp2ResponseServer() {
   })
 }
 
+function parsePath(headers) {
+  const path = headers[':path']
+  const authority = headers[':authority']
+  const protocol = headers[':scheme']
+  if (!path) {
+    return false
+  }
+  const url = new URL(`${protocol}://${authority}${path}`)
+  return { pathname: url.pathname, searchParams: url.searchParams }
+}
+
 function handler(req, res) {
   let data = Buffer.alloc(0)
   let response = {}
+
   req.on('data', (chunk) => {
     data = Buffer.concat([data, chunk])
   })
@@ -72,6 +89,7 @@ function handler(req, res) {
   })
 
   req.on('end', () => {
+    let shouldError = false
     let payload = {}
     if (data.length && data.length > 0) {
       payload = JSON.parse(data.toString('utf8'))
@@ -80,7 +98,17 @@ function handler(req, res) {
       statusCode: 200,
       body: payload
     }
+
+    const path = parsePath(req.headers)
+    if (path.pathname === '/errorCode') {
+      response.statusCode = path.searchParams.get('code')
+      const message = path.searchParams.get('reason')
+      response.body = message ? message : 'Error triggered by test request'
+      shouldError = true
+    }
+
     res.statusCode = response.statusCode
+
     // Echo back incoming headers to test which ones we add, particularly
     // 'traceparent', 'x-newrelic-transaction'
     // but also 'tracestate', synthetics, 'content-type', 'referer', 'user-agent'
@@ -94,7 +122,10 @@ function handler(req, res) {
       }
     }
 
-    if (payload?.data === 'bad stream') {
+    if (shouldError) {
+      res.destroy(response.body, response.statusCode)
+    }
+    if (payload?.data === 'infinite stream') {
       const stream = infiniteStream()
       let count = 0
       stream.on('data', () => {
