@@ -14,13 +14,16 @@ const metrics = require('../../lib/metrics_helper')
 const { version: pkgVersion } = require('undici/package')
 const semver = require('semver')
 const { createServer, createHttpsServer, createSocketServer } = require('../../lib/undici-mock-server')
+const { assertMetrics } = require('../../lib/custom-assertions')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent()
   const undici = require('undici')
+  const { version: pkgVersion } = require('undici/package.json')
   const { server, HOST, PORT, REQUEST_URL } = createServer()
   ctx.nr = {
     agent,
+    pkgVersion,
     server,
     undici,
     HOST,
@@ -46,6 +49,16 @@ test('should not fail if request not in a transaction', async (t) => {
   })
 
   assert.equal(statusCode, 200)
+})
+
+test('should create tracking metrics', (t) => {
+  const { agent, pkgVersion } = t.nr
+  const expectedPkgMetrics = [
+    [{ name: 'Supportability/Features/Instrumentation/OnRequire/undici' }],
+    [{ name: `Supportability/Features/Instrumentation/OnRequire/undici/Version/${semver.major(pkgVersion)}` }]
+  ]
+
+  assertMetrics(agent.metrics, expectedPkgMetrics, false, false)
 })
 
 test('should properly name segments', async (t) => {
