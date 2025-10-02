@@ -330,6 +330,7 @@ test('with default properties', async (t) => {
 
   await t.test('adaptive sampling target should default to 10 transactions/min', () => {
     assert.equal(configuration.distributed_tracing.sampler.adaptive_sampling_target, 10)
+    assert.equal(configuration.sampling_target, 10)
   })
 
   await t.test('opentelemetry', () => {
