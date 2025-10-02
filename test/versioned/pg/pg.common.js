@@ -43,7 +43,7 @@ module.exports = function runTests(name, clientFactory) {
   /**
    * Deletion of testing table if already exists,
    * then recreation of a testing table
-   * @param pg
+   * @param {*} pg Postgres
    */
   async function postgresSetup(pg) {
     const setupClient = new pg.Client(CON_OBJ)
@@ -85,13 +85,12 @@ module.exports = function runTests(name, clientFactory) {
     const unscoped = transaction.metrics.unscoped
 
     const expected = {
-      'Datastore/all': 3,
-      'Datastore/allWeb': 3,
-      'Datastore/Postgres/all': 3,
-      'Datastore/Postgres/allWeb': 3,
+      'Datastore/all': 2,
+      'Datastore/allWeb': 2,
+      'Datastore/Postgres/all': 2,
+      'Datastore/Postgres/allWeb': 2,
       'Datastore/operation/Postgres/insert': 1,
-      'Datastore/operation/Postgres/select': 1,
-      'Datastore/operation/Postgres/connect': 1
+      'Datastore/operation/Postgres/select': 1
     }
 
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
@@ -99,7 +98,7 @@ module.exports = function runTests(name, clientFactory) {
 
     const metricHostName = getMetricHostName(agent, params.postgres_host)
     const hostId = metricHostName + '/' + params.postgres_port
-    expected['Datastore/instance/Postgres/' + hostId] = 3
+    expected['Datastore/instance/Postgres/' + hostId] = 2
 
     const expectedNames = Object.keys(expected)
     const unscopedNames = Object.keys(unscoped)
@@ -269,12 +268,8 @@ module.exports = function runTests(name, clientFactory) {
               assert.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
-              try {
-                verify(assert, transaction)
-                end()
-              } catch (err) {
-                end(err)
-              }
+              verify(assert, transaction)
+              end()
             })
           })
         })
@@ -341,9 +336,6 @@ module.exports = function runTests(name, clientFactory) {
 
         client.connect(function (error) {
           assert.ifError(error)
-          // TODO: When orchestrion config specifies Async,
-          // we wrap this Query object in a Promise leading to a TypeError.
-          // How can we explicitly not wrap this?
           const pgQuery = client.query(new pg.Query(selQuery))
 
           pgQuery.on('error', (error) => {
@@ -360,7 +352,7 @@ module.exports = function runTests(name, clientFactory) {
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
             assert.ok(
               metrics.total > 2.0,
-              'Submittable style Query pg_sleep of 2 seconds should result in > 2 sec timing'
+              'Submittable style Query pg_sleep of 2 seconds should result in > 2 seßc timing'
             )
 
             end()
@@ -446,7 +438,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     await t.test('client pooling query', async (t) => {
-      const plan = tspl(t, { plan: 41 })
+      const plan = tspl(t, { plan: 39 })
       const { agent, pg } = t.nr
 
       plan.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
@@ -483,7 +475,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     await t.test('using Pool constructor', async (t) => {
-      const plan = tspl(t, { plan: 42 })
+      const plan = tspl(t, { plan: 40 })
       const { agent, pg } = t.nr
 
       plan.equal(agent.getTransaction(), undefined, 'no transaction should be in play')
