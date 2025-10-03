@@ -299,7 +299,7 @@ test('instrumentOutbound', async (t) => {
     end()
   })
 
-  await t.test('should pritortize using href', (t, end) => {
+  await t.test('should prioritize using href', (t, end) => {
     const { agent } = t.nr
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
