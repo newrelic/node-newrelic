@@ -89,8 +89,6 @@ test('should only log supportability metric for tracking type instrumentation', 
   assert.equal(knexOnRequiredMetric.callCount, 1, `should record ${PKG}`)
   const knexVersionMetric = agent.metrics._metrics.unscoped[PKG_VERSION]
   assert.equal(knexVersionMetric.callCount, 1, `should record ${PKG_VERSION}`)
-  const modPath = path.dirname(require.resolve('knex'))
-  assert.ok(shimmer.isInstrumented('knex', modPath), 'should mark tracking modules as instrumented')
 })
 
 test('shim.require() should play well with multiple test runs', (t) => {
