@@ -14,7 +14,7 @@ const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const utils = require('./hapi-utils')
 const fixtures = require('./fixtures')
-const match = require('../../lib/custom-assertions/match')
+const { assertPackageMetrics, match } = require('../../lib/custom-assertions')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -100,6 +100,8 @@ test('using EJS templates', { timeout: 2000 }, (t, end) => {
     assert.ok(stats, 'View metric should exist')
     assert.equal(stats.callCount, 1, 'should note the view rendering')
     verifyEnded(tx.trace.root, tx)
+    const { version } = require('@hapi/vision')
+    assertPackageMetrics({ agent, pkg: '@hapi/vision', version })
   })
 
   function verifyEnded(root, tx) {

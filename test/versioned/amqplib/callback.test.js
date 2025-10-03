@@ -11,6 +11,8 @@ const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const promiseResolvers = require('../../lib/promise-resolvers')
+const { version } = require('amqplib/package.json')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 /*
 TODO:
@@ -67,6 +69,11 @@ test('amqplib callback instrumentation', async function (t) {
     removeMatchedModules(/amqplib/)
     ctx.nr.conn.close(resolve)
     await promise
+  })
+
+  await t.test('should log tracking metrics', function(t) {
+    const { agent } = t.nr
+    assertPackageMetrics({ agent, pkg: 'amqplib', version })
   })
 
   await t.test('connect in a transaction', function (t, end) {

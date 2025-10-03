@@ -10,6 +10,7 @@ const constants = require('./constants')
 basicTests({
   lib: 'mysql2',
   factory: () => require('mysql2'),
+  version: require('mysql2/package.json').version,
   poolFactory: () => require('generic-pool'),
   constants
 })

@@ -12,6 +12,7 @@ const { removeMatchedModules } = require('../../lib/cache-buster')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 const { checkMetrics } = require('./utils')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 // Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 2
@@ -53,6 +54,12 @@ test('Redis instrumentation', async function (t) {
     // must purge require cache of redis related instrumentation
     // otherwise it will not re-register on subsequent test runs
     removeMatchedModules(/redis/)
+  })
+
+  await t.test('should log tracking metrics', function(t) {
+    const { agent } = t.nr
+    const { version } = require('redis/package.json')
+    assertPackageMetrics({ agent, pkg: 'redis', version })
   })
 
   await t.test('should find Redis calls in the transaction trace', function (t, end) {

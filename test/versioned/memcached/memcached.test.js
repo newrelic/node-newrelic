@@ -11,7 +11,7 @@ const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const { getMetricHostName } = require('../../lib/metrics_helper')
 const { tspl } = require('@matteo.collina/tspl')
-const { assertMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 /**
  * Flushes memcached to start clean
@@ -43,6 +43,12 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
       const { agent, memcached } = ctx.nr
       helper.unloadAgent(agent)
       await flush(memcached)
+    })
+
+    await t.test('should log tracking metrics', function(t) {
+      const { agent } = t.nr
+      const { version } = require('memcached/package.json')
+      assertPackageMetrics({ agent, pkg: 'memcached', version })
     })
 
     await t.test('touch()', async function (t) {

@@ -18,7 +18,7 @@ const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { originalMsgAssertion } = require('./helpers')
 const { validateLogLine, validateCommonAttrs } = require('../../lib/logging-helper')
-const { assertMetrics } = require('../../lib/custom-assertions')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 const { version: pinoVersion } = require('pino/package')
 
@@ -89,11 +89,7 @@ test('logging enabled', (t) => {
   logger.info(message)
   metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
   assert.equal(metric.callCount, 1, `should create ${LOGGING.LIBS.PINO} metric`)
-  const expectedPkgMetrics = [
-    [{ name: 'Supportability/Features/Instrumentation/OnRequire/pino' }],
-    [{ name: `Supportability/Features/Instrumentation/OnRequire/pino/Version/${semver.major(pinoVersion)}` }]
-  ]
-  assertMetrics(agent.metrics, expectedPkgMetrics, false, false)
+  assertPackageMetrics({ agent, pkg: 'pino', version: pinoVersion })
 })
 
 test('local_decorating', (t, end) => {

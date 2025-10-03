@@ -19,6 +19,7 @@ const {
   originalMsgAssertion,
   logForwardingMsgAssertion
 } = require('./helpers')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 // Winston puts the log line getting construct through formatters on a symbol
 // which is exported from the `triple-beam` module.
@@ -54,6 +55,8 @@ test.afterEach((ctx) => {
 test('logging disabled', (t, end) => {
   setup(t.nr, { application_logging: { enabled: false } })
   const { agent, winston } = t.nr
+  const { version } = require('winston/package.json')
+  assertPackageMetrics({ agent, pkg: 'winston', version })
 
   const handleMessages = makeStreamTest(() => {
     assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')

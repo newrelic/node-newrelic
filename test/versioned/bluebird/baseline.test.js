@@ -8,6 +8,8 @@
 const test = require('node:test')
 
 const helper = require('../../lib/agent_helper')
+const { version } = require('bluebird/package.json')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 const {
   testAsCallbackBehavior,
@@ -42,9 +44,10 @@ testCatchBehavior('catch')
 testCatchBehavior('caught')
 
 test('bluebird static and instance methods check', function (t) {
-  helper.loadTestAgent(t)
+  const agent = helper.loadTestAgent(t)
   const Promise = require('bluebird')
 
   areMethodsWrapped(Promise)
   areMethodsWrapped(Promise.prototype)
+  assertPackageMetrics({ agent, pkg: 'bluebird', version })
 })

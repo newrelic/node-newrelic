@@ -11,6 +11,7 @@ const { removeMatchedModules } = require('../../lib/cache-buster')
 const { promisify } = require('node:util')
 const makeRequest = promisify(helper.makeGetRequest)
 const { initNestApp, deleteNestApp } = require('./setup')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 test('Nest.js', async (t) => {
   const port = 8972 // chosen by rand(), guaranteed to be random
@@ -25,6 +26,12 @@ test('Nest.js', async (t) => {
     helper.unloadAgent(agent)
     removeMatchedModules(/test-app/)
     await deleteNestApp()
+  })
+
+  await t.test('should log tracking metrics', function() {
+    // eslint-disable-next-line sonarjs/no-internal-api-use
+    const { version } = require('./test-app/node_modules/@nestjs/core/package.json')
+    assertPackageMetrics({ agent, pkg: '@nestjs/core', version })
   })
 
   await t.test('should record a transaction in the base case', async () => {

@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const tspl = require('@matteo.collina/tspl')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
@@ -41,6 +42,12 @@ test.afterEach((ctx) => {
 function id(tx) {
   return tx?.id
 }
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('generic-pool/package.json')
+  assertPackageMetrics({ agent, pkg: 'generic-pool', version })
+})
 
 test('instantiation', (t) => {
   const plan = tspl(t, { plan: 2 })
