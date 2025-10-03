@@ -11,6 +11,7 @@ const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 const crypto = require('crypto')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 const { readFile } = require('fs/promises')
 const semver = require('semver')
 const DB_INDEX = `test-${randomString()}`
@@ -418,13 +419,8 @@ test('Elasticsearch instrumentation', async (t) => {
       }
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
-      const agentMetrics = agent.metrics._metrics.unscoped
       const pkgName = '@elastic/elasticsearch'
-      const expectedPkgMetrics = {
-        [`Supportability/Features/Instrumentation/OnRequire/${pkgName}`]: 1,
-        [`Supportability/Features/Instrumentation/OnRequire/${pkgName}/Version/${semver.major(pkgVersion)}`]: 1,
-      }
-      checkMetrics(agentMetrics, expectedPkgMetrics)
+      assertPackageMetrics({ agent, pkg: pkgName, version: pkgVersion })
     })
   })
 

@@ -15,7 +15,7 @@ const crypto = require('crypto')
 const DB_INDEX = `test-${randomString()}`
 const DB_INDEX_2 = `test2-${randomString()}`
 const SEARCHTERM_1 = randomString()
-const semver = require('semver')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 function randomString() {
   return crypto.randomBytes(5).toString('hex')
@@ -361,12 +361,7 @@ test('opensearch instrumentation', async (t) => {
       }
       expected['Datastore/instance/OpenSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
-      const agentMetrics = agent.metrics._metrics.unscoped
-      const expectedPkgMetrics = {
-        'Supportability/Features/Instrumentation/OnRequire/@opensearch-project/opensearch': 1,
-        [`Supportability/Features/Instrumentation/OnRequire/@opensearch-project/opensearch/Version/${semver.major(pkgVersion)}`]: 1,
-      }
-      checkMetrics(agentMetrics, expectedPkgMetrics)
+      assertPackageMetrics({ agent, pkg: '@opensearch-project/opensearch', version: pkgVersion })
     })
   })
 

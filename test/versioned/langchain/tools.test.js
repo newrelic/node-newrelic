@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules, removeMatchedModules } = require('../../lib/cache-buster')
-const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const helper = require('../../lib/agent_helper')
 
@@ -37,6 +37,12 @@ test.afterEach((ctx) => {
   // bust the require-cache so it can re-instrument
   removeModules(['@langchain/core'])
   removeMatchedModules(/helpers\/custom-tool\.js$/)
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('@langchain/core/package.json')
+  assertPackageMetrics({ agent, pkg: '@langchain/core', version })
 })
 
 test('should create span on successful tools create', (t, end) => {
