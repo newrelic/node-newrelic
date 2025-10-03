@@ -10,8 +10,7 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
-const { assertMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
-const semver = require('semver')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const { readFile } = require('node:fs/promises')
 const path = require('node:path')
 
@@ -47,12 +46,18 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(async (ctx) => {
+  ctx.nr.client.close()
   helper.unloadAgent(ctx.nr.agent)
   removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/stdio.js'])
 })
 
+test('should log tracking metrics', function(t) {
+  const { agent, pkgVersion } = t.nr
+  assertPackageMetrics({ agent, pkg: '@modelcontextprotocol/sdk', version: pkgVersion })
+})
+
 test('should create span for callTool', async (t) => {
-  const { agent, client, pkgVersion } = t.nr
+  const { agent, client } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
     const result = await client.callTool({
       name: 'echo',
@@ -73,18 +78,11 @@ test('should create span for callTool', async (t) => {
         { name, kind: 'internal' }
       ]
     })
-
-    const agentMetrics = agent.metrics
-    const expectedPkgMetrics = [
-      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
-      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
-    ]
-    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
 })
 
 test('should create span for readResource', async (t) => {
-  const { agent, client, pkgVersion } = t.nr
+  const { agent, client } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
     const resource = await client.readResource({
       uri: 'echo://hello-world',
@@ -102,18 +100,11 @@ test('should create span for readResource', async (t) => {
         { name, kind: 'internal' }
       ]
     })
-
-    const agentMetrics = agent.metrics
-    const expectedPkgMetrics = [
-      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
-      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
-    ]
-    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
 })
 
 test('should create span for getPrompt', async (t) => {
-  const { agent, client, pkgVersion } = t.nr
+  const { agent, client } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
     const prompt = await client.getPrompt({
       name: 'echo',
@@ -134,13 +125,6 @@ test('should create span for getPrompt', async (t) => {
         { name, kind: 'internal' }
       ]
     })
-
-    const agentMetrics = agent.metrics
-    const expectedPkgMetrics = [
-      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
-      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
-    ]
-    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
   })
 })
 

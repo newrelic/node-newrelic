@@ -12,6 +12,7 @@ const tspl = require('@matteo.collina/tspl')
 const { removeModules } = require('../../lib/cache-buster')
 const tempOverrideUncaught = require('../../lib/temp-override-uncaught')
 const helper = require('../../lib/agent_helper')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 function setupTest(t, enableSegments) {
   t.nr.agent = helper.instrumentMockedAgent({
@@ -50,6 +51,10 @@ test('no transaction', (t, end) => {
     .finally(function finallyHandler() {
       end()
     })
+
+  const { agent } = t.nr
+  const { version } = require('when/package.json')
+  assertPackageMetrics({ agent, pkg: 'when', version })
 })
 
 test('new Promise() throw', async (t) => {

@@ -12,6 +12,7 @@ const tspl = require('@matteo.collina/tspl')
 const { removeModules } = require('../../lib/cache-buster')
 const tempRemoveListeners = require('../../lib/temp-remove-listeners')
 const helper = require('../../lib/agent_helper')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 function assertTransaction(agent, tx, expect = assert) {
   expect.equal(agent.getTransaction(), tx)
@@ -28,6 +29,12 @@ test.beforeEach((ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   removeModules(['q'])
+})
+
+test('should load tracking metrics', (t) => {
+  const { agent } = t.nr
+  const { version } = require('q/package.json')
+  assertPackageMetrics({ agent, pkg: 'q', version })
 })
 
 test('q.invoke', (t, end) => {

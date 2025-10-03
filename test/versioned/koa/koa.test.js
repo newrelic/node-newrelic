@@ -10,7 +10,7 @@ const http = require('node:http')
 const tspl = require('@matteo.collina/tspl')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 
 test.beforeEach((ctx) => {
@@ -23,7 +23,9 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
-  ctx.nr.server.close()
+  if (ctx.nr.server) {
+    ctx.nr.server.close()
+  }
   helper.unloadAgent(ctx.nr.agent)
   removeModules(['koa'])
 })
@@ -74,6 +76,12 @@ function checkSegments(plan, tx) {
     ]
   })
 }
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('koa/package.json')
+  assertPackageMetrics({ agent, pkg: 'koa', version })
+})
 
 test('Should name after koa framework and verb when body set', async (t) => {
   const plan = tspl(t, { plan: 2 })

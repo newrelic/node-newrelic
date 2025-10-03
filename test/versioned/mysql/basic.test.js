@@ -9,6 +9,7 @@ const constants = require('./constants')
 basicTests({
   lib: 'mysql',
   factory: () => require('mysql'),
+  version: require('mysql/package.json').version,
   poolFactory: () => require('generic-pool'),
   constants
 })

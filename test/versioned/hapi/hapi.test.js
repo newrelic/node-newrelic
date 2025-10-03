@@ -12,6 +12,7 @@ const instrument = require('../../../lib/instrumentation/@hapi/hapi')
 const shims = require('../../../lib/shim')
 const helper = require('../../lib/agent_helper')
 const utils = require('./hapi-utils')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -23,6 +24,13 @@ test.beforeEach((ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.server.stop()
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  require('@hapi/hapi')
+  const { version } = require('@hapi/hapi/package.json')
+  assertPackageMetrics({ agent, pkg: '@hapi/hapi', version })
 })
 
 test('preserves server creation return', (t) => {

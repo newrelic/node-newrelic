@@ -12,6 +12,7 @@ const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 const { tspl } = require('@matteo.collina/tspl')
 const { checkMetrics } = require('./utils')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 // Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 2
@@ -53,6 +54,12 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
     const { agent, client } = ctx.nr
     client.end({ flush: false })
     helper.unloadAgent(agent)
+  })
+
+  await t.test('should log tracking metrics', function(t) {
+    const { agent } = t.nr
+    const { version } = require('redis/package.json')
+    assertPackageMetrics({ agent, pkg: 'redis', version })
   })
 
   await t.test('should find Redis calls in the transaction trace', async function (t) {

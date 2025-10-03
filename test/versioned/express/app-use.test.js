@@ -9,6 +9,7 @@ const helper = require('../../lib/agent_helper')
 const http = require('http')
 const { isExpress5 } = require('./utils')
 const tsplan = require('@matteo.collina/tspl')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 // This test is no longer applicable in express 5 as mounting a child router does not emit the same
 // mount event
@@ -37,6 +38,8 @@ test('app should be at top of stack when mounted', async function (t) {
   const agent = helper.instrumentMockedAgent()
 
   const express = require('express')
+  const { version } = require('express/package.json')
+  assertPackageMetrics({ agent, pkg: 'express', version })
   const main = express()
   const app = express()
   const app2 = express()
