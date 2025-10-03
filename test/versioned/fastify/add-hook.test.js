@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
 
@@ -54,6 +54,12 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.fastify.close()
   removeModules(['fastify'])
+})
+
+test('should load tracking metrics', (t) => {
+  const { agent } = t.nr
+  const { version } = require('fastify/package.json')
+  assertPackageMetrics({ agent, pkg: 'fastify', version })
 })
 
 test('non-error hooks', async (t) => {
