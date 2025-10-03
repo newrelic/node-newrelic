@@ -442,7 +442,7 @@ test('trace headers', async (t) => {
       )
     })
 
-    function finish(err, headers, body) {
+    function finish(err, headers) {
       const transaction = agent.getTransaction()
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
 
@@ -483,7 +483,7 @@ test('trace headers', async (t) => {
       )
     })
 
-    function finish(err, headers, body) {
+    function finish(err, headers) {
       assert.ok(!err)
       assert.ok(headers['x-newrelic-transaction'], 'New Relic header')
       assert.match(headers['x-newrelic-transaction'], /^[\w/-]{60,80}={0,2}$/)
@@ -514,7 +514,7 @@ test('trace headers', async (t) => {
       )
     })
 
-    function finish(err, headers, body) {
+    function finish(err, headers) {
       assert.ok(!err)
       assert.ok(headers['x-newrelic-synthetics'], 'synthetics header')
       assert.equal(headers['x-newrelic-synthetics'], 'synthHeader')
@@ -555,7 +555,7 @@ test('handling errors', async (t) => {
           finish
         )
       })
-      function finish(err, headers, body) {
+      function finish(err) {
         const transaction = agent.getTransaction()
         const [child] = transaction.trace.getChildren(transaction.trace.root.id)
         const spanAttributes = child.attributes.get(DESTINATIONS.SPAN_EVENT)
