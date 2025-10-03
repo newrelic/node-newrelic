@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
 
@@ -45,6 +45,7 @@ test.beforeEach((ctx) => {
   ctx.nr.agent = helper.instrumentMockedAgent()
 
   const fastify = require('fastify')()
+  require('undici')
   common.setupRoutes(fastify)
   ctx.nr.fastify = fastify
 })
@@ -53,6 +54,12 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.fastify.close()
   removeModules(['fastify'])
+})
+
+test('should load tracking metrics', (t) => {
+  const { agent } = t.nr
+  const { version } = require('fastify/package.json')
+  assertPackageMetrics({ agent, pkg: 'fastify', version })
 })
 
 test('non-error hooks', async (t) => {
@@ -77,9 +84,8 @@ test('non-error hooks', async (t) => {
   let txPassed = false
   agent.on('transactionFinished', (transaction) => {
     assert.equal(
-      'WebFrameworkUri/Fastify/GET//add-hook',
       transaction.getName(),
-      'transaction name matched'
+      'WebFrameworkUri/Fastify/GET//add-hook'
     )
     // all the hooks are siblings of the route handler
     // except the AFTER_HANDLER_HOOKS which are children of the route handler
@@ -106,8 +112,8 @@ test('non-error hooks', async (t) => {
         ]
       ]
     }
-    assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
 
+    assertSegments(transaction.trace, transaction.trace.root, expectedSegments)
     txPassed = true
   })
 
@@ -139,9 +145,8 @@ test('error hook', async function errorHookTest(t) {
   let txPassed = false
   agent.on('transactionFinished', (transaction) => {
     assert.equal(
-      'WebFrameworkUri/Fastify/GET//error',
       transaction.getName(),
-      'transaction name matched'
+      'WebFrameworkUri/Fastify/GET//error'
     )
     // all the hooks are siblings of the route handler
     let expectedSegments
@@ -152,7 +157,7 @@ test('error hook', async function errorHookTest(t) {
           'Nodejs/Middleware/Fastify/onRequest/<anonymous>',
           [
             'Nodejs/Middleware/Fastify/errorRoute//error',
-            [`Nodejs/Middleware/Fastify/${hookName}/testHook`]
+            `Nodejs/Middleware/Fastify/${hookName}/testHook`
           ]
         ]
       ]
@@ -161,7 +166,7 @@ test('error hook', async function errorHookTest(t) {
         'WebTransaction/WebFrameworkUri/Fastify/GET//error',
         [
           'Nodejs/Middleware/Fastify/errorRoute//error',
-          [`Nodejs/Middleware/Fastify/${hookName}/testHook`]
+          `Nodejs/Middleware/Fastify/${hookName}/testHook`
         ]
       ]
     }

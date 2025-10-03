@@ -13,6 +13,7 @@ const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 const findSegment = require('../../lib/metrics_helper').findSegment
 const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 function runCommand(client, cmd) {
   return new Promise((resolve, reject) => {
@@ -231,6 +232,12 @@ module.exports = function runTests(name, clientFactory) {
       // self-register" error regarding the native add-on.
       const pgName = require.resolve('pg')
       delete require.cache[pgName]
+    })
+
+    await t.test('should log tracking metrics', function(t) {
+      const { agent } = t.nr
+      const { version } = require('pg/package.json')
+      assertPackageMetrics({ agent, pkg: 'pg', version })
     })
 
     await t.test('simple query with prepared statement', (t, end) => {

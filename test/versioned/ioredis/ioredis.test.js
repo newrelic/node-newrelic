@@ -11,9 +11,8 @@ const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 const { tspl } = require('@matteo.collina/tspl')
-const { assertMetrics } = require('../../lib/custom-assertions')
+const { assertMetrics, assertPackageMetrics } = require('../../lib/custom-assertions')
 const { removeModules } = require('../../lib/cache-buster')
-const semver = require('semver')
 
 // Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 3
@@ -59,12 +58,7 @@ test('ioredis instrumentation', async (t) => {
       expected['Datastore/instance/Redis/' + HOST_ID] = 2
 
       assertMetrics(tx.metrics, expected, false, false, { assert: plan })
-      const expectedPkgMetrics = [
-        [{ name: 'Supportability/Features/Instrumentation/OnRequire/ioredis' }],
-        [{ name: `Supportability/Features/Instrumentation/OnRequire/ioredis/Version/${semver.major(pkgVersion)}` }]
-      ]
-
-      assertMetrics(agent.metrics, expectedPkgMetrics, false, false)
+      assertPackageMetrics({ agent, pkg: 'ioredis', version: pkgVersion })
     })
 
     helper.runInTransaction(agent, async (transaction) => {

@@ -15,7 +15,7 @@ const helper = require('../../lib/agent_helper')
 const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
-const { assertSegments, match } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, match } = require('../../lib/custom-assertions')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const responseConstants = require('../../lib/aws-server-stubs/ai-server/responses/constants')
 
@@ -50,6 +50,12 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(afterEach)
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('@smithy/smithy-client/package.json')
+  assertPackageMetrics({ agent, pkg: '@smithy/smithy-client', version })
+})
 
 test('should properly create completion segment', async (t) => {
   const { bedrock, client, agent, expectedExternalPath } = t.nr

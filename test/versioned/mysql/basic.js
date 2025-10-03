@@ -16,8 +16,9 @@ const params = require('../../lib/params')
 const setup = require('./setup')
 const { getClient } = require('./utils')
 const { findSegment } = require('../../lib/metrics_helper')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
-module.exports = function ({ lib, factory, poolFactory, constants }) {
+module.exports = function ({ lib, factory, poolFactory, constants, version }) {
   const { USER, DATABASE, TABLE } = constants
   test('Basic run through mysql functionality', { timeout: 30 * 1000 }, async function (t) {
     t.beforeEach(async function (ctx) {
@@ -50,6 +51,11 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
           resolve()
         })
       })
+    })
+
+    await t.test('should log tracking metrics', function(t) {
+      const { agent } = t.nr
+      assertPackageMetrics({ agent, pkg: lib, version })
     })
 
     await t.test('basic transaction', function testTransaction(t, end) {

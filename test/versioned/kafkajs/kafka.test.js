@@ -9,7 +9,7 @@ const test = require('node:test')
 const tspl = require('@matteo.collina/tspl')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 const utils = require('./utils')
@@ -57,6 +57,12 @@ test.afterEach(async (ctx) => {
   removeModules(['kafkajs'])
   await ctx.nr.consumer.disconnect()
   await ctx.nr.producer.disconnect()
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('kafkajs/package.json')
+  assertPackageMetrics({ agent, pkg: 'kafkajs', version })
 })
 
 test('send records correctly', async (t) => {
