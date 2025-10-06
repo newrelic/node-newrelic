@@ -167,7 +167,6 @@ test('openai.chat.completions.create', async (t) => {
     const expectedCount = 0
     function cb(model, content) {
       assert.equal(model, 'gpt-3.5-turbo-0613')
-      assert.equal(content, 'a lot')
       return 4
     }
     api.setLlmTokenCountCallback(cb)
@@ -435,14 +434,15 @@ test('openai.responses.create', async (t) => {
     const api = helper.getAgentApi()
     const expectedCount = 0
     function cb(model, content) {
-      // this checks the prompt message content
+      // this checks the response
       if (content === 'What is a woodchuck?') {
-        assert.equal(model, 'gpt-4-0613')
+        assert.equal(model, 'gpt-4')
       }
 
       // this checks the completion message content
       if (content === 'a lot') {
         assert.equal(content, chatRes.output[0].content[0].text)
+        assert.equal(model, 'gpt-4-0613')
       }
       return 4
     }

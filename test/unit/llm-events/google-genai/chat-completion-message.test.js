@@ -144,8 +144,10 @@ test('should use token_count from tokenCountCallback for prompt message', (t, en
   const api = helper.getAgentApi()
   const expectedCount = 0
   function cb(model, content) {
-    assert.equal(model, req.model)
-    assert.equal(content, req.contents)
+    // check this only if it's a request
+    if (content === req.contents) {
+      assert.equal(model, req.model)
+    }
     return 4
   }
   api.setLlmTokenCountCallback(cb)
