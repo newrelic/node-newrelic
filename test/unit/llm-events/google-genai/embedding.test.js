@@ -150,3 +150,33 @@ test('does not capture any token usage attributes when response is missing requi
     })
   })
 })
+
+test('should use token callback to set total token usage attribute', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    contents: 'This is my test input',
+    model: 'gemini-2.0-flash'
+  }
+
+  function cb(model, content) {
+    return 65
+  }
+
+  const api = helper.getAgentApi()
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const embeddingEvent = new LlmEmbedding({
+        agent,
+        segment,
+        transaction: tx,
+        request: req,
+        response: res
+      })
+      assert.equal(embeddingEvent['response.usage.total_tokens'], 65)
+      end()
+    })
+  })
+})

@@ -122,3 +122,29 @@ test('respects record_content', (t, end) => {
     end()
   })
 })
+
+test('respects record_content', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    input: 'This is my test input',
+    model: 'gpt-3.5-turbo-0613'
+  }
+
+  function cb(model, content) {
+    return 65
+  }
+
+  const api = helper.getAgentApi()
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, () => {
+    const segment = api.shim.getActiveSegment()
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
+    })
+    assert.equal(embeddingEvent['response.usage.total_tokens'], 65)
+    end()
+  })
+})

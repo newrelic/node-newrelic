@@ -114,3 +114,13 @@ test('does not capture total token usage attributes when response headers is mis
   const event = new LlmEmbedding(t.nr)
   assert.equal(event['response.usage.total_tokens'], undefined)
 })
+
+test('should use token callback to set total token usage attribute', async (t) => {
+  function cb(model, content) {
+    return 65
+  }
+  t.nr.agent.llm.tokenCountCallback = cb
+  const event = new LlmEmbedding(t.nr)
+
+  assert.equal(event['response.usage.total_tokens'], 65)
+})

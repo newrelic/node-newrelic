@@ -15,6 +15,7 @@ const LlmChatCompletionSummary = require('../../../../lib/llm-events/aws-bedrock
 test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = {
+    llm: {},
     config: {
       applications() {
         return ['test-app']
@@ -174,4 +175,19 @@ test('does not capture any token usage attributes when response is missing requi
   assert.equal(event['response.usage.prompt_tokens'], undefined)
   assert.equal(event['response.usage.completion_tokens'], undefined)
   assert.equal(event['response.usage.total_tokens'], undefined)
+})
+
+test('should use token callback to set the token usage attributes', async (t) => {
+  function cb(model, content) {
+    if (content === t.nr.bedrockCommand.prompt[0].content) {
+      return 30
+    } else {
+      return 35
+    }
+  }
+  t.nr.agent.llm.tokenCountCallback = cb
+  const event = new LlmChatCompletionSummary(t.nr)
+  assert.equal(event['response.usage.prompt_tokens'], 30)
+  assert.equal(event['response.usage.completion_tokens'], 35)
+  assert.equal(event['response.usage.total_tokens'], 65)
 })

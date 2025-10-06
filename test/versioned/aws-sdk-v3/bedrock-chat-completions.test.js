@@ -723,7 +723,7 @@ test('should not instrument stream when disabled', async (t) => {
 })
 
 test('should utilize tokenCountCallback when set', async (t) => {
-  const plan = tspl(t, { plan: 5 })
+  const plan = tspl(t, { plan: 13 })
 
   const { bedrock, client, agent } = t.nr
   const prompt = 'text amazon user token count callback response'
