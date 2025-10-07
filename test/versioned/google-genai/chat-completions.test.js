@@ -7,9 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const fs = require('node:fs')
-const path = require('node:path')
-
 const { removeModules } = require('../../lib/cache-buster')
 const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
@@ -19,10 +16,7 @@ const helper = require('../../lib/agent_helper')
 const {
   AI: { GEMINI }
 } = require('../../../lib/metrics/names')
-// have to read and not require because @google/genai does not export the package.json
-const { version: pkgVersion } = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '/node_modules/@google/genai/package.json'))
-)
+const pkgVersion = helper.readPackageVersion(__dirname, '@google/genai')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const responses = require('./mock-responses')
 const TRACKING_METRIC = `Supportability/Nodejs/ML/Gemini/${pkgVersion}`

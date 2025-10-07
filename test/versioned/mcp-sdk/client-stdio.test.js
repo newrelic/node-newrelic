@@ -11,9 +11,6 @@ const assert = require('node:assert')
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
 const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
-const { readFile } = require('node:fs/promises')
-const path = require('node:path')
-
 const {
   MCP
 } = require('../../../lib/metrics/names')
@@ -28,8 +25,7 @@ test.beforeEach(async (ctx) => {
 
   const { Client } = require('@modelcontextprotocol/sdk/client/index.js')
   const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js')
-  const pkg = await readFile(path.join(__dirname, '/node_modules/@modelcontextprotocol/sdk/package.json'))
-  const { version: pkgVersion } = JSON.parse(pkg.toString())
+  const pkgVersion = helper.readPackageVersion(__dirname, '@modelcontextprotocol/sdk')
   ctx.nr.pkgVersion = pkgVersion
 
   ctx.nr.transport = new StdioClientTransport({

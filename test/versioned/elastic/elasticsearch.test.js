@@ -6,13 +6,11 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
-const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 const crypto = require('crypto')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
-const { readFile } = require('fs/promises')
 const semver = require('semver')
 const DB_INDEX = `test-${randomString()}`
 const DB_INDEX_2 = `test2-${randomString()}`
@@ -52,10 +50,7 @@ function setMsearch(body, version) {
 
 test('Elasticsearch instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
-    // Determine version. ElasticSearch v7 did not export package, so we have to read the file
-    // instead of requiring it, as we can with 8+.
-    const pkg = await readFile(path.join(__dirname, '/node_modules/@elastic/elasticsearch/package.json'))
-    const { version: pkgVersion } = JSON.parse(pkg.toString())
+    const pkgVersion = helper.readPackageVersion(__dirname, '@elastic/elasticsearch')
 
     const agent = helper.instrumentMockedAgent()
 
