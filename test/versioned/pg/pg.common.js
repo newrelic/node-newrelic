@@ -356,7 +356,6 @@ module.exports = function runTests(name, clientFactory) {
 
           pgQuery.on('end', () => {
             const finalTx = agent.getTransaction()
-            // TODO: why is finalTx null?
             assert.ok(finalTx, 'transaction should still be visible')
 
             transaction.end()
