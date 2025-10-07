@@ -21,6 +21,8 @@ const semver = require('semver')
 const crypto = require('crypto')
 const util = require('util')
 const cp = require('child_process')
+const fs = require('node:fs')
+const path = require('node:path')
 
 let _agent = null
 let _agentApi = null
@@ -617,4 +619,20 @@ helper.execSync = function execSync({ cwd, script }) {
   } catch (err) {
     throw err.stderr
   }
+}
+
+/**
+ * Used to get version from package.json.
+ * Some packages define exports and omit `package.json` so `require` or `import`
+ * will fail when trying to read package.json. This instead just reads file and parses to json
+ *
+ * @param {string} dirname value of `__dirname` in caller
+ * @param {string} pkg name of package
+ * @returns {string} package version
+ */
+helper.readPackageVersion = function readPackageVersion(dirname, pkg) {
+  const parsedPath = path.join(dirname, 'node_modules', pkg, 'package.json')
+  const packageFile = fs.readFileSync(parsedPath)
+  const { version } = JSON.parse(packageFile)
+  return version
 }

@@ -5,19 +5,9 @@
 
 'use strict'
 
-const fs = require('node:fs')
-const path = require('node:path')
 const basicPoolTests = require('../mysql/basic-pool')
 const constants = require('./constants')
+const helper = require('../../lib/agent_helper')
 
-// exports are defined in newer versions so must read file directly
-let pkgVersion
-try {
-  ;({ version: pkgVersion } = require('mysql2/package'))
-} catch {
-  ;({ version: pkgVersion } = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '/node_modules/mysql2/package.json'))
-  ))
-}
-
+const pkgVersion = helper.readPackageVersion(__dirname, 'mysql2')
 basicPoolTests({ factory: () => require('mysql2'), constants, pkgVersion })

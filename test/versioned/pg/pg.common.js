@@ -236,7 +236,7 @@ module.exports = function runTests(name, clientFactory) {
 
     await t.test('should log tracking metrics', function(t) {
       const { agent } = t.nr
-      const { version } = require('pg/package.json')
+      const version = helper.readPackageVersion(__dirname, 'pg')
       assertPackageMetrics({ agent, pkg: 'pg', version })
     })
 

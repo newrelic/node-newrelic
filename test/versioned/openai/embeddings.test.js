@@ -7,9 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const fs = require('node:fs')
-const path = require('node:path')
-
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const createOpenAIMockServer = require('./mock-server')
@@ -18,9 +15,7 @@ const helper = require('../../lib/agent_helper')
 const {
   AI: { OPENAI }
 } = require('../../../lib/metrics/names')
-const { version: pkgVersion } = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '/node_modules/openai/package.json'))
-)
+const pkgVersion = helper.readPackageVersion(__dirname, 'openai')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 test.beforeEach(async (ctx) => {

@@ -7,8 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const fs = require('node:fs')
-const path = require('node:path')
 const semver = require('semver')
 
 const { removeModules } = require('../../lib/cache-buster')
@@ -19,10 +17,7 @@ const helper = require('../../lib/agent_helper')
 const {
   AI: { OPENAI }
 } = require('../../../lib/metrics/names')
-// have to read and not require because openai does not export the package.json
-const { version: pkgVersion } = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '/node_modules/openai/package.json'))
-)
+const pkgVersion = helper.readPackageVersion(__dirname, 'openai')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const TRACKING_METRIC = `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
 
