@@ -14,7 +14,7 @@ const {
 } = require('../../../lib/instrumentation/nextjs/utils')
 const middlewareSupported = isMiddlewareInstrumentationSupported(nextPkg.version)
 const agentHelper = require('../../lib/agent_helper')
-const { match, assertCLMAttrs } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, match, assertCLMAttrs } = require('../../lib/custom-assertions')
 
 test('Next.js', async (t) => {
   await helpers.build(__dirname)
@@ -31,6 +31,11 @@ test('Next.js', async (t) => {
   t.after(async () => {
     await server.close()
     agentHelper.unloadAgent(agent)
+  })
+
+  await t.test('should log tracking metrics', function(t) {
+    const { version } = require('next/package.json')
+    assertPackageMetrics({ agent, pkg: 'next', version })
   })
 
   await t.test('should capture query params for static, non-dynamic route, page', async (t) => {

@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const fs = require('node:fs')
 const path = require('node:path')
 
-const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 /**
  * koa-router and @koa/router updated how they defined wildcard routing
@@ -82,6 +82,11 @@ module.exports = (pkg) => {
     await t.test('with single router', async (t) => {
       t.beforeEach(testSetup)
       t.afterEach(tearDown)
+
+      await t.test('should log tracking metrics', function(t) {
+        const { agent } = t.nr
+        assertPackageMetrics({ agent, pkg, version: pkgVersion })
+      })
 
       await t.test('should name and produce segments for matched path', (t, end) => {
         const { agent, router, app } = t.nr

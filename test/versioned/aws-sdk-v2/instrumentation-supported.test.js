@@ -8,6 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const instrumentationHelper = require('../../../lib/instrumentation/aws-sdk/v2/instrumentation-helper')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 test('instrumentation is supported', async (t) => {
   t.beforeEach((ctx) => {
@@ -18,6 +19,12 @@ test('instrumentation is supported', async (t) => {
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should log tracking metrics', function(t) {
+    const { agent } = t.nr
+    const { version } = require('aws-sdk/package.json')
+    assertPackageMetrics({ agent, pkg: 'aws-sdk', version })
   })
 
   await t.test('AWS should be instrumented', (t) => {

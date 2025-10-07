@@ -8,16 +8,10 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../../lib/agent_helper')
 const { removeModules } = require('../../../lib/cache-buster')
-const InstrumentationDescriptor = require('../../../../lib/instrumentation-descriptor')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-  ctx.nr.agent = helper.instrumentMockedAgent({
-    moduleName: 'koa',
-    type: InstrumentationDescriptor.TYPE_WEB_FRAMEWORK,
-    onRequire: require('../../../../lib/instrumentation/koa/instrumentation'),
-    shimName: 'koa'
-  })
+  ctx.nr.agent = helper.instrumentMockedAgent()
 
   ctx.nr.Koa = require('koa')
   ctx.nr.shim = helper.getShim(ctx.nr.Koa)

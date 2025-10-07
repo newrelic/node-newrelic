@@ -11,7 +11,6 @@ const Subscriber = require('#agentlib/subscribers/base.js')
 const helper = require('#testlib/agent_helper.js')
 const loggerMock = require('../../mocks/logger')
 const { tspl } = require('@matteo.collina/tspl')
-const assertMetrics = require('#testlib/custom-assertions/assert-metrics.js')
 const hashes = require('#agentlib/util/hashes.js')
 
 // Used for insertDTHeaders tests below
@@ -183,13 +182,9 @@ test('should subscribe/unsubscribe to specific events on channel', (t) => {
 })
 
 test('should call handler in start if transaction is active and create a new segment', async (t) => {
-  const plan = tspl(t, { plan: 9 })
+  const plan = tspl(t, { plan: 4 })
   const { agent, subscriber } = t.nr
   const name = 'test-segment'
-  const expectedMetrics = [
-    [{ name: 'Supportability/Features/Instrumentation/OnRequire/test-package' }],
-    [{ name: 'Supportability/Features/Instrumentation/OnRequire/test-package/Version/1' }],
-  ]
   subscriber.enable()
   subscriber.handler = function handler(data, ctx) {
     plan.equal(data.name, name)
@@ -206,7 +201,6 @@ test('should call handler in start if transaction is active and create a new seg
       plan.equal(ctx.segment.name, name)
       plan.ok(!event.transaction, 'transaction not added to event')
       plan.ok(!event.segment, 'segment not added to event')
-      assertMetrics(agent.metrics, expectedMetrics, false, false, { assert: plan })
     })
   })
 

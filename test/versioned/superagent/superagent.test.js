@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const match = require('../../lib/custom-assertions/match')
+const { assertPackageMetrics, match } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const testServer = require('./test-server')
 
@@ -31,6 +31,12 @@ test.afterEach(async (ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   removeModules(['superagent'])
   await ctx.nr.stopServer()
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('superagent/package.json')
+  assertPackageMetrics({ agent, pkg: 'superagent', version })
 })
 
 test('should maintain transaction context with callbacks', (t, end) => {

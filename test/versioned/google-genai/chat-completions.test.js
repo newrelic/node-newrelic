@@ -11,7 +11,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
 const GoogleGenAIMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
@@ -57,6 +57,11 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.server?.close()
   removeModules('@google/genai')
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  assertPackageMetrics({ agent, pkg: '@google/genai', version: pkgVersion })
 })
 
 test('should create span on successful models generateContent', (t, end) => {

@@ -9,7 +9,7 @@ const test = require('node:test')
 const http = require('node:http')
 const semver = require('semver')
 const tspl = require('@matteo.collina/tspl')
-
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
 
@@ -27,6 +27,11 @@ test.beforeEach((ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   removeModules(['connect'])
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent, pkgVersion } = t.nr
+  assertPackageMetrics({ agent, pkg: 'connect', version: pkgVersion })
 })
 
 test('should properly name transaction from route name', async (t) => {

@@ -9,7 +9,7 @@ const test = require('node:test')
 const { tspl } = require('@matteo.collina/tspl')
 const fakeCert = require('../../lib/fake-cert')
 const helper = require('../../lib/agent_helper')
-const { assertMetrics } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertMetrics } = require('../../lib/custom-assertions')
 
 const METRIC = 'WebTransaction/Restify/GET//hello/:name'
 
@@ -25,6 +25,12 @@ test('Restify', async (t) => {
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should log tracking metrics', function(t) {
+    const { agent } = t.nr
+    const { version } = require('restify/package.json')
+    assertPackageMetrics({ agent, pkg: 'restify', version })
   })
 
   await t.test('should not crash when handling a connection', async function (t) {
