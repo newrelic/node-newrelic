@@ -9,8 +9,8 @@ const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 
-const helper = require('../lib/agent_helper')
-const AdaptiveSampler = require('../../lib/adaptive-sampler')
+const helper = require('../../lib/agent_helper')
+const AdaptiveSampler = require('../../../lib/samplers/adaptive-sampler')
 
 const shared = {
   'should count the number of traces sampled': (t) => {
