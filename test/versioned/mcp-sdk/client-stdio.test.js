@@ -25,9 +25,6 @@ test.beforeEach(async (ctx) => {
 
   const { Client } = require('@modelcontextprotocol/sdk/client/index.js')
   const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js')
-  const pkgVersion = helper.readPackageVersion(__dirname, '@modelcontextprotocol/sdk')
-  ctx.nr.pkgVersion = pkgVersion
-
   ctx.nr.transport = new StdioClientTransport({
     command: 'node',
     args: ['stdio-server.js']
@@ -42,13 +39,15 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(async (ctx) => {
-  ctx.nr.client.close()
+  await ctx.nr.client.close()
+  await ctx.nr.transport.close()
   helper.unloadAgent(ctx.nr.agent)
   removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/stdio.js'])
 })
 
 test('should log tracking metrics', function(t) {
-  const { agent, pkgVersion } = t.nr
+  const { agent } = t.nr
+  const pkgVersion = helper.readPackageVersion(__dirname, '@modelcontextprotocol/sdk')
   assertPackageMetrics({ agent, pkg: '@modelcontextprotocol/sdk', version: pkgVersion })
 })
 
