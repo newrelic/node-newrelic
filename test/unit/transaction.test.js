@@ -1946,8 +1946,8 @@ test('when being named with finalizeNameFromWeb', async (t) => {
     const attrs = txn.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
 
     assert.deepEqual(attrs, {
-      'request.parameters.foo': 'biz',
-      'request.parameters.bar': 'bang'
+      'request.parameters.route.foo': 'biz',
+      'request.parameters.route.bar': 'bang'
     })
   })
 
@@ -2032,8 +2032,8 @@ test('requestd', async (t) => {
     const segment = tracer.getSegment()
 
     assert.deepEqual(segment.attributes.get(AttributeFilter.DESTINATIONS.SPAN_EVENT), {
-      'request.parameters.foo': 'biz',
-      'request.parameters.bar': 'bang'
+      'request.parameters.route.foo': 'biz',
+      'request.parameters.route.bar': 'bang'
     })
   })
 })
@@ -2140,8 +2140,8 @@ function setupNameState(transaction) {
   transaction.nameState.setPrefix('Restify')
   transaction.nameState.setVerb('COOL')
   transaction.nameState.setDelimiter('/')
-  transaction.nameState.appendPath('/foo/:foo', { 'request.parameters.foo': 'biz' })
-  transaction.nameState.appendPath('/bar/:bar', { 'request.parameters.bar': 'bang' })
+  transaction.nameState.appendPath('/foo/:foo', { foo: 'biz' })
+  transaction.nameState.appendPath('/bar/:bar', { bar: 'bang' })
 }
 
 function setupHighSecurity(agent) {

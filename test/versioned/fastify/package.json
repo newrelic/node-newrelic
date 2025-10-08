@@ -37,6 +37,7 @@
         "add-hook.test.js",
         "code-level-metrics-middleware.test.js",
         "code-level-metrics-hooks.test.js",
+        "express-compat-errors.test.js",
         "errors.test.js",
         "new-state-tracking.test.js"
       ]
@@ -56,6 +57,7 @@
         "add-hook.test.js",
         "code-level-metrics-middleware.test.js",
         "code-level-metrics-hooks.test.js",
+        "express-compat-errors.test.js",
         "errors.test.js",
         "new-state-tracking.test.js"
       ]
