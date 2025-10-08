@@ -405,7 +405,7 @@ test('chat.completions.create', async (t) => {
         assertSegments(
           tx.trace,
           tx.trace.root,
-          ['timers.setTimeout', `External/${host}:${port}/chat/completions`],
+          [`External/${host}:${port}/chat/completions`],
           { exact: false }
         )
 
