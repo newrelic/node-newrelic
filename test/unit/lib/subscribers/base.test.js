@@ -12,6 +12,7 @@ const helper = require('#testlib/agent_helper.js')
 const loggerMock = require('../../mocks/logger')
 const { tspl } = require('@matteo.collina/tspl')
 const hashes = require('#agentlib/util/hashes.js')
+const { EventEmitter } = require('node:events')
 
 // Used for insertDTHeaders tests below
 function setupCATConfig(subscriber) {
@@ -227,12 +228,12 @@ test('should not call handler in start if transaction is not active and return e
 test('should add transaction to event if propagateTx is true', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, subscriber } = t.nr
+  subscriber.propagateContext = true
   subscriber.enable()
   subscriber.handler = function handler(data, ctx) {
-    plan.ok(1, 'should not call handler')
+    plan.ok(1, 'should call handler')
     return ctx
   }
-  subscriber.propagateTx = true
 
   helper.runInTransaction(agent, (tx) => {
     const event = {}
@@ -327,6 +328,47 @@ test('should bind callback and invoke the asyncStart/error/asyncError events whe
   await plan.completed
 })
 
+test('should bind callback and invoke asyncStart/asyncEnd events and propagateContext', async (t) => {
+  const plan = tspl(t, { plan: 6 })
+  const { agent, subscriber } = t.nr
+  const name = 'test-segment'
+  const expectedResult = 'test-result'
+  subscriber.callback = -1
+  subscriber.propagateContext = true
+  subscriber.enable()
+  subscriber.error = (err) => {
+    plan.ifError(err)
+  }
+  subscriber.events = ['asyncStart', 'asyncEnd', 'error']
+  subscriber.subscribe()
+  subscriber.handler = function handler(data, ctx) {
+    plan.equal(data.name, name)
+    return subscriber.createSegment({
+      name: data?.name,
+      ctx
+    })
+  }
+
+  function testCb(err, result) {
+    plan.equal(result, expectedResult)
+    plan.equal(err, null)
+  }
+
+  helper.runInTransaction(agent, (tx) => {
+    const event = { name, arguments: [testCb] }
+    subscriber.channel.start.runStores(event, () => {
+      plan.equal(event.transaction.id, tx.id)
+      event.arguments[0](null, expectedResult)
+    })
+    subscriber.channel.asyncStart.runStores(event, () => {
+      plan.equal(event.segment.name, 'test-segment')
+      plan.equal(event.transaction.id, tx.id)
+    })
+  })
+
+  await plan.completed
+})
+
 test('should not wrap callback if position is not a function thus not touching segment in asyncStart/asyncEnd', async (t) => {
   const plan = tspl(t, { plan: 7 })
   const { agent, subscriber } = t.nr
@@ -358,6 +400,53 @@ test('should not wrap callback if position is not a function thus not touching s
       event.arguments[1](null, 'data')
       plan.equal(event.segment.timer.touched, false)
     })
+  })
+
+  await plan.completed
+})
+
+test('should wrap event emitter and propagate context', async (t) => {
+  const plan = tspl(t, { plan: 8 })
+  const { agent, subscriber } = t.nr
+  const name = 'test-segment'
+  subscriber.enable()
+  subscriber.events = ['asyncStart', 'asyncEnd']
+  subscriber.subscribe()
+  subscriber.handler = function handler(data, ctx) {
+    plan.equal(data.name, name)
+    return subscriber.createSegment({
+      name: data?.name,
+      ctx
+    })
+  }
+  let txId
+  const emitter = new EventEmitter()
+  emitter.on('foo', (result) => {
+    const ctx = agent.tracer.getContext()
+    plan.equal(ctx.segment.name, name)
+    plan.equal(ctx.transaction.id, txId)
+    plan.equal(result, 'data')
+  })
+  emitter.on('end', (result) => {
+    const ctx = agent.tracer.getContext()
+    plan.equal(ctx.segment.name, name)
+    plan.equal(ctx.transaction.id, txId)
+    plan.equal(result, 'bar')
+  })
+
+  helper.runInTransaction(agent, async (tx) => {
+    txId = tx.id
+    const event = { name, arguments: ['string', emitter] }
+    await new Promise((resolve) => {
+      subscriber.channel.start.runStores(event, () => {
+        const ctx = agent.tracer.getContext()
+        subscriber.wrapEventEmitter({ args: event.arguments, index: 1, name: 'emit', ctx })
+        plan.equal(ctx.segment.name, name)
+        resolve()
+      })
+    })
+    emitter.emit('foo', 'data')
+    emitter.emit('end', 'bar')
   })
 
   await plan.completed
