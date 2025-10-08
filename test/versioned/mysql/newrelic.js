@@ -10,7 +10,7 @@ exports.config = {
   license_key: 'license key here',
   logging: {
     level: 'debug',
-    filepath: '../../../newrelic_agent.log'
+    filepath: './newrelic_agent.log'
   },
   utilization: {
     detect_aws: false,
