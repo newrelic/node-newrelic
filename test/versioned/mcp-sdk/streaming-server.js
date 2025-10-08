@@ -24,7 +24,6 @@ class McpTestServer {
     this.transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableDnsRebindingProtection: true,
-      allowedHosts: ['127.0.0.1:3000', 'localhost:3000']
     })
 
     this.app = express()
@@ -110,19 +109,21 @@ class McpTestServer {
   }
 
   async start() {
+    const self = this
     await this.server.connect(this.transport)
-    const PORT = process.env.PORT || 3000
     return new Promise((resolve) => {
-      this.expressServer = this.app.listen(PORT, () => {
-        resolve()
+      this.expressServer = this.app.listen(0, function onListen() {
+        const port = this.address().port
+        self.transport._allowedHosts = [`127.0.0.1:${port}`, `localhost:${port}`]
+        resolve(port)
       })
     })
   }
 
   async stop() {
-    if (this.transport) {
-      await this.transport.close()
-    }
+    await this.transport.close()
+    this.server.close()
+
     return new Promise((resolve, reject) => {
       if (this.expressServer) {
         this.expressServer.close((err) => {
