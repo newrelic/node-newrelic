@@ -16,6 +16,7 @@ test('should apply transaction name as active span intrinsic on transaction end'
       enabled: true
     }
   })
+  const api = helper.getAgentApi()
 
   t.after(() => {
     helper.unloadAgent(agent)
@@ -31,20 +32,26 @@ test('should apply transaction name as active span intrinsic on transaction end'
     transaction.priority = 42
     transaction.sampled = true
 
-    setTimeout(() => {
+    function sleepFn(cb) {
+      setTimeout(() => {
+        cb(null, 'sleep result')
+      }, 10)
+    }
+    api.startSegment('customSegment', true, sleepFn, function cb(err, output) {
+      assert.ok(!err)
+      assert.equal(output, 'sleep result')
       const segment = agent.tracer.getSegment()
-
+      segment.touch()
       transaction.end()
 
       const span = findSpanByName(agent, segment.name)
       const serialized = span.toJSON()
-
       const [intrinsics] = serialized
-
+      assert.equal(segment.name, 'Callback: cb')
       assert.equal(intrinsics['transaction.name'], transaction.name)
 
       end()
-    }, 10)
+    })
   })
 })
 

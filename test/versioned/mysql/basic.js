@@ -219,6 +219,7 @@ module.exports = function ({ lib, factory, poolFactory, constants, version }) {
 
     await t.test('streaming query should be timed correctly', function testCB(t, end) {
       const { agent, pool } = t.nr
+      const api = helper.getAgentApi()
       assert.ok(!agent.getTransaction(), 'no transaction should be in play yet')
       helper.runInTransaction(agent, function transactionInScope() {
         assert.ok(agent.getTransaction(), 'we should be in a transaction')
@@ -245,9 +246,17 @@ module.exports = function ({ lib, factory, poolFactory, constants, version }) {
             ended = true
           })
 
-          setTimeout(function actualEnd() {
+          function sleepFunction(cb) {
+            setTimeout(() => {
+              pool.release(client)
+              cb(null, 'done sleeping')
+            }, 2000)
+          }
+
+          api.startSegment('customSegment', true, sleepFunction, function cb(err, output) {
+            assert.ok(!err)
+            assert.equal(output, 'done sleeping')
             const transaction = agent.getTransaction().end()
-            pool.release(client)
             assert.ok(results && ended, 'result and end events should occur')
             const traceRoot = transaction.trace.root
             const traceRootDuration = traceRoot.timer.getDurationInMillis()
@@ -269,7 +278,7 @@ module.exports = function ({ lib, factory, poolFactory, constants, version }) {
             )
 
             end()
-          }, 2000)
+          })
         })
       })
     })
@@ -300,19 +309,13 @@ module.exports = function ({ lib, factory, poolFactory, constants, version }) {
               const traceRoot = transaction.trace.root
               const [querySegment] = transaction.trace.getChildren(traceRoot.id)
               const queryChildren = transaction.trace.getChildren(querySegment.id)
-              assert.equal(queryChildren.length, 2, 'the query segment should have two children')
+              assert.equal(queryChildren.length, 1, 'the query segment should have two children')
 
-              const childSegment = queryChildren[1]
+              const childSegment = queryChildren[0]
               assert.equal(
                 childSegment.name,
                 'Callback: endCallback',
                 'children should be callbacks'
-              )
-              const [grandChildSegment] = transaction.trace.getChildren(childSegment.id)
-              assert.equal(
-                grandChildSegment.name,
-                'timers.setTimeout',
-                'grand children should be timers'
               )
               end()
             }, 100)

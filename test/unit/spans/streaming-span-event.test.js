@@ -61,67 +61,69 @@ test('fromSegment()', async (t) => {
     helper.runInTransaction(agent, (transaction) => {
       transaction.sampled = true
       transaction.priority = 42
+      const segment = agent.tracer.createSegment({
+        name: 'genericSegment',
+        transaction,
+        parent: transaction.trace.root
+      })
+      segment.setDurationInMillis(300)
 
-      setTimeout(() => {
-        const tx = agent.tracer.getTransaction()
-        const [segment] = tx.trace.getChildren(tx.trace.root.id)
-        const spanContext = segment.getSpanContext()
-        spanContext.addCustomAttribute('Span Lee', 'no prize')
-        segment.addSpanAttribute('host', 'my-host')
-        segment.addSpanAttribute('port', 22)
+      const spanContext = segment.getSpanContext()
+      spanContext.addCustomAttribute('Span Lee', 'no prize')
+      segment.addSpanAttribute('host', 'my-host')
+      segment.addSpanAttribute('port', 22)
 
-        const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
+      const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
-        // Should have all the normal properties.
-        assert.ok(span)
-        assert.ok(span instanceof StreamingSpanEvent)
+      // Should have all the normal properties.
+      assert.ok(span)
+      assert.ok(span instanceof StreamingSpanEvent)
 
-        assert.ok(span._intrinsicAttributes)
-        assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
-        assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.GENERIC })
+      assert.ok(span._intrinsicAttributes)
+      assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
+      assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.GENERIC })
 
-        assert.deepEqual(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
-        assert.deepEqual(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
-        assert.deepEqual(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
-        assert.deepEqual(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
-        assert.deepEqual(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
-        assert.deepEqual(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
-        assert.deepEqual(span._intrinsicAttributes.name, { [STRING_TYPE]: 'timers.setTimeout' })
-        assert.deepEqual(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
-        assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'internal' })
+      assert.deepEqual(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
+      assert.deepEqual(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
+      assert.deepEqual(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
+      assert.deepEqual(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
+      assert.deepEqual(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
+      assert.deepEqual(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
+      assert.deepEqual(span._intrinsicAttributes.name, { [STRING_TYPE]: 'genericSegment' })
+      assert.deepEqual(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
+      assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'internal' })
 
-        assert.ok(span._intrinsicAttributes.duration)
-        assert.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
+      assert.ok(span._intrinsicAttributes.duration)
+      assert.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
 
-        // Generic should not have 'span.kind' or 'component'
-        const hasIntrinsic = Object.hasOwnProperty.bind(span._intrinsicAttributes)
-        assert.ok(!hasIntrinsic('component'))
+      // Generic should not have 'span.kind' or 'component'
+      const hasIntrinsic = Object.hasOwnProperty.bind(span._intrinsicAttributes)
+      assert.ok(!hasIntrinsic('component'))
 
-        const customAttributes = span._customAttributes
-        assert.ok(customAttributes)
-        assert.deepEqual(customAttributes['Span Lee'], { [STRING_TYPE]: 'no prize' })
+      const customAttributes = span._customAttributes
+      assert.ok(customAttributes)
+      assert.deepEqual(customAttributes['Span Lee'], { [STRING_TYPE]: 'no prize' })
 
-        const agentAttributes = span._agentAttributes
-        assert.ok(agentAttributes)
+      const agentAttributes = span._agentAttributes
+      assert.ok(agentAttributes)
 
-        assert.deepEqual(agentAttributes['server.address'], { [STRING_TYPE]: 'my-host' })
-        assert.deepEqual(agentAttributes['server.port'], { [INT_TYPE]: 22 })
+      assert.deepEqual(agentAttributes['server.address'], { [STRING_TYPE]: 'my-host' })
+      assert.deepEqual(agentAttributes['server.port'], { [INT_TYPE]: 22 })
 
-        // Should have no http properties.
-        const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
-        assert.ok(!hasOwnAttribute('externalLibrary'))
-        assert.ok(!hasOwnAttribute('externalUri'))
-        assert.ok(!hasOwnAttribute('externalProcedure'))
+      // Should have no http properties.
+      const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
+      assert.ok(!hasOwnAttribute('externalLibrary'))
+      assert.ok(!hasOwnAttribute('externalUri'))
+      assert.ok(!hasOwnAttribute('externalProcedure'))
 
-        // Should have no datastore properties.
-        assert.ok(!hasOwnAttribute('db.statement'))
-        assert.ok(!hasOwnAttribute('db.instance'))
-        assert.ok(!hasOwnAttribute('db.system'))
-        assert.ok(!hasOwnAttribute('peer.hostname'))
-        assert.ok(!hasOwnAttribute('peer.address'))
+      // Should have no datastore properties.
+      assert.ok(!hasOwnAttribute('db.statement'))
+      assert.ok(!hasOwnAttribute('db.instance'))
+      assert.ok(!hasOwnAttribute('db.system'))
+      assert.ok(!hasOwnAttribute('peer.hostname'))
+      assert.ok(!hasOwnAttribute('peer.address'))
 
-        end()
-      }, 50)
+      end()
     })
   })
 

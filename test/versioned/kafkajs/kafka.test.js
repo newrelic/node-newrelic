@@ -20,11 +20,6 @@ const broker = `${params.kafka_host}:${params.kafka_port}`
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent({
-    instrumentation: {
-      timers: {
-        enabled: false
-      }
-    },
     feature_flag: {
       kafkajs_instrumentation: true
     }
