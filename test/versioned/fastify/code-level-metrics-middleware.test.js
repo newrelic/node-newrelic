@@ -49,11 +49,11 @@ async function setup(t, config) {
 
 function assertSegments({ t, trace, baseSegment, isCLMEnabled }) {
   const { agent } = t.nr
-  let children = trace.getChildren(baseSegment.id)
+  const children = trace.getChildren(baseSegment.id)
+  let [middieSegment, handlerSegment] = children
   if (helper.isSecurityAgentEnabled(agent)) {
-    children = trace.getChildren(children[0].id)
+    ;[, middieSegment, handlerSegment] = children
   }
-  const [middieSegment, handlerSegment] = children
   assertCLMAttrs({
     segments: [
       {

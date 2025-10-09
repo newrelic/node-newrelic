@@ -34,7 +34,7 @@ module.exports = async function runTests(t, getExpectedSegments) {
           // it sometimes has timers.setTimeout depending on route
           expectedSegments = [
             `WebTransaction/WebFrameworkUri/Fastify/GET/${uri}`,
-            ['Nodejs/Middleware/Fastify/onRequest/<anonymous>', getExpectedSegments(uri)]
+            ['Nodejs/Middleware/Fastify/onRequest/<anonymous>', ...getExpectedSegments(uri)]
           ]
         } else {
           expectedSegments = [
