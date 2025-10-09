@@ -9,88 +9,91 @@ const assert = require('node:assert')
 const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
 const symbols = require('../../../lib/symbols')
+const moduleName = './test/lib/example-deps/lib/node_modules/pkg-1/foo.js'
 
 test('Agent API - instrumentLoadedModule', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
     const agent = agentHelper.instrumentMockedAgent()
 
-    ctx.nr.api = new API(agent)
+    const api = new API(agent)
 
-    const expressMock = {
+    const appMock = {
       application: {
         use: function use() {}
       },
-      Router: {}
     }
+
+    ctx.nr.api = api
     ctx.nr.agent = agent
-    ctx.nr.expressMock = expressMock
+    ctx.nr.appMock = appMock
+
+    const opts = {
+      moduleName,
+      absolutePath: moduleName,
+      onRequire(shim, module) {
+        shim.wrap(module.application, 'use', function wrapUse(shim, use) {
+          return function wrappedUse() {
+            return use.apply(this, arguments)
+          }
+        })
+      }
+    }
+    api.instrument(opts)
   })
 
   t.afterEach((ctx) => {
     agentHelper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should be callable without an error', (t, end) => {
-    const { api, expressMock } = t.nr
-    api.instrumentLoadedModule('express', expressMock)
-
-    end()
+  await t.test('should be callable without an error', (t) => {
+    const { api, appMock } = t.nr
+    api.instrumentLoadedModule(moduleName, appMock)
   })
 
-  await t.test('should return true when a function is instrumented', (t, end) => {
-    const { api, expressMock } = t.nr
-    const didInstrument = api.instrumentLoadedModule('express', expressMock)
+  await t.test('should return true when a function is instrumented', (t) => {
+    const { api, appMock } = t.nr
+    const didInstrument = api.instrumentLoadedModule(moduleName, appMock)
     assert.equal(didInstrument, true)
-
-    end()
   })
 
-  await t.test('should wrap express.application.use', (t, end) => {
-    const { api, expressMock } = t.nr
-    api.instrumentLoadedModule('express', expressMock)
+  await t.test('should wrap express.application.use', (t) => {
+    const { api, appMock } = t.nr
+    api.instrumentLoadedModule(moduleName, appMock)
 
-    assert.equal(typeof expressMock, 'object')
+    assert.equal(typeof appMock, 'object')
 
-    const shim = expressMock[symbols.shim]
-    const isWrapped = shim.isWrapped(expressMock.application.use)
+    const shim = appMock[symbols.shim]
+    const isWrapped = shim.isWrapped(appMock.application.use)
     assert.ok(isWrapped)
-
-    end()
   })
 
-  await t.test('should return false when it cannot resolve module', (t, end) => {
+  await t.test('should return false when it cannot resolve module', (t) => {
     const { api } = t.nr
     const result = api.instrumentLoadedModule('myTestModule')
 
     assert.equal(result, false)
-
-    end()
   })
 
-  await t.test('should return false when no instrumentation exists', (t, end) => {
+  await t.test('should return false when no instrumentation exists', (t) => {
     const { api } = t.nr
     const result = api.instrumentLoadedModule('sinon', {})
 
     assert.equal(result, false)
-
-    end()
   })
 
-  await t.test('should not instrument/wrap multiple times on multiple invocations', (t, end) => {
-    const { api, expressMock } = t.nr
-    const originalUse = expressMock.application.use
+  await t.test('should not instrument/wrap multiple times on multiple invocations', (t) => {
+    const { api, appMock } = t.nr
+    const originalUse = appMock.application.use
 
-    api.instrumentLoadedModule('express', expressMock)
-    api.instrumentLoadedModule('express', expressMock)
+    api.instrumentLoadedModule(moduleName, appMock)
+    api.instrumentLoadedModule(moduleName, appMock)
 
-    const nrOriginal = expressMock.application.use[symbols.original]
+    const nrOriginal = appMock.application.use[symbols.original]
     assert.equal(nrOriginal, originalUse)
-
-    end()
   })
 
-  await t.test('should not throw if supported module is not installed', function (t, end) {
+  await t.test('should not throw if supported module is not installed', function (t) {
     const { api } = t.nr
     // We need a supported module in our test. We need that module _not_ to be
     // installed. We'll use mysql.  This first bit ensures
@@ -105,7 +108,5 @@ test('Agent API - instrumentLoadedModule', async (t) => {
     assert.doesNotThrow(() => {
       api.instrumentLoadedModule('mysql', mod)
     })
-
-    end()
   })
 })

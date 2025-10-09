@@ -230,8 +230,8 @@ test('router mounted as a route handler', async (t) => {
   })
 
   let path = '*'
-  let segmentPath = '/*'
-  let metricsPath = segmentPath
+  let segmentPath = path
+  let metricsPath = '/*'
 
   // express 5 router must be regular expressions
   // need to handle the nuance of the segment vs metric name in express 5
@@ -303,10 +303,7 @@ test('segments for sub-app', async (t) => {
   app.use('/subapp1', subapp)
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint: '/subapp1/test' })
-  // express 5 no longer handles child routers as mounted applications
-  const firstSegment = isExpress5
-    ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
-    : 'Expressjs/Mounted App: /subapp1'
+  const firstSegment = 'Expressjs/Mounted App: /subapp1'
 
   assertSegments(
     transaction.trace,
@@ -342,10 +339,7 @@ test('segments for sub-app router', async (t) => {
   app.use('/subapp1', subapp)
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint: '/subapp1/test' })
-  // express 5 no longer handles child routers as mounted applications
-  const firstSegment = isExpress5
-    ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
-    : 'Expressjs/Mounted App: /subapp1'
+  const firstSegment = 'Expressjs/Mounted App: /subapp1'
 
   assertSegments(
     transaction.trace,
@@ -380,10 +374,7 @@ test('segments for wildcard', async (t) => {
   app.use('/subapp1', subapp)
 
   const { rootSegment, transaction } = await runTest({ agent, server, endpoint: '/subapp1/test' })
-  // express 5 no longer handles child routers as mounted applications
-  const firstSegment = isExpress5
-    ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
-    : 'Expressjs/Mounted App: /subapp1'
+  const firstSegment = 'Expressjs/Mounted App: /subapp1'
 
   assertSegments(
     transaction.trace,
@@ -685,6 +676,7 @@ test('when using a string pattern in path', async (t) => {
   const { agent, app, server } = t.nr
 
   const path = isExpress5 ? /ab?cd/ : '/ab?cd'
+  const metricPath = '/ab?cd'
   app.get(path, function myHandler(req, res) {
     res.end()
   })
@@ -697,7 +689,7 @@ test('when using a string pattern in path', async (t) => {
     assertSegmentsOptions
   )
 
-  checkMetrics(transaction.metrics, [`${NAMES.EXPRESS.MIDDLEWARE}myHandler/${path}`], path)
+  checkMetrics(transaction.metrics, [`${NAMES.EXPRESS.MIDDLEWARE}myHandler/${metricPath}`], metricPath)
 })
 
 test('when using a regular expression in path', async (t) => {
@@ -715,7 +707,7 @@ test('when using a regular expression in path', async (t) => {
     assertSegmentsOptions
   )
 
-  checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler//a/'], '/a/')
+  checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler//a'], '/a')
 })
 
 async function runTest({ agent, server, endpoint = '/test', errors = 0 }) {

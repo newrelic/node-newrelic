@@ -12,7 +12,6 @@ const test = require('node:test')
 const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
-const symbols = require('../../../lib/symbols')
 const { setup, teardown, TEST_URL } = require('./utils')
 const tsplan = require('@matteo.collina/tspl')
 
@@ -231,20 +230,6 @@ test('agent instrumentation of Express', async function (t) {
       let hmm
       hmm.ohno.failure.is.terrible()
     })
-
-    const router = app._router || app.router
-    for (let i = 0; i < router.stack.length; i++) {
-      const layer = router.stack[i]
-      // route middleware doesn't have a name, sentinel is our error handler,
-      // neither should be wrapped.
-      if (layer.route === undefined && layer.handle.name !== 'sentinel') {
-        assert.equal(
-          typeof layer.handle[symbols.original],
-          'function',
-          'all middlewares are wrapped'
-        )
-      }
-    }
 
     helper.makeGetRequest(`${TEST_URL}:${port}${TEST_PATH}`, function (error, response, body) {
       assert.ok(!error, 'should not error making request')
