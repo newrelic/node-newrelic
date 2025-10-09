@@ -95,11 +95,9 @@ test('non-error hooks', async (t) => {
         'WebTransaction/WebFrameworkUri/Fastify/GET//add-hook',
         [
           'Nodejs/Middleware/Fastify/onRequest/<anonymous>',
-          [
-            ...getExpectedSegments(REQUEST_HOOKS),
-            'Nodejs/Middleware/Fastify/routeHandler//add-hook',
-            getExpectedSegments(AFTER_HANDLER_HOOKS)
-          ]
+          ...getExpectedSegments(REQUEST_HOOKS),
+          'Nodejs/Middleware/Fastify/routeHandler//add-hook',
+          getExpectedSegments(AFTER_HANDLER_HOOKS)
         ]
       ]
     } else {
@@ -155,10 +153,8 @@ test('error hook', async function errorHookTest(t) {
         'WebTransaction/WebFrameworkUri/Fastify/GET//error',
         [
           'Nodejs/Middleware/Fastify/onRequest/<anonymous>',
-          [
-            'Nodejs/Middleware/Fastify/errorRoute//error',
-            `Nodejs/Middleware/Fastify/${hookName}/testHook`
-          ]
+          'Nodejs/Middleware/Fastify/errorRoute//error',
+          `Nodejs/Middleware/Fastify/${hookName}/testHook`
         ]
       ]
     } else {
