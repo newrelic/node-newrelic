@@ -37,7 +37,8 @@ test('async handlers', { skip: !isExpress5() }, async (t) => {
 
     const tx = await runTest(t, '/test')
     const [child] = tx.trace.getChildren(tx.trace.root.id)
-    const [mw, handler] = tx.trace.getChildren(child.id)
+    const [mw] = tx.trace.getChildren(child.id)
+    const [handler] = tx.trace.getChildren(mw.id)
     assert.ok(
       Math.ceil(mw.getDurationInMillis()) >= mwTimeout,
       `should be at least ${mwTimeout} for middleware segment`
@@ -53,7 +54,7 @@ test('async handlers', { skip: !isExpress5() }, async (t) => {
 
     app.use(() => Promise.reject(new Error('whoops i failed')))
     app.use('/test', function handler() {
-      throw new Error('should not call handler on error')
+      assert.ok(0, 'should not call handler on error')
     })
     app.use(function (_, req, res, next) {
       res.status(400).end()
@@ -63,7 +64,8 @@ test('async handlers', { skip: !isExpress5() }, async (t) => {
     const errors = tx.agent.errors.traceAggregator.errors
     assert.equal(errors.length, 1)
     const [error] = errors
-    assert.equal(error[2], 'HttpError 400', 'should return 400 from custom error handler')
+    assert.equal(error[2], 'whoops i failed')
+    assert.equal(tx.statusCode, 400)
   })
 })
 

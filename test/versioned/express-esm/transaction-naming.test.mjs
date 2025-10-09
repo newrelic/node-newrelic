@@ -261,7 +261,7 @@ test('when using a string pattern in path', async (t) => {
     res.end()
   })
 
-  await runTest({ agent, server, endpoint: '/abcd', expectedName: path })
+  await runTest({ agent, server, endpoint: '/abcd', expectedName: '/ab?cd' })
 })
 
 test('when using a regular expression in path', async (t) => {
@@ -271,7 +271,7 @@ test('when using a regular expression in path', async (t) => {
     res.end()
   })
 
-  await runTest({ agent, server, endpoint: '/abcd', expectedName: '/a/' })
+  await runTest({ agent, server, endpoint: '/abcd', expectedName: '/a' })
 })
 
 test('when using router with a route variable', async (t) => {
