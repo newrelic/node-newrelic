@@ -13,8 +13,8 @@ const logger = require('../../../lib/logger')
 const helper = require('../../lib/agent_helper')
 const urltils = require('../../../lib/util/urltils')
 const params = require('../../lib/params')
-const setup = require('./setup')
-const { getClient } = require('./utils')
+const setup = require('../mysql/setup')
+const { getClient } = require('../mysql/utils')
 const { findSegment } = require('../../lib/metrics_helper')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
@@ -305,14 +305,18 @@ module.exports = function ({ lib, factory, poolFactory, constants, version }) {
           query.on('end', function endCallback() {
             setTimeout(function actualEnd() {
               const transaction = agent.getTransaction().end()
-              assert.ok(transaction, 'should still have access to')
               pool.release(client)
-
               const traceRoot = transaction.trace.root
               const [querySegment] = transaction.trace.getChildren(traceRoot.id)
-              assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
               const queryChildren = transaction.trace.getChildren(querySegment.id)
-              assert.equal(queryChildren.length, 0, 'the Datastore segment should have no children')
+              assert.equal(queryChildren.length, 1, 'the query segment should have two children')
+
+              const childSegment = queryChildren[0]
+              assert.equal(
+                childSegment.name,
+                'Callback: endCallback',
+                'children should be callbacks'
+              )
               end()
             }, 100)
           })

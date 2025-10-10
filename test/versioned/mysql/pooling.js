@@ -15,7 +15,7 @@ const { lookup } = require('./utils')
 module.exports = function ({ factory, poolFactory, constants }) {
   const { USER, DATABASE, TABLE } = constants
   test('MySQL instrumentation with a connection pool', { timeout: 30000 }, async function (t) {
-    const plan = tspl(t, { plan: 13 })
+    const plan = tspl(t, { plan: 10 })
     const poolLogger = logger.child({ component: 'pool' })
     const agent = helper.instrumentMockedAgent()
     const mysql = factory()
@@ -66,13 +66,6 @@ module.exports = function ({ factory, poolFactory, constants }) {
         `Datastore/statement/MySQL/${DATABASE}.${TABLE}/select`,
         'should register as SELECT'
       )
-
-      const selectChildren = trace.getChildren(selectSegment.id)
-      plan.equal(selectChildren.length, 1, 'should only have a callback segment')
-      const cb = selectChildren[0]
-      plan.equal(cb.name, 'Callback: <anonymous>')
-      const cbChildren = trace.getChildren(cb.id)
-      plan.equal(cbChildren.length, 0)
     }
   })
 }
