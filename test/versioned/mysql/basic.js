@@ -160,11 +160,12 @@ module.exports = function ({ lib, factory, poolFactory, constants, version }) {
               assert.ok(!err, 'should not fail to set database')
 
               client.query('SELECT 1 + 1 AS solution', function (err) {
-                const seg = tx.trace.getParent(agent.tracer.getSegment().parentId)
+                assert.ok(!err, 'no errors')
+                const seg = agent.tracer.getSegment()
+                assert.ok(seg, 'there is a segment')
+                assert.equal(seg.name, 'Datastore/statement/MySQL/unknown/select', 'should be in select segment')
                 const attributes = seg.getAttributes()
 
-                assert.ok(!err, 'no errors')
-                assert.ok(seg, 'there is a segment')
                 assert.equal(
                   attributes.host,
                   urltils.isLocalhost(params.mysql_host)
@@ -378,10 +379,11 @@ module.exports = function ({ lib, factory, poolFactory, constants, version }) {
             client.query('use test_db;', function (err) {
               assert.ok(!err)
               client.query('SELECT 1 + 1 AS solution', function (err) {
-                const seg = txn.trace.getParent(agent.tracer.getSegment().parentId)
-                const attributes = seg.getAttributes()
                 assert.ok(!err)
+                const seg = agent.tracer.getSegment()
                 assert.ok(seg, 'should have a segment')
+                assert.equal(seg.name, 'Datastore/statement/MySQL/unknown/select', 'should be in select segment')
+                const attributes = seg.getAttributes()
                 assert.equal(
                   attributes.host,
                   urltils.isLocalhost(params.mysql_host)
