@@ -66,14 +66,6 @@ module.exports = function ({ factory, poolFactory, constants }) {
         `Datastore/statement/MySQL/${DATABASE}.${TABLE}/select`,
         'should register as SELECT'
       )
-
-      // const selectChildren = trace.getChildren(selectSegment.id)
-      // TODO: No need to check Callback children anymore
-      // plan.equal(selectChildren.length, 1, 'should only have a callback segment')
-      // const cb = selectChildren[0]
-      // plan.equal(cb.name, 'Callback: <anonymous>')
-      // const cbChildren = trace.getChildren(cb.id)
-      // plan.equal(cbChildren.length, 0)
     }
   })
 }
