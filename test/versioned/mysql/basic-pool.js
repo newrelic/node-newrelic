@@ -376,7 +376,6 @@ module.exports = function ({ factory, constants, pkgVersion }) {
         const socketPool = mysql.createPool(socketConfig)
         helper.runInTransaction(agent, function transactionInScope(txn) {
           socketPool.query('SELECT 1 + 1 AS solution', function (err) {
-            // TODO: my MySQL setup is throwing "Client does not support authentication protocol"
             assert.ok(!err, 'should not error making query')
 
             const seg = getDatastoreSegment({
