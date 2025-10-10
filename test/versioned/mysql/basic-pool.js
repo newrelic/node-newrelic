@@ -152,14 +152,6 @@ module.exports = function ({ factory, constants, pkgVersion }) {
         pool.query('SELECT 1 + 1 AS solution', function (err) {
           assert.ok(!err, 'should not error making query')
           const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
-          // TODO: all segments are present, but active segment,
-          // agent.tracer.getSegment(), is messed up.
-          // (Datastore/.../select exists and is a child of MySQL Pool#query
-          // which is currently the active segment)
-          // Previously, the active segment here was a Callback<anonymous>,
-          // which is no longer required.
-          //
-          // TDLR: Does it matter that we are now in a different segment?
           assert.ok(seg, 'should have a datastore segment')
 
           const attributes = seg.getAttributes()
