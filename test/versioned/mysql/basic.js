@@ -304,23 +304,15 @@ module.exports = function ({ lib, factory, poolFactory, constants, version }) {
 
           query.on('end', function endCallback() {
             setTimeout(function actualEnd() {
-              // const transaction = agent.getTransaction().end()
+              const transaction = agent.getTransaction().end()
+              assert.ok(transaction, 'should still have access to')
               pool.release(client)
 
-              // TODO: This test is safe to ignore because Subscribers will not
-              // produce Callback segments anymore.
-
-              // const traceRoot = transaction.trace.root
-              // const [querySegment] = transaction.trace.getChildren(traceRoot.id)
-              // const queryChildren = transaction.trace.getChildren(querySegment.id)
-              // assert.equal(queryChildren.length, 1, 'the query segment should have two children')
-
-              // const childSegment = queryChildren[0]
-              // assert.equal(
-              //   childSegment.name,
-              //   'Callback: endCallback',
-              //   'children should be callbacks'
-              // )
+              const traceRoot = transaction.trace.root
+              const [querySegment] = transaction.trace.getChildren(traceRoot.id)
+              assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
+              const queryChildren = transaction.trace.getChildren(querySegment.id)
+              assert.equal(queryChildren.length, 0, 'the Datastore segment should have no children')
               end()
             }, 100)
           })
