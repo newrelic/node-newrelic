@@ -5,7 +5,7 @@
 
 'use strict'
 
-const basicTests = require('../mysql/basic')
+const basicTests = require('./basic')
 const constants = require('./constants')
 const helper = require('../../lib/agent_helper')
 
