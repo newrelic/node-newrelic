@@ -247,6 +247,24 @@ test('http2 outbound request', async (t) => {
     })
   })
 
+  await t.test('should not crash if path is not set', (t, end) => {
+    const { agent, http2, port, protocol, host } = t.nr
+    const name = NAMES.EXTERNAL.PREFIX + host + ':' + port + '/'
+    helper.runInTransaction(agent, function () {
+      t.nr.transaction = agent.getTransaction()
+      makeRequest(
+        http2,
+        {
+          port,
+          protocol,
+          host,
+          method: 'GET'
+        },
+        () => checkName(t, end, name)
+      )
+    })
+  })
+
   await t.test('should parse raw headers if headers are not an object', (t, end) => {
     const { agent, http2, port, protocol, host } = t.nr
     const path = '/rawHeaders?first=1&second=2'
@@ -681,11 +699,15 @@ test('http2 error handling', async (t) => {
 async function makeRequest(http2, params, cb) {
   const { protocol, host, port, path, method, headers: requestHeaders, body = '', testing = {} } = params
   let connectUrl
+  let pathstring = ''
+  if (path) {
+    pathstring = path
+  }
   // protocol is required by http2.connect()
   if (!protocol) {
-    connectUrl = port ? `${host}:${port}${path}` : `${host}`
+    connectUrl = port ? `${host}:${port}${pathstring}` : `${host}`
   } else {
-    connectUrl = port ? `${protocol}://${host}:${port}${path}` : `${protocol}://${host}`
+    connectUrl = port ? `${protocol}://${host}:${port}${pathstring}` : `${protocol}://${host}`
   }
 
   let session
@@ -695,7 +717,7 @@ async function makeRequest(http2, params, cb) {
     return cb(e)
   }
 
-  const http2Headers = {} //  ':path': path
+  const http2Headers = {} //
 
   if (method) {
     http2Headers[':method'] = method
