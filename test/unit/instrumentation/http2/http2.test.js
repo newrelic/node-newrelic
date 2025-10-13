@@ -717,7 +717,7 @@ async function makeRequest(http2, params, cb) {
     return cb(e)
   }
 
-  const http2Headers = {} //
+  const http2Headers = {}
 
   if (method) {
     http2Headers[':method'] = method
