@@ -12,6 +12,7 @@ const hashes = require('../../../../lib/util/hashes')
 const helper = require('../../../lib/agent_helper')
 const createHttp2ResponseServer = require('./fixtures/http2')
 const events = require('node:events')
+const nodeVersion = Number(/^v?(\d+)/.exec(process.version)[1])
 
 const beforeEach = async (ctx) => {
   const { server, baseUrl, responses, host, port } = await createHttp2ResponseServer()
@@ -265,7 +266,8 @@ test('http2 outbound request', async (t) => {
     })
   })
 
-  await t.test('should parse raw headers if headers are not an object', (t, end) => {
+  await t.test('should parse raw headers if headers are not an object', { skip: nodeVersion < 22 }, (t, end) => {
+    // Raw headers as a stream option were introduced in Node v22, so we skip anything earlier.
     const { agent, http2, port, protocol, host } = t.nr
     const path = '/rawHeaders?first=1&second=2'
     const name = NAMES.EXTERNAL.PREFIX + host + ':' + port + '/rawHeaders'
