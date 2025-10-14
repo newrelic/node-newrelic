@@ -11,26 +11,26 @@ supported by the agent.
 
 | Package name | Minimum supported version | Latest published version | Introduced in* |
 | --- | --- | --- | --- |
-| `@apollo/gateway` | 2.3.0 | 2.11.2 | `@newrelic/apollo-server-plugin@1.0.0` |
+| `@apollo/gateway` | 2.3.0 | 2.11.3 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 5.0.0 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.901.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.902.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.901.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.901.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.902.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.910.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.910.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.910.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.910.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.910.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.8.0 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.1.1 | 11.9.0 |
-| `@google/genai` | 1.1.0 | 1.22.0 | 12.21.0 |
+| `@google/genai` | 1.1.0 | 1.24.0 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.14.0 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.3 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 14.0.0 | 3.2.0 |
 | `@langchain/core` | 0.1.17 | 0.3.78 | 11.13.0 |
-| `@modelcontextprotocol/sdk` | 1.13.0 | 1.19.1 | 13.2.0 |
+| `@modelcontextprotocol/sdk` | 1.13.0 | 1.20.0 | 13.2.0 |
 | `@nestjs/cli` | 9.0.0 | 11.0.10 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
-| `@prisma/client` | 5.0.0 | 6.17.0 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 4.7.0 | 11.0.0 |
+| `@prisma/client` | 5.0.0 | 6.17.1 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 4.8.1 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.9 | 2.0.0 |
 | `aws-sdk` | 2.2.48 | 2.1692.0 | 6.2.0 |
 | `bluebird` | 2.0.0 | 3.7.2 | 1.27.0 |
@@ -49,8 +49,8 @@ supported by the agent.
 | `mongodb` | 4.1.4 | 6.20.0 | 1.32.0 |
 | `mysql` | 2.16.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.15.2 | 1.32.0 |
-| `next` | 13.4.19 | 15.5.4 | 12.0.0 |
-| `openai` | 4.0.0 | 6.2.0 | 11.13.0 |
+| `next` | 13.4.19 | 15.5.5 | 12.0.0 |
+| `openai` | 4.0.0 | 6.3.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.16.3 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.5.2 | 9.0.0 |
 | `pino` | 8.0.0 | 10.0.0 | 8.11.0 |
