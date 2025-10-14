@@ -6,10 +6,7 @@
       "changes": {
         "security": [],
         "bugfixes": [],
-        "features": [
-          "Added `adaptive_sampling_target` logic",
-          "Added `adaptive_sampling_target` to config"
-        ]
+        "features": []
       }
     },
     {

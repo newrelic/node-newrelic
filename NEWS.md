@@ -1,10 +1,5 @@
 ### v13.5.0 (2025-10-14)
 
-#### Features
-
-* Added `adaptive_sampling_target` logic ([#3409](https://github.com/newrelic/node-newrelic/pull/3409)) ([a6f8280](https://github.com/newrelic/node-newrelic/commit/a6f82806d2f3445e4fa53dba4dde53508a8b63b3))
-* Added `adaptive_sampling_target` to config ([#3406](https://github.com/newrelic/node-newrelic/pull/3406)) ([0840324](https://github.com/newrelic/node-newrelic/commit/08403241c8a20b7c9e211a8fa8343bedce872917))
-
 #### Code refactoring
 
 * Updated `fastify` instrumentation to subscribe to events emitted ([#3407](https://github.com/newrelic/node-newrelic/pull/3407)) ([51e361e](https://github.com/newrelic/node-newrelic/commit/51e361ed736fa1235eeb16f1c5ec833a1b56a0bf))
@@ -14,7 +9,6 @@
 #### Documentation
 
 * Updated compatibility report ([#3413](https://github.com/newrelic/node-newrelic/pull/3413)) ([fef98dd](https://github.com/newrelic/node-newrelic/commit/fef98ddffddf60b32f162ea87dee2a3a0bdf8048))
-* Updated compatibility report ([#3402](https://github.com/newrelic/node-newrelic/pull/3402)) ([d5ca93b](https://github.com/newrelic/node-newrelic/commit/d5ca93bbd75c2d96c021c1afa5fbba9c31ab7dcc))
 
 #### Miscellaneous chores
 
