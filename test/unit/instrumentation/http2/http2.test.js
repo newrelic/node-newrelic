@@ -280,9 +280,7 @@ test('http2 outbound request', async (t) => {
             host,
             port,
             protocol,
-            path,
-            method: 'GET',
-            testing: { overrideHeaders: [':path', path, ':authority', `${host}:${port}`, ':method', 'GET'] }
+            testing: { overrideHeaders: [':path', path] }
           },
           finish
         )
@@ -345,7 +343,48 @@ test('http2 outbound request', async (t) => {
           'request.parameters.first': '1',
           'request.parameters.second': '2'
         },
-        'can handle raw headers in request'
+        'can use the host header in request'
+      )
+      end()
+    }
+  })
+
+  await t.test('should be able to use :authority pseudoheader if host/port is not set', (t, end) => {
+    const { agent, http2, port, protocol, host } = t.nr
+    const path = '/noHost?first=1&second=2'
+    const name = NAMES.EXTERNAL.PREFIX + host + ':' + port + '/noHost'
+    helper.runInTransaction(agent, function () {
+      t.nr.transaction = agent.getTransaction()
+      assert.doesNotThrow(() => {
+        makeRequest(
+          http2,
+          {
+            host, // for connect
+            port, // for connect
+            protocol,
+            method: 'GET',
+            testing: { overrideHeaders: { ':path': path, ':authority': `${host}:${port}` } }
+          },
+          finish
+        )
+      })
+    })
+    async function finish() {
+      const { transaction } = t.nr
+      const [, child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(child.name, name)
+      assert.deepEqual(
+        child.attributes.get(DESTINATIONS.SPAN_EVENT),
+        {
+          hostname: host,
+          port,
+          url: `http://${host}:${port}/noHost`,
+          'http.statusCode': 200,
+          procedure: 'GET',
+          'request.parameters.first': '1',
+          'request.parameters.second': '2'
+        },
+        'can use the :authority pseudoheader in request'
       )
       end()
     }
