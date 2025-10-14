@@ -3,7 +3,8 @@
 #### Code refactoring
 
 * Updated `fastify` instrumentation to subscribe to events emitted ([#3407](https://github.com/newrelic/node-newrelic/pull/3407)) ([51e361e](https://github.com/newrelic/node-newrelic/commit/51e361ed736fa1235eeb16f1c5ec833a1b56a0bf))
-* Updated `pg` and `pg-native` instrumentation to use subscribers ([#3397](https://github.com/newrelic/node-newrelic/pull/3397)) ([04af258](https://github.com/newrelic/node-newrelic/commit/04af2580a554ecabedab447d5edc5cec836d7f40))
+* Updated `pg` and `pg-native` instrumentation to subscribe to events emitted ([#3397](https://github.com/newrelic/node-newrelic/pull/3397)) ([04af258](https://github.com/newrelic/node-newrelic/commit/04af2580a554ecabedab447d5edc5cec836d7f40))
+
 * Updated `config.instrumentation.timers.enabled` to false to disable `timers.setTimeout` and `timers.setInterval` by default. ([#3414](https://github.com/newrelic/node-newrelic/pull/3414)) ([b925d3d](https://github.com/newrelic/node-newrelic/commit/b925d3d178886e6d4bbd0f2eaa6f51b6fddd7878))
 
 #### Documentation
