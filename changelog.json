@@ -7,8 +7,8 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "`adaptive_sampling_target` logic",
-          "Add `adaptive_sampling_target` to config"
+          "Added `adaptive_sampling_target` logic",
+          "Added `adaptive_sampling_target` to config"
         ]
       }
     },

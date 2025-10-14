@@ -2,27 +2,24 @@
 
 #### Features
 
-* `adaptive_sampling_target` logic ([#3409](https://github.com/newrelic/node-newrelic/pull/3409)) ([a6f8280](https://github.com/newrelic/node-newrelic/commit/a6f82806d2f3445e4fa53dba4dde53508a8b63b3))
-* Add `adaptive_sampling_target` to config ([#3406](https://github.com/newrelic/node-newrelic/pull/3406)) ([0840324](https://github.com/newrelic/node-newrelic/commit/08403241c8a20b7c9e211a8fa8343bedce872917))
+* Added `adaptive_sampling_target` logic ([#3409](https://github.com/newrelic/node-newrelic/pull/3409)) ([a6f8280](https://github.com/newrelic/node-newrelic/commit/a6f82806d2f3445e4fa53dba4dde53508a8b63b3))
+* Added `adaptive_sampling_target` to config ([#3406](https://github.com/newrelic/node-newrelic/pull/3406)) ([0840324](https://github.com/newrelic/node-newrelic/commit/08403241c8a20b7c9e211a8fa8343bedce872917))
 
 #### Code refactoring
 
-* Update `fastify` instrumentation to subscribe to events emitted ([#3407](https://github.com/newrelic/node-newrelic/pull/3407)) ([51e361e](https://github.com/newrelic/node-newrelic/commit/51e361ed736fa1235eeb16f1c5ec833a1b56a0bf))
-* Update `pg` and `pg-native` instrumentation to use subscribers ([#3397](https://github.com/newrelic/node-newrelic/pull/3397)) ([04af258](https://github.com/newrelic/node-newrelic/commit/04af2580a554ecabedab447d5edc5cec836d7f40))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
+* Updated `fastify` instrumentation to subscribe to events emitted ([#3407](https://github.com/newrelic/node-newrelic/pull/3407)) ([51e361e](https://github.com/newrelic/node-newrelic/commit/51e361ed736fa1235eeb16f1c5ec833a1b56a0bf))
+* Updated `pg` and `pg-native` instrumentation to use subscribers ([#3397](https://github.com/newrelic/node-newrelic/pull/3397)) ([04af258](https://github.com/newrelic/node-newrelic/commit/04af2580a554ecabedab447d5edc5cec836d7f40))
 * Updated `config.instrumentation.timers.enabled` to false to disable `timers.setTimeout` and `timers.setInterval` by default. ([#3414](https://github.com/newrelic/node-newrelic/pull/3414)) ([b925d3d](https://github.com/newrelic/node-newrelic/commit/b925d3d178886e6d4bbd0f2eaa6f51b6fddd7878))
 
 #### Documentation
 
 * Updated compatibility report ([#3413](https://github.com/newrelic/node-newrelic/pull/3413)) ([fef98dd](https://github.com/newrelic/node-newrelic/commit/fef98ddffddf60b32f162ea87dee2a3a0bdf8048))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
 * Updated compatibility report ([#3402](https://github.com/newrelic/node-newrelic/pull/3402)) ([d5ca93b](https://github.com/newrelic/node-newrelic/commit/d5ca93bbd75c2d96c021c1afa5fbba9c31ab7dcc))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 
 #### Miscellaneous chores
 
 * Added a new diagnostics base class and migrated undici to use new class ([#3408](https://github.com/newrelic/node-newrelic/pull/3408)) ([8047bf1](https://github.com/newrelic/node-newrelic/commit/8047bf165ae5105bb612c1a834d574078d52724d))
-* created directory for samplers ([#3419](https://github.com/newrelic/node-newrelic/pull/3419)) ([dd2d3df](https://github.com/newrelic/node-newrelic/commit/dd2d3dfe1bb2582de51e07a1cce6077df84f7108))
+* Created directory for samplers ([#3419](https://github.com/newrelic/node-newrelic/pull/3419)) ([dd2d3df](https://github.com/newrelic/node-newrelic/commit/dd2d3dfe1bb2582de51e07a1cce6077df84f7108))
 
 #### Styles
 
