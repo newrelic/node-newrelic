@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.5.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "`adaptive_sampling_target` logic",
+          "Add `adaptive_sampling_target` to config"
+        ]
+      }
+    },
+    {
       "version": "13.4.0",
       "changes": {
         "security": [],
