@@ -104,7 +104,8 @@ test.afterEach(afterEach)
         'request.model': modelId,
         duration: segment.getDurationInMillis(),
         input: prompt,
-        error: false
+        error: false,
+        'response.usage.total_tokens': 13
       }
 
       assert.equal(embedding[0].type, 'LlmEmbedding')
