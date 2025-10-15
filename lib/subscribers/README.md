@@ -12,7 +12,7 @@ TODO: Describe the reliance on `orchestrion-js` and `apm-tracing-hooks`. Describ
 
 ## How to Implement
 
-Like `Shim`-based instrumentation, subscriber-based instrumentation largely relies on the specifc way the package you're instrumenting is written. However, all packages will follow the below template/guidelines.
+Like `Shim`-based instrumentation, subscriber-based instrumentation largely relies on the specific way the package you're instrumenting is written. However, all packages will follow the below template/guidelines.
 
 ### Disable Shim-based Instrumentation
 
@@ -23,14 +23,14 @@ Like `Shim`-based instrumentation, subscriber-based instrumentation largely reli
 
 Now, it is time to look at the internals of the package you're instrumenting. Again, the `Shim`-based instrumentation you're replacing should be helpful here to get the gist of the package internals.
 
-1. Create a folder within `lib/subscribers` with the name of the package. If the package name is expectionally long or complicated or is prefixed with `@`, you may provide a shortened version (e.g. `@modelcontextprotocol/sdk` -> `mcp-sdk`). Remember we operate in snake-case.
+1. Create a folder within `lib/subscribers` with the name of the package. If the package name is exceptionally long or complicated or is prefixed with `@`, you may provide a shortened version (e.g. `@modelcontextprotocol/sdk` -> `mcp-sdk`). Remember we operate in snake-case.
 2. Create a `config.js` within that folder.
 3. Add a reference to the new config file in [`lib/subscriber-configs.js`](../subscriber-configs.js):
    1. ```javascript
       ...require('./subscribers/<package_name>/config')
       ```
 4. Identify one function to start with and find where this function lives in the package i.e. the relative file path.
-5. Once you have found where the function you're instrumentating is, you need to determine how it is defined in [AST](https://astexplorer.net/), so that `orchestrion` can properly wrap it. You can then add the proper instrumentation object to your `config.js`.
+5. Once you have found where the function you're instrumenting is, you need to determine how it is defined in [AST](https://astexplorer.net/), so that `orchestrion` can properly wrap it. You can then add the proper instrumentation object to your `config.js`.
 
 #### Config Template
 
@@ -44,7 +44,7 @@ const config = {
       // It could also contain the moduleName or className to differentiate between subscribers.
       channelName: 'nr_functionName',
       // <version_range> should be the same as the old instrumentation. However, you may need to break apart that range across different configs because code can differ from version to version.
-      // <relative_path_to_file> is the relative path from the instrumentated package to the file that contains the code that you want to instrument
+      // <relative_path_to_file> is the relative path from the instrumented package to the file that contains the code that you want to instrument
       module: { name: '<package_name>', versionRange: '<version_range>', filePath: '<relative_path_to_file>'},
       functionQuery: {
         className: 'ClassName',
@@ -97,4 +97,4 @@ For messaging queues, inherit from `MessageConsumerSubscriber` or `MessageProduc
 
 #### Propagation Subscriber
 
-Many packages are written in a way that causes `AsyncLocalStorage` to lose context. A common instance of this is multiple nestled callbacks. To solve this, create `PropagationSubscribers` for inner functions within the one you are instrumentating. You may have to expirement a few times to know which function is losing context; in most cases, you should only need one `PropagationSubscriber` to support another subscriber.
+Many packages are written in a way that causes `AsyncLocalStorage` to lose context. A common instance of this is multiple nestled callbacks. To solve this, create `PropagationSubscriber`s for inner functions within the one you are instrumenting. You may have to experiment a few times to know which function is losing context; in most cases, you should only need one `PropagationSubscriber` to support another subscriber.
