@@ -20,7 +20,7 @@ Test cases may also contain the following properties:
   * `pathological`: (boolean) tests which are designed specifically to break
   specific methods of obfuscation, or contain patterns that are known to be
   difficult to handle correctly
-  * `comments`: an array of strings that could be usefult for understanding
+  * `comments`: an array of strings that could be useful for understanding
   the test.
 
 The following database documentation may be helpful in understanding these test

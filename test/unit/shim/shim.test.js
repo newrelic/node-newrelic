@@ -814,7 +814,7 @@ test('Shim', async function (t) {
       assert.equal(executed, true)
     })
 
-    await t.test('should store the wrapped version for later retrival', function (t) {
+    await t.test('should store the wrapped version for later retrieval', function (t) {
       const { shim } = t.nr
       const original = {}
       const wrapped = shim.wrapExport(original, function () {
@@ -2511,7 +2511,7 @@ test('Shim', async function (t) {
     )
 
     await t.test(
-      'should not copy parameters into segment attributes when `attributes.enabled` is fale',
+      'should not copy parameters into segment attributes when `attributes.enabled` is false',
       function (t) {
         const { agent, parameters, shim } = t.nr
         let segment

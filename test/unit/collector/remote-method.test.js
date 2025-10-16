@@ -174,7 +174,7 @@ test('_safeRequest', async (t) => {
     assert.equal(
       metrics['Supportability/Nodejs/Collector/MaxPayloadSizeLimit/test'].callCount,
       1,
-      'should log MaxPayloadSizeLimit supportibility metric'
+      'should log MaxPayloadSizeLimit supportability metric'
     )
   })
 })

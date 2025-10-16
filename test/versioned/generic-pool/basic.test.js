@@ -21,7 +21,7 @@ test.beforeEach((ctx) => {
   ctx.nr.pool = require('generic-pool')
   PoolClass = ctx.nr.pool.Pool
 
-  // Uinstrumented task manager:
+  // Uninstrumented task manager:
   ctx.nr.tasks = []
   ctx.nr.tasksInterval = setInterval(() => {
     if (ctx.nr.tasks.length > 0) {
