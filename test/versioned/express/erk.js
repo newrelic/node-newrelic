@@ -21,7 +21,7 @@ app.get('/test/:id', function (req, res, next) {
   })
 })
 
-helper.ranomPort(function (port) {
+helper.randomPort(function (port) {
   server.listen(port, function () {
     process.on('message', function (code) {
       helper.makeGetRequest('http://localhost:' + port + '/test/31337', function () {

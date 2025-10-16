@@ -159,7 +159,7 @@ test('Http external span is bridged accordingly', (t, end) => {
   const { agent, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'undici-external-test'
-    tracer.startActiveSpan('unidic-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+    tracer.startActiveSpan('undici-outbound', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
       span.setAttribute(ATTR_HTTP_RES_STATUS_CODE, 200)
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'External/www.newrelic.com/search')
