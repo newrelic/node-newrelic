@@ -100,7 +100,7 @@ test('transaction name with shared middleware function', function (t, end) {
     next()
   })
 
-  app.get('/path1', function (req, res) {
+  app.get('/path1', function secondRoute(req, res) {
     res.end()
   })
 
@@ -246,7 +246,7 @@ test('when using a string pattern in path', function (t, end) {
     res.end()
   })
 
-  runTest({ t, end, endpoint: '/abcd', expectedName: path })
+  runTest({ t, end, endpoint: '/abcd', expectedName: '/ab?cd' })
 })
 
 test('when using a regular expression in path', function (t, end) {
@@ -256,7 +256,7 @@ test('when using a regular expression in path', function (t, end) {
     res.end()
   })
 
-  runTest({ t, end, endpoint: '/abcd', expectedName: '/a/' })
+  runTest({ t, end, endpoint: '/abcd', expectedName: '/a' })
 })
 
 test('when using router with a route variable', function (t, end) {
