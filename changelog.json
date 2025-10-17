@@ -621,7 +621,7 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Added supoort for Node 22",
+          "Added support for Node 22",
           "Added AIM support for Meta Llama3 models in AWS Bedrock"
         ]
       }
