@@ -80,7 +80,7 @@ test('recordWeb when recording web transactions with distributed tracing enabled
     agent.config.cross_application_tracer.enabled = true
     agent.config.distributed_tracing.account_id = '1234'
     agent.config.primary_application_id = '5677'
-    agent.config.trusted_account_key = '1234'
+    agent.config.distributed_tracing.trusted_account_key = '1234'
 
     const payload = trans._createDistributedTracePayload().text()
     trans.isDistributedTrace = null
@@ -133,7 +133,7 @@ test('recordWeb when recording web transactions with distributed tracing enabled
     agent.config.cross_application_tracer.enabled = true
     agent.config.distributed_tracing.account_id = '1234'
     agent.config.primary_application_id = '5677'
-    agent.config.trusted_account_key = '1234'
+    agent.config.distributed_tracing.trusted_account_key = '1234'
 
     record({
       transaction: trans,

@@ -33,7 +33,7 @@ test('distributed tracing full integration', async (t) => {
   const agent = helper.instrumentMockedAgent(config)
   agent.config.primary_application_id = APP_ID
   agent.config.distributed_tracing.account_id = ACCOUNT_ID
-  agent.config.trusted_account_key = ACCOUNT_ID
+  agent.config.distributed_tracing.trusted_account_key = ACCOUNT_ID
 
   // require http after creating the agent
   const http = require('http')
@@ -265,7 +265,7 @@ test('distributed tracing', async (t) => {
     })
     agent.config.primary_application_id = APP_ID
     agent.config.distributed_tracing.account_id = ACCOUNT_ID
-    agent.config.trusted_account_key = ACCOUNT_ID
+    agent.config.distributed_tracing.trusted_account_key = ACCOUNT_ID
     agent.config.encoding_key = 'foobar'
 
     const http = require('http')

@@ -826,7 +826,7 @@ test('built-in http module instrumentation', async (t) => {
       const priority = 0.789
       // eslint-disable-next-line
       const tracestate = `190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-${priority}-1563574856827`;
-      agent.config.trusted_account_key = 190
+      agent.config.distributed_tracing.trusted_account_key = 190
 
       const server = http.createServer(function (req, res) {
         const txn = agent.getTransaction()
@@ -859,7 +859,7 @@ test('built-in http module instrumentation', async (t) => {
       const { agent, http } = t.nr
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
-      agent.config.trusted_account_key = 190
+      agent.config.distributed_tracing.trusted_account_key = 190
 
       const server = http.createServer(function (req, res) {
         const txn = agent.getTransaction()
@@ -891,7 +891,7 @@ test('built-in http module instrumentation', async (t) => {
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
       const tracestate = ''
-      agent.config.trusted_account_key = 190
+      agent.config.distributed_tracing.trusted_account_key = 190
 
       const server = http.createServer(function (req, res) {
         const txn = agent.getTransaction()

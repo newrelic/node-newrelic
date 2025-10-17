@@ -347,7 +347,7 @@ test('amqplib callback instrumentation', async function (t) {
     agent.config.span_events.enabled = true
     agent.config.distributed_tracing.account_id = 1234
     agent.config.primary_application_id = 4321
-    agent.config.trusted_account_key = 1234
+    agent.config.distributed_tracing.trusted_account_key = 1234
 
     const exchange = amqpUtils.DIRECT_EXCHANGE
     let queue

@@ -805,7 +805,7 @@ test('_acceptDistributedTracePayload', async (t) => {
     const agent = helper.loadMockedAgent({
       distributed_tracing: { enabled: true }
     })
-    agent.config.trusted_account_key = '1'
+    agent.config.distributed_tracing.trusted_account_key = '1'
     // Clear deprecated values just to be extra sure.
     agent.config._process_id = null
     agent.config.distributed_tracing.account_ids = null
@@ -861,7 +861,7 @@ test('_acceptDistributedTracePayload', async (t) => {
 
   await t.test('should not accept payload if no configured trusted key', (t) => {
     const { txn } = t.nr
-    txn.agent.config.trusted_account_key = null
+    txn.agent.config.distributed_tracing.trusted_account_key = null
     txn.agent.config.distributed_tracing.account_id = null
 
     const data = {
@@ -1119,7 +1119,7 @@ test('_createDistributedTracePayload', async (t) => {
     agent.recordSupportability = sinon.spy()
     agent.config.distributed_tracing.account_id = '5678'
     agent.config.primary_application_id = '1234'
-    agent.config.trusted_account_key = '5678'
+    agent.config.distributed_tracing.trusted_account_key = '5678'
 
     // Clear deprecated values just to be extra sure.
     agent.config.cross_process_id = null
@@ -1214,7 +1214,7 @@ test('acceptDistributedTraceHeaders', async (t) => {
       distributed_tracing: { enabled: true },
       span_events: { enabled: true }
     })
-    ctx.nr.agent.config.trusted_account_key = '1'
+    ctx.nr.agent.config.distributed_tracing.trusted_account_key = '1'
   })
 
   t.afterEach((ctx) => {
@@ -1273,7 +1273,7 @@ test('acceptDistributedTraceHeaders', async (t) => {
   await t.test('should use newrelic format when no traceparent', (t, end) => {
     const { agent } = t.nr
     const trustedAccountKey = '123'
-    agent.config.trusted_account_key = trustedAccountKey
+    agent.config.distributed_tracing.trusted_account_key = trustedAccountKey
 
     const incomingTraceId = '6e2fea0b173fdad0'
     const expectedTraceId = '0000000000000000' + incomingTraceId
@@ -1319,7 +1319,7 @@ test('acceptDistributedTraceHeaders', async (t) => {
   await t.test('should not throw error when headers is a string', (t, end) => {
     const { agent } = t.nr
     const trustedAccountKey = '123'
-    agent.config.trusted_account_key = trustedAccountKey
+    agent.config.distributed_tracing.trusted_account_key = trustedAccountKey
 
     helper.runInTransaction(agent, function (txn) {
       const childSegment = txn.trace.add('child')
@@ -1426,7 +1426,7 @@ test('insertDistributedTraceHeaders', async (t) => {
       agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.primary_application_id = 'Application1'
       agent.config.distributed_tracing.enabled = true
-      agent.config.trusted_account_key = trustedAccountKey
+      agent.config.distributed_tracing.trusted_account_key = trustedAccountKey
       agent.config.span_events.enabled = true
 
       const incomingTraceId = '6E2fEA0B173FDAD0'
@@ -1486,7 +1486,7 @@ test('insertDistributedTraceHeaders', async (t) => {
   await t.test('should generate a valid new trace context traceparent header', (t) => {
     const { agent, tracer } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.trusted_account_key = '1'
+    agent.config.distributed_tracing.trusted_account_key = '1'
     agent.config.span_events.enabled = true
 
     const txn = new Transaction(agent)
@@ -1512,7 +1512,7 @@ test('insertDistributedTraceHeaders', async (t) => {
   await t.test('should generate new parentId when spans_events disabled', (t) => {
     const { agent, tracer } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.trusted_account_key = '1'
+    agent.config.distributed_tracing.trusted_account_key = '1'
     agent.config.span_events.enabled = false
 
     const txn = new Transaction(agent)
@@ -1532,7 +1532,7 @@ test('insertDistributedTraceHeaders', async (t) => {
   await t.test('should set traceparent sample part to 01 for sampled transaction', (t) => {
     const { agent, tracer } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.trusted_account_key = '1'
+    agent.config.distributed_tracing.trusted_account_key = '1'
     agent.config.span_events.enabled = true
 
     const txn = new Transaction(agent)
@@ -1550,7 +1550,7 @@ test('insertDistributedTraceHeaders', async (t) => {
   await t.test('should set traceparent traceid if traceparent exists on transaction', (t) => {
     const { agent, tracer } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.trusted_account_key = '1'
+    agent.config.distributed_tracing.trusted_account_key = '1'
     agent.config.span_events.enabled = true
 
     const txn = new Transaction(agent)
@@ -1587,7 +1587,7 @@ test('insertDistributedTraceHeaders', async (t) => {
     agent.config.distributed_tracing.account_id = 'AccountId1'
     agent.config.primary_application_id = 'Application1'
     agent.config.distributed_tracing.enabled = true
-    agent.config.trusted_account_key = trustedAccountKey
+    agent.config.distributed_tracing.trusted_account_key = trustedAccountKey
     agent.config.span_events.enabled = true
     const txn = new Transaction(agent)
     const traceId = hashes.makeId(32)
@@ -1636,7 +1636,7 @@ test('acceptTraceContextPayload', async (t) => {
   await t.test('should accept a valid trace context traceparent header', (t, end) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.trusted_account_key = '1'
+    agent.config.distributed_tracing.trusted_account_key = '1'
     agent.config.span_events.enabled = true
 
     const goodParent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
@@ -1658,7 +1658,7 @@ test('acceptTraceContextPayload', async (t) => {
   await t.test('should not accept invalid trace context traceparent header', (t, end) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.trusted_account_key = '1'
+    agent.config.distributed_tracing.trusted_account_key = '1'
     agent.config.span_events.enabled = true
 
     helper.runInTransaction(agent, function (txn) {
@@ -1682,7 +1682,7 @@ test('acceptTraceContextPayload', async (t) => {
 
   await t.test('should not accept tracestate when trusted_account_key missing', (t, end) => {
     const { agent } = t.nr
-    agent.config.trusted_account_key = null
+    agent.config.distributed_tracing.trusted_account_key = null
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
 
@@ -1714,7 +1714,7 @@ test('acceptTraceContextPayload', async (t) => {
 
   await t.test('should accept tracestate when trusted_account_key matches', (t, end) => {
     const { agent } = t.nr
-    agent.config.trusted_account_key = '33'
+    agent.config.distributed_tracing.trusted_account_key = '33'
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
 
@@ -1789,7 +1789,7 @@ test('addDistributedTraceIntrinsics', async (t) => {
     const { txn, attributes } = t.nr
     txn.agent.config.distributed_tracing.account_id = '5678'
     txn.agent.config.primary_application_id = '1234'
-    txn.agent.config.trusted_account_key = '5678'
+    txn.agent.config.distributed_tracing.trusted_account_key = '5678'
     txn.agent.config.distributed_tracing.enabled = true
 
     const payload = txn._createDistributedTracePayload().text()

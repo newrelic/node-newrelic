@@ -207,7 +207,7 @@ test('Trace', async (t) => {
     agent.config.encoding_key = encKey
     agent.config.attributes.enabled = true
     agent.config.distributed_tracing.enabled = true
-    agent.config.trusted_account_key = 111
+    agent.config.distributed_tracing.trusted_account_key = 111
 
     const dtInfo = {
       ty: 'App', // type

@@ -82,7 +82,7 @@ test('instances from header values', async (t) => {
 
   await t.test('should pass a valid tracestate header', (t) => {
     const { agent } = t.nr
-    agent.config.trusted_account_key = '190'
+    agent.config.distributed_tracing.trusted_account_key = '190'
     const goodTraceStateHeader =
       '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
 
@@ -102,7 +102,7 @@ test('instances from header values', async (t) => {
 
   await t.test('should fail mismatched trusted account ID in tracestate header', (t) => {
     const { agent } = t.nr
-    agent.config.trusted_account_key = '666'
+    agent.config.distributed_tracing.trusted_account_key = '666'
     const badTraceStateHeader =
       '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
     const valid = Tracestate.fromHeader({ header: badTraceStateHeader, agent })
@@ -113,7 +113,7 @@ test('instances from header values', async (t) => {
 
   await t.test('should fail with bad timestamp in tracestate header', (ctx) => {
     const { agent } = ctx.nr
-    agent.config.trusted_account_key = '190'
+    agent.config.distributed_tracing.trusted_account_key = '190'
     const badTimestamp =
       '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-,234234@foo=bar'
     const valid = Tracestate.fromHeader({ header: badTimestamp, agent })
@@ -123,7 +123,7 @@ test('instances from header values', async (t) => {
 
   await t.test('should handle empty priority and sampled fields (mobile payload)', (t) => {
     const { agent } = t.nr
-    agent.config.trusted_account_key = '190'
+    agent.config.distributed_tracing.trusted_account_key = '190'
     const goodTraceStateHeader =
       '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05---1563574856827,234234@foo=bar'
     const valid = Tracestate.fromHeader({ header: goodTraceStateHeader, agent })

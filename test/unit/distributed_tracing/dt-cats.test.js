@@ -30,7 +30,7 @@ test('distributed tracing', async function (t) {
   for (const testCase of testCases) {
     await t.test(testCase.test_name, (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.trusted_account_key = testCase.trusted_account_key
+      agent.config.distributed_tracing.trusted_account_key = testCase.trusted_account_key
       agent.config.distributed_tracing.account_id = testCase.account_id
       agent.config.primary_application_id = 'test app'
       agent.config.span_events.enabled = testCase.span_events_enabled

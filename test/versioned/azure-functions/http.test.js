@@ -213,7 +213,7 @@ test('handles distributed tracing information', async (t) => {
   const { agent, initialize, mockApi, shim } = t.nr
   agent.config.distributed_tracing.enabled = true
   agent.config.distributed_tracing.account_id = '33'
-  agent.config.trusted_account_key = '33'
+  agent.config.distributed_tracing.trusted_account_key = '33'
   initialize(agent, mockApi, MODULE_NAME, shim)
 
   const handler = async function () {

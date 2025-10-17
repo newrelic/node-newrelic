@@ -99,7 +99,7 @@ test('serverless_mode via configuration input', async (t) => {
     })
 
     assert.equal(config.distributed_tracing.account_id, '1234')
-    assert.equal(config.trusted_account_key, '1234')
+    assert.equal(config.distributed_tracing.trusted_account_key, '1234')
   })
 
   await t.test('should not set DT config settings while not in serverless_mode', () => {
@@ -111,7 +111,7 @@ test('serverless_mode via configuration input', async (t) => {
 
     assert.equal(config.distributed_tracing.account_id, null)
     assert.equal(config.primary_application_id, null)
-    assert.equal(config.trusted_account_key, null)
+    assert.equal(config.distributed_tracing.trusted_account_key, null)
   })
 
   await t.test('should default logging to disabled', () => {

@@ -134,7 +134,7 @@ test('send passes along DT headers', async (t) => {
   // distributed trace that we are trying to validate.
   agent.config.distributed_tracing.account_id = 'account_1'
   agent.config.primary_application_id = 'app_1'
-  agent.config.trusted_account_key = 42
+  agent.config.distributed_tracing.trusted_account_key = 42
   let produceTx = null
   const consumeTxs = []
   let txCount = 0

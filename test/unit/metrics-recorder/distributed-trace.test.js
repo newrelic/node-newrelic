@@ -41,7 +41,7 @@ function beforeEach(ctx) {
   // not in serverless_mode
   agent.config.distributed_tracing.account_id = '1234'
   agent.config.primary_application_id = '5678'
-  agent.config.trusted_account_key = '1234'
+  agent.config.distributed_tracing.trusted_account_key = '1234'
   ctx.nr.tx = new Transaction(agent)
   ctx.nr.agent = agent
 }

@@ -243,7 +243,7 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
         agent.config.distributed_tracing.account_id = 'AccountId1'
         agent.config.primary_application_id = 'AppId1'
-        agent.config.trusted_account_key = 33
+        agent.config.distributed_tracing.trusted_account_key = 33
         agent.config.distributed_tracing.enabled = true
 
         const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
