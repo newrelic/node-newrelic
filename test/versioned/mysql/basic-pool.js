@@ -127,6 +127,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             return /Datastore\/statement\/MySQL/.test(trace.name)
           })
 
+          assert.ok(seg)
           const attributes = seg.getAttributes()
           assert.ok(!err, 'should not error')
           assert.ok(seg, 'should have a segment (' + (seg && seg.name) + ')')
@@ -149,9 +150,9 @@ module.exports = function ({ factory, constants, pkgVersion }) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         agent.config.datastore_tracer.instance_reporting.enabled = false
         pool.query('SELECT 1 + 1 AS solution', function (err) {
-          const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
           assert.ok(!err, 'should not error making query')
-          assert.ok(seg, 'should have a segment')
+          const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
+          assert.ok(seg, 'should have a datastore segment')
 
           const attributes = seg.getAttributes()
           assert.ok(!attributes.host, 'should have no host parameter')
@@ -270,7 +271,9 @@ module.exports = function ({ factory, constants, pkgVersion }) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         pool.query('SELECT 1 + 1 AS solution123123123123', function (err) {
           const transaction = agent.getTransaction()
-          const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
+          // We are no longer in a Callback<anonymous> segment,
+          // so look at the current segment (MySQL Pool#query), not the parent
+          const segment = txn.trace.getParent(agent.tracer.getSegment().id)
 
           assert.ok(!err, 'no error occurred')
           assert.ok(transaction, 'transaction should exist')
@@ -292,7 +295,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
           assert.ok(!err)
           assert.ok(transaction, 'should not lose transaction')
           if (transaction) {
-            const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
+            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -317,7 +320,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
 
           connection.query('SELECT 1 + 1 AS solution', function (err) {
             const transaction = agent.getTransaction()
-            const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
+            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
 
             assert.ok(!err, 'no error occurred')
             assert.ok(transaction, 'transaction should exist')
@@ -347,7 +350,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             assert.ok(!err)
             assert.ok(transaction, 'should not lose transaction')
             if (transaction) {
-              const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
+              const segment = txn.trace.getParent(agent.tracer.getSegment().id)
               assert.ok(segment, 'segment should exist')
               assert.ok(segment.timer.start > 0, 'starts at a positive time')
               assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -461,7 +464,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const transaction = agent.getTransaction()
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
+            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -500,7 +503,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const transaction = agent.getTransaction()
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
+            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -539,7 +542,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const transaction = agent.getTransaction()
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
+            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -577,7 +580,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const transaction = agent.getTransaction()
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
+            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -617,7 +620,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const currentTransaction = agent.getTransaction()
             assert.ok(currentTransaction, 'transaction should exist')
             assert.equal(currentTransaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
+            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -640,40 +643,34 @@ module.exports = function ({ factory, constants, pkgVersion }) {
         const replicaPool = poolCluster.of('REPLICA', 'RANDOM')
         helper.runInTransaction(agent, function (txn) {
           replicaPool.query('SELECT ? + ? AS solution', [1, 1], function (err) {
+            assert.ok(!err, 'no error occurred')
             let transaction = agent.getTransaction()
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction, txn, 'transaction must be same')
 
-            let segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
-            assert.ok(segment, 'segment should exist')
-            assert.ok(segment.timer.start > 0, 'starts at a positive time')
-            assert.ok(segment.timer.start <= Date.now(), 'starts in past')
-
-            assert.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-
-            assert.ok(!err, 'no error occurred')
-            assert.ok(transaction, 'transaction should exist')
-            assert.equal(transaction, txn, 'transaction must be same')
-            assert.ok(segment, 'segment should exist')
+            // We should be in a 'MySQL Pool#query' segment.
+            // It should have a 'Datastore/statement/MySQL/unknown/select' child.
+            const activeSegment = agent.tracer.getSegment()
+            assert.ok(activeSegment)
+            assert.equal(activeSegment.name, 'MySQL Pool#query', 'is named')
+            const segment = getDatastoreSegment({ segment: agent.tracer.getSegment(), trace: txn.trace })
+            assert.ok(segment, 'Datastore segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
             assert.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
             masterPool.query('SELECT ? + ? AS solution', [1, 1], function (err) {
+              assert.ok(!err, 'no error occurred')
               transaction = agent.getTransaction()
               assert.ok(transaction, 'transaction should exist')
               assert.equal(transaction, txn, 'transaction must be same')
 
-              segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
-              assert.ok(segment, 'segment should exist')
-              assert.ok(segment.timer.start > 0, 'starts at a positive time')
-              assert.ok(segment.timer.start <= Date.now(), 'starts in past')
-
-              assert.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-
-              assert.ok(!err, 'no error occurred')
-              assert.ok(transaction, 'transaction should exist')
-              assert.equal(transaction, txn, 'transaction must be same')
+              // We should be in a 'MySQL Pool#query' segment.
+              // It should have a 'Datastore/statement/MySQL/unknown/select' child.
+              const activeSegment = agent.tracer.getSegment()
+              assert.ok(activeSegment)
+              assert.equal(activeSegment.name, 'MySQL Pool#query', 'is named')
+              const segment = getDatastoreSegment({ segment: agent.tracer.getSegment(), trace: txn.trace })
               assert.ok(segment, 'segment should exist')
               assert.ok(segment.timer.start > 0, 'starts at a positive time')
               assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -704,8 +701,15 @@ async function getDomainSocketPath() {
   }
 }
 
+/**
+ *
+ * @param {object} parameters parameters object
+ * @param {object} parameters.segment the segment that should be the parent of the Datastore segment
+ * @param {object} parameters.trace the trace associated with the segments
+ * @returns {object|null} the found Datastore segment or null if not found
+ */
 function getDatastoreSegment({ segment, trace }) {
-  return trace.getChildren(trace.getParent(segment.parentId).id).filter(function (s) {
+  return trace.getChildren(segment.id).filter(function (s) {
     return /^Datastore/.test(s && s.name)
   })[0]
 }
