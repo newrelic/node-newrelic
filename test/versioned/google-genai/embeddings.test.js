@@ -116,7 +116,6 @@ test('should create an embedding message', (t, end) => {
       input: 'This is an embedding test.',
       'request.model': 'text-embedding-004',
       'response.model': undefined,
-      token_count: undefined,
       span_id: segment.id,
       trace_id: tx.traceId,
       vendor: 'gemini',
