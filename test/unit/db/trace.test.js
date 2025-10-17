@@ -32,8 +32,8 @@ test('SQL trace attributes', async (t) => {
     function (t, end) {
       const { agent } = t.nr
       agent.config.distributed_tracing.enabled = true
-      agent.config.primary_application_id = 'test'
-      agent.config.account_id = 1
+      agent.config.distributed_tracing.primary_application_id = 'test'
+      agent.config.distributed_tracing.account_id = 1
       agent.config.simple_compression = true
       helper.runInTransaction(agent, function (tx) {
         const payload = tx._createDistributedTracePayload().text()
@@ -55,8 +55,8 @@ test('SQL trace attributes', async (t) => {
           assert.equal(attributes.priority, tx.priority)
           assert.equal(attributes.sampled, tx.sampled)
           assert.equal(attributes['parent.type'], 'App')
-          assert.equal(attributes['parent.app'], agent.config.primary_application_id)
-          assert.equal(attributes['parent.account'], agent.config.account_id)
+          assert.equal(attributes['parent.app'], agent.config.distributed_tracing.primary_application_id)
+          assert.equal(attributes['parent.account'], agent.config.distributed_tracing.account_id)
           assert.ok(!attributes.parentId)
           assert.ok(!attributes.parentSpanId)
           end()
@@ -94,8 +94,8 @@ test('SQL trace attributes', async (t) => {
   await t.test('should include the proper priority on transaction end', function (t, end) {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
-    agent.config.account_id = 1
+    agent.config.distributed_tracing.primary_application_id = 'test'
+    agent.config.distributed_tracing.account_id = 1
     agent.config.simple_compression = true
     helper.runInTransaction(agent, function (tx) {
       agent.queries.add({

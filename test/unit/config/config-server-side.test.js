@@ -28,7 +28,7 @@ test('when receiving server-side configuration', async (t) => {
 
   await t.test('should set the account ID', () => {
     config.onConnect({ account_id: 76543 })
-    assert.equal(config.account_id, 76543)
+    assert.equal(config.distributed_tracing.account_id, 76543)
   })
 
   await t.test('should set the entity GUID', () => {

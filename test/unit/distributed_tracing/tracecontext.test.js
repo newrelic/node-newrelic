@@ -9,8 +9,8 @@ const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const Traceparent = require('#agentlib/w3c/traceparent.js')
 const Tracestate = require('#agentlib/w3c/tracestate.js')
-const Transaction = require('../../../lib/transaction')
-const TraceContext = require('../../../lib/transaction/tracecontext').TraceContext
+const Transaction = require('#agentlib/transaction/index.js')
+const TraceContext = require('#agentlib/transaction/tracecontext.js').TraceContext
 const sinon = require('sinon')
 
 test('TraceContext', async function (t) {
@@ -21,9 +21,9 @@ test('TraceContext', async function (t) {
       attributes: { enabled: true }
     })
 
-    agent.config.account_id = 'AccountId1'
-    agent.config.primary_application_id = 'AppId1'
-    agent.config.trusted_account_key = 33
+    agent.config.distributed_tracing.account_id = 'AccountId1'
+    agent.config.distributed_tracing.primary_application_id = 'AppId1'
+    agent.config.distributed_tracing.trusted_account_key = 33
     agent.config.distributed_tracing.enabled = true
 
     agent.recordSupportability = supportabilitySpy
@@ -204,9 +204,9 @@ test('TraceContext', async function (t) {
       const trustedKey = '19000'
       const accountId = '190'
       const appId = '109354'
-      agent.config.trusted_account_key = trustedKey
-      agent.config.account_id = accountId
-      agent.config.primary_application_id = appId
+      agent.config.distributed_tracing.trusted_account_key = trustedKey
+      agent.config.distributed_tracing.account_id = accountId
+      agent.config.distributed_tracing.primary_application_id = appId
       agent.transactionSampler.shouldSample = () => false
 
       helper.runInTransaction(agent, function (txn) {
@@ -230,16 +230,16 @@ test('TraceContext', async function (t) {
     await t.test('should accept first valid nr entry when duplicate entries exist', (ctx, end) => {
       const { agent } = ctx.nr
       const acctKey = '190'
-      agent.config.trusted_account_key = acctKey
+      agent.config.distributed_tracing.trusted_account_key = acctKey
       const duplicateAcctTraceState =
 
         '42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,190@nr=bar'
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
       const appId = '109354'
 
-      agent.config.trusted_account_key = acctKey
-      agent.config.account_id = acctKey
-      agent.config.primary_application_id = appId
+      agent.config.distributed_tracing.trusted_account_key = acctKey
+      agent.config.distributed_tracing.account_id = acctKey
+      agent.config.distributed_tracing.primary_application_id = appId
       agent.transactionSampler.shouldSample = () => false
 
       helper.runInTransaction(agent, function (txn) {
@@ -269,7 +269,7 @@ test('TraceContext', async function (t) {
       (ctx, end) => {
         const { agent } = ctx.nr
         const acctKey = '190'
-        agent.config.trusted_account_key = acctKey
+        agent.config.distributed_tracing.trusted_account_key = acctKey
         const duplicateAcctTraceState =
 
           '190@nr=bar,42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827'
@@ -316,7 +316,7 @@ test('TraceContext', async function (t) {
       // This is a corner case and ideally never happens but is potentially possible
       // due to state loss.
 
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -351,7 +351,7 @@ test('TraceContext', async function (t) {
       // This is a corner case and ideally never happens but is potentially possible
       // due to state loss.
 
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -386,7 +386,7 @@ test('TraceContext', async function (t) {
 
     await t.test('should generate new trace when receiving invalid traceparent', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -417,8 +417,8 @@ test('TraceContext', async function (t) {
       // The http module will automatically combine headers
       // In the case of combining ['tracestate', ''] and ['tracestate', 'foo=1']
       // An incoming header may look like tracestate: 'foo=1, '.
-      agent.config.account_id = 'AccountId1'
-      agent.config.primary_application_id = 'AppId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
+      agent.config.distributed_tracing.primary_application_id = 'AppId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -452,7 +452,7 @@ test('TraceContext', async function (t) {
       (ctx, end) => {
         const { agent } = ctx.nr
         // missing trust key means can't accept/match newrelic header
-        agent.config.trusted_account_key = null
+        agent.config.distributed_tracing.trusted_account_key = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = false
 
@@ -493,8 +493,8 @@ test('TraceContext', async function (t) {
       'should propagate existing when cannot accept or generate newrelic list member',
       (ctx, end) => {
         const { agent } = ctx.nr
-        agent.config.trusted_account_key = null
-        agent.config.account_id = null
+        agent.config.distributed_tracing.trusted_account_key = null
+        agent.config.distributed_tracing.account_id = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = false
 
@@ -525,7 +525,7 @@ test('TraceContext', async function (t) {
 
     await t.test('should handle leading white space', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -549,7 +549,7 @@ test('TraceContext', async function (t) {
 
     await t.test('should handle leading tab', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -573,7 +573,7 @@ test('TraceContext', async function (t) {
 
     await t.test('should handle trailing white space', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -597,7 +597,7 @@ test('TraceContext', async function (t) {
 
     await t.test('should handle white space and tabs for a single item', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -627,7 +627,7 @@ test('TraceContext', async function (t) {
 
     await t.test('should handle white space and tabs between list members', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -660,7 +660,7 @@ test('TraceContext', async function (t) {
 
     await t.test('should handle trailing tab', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -684,7 +684,7 @@ test('TraceContext', async function (t) {
 
     await t.test('should handle leading and trailing white space and tabs', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -716,7 +716,7 @@ test('TraceContext', async function (t) {
 
     await t.test('should not create tracestate when accountId is missing', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = null
+      agent.config.distributed_tracing.account_id = null
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -741,8 +741,8 @@ test('TraceContext', async function (t) {
 
     await t.test('should not create tracestate when primary_application_id missing', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = '12345'
-      agent.config.primary_application_id = null
+      agent.config.distributed_tracing.account_id = '12345'
+      agent.config.distributed_tracing.primary_application_id = null
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -767,9 +767,9 @@ test('TraceContext', async function (t) {
 
     await t.test('should not create tracestate when trusted_account_key missing', (ctx, end) => {
       const { agent } = ctx.nr
-      agent.config.account_id = '12345'
-      agent.config.primary_application_id = 'appId'
-      agent.config.trusted_account_key = null
+      agent.config.distributed_tracing.account_id = '12345'
+      agent.config.distributed_tracing.primary_application_id = 'appId'
+      agent.config.distributed_tracing.trusted_account_key = null
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 

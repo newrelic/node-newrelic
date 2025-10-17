@@ -8,15 +8,15 @@ const assert = require('node:assert')
 const test = require('node:test')
 const util = require('util')
 const sinon = require('sinon')
-const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
-const helper = require('../../../lib/agent_helper')
-const codec = require('../../../../lib/util/codec')
+const DESTINATIONS = require('#agentlib/config/attribute-filter.js').DESTINATIONS
+const helper = require('#testlib/agent_helper.js')
+const codec = require('#agentlib/util/codec.js')
 const codecEncodeAsync = util.promisify(codec.encode)
 const codecDecodeAsync = util.promisify(codec.decode)
-const Segment = require('../../../../lib/transaction/trace/segment')
-const DTPayload = require('../../../../lib/transaction/dt-payload')
-const Trace = require('../../../../lib/transaction/trace')
-const Transaction = require('../../../../lib/transaction')
+const Segment = require('#agentlib/transaction/trace/segment.js')
+const DTPayload = require('#agentlib/transaction/dt-payload.js')
+const Trace = require('#agentlib/transaction/trace/index.js')
+const Transaction = require('#agentlib/transaction/index.js')
 
 const NEWRELIC_TRACE_HEADER = 'newrelic'
 
@@ -58,8 +58,8 @@ test('Trace', async (t) => {
   await t.test('should have DT attributes on transaction end', (t, end) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
-    agent.config.account_id = 1
+    agent.config.distributed_tracing.primary_application_id = 'test'
+    agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       tx.end()
       const attributes = tx.trace.intrinsics
@@ -78,8 +78,8 @@ test('Trace', async (t) => {
   await t.test('should have DT parent attributes on payload accept', (t, end) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
-    agent.config.account_id = 1
+    agent.config.distributed_tracing.primary_application_id = 'test'
+    agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = null
@@ -91,8 +91,8 @@ test('Trace', async (t) => {
       assert.equal(attributes.priority, tx.priority)
       assert.equal(attributes.sampled, tx.sampled)
       assert.equal(attributes['parent.type'], 'App')
-      assert.equal(attributes['parent.app'], agent.config.primary_application_id)
-      assert.equal(attributes['parent.account'], agent.config.account_id)
+      assert.equal(attributes['parent.app'], agent.config.distributed_tracing.primary_application_id)
+      assert.equal(attributes['parent.account'], agent.config.distributed_tracing.account_id)
       assert.equal(attributes.parentId, undefined)
       assert.equal(attributes.parentSpanId, undefined)
       assert.equal(tx.sampled, true)
@@ -207,7 +207,7 @@ test('Trace', async (t) => {
     agent.config.encoding_key = encKey
     agent.config.attributes.enabled = true
     agent.config.distributed_tracing.enabled = true
-    agent.config.trusted_account_key = 111
+    agent.config.distributed_tracing.trusted_account_key = 111
 
     const dtInfo = {
       ty: 'App', // type

@@ -159,8 +159,8 @@ test('on transaction finished', async (t) => {
   await t.test('should add DT parent attributes with an accepted payload', (t) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
-    agent.config.account_id = 1
+    agent.config.distributed_tracing.primary_application_id = 'test'
+    agent.config.distributed_tracing.account_id = 1
     const trans = new Transaction(agent)
     const payload = trans._createDistributedTracePayload().text()
     trans.isDistributedTrace = null
@@ -178,8 +178,8 @@ test('on transaction finished', async (t) => {
     assert.equal(attributes.sampled, trans.sampled)
     assert.equal(attributes.parentId, trans.id)
     assert.equal(attributes['parent.type'], 'App')
-    assert.equal(attributes['parent.app'], agent.config.primary_application_id)
-    assert.equal(attributes['parent.account'], agent.config.account_id)
+    assert.equal(attributes['parent.app'], agent.config.distributed_tracing.primary_application_id)
+    assert.equal(attributes['parent.account'], agent.config.distributed_tracing.account_id)
     assert.equal(attributes.error, false)
     assert.equal(trans.sampled, true)
     assert.ok(trans.priority > 1)

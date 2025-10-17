@@ -126,9 +126,9 @@ test('should add w3c tracecontext to transaction if not present on request heade
 
   const { agent, lambda, event, functionContext, responseBody } = t.nr
 
-  agent.config.account_id = 'AccountId1'
-  agent.config.primary_application_id = 'AppId1'
-  agent.config.trusted_account_key = 33
+  agent.config.distributed_tracing.account_id = 'AccountId1'
+  agent.config.distributed_tracing.primary_application_id = 'AppId1'
+  agent.config.distributed_tracing.trusted_account_key = 33
   agent.config.distributed_tracing.enabled = true
 
   const wrappedHandler = lambda.patchLambdaHandler((event, context, callback) => {

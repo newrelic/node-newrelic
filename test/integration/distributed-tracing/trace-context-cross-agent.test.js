@@ -327,9 +327,9 @@ async function runTestCase(testCase, parentTest) {
   await parentTest.test('trace context: ' + testCase.test_name, (t, end) => {
     const agent = helper.instrumentMockedAgent({})
     agent.recordSupportability = recordSupportability
-    agent.config.trusted_account_key = testCase.trusted_account_key
-    agent.config.account_id = testCase.account_id
-    agent.config.primary_application_id = 4657
+    agent.config.distributed_tracing.trusted_account_key = testCase.trusted_account_key
+    agent.config.distributed_tracing.account_id = testCase.account_id
+    agent.config.distributed_tracing.primary_application_id = 4657
     agent.config.span_events.enabled = testCase.span_events_enabled
     agent.config.transaction_events.enabled = testCase.transaction_events_enabled
     agent.config.distributed_tracing.enabled = true

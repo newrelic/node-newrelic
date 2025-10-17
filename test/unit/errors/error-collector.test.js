@@ -1569,8 +1569,8 @@ test('Errors', async (t) => {
       await t.test('should contain DT intrinsic parameters', (t) => {
         const { agent, errors } = t.nr
         agent.config.distributed_tracing.enabled = true
-        agent.config.primary_application_id = 'test'
-        agent.config.account_id = 1
+        agent.config.distributed_tracing.primary_application_id = 'test'
+        agent.config.distributed_tracing.account_id = 1
         const transaction = createTransaction(agent, 200)
 
         const error = new Error('some error')
@@ -1593,8 +1593,8 @@ test('Errors', async (t) => {
       await t.test('should contain DT intrinsic parameters', (t) => {
         const { agent, errors } = t.nr
         agent.config.distributed_tracing.enabled = true
-        agent.config.primary_application_id = 'test'
-        agent.config.account_id = 1
+        agent.config.distributed_tracing.primary_application_id = 'test'
+        agent.config.distributed_tracing.account_id = 1
         const transaction = createTransaction(agent, 200)
         const payload = transaction._createDistributedTracePayload().text()
         transaction.isDistributedTrace = null
@@ -1612,8 +1612,8 @@ test('Errors', async (t) => {
         assert.equal(attributes.priority, transaction.priority)
         assert.equal(attributes.sampled, transaction.sampled)
         assert.equal(attributes['parent.type'], 'App')
-        assert.equal(attributes['parent.app'], agent.config.primary_application_id)
-        assert.equal(attributes['parent.account'], agent.config.account_id)
+        assert.equal(attributes['parent.app'], agent.config.distributed_tracing.primary_application_id)
+        assert.equal(attributes['parent.account'], agent.config.distributed_tracing.account_id)
         assert.equal(attributes.parentId, undefined)
         assert.equal(attributes.parentSpanId, undefined)
       })
