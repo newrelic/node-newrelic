@@ -30,7 +30,7 @@ test('background transactions should not blow up with DT', async (t) => {
   const agent = helper.instrumentMockedAgent(config)
 
   agent.config.distributed_tracing.account_id = '1337'
-  agent.config.primary_application_id = '7331'
+  agent.config.distributed_tracing.primary_application_id = '7331'
   agent.config.distributed_tracing.trusted_account_key = '1337'
 
   const http = require('http')

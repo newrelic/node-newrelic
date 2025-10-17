@@ -589,7 +589,7 @@ test('when working with http.request', async (t) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.trusted_account_key = 190
     agent.config.distributed_tracing.account_id = 190
-    agent.config.primary_application_id = '389103'
+    agent.config.distributed_tracing.primary_application_id = '389103'
     const host = 'http://www.google.com'
     const path = '/index.html'
     let headers
@@ -629,7 +629,7 @@ test('when working with http.request', async (t) => {
     agent.config.distributed_tracing.exclude_newrelic_header = true
     agent.config.distributed_tracing.trusted_account_key = 190
     agent.config.distributed_tracing.account_id = 190
-    agent.config.primary_application_id = '389103'
+    agent.config.distributed_tracing.primary_application_id = '389103'
     const host = 'http://www.google.com'
     const path = '/index.html'
     let headers

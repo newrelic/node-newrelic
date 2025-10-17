@@ -22,7 +22,7 @@ test('TraceContext', async function (t) {
     })
 
     agent.config.distributed_tracing.account_id = 'AccountId1'
-    agent.config.primary_application_id = 'AppId1'
+    agent.config.distributed_tracing.primary_application_id = 'AppId1'
     agent.config.distributed_tracing.trusted_account_key = 33
     agent.config.distributed_tracing.enabled = true
 
@@ -206,7 +206,7 @@ test('TraceContext', async function (t) {
       const appId = '109354'
       agent.config.distributed_tracing.trusted_account_key = trustedKey
       agent.config.distributed_tracing.account_id = accountId
-      agent.config.primary_application_id = appId
+      agent.config.distributed_tracing.primary_application_id = appId
       agent.transactionSampler.shouldSample = () => false
 
       helper.runInTransaction(agent, function (txn) {
@@ -239,7 +239,7 @@ test('TraceContext', async function (t) {
 
       agent.config.distributed_tracing.trusted_account_key = acctKey
       agent.config.distributed_tracing.account_id = acctKey
-      agent.config.primary_application_id = appId
+      agent.config.distributed_tracing.primary_application_id = appId
       agent.transactionSampler.shouldSample = () => false
 
       helper.runInTransaction(agent, function (txn) {
@@ -418,7 +418,7 @@ test('TraceContext', async function (t) {
       // In the case of combining ['tracestate', ''] and ['tracestate', 'foo=1']
       // An incoming header may look like tracestate: 'foo=1, '.
       agent.config.distributed_tracing.account_id = 'AccountId1'
-      agent.config.primary_application_id = 'AppId1'
+      agent.config.distributed_tracing.primary_application_id = 'AppId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -742,7 +742,7 @@ test('TraceContext', async function (t) {
     await t.test('should not create tracestate when primary_application_id missing', (ctx, end) => {
       const { agent } = ctx.nr
       agent.config.distributed_tracing.account_id = '12345'
-      agent.config.primary_application_id = null
+      agent.config.distributed_tracing.primary_application_id = null
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
 
@@ -768,7 +768,7 @@ test('TraceContext', async function (t) {
     await t.test('should not create tracestate when trusted_account_key missing', (ctx, end) => {
       const { agent } = ctx.nr
       agent.config.distributed_tracing.account_id = '12345'
-      agent.config.primary_application_id = 'appId'
+      agent.config.distributed_tracing.primary_application_id = 'appId'
       agent.config.distributed_tracing.trusted_account_key = null
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true

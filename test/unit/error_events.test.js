@@ -46,7 +46,7 @@ test('attributes', async (t) => {
   await t.test('should include DT intrinsics', (t, end) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
+    agent.config.distributed_tracing.primary_application_id = 'test'
     agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       const payload = tx._createDistributedTracePayload().text()
@@ -67,7 +67,7 @@ test('attributes', async (t) => {
       assert.equal(attributes.priority, tx.priority)
       assert.equal(attributes.sampled, tx.sampled)
       assert.equal(attributes['parent.type'], 'App')
-      assert.equal(attributes['parent.app'], agent.config.primary_application_id)
+      assert.equal(attributes['parent.app'], agent.config.distributed_tracing.primary_application_id)
       assert.equal(attributes['parent.account'], agent.config.distributed_tracing.account_id)
       assert.equal(attributes['nr.transactionGuid'], tx.id)
       assert.equal(attributes.parentId, undefined)
@@ -80,7 +80,7 @@ test('attributes', async (t) => {
   await t.test('should include spanId agent attribute', (t, end) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
+    agent.config.distributed_tracing.primary_application_id = 'test'
     agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       const payload = tx._createDistributedTracePayload().text()
@@ -107,7 +107,7 @@ test('attributes', async (t) => {
   await t.test('should have the expected priority', (t, end) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
+    agent.config.distributed_tracing.primary_application_id = 'test'
     agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       const error = new Error('some error')

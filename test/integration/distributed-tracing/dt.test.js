@@ -31,7 +31,7 @@ test('distributed tracing full integration', async (t) => {
     encoding_key: 'some key'
   }
   const agent = helper.instrumentMockedAgent(config)
-  agent.config.primary_application_id = APP_ID
+  agent.config.distributed_tracing.primary_application_id = APP_ID
   agent.config.distributed_tracing.account_id = ACCOUNT_ID
   agent.config.distributed_tracing.trusted_account_key = ACCOUNT_ID
 
@@ -263,7 +263,7 @@ test('distributed tracing', async (t) => {
       distributed_tracing: { enabled: true },
       cross_application_tracer: { enabled: true }
     })
-    agent.config.primary_application_id = APP_ID
+    agent.config.distributed_tracing.primary_application_id = APP_ID
     agent.config.distributed_tracing.account_id = ACCOUNT_ID
     agent.config.distributed_tracing.trusted_account_key = ACCOUNT_ID
     agent.config.encoding_key = 'foobar'

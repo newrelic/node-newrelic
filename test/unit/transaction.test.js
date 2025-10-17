@@ -1118,7 +1118,7 @@ test('_createDistributedTracePayload', async (t) => {
 
     agent.recordSupportability = sinon.spy()
     agent.config.distributed_tracing.account_id = '5678'
-    agent.config.primary_application_id = '1234'
+    agent.config.distributed_tracing.primary_application_id = '1234'
     agent.config.distributed_tracing.trusted_account_key = '5678'
 
     // Clear deprecated values just to be extra sure.
@@ -1424,7 +1424,7 @@ test('insertDistributedTraceHeaders', async (t) => {
       const trustedAccountKey = '123'
 
       agent.config.distributed_tracing.account_id = 'AccountId1'
-      agent.config.primary_application_id = 'Application1'
+      agent.config.distributed_tracing.primary_application_id = 'Application1'
       agent.config.distributed_tracing.enabled = true
       agent.config.distributed_tracing.trusted_account_key = trustedAccountKey
       agent.config.span_events.enabled = true
@@ -1585,7 +1585,7 @@ test('insertDistributedTraceHeaders', async (t) => {
     const trustedAccountKey = '123'
 
     agent.config.distributed_tracing.account_id = 'AccountId1'
-    agent.config.primary_application_id = 'Application1'
+    agent.config.distributed_tracing.primary_application_id = 'Application1'
     agent.config.distributed_tracing.enabled = true
     agent.config.distributed_tracing.trusted_account_key = trustedAccountKey
     agent.config.span_events.enabled = true
@@ -1788,7 +1788,7 @@ test('addDistributedTraceIntrinsics', async (t) => {
   await t.test('adds DT attributes if payload was accepted', (t) => {
     const { txn, attributes } = t.nr
     txn.agent.config.distributed_tracing.account_id = '5678'
-    txn.agent.config.primary_application_id = '1234'
+    txn.agent.config.distributed_tracing.primary_application_id = '1234'
     txn.agent.config.distributed_tracing.trusted_account_key = '5678'
     txn.agent.config.distributed_tracing.enabled = true
 

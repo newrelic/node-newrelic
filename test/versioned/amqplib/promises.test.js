@@ -296,7 +296,7 @@ test('amqplib promise instrumentation', async function (t) {
     const { agent, api, channel } = t.nr
     const { promise, resolve } = promiseResolvers()
     agent.config.distributed_tracing.account_id = 1234
-    agent.config.primary_application_id = 4321
+    agent.config.distributed_tracing.primary_application_id = 4321
     agent.config.distributed_tracing.trusted_account_key = 1234
 
     const exchange = amqpUtils.DIRECT_EXCHANGE

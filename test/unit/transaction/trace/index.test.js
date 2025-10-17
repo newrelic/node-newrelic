@@ -8,7 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const util = require('util')
 const sinon = require('sinon')
-const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const DESTINATIONS = require('#agentlib/config/attribute-filter.js').DESTINATIONS
 const helper = require('#testlib/agent_helper.js')
 const codec = require('#agentlib/util/codec.js')
 const codecEncodeAsync = util.promisify(codec.encode)
@@ -58,7 +58,7 @@ test('Trace', async (t) => {
   await t.test('should have DT attributes on transaction end', (t, end) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
+    agent.config.distributed_tracing.primary_application_id = 'test'
     agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       tx.end()
@@ -78,7 +78,7 @@ test('Trace', async (t) => {
   await t.test('should have DT parent attributes on payload accept', (t, end) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
+    agent.config.distributed_tracing.primary_application_id = 'test'
     agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       const payload = tx._createDistributedTracePayload().text()
@@ -91,7 +91,7 @@ test('Trace', async (t) => {
       assert.equal(attributes.priority, tx.priority)
       assert.equal(attributes.sampled, tx.sampled)
       assert.equal(attributes['parent.type'], 'App')
-      assert.equal(attributes['parent.app'], agent.config.primary_application_id)
+      assert.equal(attributes['parent.app'], agent.config.distributed_tracing.primary_application_id)
       assert.equal(attributes['parent.account'], agent.config.distributed_tracing.account_id)
       assert.equal(attributes.parentId, undefined)
       assert.equal(attributes.parentSpanId, undefined)

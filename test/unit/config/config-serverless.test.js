@@ -110,7 +110,7 @@ test('serverless_mode via configuration input', async (t) => {
     })
 
     assert.equal(config.distributed_tracing.account_id, null)
-    assert.equal(config.primary_application_id, null)
+    assert.equal(config.distributed_tracing.primary_application_id, null)
     assert.equal(config.distributed_tracing.trusted_account_key, null)
   })
 

@@ -1237,7 +1237,7 @@ test('aws sqs span has correct entity linking attributes', (t, end) => {
 
 function setupDtHeaders(agent) {
   agent.config.distributed_tracing.trusted_account_key = 1
-  agent.config.primary_application_id = 2
+  agent.config.distributed_tracing.primary_application_id = 2
   agent.config.distributed_tracing.account_id = 1
   const spanId = '00f067aa0ba902b7'
   const traceId = '00015f9f95352ad550284c27c5d3084c'
