@@ -247,7 +247,7 @@ test('chat.completions.create', async (t) => {
       const api = helper.getAgentApi()
       function cb(model, content) {
         assert.equal(model, expectedModel)
-        if (content === promptContent || content === promptContent2) {
+        if (content === promptContent + ' ' + promptContent2) {
           return 53
         } else if (content === res) {
           return 11

@@ -25,7 +25,17 @@ const res = {
 }
 
 const chatRes = {
-  ...res,
+  headers: {
+    'x-request-id': 'req-id',
+    'openai-version': '1.0.0',
+    'openai-organization': 'new-relic',
+    'x-ratelimit-limit-requests': '100',
+    'x-ratelimit-limit-tokens': '100',
+    'x-ratelimit-reset-tokens': '100',
+    'x-ratelimit-remaining-tokens': '10',
+    'x-ratelimit-remaining-requests': '10'
+  },
+  model: 'gpt-4-0613',
   id: 'resp_id',
   temperature: 1,
   max_output_tokens: 1000000,
@@ -33,6 +43,11 @@ const chatRes = {
   object: 'response',
   output: [{ id: 'msg_id', role: 'assistant', status: 'completed', content: [{ text: 'a lot' }] }],
   output_text: 'a lot',
+  usage: {
+    total_tokens: 30,
+    prompt_tokens: 10,
+    completion_tokens: 20
+  }
 }
 
 const req = {
@@ -73,7 +88,7 @@ function getExpectedResult(tx, event, type, completionId) {
       expected = { ...expected, ...resKeys }
       expected.input = 'This is my test input'
       expected.error = false
-      expected.token_count = undefined
+      expected['response.usage.total_tokens'] = 30
       break
     case 'summary':
       expected = {
@@ -83,6 +98,9 @@ function getExpectedResult(tx, event, type, completionId) {
         'request.temperature': 1,
         'response.number_of_messages': 2,
         'response.choices.finish_reason': 'completed',
+        'response.usage.prompt_tokens': 10,
+        'response.usage.completion_tokens': 20,
+        'response.usage.total_tokens': 30,
         error: false
       }
       break
