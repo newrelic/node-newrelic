@@ -345,7 +345,7 @@ test('amqplib callback instrumentation', async function (t) {
     const { agent, api, channel } = t.nr
     const { promise, resolve } = promiseResolvers()
     agent.config.span_events.enabled = true
-    agent.config.account_id = 1234
+    agent.config.distributed_tracing.account_id = 1234
     agent.config.primary_application_id = 4321
     agent.config.trusted_account_key = 1234
 

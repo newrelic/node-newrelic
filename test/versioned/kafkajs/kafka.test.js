@@ -132,7 +132,7 @@ test('send passes along DT headers', async (t) => {
 
   // These agent.config lines are utilized to simulate the inbound
   // distributed trace that we are trying to validate.
-  agent.config.account_id = 'account_1'
+  agent.config.distributed_tracing.account_id = 'account_1'
   agent.config.primary_application_id = 'app_1'
   agent.config.trusted_account_key = 42
   let produceTx = null

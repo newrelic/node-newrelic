@@ -270,7 +270,7 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag f
   await beforeEach(t.nr, agentConfig, validator)
 
   const { agent, host, port } = t.nr
-  agent.config.account_id = '33'
+  agent.config.distributed_tracing.account_id = '33'
   agent.config.trusted_account_key = '33'
 
   const result = await doRequest({

@@ -42,7 +42,7 @@ test('should set traceparent and tracestate on outgoing headers when otel root c
   const { agent, carrier, setter } = t.nr
   agent.config.trusted_account_key = 1
   agent.config.primary_application_id = 2
-  agent.config.account_id = 1
+  agent.config.distributed_tracing.account_id = 1
   const propagation = new NewRelicTracePropagator(agent)
   helper.runInTransaction(agent, (tx) => {
     otel.trace.getSpanContext.callsFake(() => {

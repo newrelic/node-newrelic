@@ -212,7 +212,7 @@ test('handles distributed tracing information', async (t) => {
   bootstrapModule({ t, request: clientRequest })
   const { agent, initialize, mockApi, shim } = t.nr
   agent.config.distributed_tracing.enabled = true
-  agent.config.account_id = '33'
+  agent.config.distributed_tracing.account_id = '33'
   agent.config.trusted_account_key = '33'
   initialize(agent, mockApi, MODULE_NAME, shim)
 

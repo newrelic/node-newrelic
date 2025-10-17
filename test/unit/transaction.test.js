@@ -808,7 +808,7 @@ test('_acceptDistributedTracePayload', async (t) => {
     agent.config.trusted_account_key = '1'
     // Clear deprecated values just to be extra sure.
     agent.config._process_id = null
-    agent.config.account_ids = null
+    agent.config.distributed_tracing.account_ids = null
 
     agent.recordSupportability = sinon.spy()
 
@@ -862,7 +862,7 @@ test('_acceptDistributedTracePayload', async (t) => {
   await t.test('should not accept payload if no configured trusted key', (t) => {
     const { txn } = t.nr
     txn.agent.config.trusted_account_key = null
-    txn.agent.config.account_id = null
+    txn.agent.config.distributed_tracing.account_id = null
 
     const data = {
       ac: '1',
@@ -1117,7 +1117,7 @@ test('_createDistributedTracePayload', async (t) => {
     })
 
     agent.recordSupportability = sinon.spy()
-    agent.config.account_id = '5678'
+    agent.config.distributed_tracing.account_id = '5678'
     agent.config.primary_application_id = '1234'
     agent.config.trusted_account_key = '5678'
 
@@ -1423,7 +1423,7 @@ test('insertDistributedTraceHeaders', async (t) => {
       const { agent } = t.nr
       const trustedAccountKey = '123'
 
-      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.account_id = 'AccountId1'
       agent.config.primary_application_id = 'Application1'
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = trustedAccountKey
@@ -1584,7 +1584,7 @@ test('insertDistributedTraceHeaders', async (t) => {
     const { agent } = t.nr
     const trustedAccountKey = '123'
 
-    agent.config.account_id = 'AccountId1'
+    agent.config.distributed_tracing.account_id = 'AccountId1'
     agent.config.primary_application_id = 'Application1'
     agent.config.distributed_tracing.enabled = true
     agent.config.trusted_account_key = trustedAccountKey
@@ -1787,7 +1787,7 @@ test('addDistributedTraceIntrinsics', async (t) => {
 
   await t.test('adds DT attributes if payload was accepted', (t) => {
     const { txn, attributes } = t.nr
-    txn.agent.config.account_id = '5678'
+    txn.agent.config.distributed_tracing.account_id = '5678'
     txn.agent.config.primary_application_id = '1234'
     txn.agent.config.trusted_account_key = '5678'
     txn.agent.config.distributed_tracing.enabled = true

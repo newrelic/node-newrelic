@@ -33,7 +33,7 @@ test('SQL trace attributes', async (t) => {
       const { agent } = t.nr
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
-      agent.config.account_id = 1
+      agent.config.distributed_tracing.account_id = 1
       agent.config.simple_compression = true
       helper.runInTransaction(agent, function (tx) {
         const payload = tx._createDistributedTracePayload().text()
@@ -56,7 +56,7 @@ test('SQL trace attributes', async (t) => {
           assert.equal(attributes.sampled, tx.sampled)
           assert.equal(attributes['parent.type'], 'App')
           assert.equal(attributes['parent.app'], agent.config.primary_application_id)
-          assert.equal(attributes['parent.account'], agent.config.account_id)
+          assert.equal(attributes['parent.account'], agent.config.distributed_tracing.account_id)
           assert.ok(!attributes.parentId)
           assert.ok(!attributes.parentSpanId)
           end()
@@ -95,7 +95,7 @@ test('SQL trace attributes', async (t) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
-    agent.config.account_id = 1
+    agent.config.distributed_tracing.account_id = 1
     agent.config.simple_compression = true
     helper.runInTransaction(agent, function (tx) {
       agent.queries.add({

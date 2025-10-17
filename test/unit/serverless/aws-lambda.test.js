@@ -241,7 +241,7 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
           end()
         })
 
-        agent.config.account_id = 'AccountId1'
+        agent.config.distributed_tracing.account_id = 'AccountId1'
         agent.config.primary_application_id = 'AppId1'
         agent.config.trusted_account_key = 33
         agent.config.distributed_tracing.enabled = true

@@ -39,7 +39,7 @@ function beforeEach(ctx) {
   })
   // Set the DT required data after config runs, since they'll be cleared when
   // not in serverless_mode
-  agent.config.account_id = '1234'
+  agent.config.distributed_tracing.account_id = '1234'
   agent.config.primary_application_id = '5678'
   agent.config.trusted_account_key = '1234'
   ctx.nr.tx = new Transaction(agent)

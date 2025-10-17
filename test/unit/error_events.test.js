@@ -47,7 +47,7 @@ test('attributes', async (t) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
-    agent.config.account_id = 1
+    agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = null
@@ -68,7 +68,7 @@ test('attributes', async (t) => {
       assert.equal(attributes.sampled, tx.sampled)
       assert.equal(attributes['parent.type'], 'App')
       assert.equal(attributes['parent.app'], agent.config.primary_application_id)
-      assert.equal(attributes['parent.account'], agent.config.account_id)
+      assert.equal(attributes['parent.account'], agent.config.distributed_tracing.account_id)
       assert.equal(attributes['nr.transactionGuid'], tx.id)
       assert.equal(attributes.parentId, undefined)
       assert.equal(attributes.parentSpanId, undefined)
@@ -81,7 +81,7 @@ test('attributes', async (t) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
-    agent.config.account_id = 1
+    agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = null
@@ -108,7 +108,7 @@ test('attributes', async (t) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
-    agent.config.account_id = 1
+    agent.config.distributed_tracing.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       const error = new Error('some error')
       const customAttributes = {}
