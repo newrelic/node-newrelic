@@ -163,7 +163,7 @@ test('serverless mode via ENV variables', async (t) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_TRUSTED_ACCOUNT_KEY: '1234'
+        NEW_RELIC_DISTRIBUTED_TRACING_TRUSTED_ACCOUNT_KEY: '1234'
       },
       (tc) => {
         assert.equal(tc.trusted_account_key, '1234')
@@ -176,7 +176,7 @@ test('serverless mode via ENV variables', async (t) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_PRIMARY_APPLICATION_ID: '5678'
+        NEW_RELIC_DISTRIBUTED_TRACING_PRIMARY_APPLICATION_ID: '5678'
       },
       (tc) => {
         assert.equal(tc.primary_application_id, '5678')
@@ -189,7 +189,7 @@ test('serverless mode via ENV variables', async (t) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_ACCOUNT_ID: '91011'
+        NEW_RELIC_DISTRIBUTED_TRACING_ACCOUNT_ID: '91011'
       },
       (tc) => {
         assert.equal(tc.account_id, '91011')
@@ -203,8 +203,8 @@ test('serverless mode via ENV variables', async (t) => {
     (t, end) => {
       const env = {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
-        NEW_RELIC_ACCOUNT_ID: 'defined',
-        NEW_RELIC_PRIMARY_APPLICATION_ID: 'defined',
+        NEW_RELIC_DISTRIBUTED_TRACING_ACCOUNT_ID: 'defined',
+        NEW_RELIC_DISTRIBUTED_TRACING_PRIMARY_APPLICATION_ID: 'defined',
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       idempotentEnv(env, (tc) => {
@@ -237,7 +237,7 @@ test('serverless mode via ENV variables', async (t) => {
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true,
-        NEW_RELIC_ACCOUNT_ID: '12345'
+        NEW_RELIC_DISTRIBUTED_TRACING_ACCOUNT_ID: '12345'
       },
       (config) => {
         assert.equal(config.distributed_tracing.enabled, true)
@@ -249,7 +249,7 @@ test('serverless mode via ENV variables', async (t) => {
   await t.test('should allow distributed tracing to be enabled from configuration ', (t, end) => {
     const envVariables = {
       NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      NEW_RELIC_ACCOUNT_ID: '12345'
+      NEW_RELIC_DISTRIBUTED_TRACING_ACCOUNT_ID: '12345'
     }
 
     const inputConfig = {
@@ -266,7 +266,7 @@ test('serverless mode via ENV variables', async (t) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_ACCOUNT_ID: '12345'
+        NEW_RELIC_DISTRIBUTED_TRACING_ACCOUNT_ID: '12345'
       },
       (tc) => {
         assert.equal(tc.serverless_mode.enabled, true)
@@ -296,7 +296,7 @@ test('serverless mode via ENV variables', async (t) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_ACCOUNT_ID: '12345'
+        NEW_RELIC_DISTRIBUTED_TRACING_ACCOUNT_ID: '12345'
       },
       (tc) => {
         assert.equal(tc.serverless_mode.enabled, true)
@@ -439,9 +439,9 @@ test('when distributed_tracing manually set in serverless_mode', async (t) => {
 
   await t.test('works if all required env vars are defined', () => {
     const env = {
-      NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
-      NEW_RELIC_ACCOUNT_ID: 'defined',
-      NEW_RELIC_PRIMARY_APPLICATION_ID: 'defined',
+      NEW_RELIC_DISTRIBUTED_TRACING_TRUSTED_ACCOUNT_KEY: 'defined',
+      NEW_RELIC_DISTRIBUTED_TRACING_ACCOUNT_ID: 'defined',
+      NEW_RELIC_DISTRIBUTED_TRACING_PRIMARY_APPLICATION_ID: 'defined',
       NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
       NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
     }
