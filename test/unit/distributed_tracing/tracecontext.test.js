@@ -9,7 +9,7 @@ const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const Traceparent = require('#agentlib/w3c/traceparent.js')
 const Tracestate = require('#agentlib/w3c/tracestate.js')
-const Transaction = require('#agentlib/transaction.js')
+const Transaction = require('#agentlib/transaction/index.js')
 const TraceContext = require('#agentlib/transaction/tracecontext.js').TraceContext
 const sinon = require('sinon')
 

@@ -92,22 +92,22 @@ test('serverless_mode via configuration input', async (t) => {
   })
 
   await t.test('should set DT config settings while in serverless_mode', () => {
-    const config = Config.initialize({
+    const config = Config.initialize({ distributed_tracing: {
       account_id: '1234',
       primary_application_id: '2345',
-      serverless_mode: { enabled: true }
-    })
+    },
+    serverless_mode: { enabled: true } })
 
     assert.equal(config.distributed_tracing.account_id, '1234')
     assert.equal(config.distributed_tracing.trusted_account_key, '1234')
   })
 
   await t.test('should not set DT config settings while not in serverless_mode', () => {
-    const config = Config.initialize({
+    const config = Config.initialize({ distributed_tracing: {
       account_id: '1234',
       primary_application_id: '2345',
       trusted_account_key: '3456'
-    })
+    } })
 
     assert.equal(config.distributed_tracing.account_id, null)
     assert.equal(config.distributed_tracing.primary_application_id, null)
@@ -429,8 +429,7 @@ test('when distributed_tracing manually set in serverless_mode', async (t) => {
 
   await t.test('disables DT when DT set to false and account_id is set', () => {
     const config = Config.initialize({
-      account_id: '1234',
-      distributed_tracing: { enabled: false },
+      distributed_tracing: { enabled: false, account_id: '1234', },
       serverless_mode: {
         enabled: true
       }
