@@ -685,7 +685,7 @@ test('wrapFunction', async function testwrapFunction(t) {
   function wrapArgs(seg, callbacks, bindFunction) {
     plan.equal(this, outer)
     plan.equal(seg.name, 'my segment')
-    return callbacks.map(function transfrom(arg) {
+    return callbacks.map(function transform(arg) {
       if (typeof arg === 'function') {
         return bindFunction(arg)
       }

@@ -21,7 +21,7 @@ test('mysql2 promises', { timeout: 30000 }, async (t) => {
     const agent = helper.instrumentMockedAgent({
       slow_sql: { enabled: true },
       transaction_tracer: {
-        recod_sql: 'raw',
+        record_sql: 'raw',
         explain_threshold: 0,
         enabled: true
       }

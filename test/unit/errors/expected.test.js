@@ -178,7 +178,7 @@ test('Expected Errors, when expected configuration is present', async (t) => {
         const json = apdexStats.toJSON()
         tx.end()
 
-        assert.equal(json[2], 0, 'shold be no errors in the frustrating column')
+        assert.equal(json[2], 0, 'should be no errors in the frustrating column')
         end()
       })
     }

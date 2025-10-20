@@ -33,7 +33,7 @@ const ALL_HOOKS = [...REQUEST_HOOKS, ...AFTER_HANDLER_HOOKS, ...AFTER_TX_HOOKS]
 /**
  * Helper to return the list of expected segments
  *
- * @param {Array} hooks lifecyle hook names to build segment names from
+ * @param {Array} hooks lifecycle hook names to build segment names from
  * @returns {Array} formatted list of expected segments
  */
 function getExpectedSegments(hooks) {

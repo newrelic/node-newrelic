@@ -249,7 +249,7 @@ module.exports = (pkg) => {
       })
 
       await t.test(
-        'should name transaction after matched path with erroring parameware',
+        'should name transaction after matched path with erroring paramware',
         (t, end) => {
           const { agent, router, app } = t.nr
           router.param('first', function firstParamware() {

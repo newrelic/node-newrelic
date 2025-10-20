@@ -25,7 +25,7 @@ exports.config = {
   /**
    * This provides instrumentation for `setTimeout` and `setInterval` calls.
    * We recommend you disable this instrumentation as it does not not provide
-   * much value and creates a lot of unncessary TraceSegments/Span events.
+   * much value and creates a lot of unnecessary TraceSegments/Span events.
    */
   instrumentation: {
     timers: {
