@@ -611,4 +611,37 @@ test('openai.responses.create', async (t) => {
       })
     })
   })
+
+  await t.test('should not set token_count if response prompt and completion content is undefined', (t, end) => {
+    const { agent } = t.nr
+    const api = helper.getAgentApi()
+
+    function cb() {
+      return 5
+    }
+    api.setLlmTokenCountCallback(cb)
+
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        const content = chatRes.output[0].content[0].text
+        const role = chatRes.output[0].role
+        req.input = undefined
+        chatRes.output = undefined
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          transaction: tx,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: { content, role }, // lib/instrumentation/openai.js sets this object up
+          index: 2
+        })
+        assert.equal(chatMessageEvent.token_count, undefined)
+        end()
+      })
+    })
+  })
 })
