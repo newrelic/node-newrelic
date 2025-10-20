@@ -26,8 +26,8 @@ test("restify shouldn't affect express query parsing middleware", async function
   })
 
   app.get('/', (req, res) => {
-    // Unforunately, restify has its own issues with Express right now
-    // and by modify the prototype ends up chaning query from a property
+    // Unfortunately, restify has its own issues with Express right now
+    // and by modify the prototype ends up changing query from a property
     // to a function. So we'll double-check the value but express is already borked.
     // https://github.com/restify/node-restify/issues/1540
     // https://github.com/restify/node-restify/blob/master/lib/request.js#L382-L398
@@ -44,7 +44,7 @@ test("restify shouldn't affect express query parsing middleware", async function
 
   let attempts = 0
   server.on('error', (e) => {
-    // server port not guranteed to be not in use
+    // server port not guaranteed to be not in use
     if (e.code === 'EADDRINUSE') {
       if (attempts >= MAX_PORT_ATTEMPTS) {
         console.log('Exceeded max attempts (%s), bailing out.', MAX_PORT_ATTEMPTS)

@@ -1474,7 +1474,7 @@ test('insertDistributedTraceHeaders', async (t) => {
         // newrelic header should have traceId untouched
         assert.equal(payload.d.tr, incomingTraceId)
 
-        // traceId used for metrics shoudl go untouched
+        // traceId used for metrics should go untouched
         assert.equal(txn.traceId, incomingTraceId)
 
         txn.end()
@@ -1998,7 +1998,7 @@ test('when being named with finalizeNameFromWeb', async (t) => {
   )
 })
 
-test('requestd', async (t) => {
+test('requests', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent({

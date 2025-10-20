@@ -38,7 +38,7 @@ test('Restify router introspection', async function (t) {
     helper.makeGetRequest('http://localhost:' + port + '/test/31337', function (error, res, body) {
       plan.ifError(error)
       plan.equal(res.statusCode, 200, 'nothing exploded')
-      plan.deepEqual(body, { status: 'ok' }, 'got expected respose')
+      plan.deepEqual(body, { status: 'ok' }, 'got expected response')
     })
   })
   await plan.completed

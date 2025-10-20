@@ -530,7 +530,7 @@ helper.getMetrics = function getMetrics(agent) {
  * @param {Function} cb original callback
  */
 helper.checkWrappedCb = function checkWrappedCb(shim, cb) {
-  // The wrapped calledback is always the last argument
+  // The wrapped callback is always the last argument
   const wrappedCB = arguments[arguments.length - 1]
   this.not(wrappedCB, cb)
   this.ok(shim.isWrapped(wrappedCB))

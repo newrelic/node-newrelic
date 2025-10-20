@@ -2,6 +2,14 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.5.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
       "version": "13.4.0",
       "changes": {
         "security": [],
@@ -613,7 +621,7 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Added supoort for Node 22",
+          "Added support for Node 22",
           "Added AIM support for Meta Llama3 models in AWS Bedrock"
         ]
       }
