@@ -18,9 +18,9 @@ const res = {
     }
   ],
   usageMetadata: {
-    promptTokenCount: '10',
-    candidatesTokenCount: '20',
-    totalTokenCount: '30'
+    promptTokenCount: 10,
+    candidatesTokenCount: 20,
+    totalTokenCount: 30
   }
 }
 
