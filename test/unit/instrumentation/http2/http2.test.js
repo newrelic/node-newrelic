@@ -189,8 +189,9 @@ test('http2 outbound request', async (t) => {
     function finish() {
       const { transaction } = t.nr
       const [, child] = transaction.trace.getChildren(transaction.trace.root.id)
+      const spanAttrs = child.attributes.get(DESTINATIONS.SPAN_EVENT)
       assert.deepEqual(
-        child.attributes.get(DESTINATIONS.SPAN_EVENT),
+        spanAttrs,
         {
           hostname: host,
           port,
@@ -201,8 +202,7 @@ test('http2 outbound request', async (t) => {
           'request.parameters.another': 'yourself',
           'request.parameters.thing': true,
           'request.parameters.grownup': 'true'
-        },
-        'adds attributes to spans'
+        }
       )
       end()
     }
@@ -300,8 +300,7 @@ test('http2 outbound request', async (t) => {
           procedure: 'GET',
           'request.parameters.first': '1',
           'request.parameters.second': '2'
-        },
-        'can handle raw headers in request'
+        }
       )
       end()
     }
@@ -342,8 +341,7 @@ test('http2 outbound request', async (t) => {
           procedure: 'GET',
           'request.parameters.first': '1',
           'request.parameters.second': '2'
-        },
-        'can use the host header in request'
+        }
       )
       end()
     }
@@ -383,8 +381,7 @@ test('http2 outbound request', async (t) => {
           procedure: 'GET',
           'request.parameters.first': '1',
           'request.parameters.second': '2'
-        },
-        'can use the :authority pseudoheader in request'
+        }
       )
       end()
     }
@@ -565,14 +562,13 @@ test('http trace headers', async (t) => {
     function finish(err, headers) {
       const transaction = agent.getTransaction()
       const [, child] = transaction.trace.getChildren(transaction.trace.root.id)
-
       assert.ok(!err)
       assert.equal(child.name, `External/${host}:${port}${path}`)
       assert.ok(headers.traceparent, 'traceparent header')
       const [version, traceId, parentSpanId, sampledFlag] = headers.traceparent.split('-')
       assert.equal(version, '00')
       assert.equal(traceId, transaction.traceId)
-      assert.equal(parentSpanId, child.id)
+      assert.equal(parentSpanId, transaction.trace.root.id)
       assert.equal(sampledFlag, '01')
       end()
     }
@@ -699,9 +695,9 @@ test('http2 error handling', async (t) => {
     helper.runInTransaction(agent, handled)
     const expectedCode = 'ERR_HTTP2_STREAM_ERROR'
 
-    async function handled(transaction) {
-      const session = await http2.connect(`${protocol}://${host}:${port}`)
-      const req = await session.request({
+    function handled(transaction) {
+      const session = http2.connect(`${protocol}://${host}:${port}`)
+      const req = session.request({
         ':path': '/destroy',
         ':method': 'GET'
       })
@@ -718,9 +714,9 @@ test('http2 error handling', async (t) => {
       req.end()
     }
 
-    async function unhandled(transaction) {
-      const session = await http2.connect(`${protocol}://${host}:${port}${path}`)
-      const req = await session.request({
+    function unhandled(transaction) {
+      const session = http2.connect(`${protocol}://${host}:${port}${path}`)
+      const req = session.request({
         ':path': '/destroy',
         ':method': 'GET'
       })
@@ -751,12 +747,7 @@ async function makeRequest(http2, params, cb) {
     connectUrl = port ? `${protocol}://${host}:${port}${pathstring}` : `${protocol}://${host}`
   }
 
-  let session
-  try {
-    session = await http2.connect(connectUrl)
-  } catch (e) {
-    return cb(e)
-  }
+  const session = await http2.connect(connectUrl)
 
   const http2Headers = {}
 
@@ -774,13 +765,7 @@ async function makeRequest(http2, params, cb) {
     combinedHeaders = testing.overrideHeaders
   }
 
-  let req
-  try {
-    req = await session.request(combinedHeaders)
-  } catch (e) {
-    return cb(e)
-  }
-
+  const req = session.request(combinedHeaders)
   req.on('error', function (err) {
     cb(err)
   })
