@@ -18,13 +18,12 @@ on:
         type: boolean
         required: false
         default: false
-    secrets:
-      # Cannot rely on environment secrets(i.e. from node-newrelic settings or org level)
-      # in a reusable workflow.  We must pass it in, see create-release.yml
-      # See: https://github.community/t/reusable-workflows-secrets-and-environments/203695/4
-      npm_token:
-        description: Auth token to publish to npm registry
-        required: true
+
+permissions:
+  # This permission is needed so that git tags can be created.
+  contents: write
+  # This permission is needed for OIDC based publishing.
+  id-token: write
 
 jobs:
   tag-and-publish:
@@ -44,7 +43,12 @@ jobs:
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        # As of 2025-10-21, we must specify a version to use because we need
+        # a specific version of npm in order to perform OIDC based publishing.
+        # That version of npm is 11.5.1, which first ships with v24.5.0.
+        # Once v24 is the minimum LTS release, we can revert this back to
+        # utilizing the matrix defined version.
+        node-version: 24.x
         registry-url: 'https://registry.npmjs.org'
     # Only need to install deps in agent-repo because of the bin scripts
     - name: Install Dependencies
@@ -66,8 +70,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish to Npm
       run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
     - name: Get Created Tag
       id: get_tag
       run: echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
