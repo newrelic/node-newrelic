@@ -24,7 +24,7 @@ services:
 
   opensearch:
     container_name: nr_node_opensearch
-    image: opensearchproject/opensearch:2.1.0
+    image: opensearchproject/opensearch:2
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       # Disable password
