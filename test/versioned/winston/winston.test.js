@@ -89,7 +89,7 @@ test('logging enabled', (t) => {
   setup(t.nr, { application_logging: { enabled: true } })
   const { agent, winston } = t.nr
 
-  // If we add two loggers, that counts as two instrumenations.
+  // If we add two loggers, that counts as two instrumentations.
   winston.createLogger({})
   winston.loggers.add('local', {})
 

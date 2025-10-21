@@ -97,7 +97,7 @@ test('Restify capture params introspection', async function (t) {
       helper.makeGetRequest('http://localhost:' + port + '/test/1337', function (error, res, body) {
         assert.ifError(error)
         assert.equal(res.statusCode, 200, 'nothing exploded')
-        assert.deepEqual(body, { status: 'ok' }, 'got expected respose')
+        assert.deepEqual(body, { status: 'ok' }, 'got expected response')
         end()
       })
     })
@@ -136,7 +136,7 @@ test('Restify capture params introspection', async function (t) {
       helper.makeGetRequest(url, function (error, res, body) {
         assert.ifError(error)
         assert.equal(res.statusCode, 200, 'nothing exploded')
-        assert.deepEqual(body, { status: 'ok' }, 'got expected respose')
+        assert.deepEqual(body, { status: 'ok' }, 'got expected response')
         end()
       })
     })
@@ -180,7 +180,7 @@ test('Restify capture params introspection', async function (t) {
       helper.makeGetRequest(url, function (error, res, body) {
         assert.ifError(error)
         assert.equal(res.statusCode, 200, 'nothing exploded')
-        assert.deepEqual(body, { status: 'ok' }, 'got expected respose')
+        assert.deepEqual(body, { status: 'ok' }, 'got expected response')
         end()
       })
     })

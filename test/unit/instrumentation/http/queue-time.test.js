@@ -14,7 +14,7 @@ const THRESHOLD = 200
 /**
  * This test file has been setup to run serial / not in parallel with other files.
  * These tests attempt to verify a reasonable threshold for queue time.
- * That can be easily thrwarted during a parallel run which can double time
+ * That can be easily thwarted during a parallel run which can double time
  * for these to execute.
  */
 test('built-in http queueTime', async (t) => {

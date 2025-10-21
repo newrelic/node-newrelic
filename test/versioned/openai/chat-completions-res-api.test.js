@@ -383,7 +383,7 @@ test('responses.create', async (t) => {
     function cb(model, content) {
       // could be gpt-4 or gpt-4-0613
       assert.ok(model === 'gpt-4' || model === 'gpt-4-0613', 'should be gpt-4 or gpt-4-0613')
-      if (content === promptContent || content === promptContent2) {
+      if (content === promptContent + ' ' + promptContent2) {
         return 53
       } else if (content === res) {
         return 11

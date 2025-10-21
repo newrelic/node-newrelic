@@ -23,7 +23,7 @@ test('Express e2e request smoke test', (t, end) => {
     server.on(type, exitHandlers[type])
   })
 
-  server.on('message', function incommingMessage(port) {
+  server.on('message', function incomingMessage(port) {
     const options = {
       hostname: 'localhost',
       port,

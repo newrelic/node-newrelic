@@ -394,7 +394,7 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
-  await t.test('should pick up which status codes are expectedd when using a range', (t, end) => {
+  await t.test('should pick up which status codes are expected when using a range', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: '401, 420-421, 502'

@@ -542,7 +542,7 @@ function makeMultiRunner({ t, endpoint, expectedName, numTests, end }) {
 /**
  * Makes a request and waits for transaction to finish before ending test.
  * You can pass in the assertion library, this is for tests that rely on `tspl`
- * end is optionally called and will be ommitted when tests rely on `tspl`
+ * end is optionally called and will be omitted when tests rely on `tspl`
  * to end.
  *
  * @param {object} params to function

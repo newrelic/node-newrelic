@@ -21,7 +21,7 @@ const newrelic = require('newrelic');
 const agent = require.cache.__NR_cache.agent;
 const Shim = require('newrelic/lib/shim/shim');
 
-// do the same fnApply/apply shenangins as the shim library
+// do the same fnApply/apply shenanigans as the shim library
 // https://github.com/newrelic/node-newrelic/blob/v7.1.3/lib/shim/shim.js#L17-L19
 const fnApply = Function.prototype.apply
 
