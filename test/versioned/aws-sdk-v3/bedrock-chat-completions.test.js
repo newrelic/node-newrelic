@@ -723,7 +723,7 @@ test('should not instrument stream when disabled', async (t) => {
 })
 
 test('should utilize tokenCountCallback when set', async (t) => {
-  const plan = tspl(t, { plan: 5 })
+  const plan = tspl(t, { plan: 13 })
 
   const { bedrock, client, agent } = t.nr
   const prompt = 'text amazon user token count callback response'
@@ -744,7 +744,7 @@ test('should utilize tokenCountCallback when set', async (t) => {
     const events = agent.customEventAggregator.events.toArray()
     const completions = events.filter((e) => e[0].type === 'LlmChatCompletionMessage')
     plan.equal(
-      completions.some((e) => e[1].token_count === 7),
+      completions.some((e) => e[1].token_count === 0),
       true
     )
 
