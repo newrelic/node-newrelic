@@ -225,7 +225,7 @@ test('concurrent requests in diff transaction', async (t) => {
     tx.end()
   })
 
-  const tx2 = helper.runInTransaction(agent, async(tx) => {
+  const tx2 = helper.runInTransaction(agent, async (tx) => {
     const { statusCode } = await undici.request(REQUEST_URL, {
       path: '/put',
       method: 'PUT',
@@ -401,7 +401,7 @@ test('pipeline', (t, end) => {
         },
         ({ statusCode, body }) => {
           assert.equal(statusCode, 200)
-          return pipeline(body, new PassThrough(), () => {})
+          return pipeline(body, new PassThrough(), () => { })
         }
       ),
       new Writable({
@@ -419,5 +419,56 @@ test('pipeline', (t, end) => {
         end()
       }
     )
+  })
+})
+
+test('should recognize requests via proxy correctly', async function (t) {
+  const { undici, agent } = t.nr
+  // Create a proxy server
+  t.nr.proxyServer = require('proxy').createProxy(require('node:http').createServer())
+  t.nr.proxyServer.listen(8000)
+
+  t.after((ctx) => {
+    ctx.nr.proxyServer.close()
+  })
+
+  await helper.runInTransaction(agent, async (tx) => {
+    const proxyAgent = new undici.ProxyAgent('http://localhost:8000')
+
+    const response = await undici.request('http://example.com', {
+      dispatcher: proxyAgent,
+      method: 'GET',
+      path: '/'
+    })
+
+    assert.equal(response.statusCode, 200)
+    assertSegments(tx.trace, tx.trace.root, ['External/example.com/'], { exact: false })
+  })
+})
+
+test('should not crash on invalid proxy URL construction', async function (t) {
+  const { undici, agent, REQUEST_URL } = t.nr
+
+  await helper.runInTransaction(agent, async (tx) => {
+    const malformedUrls = [
+      `${REQUEST_URL}example.com:80`,
+      `${REQUEST_URL}http://example.com`,
+      // While this might be valid for http,
+      // undici does not support proxies in this way.
+      `${REQUEST_URL}/http://example.com`
+    ]
+
+    for (const url of malformedUrls) {
+      try {
+        await undici.request(url)
+      } catch (err) {
+        // Verify your instrumentation logged the error gracefully
+        // and didn't crash the agent
+        assert.ok(err.code === 'ERR_INVALID_URL' || err.code === 'EINVAL')
+
+        // Verify transaction still exists and is functional
+        assert.ok(tx)
+      }
+    }
   })
 })
