@@ -50,6 +50,43 @@ test('http2 outbound request', async (t) => {
     end()
   }
 
+  await t.test('should add unscoped metrics for an external request', (t, end) => {
+    const { agent, http2, port, protocol, host } = t.nr
+    helper.runInTransaction(agent, function () {
+      t.nr.transaction = agent.getTransaction()
+      makeRequest(
+        http2,
+        {
+          port,
+          protocol,
+          host,
+          path: '/a?b=c&d=e&f=g',
+          method: 'GET'
+        },
+        finish
+      )
+    })
+
+    function finish() {
+      t.nr.transaction.end()
+      const expectedNames = [
+            `External/${host}:${port}/http2`,
+            `External/${host}:${port}/all`,
+            'External/allWeb',
+            'External/all'
+      ]
+      expectedNames.forEach((metricName) => {
+        const metric = agent.metrics.getOrCreateMetric(metricName)
+        assert.equal(
+          metric.callCount,
+          1,
+                `should record unscoped external metric of ${metricName} for an undici request`
+        )
+      })
+      end()
+    }
+  })
+
   await t.test('should omit query parameters from path if attributes.enabled is false', (t, end) => {
     const { agent, http2, port, protocol, host } = t.nr
     agent.config.attributes.enabled = false
@@ -533,6 +570,7 @@ test('http2 outbound request', async (t) => {
     }
   })
 })
+
 test('http trace headers', async (t) => {
   t.beforeEach(beforeEach)
   t.afterEach(afterEach)
