@@ -3,12 +3,14 @@ name: Create Release
 # Manual trigger only
 on: [workflow_dispatch]
 
+# Since we are reusing a workflow, we must match the permissions that
+# upstream workflow requires.
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
   tag-and-publish:
     uses: newrelic/node-newrelic/.github/workflows/release-creation.yml@main
     with:
       workflows: ci-workflow.yml,smoke-test-workflow.yml
-    # See release-creation.yml explaining why this has to be done
-    secrets:
-      npm_token: ${{ secrets.NODE_AGENT_NPM_TOKEN }}
-

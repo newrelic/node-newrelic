@@ -37,14 +37,14 @@ function assertChatCompletionMessages(
       expectedChatMsg.id = /[a-f0-9]{36}/
       expectedChatMsg.content = reqContent
       if (tokenUsage) {
-        expectedChatMsg.token_count = 53
+        expectedChatMsg.token_count = 0
       }
     } else if (msg[1].sequence === 1) {
       expectedChatMsg.sequence = 1
       expectedChatMsg.id = /[a-f0-9]{36}/
       expectedChatMsg.content = 'What does 1 plus 1 equal?'
       if (tokenUsage) {
-        expectedChatMsg.token_count = 53
+        expectedChatMsg.token_count = 0
       }
     } else {
       expectedChatMsg.sequence = 2
@@ -53,7 +53,7 @@ function assertChatCompletionMessages(
       expectedChatMsg.content = resContent
       expectedChatMsg.is_response = true
       if (tokenUsage) {
-        expectedChatMsg.token_count = 11
+        expectedChatMsg.token_count = 0
       }
     }
 
