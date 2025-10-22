@@ -462,11 +462,7 @@ test('should not crash on invalid proxy URL construction', async function (t) {
       try {
         await undici.request(url)
       } catch (err) {
-        // Verify your instrumentation logged the error gracefully
-        // and didn't crash the agent
         assert.ok(err.code === 'ERR_INVALID_URL' || err.code === 'EINVAL')
-
-        // Verify transaction still exists and is functional
         assert.ok(tx)
       }
     }
