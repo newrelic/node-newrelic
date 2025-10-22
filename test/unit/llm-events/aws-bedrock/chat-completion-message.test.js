@@ -211,3 +211,10 @@ test('should set token_count to 0 if response headers includes usage keys we nee
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, 0)
 })
+
+test('should not set token_count if response prompt and completion content is undefined', async (t) => {
+  t.nr.bedrockCommand.prompt = undefined
+  t.nr.bedrockResponse.completions = undefined
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
