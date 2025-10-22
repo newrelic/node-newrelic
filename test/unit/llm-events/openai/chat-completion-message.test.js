@@ -68,6 +68,11 @@ test('openai.chat.completions.create', async (t) => {
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
+    chatRes.usage = {
+      total_tokens: 30,
+      prompt_tokens: 10,
+      completion_tokens: 20
+    }
   })
 
   await t.test('should create a LlmChatCompletionMessage event', (t, end) => {
@@ -125,18 +130,21 @@ test('openai.chat.completions.create', async (t) => {
   await t.test('should use token_count from tokenCountCallback for prompt message', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
-    const expectedCount = 4
+    const expectedCount = 0
     function cb(model, content) {
       assert.equal(model, 'gpt-3.5-turbo-0613')
-      assert.equal(content, 'What is a woodchuck?')
-      return expectedCount
+
+      // this checks the prompt message content
+      if (content === 'What is a woodchuck?') {
+        assert.equal(content, req.messages[0].content)
+      }
+      return 4
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
         const summaryId = 'chat-summary-id'
-        delete chatRes.usage
         const chatMessageEvent = new LlmChatCompletionMessage({
           transaction: tx,
           agent,
@@ -156,18 +164,16 @@ test('openai.chat.completions.create', async (t) => {
   await t.test('should use token_count from tokenCountCallback for completion messages', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
-    const expectedCount = 4
+    const expectedCount = 0
     function cb(model, content) {
       assert.equal(model, 'gpt-3.5-turbo-0613')
-      assert.equal(content, 'a lot')
-      return expectedCount
+      return 4
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
         const summaryId = 'chat-summary-id'
-        delete chatRes.usage
         const chatMessageEvent = new LlmChatCompletionMessage({
           agent,
           segment,
@@ -184,7 +190,7 @@ test('openai.chat.completions.create', async (t) => {
     })
   })
 
-  await t.test('should not set token_count if not set in usage nor a callback registered', (t, end) => {
+  await t.test('should not set token_count if not set in response nor a callback registered', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     helper.runInTransaction(agent, (tx) => {
@@ -224,6 +230,87 @@ test('openai.chat.completions.create', async (t) => {
           agent,
           segment,
           transaction: tx,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: chatRes.choices[0].message,
+          index: 2
+        })
+        assert.equal(chatMessageEvent.token_count, undefined)
+        end()
+      })
+    })
+  })
+
+  await t.test('should not set token_count if callback registered returns is less than 0', (t, end) => {
+    const { agent } = t.nr
+    const api = helper.getAgentApi()
+    function cb() {
+      return -1
+    }
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        delete chatRes.usage
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          transaction: tx,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: chatRes.choices[0].message,
+          index: 2
+        })
+        assert.equal(chatMessageEvent.token_count, undefined)
+        end()
+      })
+    })
+  })
+
+  await t.test('should not set token_count if callback registered returns null', (t, end) => {
+    const { agent } = t.nr
+    const api = helper.getAgentApi()
+    function cb() {
+      return null
+    }
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        delete chatRes.usage
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          transaction: tx,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: chatRes.choices[0].message,
+          index: 2
+        })
+        assert.equal(chatMessageEvent.token_count, undefined)
+        end()
+      })
+    })
+  })
+
+  await t.test('should not set token_count if response does not include usage keys we need - input and output tokens', (t, end) => {
+    const { agent } = t.nr
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, (tx) => {
+      // delete one key that we need in usage object
+      delete chatRes.usage.prompt_tokens
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          transaction: tx,
+          agent,
+          segment,
           request: req,
           response: chatRes,
           completionId: summaryId,
@@ -268,6 +355,7 @@ test('openai.responses.create', async (t) => {
           index: 0
         })
         const expected = getExpectedResult(tx, { id: 'resp_id-0' }, 'message', summaryId)
+        expected.token_count = 0
         assert.deepEqual(chatMessageEvent, expected)
         end()
       })
@@ -298,6 +386,7 @@ test('openai.responses.create', async (t) => {
         expected.content = chatRes.output[0].content[0].text
         expected.role = chatRes.output[0].role
         expected.is_response = true
+        expected.token_count = 0
         assert.deepEqual(chatMessageEvent, expected)
         end()
       })
@@ -307,11 +396,14 @@ test('openai.responses.create', async (t) => {
   await t.test('should use token_count from tokenCountCallback for prompt message', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
-    const expectedCount = 4
+    const expectedCount = 0
     function cb(model, content) {
-      assert.equal(model, req.model)
-      assert.equal(content, req.input)
-      return expectedCount
+      // this checks the prompt message content
+      if (content === 'What is a woodchuck?') {
+        assert.equal(model, req.model)
+        assert.equal(content, req.input)
+      }
+      return 4
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
@@ -340,11 +432,19 @@ test('openai.responses.create', async (t) => {
   await t.test('should use token_count from tokenCountCallback for completion messages', (t, end) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
-    const expectedCount = 4
+    const expectedCount = 0
     function cb(model, content) {
-      assert.equal(model, 'gpt-4-0613')
-      assert.equal(content, 'a lot')
-      return expectedCount
+      // this checks the response
+      if (content === 'What is a woodchuck?') {
+        assert.equal(model, 'gpt-4')
+      }
+
+      // this checks the completion message content
+      if (content === 'a lot') {
+        assert.equal(content, chatRes.output[0].content[0].text)
+        assert.equal(model, 'gpt-4-0613')
+      }
+      return 4
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
@@ -410,6 +510,125 @@ test('openai.responses.create', async (t) => {
         const content = chatRes.output[0].content[0].text
         const role = chatRes.output[0].role
         delete chatRes.usage
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          transaction: tx,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: { content, role }, // lib/instrumentation/openai.js sets this object up
+          index: 2
+        })
+        assert.equal(chatMessageEvent.token_count, undefined)
+        end()
+      })
+    })
+  })
+
+  await t.test('should not set token_count if callback registered returns is less than 0', (t, end) => {
+    const { agent } = t.nr
+    const api = helper.getAgentApi()
+    function cb() {
+      return -1
+    }
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        const content = chatRes.output[0].content[0].text
+        const role = chatRes.output[0].role
+        delete chatRes.usage
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          transaction: tx,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: { content, role }, // lib/instrumentation/openai.js sets this object up
+          index: 2
+        })
+        assert.equal(chatMessageEvent.token_count, undefined)
+        end()
+      })
+    })
+  })
+
+  await t.test('should not set token_count if callback registered returns null', (t, end) => {
+    const { agent } = t.nr
+    const api = helper.getAgentApi()
+    function cb() {
+      return null
+    }
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        const content = chatRes.output[0].content[0].text
+        const role = chatRes.output[0].role
+        delete chatRes.usage
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          transaction: tx,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: { content, role }, // lib/instrumentation/openai.js sets this object up
+          index: 2
+        })
+        assert.equal(chatMessageEvent.token_count, undefined)
+        end()
+      })
+    })
+  })
+
+  await t.test('should not set token_count if response does not include token usage in response', (t, end) => {
+    const { agent } = t.nr
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        const content = chatRes.output[0].content[0].text
+        const role = chatRes.output[0].role
+        delete chatRes.usage // delete token usage information
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          transaction: tx,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: { content, role }, // lib/instrumentation/openai.js sets this object up
+          index: 2
+        })
+        assert.equal(chatMessageEvent.token_count, undefined)
+        end()
+      })
+    })
+  })
+
+  await t.test('should not set token_count if response prompt and completion content is undefined', (t, end) => {
+    const { agent } = t.nr
+    const api = helper.getAgentApi()
+
+    function cb() {
+      return 5
+    }
+    api.setLlmTokenCountCallback(cb)
+
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        const content = chatRes.output[0].content[0].text
+        const role = chatRes.output[0].role
+        req.input = undefined
+        chatRes.output = undefined
         const chatMessageEvent = new LlmChatCompletionMessage({
           agent,
           segment,
