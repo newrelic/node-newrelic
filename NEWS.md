@@ -1,3 +1,40 @@
+### v13.6.0 (2025-10-23)
+
+#### Features
+
+* Added instrumentation for http2 client methods ([#3284](https://github.com/newrelic/node-newrelic/pull/3284)) ([bda7aea](https://github.com/newrelic/node-newrelic/commit/bda7aeaac16ce9f54bd28de72aa7465be96cd157))
+* Updated token calculation for `google-genai` LLM Events ([#3431](https://github.com/newrelic/node-newrelic/pull/3431)) ([41d32be](https://github.com/newrelic/node-newrelic/commit/41d32befe1d9c3201b62253a5de76c918d98a025))
+* Updated token calculation for `openai` LLM Events ([#3430](https://github.com/newrelic/node-newrelic/pull/3430)) ([b8678cc](https://github.com/newrelic/node-newrelic/commit/b8678cc92bb986eae7efec4b516f66406307e841))
+
+#### Bug fixes
+
+* Typos ([#3433](https://github.com/newrelic/node-newrelic/pull/3433)) ([37d1e29](https://github.com/newrelic/node-newrelic/commit/37d1e29f4e23ed41a941cc7260444fee071dd222))
+* typos pt 2 ([#3434](https://github.com/newrelic/node-newrelic/pull/3434)) ([aac0d76](https://github.com/newrelic/node-newrelic/commit/aac0d761edd949dbeda8268233c28aa5a45b8c40))
+
+#### Code refactoring
+
+* Update `express` instrumentation to subscribe to events emitted ([#3424](https://github.com/newrelic/node-newrelic/pull/3424)) ([bbf3d01](https://github.com/newrelic/node-newrelic/commit/bbf3d010bc402953e53cae5200af6bfb55a6446d))
+* Updated instances of `Array.forEach` for a more performant for...of or for index loop ([#3440](https://github.com/newrelic/node-newrelic/pull/3440)) ([48c37bf](https://github.com/newrelic/node-newrelic/commit/48c37bf7f85291553666d4512ca995b6a5b136a2))
+
+#### Documentation
+
+* Updated compatibility report ([#3459](https://github.com/newrelic/node-newrelic/pull/3459)) ([f253b97](https://github.com/newrelic/node-newrelic/commit/f253b97c039caa9e9110055d93e0c32e2d6911a8))
+    * Co-authored-by: mrickard <11327+mrickard@users.noreply.github.com>
+* Updated compatibility report ([#3447](https://github.com/newrelic/node-newrelic/pull/3447)) ([9f250f4](https://github.com/newrelic/node-newrelic/commit/9f250f47cb47ba505026d7c608c44314b612472b))
+    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
+* Updated compatibility report ([#3439](https://github.com/newrelic/node-newrelic/pull/3439)) ([013c4e3](https://github.com/newrelic/node-newrelic/commit/013c4e3cbb2534a81a6aed31b79585279d9ef9e6))
+* Updated compatibility report ([#3429](https://github.com/newrelic/node-newrelic/pull/3429)) ([031928b](https://github.com/newrelic/node-newrelic/commit/031928be1f12628157df76f3771086b2a9e48a7d))
+
+#### Miscellaneous chores
+
+* Update release workflows ([#3444](https://github.com/newrelic/node-newrelic/pull/3444)) ([d1ec158](https://github.com/newrelic/node-newrelic/commit/d1ec158f46d034160b665f8b0785c020ba39b820))
+
+#### Tests
+
+* fixed express async error test to purposely misspell a method to emit a crash ([#3435](https://github.com/newrelic/node-newrelic/pull/3435)) ([ff9f064](https://github.com/newrelic/node-newrelic/commit/ff9f0646c4fc23e367c1e190eb8091423c690103))
+* Pinned Next.js tests to <16.0.0 ([#3446](https://github.com/newrelic/node-newrelic/pull/3446)) ([10787a1](https://github.com/newrelic/node-newrelic/commit/10787a1f4e325b7321173ee5b2fab0809af5e8d1))
+* Updated minimum tested version of `@langchain/core` to 1.0.0 ([#3437](https://github.com/newrelic/node-newrelic/pull/3437)) ([b61f67a](https://github.com/newrelic/node-newrelic/commit/b61f67a4c6d59f0b2a49e0de93a6d38e56d214fd))
+
 ### v13.5.0 (2025-10-14)
 
 #### Code refactoring
