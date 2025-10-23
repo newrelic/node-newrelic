@@ -16,7 +16,6 @@ const { match } = require('../../lib/custom-assertions')
 const assert = require('node:assert')
 const SEGMENT_DESTINATION = TRANS_SEGMENT
 const helper = require('../../lib/agent_helper')
-const semver = require('semver')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -180,6 +179,7 @@ function afterEach(ctx) {
 }
 
 function getAiResponseServer() {
+  const semver = require('semver')
   const { version: pkgVersion } = JSON.parse(
     fs.readFileSync(path.join(__dirname, '/node_modules/@aws-sdk/client-bedrock-runtime/package.json'))
   )
