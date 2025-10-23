@@ -211,7 +211,6 @@ test('ioredis instrumentation', async (t) => {
     })
   })
 
-  // TODO: add something in a promise chain to verify this is working as expected
   await t.test('redis failure', async (t) => {
     const { agent, redisClient } = t.nr
     await helper.runInTransaction(agent, async (transaction) => {
@@ -222,6 +221,29 @@ test('ioredis instrumentation', async (t) => {
       })
       transaction.end()
     })
+  })
+
+  // this asserts our interception of promise doesn't break a promise chain
+  await t.test('chain commands that succeed and fail', async (t) => {
+    const { agent, redisClient } = t.nr
+    const plan = tspl(t, { plan: 3 })
+    agent.on('transactionFinished', function (tx) {
+      const root = tx.trace.root
+      const children = tx.trace.getChildren(root.id)
+      const [setSegment, set2Segment] = children
+      plan.equal(setSegment.name, 'Datastore/operation/Redis/set')
+      plan.equal(set2Segment.name, 'Datastore/operation/Redis/set')
+    })
+    await helper.runInTransaction(agent, async (transaction) => {
+      await redisClient.set('foo', 'bar')
+        .then(() => redisClient.set('baz', []))
+        .then(() => redisClient.get('foo'))
+        .catch((err) => {
+          plan.strictEqual(err.name, 'ReplyError')
+        })
+      transaction.end()
+    })
+    await plan.completed
   })
 
   await t.test('pipeline works', async (t) => {
@@ -261,6 +283,49 @@ test('ioredis instrumentation', async (t) => {
         .exec()
       const errString = err[0].toString()
       plan.match(errString, /ERR wrong number of arguments/)
+      tx.end()
+    })
+
+    await plan.completed
+  })
+
+  await t.test('pipeline with chain of normal commands', async (t) => {
+    const { agent, redisClient } = t.nr
+    const plan = tspl(t, { plan: 14 })
+    agent.on('transactionFinished', function (tx) {
+      const root = tx.trace.root
+      const children = tx.trace.getChildren(root.id)
+      plan.equal(children.length, 6, 'root has six children')
+      const [setSegment, set2Segment, getSegment, get2Segment, get3Segment, set3Segment] = children
+      plan.equal(setSegment.name, 'Datastore/operation/Redis/set')
+      plan.equal(set2Segment.name, 'Datastore/operation/Redis/set')
+      plan.equal(set3Segment.name, 'Datastore/operation/Redis/set')
+      plan.equal(getSegment.name, 'Datastore/operation/Redis/get')
+      plan.equal(get2Segment.name, 'Datastore/operation/Redis/get')
+      plan.equal(get3Segment.name, 'Datastore/operation/Redis/get')
+    })
+    await helper.runInTransaction(agent, async (tx) => {
+      await redisClient.pipeline()
+        .set('key1', 'test')
+        .set('key2', [])
+        .get('key1')
+        .get('key2')
+        .exec()
+        .then((result) => {
+          plan.equal(result.length, 4)
+          plan.deepEqual(result[0], [null, 'OK'])
+          const errString = result[1].toString()
+          plan.match(errString, /ERR wrong number of arguments/)
+          plan.deepEqual(result[2], [null, 'test'])
+          plan.deepEqual(result[3], [null, null])
+          return redisClient.get('key1')
+        }).then((res) => {
+          plan.equal(res, 'test')
+          return redisClient.set('key3', [])
+        }).then(() => redisClient.get('key3')).catch((err) => {
+          plan.match(err.toString(), /ReplyError: /)
+        })
+
       tx.end()
     })
 
