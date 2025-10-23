@@ -28,12 +28,14 @@ test('ioredis instrumentation', async (t) => {
       ? agent.config.getHostnameSafe()
       : params.redis_host
     const HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
+    const redisKey = helper.randomString('redis-key')
 
     await redisClient.select(DB_INDEX)
     ctx.nr = {
       agent,
       pkgVersion,
       redisClient,
+      redisKey,
       HOST_ID,
       METRIC_HOST_NAME
     }
@@ -47,7 +49,7 @@ test('ioredis instrumentation', async (t) => {
   })
 
   await t.test('creates expected metrics', async (t) => {
-    const { agent, pkgVersion, redisClient, HOST_ID } = t.nr
+    const { agent, pkgVersion, redisClient, redisKey, HOST_ID } = t.nr
     const plan = tspl(t, { plan: 6 })
     agent.on('transactionFinished', function (tx) {
       const expected = [
@@ -62,7 +64,7 @@ test('ioredis instrumentation', async (t) => {
     })
 
     helper.runInTransaction(agent, async (transaction) => {
-      await redisClient.set('testkey', 'testvalue')
+      await redisClient.set(redisKey, 'testvalue')
       transaction.end()
     })
 
@@ -70,7 +72,7 @@ test('ioredis instrumentation', async (t) => {
   })
 
   await t.test('creates expected segments', async (t) => {
-    const { agent, redisClient } = t.nr
+    const { agent, redisClient, redisKey } = t.nr
     const plan = tspl(t, { plan: 5 })
 
     agent.on('transactionFinished', function (tx) {
@@ -90,16 +92,16 @@ test('ioredis instrumentation', async (t) => {
     })
 
     await helper.runInTransaction(agent, async (transaction) => {
-      await redisClient.set('testkey', 'testvalue')
-      const value = await redisClient.get('testkey')
-      plan.equal(value, 'testvalue', 'should have expected value')
+      await redisClient.set(redisKey, 'testvalue')
+      const value = await redisClient.get(redisKey)
+      plan.equal(value, 'testvalue')
       transaction.end()
     })
     await plan.completed
   })
 
   await t.test('should add instance attributes to all redis segments', async (t) => {
-    const { agent, redisClient, METRIC_HOST_NAME } = t.nr
+    const { agent, redisClient, redisKey, METRIC_HOST_NAME } = t.nr
     agent.config.datastore_tracer.instance_reporting.enabled = true
     agent.config.datastore_tracer.database_name_reporting.enabled = true
     const plan = tspl(t, { plan: 12 })
@@ -114,27 +116,27 @@ test('ioredis instrumentation', async (t) => {
       const getAttrs = getSegment.getAttributes()
       plan.equal(setAttrs.host, METRIC_HOST_NAME)
       plan.equal(setAttrs.product, 'Redis')
-      plan.equal(setAttrs.key, '"testkey"')
+      plan.equal(setAttrs.key, `"${redisKey}"`)
       plan.equal(setAttrs.port_path_or_id, params.redis_port.toString())
       plan.equal(setAttrs.database_name, String(DB_INDEX))
       plan.equal(getAttrs.host, METRIC_HOST_NAME)
       plan.equal(getAttrs.product, 'Redis')
-      plan.equal(getAttrs.key, '"testkey"')
+      plan.equal(getAttrs.key, `"${redisKey}"`)
       plan.equal(getAttrs.port_path_or_id, params.redis_port.toString())
       plan.equal(getAttrs.database_name, String(DB_INDEX))
     })
 
     helper.runInTransaction(agent, async (transaction) => {
-      await redisClient.set('testkey', 'testvalue')
-      const value = await redisClient.get('testkey')
-      plan.equal(value, 'testvalue', 'should have expected value')
+      await redisClient.set(redisKey, 'testvalue')
+      const value = await redisClient.get(redisKey)
+      plan.equal(value, 'testvalue')
       transaction.end()
     })
     await plan.completed
   })
 
   await t.test('should not add instance attributes to redis segments when disabled', async (t) => {
-    const { agent, redisClient, HOST_ID } = t.nr
+    const { agent, redisClient, redisKey, HOST_ID } = t.nr
     const plan = tspl(t, { plan: 13 })
     agent.config.datastore_tracer.instance_reporting.enabled = false
     agent.config.datastore_tracer.database_name_reporting.enabled = false
@@ -149,12 +151,12 @@ test('ioredis instrumentation', async (t) => {
       const getAttrs = getSegment.getAttributes()
       plan.equal(setAttrs.host, undefined)
       plan.equal(setAttrs.product, 'Redis')
-      plan.equal(setAttrs.key, '"testkey"')
+      plan.equal(setAttrs.key, `"${redisKey}"`)
       plan.equal(setAttrs.port_path_or_id, undefined)
       plan.equal(setAttrs.database_name, undefined)
       plan.equal(getAttrs.host, undefined)
       plan.equal(getAttrs.product, 'Redis')
-      plan.equal(getAttrs.key, '"testkey"')
+      plan.equal(getAttrs.key, `"${redisKey}"`)
       plan.equal(getAttrs.port_path_or_id, undefined)
       plan.equal(getAttrs.database_name, undefined)
       const unscoped = tx.metrics.unscoped
@@ -162,16 +164,16 @@ test('ioredis instrumentation', async (t) => {
     })
 
     helper.runInTransaction(agent, async (transaction) => {
-      await redisClient.set('testkey', 'testvalue')
-      const value = await redisClient.get('testkey')
-      plan.equal(value, 'testvalue', 'should have expected value')
+      await redisClient.set(redisKey, 'testvalue')
+      const value = await redisClient.get(redisKey)
+      plan.equal(value, 'testvalue')
       transaction.end()
     })
     await plan.completed
   })
 
   await t.test('should follow selected database', async (t) => {
-    const { agent, redisClient } = t.nr
+    const { agent, redisClient, redisKey } = t.nr
     const plan = tspl(t, { plan: 7 })
     const SELECTED_DB = 5
 
@@ -190,9 +192,9 @@ test('ioredis instrumentation', async (t) => {
     })
 
     helper.runInTransaction(agent, async (transaction) => {
-      await redisClient.set('testkey', 'testvalue')
+      await redisClient.set(redisKey, 'testvalue')
       await redisClient.select(SELECTED_DB)
-      await redisClient.set('testkey2', 'testvalue')
+      await redisClient.set(`${redisKey}2`, 'testvalue')
       transaction.end()
     })
     await plan.completed
@@ -200,10 +202,10 @@ test('ioredis instrumentation', async (t) => {
 
   // NODE-1524 regression
   await t.test('does not crash when ending out of transaction', (t, end) => {
-    const { agent, redisClient } = t.nr
+    const { agent, redisClient, redisKey } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       assert.ok(agent.getTransaction(), 'transaction should be in progress')
-      redisClient.set('testkey', 'testvalue').then(function () {
+      redisClient.set(redisKey, 'testvalue').then(function () {
         assert.ok(!agent.getTransaction(), 'transaction should have ended')
         end()
       })
@@ -212,10 +214,10 @@ test('ioredis instrumentation', async (t) => {
   })
 
   await t.test('redis failure', async (t) => {
-    const { agent, redisClient } = t.nr
+    const { agent, redisClient, redisKey } = t.nr
     await helper.runInTransaction(agent, async (transaction) => {
       assert.rejects(async () => {
-        await redisClient.set('testkey', [])
+        await redisClient.set(redisKey, [])
       }, {
         name: 'ReplyError'
       })
@@ -225,7 +227,8 @@ test('ioredis instrumentation', async (t) => {
 
   // this asserts our interception of promise doesn't break a promise chain
   await t.test('chain commands that succeed and fail', async (t) => {
-    const { agent, redisClient } = t.nr
+    const { agent, redisClient, redisKey } = t.nr
+    const key2 = helper.randomString('baz')
     const plan = tspl(t, { plan: 3 })
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
@@ -235,9 +238,9 @@ test('ioredis instrumentation', async (t) => {
       plan.equal(set2Segment.name, 'Datastore/operation/Redis/set')
     })
     await helper.runInTransaction(agent, async (transaction) => {
-      await redisClient.set('foo', 'bar')
-        .then(() => redisClient.set('baz', []))
-        .then(() => redisClient.get('foo'))
+      await redisClient.set(redisKey, 'bar')
+        .then(() => redisClient.set(key2, []))
+        .then(() => redisClient.get(redisKey))
         .catch((err) => {
           plan.strictEqual(err.name, 'ReplyError')
         })
@@ -247,7 +250,7 @@ test('ioredis instrumentation', async (t) => {
   })
 
   await t.test('pipeline works', async (t) => {
-    const { agent, redisClient } = t.nr
+    const { agent, redisClient, redisKey } = t.nr
     const plan = tspl(t, { plan: 3 })
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
@@ -258,8 +261,8 @@ test('ioredis instrumentation', async (t) => {
     })
     await helper.runInTransaction(agent, async (tx) => {
       const res = await redisClient.pipeline()
-        .set('key1', 'test')
-        .get('key1')
+        .set(redisKey, 'test')
+        .get(redisKey)
         .exec()
       plan.deepStrictEqual(res, [[null, 'OK'], [null, 'test']])
       tx.end()
@@ -269,7 +272,7 @@ test('ioredis instrumentation', async (t) => {
   })
 
   await t.test('pipeline does not crash when invalid command args', async (t) => {
-    const { agent, redisClient } = t.nr
+    const { agent, redisClient, redisKey } = t.nr
     const plan = tspl(t, { plan: 2 })
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
@@ -279,7 +282,7 @@ test('ioredis instrumentation', async (t) => {
     })
     await helper.runInTransaction(agent, async (tx) => {
       const err = await redisClient.pipeline()
-        .set('key1', [])
+        .set(redisKey, [])
         .exec()
       const errString = err[0].toString()
       plan.match(errString, /ERR wrong number of arguments/)
@@ -290,7 +293,9 @@ test('ioredis instrumentation', async (t) => {
   })
 
   await t.test('pipeline with chain of normal commands', async (t) => {
-    const { agent, redisClient } = t.nr
+    const { agent, redisClient, redisKey } = t.nr
+    const key2 = helper.randomString('key2')
+    const key3 = helper.randomString('key3')
     const plan = tspl(t, { plan: 14 })
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
@@ -306,10 +311,10 @@ test('ioredis instrumentation', async (t) => {
     })
     await helper.runInTransaction(agent, async (tx) => {
       await redisClient.pipeline()
-        .set('key1', 'test')
-        .set('key2', [])
-        .get('key1')
-        .get('key2')
+        .set(redisKey, 'test')
+        .set(key2, [])
+        .get(redisKey)
+        .get(key2)
         .exec()
         .then((result) => {
           plan.equal(result.length, 4)
@@ -318,11 +323,11 @@ test('ioredis instrumentation', async (t) => {
           plan.match(errString, /ERR wrong number of arguments/)
           plan.deepEqual(result[2], [null, 'test'])
           plan.deepEqual(result[3], [null, null])
-          return redisClient.get('key1')
+          return redisClient.get(redisKey)
         }).then((res) => {
           plan.equal(res, 'test')
-          return redisClient.set('key3', [])
-        }).then(() => redisClient.get('key3')).catch((err) => {
+          return redisClient.set(key3, [])
+        }).then(() => redisClient.get(key3)).catch((err) => {
           plan.match(err.toString(), /ReplyError: /)
         })
 

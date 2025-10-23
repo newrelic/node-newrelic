@@ -27,9 +27,9 @@ test.beforeEach(async (ctx) => {
 
   const { Kafka, logLevel } = require('kafkajs')
   ctx.nr.Kafka = Kafka
-  const topic = utils.randomString()
+  const topic = helper.randomString('topic')
   ctx.nr.topic = topic
-  const clientId = utils.randomString('kafka-test')
+  const clientId = helper.randomString('kafka-test')
   ctx.nr.clientId = clientId
 
   const kafka = new Kafka({
