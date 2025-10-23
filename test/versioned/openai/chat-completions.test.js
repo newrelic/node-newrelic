@@ -425,16 +425,19 @@ test('chat.completions.create', async (t) => {
     assert.equal(events.length, 0, 'should not create llm events')
   })
 
-  await t.test('auth errors should be tracked', (t, end) => {
+  await t.test('auth errors should be tracked', async (t) => {
     const { client, agent } = t.nr
-    helper.runInTransaction(agent, async (tx) => {
+    const plan = tspl(t, { plan: 13 })
+    await helper.runInTransaction(agent, async (tx) => {
       try {
         await client.chat.completions.create({
           messages: [{ role: 'user', content: 'Invalid API key.' }]
         })
-      } catch {}
+      } catch (err) {
+        plan.ok(err)
+      }
 
-      assert.equal(tx.exceptions.length, 1)
+      plan.equal(tx.exceptions.length, 1)
       match(tx.exceptions[0], {
         error: {
           status: 401,
@@ -451,27 +454,30 @@ test('chat.completions.create', async (t) => {
         agentAttributes: {
           spanId: /\w+/
         }
-      })
+      }, { assert: plan })
 
       const summary = agent.customEventAggregator.events.toArray().find((e) => e[0].type === 'LlmChatCompletionSummary')
-      assert.ok(summary)
-      assert.equal(summary[1].error, true)
+      plan.ok(summary)
+      plan.equal(summary[1].error, true)
 
       tx.end()
-      end()
     })
+    await plan.completed
   })
 
-  await t.test('invalid payload errors should be tracked', (t, end) => {
+  await t.test('invalid payload errors should be tracked', async (t) => {
     const { client, agent } = t.nr
-    helper.runInTransaction(agent, async (tx) => {
+    const plan = tspl(t, { plan: 11 })
+    await helper.runInTransaction(agent, async (tx) => {
       try {
         await client.chat.completions.create({
           messages: [{ role: 'bad-role', content: 'Invalid role.' }]
         })
-      } catch {}
+      } catch (err) {
+        plan.ok(err)
+      }
 
-      assert.equal(tx.exceptions.length, 1)
+      plan.equal(tx.exceptions.length, 1)
       match(tx.exceptions[0], {
         error: {
           status: 400,
@@ -488,11 +494,11 @@ test('chat.completions.create', async (t) => {
         agentAttributes: {
           spanId: /\w+/
         }
-      })
+      }, { assert: plan })
 
       tx.end()
-      end()
     })
+    await plan.completed
   })
 
   await t.test('should add llm attribute to transaction', (t, end) => {
