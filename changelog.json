@@ -5,14 +5,9 @@
       "version": "13.6.0",
       "changes": {
         "security": [],
-        "bugfixes": [
-          "typos pt 2",
-          "Typos"
-        ],
+        "bugfixes": [],
         "features": [
-          "Added instrumentation for http2 client methods",
-          "Updated token calculation for `google-genai` LLM Events",
-          "Updated token calculation for `openai` LLM Events"
+          "Added instrumentation for http2 client methods"
         ]
       }
     },
