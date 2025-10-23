@@ -10,15 +10,16 @@ const {
   afterEach,
   assertChatCompletionMessages,
   assertChatCompletionSummary,
-  assertChatCompletionMessage
+  assertChatCompletionMessage,
+  getAiResponseServer
 } = require('./common')
 const helper = require('../../lib/agent_helper')
-const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { assertSegments, match } = require('../../lib/custom-assertions')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const { tspl } = require('@matteo.collina/tspl')
+const createAiResponseServer = getAiResponseServer()
 
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.
@@ -99,13 +100,12 @@ test.beforeEach(async (ctx) => {
   ctx.nr.responses = responses
   ctx.nr.expectedExternalPath = (modelId, method = 'invoke') => `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
 
-  const client = new bedrock.BedrockRuntimeClient({
+  ctx.nr.client = new bedrock.BedrockRuntimeClient({
     region: 'us-east-1',
     credentials: FAKE_CREDENTIALS,
     endpoint: baseUrl,
     maxAttempts: 1
   })
-  ctx.nr.client = client
 })
 
 test.afterEach(afterEach)
@@ -634,18 +634,31 @@ test('models should properly create errors on stream interruption', async (t) =>
   const prompt = 'text amazon bad stream'
   const input = requests.amazon(prompt, modelId)
 
+  const httpError = {
+    code: 'ECONNRESET',
+    message: /aborted/,
+    $response: {
+      statusCode: 500
+    }
+  }
+  const http2Error = {
+    message: /Unterminated string in JSON|Unexpected non-whitespace character/,
+    $response: {
+      statusCode: 500
+    }
+  }
+
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
   await helper.runInTransaction(agent, async (tx) => {
     try {
       await client.send(command)
     } catch (error) {
-      match(error, {
-        code: 'ECONNRESET',
-        message: /aborted/,
-        $response: {
-          statusCode: 500
-        }
-      })
+      // http errors are different from http2 errors
+      if (error.code) {
+        match(error, httpError)
+      } else {
+        match(error, http2Error)
+      }
     }
 
     const events = agent.customEventAggregator.events.toArray()
