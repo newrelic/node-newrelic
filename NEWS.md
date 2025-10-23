@@ -3,27 +3,19 @@
 #### Features
 
 * Added instrumentation for http2 client methods ([#3284](https://github.com/newrelic/node-newrelic/pull/3284)) ([bda7aea](https://github.com/newrelic/node-newrelic/commit/bda7aeaac16ce9f54bd28de72aa7465be96cd157))
-* Updated token calculation for `google-genai` LLM Events ([#3431](https://github.com/newrelic/node-newrelic/pull/3431)) ([41d32be](https://github.com/newrelic/node-newrelic/commit/41d32befe1d9c3201b62253a5de76c918d98a025))
-* Updated token calculation for `openai` LLM Events ([#3430](https://github.com/newrelic/node-newrelic/pull/3430)) ([b8678cc](https://github.com/newrelic/node-newrelic/commit/b8678cc92bb986eae7efec4b516f66406307e841))
-
-#### Bug fixes
-
-* Typos ([#3433](https://github.com/newrelic/node-newrelic/pull/3433)) ([37d1e29](https://github.com/newrelic/node-newrelic/commit/37d1e29f4e23ed41a941cc7260444fee071dd222))
-* typos pt 2 ([#3434](https://github.com/newrelic/node-newrelic/pull/3434)) ([aac0d76](https://github.com/newrelic/node-newrelic/commit/aac0d761edd949dbeda8268233c28aa5a45b8c40))
 
 #### Code refactoring
 
 * Update `express` instrumentation to subscribe to events emitted ([#3424](https://github.com/newrelic/node-newrelic/pull/3424)) ([bbf3d01](https://github.com/newrelic/node-newrelic/commit/bbf3d010bc402953e53cae5200af6bfb55a6446d))
 * Updated instances of `Array.forEach` for a more performant for...of or for index loop ([#3440](https://github.com/newrelic/node-newrelic/pull/3440)) ([48c37bf](https://github.com/newrelic/node-newrelic/commit/48c37bf7f85291553666d4512ca995b6a5b136a2))
+* Updated token calculation for `google-genai` LLM Events ([#3431](https://github.com/newrelic/node-newrelic/pull/3431)) ([41d32be](https://github.com/newrelic/node-newrelic/commit/41d32befe1d9c3201b62253a5de76c918d98a025))
+* Updated token calculation for `openai` LLM Events ([#3430](https://github.com/newrelic/node-newrelic/pull/3430)) ([b8678cc](https://github.com/newrelic/node-newrelic/commit/b8678cc92bb986eae7efec4b516f66406307e841))
 
 #### Documentation
 
-* Updated compatibility report ([#3459](https://github.com/newrelic/node-newrelic/pull/3459)) ([f253b97](https://github.com/newrelic/node-newrelic/commit/f253b97c039caa9e9110055d93e0c32e2d6911a8))
-    * Co-authored-by: mrickard <11327+mrickard@users.noreply.github.com>
-* Updated compatibility report ([#3447](https://github.com/newrelic/node-newrelic/pull/3447)) ([9f250f4](https://github.com/newrelic/node-newrelic/commit/9f250f47cb47ba505026d7c608c44314b612472b))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
-* Updated compatibility report ([#3439](https://github.com/newrelic/node-newrelic/pull/3439)) ([013c4e3](https://github.com/newrelic/node-newrelic/commit/013c4e3cbb2534a81a6aed31b79585279d9ef9e6))
 * Updated compatibility report ([#3429](https://github.com/newrelic/node-newrelic/pull/3429)) ([031928b](https://github.com/newrelic/node-newrelic/commit/031928be1f12628157df76f3771086b2a9e48a7d))
+* Typos ([#3433](https://github.com/newrelic/node-newrelic/pull/3433)) ([37d1e29](https://github.com/newrelic/node-newrelic/commit/37d1e29f4e23ed41a941cc7260444fee071dd222))
+* Typos part 2 ([#3434](https://github.com/newrelic/node-newrelic/pull/3434)) ([aac0d76](https://github.com/newrelic/node-newrelic/commit/aac0d761edd949dbeda8268233c28aa5a45b8c40))
 
 #### Miscellaneous chores
 
@@ -7989,6 +7981,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
