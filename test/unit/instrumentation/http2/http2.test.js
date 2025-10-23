@@ -571,7 +571,7 @@ test('http2 outbound request', async (t) => {
     }
   })
 
-  await t.test('should not record segments and should not error if not run in a transaction', { skip: nodeVersion < 22 }, (t, end) => {
+  await t.test('should not record segments and should not error if not run in a transaction', (t, end) => {
     // Raw headers as a stream option were introduced in Node v22, so we skip anything earlier.
     const { agent, http2, port, protocol, host } = t.nr
     const path = '/first?second=2&third=3'
@@ -599,24 +599,28 @@ test('http trace headers', async (t) => {
   t.beforeEach(beforeEach)
   t.afterEach(afterEach)
 
-  const headers = { headerType: 'object', ':method': 'GET' }
-  const rawHeaders = ['headerType', 'raw', ':method', 'GET']
-  const headersForTest = [headers]
+  function formatHeaders(headers, type) {
+    if (type === 'raw') {
+      const rawHeaders = []
+      for (const [key, value] of Object.entries(headers)) {
+        rawHeaders.push(key, value)
+      }
+      return rawHeaders
+    }
+    return headers
+  }
+
+  const headersForTest = ['object']
   if (nodeVersion >= 22) {
-    headersForTest.push(rawHeaders)
+    headersForTest.push('raw')
   }
   for await (const requestHeaders of headersForTest) {
-    await t.test('should add DT headers when `distributed_tracing` is enabled', (t, end) => {
+    await t.test(`header type (${requestHeaders}): should add DT headers when 'distributed_tracing' is enabled`, (t, end) => {
       const { agent, http2, protocol, host, port, path } = t.nr
       agent.config.trusted_account_key = 190
       agent.config.account_id = 190
       agent.config.primary_application_id = '389103'
-      let testHeaders
-      if (Array.isArray(requestHeaders)) {
-        testHeaders = [...requestHeaders, 'host', `${host}:${port}`, ':path', path]
-      } else {
-        testHeaders = { ...requestHeaders, host: `${host}:${port}`, ':path': path }
-      }
+      const testHeaders = formatHeaders({ host: `${host}:${port}`, ':path': path, ':method': 'GET' }, requestHeaders)
 
       helper.runInTransaction(agent, function () {
         t.nr.transaction = agent.getTransaction()
@@ -648,7 +652,7 @@ test('http trace headers', async (t) => {
       }
     })
 
-    await t.test('should add CAT headers when `cross_application_tracer` is enabled', (t, end) => {
+    await t.test(`header type (${requestHeaders}): should add CAT headers when 'cross_application_tracer' is enabled`, (t, end) => {
       const { agent, http2, protocol, host, port, path } = t.nr
       const encKey = 'testEncodingKey'
       agent.config.distributed_tracing.enabled = false
@@ -657,13 +661,8 @@ test('http trace headers', async (t) => {
       agent.config.trusted_account_ids = [123]
       const appData = ['123#456', 'abc', 0, 0, -1, 'xyz']
       const obfData = hashes.obfuscateNameUsingKey(JSON.stringify(appData), encKey)
-      // add x-newrelic-app-data header and host headers correctly for this test's header type
-      let testHeaders
-      if (Array.isArray(requestHeaders)) {
-        testHeaders = [...requestHeaders, 'host', `${host}:${port}`, ':path', path, 'x-newrelic-app-data', obfData]
-      } else {
-        testHeaders = { ...requestHeaders, host: `${host}:${port}`, path, 'x-newrelic-app-data': obfData }
-      }
+      const testHeaders = formatHeaders({ 'x-newrelic-app-data': obfData, host: `${host}:${port}`, ':path': path, ':method': 'GET' }, requestHeaders)
+
       helper.runInTransaction(agent, function () {
         t.nr.transaction = agent.getTransaction()
         makeRequest(
@@ -687,16 +686,10 @@ test('http trace headers', async (t) => {
       }
     })
 
-    await t.test('should add synthetics header when it exists on transaction', (t, end) => {
+    await t.test(`header type (${requestHeaders}): should add synthetics header when it exists on transaction`, (t, end) => {
       const { agent, http2, protocol, host, port, path } = t.nr
       agent.config.encoding_key = 'testEncodingKey'
-      // add host header correctly for this test's header type
-      let testHeaders
-      if (Array.isArray(requestHeaders)) {
-        testHeaders = [...requestHeaders, 'host', `${host}:${port}`, ':path', path]
-      } else {
-        testHeaders = { ...requestHeaders, host: `${host}:${port}`, ':path': path }
-      }
+      const testHeaders = formatHeaders({ host: `${host}:${port}`, ':path': path, ':method': 'GET' }, requestHeaders)
 
       helper.runInTransaction(agent, function () {
         const tx = agent.getTransaction()
