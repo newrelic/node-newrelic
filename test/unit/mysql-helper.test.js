@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const useParser = require('../../lib/db/utils').extractDatabaseChangeFromUse
+const useParser = require('../../lib/subscribers/mysql/helper').extractDatabaseChangeFromUse
 
 test('should match single statement use expressions', () => {
   assert.equal(useParser('use test_db;'), 'test_db')
