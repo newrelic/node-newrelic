@@ -172,7 +172,8 @@ test('handles claude3streams', async (t) => {
   assert.deepStrictEqual(foundBody, {
     completions: ['42'],
     stop_reason: 'done',
-    type: 'message_stop'
+    type: 'message_stop',
+    usage: {}
   })
 
   const bc = new BedrockCommand({
@@ -206,7 +207,8 @@ test('handles region specific claude3streams', async (t) => {
   assert.deepStrictEqual(foundBody, {
     completions: ['42'],
     stop_reason: 'done',
-    type: 'message_stop'
+    type: 'message_stop',
+    usage: {}
   })
 
   const bc = new BedrockCommand({
@@ -338,7 +340,7 @@ test('handles llama streams', async (t) => {
       statusCode: 200
     },
     output: {
-      body: new TextEncoder().encode(JSON.stringify({ generation: '12', stop_reason: 'done' }))
+      body: new TextEncoder().encode(JSON.stringify({ generation: '12', stop_reason: 'done', usage: {} }))
     }
   })
 
