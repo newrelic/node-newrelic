@@ -1032,48 +1032,4 @@ test('DatastoreShim', async function (t) {
       })
     })
   })
-
-  await t.test('#getDatabaseNameFromUseQuery', async (t) => {
-    t.beforeEach(beforeEach)
-    t.afterEach(afterEach)
-
-    await t.test('should match single statement use expressions', (t) => {
-      const { shim } = t.nr
-      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db;'), 'test_db')
-      assert.equal(shim.getDatabaseNameFromUseQuery('USE INIT'), 'INIT')
-    })
-
-    await t.test('should not be sensitive to ; omission', (t) => {
-      const { shim } = t.nr
-      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db'), 'test_db')
-    })
-
-    await t.test('should not be sensitive to extra ;', (t) => {
-      const { shim } = t.nr
-      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db;;;;;;'), 'test_db')
-    })
-
-    await t.test('should not be sensitive to extra white space', (t) => {
-      const { shim } = t.nr
-      assert.equal(shim.getDatabaseNameFromUseQuery('            use test_db;'), 'test_db')
-      assert.equal(shim.getDatabaseNameFromUseQuery('use             test_db;'), 'test_db')
-      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db            ;'), 'test_db')
-      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db;            '), 'test_db')
-    })
-
-    await t.test('should match backtick expressions', (t) => {
-      const { shim } = t.nr
-      assert.equal(shim.getDatabaseNameFromUseQuery('use `test_db`;'), '`test_db`')
-      assert.equal(shim.getDatabaseNameFromUseQuery('use `☃☃☃☃☃☃`;'), '`☃☃☃☃☃☃`')
-    })
-
-    await t.test('should not match malformed use expressions', (t) => {
-      const { shim } = t.nr
-      assert.equal(shim.getDatabaseNameFromUseQuery('use cxvozicjvzocixjv`oasidfjaosdfij`;'), null)
-      assert.equal(shim.getDatabaseNameFromUseQuery('use `oasidfjaosdfij`123;'), null)
-      assert.equal(shim.getDatabaseNameFromUseQuery('use `oasidfjaosdfij` 123;'), null)
-      assert.equal(shim.getDatabaseNameFromUseQuery('use \u0001;'), null)
-      assert.equal(shim.getDatabaseNameFromUseQuery('use oasidfjaosdfij 123;'), null)
-    })
-  })
 })

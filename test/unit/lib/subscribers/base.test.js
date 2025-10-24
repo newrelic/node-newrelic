@@ -440,7 +440,7 @@ test('should wrap event emitter and propagate context', async (t) => {
     await new Promise((resolve) => {
       subscriber.channel.start.runStores(event, () => {
         const ctx = agent.tracer.getContext()
-        subscriber.wrapEventEmitter({ args: event.arguments, index: 1, name: 'emit', ctx })
+        subscriber.wrapEventEmitter({ args: event.arguments, index: 1, ctx })
         plan.equal(ctx.segment.name, name)
         resolve()
       })
