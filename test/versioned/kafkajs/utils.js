@@ -6,17 +6,9 @@
 'use strict'
 
 const { assertMetrics, assertSpanKind } = require('../../lib/custom-assertions')
-const { makeId } = require('../../../lib/util/hashes')
 const utils = module.exports
 const metrics = require('../../lib/metrics_helper')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
-
-/**
- * Creates a random string with prefix to be used for testing
- * @param {string} [prefix] prefix for random string
- * @returns {string} prefix with random id appended
- */
-utils.randomString = (prefix = 'test-topic') => `${prefix}-${makeId()}`
 
 /**
  * Creates a topic with the admin class

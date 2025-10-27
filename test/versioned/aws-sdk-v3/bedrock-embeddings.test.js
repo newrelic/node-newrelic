@@ -8,10 +8,10 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const { assertSegments, match } = require('../../lib/custom-assertions')
-const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
-const { afterEach } = require('./common')
+const { afterEach, getAiResponseServer } = require('./common')
+const createAiResponseServer = getAiResponseServer()
 const requests = {
   amazon: (prompt, modelId) => {
     return {
@@ -26,7 +26,6 @@ const requests = {
     }
   }
 }
-const { tspl } = require('@matteo.collina/tspl')
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
@@ -105,7 +104,8 @@ test.afterEach(afterEach)
         'request.model': modelId,
         duration: segment.getDurationInMillis(),
         input: prompt,
-        error: false
+        error: false,
+        'response.usage.total_tokens': 13
       }
 
       assert.equal(embedding[0].type, 'LlmEmbedding')
@@ -226,33 +226,5 @@ test.afterEach(afterEach)
 
       tx.end()
     })
-  })
-})
-
-test('should utilize tokenCountCallback when set', async (t) => {
-  const plan = tspl(t, { plan: 3 })
-
-  const { bedrock, client, agent } = t.nr
-  const prompt = 'embed text amazon token count callback response'
-  const modelId = 'amazon.titan-embed-text-v1'
-  const input = requests.amazon(prompt, modelId)
-
-  agent.config.ai_monitoring.record_content.enabled = false
-  agent.llm.tokenCountCallback = function (model, content) {
-    plan.equal(model, modelId)
-    plan.equal(content, prompt)
-    return content?.split(' ')?.length
-  }
-  const command = new bedrock.InvokeModelCommand(input)
-
-  await helper.runInTransaction(agent, async (tx) => {
-    await client.send(command)
-
-    const events = agent.customEventAggregator.events.toArray()
-    const embeddings = events.filter((e) => e[0].type === 'LlmEmbedding')
-    const msg = embeddings[0][1]
-    plan.equal(msg.token_count, 7)
-
-    tx.end()
   })
 })

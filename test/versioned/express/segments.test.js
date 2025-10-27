@@ -13,13 +13,10 @@ const { assertMetrics, assertSegments, assertCLMAttrs, assertSpanKind } = requir
 
 const assertSegmentsOptions = {
   exact: true,
-  // in Node 8 the http module sometimes creates a setTimeout segment
   // the query and expressInit middleware are registered under the hood up until express 5
   exclude: [
     NAMES.EXPRESS.MIDDLEWARE + 'query',
     NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
-    'timers.setTimeout',
-    'Truncated/timers.setTimeout'
   ]
 }
 
@@ -245,8 +242,8 @@ test('router mounted as a route handler', function (t, end) {
   })
 
   let path = '*'
-  let segmentPath = '/*'
-  let metricsPath = segmentPath
+  let segmentPath = path
+  let metricsPath = '/*'
 
   // express 5 router must be regular expressions
   // need to handle the nuance of the segment vs metric name in express 5
@@ -313,7 +310,7 @@ test('segments for routers', function (t, end) {
 })
 
 test('segments for sub-app', function (t, end) {
-  const { app, express, isExpress5 } = t.nr
+  const { app, express } = t.nr
 
   const subapp = express()
   subapp.all('/test', function (req, res) {
@@ -323,15 +320,10 @@ test('segments for sub-app', function (t, end) {
   app.use('/subapp1', subapp)
 
   runTest(t, '/subapp1/test', function (root, transaction) {
-    // express 5 no longer handles child routers as mounted applications
-    const firstSegment = isExpress5
-      ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
-      : 'Expressjs/Mounted App: /subapp1'
-
     assertSegments(
       transaction.trace,
       root,
-      [firstSegment, ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]],
+      ['Expressjs/Mounted App: /subapp1', ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]],
       assertSegmentsOptions
     )
 
@@ -346,7 +338,7 @@ test('segments for sub-app', function (t, end) {
 })
 
 test('segments for sub-app router', function (t, end) {
-  const { app, express, isExpress5 } = t.nr
+  const { app, express } = t.nr
 
   const subapp = express()
   subapp.get(
@@ -365,15 +357,11 @@ test('segments for sub-app router', function (t, end) {
   app.use('/subapp1', subapp)
 
   runTest(t, '/subapp1/test', function (root, transaction) {
-    // express 5 no longer handles child routers as mounted applications
-    const firstSegment = isExpress5
-      ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
-      : 'Expressjs/Mounted App: /subapp1'
     assertSegments(
       transaction.trace,
       root,
       [
-        firstSegment,
+        'Expressjs/Mounted App: /subapp1',
         [
           'Expressjs/Route Path: /test',
           [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>', NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'],
@@ -395,7 +383,7 @@ test('segments for sub-app router', function (t, end) {
 })
 
 test('segments for wildcard', function (t, end) {
-  const { app, express, isExpress5 } = t.nr
+  const { app, express } = t.nr
 
   const subapp = express()
   subapp.all('/:app', function (req, res) {
@@ -405,14 +393,10 @@ test('segments for wildcard', function (t, end) {
   app.use('/subapp1', subapp)
 
   runTest(t, '/subapp1/test', function (root, transaction) {
-    // express 5 no longer handles child routers as mounted applications
-    const firstSegment = isExpress5
-      ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
-      : 'Expressjs/Mounted App: /subapp1'
     assertSegments(
       transaction.trace,
       root,
-      [firstSegment, ['Expressjs/Route Path: /:app', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]],
+      ['Expressjs/Mounted App: /subapp1', ['Expressjs/Route Path: /:app', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]],
       assertSegmentsOptions
     )
 
@@ -442,6 +426,7 @@ test('router with subapp', function (t, end) {
     const subAppSegment = isExpress5
       ? NAMES.EXPRESS.MIDDLEWARE + 'app//subapp1'
       : 'Expressjs/Mounted App: /subapp1'
+
     assertSegments(
       transaction.trace,
       root,
@@ -759,6 +744,7 @@ test('when using a string pattern in path', function (t, end) {
   const { app } = t.nr
 
   const path = t.nr.isExpress5 ? /ab?cd/ : '/ab?cd'
+  const metricPath = '/ab?cd'
   app.get(path, function myHandler(req, res) {
     res.end()
   })
@@ -771,7 +757,7 @@ test('when using a string pattern in path', function (t, end) {
       assertSegmentsOptions
     )
 
-    checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler/' + path], path)
+    checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler/' + metricPath], metricPath)
 
     end()
   })
@@ -792,7 +778,7 @@ test('when using a regular expression in path', function (t, end) {
       assertSegmentsOptions
     )
 
-    checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler//a/'], '/a/')
+    checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + 'myHandler//a'], '/a')
 
     end()
   })

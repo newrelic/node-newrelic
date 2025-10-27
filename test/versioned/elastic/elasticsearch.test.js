@@ -9,16 +9,11 @@ const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
-const crypto = require('crypto')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
 const semver = require('semver')
-const DB_INDEX = `test-${randomString()}`
-const DB_INDEX_2 = `test2-${randomString()}`
-const SEARCHTERM_1 = randomString()
-
-function randomString() {
-  return crypto.randomBytes(5).toString('hex')
-}
+const DB_INDEX = helper.randomString('test-')
+const DB_INDEX_2 = helper.randomString('test2-')
+const SEARCHTERM_1 = helper.randomString()
 
 // request bodies are structured differently in ElasticSearch v7.x vs v8.x
 function setRequestBody(body, version) {
@@ -92,7 +87,7 @@ test('Elasticsearch instrumentation', async (t) => {
 
   await t.test('should be able to record creating an index', async (t) => {
     const { agent, client } = t.nr
-    const index = `test-index-${randomString()}`
+    const index = helper.randomString('test-index-')
     t.after(async () => {
       await client.indices.delete({ index })
     })
@@ -117,7 +112,7 @@ test('Elasticsearch instrumentation', async (t) => {
       return
     }
 
-    const index = `test-index-${randomString()}`
+    const index = helper.randomString('test-index-')
     t.after(async () => {
       await client.indices.delete({ index })
     })
@@ -368,7 +363,7 @@ test('Elasticsearch instrumentation', async (t) => {
 
   await t.test('should create correct metrics', async function (t) {
     const { agent, client, pkgVersion, HOST_ID } = t.nr
-    const id = `key-${randomString()}`
+    const id = helper.randomString('key-')
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const documentProp = setRequestBody(
         {

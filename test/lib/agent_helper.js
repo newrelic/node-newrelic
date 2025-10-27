@@ -636,3 +636,12 @@ helper.readPackageVersion = function readPackageVersion(dirname, pkg) {
   const { version } = JSON.parse(packageFile)
   return version
 }
+
+/**
+ * Creates a random string prefixed with the provided value
+ * @param {string} prefix value to prefix random string
+ * @returns {string} random string
+ */
+helper.randomString = function randomString(prefix = '') {
+  return `${prefix}${crypto.randomBytes(8).toString('hex')}`
+}

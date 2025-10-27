@@ -9,15 +9,10 @@ const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
-const crypto = require('crypto')
-const DB_INDEX = `test-${randomString()}`
-const DB_INDEX_2 = `test2-${randomString()}`
-const SEARCHTERM_1 = randomString()
+const DB_INDEX = helper.randomString('test-')
+const DB_INDEX_2 = helper.randomString('test2-')
+const SEARCHTERM_1 = helper.randomString()
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
-
-function randomString() {
-  return crypto.randomBytes(5).toString('hex')
-}
 
 function setRequestBody(body) {
   return { body }
@@ -75,7 +70,7 @@ test('opensearch instrumentation', async (t) => {
 
   await t.test('should be able to record creating an index', async (t) => {
     const { agent, client } = t.nr
-    const index = `test-index-${randomString()}`
+    const index = helper.randomString('test-index-')
     t.after(async () => {
       await client.indices.delete({ index })
     })
@@ -316,7 +311,7 @@ test('opensearch instrumentation', async (t) => {
 
   await t.test('should create correct metrics', async function (t) {
     const { agent, client, pkgVersion, HOST_ID } = t.nr
-    const id = `key-${randomString()}`
+    const id = helper.randomString('key-')
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const documentProp = setRequestBody({
         document: {
