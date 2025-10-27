@@ -6,8 +6,6 @@
 
 #### Bug fixes
 
-* Typos ([#3433](https://github.com/newrelic/node-newrelic/pull/3433)) ([37d1e29](https://github.com/newrelic/node-newrelic/commit/37d1e29f4e23ed41a941cc7260444fee071dd222))
-* Typos part 2 ([#3434](https://github.com/newrelic/node-newrelic/pull/3434)) ([aac0d76](https://github.com/newrelic/node-newrelic/commit/aac0d761edd949dbeda8268233c28aa5a45b8c40))
 * Updated `ioredis` instrumentation to handle breakage of errors when using `.pipeline`. ([#3457](https://github.com/newrelic/node-newrelic/pull/3457)) ([49f4d93](https://github.com/newrelic/node-newrelic/commit/49f4d93a59045f35406dfdbd3248dca0652727d6))
 * Updated `openai` `instrumentStream` function to handle empty chunk when `include_usage` is set ([#3427](https://github.com/newrelic/node-newrelic/pull/3427)) ([f804940](https://github.com/newrelic/node-newrelic/commit/f8049405003f0811450f75468e0bddfb1f05ec2b))
 
@@ -26,6 +24,8 @@
 
 #### Miscellaneous chores
 
+* Typos ([#3433](https://github.com/newrelic/node-newrelic/pull/3433)) ([37d1e29](https://github.com/newrelic/node-newrelic/commit/37d1e29f4e23ed41a941cc7260444fee071dd222))
+* Typos part 2 ([#3434](https://github.com/newrelic/node-newrelic/pull/3434)) ([aac0d76](https://github.com/newrelic/node-newrelic/commit/aac0d761edd949dbeda8268233c28aa5a45b8c40))
 * Update release workflows ([#3444](https://github.com/newrelic/node-newrelic/pull/3444)) ([d1ec158](https://github.com/newrelic/node-newrelic/commit/d1ec158f46d034160b665f8b0785c020ba39b820))
 
 #### Tests
@@ -7991,6 +7991,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
