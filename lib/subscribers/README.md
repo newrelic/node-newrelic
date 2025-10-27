@@ -34,7 +34,7 @@ const config = {
   instrumentations: [
     {
       /**
-       * The channelName must be prefixed with `nr_` and must contain at least the expressionName or methodName.
+       * By convention, we prefix channelNames with `nr_` and include at least the expressionName or methodName.
        * It could also contain the moduleName or className to further differentiate between subscribers.
        */
       channelName: 'nr_functionName',
