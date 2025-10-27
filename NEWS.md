@@ -1,3 +1,40 @@
+### v13.6.0 (2025-10-27)
+
+#### Features
+
+* Added instrumentation for http2 client methods ([#3284](https://github.com/newrelic/node-newrelic/pull/3284)) ([bda7aea](https://github.com/newrelic/node-newrelic/commit/bda7aeaac16ce9f54bd28de72aa7465be96cd157))
+
+#### Bug fixes
+
+* Updated `ioredis` instrumentation to handle breakage of errors when using `.pipeline`. ([#3457](https://github.com/newrelic/node-newrelic/pull/3457)) ([49f4d93](https://github.com/newrelic/node-newrelic/commit/49f4d93a59045f35406dfdbd3248dca0652727d6))
+* Updated `openai` `instrumentStream` function to handle empty chunk when `include_usage` is set ([#3427](https://github.com/newrelic/node-newrelic/pull/3427)) ([f804940](https://github.com/newrelic/node-newrelic/commit/f8049405003f0811450f75468e0bddfb1f05ec2b))
+
+#### Code refactoring
+
+* Update `express` instrumentation to subscribe to events emitted ([#3424](https://github.com/newrelic/node-newrelic/pull/3424)) ([bbf3d01](https://github.com/newrelic/node-newrelic/commit/bbf3d010bc402953e53cae5200af6bfb55a6446d))
+* Updated instances in instrumentation of `Array.forEach` for a more performant for...of or for index loop ([#3463](https://github.com/newrelic/node-newrelic/pull/3463)) ([99484ce](https://github.com/newrelic/node-newrelic/commit/99484ce0e7a963fbbc3cbc22f4956ce19e5eecc2))
+* Updated instances of `Array.forEach` for a more performant for...of or for index loop ([#3440](https://github.com/newrelic/node-newrelic/pull/3440)) ([48c37bf](https://github.com/newrelic/node-newrelic/commit/48c37bf7f85291553666d4512ca995b6a5b136a2))
+* Updated token calculation for `aws-bedrock` LLM Events ([#3445](https://github.com/newrelic/node-newrelic/pull/3445)) ([9450181](https://github.com/newrelic/node-newrelic/commit/945018171da713487a0b5b674e68bdbb211e655e))
+* Updated token calculation for `google-genai` LLM Events ([#3431](https://github.com/newrelic/node-newrelic/pull/3431)) ([41d32be](https://github.com/newrelic/node-newrelic/commit/41d32befe1d9c3201b62253a5de76c918d98a025))
+* Updated token calculation for `openai` LLM Events ([#3430](https://github.com/newrelic/node-newrelic/pull/3430)) ([b8678cc](https://github.com/newrelic/node-newrelic/commit/b8678cc92bb986eae7efec4b516f66406307e841))
+
+#### Documentation
+
+* Updated compatibility report ([#3459](https://github.com/newrelic/node-newrelic/pull/3459)) ([f253b97](https://github.com/newrelic/node-newrelic/commit/f253b97c039caa9e9110055d93e0c32e2d6911a8))
+
+#### Miscellaneous chores
+
+* Update release workflows ([#3444](https://github.com/newrelic/node-newrelic/pull/3444)) ([d1ec158](https://github.com/newrelic/node-newrelic/commit/d1ec158f46d034160b665f8b0785c020ba39b820))
+
+#### Tests
+
+* Added a `randomString` helper to agent_helper and use it in ioredis to avoid flappy tests, also updated local instances of random strings in kafka, elasticsearch and opensearch tests ([#3462](https://github.com/newrelic/node-newrelic/pull/3462)) ([4deb6d8](https://github.com/newrelic/node-newrelic/commit/4deb6d80d9daa7fd9d4c077a5cc52f358ed44e61))
+* Fixed conflict between ioredis and ioredis-esm by running `flushdb` instead of `flushall` to avoid index getting removed mid test ([#3464](https://github.com/newrelic/node-newrelic/pull/3464)) ([5e3f0a8](https://github.com/newrelic/node-newrelic/commit/5e3f0a81bfcf8bc8cf04559f29d3a76c1262bcc7))
+* Fixed express async error test to purposely misspell a method to emit a crash ([#3435](https://github.com/newrelic/node-newrelic/pull/3435)) ([ff9f064](https://github.com/newrelic/node-newrelic/commit/ff9f0646c4fc23e367c1e190eb8091423c690103))
+* Moved aws-sdk-v3 common.js requirement of semver ([#3461](https://github.com/newrelic/node-newrelic/pull/3461)) ([6a380ef](https://github.com/newrelic/node-newrelic/commit/6a380ef580268be131417587a2dda5adf3545e68))
+* Pinned Next.js tests to <16.0.0 ([#3446](https://github.com/newrelic/node-newrelic/pull/3446)) ([10787a1](https://github.com/newrelic/node-newrelic/commit/10787a1f4e325b7321173ee5b2fab0809af5e8d1))
+* Updated minimum tested version of `@langchain/core` to 1.0.0 ([#3437](https://github.com/newrelic/node-newrelic/pull/3437)) ([b61f67a](https://github.com/newrelic/node-newrelic/commit/b61f67a4c6d59f0b2a49e0de93a6d38e56d214fd))
+
 ### v13.5.0 (2025-10-14)
 
 #### Code refactoring
@@ -7952,6 +7989,9 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
+
+
 
 
 
