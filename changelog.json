@@ -5,7 +5,10 @@
       "version": "13.6.0",
       "changes": {
         "security": [],
-        "bugfixes": [],
+        "bugfixes": [
+          "Updated `ioredis` instrumentation to handle breakage of errors when using `.pipeline`",
+          "Updated `openai` `instrumentStream` function to handle empty chunk when `include_usage` is set"
+        ],
         "features": [
           "Added instrumentation for http2 client methods"
         ]
