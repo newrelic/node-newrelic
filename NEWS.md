@@ -24,8 +24,6 @@
 
 #### Miscellaneous chores
 
-* Typos ([#3433](https://github.com/newrelic/node-newrelic/pull/3433)) ([37d1e29](https://github.com/newrelic/node-newrelic/commit/37d1e29f4e23ed41a941cc7260444fee071dd222))
-* Typos part 2 ([#3434](https://github.com/newrelic/node-newrelic/pull/3434)) ([aac0d76](https://github.com/newrelic/node-newrelic/commit/aac0d761edd949dbeda8268233c28aa5a45b8c40))
 * Update release workflows ([#3444](https://github.com/newrelic/node-newrelic/pull/3444)) ([d1ec158](https://github.com/newrelic/node-newrelic/commit/d1ec158f46d034160b665f8b0785c020ba39b820))
 
 #### Tests
@@ -7991,6 +7989,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
