@@ -202,7 +202,8 @@ test('chat.completions.create', async (t) => {
             { role: 'user', content },
             { role: 'user', content: 'What does 1 plus 1 equal?' }
           ],
-          stream: true
+          stream: true,
+          stream_options: { include_usage: true },
         })
 
         let res = ''
