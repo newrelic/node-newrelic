@@ -217,3 +217,35 @@ test('loggingLabels', async (t) => {
     assert.deepEqual(configuration.loggingLabels, {})
   })
 })
+
+test('root sampler', async (t) => {
+  await t.test('should set root sampler to \'always_on\'', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: 'always_on'
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.deepEqual(configuration.distributed_tracing.sampler.root, 'always_on')
+  })
+
+  await t.test('should set root sampler to trace_id_ratio_based', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: {
+            trace_id_ratio_based: {
+              ratio: 0.5
+            }
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.deepEqual(configuration.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
+  })
+})
