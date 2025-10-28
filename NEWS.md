@@ -1,3 +1,14 @@
+### v13.6.1 (2025-10-28)
+
+#### Bug fixes
+
+* Updated middleware wrapper to not wrap handler if it is not a function ([#3469](https://github.com/newrelic/node-newrelic/pull/3469)) ([c702689](https://github.com/newrelic/node-newrelic/commit/c702689a6e73756f6b3ad39706a33874fbd6da73))
+
+#### Documentation
+
+* Updated compatibility report ([#3466](https://github.com/newrelic/node-newrelic/pull/3466)) ([5853657](https://github.com/newrelic/node-newrelic/commit/5853657a63dc75481fc6598c10afd208391f525b))
+    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
+
 ### v13.6.0 (2025-10-27)
 
 #### Features
