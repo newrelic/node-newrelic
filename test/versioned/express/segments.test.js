@@ -784,7 +784,7 @@ test('when using a regular expression in path', function (t, end) {
   })
 })
 
-test('middleware as an array', function (t, end) {
+test('route defines middlewares as a series of arrays', function (t, end) {
   const { app } = t.nr
 
   function mw1(req, res, next) {
@@ -795,11 +795,19 @@ test('middleware as an array', function (t, end) {
     next()
   }
 
+  function mw3(req, res, next) {
+    next()
+  }
+
+  function mw4(req, res, next) {
+    next()
+  }
+
   function handler(req, res) {
     res.end()
   }
 
-  app.get('/test', [mw1, mw2, handler])
+  app.get('/test', [mw1, mw2], [mw3, mw4], handler)
 
   runTest(t, '/test', function (root, transaction) {
     assertSegments(
@@ -809,6 +817,8 @@ test('middleware as an array', function (t, end) {
         [
         `${NAMES.EXPRESS.MIDDLEWARE}mw1`,
         `${NAMES.EXPRESS.MIDDLEWARE}mw2`,
+        `${NAMES.EXPRESS.MIDDLEWARE}mw3`,
+        `${NAMES.EXPRESS.MIDDLEWARE}mw4`,
         `${NAMES.EXPRESS.MIDDLEWARE}handler`
         ]
       ],
@@ -818,6 +828,8 @@ test('middleware as an array', function (t, end) {
     checkMetrics(transaction.metrics, [
       `${NAMES.EXPRESS.MIDDLEWARE}mw1//test`,
       `${NAMES.EXPRESS.MIDDLEWARE}mw2//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}mw3//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}mw4//test`,
       `${NAMES.EXPRESS.MIDDLEWARE}handler//test`
     ], '/test')
 
