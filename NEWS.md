@@ -7,7 +7,6 @@
 #### Documentation
 
 * Updated compatibility report ([#3466](https://github.com/newrelic/node-newrelic/pull/3466)) ([5853657](https://github.com/newrelic/node-newrelic/commit/5853657a63dc75481fc6598c10afd208391f525b))
-    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
 
 ### v13.6.0 (2025-10-27)
 
@@ -8000,6 +7999,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
