@@ -211,6 +211,30 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
+  await t.test('should set remote_parent_sampled sampler to trace id based ratio', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED: 'trace_id_ratio_based',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED_TRACE_ID_RATIO_BASED_RATIO: '0.5'
+    }
+
+    idempotentEnv(env, (tc) => {
+      assert.equal(tc.distributed_tracing.sampler.remote_parent_sampled.trace_id_ratio_based.ratio, 0.5)
+      end()
+    })
+  })
+
+  await t.test('should set remote_parent_sampled sampler to trace id based ratio', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED: 'trace_id_ratio_based',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED_TRACE_ID_RATIO_BASED_RATIO: '0.5'
+    }
+
+    idempotentEnv(env, (tc) => {
+      assert.equal(tc.distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.5)
+      end()
+    })
+  })
+
   await t.test('should fall back to default sampler when trace id ratio based is misconfigured', (t, end) => {
     const env = {
       NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based',
