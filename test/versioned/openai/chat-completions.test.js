@@ -162,7 +162,8 @@ test('chat.completions.create', async (t) => {
         const content = 'Streamed response'
         const stream = await client.chat.completions.create({
           stream: true,
-          messages: [{ role: 'user', content }]
+          messages: [{ role: 'user', content }],
+          stream_options: { include_usage: true },
         })
 
         let chunk = {}
@@ -201,7 +202,8 @@ test('chat.completions.create', async (t) => {
             { role: 'user', content },
             { role: 'user', content: 'What does 1 plus 1 equal?' }
           ],
-          stream: true
+          stream: true,
+          stream_options: { include_usage: true },
         })
 
         let res = ''

@@ -784,6 +784,59 @@ test('when using a regular expression in path', function (t, end) {
   })
 })
 
+test('route defines middlewares as a series of arrays', function (t, end) {
+  const { app } = t.nr
+
+  function mw1(req, res, next) {
+    next()
+  }
+
+  function mw2(req, res, next) {
+    next()
+  }
+
+  function mw3(req, res, next) {
+    next()
+  }
+
+  function mw4(req, res, next) {
+    next()
+  }
+
+  function handler(req, res) {
+    res.end()
+  }
+
+  app.get('/test', [mw1, mw2], [mw3, mw4], handler)
+
+  runTest(t, '/test', function (root, transaction) {
+    assertSegments(
+      transaction.trace,
+      root,
+      ['Expressjs/Route Path: /test',
+        [
+        `${NAMES.EXPRESS.MIDDLEWARE}mw1`,
+        `${NAMES.EXPRESS.MIDDLEWARE}mw2`,
+        `${NAMES.EXPRESS.MIDDLEWARE}mw3`,
+        `${NAMES.EXPRESS.MIDDLEWARE}mw4`,
+        `${NAMES.EXPRESS.MIDDLEWARE}handler`
+        ]
+      ],
+      assertSegmentsOptions
+    )
+
+    checkMetrics(transaction.metrics, [
+      `${NAMES.EXPRESS.MIDDLEWARE}mw1//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}mw2//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}mw3//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}mw4//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}handler//test`
+    ], '/test')
+
+    end()
+  })
+})
+
 const codeLevelMetrics = [true, false]
 for (const enabled of codeLevelMetrics) {
   test(`Code Level Metrics ${enabled}`, function (t, end) {

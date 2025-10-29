@@ -23,7 +23,6 @@ test('ioredis instrumentation', async (t) => {
     const { version: pkgVersion } = require('ioredis/package.json')
     const Redis = require('ioredis')
     const redisClient = new Redis(params.redis_port, params.redis_host)
-    await redisClient.flushall()
     const METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
       ? agent.config.getHostnameSafe()
       : params.redis_host
@@ -41,10 +40,13 @@ test('ioredis instrumentation', async (t) => {
     }
   })
 
-  t.afterEach((ctx) => {
+  t.afterEach(async (ctx) => {
     const { agent, redisClient } = ctx.nr
     helper.unloadAgent(agent)
     removeModules(['ioredis'])
+    // re-select the default index for suite as some tests change it
+    await redisClient.select(DB_INDEX)
+    await redisClient.flushdb()
     redisClient.disconnect()
   })
 
@@ -176,7 +178,6 @@ test('ioredis instrumentation', async (t) => {
     const { agent, redisClient, redisKey } = t.nr
     const plan = tspl(t, { plan: 7 })
     const SELECTED_DB = 5
-
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
       const children = tx.trace.getChildren(root.id)
@@ -196,6 +197,8 @@ test('ioredis instrumentation', async (t) => {
       await redisClient.select(SELECTED_DB)
       await redisClient.set(`${redisKey}2`, 'testvalue')
       transaction.end()
+      // flushing index 5
+      await redisClient.flushdb()
     })
     await plan.completed
   })

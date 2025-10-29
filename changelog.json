@@ -2,6 +2,39 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.6.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated express instrumentation to properly instrument an array of middleware defined on a route"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.6.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated middleware wrapper to not wrap handler if it is not a function"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.6.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `ioredis` instrumentation to handle breakage of errors when using `.pipeline`",
+          "Updated `openai` `instrumentStream` function to handle empty chunk when `include_usage` is set"
+        ],
+        "features": [
+          "Added instrumentation for http2 client methods"
+        ]
+      }
+    },
+    {
       "version": "13.5.0",
       "changes": {
         "security": [],

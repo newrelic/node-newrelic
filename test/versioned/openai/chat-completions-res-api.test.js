@@ -318,7 +318,8 @@ test('responses.create', async (t) => {
       const stream = await client.responses.create({
         stream: true,
         input: content,
-        model: 'gpt-4'
+        model: 'gpt-4',
+        stream_options: { include_usage: true }
       })
 
       let chunk = {}
@@ -349,7 +350,8 @@ test('responses.create', async (t) => {
       const stream = await client.responses.create({
         stream: true,
         input: [{ role: 'user', content }, { role: 'user', content: 'What does 1 plus 1 equal?' }],
-        model: 'gpt-4'
+        model: 'gpt-4',
+        stream_options: { include_usage: true }
       })
 
       let chunk = {}
