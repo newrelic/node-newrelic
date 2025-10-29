@@ -1,3 +1,14 @@
+### v13.6.2 (2025-10-29)
+
+#### Bug fixes
+
+* Updated express instrumentation to properly instrument an array of middleware defined on a route ([#3473](https://github.com/newrelic/node-newrelic/pull/3473)) ([e383c4e](https://github.com/newrelic/node-newrelic/commit/e383c4efc7171f02aef41d6c657455338b4b7258))
+
+#### Documentation
+
+* documented how to use the subscriber based instrumentation ([#3432](https://github.com/newrelic/node-newrelic/pull/3432)) ([3b3ab72](https://github.com/newrelic/node-newrelic/commit/3b3ab72eee3b4c1a12592d92eab59da2a48b1f46))
+* Updated compatibility report ([#3471](https://github.com/newrelic/node-newrelic/pull/3471)) ([964543b](https://github.com/newrelic/node-newrelic/commit/964543bae1a7c1fd5af32f02ba40d4bf68737d11))
+
 ### v13.6.1 (2025-10-28)
 
 #### Bug fixes
