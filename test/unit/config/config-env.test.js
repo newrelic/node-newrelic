@@ -274,6 +274,53 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
+  await t.test('should set root and remote parent sampled but leave remote parent not sampled as default', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT_TRACE_ID_RATIO_BASED_RATIO: '0.5',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED: 'always_on'
+    }
+
+    idempotentEnv(env, (tc) => {
+      assert.equal(tc.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
+      assert.equal(tc.distributed_tracing.sampler.remote_parent_sampled, 'always_on')
+      end()
+    })
+  })
+
+  await t.test('should set all samplers to trace id ratio based', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT_TRACE_ID_RATIO_BASED_RATIO: '0.5',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED: 'trace_id_ratio_based',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED_TRACE_ID_RATIO_BASED_RATIO: '0.6',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED: 'trace_id_ratio_based',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED_TRACE_ID_RATIO_BASED_RATIO: '0.85'
+    }
+
+    idempotentEnv(env, (tc) => {
+      assert.equal(tc.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
+      assert.equal(tc.distributed_tracing.sampler.remote_parent_sampled.trace_id_ratio_based.ratio, 0.6)
+      assert.equal(tc.distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.85)
+      end()
+    })
+  })
+
+  await t.test('should set all samplers to a string', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'always_on',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED: 'default',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED: 'adaptive',
+    }
+
+    idempotentEnv(env, (tc) => {
+      assert.equal(tc.distributed_tracing.sampler.root, 'always_on')
+      assert.equal(tc.distributed_tracing.sampler.remote_parent_sampled, 'default')
+      assert.equal(tc.distributed_tracing.sampler.remote_parent_not_sampled, 'adaptive')
+      end()
+    })
+  })
+
   await t.test('should pick up on the span events env vars', (t, end) => {
     const env = {
       NEW_RELIC_SPAN_EVENTS_ENABLED: true,
