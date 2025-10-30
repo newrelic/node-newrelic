@@ -218,7 +218,7 @@ test('loggingLabels', async (t) => {
   })
 })
 
-test('root sampler', async (t) => {
+test('distributed tracing samplers', async (t) => {
   await t.test('should set root sampler to \'always_on\'', () => {
     const config = {
       distributed_tracing: {
@@ -230,6 +230,19 @@ test('root sampler', async (t) => {
 
     const configuration = Config.initialize(config)
     assert.deepEqual(configuration.distributed_tracing.sampler.root, 'always_on')
+  })
+
+  await t.test('should set remote parent sampled sampler to \'adaptive\'', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          remote_parent_sampled: 'adaptive'
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.deepEqual(configuration.distributed_tracing.sampler.remote_parent_sampled, 'adaptive')
   })
 
   await t.test('should set root sampler to trace_id_ratio_based', () => {
@@ -247,5 +260,105 @@ test('root sampler', async (t) => {
 
     const configuration = Config.initialize(config)
     assert.deepEqual(configuration.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
+  })
+
+  await t.test('should set remote_parent_not_sampled sampler to trace_id_ratio_based', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          remote_parent_not_sampled: {
+            trace_id_ratio_based: {
+              ratio: 0.5
+            }
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.deepEqual(configuration.distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.5)
+  })
+
+  await t.test('should set root sampler to default when ratio for trace id ratio based is not set', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: {
+            trace_id_ratio_based: {
+              wrongKey: 0.5
+            }
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.deepEqual(configuration.distributed_tracing.sampler.root, 'default')
+  })
+
+  await t.test('should set root and remote parent sampled but leave remote parent not sampled as default', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: {
+            trace_id_ratio_based: {
+              ratio: 0.5
+            }
+          },
+          remote_parent_sampled: 'always_on'
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.deepEqual(configuration.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
+    assert.deepEqual(configuration.distributed_tracing.sampler.remote_parent_sampled, 'always_on')
+    assert.deepEqual(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
+  })
+
+  await t.test('should set all samplers to trace id ratio based', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: {
+            trace_id_ratio_based: {
+              ratio: 0.5
+            }
+          },
+          remote_parent_sampled: {
+            trace_id_ratio_based: {
+              ratio: 0.6
+            }
+          },
+          remote_parent_not_sampled: {
+            trace_id_ratio_based: {
+              ratio: 0.85
+            }
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.deepEqual(configuration.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
+    assert.deepEqual(configuration.distributed_tracing.sampler.remote_parent_sampled.trace_id_ratio_based.ratio, 0.6)
+    assert.deepEqual(configuration.distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.85)
+  })
+
+  await t.test('should set all samplers to a string', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: 'always_on',
+          remote_parent_sampled: 'default',
+          remote_parent_not_sampled: 'adaptive'
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.deepEqual(configuration.distributed_tracing.sampler.root, 'always_on')
+    assert.deepEqual(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
+    assert.deepEqual(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'adaptive')
   })
 })
