@@ -16,6 +16,8 @@ const { match } = require('../../lib/custom-assertions')
 const assert = require('node:assert')
 const SEGMENT_DESTINATION = TRANS_SEGMENT
 const helper = require('../../lib/agent_helper')
+const fs = require('node:fs')
+const path = require('node:path')
 
 function checkAWSAttributes({ trace, segment, pattern, markedSegments = [] }) {
   const expectedAttrs = {
@@ -176,6 +178,17 @@ function afterEach(ctx) {
   })
 }
 
+function getAiResponseServer() {
+  const semver = require('semver')
+  const { version: pkgVersion } = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '/node_modules/@aws-sdk/client-bedrock-runtime/package.json'))
+  )
+  if (semver.gte(pkgVersion, '3.798.0')) {
+    return require('../../lib/aws-server-stubs/ai-server/http2')
+  }
+  return require('../../lib/aws-server-stubs/ai-server')
+}
+
 module.exports = {
   afterEach,
   assertChatCompletionSummary,
@@ -188,5 +201,6 @@ module.exports = {
   SEGMENT_DESTINATION,
   checkAWSAttributes,
   getMatchingSegments,
-  checkExternals
+  checkExternals,
+  getAiResponseServer
 }

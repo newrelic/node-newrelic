@@ -55,10 +55,13 @@ function getExpectedResult(tx, event, type, completionId) {
 
   switch (type) {
     case 'embedding':
-      expected = { ...expected, ...resKeys }
+      expected = {
+        ...expected,
+        ...resKeys,
+        'response.usage.total_tokens': 30,
+      }
       expected.input = 'This is my test input'
       expected.error = false
-      expected.token_count = undefined
       break
     case 'summary':
       expected = {
@@ -68,6 +71,9 @@ function getExpectedResult(tx, event, type, completionId) {
         'request.temperature': 1.0,
         'response.number_of_messages': 2,
         'response.choices.finish_reason': 'STOP',
+        'response.usage.prompt_tokens': 10,
+        'response.usage.completion_tokens': 20,
+        'response.usage.total_tokens': 30,
         error: false
       }
       break
@@ -78,7 +84,8 @@ function getExpectedResult(tx, event, type, completionId) {
         sequence: 0,
         completion_id: completionId,
         is_response: false,
-        role: 'user'
+        role: 'user',
+        token_count: 0
       }
   }
 

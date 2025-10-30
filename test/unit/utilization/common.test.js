@@ -84,7 +84,7 @@ test('Utilization Common Components', async function (t) {
   await t.test('common.request', async (t) => {
     t.before(() => {
       nock.disableNetConnect()
-      nock('http://fakedomain').persist().get('/timeout').delay(150).reply(200, 'wohoo')
+      nock('http://fakedomain').persist().get('/timeout').delay(150).reply(200, 'woohoo')
     })
 
     t.beforeEach(function (ctx) {
@@ -115,7 +115,7 @@ test('Utilization Common Components', async function (t) {
         agent,
         (err, data) => {
           assert.ifError(err)
-          assert.equal(data, 'wohoo')
+          assert.equal(data, 'woohoo')
           invocationCount++
         }
       )
@@ -150,7 +150,7 @@ test('Utilization Common Components', async function (t) {
       )
 
       // need to give enough time for second to have chance to run.
-      // sinon and http dont quite seem to work well enough to do this
+      // sinon and http don't quite seem to work well enough to do this
       // totally faked synchronously.
       setTimeout(verifyInvocations, 200)
 

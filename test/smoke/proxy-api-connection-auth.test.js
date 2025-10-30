@@ -52,7 +52,7 @@ test('proxy authentication should set headers', async (t) => {
     const api = new CollectorAPI(agent)
 
     api.connect(() => {
-      // need a callback even though we dont care and
+      // need a callback even though we don't care and
       // are just asserting some of the outgoing http requests above
     })
   })

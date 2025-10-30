@@ -200,7 +200,7 @@ async function testThrowBehavior(methodName) {
               plan.ok(0, name + 'should not go into resolve handler after throw')
             })
             .catch(function (err) {
-              plan.equal(err, foo, name + 'should pass throught the correct object')
+              plan.equal(err, foo, name + 'should pass through the correct object')
             })
         }
       })

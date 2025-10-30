@@ -188,7 +188,7 @@ test('when.iterate', async (t) => {
   const COUNT = 10
   const testFunc = (name) => {
     const tx = agent.getTransaction()
-    let incrementerCount = 0
+    let incrementorCount = 0
     let predicateCount = 0
     let bodyCount = 0
 
@@ -196,7 +196,7 @@ test('when.iterate', async (t) => {
 
     function iterator(seed) {
       plan.equal(agent.getTransaction(), tx, `${name} iterator has correct transaction state`)
-      plan.equal(incrementerCount++, seed++, `${name} should iterate as expected`)
+      plan.equal(incrementorCount++, seed++, `${name} should iterate as expected`)
       return seed
     }
 

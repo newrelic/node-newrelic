@@ -1044,7 +1044,7 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       assert.equal(agentAttributes['request.method'], 'GET')
 
-      // validate that multi value query string parameters are normalized to comma seperated strings
+      // validate that multi value query string parameters are normalized to comma separated strings
       assert.equal(agentAttributes['request.parameters.query'], '1234ABCD,other')
 
       assert.equal(
@@ -1054,7 +1054,7 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
 
       assert.equal(spanAttributes[EVENTSOURCE_TYPE], 'alb')
 
-      // validate that multi value headers are normalized to comma seperated strings
+      // validate that multi value headers are normalized to comma separated strings
       assert.equal(
         spanAttributes['request.headers.setCookie'],
         'cookie-name=cookie-value;Domain=myweb.com;Secure;HttpOnly,cookie-name=cookie-other-value'

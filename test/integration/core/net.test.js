@@ -98,7 +98,7 @@ test('connect', function connectTest(t, end) {
       setTimeout(verify, 0)
     })
 
-    socket.on('connect', function onConnet() {
+    socket.on('connect', function onConnect() {
       assert.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.write('some data')
       socket.end()

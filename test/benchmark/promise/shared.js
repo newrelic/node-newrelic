@@ -18,7 +18,7 @@ const tests = [
     return function runTest() {
       // number of internal nodes on the binary tree of promises
       // this will produce a binary tree with NUM_PROMISES / 2 internal
-      // nodes, and NUM_PROMIES / 2 + 1 leaves
+      // nodes, and NUM_PROMISES / 2 + 1 leaves
       const internalPromises = NUM_PROMISES / 2
       const promises = [Promise.resolve()]
 

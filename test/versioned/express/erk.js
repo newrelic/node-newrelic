@@ -21,6 +21,9 @@ app.get('/test/:id', function (req, res, next) {
   })
 })
 
+// for the spellchecking police,
+// this is intentionally misspelled.
+// please do not fix, looking at you bhensley
 helper.ranomPort(function (port) {
   server.listen(port, function () {
     process.on('message', function (code) {

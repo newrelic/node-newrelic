@@ -152,7 +152,7 @@ test('environmental sampler', async function (t) {
     assert.equal(stats.total, numCpus)
   })
 
-  await t.test('should gather CPU sytem time metric', function (t) {
+  await t.test('should gather CPU system time metric', function (t) {
     const { agent } = t.nr
     systemMetricsSampler.sampleCpu(agent)()
 

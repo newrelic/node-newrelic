@@ -143,7 +143,7 @@ test('with default properties', async (t) => {
     assert.equal(configuration.transaction_tracer.top_n, 20)
   })
 
-  await t.test('should obfsucate sql by default', () => {
+  await t.test('should obfuscate sql by default', () => {
     assert.equal(configuration.transaction_tracer.record_sql, 'obfuscated')
   })
 

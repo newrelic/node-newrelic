@@ -8,12 +8,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
-const crypto = require('crypto')
-const DB_INDEX = `test-${randomString()}`
-
-function randomString() {
-  return crypto.randomBytes(5).toString('hex')
-}
+const DB_INDEX = helper.randomString('test-')
 
 test('Elasticsearch instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {

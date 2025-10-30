@@ -1,3 +1,93 @@
+### v13.6.2 (2025-10-29)
+
+#### Bug fixes
+
+* Updated express instrumentation to properly instrument an array of middleware defined on a route ([#3473](https://github.com/newrelic/node-newrelic/pull/3473)) ([e383c4e](https://github.com/newrelic/node-newrelic/commit/e383c4efc7171f02aef41d6c657455338b4b7258))
+
+#### Documentation
+
+* documented how to use the subscriber based instrumentation ([#3432](https://github.com/newrelic/node-newrelic/pull/3432)) ([3b3ab72](https://github.com/newrelic/node-newrelic/commit/3b3ab72eee3b4c1a12592d92eab59da2a48b1f46))
+* Updated compatibility report ([#3471](https://github.com/newrelic/node-newrelic/pull/3471)) ([964543b](https://github.com/newrelic/node-newrelic/commit/964543bae1a7c1fd5af32f02ba40d4bf68737d11))
+
+### v13.6.1 (2025-10-28)
+
+#### Bug fixes
+
+* Updated middleware wrapper to not wrap handler if it is not a function ([#3469](https://github.com/newrelic/node-newrelic/pull/3469)) ([c702689](https://github.com/newrelic/node-newrelic/commit/c702689a6e73756f6b3ad39706a33874fbd6da73))
+
+#### Documentation
+
+* Updated compatibility report ([#3466](https://github.com/newrelic/node-newrelic/pull/3466)) ([5853657](https://github.com/newrelic/node-newrelic/commit/5853657a63dc75481fc6598c10afd208391f525b))
+
+### v13.6.0 (2025-10-27)
+
+#### Features
+
+* Added instrumentation for http2 client methods ([#3284](https://github.com/newrelic/node-newrelic/pull/3284)) ([bda7aea](https://github.com/newrelic/node-newrelic/commit/bda7aeaac16ce9f54bd28de72aa7465be96cd157))
+
+#### Bug fixes
+
+* Updated `ioredis` instrumentation to handle breakage of errors when using `.pipeline`. ([#3457](https://github.com/newrelic/node-newrelic/pull/3457)) ([49f4d93](https://github.com/newrelic/node-newrelic/commit/49f4d93a59045f35406dfdbd3248dca0652727d6))
+* Updated `openai` `instrumentStream` function to handle empty chunk when `include_usage` is set ([#3427](https://github.com/newrelic/node-newrelic/pull/3427)) ([f804940](https://github.com/newrelic/node-newrelic/commit/f8049405003f0811450f75468e0bddfb1f05ec2b))
+
+#### Code refactoring
+
+* Update `express` instrumentation to subscribe to events emitted ([#3424](https://github.com/newrelic/node-newrelic/pull/3424)) ([bbf3d01](https://github.com/newrelic/node-newrelic/commit/bbf3d010bc402953e53cae5200af6bfb55a6446d))
+* Updated instances in instrumentation of `Array.forEach` for a more performant for...of or for index loop ([#3463](https://github.com/newrelic/node-newrelic/pull/3463)) ([99484ce](https://github.com/newrelic/node-newrelic/commit/99484ce0e7a963fbbc3cbc22f4956ce19e5eecc2))
+* Updated instances of `Array.forEach` for a more performant for...of or for index loop ([#3440](https://github.com/newrelic/node-newrelic/pull/3440)) ([48c37bf](https://github.com/newrelic/node-newrelic/commit/48c37bf7f85291553666d4512ca995b6a5b136a2))
+* Updated token calculation for `aws-bedrock` LLM Events ([#3445](https://github.com/newrelic/node-newrelic/pull/3445)) ([9450181](https://github.com/newrelic/node-newrelic/commit/945018171da713487a0b5b674e68bdbb211e655e))
+* Updated token calculation for `google-genai` LLM Events ([#3431](https://github.com/newrelic/node-newrelic/pull/3431)) ([41d32be](https://github.com/newrelic/node-newrelic/commit/41d32befe1d9c3201b62253a5de76c918d98a025))
+* Updated token calculation for `openai` LLM Events ([#3430](https://github.com/newrelic/node-newrelic/pull/3430)) ([b8678cc](https://github.com/newrelic/node-newrelic/commit/b8678cc92bb986eae7efec4b516f66406307e841))
+
+#### Documentation
+
+* Updated compatibility report ([#3459](https://github.com/newrelic/node-newrelic/pull/3459)) ([f253b97](https://github.com/newrelic/node-newrelic/commit/f253b97c039caa9e9110055d93e0c32e2d6911a8))
+
+#### Miscellaneous chores
+
+* Update release workflows ([#3444](https://github.com/newrelic/node-newrelic/pull/3444)) ([d1ec158](https://github.com/newrelic/node-newrelic/commit/d1ec158f46d034160b665f8b0785c020ba39b820))
+
+#### Tests
+
+* Added a `randomString` helper to agent_helper and use it in ioredis to avoid flappy tests, also updated local instances of random strings in kafka, elasticsearch and opensearch tests ([#3462](https://github.com/newrelic/node-newrelic/pull/3462)) ([4deb6d8](https://github.com/newrelic/node-newrelic/commit/4deb6d80d9daa7fd9d4c077a5cc52f358ed44e61))
+* Fixed conflict between ioredis and ioredis-esm by running `flushdb` instead of `flushall` to avoid index getting removed mid test ([#3464](https://github.com/newrelic/node-newrelic/pull/3464)) ([5e3f0a8](https://github.com/newrelic/node-newrelic/commit/5e3f0a81bfcf8bc8cf04559f29d3a76c1262bcc7))
+* Fixed express async error test to purposely misspell a method to emit a crash ([#3435](https://github.com/newrelic/node-newrelic/pull/3435)) ([ff9f064](https://github.com/newrelic/node-newrelic/commit/ff9f0646c4fc23e367c1e190eb8091423c690103))
+* Moved aws-sdk-v3 common.js requirement of semver ([#3461](https://github.com/newrelic/node-newrelic/pull/3461)) ([6a380ef](https://github.com/newrelic/node-newrelic/commit/6a380ef580268be131417587a2dda5adf3545e68))
+* Pinned Next.js tests to <16.0.0 ([#3446](https://github.com/newrelic/node-newrelic/pull/3446)) ([10787a1](https://github.com/newrelic/node-newrelic/commit/10787a1f4e325b7321173ee5b2fab0809af5e8d1))
+* Updated minimum tested version of `@langchain/core` to 1.0.0 ([#3437](https://github.com/newrelic/node-newrelic/pull/3437)) ([b61f67a](https://github.com/newrelic/node-newrelic/commit/b61f67a4c6d59f0b2a49e0de93a6d38e56d214fd))
+
+### v13.5.0 (2025-10-14)
+
+#### Code refactoring
+
+* Updated `fastify` instrumentation to subscribe to events emitted ([#3407](https://github.com/newrelic/node-newrelic/pull/3407)) ([51e361e](https://github.com/newrelic/node-newrelic/commit/51e361ed736fa1235eeb16f1c5ec833a1b56a0bf))
+* Updated `pg` and `pg-native` instrumentation to subscribe to events emitted ([#3397](https://github.com/newrelic/node-newrelic/pull/3397)) ([04af258](https://github.com/newrelic/node-newrelic/commit/04af2580a554ecabedab447d5edc5cec836d7f40))
+
+* Updated `config.instrumentation.timers.enabled` to false to disable `timers.setTimeout` and `timers.setInterval` by default. ([#3414](https://github.com/newrelic/node-newrelic/pull/3414)) ([b925d3d](https://github.com/newrelic/node-newrelic/commit/b925d3d178886e6d4bbd0f2eaa6f51b6fddd7878))
+    * To re-enable, set `config.instrumentation.timers.enabled` to `true` in config or set `NEW_RELIC_INSTRUMENTATION_TIMERS_ENABLED=true` 
+
+#### Documentation
+
+* Updated compatibility report ([#3413](https://github.com/newrelic/node-newrelic/pull/3413)) ([fef98dd](https://github.com/newrelic/node-newrelic/commit/fef98ddffddf60b32f162ea87dee2a3a0bdf8048))
+
+#### Miscellaneous chores
+
+* Added a new diagnostics base class and migrated undici to use new class ([#3408](https://github.com/newrelic/node-newrelic/pull/3408)) ([8047bf1](https://github.com/newrelic/node-newrelic/commit/8047bf165ae5105bb612c1a834d574078d52724d))
+* Created directory for samplers ([#3419](https://github.com/newrelic/node-newrelic/pull/3419)) ([dd2d3df](https://github.com/newrelic/node-newrelic/commit/dd2d3dfe1bb2582de51e07a1cce6077df84f7108))
+
+#### Styles
+
+* Require `check-types` and `require-returns-type` jsdoc ([#3400](https://github.com/newrelic/node-newrelic/pull/3400)) ([e4cd687](https://github.com/newrelic/node-newrelic/commit/e4cd687c59aeaba6b627403bcb29b4b6576fe4d9))
+* Require jsdoc `check*`, `implements-on-classes`, and some `no-undefined-types` ([#3404](https://github.com/newrelic/node-newrelic/pull/3404)) ([4fa645b](https://github.com/newrelic/node-newrelic/commit/4fa645b91900ff0acbd24b8f50c6fffcd07f3b82))
+* Require jsdoc `require-returns-check` and `require-property-*` ([#3403](https://github.com/newrelic/node-newrelic/pull/3403)) ([1008073](https://github.com/newrelic/node-newrelic/commit/100807342b9c9283f43042024f15bb575de219ee))
+
+#### Tests
+
+* Added helper to get version of package when package.json not exported, and updated tests that need it ([#3411](https://github.com/newrelic/node-newrelic/pull/3411)) ([5ae02c7](https://github.com/newrelic/node-newrelic/commit/5ae02c7411cd7ae0a45203b025559c5442a7171e))
+* Fixed fastify segment tree assertion when security agent is enabled ([#3422](https://github.com/newrelic/node-newrelic/pull/3422)) ([b2cf6ed](https://github.com/newrelic/node-newrelic/commit/b2cf6ed5d8debae23d0bb31e9a72b325464fadc2))
+* Refactored mcp tests to listen on new port for every streaming test, removed unncessary shutdown of process ([#3420](https://github.com/newrelic/node-newrelic/pull/3420)) ([17db813](https://github.com/newrelic/node-newrelic/commit/17db8133e8e13c970362330885dccf4870942aea))
+* Updated an openai assertion with setTimeout disabled ([#3421](https://github.com/newrelic/node-newrelic/pull/3421)) ([ceec8f9](https://github.com/newrelic/node-newrelic/commit/ceec8f9ef2ac95285dcc1619ef2ee8e187252beb))
+
 ### v13.4.0 (2025-09-29)
 
 #### Code refactoring
@@ -7920,6 +8010,10 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
+
+
+
 
 
 

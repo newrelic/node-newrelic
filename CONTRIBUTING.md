@@ -75,7 +75,7 @@ When contributing to this repository, please ensure that your commit messages ad
   * `style` - changes that do not affect the meaning of the code (e.g. formatting, white-space, etc.)
   * `test` - adding new tests or modifying existing tests
 * Use the imperative, present tense (e.g. "add feature" instead of "added feature")
-* Optionally, include a scope in parantheses after the type to indicate which part of the repository is affected (e.g. `feat(instrumentation): add support for Prisma Client`)
+* Optionally, include a scope in parentheses after the type to indicate which part of the repository is affected (e.g. `feat(instrumentation): add support for Prisma Client`)
 
 Please note that we use the [Squash and Merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits) method when merging Pull Requests into the main branch. We do not use the original commit messages from each individual commit. Instead, we use the Pull Request title as the commit message for the squashed commit, and as such, require that the Pull Request title adheres to our Conventional Commit standards. Any additional documentation or information relevant to the release notes should be added to the "optional extended description" section of the squash commit on merge.
 

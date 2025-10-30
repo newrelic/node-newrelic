@@ -33,19 +33,19 @@ test('Agent API - setTransactionName', async (t) => {
 
   await t.test('sets the transaction name to the custom name', async (t) => {
     const { agent, api } = t.nr
-    const { transaction } = await setTranasactionNameGoldenPath({ agent, api })
+    const { transaction } = await setTransactionNameGoldenPath({ agent, api })
     assert.equal(transaction.name, 'WebTransaction/Custom/Test')
   })
 
   await t.test('names the web trace segment after the custom name', async (t) => {
     const { agent, api } = t.nr
-    const { segment } = await setTranasactionNameGoldenPath({ agent, api })
+    const { segment } = await setTransactionNameGoldenPath({ agent, api })
     assert.equal(segment.name, 'WebTransaction/Custom/Test')
   })
 
   await t.test('leaves the request URL alone', async (t) => {
     const { agent, api } = t.nr
-    const { transaction } = await setTranasactionNameGoldenPath({ agent, api })
+    const { transaction } = await setTransactionNameGoldenPath({ agent, api })
     assert.equal(transaction.url, TEST_URL)
   })
 
@@ -76,7 +76,7 @@ test('Agent API - setTransactionName', async (t) => {
   })
 })
 
-function setTranasactionNameGoldenPath({ agent, api }) {
+function setTransactionNameGoldenPath({ agent, api }) {
   let segment = null
   return new Promise((resolve) => {
     agent.on('transactionFinished', function (finishedTransaction) {
