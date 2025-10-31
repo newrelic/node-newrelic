@@ -9,7 +9,8 @@
         "node": ">=20"
       },
       "dependencies": {
-        "undici": ">=5.0.0"
+        "undici": ">=5.0.0",
+        "proxy": ">=2.0.0"
       },
       "files": [
         "requests.test.js"
