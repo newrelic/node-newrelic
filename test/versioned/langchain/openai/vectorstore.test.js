@@ -42,6 +42,7 @@ test.beforeEach(async (ctx) => {
       node: `http://${params.elastic_host}:${params.elastic_port}`
     })
   }
+
   const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
 
   ctx.nr.embedding = new OpenAIEmbeddings({
