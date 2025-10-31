@@ -337,6 +337,14 @@ test('with default properties', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.root, 'default')
   })
 
+  await t.test('remote parent sampled sampler should default to default', () => {
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
+  })
+
+  await t.test('remote parent not sampled sampler should default to default', () => {
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
+  })
+
   await t.test('opentelemetry', () => {
     const otel = configuration.opentelemetry_bridge
     assert.equal(otel.enabled, false)

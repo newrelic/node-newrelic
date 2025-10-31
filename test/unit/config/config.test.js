@@ -279,7 +279,7 @@ test('distributed tracing samplers', async (t) => {
     assert.deepEqual(configuration.distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.5)
   })
 
-  await t.test('should set root sampler to default when ratio for trace id ratio based is not set', () => {
+  await t.test('should set root sampler to default when ratio for trace id ratio based is not set - used wrong key', () => {
     const config = {
       distributed_tracing: {
         sampler: {

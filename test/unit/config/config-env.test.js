@@ -176,7 +176,7 @@ test('when overriding configuration values via environment variables', async (t)
     const env = {
       NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: 'true',
       NEW_RELIC_DISTRIBUTED_TRACING_EXCLUDE_NEWRELIC_HEADER: 'true',
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ADAPTIVE_SAMPLING_TARGET: 20,
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ADAPTIVE_SAMPLING_TARGET: 20
     }
 
     idempotentEnv(env, (tc) => {
@@ -223,7 +223,7 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
-  await t.test('should set remote_parent_sampled sampler to trace id based ratio', (t, end) => {
+  await t.test('should set remote_parent_not_sampled sampler to trace id based ratio', (t, end) => {
     const env = {
       NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED: 'trace_id_ratio_based',
       NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED_TRACE_ID_RATIO_BASED_RATIO: '0.5'
@@ -235,7 +235,7 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
-  await t.test('should fall back to default sampler when trace id ratio based is misconfigured', (t, end) => {
+  await t.test('should fall back to default root sampler when trace id ratio based is misconfigured', (t, end) => {
     const env = {
       NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based',
       // Missing "RATIO" key at the end of this env var
@@ -248,7 +248,7 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
-  await t.test('should fall back to default sampler trace id ratio is missing sampler root', (t, end) => {
+  await t.test('should fall back to default root sampler when trace id ratio is missing sampler root', (t, end) => {
     const env = {
       // NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based' is needed to enable this sampler
       NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT_TRACE_ID_RATIO_BASED: '0.5'
