@@ -312,6 +312,30 @@ test('handles error in stream', (t, end) => {
 })
 
 // Other tests
+test('should not create llm events when ai_monitoring.enabled is false', (t, end) => {
+  const { client, agent } = t.nr
+  agent.config.ai_monitoring.enabled = false
+  helper.runInTransaction(agent, async (tx) => {
+    const model = 'gemini-2.0-flash'
+    const result = await client.models.generateContent({
+      model,
+      contents: 'You are a mathematician.'
+    })
+    assert.ok(result)
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 0, 'should not create llm events')
+
+    const activeSeg = agent.tracer.getSegment()
+    assert.equal(activeSeg?.isRoot, true)
+    const children = tx.trace.getChildren(activeSeg.id)
+    assert.notEqual(children?.[0]?.name, GEMINI.COMPLETION)
+
+    tx.end()
+    end()
+  })
+})
+
 test('should not create llm events when ai_monitoring.streaming.enabled is false', (t, end) => {
   const { client, agent } = t.nr
   agent.config.ai_monitoring.streaming.enabled = false
@@ -338,11 +362,16 @@ test('should not create llm events when ai_monitoring.streaming.enabled is false
     assert.equal(res, expectedRes.body.candidates[0].content.parts[0].text)
 
     const events = agent.customEventAggregator.events.toArray()
-    assert.equal(events.length, 0, 'should not llm events when streaming is disabled')
+    assert.equal(events.length, 0, 'should not create llm events when streaming is disabled')
     const streamingDisabled = agent.metrics.getOrCreateMetric(
       'Supportability/Nodejs/ML/Streaming/Disabled'
     )
     assert.equal(streamingDisabled.callCount > 0, true)
+
+    const activeSeg = agent.tracer.getSegment()
+    assert.equal(activeSeg?.isRoot, true)
+    const children = tx.trace.getChildren(activeSeg.id)
+    assert.notEqual(children?.[0]?.name, GEMINI.COMPLETION)
 
     tx.end()
     end()
