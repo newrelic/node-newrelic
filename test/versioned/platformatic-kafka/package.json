@@ -1,0 +1,19 @@
+{
+  "name": "platformatic-kafka-tests",
+  "targets": [{"name":"@platformatic/kafka","minAgentVersion":"13.6.1"}],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "@platformatic/kafka": ">=1.19.0"
+      },
+      "files": [
+        "producer.test.js"
+      ]
+    }
+  ]
+}

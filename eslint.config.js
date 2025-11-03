@@ -143,5 +143,11 @@ module.exports = [
 
   sharedConfig.configs.baselineNewRelicConfig,
   newrelicConfigOverrides,
-  globalIgnores
+  globalIgnores,
+
+  {
+    rules: {
+      'accessor-pairs': 'off'
+    }
+  }
 ]
