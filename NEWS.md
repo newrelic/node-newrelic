@@ -1,3 +1,19 @@
+### v13.7.0 (2025-11-03)
+
+#### Features
+
+* Added configuration for ratio based sampling for distributed tracing ([#3438](https://github.com/newrelic/node-newrelic/pull/3438)) ([f281f19](https://github.com/newrelic/node-newrelic/commit/f281f19fbc40f91ae80957ef8c6b98f1df23f606))
+    * Co-authored-by: James Sumners <jsumners@newrelic.com>
+
+#### Code refactoring
+
+* Update `mysql` and `mysql2` instrumentation to subscribe to events emitted ([#3423](https://github.com/newrelic/node-newrelic/pull/3423)) ([2e38914](https://github.com/newrelic/node-newrelic/commit/2e38914ffd8510dc610bd629a00b61e604dca2db))
+
+#### Documentation
+
+* Cleaned up README links and outdated verbiage ([#3484](https://github.com/newrelic/node-newrelic/pull/3484)) ([51e6d7a](https://github.com/newrelic/node-newrelic/commit/51e6d7ace2fb62b907113ec01f63a8d8e4be4e34))
+* Updated compatibility report ([#3477](https://github.com/newrelic/node-newrelic/pull/3477)) ([859f27f](https://github.com/newrelic/node-newrelic/commit/859f27febe4d4afd46bf7d080a2db51ae9acc0cc))
+
 ### v13.6.2 (2025-10-29)
 
 #### Bug fixes
