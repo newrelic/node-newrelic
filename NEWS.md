@@ -3,11 +3,10 @@
 #### Features
 
 * Added configuration for ratio based sampling for distributed tracing ([#3438](https://github.com/newrelic/node-newrelic/pull/3438)) ([f281f19](https://github.com/newrelic/node-newrelic/commit/f281f19fbc40f91ae80957ef8c6b98f1df23f606))
-    * Co-authored-by: James Sumners <jsumners@newrelic.com>
 
 #### Code refactoring
 
-* Update `mysql` and `mysql2` instrumentation to subscribe to events emitted ([#3423](https://github.com/newrelic/node-newrelic/pull/3423)) ([2e38914](https://github.com/newrelic/node-newrelic/commit/2e38914ffd8510dc610bd629a00b61e604dca2db))
+* Updated `mysql` and `mysql2` instrumentation to subscribe to events emitted ([#3423](https://github.com/newrelic/node-newrelic/pull/3423)) ([2e38914](https://github.com/newrelic/node-newrelic/commit/2e38914ffd8510dc610bd629a00b61e604dca2db))
 
 #### Documentation
 
@@ -8026,6 +8025,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
