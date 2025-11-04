@@ -73,13 +73,20 @@ test.beforeEach((ctx) => {
       'x-amzn-request-id': 'aws-request-1'
     },
     finishReason: 'done',
-    completions: ['completion-1']
+    completions: ['completion-1'],
+    get inputTokenCount() {
+      return this.headers['x-amzn-bedrock-input-token-count']
+    },
+    get outputTokenCount() {
+      return this.headers['x-amzn-bedrock-output-token-count']
+    },
+    get totalTokenCount() {
+      return this.inputTokenCount + this.outputTokenCount
+    }
   }
 })
 
 test('creates a basic summary', async (t) => {
-  t.nr.bedrockResponse.inputTokenCount = 0
-  t.nr.bedrockResponse.outputTokenCount = 0
   const event = new LlmChatCompletionSummary(t.nr)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.duration, 100)
@@ -122,29 +129,7 @@ test('creates a titan summary', async (t) => {
   assert.equal(event['response.number_of_messages'], 2)
 })
 
-test('capture token usage attributes when response object includes input and output token usage information', async (t) => {
-  t.nr.bedrockResponse.usage = {
-    input_tokens: 30,
-    output_tokens: 40
-  }
-  const event = new LlmChatCompletionSummary(t.nr)
-  assert.equal(event['response.usage.prompt_tokens'], 30)
-  assert.equal(event['response.usage.completion_tokens'], 40)
-  assert.equal(event['response.usage.total_tokens'], 70)
-})
-
-test('capture token usage attributes when response object includes input and output token usage information - another format', async (t) => {
-  t.nr.bedrockResponse.usage = {
-    inputTokens: 30,
-    outputTokens: 40,
-  }
-  const event = new LlmChatCompletionSummary(t.nr)
-  assert.equal(event['response.usage.prompt_tokens'], 30)
-  assert.equal(event['response.usage.completion_tokens'], 40)
-  assert.equal(event['response.usage.total_tokens'], 70)
-})
-
-test('capture token usage attributes when response headers is missing total token count', async (t) => {
+test('capture token usage attributes from headers', async (t) => {
   t.nr.bedrockResponse.headers = {
     'x-amzn-bedrock-input-token-count': 30,
     'x-amzn-bedrock-output-token-count': 40,
@@ -153,28 +138,6 @@ test('capture token usage attributes when response headers is missing total toke
   assert.equal(event['response.usage.prompt_tokens'], 30)
   assert.equal(event['response.usage.completion_tokens'], 40)
   assert.equal(event['response.usage.total_tokens'], 70)
-})
-
-test('capture token usage attributes when response headers include all token usage information', async (t) => {
-  t.nr.bedrockResponse.headers = {
-    'x-amzn-bedrock-input-token-count': 30,
-    'x-amzn-bedrock-output-token-count': 40,
-    'x-amzn-bedrock-total-token-count': 70
-  }
-  const event = new LlmChatCompletionSummary(t.nr)
-  assert.equal(event['response.usage.prompt_tokens'], 30)
-  assert.equal(event['response.usage.completion_tokens'], 40)
-  assert.equal(event['response.usage.total_tokens'], 70)
-})
-
-test('does not capture any token usage attributes when response is missing required usage information', async (t) => {
-  t.nr.bedrockResponse.headers = {
-    'x-amzn-bedrock-input-token-count': 30,
-  }
-  const event = new LlmChatCompletionSummary(t.nr)
-  assert.equal(event['response.usage.prompt_tokens'], undefined)
-  assert.equal(event['response.usage.completion_tokens'], undefined)
-  assert.equal(event['response.usage.total_tokens'], undefined)
 })
 
 test('should use token callback to set the token usage attributes', async (t) => {

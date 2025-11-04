@@ -197,7 +197,7 @@ test('openai.chat.completions.create', async (t) => {
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
         const summaryId = 'chat-summary-id'
-        delete chatRes.usage
+        delete chatRes.usage.prompt_tokens
         const chatMessageEvent = new LlmChatCompletionMessage({
           agent,
           segment,
@@ -371,12 +371,14 @@ test('openai.responses.create', async (t) => {
         const summaryId = 'chat-summary-id'
         const content = chatRes.output[0].content[0].text
         const role = chatRes?.output?.[0]?.role
+        const response = { ...chatRes }
+        delete response.usage
         const chatMessageEvent = new LlmChatCompletionMessage({
           transaction: tx,
           agent,
           segment,
           request: req,
-          response: chatRes,
+          response,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
           index: 2
@@ -386,7 +388,6 @@ test('openai.responses.create', async (t) => {
         expected.content = chatRes.output[0].content[0].text
         expected.role = chatRes.output[0].role
         expected.is_response = true
-        expected.token_count = 0
         assert.deepEqual(chatMessageEvent, expected)
         end()
       })

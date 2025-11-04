@@ -13,9 +13,9 @@ const errValidationException =
 responses.set('embed text amazon success', {
   headers: {
     'content-type': contentType,
-    'x-amzn-requestid': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
+    'x-amzn-requestid': reqId,
     'x-amzn-bedrock-invocation-latency': '195',
-    'x-amzn-bedrock-input-token-count': '13'
+    'x-amzn-bedrock-input-token-count': '14'
   },
   statusCode: 200,
   body: {
@@ -29,15 +29,15 @@ responses.set('text amazon ultimate question', {
     'content-type': contentType,
     'x-amzn-requestid': reqId,
     'x-amzn-bedrock-invocation-latency': '2420',
-    'x-amzn-bedrock-output-token-count': '4',
-    'x-amzn-bedrock-input-token-count': '8'
+    'x-amzn-bedrock-output-token-count': '9',
+    'x-amzn-bedrock-input-token-count': '14'
   },
   statusCode: 200,
   body: {
-    inputTextTokenCount: 13,
+    inputTextTokenCount: 9,
     results: [
       {
-        tokenCount: 4,
+        tokenCount: 23,
         outputText: '42',
         completionReason: 'endoftext'
       }
@@ -59,7 +59,7 @@ responses.set('text amazon ultimate question streamed', {
         index: 0,
         totalOutputTextTokenCount: null,
         completionReason: null,
-        inputTextTokenCount: 13
+        inputTextTokenCount: '14'
       },
       headers: {
         ':event-type': { type: 'string', value: 'chunk' },
@@ -70,12 +70,11 @@ responses.set('text amazon ultimate question streamed', {
       body: {
         outputText: '',
         index: 0,
-        totalOutputTextTokenCount: 75,
         completionReason: 'endoftext',
         inputTextTokenCount: null,
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 8,
-          outputTokenCount: 4,
+          inputTokenCount: '14',
+          outputTokenCount: '9',
           invocationLatency: 3879,
           firstByteLatency: 3291
         }
