@@ -67,7 +67,8 @@ test('should create langchain events for every invoke call', (t, end) => {
     const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
     const chain = prompt.pipe(model).pipe(outputParser)
-    await chain.invoke(input, options)
+    const result = await chain.invoke(input, options)
+    assert.ok(result)
 
     const events = agent.customEventAggregator.events.toArray()
     assert.equal(events.length, 6, 'should create 6 events')
