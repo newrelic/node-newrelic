@@ -57,8 +57,7 @@ function getExpectedResult(tx, event, type, completionId) {
     case 'embedding':
       expected = {
         ...expected,
-        ...resKeys,
-        'response.usage.total_tokens': 30,
+        ...resKeys
       }
       expected.input = 'This is my test input'
       expected.error = false

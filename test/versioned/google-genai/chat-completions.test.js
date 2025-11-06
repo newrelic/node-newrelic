@@ -131,7 +131,7 @@ test('should create chat completion message and summary for every message sent',
     })
 
     const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-    assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage: true })
+    assertChatCompletionSummary({ tx, model, chatSummary })
 
     tx.end()
     end()
@@ -223,13 +223,15 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
   const expectedModel = 'gemini-2.0-flash'
   const api = helper.getAgentApi()
   let cbCalled = false
+  const promptTokens = 11
+  const completionTokens = 53
   function cb(model, content) {
     assert.equal(model, expectedModel)
     cbCalled = true
     if (content === promptContent + ' ' + promptContent2) {
-      return 53
+      return promptTokens
     } else if (content === res) {
-      return 11
+      return completionTokens
     }
   }
   api.setLlmTokenCountCallback(cb)
@@ -253,7 +255,6 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
     const events = agent.customEventAggregator.events.toArray()
     const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
     assertChatCompletionMessages({
-      tokenUsage: true,
       tx,
       chatMsgs,
       id: '"0e7e48f05cf962e1692113a49b276e8bb1bc"',
@@ -261,6 +262,8 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
       resContent: res,
       reqContent: promptContent
     })
+    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+    assertChatCompletionSummary({ tx, model: expectedModel, chatSummary, promptTokens, completionTokens })
 
     tx.end()
     end()
