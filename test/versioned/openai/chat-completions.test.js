@@ -148,7 +148,7 @@ test('chat.completions.create', async (t) => {
       })
 
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-      assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage: true })
+      assertChatCompletionSummary({ tx, model, chatSummary })
 
       tx.end()
       end()
@@ -156,14 +156,13 @@ test('chat.completions.create', async (t) => {
   })
 
   if (semver.gte(pkgVersion, '4.12.2')) {
-    await t.test('should create span on successful chat completion stream create', { skip: semver.lt(pkgVersion, '4.12.2') }, (t, end) => {
+    await t.test('should create span on successful chat completion stream create', (t, end) => {
       const { client, agent, host, port } = t.nr
       helper.runInTransaction(agent, async (tx) => {
         const content = 'Streamed response'
         const stream = await client.chat.completions.create({
           stream: true,
-          messages: [{ role: 'user', content }],
-          stream_options: { include_usage: true },
+          messages: [{ role: 'user', content }]
         })
 
         let chunk = {}
@@ -202,8 +201,7 @@ test('chat.completions.create', async (t) => {
             { role: 'user', content },
             { role: 'user', content: 'What does 1 plus 1 equal?' }
           ],
-          stream: true,
-          stream_options: { include_usage: true },
+          stream: true
         })
 
         let res = ''
@@ -229,6 +227,55 @@ test('chat.completions.create', async (t) => {
           id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
           model,
           resContent: res,
+          reqContent: content,
+          noTokenUsage: true
+        })
+
+        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+        assertChatCompletionSummary({ tx, model, chatSummary, noUsageTokens: true })
+
+        tx.end()
+        end()
+      })
+    })
+
+    await t.test('should assign usage information when `include_usage` exists in stream', (t, end) => {
+      const { client, agent } = t.nr
+      helper.runInTransaction(agent, async (tx) => {
+        const content = 'Streamed response usage'
+        const model = 'gpt-4'
+        const stream = await client.chat.completions.create({
+          stream: true,
+          model,
+          messages: [
+            { role: 'user', content },
+            { role: 'user', content: 'What does 1 plus 1 equal?' }
+          ],
+          streaming_options: { include_usage: true }
+        })
+
+        let chunk = {}
+        let res = ''
+        for await (chunk of stream) {
+          if (!chunk.usage) {
+            res += chunk.choices[0]?.delta?.content
+          }
+        }
+        assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
+        assert.equal(chunk.choices[0].message.role, 'assistant')
+        const expectedRes = responses.get(content)
+        assert.equal(chunk.choices[0].message.content, expectedRes.streamData)
+        assert.equal(chunk.choices[0].message.content, res)
+        assert.deepEqual(chunk.usage, { prompt_tokens: 53, completion_tokens: 11, total_tokens: 64 })
+        const events = agent.customEventAggregator.events.toArray()
+        assert.equal(events.length, 4, 'should create a chat completion message and summary event')
+        const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+        assertChatCompletionMessages({
+          tx,
+          chatMsgs,
+          id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+          model,
+          resContent: res,
           reqContent: content
         })
 
@@ -244,15 +291,17 @@ test('chat.completions.create', async (t) => {
       const { client, agent } = t.nr
       const promptContent = 'Streamed response'
       const promptContent2 = 'What does 1 plus 1 equal?'
+      const promptTokens = 11
+      const completionTokens = 53
       let res = ''
       const expectedModel = 'gpt-4'
       const api = helper.getAgentApi()
       function cb(model, content) {
         assert.equal(model, expectedModel)
         if (content === promptContent + ' ' + promptContent2) {
-          return 53
+          return promptTokens
         } else if (content === res) {
-          return 11
+          return completionTokens
         }
       }
       api.setLlmTokenCountCallback(cb)
@@ -276,7 +325,6 @@ test('chat.completions.create', async (t) => {
         const events = agent.customEventAggregator.events.toArray()
         const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
         assertChatCompletionMessages({
-          tokenUsage: true,
           tx,
           chatMsgs,
           id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
@@ -284,6 +332,9 @@ test('chat.completions.create', async (t) => {
           resContent: res,
           reqContent: promptContent
         })
+
+        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+        assertChatCompletionSummary({ tx, model: expectedModel, chatSummary, promptTokens, completionTokens })
 
         tx.end()
         end()

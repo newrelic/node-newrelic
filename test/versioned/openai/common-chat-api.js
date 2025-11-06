@@ -13,7 +13,7 @@ module.exports = {
 const { match } = require('../../lib/custom-assertions')
 
 function assertChatCompletionMessages(
-  { tx, chatMsgs, id, model, reqContent, resContent, tokenUsage },
+  { tx, chatMsgs, id, model, reqContent, resContent, noTokenUsage },
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
@@ -36,14 +36,14 @@ function assertChatCompletionMessages(
       expectedChatMsg.sequence = 0
       expectedChatMsg.id = `${id}-0`
       expectedChatMsg.content = reqContent
-      if (tokenUsage) {
+      if (!noTokenUsage) {
         expectedChatMsg.token_count = 0
       }
     } else if (msg[1].sequence === 1) {
       expectedChatMsg.sequence = 1
       expectedChatMsg.id = `${id}-1`
       expectedChatMsg.content = 'What does 1 plus 1 equal?'
-      if (tokenUsage) {
+      if (!noTokenUsage) {
         expectedChatMsg.token_count = 0
       }
     } else {
@@ -52,7 +52,7 @@ function assertChatCompletionMessages(
       expectedChatMsg.id = `${id}-2`
       expectedChatMsg.content = resContent
       expectedChatMsg.is_response = true
-      if (tokenUsage) {
+      if (!noTokenUsage) {
         expectedChatMsg.token_count = 0
       }
     }
@@ -63,7 +63,7 @@ function assertChatCompletionMessages(
 }
 
 function assertChatCompletionSummary(
-  { tx, model, chatSummary, error = false },
+  { tx, model, chatSummary, error = false, promptTokens = 53, completionTokens = 11, totalTokens = 64, noUsageTokens = false },
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
@@ -88,6 +88,12 @@ function assertChatCompletionSummary(
     'response.number_of_messages': 3,
     'response.choices.finish_reason': 'stop',
     error
+  }
+
+  if (!(error || noUsageTokens)) {
+    expectedChatSummary['response.usage.prompt_tokens'] = promptTokens
+    expectedChatSummary['response.usage.completion_tokens'] = completionTokens
+    expectedChatSummary['response.usage.total_tokens'] = totalTokens
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
