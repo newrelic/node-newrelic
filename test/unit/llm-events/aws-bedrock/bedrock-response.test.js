@@ -54,11 +54,21 @@ test.beforeEach((ctx) => {
       statusCode: 200,
       headers: {
         'x-amzn-requestid': 'aws-request-1',
-        'x-foo': 'foo'
+        'x-foo': 'foo',
+        'x-amzn-bedrock-input-token-count': '56',
+        'x-amzn-bedrock-output-token-count': '46'
       }
     },
     output: {
-      body: new TextEncoder().encode('{"foo":"foo"}')
+      body: new TextEncoder().encode('{"foo":"foo"}'),
+      output: {
+        message: { content: [{ text: 'Hello world' }] },
+      },
+      usage: {
+        inputTokens: 42,
+        outputTokens: 58,
+        totalTokens: 100
+      }
     }
   }
 
@@ -77,7 +87,8 @@ test.beforeEach((ctx) => {
     },
     isTitan() {
       return false
-    }
+    },
+    isConverse: false
   }
 
   ctx.nr.updatePayload = (payload) => {
@@ -212,4 +223,31 @@ test('should only set data from raw response on error', (t) => {
   assert.deepStrictEqual(res.headers, t.nr.response.$response.headers)
   assert.equal(res.requestId, 'aws-request-1')
   assert.equal(res.statusCode, 200)
+})
+
+test('inputTokenCount', (t) => {
+  t.nr.bedrockCommand.isConverse = true
+  const res = new BedrockResponse(t.nr)
+  assert.equal(res.inputTokenCount, 42)
+  t.nr.bedrockCommand.isConverse = false
+  const res2 = new BedrockResponse(t.nr)
+  assert.equal(res2.inputTokenCount, 56)
+})
+
+test('outputTokenCount', (t) => {
+  t.nr.bedrockCommand.isConverse = true
+  const res = new BedrockResponse(t.nr)
+  assert.equal(res.outputTokenCount, 58)
+  t.nr.bedrockCommand.isConverse = false
+  const res2 = new BedrockResponse(t.nr)
+  assert.equal(res2.outputTokenCount, 46)
+})
+
+test('totalTokenCount', (t) => {
+  t.nr.bedrockCommand.isConverse = true
+  const res = new BedrockResponse(t.nr)
+  assert.equal(res.totalTokenCount, 100)
+  t.nr.bedrockCommand.isConverse = false
+  const res2 = new BedrockResponse(t.nr)
+  assert.equal(res2.totalTokenCount, 102)
 })

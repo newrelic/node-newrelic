@@ -171,50 +171,34 @@ test('should not set token_count if callback registered returns null', async (t)
   assert.equal(event.token_count, undefined)
 })
 
-test('should not set token_count if not set in response nor a callback registered', async (t) => {
-  t.nr.bedrockResponse.usage = {}
+test('should not set token_count if inputTokenCount and outputTokenCount are not on response', async (t) => {
+  Object.defineProperty(t.nr.bedrockResponse, 'inputTokenCount', {
+    get() { return null }
+  })
+  Object.defineProperty(t.nr.bedrockResponse, 'outputTokenCount', {
+    get() { return null }
+  })
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, undefined)
 })
 
-test('should not set token_count if not set in usage nor a callback registered returns count (empty)', async (t) => {
-  const { agent } = t.nr
-  t.nr.bedrockResponse.usage = {}
-
-  agent.llm.tokenCountCallback = () => {}
+test('should not set token_count if inputTokenCount is set but not outputTokenCount', async (t) => {
+  Object.defineProperty(t.nr.bedrockResponse, 'outputTokenCount', {
+    get() { return null }
+  })
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, undefined)
 })
 
-test('should not set token_count if response does not include usage keys we need - input and output tokens', async (t) => {
-  t.nr.bedrockResponse.usage = {
-    input_tokens: 30,
-  }
+test('should not set token_count if outputTokenCount is set but not inputTokenCount', async (t) => {
+  Object.defineProperty(t.nr.bedrockResponse, 'inputTokenCount', {
+    get() { return null }
+  })
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, undefined)
 })
 
-test('should set token_count to 0 if response object includes usage keys we need - input and output tokens', async (t) => {
-  t.nr.bedrockResponse.usage = {
-    input_tokens: 30,
-    output_tokens: 40,
-  }
+test('should set token_count to 0 if inputTokenCount and outputTokenCount are on response', async (t) => {
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, 0)
-})
-
-test('should set token_count to 0 if response headers includes usage keys we need - input and output tokens', async (t) => {
-  t.nr.bedrockResponse.headers = {
-    'x-amzn-bedrock-input-token-count': 30,
-    'x-amzn-bedrock-output-token-count': 40,
-  }
-  const event = new LlmChatCompletionMessage(t.nr)
-  assert.equal(event.token_count, 0)
-})
-
-test('should not set token_count if response prompt and completion content is undefined', async (t) => {
-  t.nr.bedrockCommand.prompt = undefined
-  t.nr.bedrockResponse.completions = undefined
-  const event = new LlmChatCompletionMessage(t.nr)
-  assert.equal(event.token_count, undefined)
 })

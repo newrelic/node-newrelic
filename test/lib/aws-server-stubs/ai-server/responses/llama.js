@@ -13,8 +13,8 @@ responses.set('text llama ultimate question', {
     'content-type': contentType,
     'x-amzn-requestid': reqId,
     'x-amzn-bedrock-invocation-latency': 9677,
-    'x-amzn-bedrock-output-token-count': 4,
-    'x-amzn-bedrock-input-token-count': 8
+    'x-amzn-bedrock-output-token-count': '9',
+    'x-amzn-bedrock-input-token-count': '14'
   },
   statusCode: 200,
   body: {
@@ -58,8 +58,8 @@ responses.set('text llama ultimate question streamed', {
         generation_token_count: 212,
         stop_reason: 'endoftext',
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 8,
-          outputTokenCount: 4,
+          inputTokenCount: '14',
+          outputTokenCount: '9',
           invocationLatency: 9825,
           firstByteLatency: 283
         }

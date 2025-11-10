@@ -13,7 +13,7 @@ responses.set('text claude3 ultimate question', {
     'content-type': contentType,
     'x-amzn-requestid': reqId,
     'x-amzn-bedrock-invocation-latency': '926',
-    'x-amzn-bedrock-output-token-count': '36',
+    'x-amzn-bedrock-output-token-count': '9',
     'x-amzn-bedrock-input-token-count': '14'
   },
   statusCode: 200,
@@ -39,7 +39,7 @@ responses.set('text claude3 ultimate question chunked', {
     'content-type': contentType,
     'x-amzn-requestid': reqId,
     'x-amzn-bedrock-invocation-latency': '926',
-    'x-amzn-bedrock-output-token-count': '36',
+    'x-amzn-bedrock-output-token-count': '9',
     'x-amzn-bedrock-input-token-count': '14'
   },
   statusCode: 200,
@@ -159,8 +159,8 @@ responses.set('text claude3 ultimate question streamed', {
       body: {
         type: 'message_stop',
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 8,
-          outputTokenCount: 4,
+          inputTokenCount: '14',
+          outputTokenCount: '9',
           invocationLatency: 511,
           firstByteLatency: 358
         }

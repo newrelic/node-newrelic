@@ -112,13 +112,14 @@ test('properly create the LlmChatCompletionMessage(s) and LlmChatCompletionSumma
     assertChatCompletionMessages({
       modelId,
       prompt,
+      tokenUsage: true,
       tx,
       expectedId: null,
       chatMsgs,
       resContent: 'This is a test.'
     })
 
-    assertChatCompletionSummary({ tx, modelId, chatSummary })
+    assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage: true })
 
     tx.end()
   })
@@ -276,7 +277,8 @@ test('should properly create errors on create completion', async (t) => {
       modelId,
       prompt,
       tx,
-      chatMsgs
+      chatMsgs,
+      error: true
     })
 
     assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
@@ -372,11 +374,12 @@ test('should instrument text stream', async (t) => {
       prompt,
       expectedId: null,
       resContent: 'This is a test.',
+      tokenUsage: true,
       tx,
       chatMsgs
     })
 
-    assertChatCompletionSummary({ tx, modelId, chatSummary, numMsgs: events.length - 1 })
+    assertChatCompletionSummary({ tx, modelId, tokenUsage: true, chatSummary, numMsgs: events.length - 1 })
 
     tx.end()
   })

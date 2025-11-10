@@ -171,7 +171,18 @@ test('Handles a simple text-based chat', async (t) => {
     assert.deepStrictEqual(event, simpleTextChunks[i])
     i++
   }
-  assert.deepEqual(handler.response.output, { output: { message: { content: [{ text: 'Hello world!!' }] } } })
+  assert.deepEqual(handler.response.output, {
+    output: {
+      message: {
+        content: [{ text: 'Hello world!!' }]
+      }
+    },
+    usage: {
+      inputTokens: 100,
+      outputTokens: 10,
+      totalTokens: 110
+    }
+  })
 })
 
 test('Handles multi-chunk tool-call streams ', async (t) => {
@@ -183,7 +194,18 @@ test('Handles multi-chunk tool-call streams ', async (t) => {
     assert.deepStrictEqual(event, toolUseChunks[i])
     i++
   }
-  assert.deepEqual(handler.response.output, { output: { message: { content: [{ text: 'I should call a tool' }, { toolUse: { name: 'some-tool' } }] } } })
+  assert.deepEqual(handler.response.output, {
+    output: {
+      message: {
+        content: [{ text: 'I should call a tool' }, { toolUse: { name: 'some-tool' } }]
+      },
+    },
+    usage: {
+      inputTokens: 100,
+      outputTokens: 10,
+      totalTokens: 110
+    }
+  })
 })
 
 test('Can start new chunks whether or not an explicit start event is seen', async (t) => {
@@ -212,19 +234,32 @@ test('Can start new chunks whether or not an explicit start event is seen', asyn
         contentBlockIndex: 0,
         p: 'abcd'
       }
-    }]
+    },
+    {
+      messageStop: 'DONE'
+    },
+    {
+      metadata: {
+        usage: {
+          inputTokens: 10,
+          outputTokens: 5,
+          totalTokens: 15
+        }
+      }
+    }
+  ]
 
   t.nr.stream = asyncGeneratorFromChunks(chunks)
   let handler = new ConverseStreamHandler(t.nr)
   // eslint-disable-next-line sonarjs/no-unused-vars, no-unused-vars
   for await (const _ of handler.generator()) { /* empty */ }
-  assert.deepEqual(handler.response.output, { output: { message: { content: [{ text: 'Hello world' }] } } })
+  assert.deepEqual(handler.response.output, { output: { message: { content: [{ text: 'Hello world' }] } }, usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 } })
 
   t.nr.stream = asyncGeneratorFromChunks(chunks.filter((chunk) => !chunk.contentBlockStart))
   handler = new ConverseStreamHandler(t.nr)
   // eslint-disable-next-line sonarjs/no-unused-vars, no-unused-vars
   for await (const _ of handler.generator()) { /* empty */ }
-  assert.deepEqual(handler.response.output, { output: { message: { content: [{ text: 'Hello world' }] } } })
+  assert.deepEqual(handler.response.output, { output: { message: { content: [{ text: 'Hello world' }] } }, usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 } })
 })
 
 function asyncGeneratorFromChunks(chunks) {

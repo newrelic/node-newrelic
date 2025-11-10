@@ -196,6 +196,49 @@ test.afterEach(afterEach)
     await promise
   })
 
+  test(`${modelId}:  supports assigning token counts in callback`, async (t) => {
+    const { bedrock, client, agent } = t.nr
+    const { promise, resolve } = promiseResolvers()
+    const prompt = `text ${resKey} ultimate question`
+    const input = requests[resKey](prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
+    const promptTokens = 9
+    const completionTokens = 14
+
+    function cb(model, content) {
+      assert.equal(model, modelId)
+      if (content === prompt) {
+        return promptTokens
+      } else {
+        return completionTokens
+      }
+    }
+    const api = helper.getAgentApi()
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, async (tx) => {
+      api.addCustomAttribute('llm.conversation_id', 'convo-id')
+      await client.send(command)
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 3)
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+
+      assertChatCompletionMessages({
+        modelId,
+        prompt,
+        resContent: '42',
+        tx,
+        expectedId: modelId.includes('ai21') || modelId.includes('cohere') ? '1234' : null,
+        chatMsgs
+      })
+
+      assertChatCompletionSummary({ tx, modelId, chatSummary, promptTokens, completionTokens })
+      tx.end()
+      resolve()
+    })
+    await promise
+  })
+
   test(`${modelId}: text answer (streamed)`, async (t) => {
     const { bedrock, client, agent } = t.nr
     const prompt = `text ${resKey} ultimate question streamed`
@@ -335,7 +378,8 @@ test.afterEach(afterEach)
         modelId,
         prompt,
         tx,
-        chatMsgs
+        chatMsgs,
+        error: true
       })
 
       assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
@@ -700,17 +744,15 @@ test('should not instrument stream when disabled', async (t) => {
       {
         outputText: '42',
         index: 0,
-        totalOutputTextTokenCount: 75,
         completionReason: 'endoftext',
-        inputTextTokenCount: 13,
+        inputTextTokenCount: '14',
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 8,
-          outputTokenCount: 4,
+          inputTokenCount: '14',
+          outputTokenCount: '9',
           invocationLatency: 3879,
           firstByteLatency: 3291
         }
-      },
-      'should not interfere with stream'
+      }
     )
 
     const events = agent.customEventAggregator.events.toArray()

@@ -30,7 +30,7 @@ test('should properly create a LlmEmbedding event', (t, end) => {
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
-      const segment = api.shim.getActiveSegment()
+      const segment = agent.tracer.getSegment()
       segment.end()
       const embeddingEvent = new LlmEmbedding({
         agent,
@@ -87,7 +87,7 @@ test('should set error to true', (t, end) => {
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, () => {
     api.startSegment('fakeSegment', false, () => {
-      const segment = api.shim.getActiveSegment()
+      const segment = agent.tracer.getSegment()
       const embeddingEvent = new LlmEmbedding({
         agent,
         segment,
@@ -109,9 +109,8 @@ test('respects record_content', (t, end) => {
   }
   agent.config.ai_monitoring.record_content.enabled = false
 
-  const api = helper.getAgentApi()
   helper.runInTransaction(agent, () => {
-    const segment = api.shim.getActiveSegment()
+    const segment = agent.tracer.getSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
@@ -137,7 +136,7 @@ test('respects record_content', (t, end) => {
   const api = helper.getAgentApi()
   api.setLlmTokenCountCallback(cb)
   helper.runInTransaction(agent, () => {
-    const segment = api.shim.getActiveSegment()
+    const segment = agent.tracer.getSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
@@ -145,6 +144,26 @@ test('respects record_content', (t, end) => {
       response: res
     })
     assert.equal(embeddingEvent['response.usage.total_tokens'], 65)
+    end()
+  })
+})
+
+test('assigns total_tokens from response', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    input: 'This is my test input',
+    model: 'gpt-3.5-turbo-0613'
+  }
+
+  helper.runInTransaction(agent, () => {
+    const segment = agent.tracer.getSegment()
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
+    })
+    assert.equal(embeddingEvent['response.usage.total_tokens'], 30)
     end()
   })
 })
