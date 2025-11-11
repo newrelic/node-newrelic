@@ -9,9 +9,6 @@
           "Updated openai instrumentation to properly handle streaming when `stream_options.include_usage` is set",
           "Updated `@google/genai` to properly handle assigning token counts to LlmCompletionSummary message",
           "Updated AWS Bedrock instrumentation to properly assign token counts"
-        ],
-        "features": [
-          "Added configuration for ratio based sampling for distributed tracing"
         ]
       }
     },
