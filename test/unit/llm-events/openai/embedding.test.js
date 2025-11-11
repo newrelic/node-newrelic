@@ -101,13 +101,19 @@ test('should set error to true', (t, end) => {
   })
 })
 
-test('respects record_content', (t, end) => {
+test('respects record_content by not recording content when set to false', (t, end) => {
   const { agent } = t.nr
   const req = {
     input: 'This is my test input',
     model: 'gpt-3.5-turbo-0613'
   }
   agent.config.ai_monitoring.record_content.enabled = false
+  function cb(model, content) {
+    return 65
+  }
+
+  const api = helper.getAgentApi()
+  api.setLlmTokenCountCallback(cb)
 
   helper.runInTransaction(agent, () => {
     const segment = agent.tracer.getSegment()
@@ -118,11 +124,12 @@ test('respects record_content', (t, end) => {
       response: res
     })
     assert.equal(embeddingEvent.input, undefined)
+    assert.equal(embeddingEvent['response.usage.total_tokens'], 65)
     end()
   })
 })
 
-test('respects record_content', (t, end) => {
+test('respects record_content by recording content when true', (t, end) => {
   const { agent } = t.nr
   const req = {
     input: 'This is my test input',
@@ -144,6 +151,33 @@ test('respects record_content', (t, end) => {
       response: res
     })
     assert.equal(embeddingEvent['response.usage.total_tokens'], 65)
+    assert.equal(embeddingEvent.input, req.input)
+    end()
+  })
+})
+
+test('does not calculate tokens when no content exists', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    model: 'gpt-3.5-turbo-0613'
+  }
+
+  function cb(model, content) {
+    return 65
+  }
+
+  const api = helper.getAgentApi()
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, () => {
+    const segment = agent.tracer.getSegment()
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
+    })
+    assert.equal(embeddingEvent['response.usage.total_tokens'], undefined)
+    assert.equal(embeddingEvent.input, undefined)
     end()
   })
 })

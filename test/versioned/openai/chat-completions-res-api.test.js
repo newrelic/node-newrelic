@@ -143,7 +143,7 @@ test('responses.create', async (t) => {
       })
 
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-      assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage: true })
+      assertChatCompletionSummary({ tx, model, chatSummary })
 
       tx.end()
       end()
@@ -174,7 +174,7 @@ test('responses.create', async (t) => {
       })
 
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-      assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage: true, singleInput: true })
+      assertChatCompletionSummary({ tx, model, chatSummary, singleInput: true })
 
       tx.end()
       end()
@@ -318,8 +318,7 @@ test('responses.create', async (t) => {
       const stream = await client.responses.create({
         stream: true,
         input: content,
-        model: 'gpt-4',
-        stream_options: { include_usage: true }
+        model: 'gpt-4'
       })
 
       let chunk = {}
@@ -347,11 +346,11 @@ test('responses.create', async (t) => {
     const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const content = 'Streamed response'
+      const model = 'gpt-4-0613'
       const stream = await client.responses.create({
         stream: true,
         input: [{ role: 'user', content }, { role: 'user', content: 'What does 1 plus 1 equal?' }],
-        model: 'gpt-4',
-        stream_options: { include_usage: true }
+        model,
       })
 
       let chunk = {}
@@ -366,10 +365,12 @@ test('responses.create', async (t) => {
         tx,
         chatMsgs,
         id: 'resp_684886977be881928c9db234e14ae7d80f8976796514dff9',
-        model: 'gpt-4-0613',
+        model,
         resContent: res,
         reqContent: content
       })
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      assertChatCompletionSummary({ tx, model, chatSummary, streaming: true })
 
       tx.end()
       end()
@@ -378,23 +379,27 @@ test('responses.create', async (t) => {
 
   await t.test('should call the tokenCountCallback in streaming', (t, end) => {
     const { client, agent } = t.nr
+    const model = 'gpt-4-0613'
     const promptContent = 'Streamed response'
     const promptContent2 = 'What does 1 plus 1 equal?'
+    const promptTokens = 53
+    const completionTokens = 11
     const res = 'Test stream'
     const api = helper.getAgentApi()
+    // swap the token counts
     function cb(model, content) {
       // could be gpt-4 or gpt-4-0613
       assert.ok(model === 'gpt-4' || model === 'gpt-4-0613', 'should be gpt-4 or gpt-4-0613')
       if (content === promptContent + ' ' + promptContent2) {
-        return 53
+        return promptTokens
       } else if (content === res) {
-        return 11
+        return completionTokens
       }
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, async (tx) => {
       const stream = await client.responses.create({
-        model: 'gpt-4',
+        model,
         input: [
           { role: 'user', content: promptContent },
           { role: 'user', content: promptContent2 }
@@ -410,14 +415,15 @@ test('responses.create', async (t) => {
       const events = agent.customEventAggregator.events.toArray()
       const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
       assertChatCompletionMessages({
-        tokenUsage: true,
         tx,
         chatMsgs,
         id: 'resp_684886977be881928c9db234e14ae7d80f8976796514dff9',
-        model: 'gpt-4-0613',
+        model,
         resContent: res,
         reqContent: promptContent
       })
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      assertChatCompletionSummary({ tx, model, chatSummary, streaming: true, promptTokens, completionTokens })
 
       tx.end()
       end()

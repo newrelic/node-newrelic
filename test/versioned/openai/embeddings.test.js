@@ -122,6 +122,7 @@ test('should create an embedding message', (t, end) => {
       'response.headers.ratelimitResetTokens': '2ms',
       'response.headers.ratelimitRemainingTokens': '149994',
       'response.headers.ratelimitRemainingRequests': '197',
+      'response.usage.total_tokens': 6,
       input: 'This is an embedding test.',
       error: false
     }
