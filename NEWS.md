@@ -1,10 +1,5 @@
 ### v13.6.3 (2025-11-11)
 
-#### Features
-
-* Added configuration for ratio based sampling for distributed tracing ([#3438](https://github.com/newrelic/node-newrelic/pull/3438)) ([f281f19](https://github.com/newrelic/node-newrelic/commit/f281f19fbc40f91ae80957ef8c6b98f1df23f606))
-    * Co-authored-by: James Sumners <jsumners@newrelic.com>
-
 #### Bug fixes
 
 * Updated `@google/genai` to properly handle assigning token counts to LlmCompletionSummary message ([#3495](https://github.com/newrelic/node-newrelic/pull/3495)) ([f805d38](https://github.com/newrelic/node-newrelic/commit/f805d382ed0a898f784b053fb9855e9da97dea98))
@@ -8032,6 +8027,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
