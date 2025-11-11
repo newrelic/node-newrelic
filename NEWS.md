@@ -1,3 +1,20 @@
+### v13.6.3 (2025-11-11)
+
+#### Bug fixes
+
+* Updated `@google/genai` to properly handle assigning token counts to LlmCompletionSummary message ([#3495](https://github.com/newrelic/node-newrelic/pull/3495)) ([f805d38](https://github.com/newrelic/node-newrelic/commit/f805d382ed0a898f784b053fb9855e9da97dea98))
+* Updated AWS Bedrock instrumentation to properly assign token counts ([#3491](https://github.com/newrelic/node-newrelic/pull/3491)) ([b1687f6](https://github.com/newrelic/node-newrelic/commit/b1687f6dcb8782623a92dacee740a537ad791fdc))
+* Updated openai instrumentation to properly handle streaming when `stream_options.include_usage` is set ([#3494](https://github.com/newrelic/node-newrelic/pull/3494)) ([37c43f5](https://github.com/newrelic/node-newrelic/commit/37c43f5b448f851b749b95b032c4fb52785f2ab0))
+
+#### Code refactoring
+
+* Update `mysql` and `mysql2` instrumentation to subscribe to events emitted ([#3423](https://github.com/newrelic/node-newrelic/pull/3423)) ([2e38914](https://github.com/newrelic/node-newrelic/commit/2e38914ffd8510dc610bd629a00b61e604dca2db))
+
+#### Documentation
+
+* Cleaned up README links and outdated verbiage ([#3484](https://github.com/newrelic/node-newrelic/pull/3484)) ([51e6d7a](https://github.com/newrelic/node-newrelic/commit/51e6d7ace2fb62b907113ec01f63a8d8e4be4e34))
+* Updated compatibility report ([#3477](https://github.com/newrelic/node-newrelic/pull/3477)) ([859f27f](https://github.com/newrelic/node-newrelic/commit/859f27febe4d4afd46bf7d080a2db51ae9acc0cc))
+
 ### v13.6.2 (2025-10-29)
 
 #### Bug fixes
@@ -8010,6 +8027,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
