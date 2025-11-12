@@ -18,6 +18,8 @@ const hashes = require('#agentlib/util/hashes.js')
 const sinon = require('sinon')
 const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 
+// TODO: add tests when using TraceIdRatioBasedSampler?
+
 test('Transaction unit tests', async (t) => {
   t.beforeEach(function (ctx) {
     ctx.nr = {}

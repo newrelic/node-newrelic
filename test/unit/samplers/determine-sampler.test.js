@@ -17,7 +17,7 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
-  if (ctx.nr.agent)helper.unloadAgent(ctx.nr.agent)
+  if (ctx.nr.agent) helper.unloadAgent(ctx.nr.agent)
 })
 
 test('should throw error if agent or config is null', (t) => {
@@ -33,7 +33,7 @@ test('should choose adaptive sampler by default', (t) => {
   assert.ok(sampler instanceof AdaptiveSampler)
 })
 
-test('if trace_id_ratio_based and ratio is not configured, use adaptive sampler', (t) => {
+test('if trace_id_ratio_based is defined but ratio is not, use adaptive sampler', (t) => {
   const config = new Config({
     distributed_tracing: {
       sampler: {
