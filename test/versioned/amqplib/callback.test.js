@@ -323,7 +323,6 @@ test('amqplib callback instrumentation', async function (t) {
 
             channel.ack(msg)
             produceTx.end()
-            consumeTx.end()
             resolve()
           })
           helper.runInTransaction(agent, function (tx) {
@@ -373,7 +372,6 @@ test('amqplib callback instrumentation', async function (t) {
 
             channel.ack(msg)
             produceTx.end()
-            consumeTx.end()
             resolve()
           })
 
