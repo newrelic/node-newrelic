@@ -399,7 +399,7 @@ test('should not instrument stream when disabled', async (t) => {
 
   await helper.runInTransaction(agent, async (tx) => {
     const response = await client.send(command)
-    for await (const event of response?.stream?.options?.messageStream?.options?.inputStream) {
+    for await (const event of response?.stream) {
       // no-op iteration over the stream in order to exercise the instrumentation
       consumeStreamChunk(event)
     }
