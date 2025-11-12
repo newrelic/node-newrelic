@@ -313,6 +313,10 @@ test('amqplib promise instrumentation', async function (t) {
 
       const body = msg.content.toString('utf8')
       assert.equal(body, 'hello', 'should receive expected body')
+      assert.equal(msg.properties.headers.unit, 'test')
+      // Note the traceId and spanId are asserted below in `amqpUtils.verifyDistributedTrace`
+      const [, , , sampledFlag] = msg.properties.headers.traceparent.split('-')
+      assert.equal(sampledFlag, publishTx.sampled ? '01' : '00', 'should have correct sampled flag')
 
       channel.ack(msg)
       publishTx.end()
@@ -322,7 +326,8 @@ test('amqplib promise instrumentation', async function (t) {
     await helper.runInTransaction(agent, async function (tx) {
       publishTx = tx
       amqpUtils.verifyTransaction(agent, tx, 'consume')
-      channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+      const opts = { headers: { unit: 'test' } }
+      channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'), opts)
     })
     await promise
     assert.notStrictEqual(consumeTx, publishTx, 'should not be in original transaction')

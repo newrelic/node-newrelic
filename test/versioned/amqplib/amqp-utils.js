@@ -74,6 +74,7 @@ function verifyCAT(produceTransaction, consumeTransaction) {
 function verifyDistributedTrace(produceTransaction, consumeTransaction) {
   assert.ok(produceTransaction.isDistributedTrace, 'should mark producer as distributed')
   assert.ok(consumeTransaction.isDistributedTrace, 'should mark consumer as distributed')
+  assert.equal(produceTransaction.sampled, consumeTransaction.sampled, 'sampling should match')
 
   assert.equal(consumeTransaction.incomingCatId, null, 'should not set old CAT properties')
 
