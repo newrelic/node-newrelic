@@ -11,6 +11,7 @@ const Config = require('#agentlib/config/index.js')
 const AdaptiveSampler = require('#agentlib/samplers/adaptive-sampler.js')
 const AlwaysOnSampler = require('#agentlib/samplers/always-on-sampler.js')
 const AlwaysOffSampler = require('#agentlib/samplers/always-off-sampler.js')
+const TraceIdRatioBasedSampler = require('#agentlib/samplers/ratio-based-sampler.js')
 const determineSampler = require('#agentlib/samplers/determine-sampler.js')
 
 test.beforeEach((ctx) => {
@@ -175,4 +176,38 @@ test('agent.sampler.remoteParentNotSampled is determined correctly', async (t) =
     const sampler = t.nr.agent.sampler.remoteParentNotSampled
     assert.ok(sampler instanceof AlwaysOffSampler)
   })
+})
+
+test('if trace_id_ratio_based is defined but ratio is not, use adaptive sampler', (t) => {
+  const config = new Config({
+    distributed_tracing: {
+      sampler: {
+        root: {
+          trace_id_ratio_based: {
+            // ratio explicitly not defined
+          }
+        }
+      }
+    }
+  })
+  t.nr.agent = helper.loadMockedAgent(config)
+  const sampler = t.nr.agent.transactionSampler
+  assert.ok(sampler instanceof AdaptiveSampler)
+})
+
+test('should use traceidratiobasedsampler if trace_id_ratio_based and ratio is defined', (t) => {
+  const config = new Config({
+    distributed_tracing: {
+      sampler: {
+        root: {
+          trace_id_ratio_based: {
+            ratio: 0.3
+          }
+        }
+      }
+    }
+  })
+  t.nr.agent = helper.loadMockedAgent(config)
+  const sampler = t.nr.agent.transactionSampler
+  assert.ok(sampler instanceof TraceIdRatioBasedSampler)
 })
