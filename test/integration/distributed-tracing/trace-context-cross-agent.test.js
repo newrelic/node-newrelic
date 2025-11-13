@@ -268,7 +268,7 @@ async function runTestCase(testCase, parentTest) {
     testExpectedFixtureKeys(testCase, [
       'account_id',
       'expected_metrics',
-      'force_sampled_true',
+      'force_adaptive_sampled_true',
       'inbound_headers',
       'intrinsics',
       'outbound_payloads',
@@ -279,7 +279,13 @@ async function runTestCase(testCase, parentTest) {
       'trusted_account_key',
       'web_transaction',
       'comment',
-      'transaction_events_enabled'
+      'transaction_events_enabled',
+      // Sampling
+      'remote_parent_sampled',
+      'remote_parent_not_sampled',
+      'root',
+      'ratio',
+      'expected_priority_between'
     ])
 
     if (testCase.outbound_payloads) {
@@ -356,7 +362,7 @@ async function runTestCase(testCase, parentTest) {
 
       // monkey patch this transaction object
       // to force sampled to be true.
-      if (testCase.force_sampled_true) {
+      if (testCase.force_adaptive_sampled_true) {
         transaction.agent.transactionSampler.shouldSample = function stubShouldSample() {
           return true
         }
