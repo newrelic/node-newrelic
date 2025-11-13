@@ -1,3 +1,15 @@
+### v13.6.4 (2025-11-13)
+
+#### Bug fixes
+
+* Updated `MessageConsumerSubscriber` to end transaction created for a given message consumption ([#3503](https://github.com/newrelic/node-newrelic/pull/3503)) ([ba30818](https://github.com/newrelic/node-newrelic/commit/ba308184e5cb4f916aec53963cce0caa9149efbe))
+* Updated MessageProducerSubscriber to properly set the sampled flag on traceparent ([#3505](https://github.com/newrelic/node-newrelic/pull/3505)) ([0b1a9a8](https://github.com/newrelic/node-newrelic/commit/0b1a9a80b81e0f4388d421f17176eab386d04cbc))
+* Updated the bedrock middleware to be registered with a `high` priority to ensure payload is properly deserialized ([#3500](https://github.com/newrelic/node-newrelic/pull/3500)) ([63e531b](https://github.com/newrelic/node-newrelic/commit/63e531bf50d600d92556b3785725dd38145f3491))
+
+#### Tests
+
+* pin `@aws-sdk/client-bedrock-runtime` tests ([#3499](https://github.com/newrelic/node-newrelic/pull/3499)) ([c6b0080](https://github.com/newrelic/node-newrelic/commit/c6b00803fd58695fd0244a37e2969a7d2b750c14))
+
 ### v13.6.3 (2025-11-11)
 
 #### Bug fixes
