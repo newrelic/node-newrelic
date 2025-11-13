@@ -615,8 +615,9 @@ test(
     const { agent, subscriber } = t.nr
     setupDTConfig(subscriber)
     helper.runInTransaction(agent, function (tx) {
-      const headers = {}
       const ctx = agent.tracer.getContext()
+      sinon.stub(ctx.transaction, 'isSampled').returns(false)
+      const headers = {}
       subscriber.insertDTHeaders({ ctx, headers })
       assert.equal(headers.traceparent, `00-${tx.traceId}-${ctx?.segment.id}-00`)
       end()
@@ -630,9 +631,9 @@ test(
     const { agent, subscriber } = t.nr
     setupDTConfig(subscriber)
     helper.runInTransaction(agent, function (tx) {
-      tx.sampled = true
-      const headers = {}
       const ctx = agent.tracer.getContext()
+      sinon.stub(ctx.transaction, 'isSampled').returns(true)
+      const headers = {}
       subscriber.insertDTHeaders({ ctx, headers })
       assert.equal(headers.traceparent, `00-${tx.traceId}-${ctx?.segment.id}-01`)
       end()

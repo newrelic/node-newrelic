@@ -369,6 +369,10 @@ test('amqplib callback instrumentation', async function (t) {
 
             const body = msg.content.toString('utf8')
             assert.equal(body, 'hello', 'should receive expected body')
+            assert.equal(msg.properties.headers.unit, 'test')
+            // Note the traceId and spanId are asserted below in `amqpUtils.verifyDistributedTrace`
+            const [, , , sampledFlag] = msg.properties.headers.traceparent.split('-')
+            assert.equal(sampledFlag, produceTx.sampled ? '01' : '00', 'should have correct sampled flag')
 
             channel.ack(msg)
             produceTx.end()
@@ -380,7 +384,8 @@ test('amqplib callback instrumentation', async function (t) {
             assert.ok(!err, 'should not error subscribing consumer')
             amqpUtils.verifyTransaction(agent, tx, 'consume')
 
-            channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+            const opts = { headers: { unit: 'test' } }
+            channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'), opts)
           })
         })
       })
