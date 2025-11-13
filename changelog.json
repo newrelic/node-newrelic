@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.6.4",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated MessageProducerSubscriber to properly set the sampled flag on traceparent",
+          "Updated `MessageConsumerSubscriber` to end transaction created for a given message consumption",
+          "Updated the bedrock middleware to be registered with a `high` priority to ensure payload is properly deserialized"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "13.6.3",
       "changes": {
         "security": [],
