@@ -328,6 +328,146 @@ test('should bind callback and invoke the asyncStart/error/asyncError events whe
   await plan.completed
 })
 
+test('should bind callback and invoke the asyncStart/error/asyncError events with right context when callback succeeds', async (t) => {
+  const plan = tspl(t, { plan: 10 })
+  const { agent, subscriber } = t.nr
+  const name = 'test-segment'
+  const expectedResult = 'test-result'
+  subscriber.callback = -1
+  subscriber.error = (data) => {
+    plan.fail('should not call error when cb succeeds')
+  }
+
+  subscriber.asyncStart = (data) => {
+    plan.equal(data.callback, true)
+    plan.ok(!data.error)
+    plan.equal(data.result, expectedResult)
+  }
+  subscriber.asyncEnd = (data) => {
+    plan.equal(data.callback, true)
+    plan.ok(!data.error)
+    plan.equal(data.cbResult, undefined)
+    plan.equal(data.result, expectedResult)
+  }
+  subscriber.enable()
+  subscriber.events = ['asyncStart', 'asyncEnd', 'error']
+  subscriber.subscribe()
+  subscriber.handler = function handler(data, ctx) {
+    plan.equal(data.name, name)
+    return subscriber.createSegment({
+      name: data?.name,
+      ctx
+    })
+  }
+
+  function testCb(err, result) {
+    plan.equal(result, expectedResult)
+    plan.equal(err, null)
+  }
+
+  helper.runInTransaction(agent, () => {
+    const event = { name, arguments: [testCb] }
+    subscriber.channel.start.runStores(event, () => {
+      event.arguments[0](null, expectedResult)
+    })
+  })
+
+  await plan.completed
+})
+
+test('should bind callback and invoke the asyncStart/error/asyncError events with right context when callback returns a promise', async (t) => {
+  const plan = tspl(t, { plan: 10 })
+  const { agent, subscriber } = t.nr
+  const name = 'test-segment'
+  const expectedResult = 'test-result'
+  subscriber.callback = -1
+  subscriber.error = (data) => {
+    plan.fail('should not call error when cb succeeds')
+  }
+
+  subscriber.asyncStart = (data) => {
+    plan.equal(data.callback, true)
+    plan.ok(!data.error)
+    plan.equal(data.result, expectedResult)
+  }
+  subscriber.asyncEnd = (data) => {
+    plan.equal(data.callback, true)
+    plan.ok(!data.error)
+    plan.ok(data.cbResult instanceof Promise)
+    plan.equal(data.result, expectedResult)
+  }
+  subscriber.enable()
+  subscriber.events = ['asyncStart', 'asyncEnd', 'error']
+  subscriber.subscribe()
+  subscriber.handler = function handler(data, ctx) {
+    plan.equal(data.name, name)
+    return subscriber.createSegment({
+      name: data?.name,
+      ctx
+    })
+  }
+
+  async function testCb(err, result) {
+    plan.equal(result, expectedResult)
+    plan.equal(err, null)
+  }
+
+  helper.runInTransaction(agent, () => {
+    const event = { name, arguments: [testCb] }
+    subscriber.channel.start.runStores(event, () => {
+      event.arguments[0](null, expectedResult)
+    })
+  })
+
+  await plan.completed
+})
+
+test('should bind callback and invoke the asyncStart/error/asyncError events with right context when callback fails', async (t) => {
+  const plan = tspl(t, { plan: 10 })
+  const { agent, subscriber } = t.nr
+  const name = 'test-segment'
+  const expectedErr = new Error('cb failed')
+  subscriber.callback = -1
+  subscriber.error = (data) => {
+    plan.equal(data.callback, true)
+    plan.deepEqual(data.error, expectedErr)
+  }
+
+  subscriber.asyncStart = (data) => {
+    plan.equal(data.callback, true)
+    plan.deepEqual(data.error, expectedErr)
+  }
+  subscriber.asyncEnd = (data) => {
+    plan.equal(data.callback, true)
+    plan.deepEqual(data.error, expectedErr)
+    plan.equal(data.cbResult, undefined)
+  }
+  subscriber.enable()
+  subscriber.events = ['asyncStart', 'asyncEnd', 'error']
+  subscriber.subscribe()
+  subscriber.handler = function handler(data, ctx) {
+    plan.equal(data.name, name)
+    return subscriber.createSegment({
+      name: data?.name,
+      ctx
+    })
+  }
+
+  function testCb(err, result) {
+    plan.deepEqual(err, expectedErr)
+    plan.equal(result, undefined)
+  }
+
+  helper.runInTransaction(agent, () => {
+    const event = { name, arguments: [testCb] }
+    subscriber.channel.start.runStores(event, () => {
+      event.arguments[0](expectedErr)
+    })
+  })
+
+  await plan.completed
+})
+
 test('should bind callback and invoke asyncStart/asyncEnd events and propagateContext', async (t) => {
   const plan = tspl(t, { plan: 6 })
   const { agent, subscriber } = t.nr
