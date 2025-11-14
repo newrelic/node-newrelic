@@ -13,18 +13,7 @@ const { removeMatchedModules } = require('../../lib/cache-buster')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const { version } = require('amqplib/package.json')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
-
-/*
-TODO:
-
-- promise API
-- callback API
-
-consumer
-- off by default for rum
-- value of the attribute is limited to 255 bytes
-
- */
+const PROMISE_WAIT = 100
 
 test('amqplib callback instrumentation', async function (t) {
   t.beforeEach(async function (ctx) {
@@ -399,7 +388,7 @@ test('amqplib callback instrumentation', async function (t) {
   })
 
   await t.test('consume out of transaction', function (t, end) {
-    const { agent, api, channel } = t.nr
+    const { agent, channel } = t.nr
     const exchange = amqpUtils.DIRECT_EXCHANGE
     let queue = null
 
@@ -421,17 +410,12 @@ test('amqplib callback instrumentation', async function (t) {
           channel.consume(
             queue,
             function (msg) {
-              const tx = api.getTransaction()
               assert.ok(msg, 'should receive a message')
 
               const body = msg.content.toString('utf8')
               assert.equal(body, 'hello', 'should receive expected body')
 
               channel.ack(msg)
-
-              setImmediate(function () {
-                tx.end()
-              })
             },
             null,
             function (err) {
@@ -472,14 +456,108 @@ test('amqplib callback instrumentation', async function (t) {
           channel.consume(
             queue,
             function (msg) {
-              const tx = api.getTransaction()
               api.setTransactionName('foobar')
 
               channel.ack(msg)
+            },
+            null,
+            function (err) {
+              assert.ok(!err, 'should not error subscribing consumer')
 
-              setImmediate(function () {
-                tx.end()
-              })
+              channel.publish(amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key', Buffer.from('hello'))
+            }
+          )
+        })
+      })
+    })
+  })
+
+  await t.test('consume async handler', function (t, end) {
+    const { agent, channel } = t.nr
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
+
+    agent.on('transactionFinished', function (tx) {
+      amqpUtils.verifyConsumeTransaction(tx, exchange, queue, 'consume-tx-key')
+      assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
+      end()
+    })
+
+    channel.assertExchange(exchange, 'direct', null, function (err) {
+      assert.ok(!err, 'should not error asserting exchange')
+
+      channel.assertQueue('', { exclusive: true }, function (err, res) {
+        assert.ok(!err, 'should not error asserting queue')
+        queue = res.queue
+
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function (err) {
+          assert.ok(!err, 'should not error binding queue')
+
+          channel.consume(
+            queue,
+            async function (msg) {
+              assert.ok(msg, 'should receive a message')
+
+              const body = msg.content.toString('utf8')
+              assert.equal(body, 'hello', 'should receive expected body')
+
+              await new Promise((resolve) => setTimeout(resolve, PROMISE_WAIT))
+              channel.ack(msg)
+            },
+            null,
+            function (err) {
+              assert.ok(!err, 'should not error subscribing consumer')
+
+              channel.publish(amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key', Buffer.from('hello'))
+            }
+          )
+        })
+      })
+    })
+  })
+
+  await t.test('consume async handler that rejects', function (t, end) {
+    const { agent, channel } = t.nr
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
+
+    agent.on('transactionFinished', function (tx) {
+      amqpUtils.verifyConsumeTransaction(tx, exchange, queue, 'consume-tx-key')
+      assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
+      end()
+    })
+
+    channel.assertExchange(exchange, 'direct', null, function (err) {
+      assert.ok(!err, 'should not error asserting exchange')
+
+      channel.assertQueue('', { exclusive: true }, function (err, res) {
+        assert.ok(!err, 'should not error asserting queue')
+        queue = res.queue
+
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function (err) {
+          assert.ok(!err, 'should not error binding queue')
+
+          channel.consume(
+            queue,
+            async function (msg) {
+              assert.ok(msg, 'should receive a message')
+
+              const body = msg.content.toString('utf8')
+              assert.equal(body, 'hello', 'should receive expected body')
+
+              try {
+                const err = new Error('async handler failure')
+                await new Promise((_resolve, reject) => {
+                  setTimeout(() => {
+                    reject(err)
+                  }, PROMISE_WAIT)
+                })
+                assert.fail('should not resolve successfully')
+              } catch (err) {
+                assert.equal(err.message, 'async handler failure')
+              } finally {
+                channel.ack(msg)
+              }
             },
             null,
             function (err) {
