@@ -224,6 +224,52 @@ test('Error handling tests', async (t) => {
     })
     await plan.completed
   })
+
+  await t.test('does not report error when the argument to next is `route`', function (t, end) {
+    const { app, express } = t.nr
+
+    const router1 = express.Router()
+    function bail(req, res, next) {
+      next('route')
+    }
+    router1.get('/test', bail, function (req, res, next) {
+      res.send('fail')
+    })
+
+    app.use(router1)
+    app.get('/test', function (req, res) {
+      res.send('done')
+    })
+
+    runTest(t, function (errors, statuscode) {
+      assert.equal(errors.length, 0)
+      assert.equal(statuscode, 200)
+      end()
+    })
+  })
+
+  await t.test('does not report error when the argument to next is `router`', function (t, end) {
+    const { app, express } = t.nr
+
+    const router1 = express.Router()
+    function bail(req, res, next) {
+      next('router')
+    }
+    router1.get('/test', bail, function (req, res, next) {
+      res.end('fail')
+    })
+
+    app.use(router1)
+    app.get('/test', function (req, res) {
+      res.end('done')
+    })
+
+    runTest(t, function (errors, statuscode) {
+      assert.equal(errors.length, 0)
+      assert.equal(statuscode, 200)
+      end()
+    })
+  })
 })
 
 function runTest(t, callback) {
