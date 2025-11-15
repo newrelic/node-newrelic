@@ -59,6 +59,12 @@ test.beforeEach((ctx) => {
   ctx.nr.onComplete = (params) => {
     assert.deepStrictEqual(params, ctx.nr.passThroughParams)
   }
+  ctx.nr.metrics = {
+    'amazon-bedrock-invocationMetrics': {
+      inputTokenCount: 10,
+      outputTokenCount: 20
+    }
+  }
 
   ctx.nr.chunks = [{ foo: 'foo' }]
 
@@ -94,7 +100,9 @@ test('handles claude streams', async (t) => {
   assert.deepStrictEqual(handler.response, {
     response: {
       headers: {
-        'x-amzn-requestid': 'aws-req-1'
+        'x-amzn-requestid': 'aws-req-1',
+        'x-amzn-bedrock-input-token-count': 10,
+        'x-amzn-bedrock-output-token-count': 20
       },
       statusCode: 200
     },
@@ -132,7 +140,9 @@ test('handles region specific claude streams', async (t) => {
   assert.deepStrictEqual(handler.response, {
     response: {
       headers: {
-        'x-amzn-requestid': 'aws-req-1'
+        'x-amzn-requestid': 'aws-req-1',
+        'x-amzn-bedrock-input-token-count': 10,
+        'x-amzn-bedrock-output-token-count': 20
       },
       statusCode: 200
     },
@@ -170,7 +180,7 @@ test('handles claude3streams', async (t) => {
   }
   const foundBody = JSON.parse(new TextDecoder().decode(handler.response.output.body))
   assert.deepStrictEqual(foundBody, {
-    completions: ['42'],
+    completions: '42',
     stop_reason: 'done',
     type: 'message_stop'
   })
@@ -204,7 +214,7 @@ test('handles region specific claude3streams', async (t) => {
   }
   const foundBody = JSON.parse(new TextDecoder().decode(handler.response.output.body))
   assert.deepStrictEqual(foundBody, {
-    completions: ['42'],
+    completions: '42',
     stop_reason: 'done',
     type: 'message_stop'
   })
@@ -238,7 +248,9 @@ test('handles cohere streams', async (t) => {
   assert.deepStrictEqual(handler.response, {
     response: {
       headers: {
-        'x-amzn-requestid': 'aws-req-1'
+        'x-amzn-requestid': 'aws-req-1',
+        'x-amzn-bedrock-input-token-count': 10,
+        'x-amzn-bedrock-output-token-count': 20
       },
       statusCode: 200
     },
@@ -288,7 +300,9 @@ test('handles cohere embedding streams', async (t) => {
   assert.deepStrictEqual(handler.response, {
     response: {
       headers: {
-        'x-amzn-requestid': 'aws-req-1'
+        'x-amzn-requestid': 'aws-req-1',
+        'x-amzn-bedrock-input-token-count': 10,
+        'x-amzn-bedrock-output-token-count': 20
       },
       statusCode: 200
     },
@@ -333,7 +347,9 @@ test('handles llama streams', async (t) => {
   assert.deepStrictEqual(handler.response, {
     response: {
       headers: {
-        'x-amzn-requestid': 'aws-req-1'
+        'x-amzn-requestid': 'aws-req-1',
+        'x-amzn-bedrock-input-token-count': 10,
+        'x-amzn-bedrock-output-token-count': 20
       },
       statusCode: 200
     },
@@ -371,7 +387,9 @@ test('handles titan streams', async (t) => {
   assert.deepStrictEqual(handler.response, {
     response: {
       headers: {
-        'x-amzn-requestid': 'aws-req-1'
+        'x-amzn-requestid': 'aws-req-1',
+        'x-amzn-bedrock-input-token-count': 10,
+        'x-amzn-bedrock-output-token-count': 20
       },
       statusCode: 200
     },
@@ -379,8 +397,7 @@ test('handles titan streams', async (t) => {
       body: new TextEncoder().encode(
         JSON.stringify({
           results: [
-            { outputText: '1', completionReason: null },
-            { outputText: '2', completionReason: 'done' }
+            { outputText: '12', completionReason: 'done' }
           ]
         })
       )
@@ -398,7 +415,7 @@ test('handles titan streams', async (t) => {
     })
   })
   const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
-  assert.equal(br.completions.length, 2)
+  assert.equal(br.completions.length, 1)
   assert.equal(br.finishReason, 'done')
   assert.equal(br.requestId, 'aws-req-1')
   assert.equal(br.statusCode, 200)

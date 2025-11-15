@@ -21,6 +21,8 @@ const semver = require('semver')
 const crypto = require('crypto')
 const util = require('util')
 const cp = require('child_process')
+const fs = require('node:fs')
+const path = require('node:path')
 
 let _agent = null
 let _agentApi = null
@@ -73,7 +75,7 @@ helper.getTracer = () => _agent?.tracer
  *                      See agent.js for details, but so far this includes
  *                      passing in a config object and the connection stub
  *                      created in this function.
- * @param setState
+ * @param {boolean} setState defaults to true
  * @returns {Agent} Agent with a stubbed configuration.
  */
 helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
@@ -128,12 +130,10 @@ helper.getAgentApi = function getAgentApi() {
  * Generate the URLs used to talk to the collector, which have a very
  * specific format. Useful with nock.
  *
- * @param {String} method The method being invoked on the collector.
- * @param number runID  Agent run ID (optional).
- *
- * @param runID
- * @param protocolVersion
- * @returns {String} URL path for the collector.
+ * @param {string} method The method being invoked on the collector.
+ * @param {number} runID  Agent run ID (optional).
+ * @param {number} [protocolVersion] defaults to 17
+ * @returns {string} URL path for the collector.
  */
 helper.generateCollectorPath = function generateCollectorPath(method, runID, protocolVersion) {
   protocolVersion = protocolVersion || 17
@@ -179,7 +179,7 @@ helper.generateAllPaths = (runId) => {
  * @param {boolean} [setState]
  *  Initializes agent's state to 'started', enabling data collection.
  *
- * @param shimmer
+ * @param {object} shimmer shimmer instance; defaults to #agentlib/shimmer
  * @returns {Agent} Agent with a stubbed configuration.
  */
 helper.instrumentMockedAgent = (conf, setState = true, shimmer = require('../../lib/shimmer')) => {
@@ -197,8 +197,7 @@ helper.instrumentMockedAgent = (conf, setState = true, shimmer = require('../../
 /**
  * Helper to check if security agent should be loaded
  *
- * @param {Agent} Agent with a stubbed configuration
- * @param agent
+ * @param {Agent} agent with a stubbed configuration
  * @returns {boolean}
  */
 helper.isSecurityAgentEnabled = function isSecurityAgentEnabled(agent) {
@@ -209,8 +208,7 @@ helper.isSecurityAgentEnabled = function isSecurityAgentEnabled(agent) {
  * Checks if security agent _should_ be loaded
  * and requires it and calls start
  *
- * @param {Agent} Agent with a stubbed configuration
- * @param agent
+ * @param {Agent} agent with a stubbed configuration
  */
 helper.maybeLoadSecurityAgent = function maybeLoadSecurityAgent(agent) {
   if (helper.isSecurityAgentEnabled(agent)) {
@@ -224,8 +222,7 @@ helper.maybeLoadSecurityAgent = function maybeLoadSecurityAgent(agent) {
  * Checks if security agent is loaded and deletes all
  * files in its require cache so it can be re-loaded
  *
- * @param {Agent} Agent with a stubbed configuration
- * @param agent
+ * @param {Agent} agent with a stubbed configuration
  */
 helper.maybeUnloadSecurityAgent = function maybeUnloadSecurityAgent(agent) {
   if (helper.isSecurityAgentEnabled(agent)) {
@@ -237,9 +234,8 @@ helper.maybeUnloadSecurityAgent = function maybeUnloadSecurityAgent(agent) {
  * Shut down the agent, ensuring that any instrumentation scaffolding
  * is shut down.
  *
- * @param Agent agent The agent to shut down.
- * @param agent
- * @param shimmer
+ * @param {Agent} agent The agent to shut down.
+ * @param {object} [shimmer] The shimmer to use.
  */
 helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
   agent.emit('unload')
@@ -310,9 +306,9 @@ helper.runInTransaction = (agent, type, callback) => {
 /**
  * Proxy for runInTransaction that names the transaction that the
  * callback is executed in
- * @param agent
- * @param type
- * @param callback
+ * @param {Agent} agent instance
+ * @param {string} type the class of the transaction
+ * @param {Function} callback function to be called within the transaction
  */
 helper.runInNamedTransaction = (agent, type, callback) => {
   if (!callback && typeof type === 'function') {
@@ -336,10 +332,8 @@ helper.runInSegment = (agent, name, callback) => {
 /**
  * Select Redis DB index and flush entries in it.
  *
- * @param {redis} [redis]
- * @param client
+ * @param {object} client Redis client
  * @param {number} dbIndex
- * @param {function} callback
  *  The operations to be performed while the server is running.
  */
 helper.flushRedisDb = (client, dbIndex) => new Promise((resolve, reject) => {
@@ -414,7 +408,7 @@ helper.startServerWithRandomPortRetry = (server, maxAttempts = 5) => {
  * request is made after instrumentation is registered
  * we want to make sure we get the original library and not
  * our instrumented one
- * @param ca
+ * @param {object} ca certificate authority
  */
 helper.getRequestLib = function getRequestLib(ca) {
   const request = ca ? https.request : http.request
@@ -533,11 +527,10 @@ helper.getMetrics = function getMetrics(agent) {
  * It also verifies it does not throw an error
  *
  * @param {object} shim shim lib
- * @param {Function} original callback
- * @param cb
+ * @param {Function} cb original callback
  */
 helper.checkWrappedCb = function checkWrappedCb(shim, cb) {
-  // The wrapped calledback is always the last argument
+  // The wrapped callback is always the last argument
   const wrappedCB = arguments[arguments.length - 1]
   this.not(wrappedCB, cb)
   this.ok(shim.isWrapped(wrappedCB))
@@ -600,7 +593,7 @@ helper.isSupportedVersion = function isSupportedVersion(version) {
 /**
  * Gets a shim instance for a package.
  * @param {object} pkg exported obj that is instrumented
- * @returns The existing or newly created shim.
+ * @returns {Shim} The existing or newly created shim.
  */
 helper.getShim = function getShim(pkg) {
   return pkg?.[symbols.shim]
@@ -626,4 +619,29 @@ helper.execSync = function execSync({ cwd, script }) {
   } catch (err) {
     throw err.stderr
   }
+}
+
+/**
+ * Used to get version from package.json.
+ * Some packages define exports and omit `package.json` so `require` or `import`
+ * will fail when trying to read package.json. This instead just reads file and parses to json
+ *
+ * @param {string} dirname value of `__dirname` in caller
+ * @param {string} pkg name of package
+ * @returns {string} package version
+ */
+helper.readPackageVersion = function readPackageVersion(dirname, pkg) {
+  const parsedPath = path.join(dirname, 'node_modules', pkg, 'package.json')
+  const packageFile = fs.readFileSync(parsedPath)
+  const { version } = JSON.parse(packageFile)
+  return version
+}
+
+/**
+ * Creates a random string prefixed with the provided value
+ * @param {string} prefix value to prefix random string
+ * @returns {string} random string
+ */
+helper.randomString = function randomString(prefix = '') {
+  return `${prefix}${crypto.randomBytes(8).toString('hex')}`
 }

@@ -11,6 +11,8 @@ const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const promiseResolvers = require('../../lib/promise-resolvers')
+const { version } = require('amqplib/package.json')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 /*
 TODO:
@@ -69,6 +71,11 @@ test('amqplib callback instrumentation', async function (t) {
     await promise
   })
 
+  await t.test('should log tracking metrics', function(t) {
+    const { agent } = t.nr
+    assertPackageMetrics({ agent, pkg: 'amqplib', version })
+  })
+
   await t.test('connect in a transaction', function (t, end) {
     const { agent, amqplib } = t.nr
     helper.runInTransaction(agent, function (tx) {
@@ -105,7 +112,7 @@ test('amqplib callback instrumentation', async function (t) {
     const exchange = amqpUtils.FANOUT_EXCHANGE
 
     agent.on('transactionFinished', function (tx) {
-      amqpUtils.verifyProduce(tx, exchange)
+      amqpUtils.verifyProduce(tx, exchange, null, true)
       end()
     })
 
@@ -138,7 +145,7 @@ test('amqplib callback instrumentation', async function (t) {
     const exchange = amqpUtils.DIRECT_EXCHANGE
 
     agent.on('transactionFinished', function (tx) {
-      amqpUtils.verifyProduce(tx, exchange, 'key1')
+      amqpUtils.verifyProduce(tx, exchange, 'key1', true)
       end()
     })
 
@@ -171,7 +178,7 @@ test('amqplib callback instrumentation', async function (t) {
     let queueName = null
 
     agent.on('transactionFinished', function (tx) {
-      amqpUtils.verifyPurge(tx)
+      amqpUtils.verifyPurge(tx, true)
       end()
     })
 
@@ -316,7 +323,6 @@ test('amqplib callback instrumentation', async function (t) {
 
             channel.ack(msg)
             produceTx.end()
-            consumeTx.end()
             resolve()
           })
           helper.runInTransaction(agent, function (tx) {
@@ -363,10 +369,13 @@ test('amqplib callback instrumentation', async function (t) {
 
             const body = msg.content.toString('utf8')
             assert.equal(body, 'hello', 'should receive expected body')
+            assert.equal(msg.properties.headers.unit, 'test')
+            // Note the traceId and spanId are asserted below in `amqpUtils.verifyDistributedTrace`
+            const [, , , sampledFlag] = msg.properties.headers.traceparent.split('-')
+            assert.equal(sampledFlag, produceTx.sampled ? '01' : '00', 'should have correct sampled flag')
 
             channel.ack(msg)
             produceTx.end()
-            consumeTx.end()
             resolve()
           })
 
@@ -375,7 +384,8 @@ test('amqplib callback instrumentation', async function (t) {
             assert.ok(!err, 'should not error subscribing consumer')
             amqpUtils.verifyTransaction(agent, tx, 'consume')
 
-            channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+            const opts = { headers: { unit: 'test' } }
+            channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'), opts)
           })
         })
       })

@@ -17,12 +17,11 @@ const { STATEMENT_PREFIX } = ESM
  * The response from the methods in this file differ between versions
  * This helper decides which pieces to assert
  *
- * @param {Object} params
- * @param {Object} params.data result from callback used to assert
- * @param {Number} params.count, optional
+ * @param {object} params params object
+ * @param {object} params.data result from callback used to assert
+ * @param {number} [params.count] optional count
  * @param {string} params.keyPrefix prefix where the count exists
- * @param {Object} params.extraValues extra fields to assert on >=4.0.0 version of module
- * @param params.count
+ * @param {object} params.extraValues extra fields to assert on >=4.0.0 version of module
  */
 function assertExpectedResult({ data, count, keyPrefix, extraValues }) {
   const expectedResult = { acknowledged: true, ...extraValues }

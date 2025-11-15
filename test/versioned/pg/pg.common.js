@@ -13,6 +13,7 @@ const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 const findSegment = require('../../lib/metrics_helper').findSegment
 const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 function runCommand(client, cmd) {
   return new Promise((resolve, reject) => {
@@ -43,7 +44,7 @@ module.exports = function runTests(name, clientFactory) {
   /**
    * Deletion of testing table if already exists,
    * then recreation of a testing table
-   * @param pg
+   * @param {*} pg Postgres
    */
   async function postgresSetup(pg) {
     const setupClient = new pg.Client(CON_OBJ)
@@ -233,6 +234,12 @@ module.exports = function runTests(name, clientFactory) {
       delete require.cache[pgName]
     })
 
+    await t.test('should log tracking metrics', function(t) {
+      const { agent } = t.nr
+      const version = helper.readPackageVersion(__dirname, 'pg')
+      assertPackageMetrics({ agent, pkg: 'pg', version })
+    })
+
     await t.test('simple query with prepared statement', (t, end) => {
       const { agent, pg } = t.nr
       const client = new pg.Client(CON_OBJ)
@@ -268,8 +275,12 @@ module.exports = function runTests(name, clientFactory) {
               assert.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
-              verify(assert, transaction)
-              end()
+              try {
+                verify(assert, transaction)
+                end()
+              } catch (err) {
+                end(err)
+              }
             })
           })
         })
@@ -352,7 +363,7 @@ module.exports = function runTests(name, clientFactory) {
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
             assert.ok(
               metrics.total > 2.0,
-              'Submittable style Query pg_sleep of 2 seconds should result in > 2 seßc timing'
+              'Submittable style Query pg_sleep of 2 seconds should result in > 2 sec timing'
             )
 
             end()

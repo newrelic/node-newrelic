@@ -5,7 +5,7 @@
 
 This package instruments your application for performance monitoring with [New Relic](https://newrelic.com).
 
-In order to take full advantage of this package, make sure you have a [New Relic account](https://newrelic.com) before starting. Available features, such as slow transaction traces, will vary [based on account level](https://newrelic.com/application-monitoring/features).
+In order to take full advantage of this package, make sure you have a [New Relic account](https://newrelic.com) before starting. 
 
 As with any instrumentation tool, please test before using in production.
 
@@ -15,7 +15,7 @@ To use New Relic's Node.js agent entails these three steps, which are described 
 
 - Install [the `newrelic` package](https://www.npmjs.com/package/newrelic)
 - Create a base configuration file
-- Require the agent in your program
+- Load the agent in your program
 
 1. To install the agent for performance monitoring, use your favorite npm-based package manager and install the `newrelic` package into your application:
 
@@ -95,7 +95,7 @@ node -r newrelic your-program.js
 
 If your application is written with `import` and `export` statements in javascript, you are using [ES Modules](https://nodejs.org/api/esm.html#modules-ecmascript-modules) and must bootstrap the agent in a different way.
 
-The New Relic Node.js agent includes ***_experimental_*** support for ES Modules. The agent is reliant on an experimental feature in Node.js in order to appropriately register instrumentation. Until the Node.js API for [ES Module Loaders](https://nodejs.org/api/esm.html#loaders) is stable, breaking changes may occur when updating Node.js. Lastly, the ESM loader does not follow the same [supported Node.js versions](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent#system) as the agent. The minimum supported version of Node.js is `v16.12.0`.
+The New Relic Node.js agent includes support for ES Modules. 
 
 ### Setup
 
@@ -237,10 +237,9 @@ If the issue has been confirmed as a bug or is a feature request, please file a 
 **Support Channels**
 
 * [New Relic Documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/introduction-new-relic-nodejs): Comprehensive guidance for using our platform
-* [New Relic Community](https://forum.newrelic.com/): The best place to engage in troubleshooting questions
-* [New Relic Developer](https://developer.newrelic.com/): Resources for building a custom observability applications
+* [New Relic Community](https://support.newrelic.com/): The best place to engage in troubleshooting questions
+* [New Relic Technical Support Offerings](https://docs.newrelic.com/docs/licenses/license-information/general-usage-licenses/support-plan): Support offerings.
 * [New Relic University](https://learn.newrelic.com/): A range of online training for New Relic users of every level
-* [New Relic Technical Support](https://support.newrelic.com/) 24/7/365 ticketed support. Read more about our [Technical Support Offerings](https://docs.newrelic.com/docs/licenses/license-information/general-usage-licenses/support-plan).
 
 
 ## Privacy
@@ -249,10 +248,6 @@ At New Relic we take your privacy and the security of your information seriously
 We define “Personal Data” as any information relating to an identified or identifiable individual, including, for example, your name, phone number, post code or zip code, Device ID, IP address and email address.
 
 Please review [New Relic’s General Data Privacy Notice](https://newrelic.com/termsandconditions/privacy) for more information.
-
-## Roadmap
-
-See our [roadmap](./ROADMAP_Node.md), to learn more about our product vision, understand our plans, and provide us valuable feedback.
 
 ## Contribute
 
@@ -268,7 +263,7 @@ If you believe you have found a security vulnerability in this project or any of
 
 If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
 
-To [all contributors](https://github.com/newrelic/node-newrelic/graphs/contributors), we thank you!  Without your contribution, this project would not be what it is today.  We also host a community project page dedicated to [New Relic Node Agent](https://opensource.newrelic.com/projects/newrelic/node-newrelic).
+To [all contributors](https://github.com/newrelic/node-newrelic/graphs/contributors), we thank you!  Without your contribution, this project would not be what it is today.
 
 ## License
 

@@ -7,11 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const fs = require('node:fs')
-const path = require('node:path')
-
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
 const GoogleGenAIMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
@@ -19,10 +16,7 @@ const helper = require('../../lib/agent_helper')
 const {
   AI: { GEMINI }
 } = require('../../../lib/metrics/names')
-// have to read and not require because @google/genai does not export the package.json
-const { version: pkgVersion } = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '/node_modules/@google/genai/package.json'))
-)
+const pkgVersion = helper.readPackageVersion(__dirname, '@google/genai')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const responses = require('./mock-responses')
 const TRACKING_METRIC = `Supportability/Nodejs/ML/Gemini/${pkgVersion}`
@@ -57,6 +51,11 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.server?.close()
   removeModules('@google/genai')
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  assertPackageMetrics({ agent, pkg: '@google/genai', version: pkgVersion })
 })
 
 test('should create span on successful models generateContent', (t, end) => {
@@ -132,7 +131,7 @@ test('should create chat completion message and summary for every message sent',
     })
 
     const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-    assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage: true })
+    assertChatCompletionSummary({ tx, model, chatSummary })
 
     tx.end()
     end()
@@ -224,13 +223,15 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
   const expectedModel = 'gemini-2.0-flash'
   const api = helper.getAgentApi()
   let cbCalled = false
+  const promptTokens = 11
+  const completionTokens = 53
   function cb(model, content) {
     assert.equal(model, expectedModel)
     cbCalled = true
-    if (content === promptContent || content === promptContent2) {
-      return 53
+    if (content === promptContent + ' ' + promptContent2) {
+      return promptTokens
     } else if (content === res) {
-      return 11
+      return completionTokens
     }
   }
   api.setLlmTokenCountCallback(cb)
@@ -254,7 +255,6 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
     const events = agent.customEventAggregator.events.toArray()
     const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
     assertChatCompletionMessages({
-      tokenUsage: true,
       tx,
       chatMsgs,
       id: '"0e7e48f05cf962e1692113a49b276e8bb1bc"',
@@ -262,6 +262,8 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
       resContent: res,
       reqContent: promptContent
     })
+    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+    assertChatCompletionSummary({ tx, model: expectedModel, chatSummary, promptTokens, completionTokens })
 
     tx.end()
     end()

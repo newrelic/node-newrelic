@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
@@ -64,6 +64,12 @@ async function afterEach(ctx) {
 test('streaming enabled', async (t) => {
   t.beforeEach((ctx) => beforeEach({ enabled: true, ctx }))
   t.afterEach((ctx) => afterEach(ctx))
+
+  await t.test('should log tracking metrics', function(t) {
+    const { agent } = t.nr
+    const { version } = require('@langchain/core/package.json')
+    assertPackageMetrics({ agent, pkg: '@langchain/core', version })
+  })
 
   await t.test('should create langchain events for every stream call', (t, end) => {
     const { agent, prompt, outputParser, model } = t.nr

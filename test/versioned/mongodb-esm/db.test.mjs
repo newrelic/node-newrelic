@@ -484,7 +484,7 @@ function verifyMongoSegments({ t, tx, expectedSegments }) {
       // Commands, known as "admin commands", always happen against the "admin"
       // database regardless of the DB the connection is actually connected to.
       // This is apparently by design.
-      // htps://jira.mongodb.org/browse/NODE-827
+      // https://jira.mongodb.org/browse/NODE-827
       let dbName = DB_NAME
       if (/\/renameCollection$/.test(current.name) === true) {
         dbName = 'admin'

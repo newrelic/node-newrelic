@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const {
   assertLangChainVectorSearch,
   assertLangChainVectorSearchResult,
@@ -67,6 +67,12 @@ test.afterEach(async (ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument
   removeModules(['@langchain/core', 'openai', '@elastic', '@langchain/community'])
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('@langchain/core/package.json')
+  assertPackageMetrics({ agent, pkg: '@langchain/core', version })
 })
 
 test('should create vectorstore events for every similarity search call', (t, end) => {

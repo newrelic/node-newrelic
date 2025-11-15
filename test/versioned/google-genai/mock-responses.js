@@ -37,7 +37,7 @@ responses.set('This is an embedding test.', {
       {
         values: [0.4, 0.5, 0.6],
       }
-    ],
+    ]
   }
 })
 
@@ -100,10 +100,10 @@ responses.set('Streamed response', {
           ],
           role: 'model'
         },
-        usageMetadata: { promptTokenCount: 999, totalTokenCount: 999, promptTokensDetails: [{ modality: 'TEXT', tokenCount: 999 }] },
         finishReason: 'STOP'
       }
     ],
+    usageMetadata: { candidatesTokenCount: 11, promptTokenCount: 53, totalTokenCount: 64, promptTokensDetails: [{ modality: 'TEXT', tokenCount: 53 }] },
     modelVersion: 'gemini-2.0-flash'
   }
 })

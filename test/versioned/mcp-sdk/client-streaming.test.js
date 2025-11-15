@@ -10,11 +10,7 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
-const { assertMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
-const semver = require('semver')
-const { readFile } = require('node:fs/promises')
-const path = require('node:path')
-
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const {
   MCP
 } = require('../../../lib/metrics/names')
@@ -29,18 +25,14 @@ test.beforeEach(async (ctx) => {
 
   const { Client } = require('@modelcontextprotocol/sdk/client/index.js')
   const { StreamableHTTPClientTransport } = require('@modelcontextprotocol/sdk/client/streamableHttp.js')
-  const pkg = await readFile(path.join(__dirname, '/node_modules/@modelcontextprotocol/sdk/package.json'))
-  const { version: pkgVersion } = JSON.parse(pkg.toString())
-  ctx.nr.pkgVersion = pkgVersion
-
   // Set up server
   const McpTestServer = require('./streaming-server')
   ctx.nr.mcpServer = new McpTestServer()
-  await ctx.nr.mcpServer.start()
+  const port = await ctx.nr.mcpServer.start()
 
   // Set up client
   ctx.nr.transport = new StreamableHTTPClientTransport(
-    new URL('http://localhost:3000/mcp')
+    new URL(`http://localhost:${port}/mcp`)
   )
   ctx.nr.client = new Client(
     {
@@ -52,17 +44,24 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(async (ctx) => {
+  await ctx.nr.client.close()
+  await ctx.nr.transport.close()
   await ctx.nr.mcpServer.stop()
   helper.unloadAgent(ctx.nr.agent)
   removeModules([
     '@modelcontextprotocol/sdk/client/index.js',
-    '@modelcontextprotocol/sdk/client/streamableHttp.js',
-    './streaming-server.js'
+    '@modelcontextprotocol/sdk/client/streamableHttp.js'
   ])
 })
 
+test('should log package tracking metrics', (t) => {
+  const { agent } = t.nr
+  const version = helper.readPackageVersion(__dirname, '@modelcontextprotocol/sdk')
+  assertPackageMetrics({ agent, pkg: '@modelcontextprotocol/sdk', version })
+})
+
 test('should create span for callTool', (t, end) => {
-  const { agent, client, pkgVersion } = t.nr
+  const { agent, client } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     const result = await client.callTool({
       name: 'echo',
@@ -80,19 +79,13 @@ test('should create span for callTool', (t, end) => {
         { name, kind: 'internal' }
       ]
     })
-    const agentMetrics = agent.metrics
-    const expectedPkgMetrics = [
-      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
-      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
-    ]
-    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
 
     end()
   })
 })
 
 test('should create span for readResource', (t, end) => {
-  const { agent, client, pkgVersion } = t.nr
+  const { agent, client } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     const resource = await client.readResource({
       uri: 'echo://hello-world',
@@ -111,19 +104,12 @@ test('should create span for readResource', (t, end) => {
       ]
     })
 
-    const agentMetrics = agent.metrics
-    const expectedPkgMetrics = [
-      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
-      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
-    ]
-    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
-
     end()
   })
 })
 
 test('should create span for getPrompt', (t, end) => {
-  const { agent, client, pkgVersion } = t.nr
+  const { agent, client } = t.nr
   helper.runInTransaction(agent, async (tx) => {
     const prompt = await client.getPrompt({
       name: 'echo',
@@ -144,13 +130,6 @@ test('should create span for getPrompt', (t, end) => {
         { name, kind: 'internal' }
       ]
     })
-
-    const agentMetrics = agent.metrics
-    const expectedPkgMetrics = [
-      [{ name: 'Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk' }],
-      [{ name: `Supportability/Features/Instrumentation/OnRequire/@modelcontextprotocol/sdk/Version/${semver.major(pkgVersion)}` }]
-    ]
-    assertMetrics(agentMetrics, expectedPkgMetrics, false, false)
 
     end()
   })

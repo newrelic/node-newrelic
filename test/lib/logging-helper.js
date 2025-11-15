@@ -13,10 +13,9 @@ const CONTEXT_KEYS = ['trace.id', 'span.id']
  * Validates context about a given log line
  *
  * @param {object} params to fn
- * @param {object} params.log log line
+ * @param {object} params.line log line
  * @param {string} params.message message in log line
  * @param {number} params.level log level
- * @param params.line
  */
 function validateLogLine({ line: logLine, message, level }) {
   assert.equal(/\d{10}/.test(logLine.timestamp), true, 'should have proper unix timestamp')

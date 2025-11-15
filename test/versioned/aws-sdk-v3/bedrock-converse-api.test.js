@@ -10,14 +10,15 @@ const {
   afterEach,
   assertChatCompletionMessages,
   assertChatCompletionSummary,
+  getAiResponseServer
 } = require('./common')
 const helper = require('../../lib/agent_helper')
-const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
-const { assertSegments, match } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, match } = require('../../lib/custom-assertions')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const responseConstants = require('../../lib/aws-server-stubs/ai-server/responses/constants')
+const createAiResponseServer = getAiResponseServer()
 
 // We'll test with only one model because the
 // request and response structure is the same
@@ -50,6 +51,12 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(afterEach)
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('@smithy/smithy-client/package.json')
+  assertPackageMetrics({ agent, pkg: '@smithy/smithy-client', version })
+})
 
 test('should properly create completion segment', async (t) => {
   const { bedrock, client, agent, expectedExternalPath } = t.nr
@@ -105,13 +112,14 @@ test('properly create the LlmChatCompletionMessage(s) and LlmChatCompletionSumma
     assertChatCompletionMessages({
       modelId,
       prompt,
+      tokenUsage: true,
       tx,
       expectedId: null,
       chatMsgs,
       resContent: 'This is a test.'
     })
 
-    assertChatCompletionSummary({ tx, modelId, chatSummary })
+    assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage: true })
 
     tx.end()
   })
@@ -269,7 +277,8 @@ test('should properly create errors on create completion', async (t) => {
       modelId,
       prompt,
       tx,
-      chatMsgs
+      chatMsgs,
+      error: true
     })
 
     assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
@@ -365,11 +374,12 @@ test('should instrument text stream', async (t) => {
       prompt,
       expectedId: null,
       resContent: 'This is a test.',
+      tokenUsage: true,
       tx,
       chatMsgs
     })
 
-    assertChatCompletionSummary({ tx, modelId, chatSummary, numMsgs: events.length - 1 })
+    assertChatCompletionSummary({ tx, modelId, tokenUsage: true, chatSummary, numMsgs: events.length - 1 })
 
     tx.end()
   })
@@ -389,7 +399,7 @@ test('should not instrument stream when disabled', async (t) => {
 
   await helper.runInTransaction(agent, async (tx) => {
     const response = await client.send(command)
-    for await (const event of response?.stream?.options?.messageStream?.options?.inputStream) {
+    for await (const event of response?.stream) {
       // no-op iteration over the stream in order to exercise the instrumentation
       consumeStreamChunk(event)
     }

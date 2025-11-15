@@ -289,7 +289,7 @@ test('multiple errors in web tx should gather and merge custom params', async fu
       // custom attributes
       const ua = attributes.userAttributes
       plan.equal(Object.keys(ua).length, 5, 'should have 5 custom attributes after merging')
-      // Overriden for error custom params
+      // Overridden for error custom params
       Object.keys(expectedParams).forEach(function (paramKey) {
         plan.equal(ua[paramKey], expectedParams[paramKey], 'has the passed in params')
       })

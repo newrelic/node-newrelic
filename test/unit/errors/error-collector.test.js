@@ -563,7 +563,7 @@ test('Errors', async (t) => {
         const tx = createTransaction(agent, 200)
 
         errors.add(tx, Error('error1'))
-        errors.add(tx, Error('erorr2'))
+        errors.add(tx, Error('error2'))
         errors.onTransactionFinished(tx)
 
         const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')

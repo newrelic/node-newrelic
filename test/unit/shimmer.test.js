@@ -753,7 +753,7 @@ test('Shimmer with logger mock', async (t) => {
     })
 
     require(TEST_MODULE_RELATIVE_PATH)
-    assert.deepEqual(loggerMock.warn.args[0], [
+    assert.deepEqual(loggerMock.warn.args[1], [
       instFail,
       origError,
       'Custom instrumentation for %s failed, then the onError handler threw an error',
@@ -771,7 +771,7 @@ test('Shimmer with logger mock', async (t) => {
     })
 
     require(TEST_MODULE_RELATIVE_PATH)
-    assert.deepEqual(loggerMock.warn.args[0], [
+    assert.deepEqual(loggerMock.warn.args[1], [
       origError,
       'Custom instrumentation for %s failed. Please report this to the maintainers of the custom instrumentation.',
       TEST_MODULE_PATH
@@ -812,32 +812,6 @@ test('Shimmer with logger mock', async (t) => {
       require(TEST_MODULE_RELATIVE_PATH)
       assert.deepEqual(loggerMock.trace.args[2], [
         'Failed to instrument test-mod/module@0.0.1, skipping registering instrumentation'
-      ])
-    }
-  )
-
-  await t.test('should return package version from package.json', () => {
-    shimmer.registerInstrumentation({
-      moduleName: TEST_MODULE_PATH,
-      onRequire: () => {}
-    })
-
-    require(TEST_MODULE_RELATIVE_PATH)
-    const version = shimmer.getPackageVersion(TEST_MODULE_PATH)
-    const found = loggerMock.debug.args.find((debugArgs) => debugArgs?.[0]?.includes('Failed to get version for `%s`, reason: %s'))
-    assert.equal(undefined, found)
-    assert.equal(version, '0.0.1', 'should get package version from package.json')
-  })
-
-  await t.test(
-    'should return Node.js version when it cannot obtain package version from package.json',
-    async (t) => {
-      const version = shimmer.getPackageVersion('bogus')
-      assert.equal(version, process.version)
-      assert.deepEqual(loggerMock.debug.args[loggerMock.debug.args.length - 1], [
-        'Failed to get version for `%s`, reason: %s',
-        'bogus',
-        "no tracked items for module 'bogus'"
       ])
     }
   )

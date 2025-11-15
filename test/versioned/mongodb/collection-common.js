@@ -37,7 +37,7 @@ const { COLLECTIONS } = common
  * A function invoked by each subtest after the common assertions have been
  * applied. It is used to assert local assertions for each test.
  *
- * @typedef {function} VerifyCollectionCallback
+ * @typedef {Function} VerifyCollectionCallback
  * @param {Error|null} error Set if an error occurred prior to the verify
  * function.
  * @param {object[]} [segments] A list of segments from the transaction.
@@ -51,7 +51,7 @@ const { COLLECTIONS } = common
  * Callback to invoke that will issue queries against the provided collection
  * and then invoke a callback to verify the results of those queries.
  *
- * @typedef {function} CollectionTestCallback
+ * @typedef {Function} CollectionTestCallback
  * @param {object} collection The MongoDB collection to issue queries against.
  * @param {VerifyCollectionCallback} verify The callback to invoke that will
  * verify the queries generated the correct data.

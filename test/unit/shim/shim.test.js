@@ -814,7 +814,7 @@ test('Shim', async function (t) {
       assert.equal(executed, true)
     })
 
-    await t.test('should store the wrapped version for later retrival', function (t) {
+    await t.test('should store the wrapped version for later retrieval', function (t) {
       const { shim } = t.nr
       const original = {}
       const wrapped = shim.wrapExport(original, function () {
@@ -2511,7 +2511,7 @@ test('Shim', async function (t) {
     )
 
     await t.test(
-      'should not copy parameters into segment attributes when `attributes.enabled` is fale',
+      'should not copy parameters into segment attributes when `attributes.enabled` is false',
       function (t) {
         const { agent, parameters, shim } = t.nr
         let segment
@@ -2948,29 +2948,6 @@ test('Shim', async function (t) {
       const shim = new Shim(agent, mod1, mod1, mod1)
       const shim2 = new Shim(agent, mod2, mod2, mod2)
       assert.notEqual(shim.id, shim2.id, 'ids should not be the same')
-    })
-  })
-
-  await t.test('prefixRouteParameters', async (t) => {
-    t.beforeEach(beforeEach)
-    t.afterEach(afterEach)
-
-    await t.test('should not prefix parameters when given invalid input', (t) => {
-      const { shim } = t.nr
-      const resultNull = shim.prefixRouteParameters(null)
-      assert.equal(resultNull, undefined)
-
-      const resultString = shim.prefixRouteParameters('parameters')
-      assert.equal(resultString, undefined)
-    })
-
-    await t.test('should return the object with route param prefix applied to keys', (t) => {
-      const { shim } = t.nr
-      const result = shim.prefixRouteParameters({ id: '123abc', foo: 'bar' })
-      assert.deepEqual(result, {
-        'request.parameters.route.id': '123abc',
-        'request.parameters.route.foo': 'bar'
-      })
     })
   })
 

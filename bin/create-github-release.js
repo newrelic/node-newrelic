@@ -68,7 +68,7 @@ async function createRelease() {
     console.log('*** Full Run Successful ***')
   } catch (err) {
     if (err.status && err.status === 404) {
-      console.log('404 status error detected. For octokit, this may mean insuffient permissions.')
+      console.log('404 status error detected. For octokit, this may mean insufficient permissions.')
       console.log('Ensure you have a valid GITHUB_TOKEN set in your env vars.')
     }
 

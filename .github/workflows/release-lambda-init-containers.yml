@@ -1,6 +1,7 @@
 name: Agent Release Lambda Layers and K8s Init Containers
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Create Release"]
     types:

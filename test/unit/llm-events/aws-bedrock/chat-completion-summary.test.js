@@ -15,6 +15,7 @@ const LlmChatCompletionSummary = require('../../../../lib/llm-events/aws-bedrock
 test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = {
+    llm: {},
     config: {
       applications() {
         return ['test-app']
@@ -72,13 +73,20 @@ test.beforeEach((ctx) => {
       'x-amzn-request-id': 'aws-request-1'
     },
     finishReason: 'done',
-    completions: ['completion-1']
+    completions: ['completion-1'],
+    get inputTokenCount() {
+      return this.headers['x-amzn-bedrock-input-token-count']
+    },
+    get outputTokenCount() {
+      return this.headers['x-amzn-bedrock-output-token-count']
+    },
+    get totalTokenCount() {
+      return this.inputTokenCount + this.outputTokenCount
+    }
   }
 })
 
 test('creates a basic summary', async (t) => {
-  t.nr.bedrockResponse.inputTokenCount = 0
-  t.nr.bedrockResponse.outputTokenCount = 0
   const event = new LlmChatCompletionSummary(t.nr)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.duration, 100)
@@ -119,4 +127,30 @@ test('creates a titan summary', async (t) => {
   assert.equal(event['request.temperature'], 0.5)
   assert.equal(event['response.choices.finish_reason'], 'done')
   assert.equal(event['response.number_of_messages'], 2)
+})
+
+test('capture token usage attributes from headers', async (t) => {
+  t.nr.bedrockResponse.headers = {
+    'x-amzn-bedrock-input-token-count': 30,
+    'x-amzn-bedrock-output-token-count': 40,
+  }
+  const event = new LlmChatCompletionSummary(t.nr)
+  assert.equal(event['response.usage.prompt_tokens'], 30)
+  assert.equal(event['response.usage.completion_tokens'], 40)
+  assert.equal(event['response.usage.total_tokens'], 70)
+})
+
+test('should use token callback to set the token usage attributes', async (t) => {
+  function cb(model, content) {
+    if (content === t.nr.bedrockCommand.prompt[0].content) {
+      return 30
+    } else {
+      return 35
+    }
+  }
+  t.nr.agent.llm.tokenCountCallback = cb
+  const event = new LlmChatCompletionSummary(t.nr)
+  assert.equal(event['response.usage.prompt_tokens'], 30)
+  assert.equal(event['response.usage.completion_tokens'], 35)
+  assert.equal(event['response.usage.total_tokens'], 65)
 })

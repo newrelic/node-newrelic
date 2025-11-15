@@ -9,8 +9,9 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { match } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, match } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
+const { version } = require('@grpc/grpc-js/package.json')
 
 const { ERR_CODE, ERR_MSG } = require('./constants.cjs')
 const {
@@ -39,6 +40,11 @@ test.afterEach((ctx) => {
   ctx.nr.server.forceShutdown()
   ctx.nr.client.close()
   removeModules(['@grpc/grpc-js'])
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  assertPackageMetrics({ agent, pkg: '@grpc/grpc-js', version })
 })
 
 test('should track unary client requests as an external when in a transaction', (t, end) => {

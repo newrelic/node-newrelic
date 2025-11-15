@@ -49,7 +49,7 @@ that are specific to our versioned test runner. The following is a
     {
       "name": "other-module",
       
-      // If the named module requires a specific agent implemenation, for
+      // If the named module requires a specific agent implementation, for
       // example `@newrelic/next`, then the full agent module identifier with
       // version string should be provided.
       "minAgentVersion": "@newrelic/special-agent@1.2.3"
@@ -72,7 +72,7 @@ that are specific to our versioned test runner. The following is a
         // `node` indicates which versions of Node.js should be used to run
         // this test block. Typically, a basic `>=` qualifier will be used, but
         // a static version is also likely. If the version of Node.js being
-        // used to run the suite does not match the contraint, then the test
+        // used to run the suite does not match the constraint, then the test
         // block will be skipped.
         "node": ">= 18"
       },
@@ -105,7 +105,7 @@ that are specific to our versioned test runner. The following is a
     },
     
     // This example block will only run on Node.js 20.x. Pay attention
-    // to the "dependencies" section for a special depedency declaration
+    // to the "dependencies" section for a special dependency declaration
     // supported by our versioned test runner.
     {
       "engines": { "node": "20" },

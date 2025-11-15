@@ -1813,16 +1813,16 @@ API.prototype.setUserID = function setUserID(id) {
  */
 function _filterAttributes(attributes, name) {
   const filteredAttributes = Object.create(null)
-  Object.keys(attributes).forEach((attributeKey) => {
+  for (const attributeKey of Object.keys(attributes)) {
     if (!isValidType(attributes[attributeKey])) {
       logger.info(
         `Omitting attribute ${attributeKey} from ${name} call, type must ` +
           'be boolean, number, or string'
       )
-      return
+      continue
     }
     filteredAttributes[attributeKey] = attributes[attributeKey]
-  })
+  }
   return filteredAttributes
 }
 
@@ -1937,7 +1937,7 @@ API.prototype.ignoreApdex = function ignoreApdex() {
  *      { role: 'user', content: 'Tell me about Node.js.'}
  *    ]})
  * })
- * @param {Object} context LLM custom attributes context
+ * @param {object} context LLM custom attributes context
  * @param {Function} callback The function to execute in context.
  */
 API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context, callback) {

@@ -15,7 +15,7 @@ const repos = [
   {
     name: 'apollo-server',
     repository: 'https://github.com/newrelic/newrelic-node-apollo-server-plugin.git',
-    branch: 'main',
+    branch: 'remove-set-timeout',
     additionalFiles: [
       'tests/lib',
     ]

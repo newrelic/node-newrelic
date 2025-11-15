@@ -479,7 +479,7 @@ test('TraceContext', async function (t) {
           // should propagate
           assert.ok(headers.traceparent.startsWith('00-4bf92f3577b34da6a'))
 
-          // The original tracestate should be propogated
+          // The original tracestate should be propagated
           assert.equal(headers.tracestate, incomingTracestate)
 
           txn.end()
@@ -490,7 +490,7 @@ test('TraceContext', async function (t) {
     )
 
     await t.test(
-      'should propogate existing when cannot accept or generate newrelic list member',
+      'should propagate existing when cannot accept or generate newrelic list member',
       (ctx, end) => {
         const { agent } = ctx.nr
         agent.config.trusted_account_key = null
@@ -514,7 +514,7 @@ test('TraceContext', async function (t) {
           // should propagate
           assert.ok(headers.traceparent.startsWith('00-4bf92f3577b34da6a'))
 
-          // The original tracestate should be propogated
+          // The original tracestate should be propagated
           assert.equal(headers.tracestate, incomingTracestate)
 
           txn.end()

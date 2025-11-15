@@ -53,6 +53,9 @@ test.beforeEach((ctx) => {
   ctx.nr.bedrockResponse = {
     headers: {
       'x-amzn-requestid': 'request-1'
+    },
+    get inputTokenCount() {
+      return 70
     }
   }
   ctx.nr.transaction = {
@@ -79,8 +82,38 @@ test('should not capture input when `ai_monitoring.record_content.enabled` is fa
   assert.equal(event.input, undefined, 'input should be empty')
 })
 
-test('should capture token_count when callback is defined', async (t) => {
-  t.nr.agent.llm.tokenCountCallback = () => 3
+test('capture total token usage attribute when inputTokenCount is set', async (t) => {
   const event = new LlmEmbedding(t.nr)
-  assert.equal(event.token_count, 3)
+  assert.equal(event['response.usage.total_tokens'], 70)
+})
+
+test('does not capture total token usage when inputTokenCount is not set', async (t) => {
+  Object.defineProperty(t.nr.bedrockResponse, 'inputTokenCount', {
+    get() {
+      return undefined
+    }
+  })
+  const event = new LlmEmbedding(t.nr)
+  assert.equal(event['response.usage.total_tokens'], undefined)
+})
+
+test('should use token callback to set total token usage attribute', async (t) => {
+  function cb(model, content) {
+    return 65
+  }
+  t.nr.agent.llm.tokenCountCallback = cb
+  const event = new LlmEmbedding(t.nr)
+
+  assert.equal(event['response.usage.total_tokens'], 65)
+})
+
+test('should not call token callback if there is no content', async (t) => {
+  function cb(model, content) {
+    return 65
+  }
+  t.nr.agent.llm.tokenCountCallback = cb
+  t.nr.input = undefined
+  const event = new LlmEmbedding(t.nr)
+
+  assert.equal(event['response.usage.total_tokens'], undefined)
 })

@@ -143,7 +143,7 @@ test('with default properties', async (t) => {
     assert.equal(configuration.transaction_tracer.top_n, 20)
   })
 
-  await t.test('should obfsucate sql by default', () => {
+  await t.test('should obfuscate sql by default', () => {
     assert.equal(configuration.transaction_tracer.record_sql, 'obfuscated')
   })
 
@@ -318,7 +318,6 @@ test('with default properties', async (t) => {
   await t.test('instrumentation defaults', () => {
     assert.equal(configuration.instrumentation.express.enabled, true)
     assert.equal(configuration.instrumentation['@prisma/client'].enabled, true)
-    assert.equal(configuration.instrumentation.npmlog.enabled, true)
     assert.equal(configuration.instrumentation.http.enabled, true)
     assert.equal(configuration.instrumentation.undici.enabled, true)
     assert.equal(configuration.instrumentation.domain.enabled, true)
@@ -326,6 +325,23 @@ test('with default properties', async (t) => {
 
   await t.test('remote parent sampling should default to baseline', () => {
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
+  })
+
+  await t.test('adaptive sampling target should default to 10 transactions/min', () => {
+    assert.equal(configuration.distributed_tracing.sampler.adaptive_sampling_target, 10)
+    assert.equal(configuration.sampling_target, 10)
+  })
+
+  await t.test('root sampler should default to default', () => {
+    assert.equal(configuration.distributed_tracing.sampler.root, 'default')
+  })
+
+  await t.test('remote parent sampled sampler should default to default', () => {
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
+  })
+
+  await t.test('remote parent not sampled sampler should default to default', () => {
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
   })
 

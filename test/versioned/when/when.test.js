@@ -12,6 +12,7 @@ const tspl = require('@matteo.collina/tspl')
 const { removeModules } = require('../../lib/cache-buster')
 const tempOverrideUncaught = require('../../lib/temp-override-uncaught')
 const helper = require('../../lib/agent_helper')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 function setupTest(t, enableSegments) {
   t.nr.agent = helper.instrumentMockedAgent({
@@ -50,6 +51,10 @@ test('no transaction', (t, end) => {
     .finally(function finallyHandler() {
       end()
     })
+
+  const { agent } = t.nr
+  const { version } = require('when/package.json')
+  assertPackageMetrics({ agent, pkg: 'when', version })
 })
 
 test('new Promise() throw', async (t) => {
@@ -183,7 +188,7 @@ test('when.iterate', async (t) => {
   const COUNT = 10
   const testFunc = (name) => {
     const tx = agent.getTransaction()
-    let incrementerCount = 0
+    let incrementorCount = 0
     let predicateCount = 0
     let bodyCount = 0
 
@@ -191,7 +196,7 @@ test('when.iterate', async (t) => {
 
     function iterator(seed) {
       plan.equal(agent.getTransaction(), tx, `${name} iterator has correct transaction state`)
-      plan.equal(incrementerCount++, seed++, `${name} should iterate as expected`)
+      plan.equal(incrementorCount++, seed++, `${name} should iterate as expected`)
       return seed
     }
 
@@ -869,16 +874,13 @@ test('node.apply', (t, end) => {
 /**
  * Tests a `when` library method outside of an agent transaction.
  *
- * @param {object} params
- * @param params.plan
- * @param {object} plan The assertion library that expects a set number of
+ * @param {object} params The params object
+ * @param {object} params.plan The assertion library that expects a set number of
  * assertions to be completed during the test.
- * @param {object} agent A mocked agent instance.
- * @param {function} testFunc A function that accepts a "name" parameter and
+ * @param {object} params.agent A mocked agent instance.
+ * @param {Function} params.testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
- * @param params.agent
- * @param params.testFunc
  * @returns {Promise<void>}
  */
 async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
@@ -904,16 +906,13 @@ async function testThrowOutsideTransaction({ plan, agent, testFunc }) {
 /**
  * Tests a `when` library method inside of an agent transaction.
  *
- * @param {object} params
- * @param params.plan
- * @param {object} plan The assertion library that expects a set number of
+ * @param {object} params The params object
+ * @param {object} params.plan The assertion library that expects a set number of
  * assertions to be completed during the test.
- * @param {object} agent A mocked agent instance.
- * @param {function} testFunc A function that accepts a "name" parameter and
+ * @param {object} params.agent A mocked agent instance.
+ * @param {Function} params.testFunc A function that accepts a "name" parameter and
  * returns a promise. The parameter is a string for identifying the test and
  * values used within the test.
- * @param params.agent
- * @param params.testFunc
  * @returns {Promise<void>}
  */
 async function testInsideTransaction({ plan, agent, testFunc }) {

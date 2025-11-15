@@ -18,13 +18,15 @@ const CollectorValidators = require('./test-collector-validators')
 /**
  * Extends {@link http.IncomingMessage} with convenience properties and methods.
  * @typedef {object} CollectorIncomingRequest
- * @property
+ * @property {object} query The parsed query string.
+ * @property {Function} body A function that returns a promise resolving to the request body.
+ * @property {Function} getHeader A function that returns the value of a specific header.
  */
 
 /**
  * Extends {@link http.OutgoingMessage} with convenience properties and methods.
  * @typedef {object} CollectorOutgoingResponse
- * @property
+ * @property {Function} json A function that sends a JSON response.
  */
 
 /**
@@ -57,7 +59,7 @@ class Collector {
       /**
        * Send the response as serialized JSON.
        *
-       * @param {object} params
+       * @param {object} params params object
        * @param {object} params.payload The object to serialize into a response.
        * @param {number} [params.code] The status code to use for the
        * response.
@@ -107,7 +109,7 @@ class Collector {
        * Get the value of a specific header.
        *
        * @memberof CollectorIncomingRequest
-       * @param {string} name
+       * @param {string} name header name
        * @returns {*}
        */
       req.getHeader = function (name) {
@@ -173,7 +175,7 @@ class Collector {
    * The most basic `agent_settings` handler. Useful when you do not need to
    * customize the handler.
    *
-   * @returns {function}
+   * @returns {Function}
    */
   get agentSettingsHandler() {
     return function (req, res) {
@@ -185,7 +187,7 @@ class Collector {
    * the most basic `connect` handler. Useful when you do not need to
    * customize the handler.
    *
-   * @returns {function}
+   * @returns {Function}
    */
   get connectHandler() {
     const runId = this.#runId
@@ -198,7 +200,7 @@ class Collector {
    * The most basic `preconnect` handler. Useful when you do not need to
    * customize the handler.
    *
-   * @returns {function}
+   * @returns {Function}
    */
   get preconnectHandler() {
     const host = this.host
@@ -233,7 +235,7 @@ class Collector {
    * string with the `method` parameter is present. This is required, as the
    * value of `method` will be used to look up the handler when receiving
    * requests.
-   * @param {function} handler A typical `(req, res) => {}` handler. For
+   * @param {Function} handler A typical `(req, res) => {}` handler. For
    * convenience, `res` is extended with a `json({ payload, code = 200 })`
    * method for easily sending JSON responses. Also, `req` is extended with
    * a `body()` method that returns a promise which resolves to the string

@@ -10,7 +10,7 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { run } = require('./utils')
-const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 
 test.beforeEach((ctx) => {
@@ -23,9 +23,17 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
-  removeModules(['koa', 'koa-router'])
+  removeModules(['koa', 'koa-route'])
   helper.unloadAgent(ctx.nr.agent)
-  ctx.nr.server.close()
+  if (ctx.nr.server) {
+    ctx.nr.server.close()
+  }
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('koa-route/package.json')
+  assertPackageMetrics({ agent, pkg: 'koa-route', version })
 })
 
 test('should name and produce segments for koa-route middleware', (t, end) => {

@@ -12,13 +12,13 @@ const helper = require('../../lib/agent_helper')
 const shimmer = require('../../../lib/shimmer')
 const symbols = require('../../../lib/symbols')
 const { FEATURES } = require('../../../lib/metrics/names')
+const { assertMetrics } = require('../../lib/custom-assertions')
 
 const LOCAL_MODULE = 'local-package'
 const LOCAL_MODULE_PATH = require.resolve('./local-package')
 const CUSTOM_MODULE = 'customTestPackage'
 const CUSTOM_MODULE_PATH = `./node_modules/${CUSTOM_MODULE}`
 const CUSTOM_MODULE_PATH_SUB = `./node_modules/subPkg/node_modules/${CUSTOM_MODULE}`
-const EXPECTED_REQUIRE_METRIC_NAME = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/${CUSTOM_MODULE}`
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent()
@@ -28,7 +28,8 @@ test.beforeEach((ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
-test('Should properly track module paths to enable shim.require()', function () {
+test('Should properly track module paths to enable shim.require()', function (t) {
+  const { agent } = t.nr
   shimmer.registerInstrumentation({
     moduleName: CUSTOM_MODULE,
     onRequire: () => {}
@@ -45,6 +46,12 @@ test('Should properly track module paths to enable shim.require()', function () 
   const shimLoadedCustom = shim.require('custom')
   assert.ok(shimLoadedCustom, 'shim.require() should load module')
   assert.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
+  const expectedPkgMetrics = [
+    [{ name: `Supportability/Features/Instrumentation/OnRequire/${CUSTOM_MODULE}` }],
+    [{ name: `Supportability/Features/Instrumentation/OnRequire/${CUSTOM_MODULE}/Version/3` }]
+  ]
+
+  assertMetrics(agent.metrics, expectedPkgMetrics, false, false)
 })
 
 test('should instrument multiple versions of the same package', function () {
@@ -82,8 +89,6 @@ test('should only log supportability metric for tracking type instrumentation', 
   assert.equal(knexOnRequiredMetric.callCount, 1, `should record ${PKG}`)
   const knexVersionMetric = agent.metrics._metrics.unscoped[PKG_VERSION]
   assert.equal(knexVersionMetric.callCount, 1, `should record ${PKG_VERSION}`)
-  const modPath = path.dirname(require.resolve('knex'))
-  assert.ok(shimmer.isInstrumented('knex', modPath), 'should mark tracking modules as instrumented')
 })
 
 test('shim.require() should play well with multiple test runs', (t) => {
@@ -117,44 +122,6 @@ test('shim.require() should play well with multiple test runs', (t) => {
   assert.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
 })
 
-test('Should create usage metric onRequire', (t, end) => {
-  const { agent } = t.nr
-  shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE,
-    onRequire: onRequireHandler
-  })
-
-  require(CUSTOM_MODULE_PATH)
-
-  function onRequireHandler() {
-    const onRequireMetric = agent.metrics._metrics.unscoped[EXPECTED_REQUIRE_METRIC_NAME]
-
-    assert.ok(onRequireMetric)
-    assert.equal(onRequireMetric.callCount, 1)
-    end()
-  }
-})
-
-test('Should create usage version metric onRequire', (t, end) => {
-  const { agent } = t.nr
-  shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE,
-    onRequire: onRequireHandler
-  })
-
-  require(CUSTOM_MODULE_PATH)
-
-  function onRequireHandler() {
-    const expectedVersionMetricName = `${EXPECTED_REQUIRE_METRIC_NAME}/Version/3`
-
-    const onRequireMetric = agent.metrics._metrics.unscoped[expectedVersionMetricName]
-
-    assert.ok(onRequireMetric)
-    assert.equal(onRequireMetric.callCount, 1)
-    end()
-  }
-})
-
 test('Should create usage metric onRequire for built-in', (t) => {
   const { agent } = t.nr
   const domainMetric = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/domain`
@@ -170,6 +137,7 @@ test('Should create usage metric onRequire for built-in', (t) => {
 })
 
 test('should instrument a local package', (t, end) => {
+  const { agent } = t.nr
   shimmer.registerInstrumentation({
     moduleName: LOCAL_MODULE,
     absolutePath: LOCAL_MODULE_PATH,
@@ -181,13 +149,18 @@ test('should instrument a local package', (t, end) => {
   function onRequireHandler(shim, localPkg, name) {
     assert.equal(
       shim.pkgVersion,
-      process.version,
+      process.version.slice(1),
       'defaults to node version for pkgVersion as this is not a package'
     )
     assert.ok(shim.id)
     assert.equal(name, LOCAL_MODULE)
     const result = localPkg()
     assert.deepEqual(result, { hello: 'world' })
+    const expectedPkgMetrics = [
+      [{ name: `Supportability/Features/Instrumentation/OnRequire/${LOCAL_MODULE}` }]
+    ]
+
+    assertMetrics(agent.metrics, expectedPkgMetrics, false, false)
     end()
   }
 })

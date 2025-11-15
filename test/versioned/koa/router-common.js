@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const fs = require('node:fs')
 const path = require('node:path')
 
-const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 /**
  * koa-router and @koa/router updated how they defined wildcard routing
@@ -50,7 +50,8 @@ module.exports = (pkg) => {
      * and handle the differences.
      *
      * See original issue: https://github.com/newrelic/node-newrelic-koa/issues/35
-     * @param mwName
+     *
+     * @param {string} mwName middleware name
      */
     function getNestedSpanName(mwName) {
       let spanName = `Nodejs/Middleware/Koa/${mwName}/`
@@ -81,6 +82,11 @@ module.exports = (pkg) => {
     await t.test('with single router', async (t) => {
       t.beforeEach(testSetup)
       t.afterEach(tearDown)
+
+      await t.test('should log tracking metrics', function(t) {
+        const { agent } = t.nr
+        assertPackageMetrics({ agent, pkg, version: pkgVersion })
+      })
 
       await t.test('should name and produce segments for matched path', (t, end) => {
         const { agent, router, app } = t.nr
@@ -243,7 +249,7 @@ module.exports = (pkg) => {
       })
 
       await t.test(
-        'should name transaction after matched path with erroring parameware',
+        'should name transaction after matched path with erroring paramware',
         (t, end) => {
           const { agent, router, app } = t.nr
           router.param('first', function firstParamware() {

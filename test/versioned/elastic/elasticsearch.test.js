@@ -6,20 +6,14 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
-const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
-const crypto = require('crypto')
-const { readFile } = require('fs/promises')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 const semver = require('semver')
-const DB_INDEX = `test-${randomString()}`
-const DB_INDEX_2 = `test2-${randomString()}`
-const SEARCHTERM_1 = randomString()
-
-function randomString() {
-  return crypto.randomBytes(5).toString('hex')
-}
+const DB_INDEX = helper.randomString('test-')
+const DB_INDEX_2 = helper.randomString('test2-')
+const SEARCHTERM_1 = helper.randomString()
 
 // request bodies are structured differently in ElasticSearch v7.x vs v8.x
 function setRequestBody(body, version) {
@@ -51,10 +45,7 @@ function setMsearch(body, version) {
 
 test('Elasticsearch instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
-    // Determine version. ElasticSearch v7 did not export package, so we have to read the file
-    // instead of requiring it, as we can with 8+.
-    const pkg = await readFile(path.join(__dirname, '/node_modules/@elastic/elasticsearch/package.json'))
-    const { version: pkgVersion } = JSON.parse(pkg.toString())
+    const pkgVersion = helper.readPackageVersion(__dirname, '@elastic/elasticsearch')
 
     const agent = helper.instrumentMockedAgent()
 
@@ -96,7 +87,7 @@ test('Elasticsearch instrumentation', async (t) => {
 
   await t.test('should be able to record creating an index', async (t) => {
     const { agent, client } = t.nr
-    const index = `test-index-${randomString()}`
+    const index = helper.randomString('test-index-')
     t.after(async () => {
       await client.indices.delete({ index })
     })
@@ -121,7 +112,7 @@ test('Elasticsearch instrumentation', async (t) => {
       return
     }
 
-    const index = `test-index-${randomString()}`
+    const index = helper.randomString('test-index-')
     t.after(async () => {
       await client.indices.delete({ index })
     })
@@ -175,11 +166,9 @@ test('Elasticsearch instrumentation', async (t) => {
       })
       assert.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
-      // helper interface results in a first child of timers.setTimeout, with the second child related to the operation
-      const [firstChild, secondChild] = trace.getChildren(trace.root.id)
-      assert.ok(firstChild)
+      const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
-        secondChild.name,
+        firstChild.name,
         'Datastore/statement/ElasticSearch/any/bulk.create',
         'should record bulk operation'
       )
@@ -361,8 +350,7 @@ test('Elasticsearch instrumentation', async (t) => {
       const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,
-        'timers.setTimeout',
-        'helpers, for some reason, generates a setTimeout metric first'
+        'Datastore/statement/ElasticSearch/any/msearch.create'
       )
       transaction.end()
       assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
@@ -375,7 +363,7 @@ test('Elasticsearch instrumentation', async (t) => {
 
   await t.test('should create correct metrics', async function (t) {
     const { agent, client, pkgVersion, HOST_ID } = t.nr
-    const id = `key-${randomString()}`
+    const id = helper.randomString('key-')
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const documentProp = setRequestBody(
         {
@@ -418,16 +406,8 @@ test('Elasticsearch instrumentation', async (t) => {
       }
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
-      const agentMetrics = agent.metrics._metrics.unscoped
-      let pkgName = '@elastic/elasticsearch'
-      if (semver.gte(pkgVersion, '8.0.0')) {
-        pkgName = '@elastic/transport'
-      }
-      const expectedPkgMetrics = {
-        [`Supportability/Features/Instrumentation/OnRequire/${pkgName}`]: 1,
-        [`Supportability/Features/Instrumentation/OnRequire/${pkgName}/Version/${semver.major(pkgVersion)}`]: 1,
-      }
-      checkMetrics(agentMetrics, expectedPkgMetrics)
+      const pkgName = '@elastic/elasticsearch'
+      assertPackageMetrics({ agent, pkg: pkgName, version: pkgVersion })
     })
   })
 

@@ -67,11 +67,14 @@ test.beforeEach((ctx) => {
     },
     get outputTokenCount() {
       return 4
-    }
+    },
+    completions: ['a completion']
   }
 
   ctx.nr.bedrockCommand = {
     id: 'cmd-1',
+    prompt: [{ content: 'a prompt' }],
+    modelId: 'model-1',
     isClaude() {
       return false
     },
@@ -98,7 +101,7 @@ test('create creates a non-response instance', async (t) => {
   assert.equal(event.content, 'a prompt')
   assert.equal(event.role, 'user')
   assert.match(event.id, /[\w-]{36}/)
-  assert.equal(event.token_count, 3)
+  assert.equal(event.token_count, 0)
 })
 
 test('create creates a titan response instance', async (t) => {
@@ -135,4 +138,67 @@ test('should not capture content when `ai_monitoring.record_content.enabled` is 
   agent.config.ai_monitoring.record_content.enabled = false
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.content, undefined, 'content should be empty')
+})
+
+test('should capture token_count even when `ai_monitoring.record_content.enabled` is false', async (t) => {
+  const { agent } = t.nr
+  agent.config.ai_monitoring.record_content.enabled = false
+  t.nr.agent.llm.tokenCountCallback = () => 3
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, 0)
+})
+
+test('should capture token_count when callback is defined', async (t) => {
+  const { agent } = t.nr
+  agent.llm.tokenCountCallback = () => 3
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, 0)
+})
+
+test('should not set token_count if callback registered returns is less than 0', async (t) => {
+  const { agent } = t.nr
+  agent.llm.tokenCountCallback = () => -1
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should not set token_count if callback registered returns null', async (t) => {
+  const { agent } = t.nr
+  t.nr.isResponse = true
+
+  agent.llm.tokenCountCallback = () => null
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should not set token_count if inputTokenCount and outputTokenCount are not on response', async (t) => {
+  Object.defineProperty(t.nr.bedrockResponse, 'inputTokenCount', {
+    get() { return null }
+  })
+  Object.defineProperty(t.nr.bedrockResponse, 'outputTokenCount', {
+    get() { return null }
+  })
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should not set token_count if inputTokenCount is set but not outputTokenCount', async (t) => {
+  Object.defineProperty(t.nr.bedrockResponse, 'outputTokenCount', {
+    get() { return null }
+  })
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should not set token_count if outputTokenCount is set but not inputTokenCount', async (t) => {
+  Object.defineProperty(t.nr.bedrockResponse, 'inputTokenCount', {
+    get() { return null }
+  })
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, undefined)
+})
+
+test('should set token_count to 0 if inputTokenCount and outputTokenCount are on response', async (t) => {
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.token_count, 0)
 })

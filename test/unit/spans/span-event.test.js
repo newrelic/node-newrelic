@@ -64,69 +64,70 @@ test('fromSegment()', async (t) => {
       transaction.sampled = true
       transaction.priority = 42
 
-      setTimeout(() => {
-        const tx = agent.tracer.getTransaction()
-        const [segment] = tx.trace.getChildren(tx.trace.root.id)
-        segment.addSpanAttribute('SpiderSpan', 'web')
-        segment.addSpanAttribute('host', 'my-host')
-        segment.addSpanAttribute('port', 222)
+      const segment = agent.tracer.createSegment({
+        name: 'genericSegment',
+        transaction,
+        parent: transaction.trace.root
+      })
+      segment.setDurationInMillis(300)
+      segment.addSpanAttribute('SpiderSpan', 'web')
+      segment.addSpanAttribute('host', 'my-host')
+      segment.addSpanAttribute('port', 222)
 
-        const spanContext = segment.getSpanContext()
-        spanContext.addCustomAttribute('Span Lee', 'no prize')
+      const spanContext = segment.getSpanContext()
+      spanContext.addCustomAttribute('Span Lee', 'no prize')
 
-        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
+      const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', inProcessSpans: true })
 
-        // Should have all the normal properties.
-        assert.ok(span)
-        assert.ok(span instanceof SpanEvent)
+      // Should have all the normal properties.
+      assert.ok(span)
+      assert.ok(span instanceof SpanEvent)
 
-        assert.ok(span.intrinsics)
-        assert.equal(span.intrinsics.type, 'Span')
-        assert.equal(span.intrinsics.category, SpanEvent.CATEGORIES.GENERIC)
+      assert.ok(span.intrinsics)
+      assert.equal(span.intrinsics.type, 'Span')
+      assert.equal(span.intrinsics.category, SpanEvent.CATEGORIES.GENERIC)
 
-        assert.equal(span.intrinsics.traceId, transaction.traceId)
-        assert.equal(span.intrinsics.guid, segment.id)
-        assert.equal(span.intrinsics.parentId, 'parent')
-        assert.equal(span.intrinsics.transactionId, transaction.id)
-        assert.equal(span.intrinsics.sampled, true)
-        assert.equal(span.intrinsics.priority, 42)
-        assert.equal(span.intrinsics.name, 'timers.setTimeout')
-        assert.equal(span.intrinsics.timestamp, segment.timer.start)
+      assert.equal(span.intrinsics.traceId, transaction.traceId)
+      assert.equal(span.intrinsics.guid, segment.id)
+      assert.equal(span.intrinsics.parentId, 'parent')
+      assert.equal(span.intrinsics.transactionId, transaction.id)
+      assert.equal(span.intrinsics.sampled, true)
+      assert.equal(span.intrinsics.priority, 42)
+      assert.equal(span.intrinsics.name, 'genericSegment')
+      assert.equal(span.intrinsics.timestamp, segment.timer.start)
 
-        assert.ok(span.intrinsics.duration >= 0.03 && span.intrinsics.duration <= 0.3)
+      assert.equal(span.intrinsics.duration, 0.3)
 
-        // Generic should not have 'span.kind' or 'component'
-        assert.equal(span.intrinsics['span.kind'], 'internal')
-        assert.equal(span.intrinsics.component, null)
+      // Generic should not have 'span.kind' or 'component'
+      assert.equal(span.intrinsics['span.kind'], 'internal')
+      assert.equal(span.intrinsics.component, null)
 
-        assert.ok(span.customAttributes)
-        const customAttributes = span.customAttributes
+      assert.ok(span.customAttributes)
+      const customAttributes = span.customAttributes
 
-        assert.ok(customAttributes['Span Lee'])
+      assert.ok(customAttributes['Span Lee'])
 
-        assert.ok(span.attributes)
-        const attributes = span.attributes
+      assert.ok(span.attributes)
+      const attributes = span.attributes
 
-        const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
+      const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
 
-        assert.ok(hasOwnAttribute('SpiderSpan'), 'Should have attribute added through segment')
-        assert.equal(attributes['server.address'], 'my-host')
-        assert.equal(attributes['server.port'], 222)
+      assert.ok(hasOwnAttribute('SpiderSpan'), 'Should have attribute added through segment')
+      assert.equal(attributes['server.address'], 'my-host')
+      assert.equal(attributes['server.port'], 222)
 
-        // Should have no http properties.
-        assert.ok(!hasOwnAttribute('externalLibrary'))
-        assert.ok(!hasOwnAttribute('externalUri'))
-        assert.ok(!hasOwnAttribute('externalProcedure'))
+      // Should have no http properties.
+      assert.ok(!hasOwnAttribute('externalLibrary'))
+      assert.ok(!hasOwnAttribute('externalUri'))
+      assert.ok(!hasOwnAttribute('externalProcedure'))
 
-        // Should have no datastore properties.
-        assert.ok(!hasOwnAttribute('db.statement'))
-        assert.ok(!hasOwnAttribute('db.instance'))
-        assert.ok(!hasOwnAttribute('db.system'))
-        assert.ok(!hasOwnAttribute('peer.hostname'))
-        assert.ok(!hasOwnAttribute('peer.address'))
-
-        end()
-      }, 50)
+      // Should have no datastore properties.
+      assert.ok(!hasOwnAttribute('db.statement'))
+      assert.ok(!hasOwnAttribute('db.instance'))
+      assert.ok(!hasOwnAttribute('db.system'))
+      assert.ok(!hasOwnAttribute('peer.hostname'))
+      assert.ok(!hasOwnAttribute('peer.address'))
+      end()
     })
   })
 

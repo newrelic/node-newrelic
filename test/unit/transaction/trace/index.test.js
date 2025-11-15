@@ -828,7 +828,7 @@ test('should set URI to null when request.uri attribute is excluded globally', a
   assert.ok(!requestUri)
 })
 
-test('should set URI to null when request.uri attribute is exluded from traces', async (t) => {
+test('should set URI to null when request.uri attribute is excluded from traces', async (t) => {
   const URL = '/test'
 
   const agent = helper.loadMockedAgent({

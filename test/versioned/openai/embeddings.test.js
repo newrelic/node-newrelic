@@ -7,9 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const fs = require('node:fs')
-const path = require('node:path')
-
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const createOpenAIMockServer = require('./mock-server')
@@ -18,9 +15,7 @@ const helper = require('../../lib/agent_helper')
 const {
   AI: { OPENAI }
 } = require('../../../lib/metrics/names')
-const { version: pkgVersion } = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '/node_modules/openai/package.json'))
-)
+const pkgVersion = helper.readPackageVersion(__dirname, 'openai')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 test.beforeEach(async (ctx) => {
@@ -121,13 +116,13 @@ test('should create an embedding message', (t, end) => {
       'request.model': 'text-embedding-ada-002',
       duration: segment.getDurationInMillis(),
       'response.organization': 'new-relic-nkmd8b',
-      token_count: undefined,
       'response.headers.llmVersion': '2020-10-01',
       'response.headers.ratelimitLimitRequests': '200',
       'response.headers.ratelimitLimitTokens': '150000',
       'response.headers.ratelimitResetTokens': '2ms',
       'response.headers.ratelimitRemainingTokens': '149994',
       'response.headers.ratelimitRemainingRequests': '197',
+      'response.usage.total_tokens': 6,
       input: 'This is an embedding test.',
       error: false
     }

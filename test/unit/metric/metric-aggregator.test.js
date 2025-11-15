@@ -92,7 +92,7 @@ test('Metric Aggregator', async (t) => {
     assert.equal(metricAggregator.started, metricAggregator._metrics.started)
   })
 
-  await t.test('_getMergeData() should return mergable metric collection', (t) => {
+  await t.test('_getMergeData() should return mergeable metric collection', (t) => {
     const { metricAggregator } = t.nr
     metricAggregator.getOrCreateMetric('metric1', 'scope1')
     metricAggregator.getOrCreateMetric('metric2')

@@ -13,12 +13,11 @@ const { CONTEXT_KEYS } = require('../../lib/logging-helper')
  * Assert function to verify the original log line is untouched by our instrumentation unless
  * local log decoration is enabled.  Local log decoration asserts `NR-LINKING` string exists on msg
  *
- * @param {Object} opts
+ * @param {object} opts options object
  * @param {boolean} [opts.includeLocalDecorating] is local log decoration enabled
- * @param {boolean} [opts.timestamp] does timestamp exist on original message
  * @param {string} [opts.level] level to assert is on message
- * @param opts.logLine
- * @param opts.hostname
+ * @param {object} opts.logLine log line object
+ * @param {string} opts.hostname hostname
  */
 helpers.originalMsgAssertion = function originalMsgAssertion({
   includeLocalDecorating = false,

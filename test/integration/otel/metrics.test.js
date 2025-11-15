@@ -139,9 +139,9 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   const supportMetrics = agent.metrics._metrics.unscoped
   const expectedMetricNames = [
     'Supportability/Nodejs/OpenTelemetryBridge/Setup',
-    'Supportability/Nodejs/OpenTelemetryBridge/Metrics',
-    'Supportability/Nodejs/OpenTelemetryBridge/Metrics/getMeter',
-    'Supportability/Nodejs/OpenTelemetryBridge/Metrics/meter/createCounter'
+    'Supportability/Metrics/Nodejs/OpenTelemetryBridge/enabled',
+    'Supportability/Metrics/Nodejs/OpenTelemetryBridge/getMeter',
+    'Supportability/Metrics/Nodejs/OpenTelemetryBridge/meter/createCounter'
   ]
   for (const expectedMetricName of expectedMetricNames) {
     assert.equal(supportMetrics[expectedMetricName].callCount, 1)

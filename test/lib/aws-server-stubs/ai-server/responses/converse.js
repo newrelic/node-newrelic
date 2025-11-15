@@ -12,9 +12,9 @@ responses.set('text converse ultimate question', {
   headers: {
     'content-type': contentType,
     'x-amzn-requestid': reqId,
-    'x-amzn-bedrock-invocation-latency': 9677,
-    'x-amzn-bedrock-output-token-count': 4,
-    'x-amzn-bedrock-input-token-count': 8
+    'x-amzn-bedrock-invocation-latency': '9677',
+    'x-amzn-bedrock-output-token-count': '9',
+    'x-amzn-bedrock-input-token-count': '14',
   },
   statusCode: 200,
   body: {
@@ -74,7 +74,7 @@ responses.set('text converse ultimate question streamed', {
       body: {
         metrics: { latencyMs: 232, },
         p: 'abc',
-        usage: { inputTokens: 17, outputTokens: 6, totalTokens: 23, },
+        usage: { inputTokens: 14, outputTokens: 9, totalTokens: 23, },
       }
     }
   ]

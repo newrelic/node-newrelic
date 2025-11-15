@@ -2,6 +2,90 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.6.4",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated MessageProducerSubscriber to properly set the sampled flag on traceparent",
+          "Updated `MessageConsumerSubscriber` to end transaction created for a given message consumption",
+          "Updated the bedrock middleware to be registered with a `high` priority to ensure payload is properly deserialized"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.6.3",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated openai instrumentation to properly handle streaming when `stream_options.include_usage` is set",
+          "Updated `@google/genai` to properly handle assigning token counts to LlmCompletionSummary message",
+          "Updated AWS Bedrock instrumentation to properly assign token counts"
+        ]
+      }
+    },
+    {
+      "version": "13.6.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated express instrumentation to properly instrument an array of middleware defined on a route"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.6.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated middleware wrapper to not wrap handler if it is not a function"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.6.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `ioredis` instrumentation to handle breakage of errors when using `.pipeline`",
+          "Updated `openai` `instrumentStream` function to handle empty chunk when `include_usage` is set"
+        ],
+        "features": [
+          "Added instrumentation for http2 client methods"
+        ]
+      }
+    },
+    {
+      "version": "13.5.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
+      "version": "13.4.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
+      "version": "13.3.3",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `openai` instrumentation to properly return APIPromise to avoid crashing when using `completions.parse` or `responses.parse`"
+        ],
+        "features": [
+          "Added support for tracing callback on subscribers"
+        ]
+      }
+    },
+    {
       "version": "13.3.2",
       "changes": {
         "security": [],
@@ -593,7 +677,7 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Added supoort for Node 22",
+          "Added support for Node 22",
           "Added AIM support for Meta Llama3 models in AWS Bedrock"
         ]
       }

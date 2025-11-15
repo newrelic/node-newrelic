@@ -12,6 +12,7 @@ const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { makeSink, logStuff, originalMsgAssertion, logForwardingMsgAssertion } = require('./helpers')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 function setup(testContext, config) {
   testContext.agent = helper.instrumentMockedAgent(config)
@@ -46,6 +47,13 @@ test('logging enabled/disabled', async (t) => {
       undefined,
       `should not create ${LOGGING.LIBS.BUNYAN} metric when logging is disabled`
     )
+  })
+
+  await t.test('should log tracking metrics', function(t) {
+    setup(t.nr, { application_logging: { enabled: true } })
+    const { agent } = t.nr
+    const { version } = require('bunyan/package.json')
+    assertPackageMetrics({ agent, pkg: 'bunyan', version })
   })
 
   await t.test('logging enabled', (t) => {

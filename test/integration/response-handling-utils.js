@@ -45,7 +45,7 @@ const endpointDataChecks = {
  * This allows for verifying response handling for endpoint under test still
  * behaves correctly when other endpoints fail.
  * @param {*} agent The agent instance to add data to
- * @param {*} callback
+ * @param {*} callback The function to call after the transaction ends.
  */
 function createTestData(agent, callback) {
   const metric = agent.metrics.getOrCreateMetric('myMetric')

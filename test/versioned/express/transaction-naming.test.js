@@ -100,7 +100,7 @@ test('transaction name with shared middleware function', function (t, end) {
     next()
   })
 
-  app.get('/path1', function (req, res) {
+  app.get('/path1', function secondRoute(req, res) {
     res.end()
   })
 
@@ -246,7 +246,7 @@ test('when using a string pattern in path', function (t, end) {
     res.end()
   })
 
-  runTest({ t, end, endpoint: '/abcd', expectedName: path })
+  runTest({ t, end, endpoint: '/abcd', expectedName: '/ab?cd' })
 })
 
 test('when using a regular expression in path', function (t, end) {
@@ -256,7 +256,7 @@ test('when using a regular expression in path', function (t, end) {
     res.end()
   })
 
-  runTest({ t, end, endpoint: '/abcd', expectedName: '/a/' })
+  runTest({ t, end, endpoint: '/abcd', expectedName: '/a' })
 })
 
 test('when using router with a route variable', function (t, end) {
@@ -542,15 +542,15 @@ function makeMultiRunner({ t, endpoint, expectedName, numTests, end }) {
 /**
  * Makes a request and waits for transaction to finish before ending test.
  * You can pass in the assertion library, this is for tests that rely on `tspl`
- * end is optionally called and will be ommitted when tests rely on `tspl`
+ * end is optionally called and will be omitted when tests rely on `tspl`
  * to end.
  *
  * @param {object} params to function
  * @param {object} params.t test context
- * @param {string} params.endpoint
+ * @param {string} params.endpoint endpoint
  * @param {string} [params.expectedName] defaults to endpoint if not specified
- * @param {function} [params.end] function that tells test to end
- * @param {object} params.localAssert library for assertions, defaults to `node:assert`
+ * @param {Function} [params.end] function that tells test to end
+ * @param {object} [params.localAssert] library for assertions, defaults to `node:assert`
  *
  */
 function runTest({ t, endpoint, expectedName, end, localAssert = require('node:assert') }) {

@@ -19,11 +19,6 @@ async function main() {
     },
   })
 
-  // Set up auto-shutdown after first request
-  const shutdown = () => {
-    process.exit(0)
-  }
-
   server.registerResource(
     'echo',
     new ResourceTemplate('echo://{message}', { list: undefined }),
@@ -38,7 +33,6 @@ async function main() {
           text: `Resource echo: ${message}`
         }]
       }
-      setTimeout(shutdown, 100)
       return result
     }
   )
@@ -52,7 +46,6 @@ async function main() {
     },
     async ({ message }) => {
       const result = { content: [{ type: 'text', text: `Tool echo: ${message}` }] }
-      setTimeout(shutdown, 100)
       return result
     }
   )
@@ -74,7 +67,6 @@ async function main() {
           }
         }]
       }
-      setTimeout(shutdown, 100)
       return result
     }
   )

@@ -64,7 +64,7 @@ function handler(req, res) {
       return
     }
 
-    const { headers, code, body, streamData } = RESPONSES.get(prompt)
+    const { headers, code, body, streamData, usage } = RESPONSES.get(prompt)
     for (const [key, value] of Object.entries(headers)) {
       res.setHeader(key, value)
     }
@@ -76,7 +76,7 @@ function handler(req, res) {
       // terminated with a `done: [DONE]` string.
       let outStream
       if (streamData !== 'do random') {
-        outStream = finiteStream(streamData, { ...body })
+        outStream = finiteStream(streamData, { ...body }, usage)
       } else {
         outStream = randomStream({ ...body })
         let streamChunkCount = 0
@@ -105,11 +105,13 @@ function handler(req, res) {
  * @param {string} dataToStream A fairly long string to split on space chars.
  * @param {object} chunkTemplate An object that is shaped like an OpenAI stream
  * data object.
+ * @param {object} usage provides usage data to send before ending the stream.
  * @returns {Readable} A paused stream.
  */
-function finiteStream(dataToStream, chunkTemplate) {
+function finiteStream(dataToStream, chunkTemplate, usage) {
   const parts = dataToStream.split(' ')
   let i = 0
+  let readUsage = false
   return new Readable({
     read() {
       // This is how the data is streamed from openai
@@ -121,6 +123,13 @@ function finiteStream(dataToStream, chunkTemplate) {
         const chunk = JSON.stringify(chunkTemplate)
         this.push(`data: ${chunk}\n\n`)
         i += 1
+      // handle simulating of `include_usage` in streams
+      // it sends the usage with empty choices before ending
+      } else if (usage && !readUsage) {
+        const template = { ...chunkTemplate, choices: [] }
+        const chunk = JSON.stringify({ usage, ...template })
+        this.push(`data: ${chunk}\n\n`)
+        readUsage = true
       } else {
         this.push('data: [DONE]\n\n')
         this.push(null)

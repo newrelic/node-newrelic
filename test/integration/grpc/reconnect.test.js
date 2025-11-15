@@ -42,7 +42,7 @@ test('test that connection class reconnects', async (t) => {
    *
    * While the test functions correctly with a valid connection,
    * we ensure proper connection / OK status handling for this case.
-   * @param stream
+   * @param {object} stream The stream to record.
    */
   const recordSpan = (stream) => {
     serverConnections++
@@ -95,7 +95,7 @@ test('test that connection class reconnects', async (t) => {
       plan.ok(true, 'disconnected')
 
       // if we've disconnected twice, the test is done
-      // mark the state as permanantly closed in order to
+      // mark the state as permanently closed in order to
       // avoid further automatic reconnects (skipping
       // _setState to avoid an additional disconnect event)
       if (countDisconnects > 1) {
@@ -181,7 +181,7 @@ test('Should reconnect even when data sent back', async (t) => {
       plan.ok(true, 'disconnected')
 
       // if we've disconnected twice, the test is done
-      // mark the state as permanantly closed in order to
+      // mark the state as permanently closed in order to
       // avoid further automatic reconnects (skipping
       // _setState to avoid an additional disconnect event)
       if (countDisconnects > 1) {

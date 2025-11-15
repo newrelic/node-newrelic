@@ -8,25 +8,25 @@ const utils = module.exports
 
 /**
  * @typedef {object} Page
- * @property {string} name
- * @property {description} description
- * @property {Widget[]} widgets
+ * @property {string} name the name of the Page
+ * @property {string} description the description of the Page
+ * @property {Widget[]} widgets an array of widgets
  */
 
 /**
  * @typedef {object} Dashboard
- * @property {string} name
- * @property {Page[]} pages
+ * @property {string} name the name of the Dashboard
+ * @property {Page[]} pages an array of pages
  */
 
 /**
  * @typedef {object} Widget
- * @property {string} title
- * @property {number} column
- * @property {number} row
- * @property {number} width
- * @property {number} height
- * @property {string} query
+ * @property {string} title widget title
+ * @property {number} column column number
+ * @property {number} row row number
+ * @property {number} width widget width
+ * @property {number} height widget height
+ * @property {string} query nrql query
  */
 
 /**

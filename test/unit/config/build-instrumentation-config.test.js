@@ -22,6 +22,10 @@ test('should default the instrumentation stanza', () => {
   const coreLibraries = require('../../../lib/core-instrumentation')
   const corePkgs = Object.keys(coreLibraries)
   corePkgs.forEach((pkg) => {
-    assert.deepEqual(pkgs[pkg], { enabled: { formatter: boolean, default: true } })
+    let defaultValue = true
+    if (pkg === 'timers') {
+      defaultValue = false
+    }
+    assert.deepEqual(pkgs[pkg], { enabled: { formatter: boolean, default: defaultValue } })
   })
 })

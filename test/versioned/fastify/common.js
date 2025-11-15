@@ -22,7 +22,7 @@ common.routesToTest = routesToTest
  * use cases of fastify: route handlers(sync/async), errors, named
  * handlers
  *
- * @param {Object} fastify
+ * @param {object} fastify fastify instance
  */
 common.setupRoutes = (fastify) => {
   /**
@@ -57,7 +57,7 @@ common.setupRoutes = (fastify) => {
   }, {})
 
   /**
-   * Registeres a named route handler for testing adding hooks for
+   * Registers a named route handler for testing adding hooks for
    * every request lifecycle
    */
   fastify.get('/add-hook', function routeHandler(request, reply) {
@@ -86,9 +86,9 @@ common.setupRoutes = (fastify) => {
  * Defines both a global middleware and middleware mounted at a specific
  * path. This tests the `middie` and/or `fastify-express` plugin middleware
  * instrumentation
- * @param root0
- * @param root0.fastify
- * @param root0.calls
+ * @param {object} params params object
+ * @param {object} params.fastify fastify instance
+ * @param {object} params.calls calls object
  */
 common.registerMiddlewares = ({ fastify, calls }) => {
   function testMiddleware(req, res, next) {
@@ -110,12 +110,12 @@ common.registerMiddlewares = ({ fastify, calls }) => {
 /**
  * Helper to make a request and parse the json body
  *
- * @param address.address
- * @param {Object} address fastify address contains address/port/family
- * @param address.port
+ * @param {object} address fastify address contains address/port/family
+ * @param {string} address.address fastify address
+ * @param {number} address.port fastify port
+ * @param {string} address.family fastify family
  * @param {string} uri to make request to
- * @param address.family
- * @returns {Object} parsed json body
+ * @returns {object} parsed json body
  */
 common.makeRequest = async ({ address, port, family }, uri) => {
   const formattedAddress = family === 'IPv6' ? `[${address}]` : address

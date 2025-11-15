@@ -9,7 +9,7 @@
         "node": ">=20"
       },
       "dependencies": {
-        "next": ">=13.4.19"
+        "next": ">=13.4.19 <16"
       },
       "files": [
         "app-dir.test.js"
@@ -20,7 +20,7 @@
         "node": ">=20"
       },
       "dependencies": {
-        "next": ">=14.0.0"
+        "next": ">=14.0.0 <16"
       },
       "files": [
         "attributes.test.js",

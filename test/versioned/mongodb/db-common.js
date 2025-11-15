@@ -12,6 +12,7 @@ const { removeModules } = require('../../lib/cache-buster')
 const common = require('./common')
 const collectionCommon = require('./collection-common')
 const helper = require('../../lib/agent_helper')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 let MONGO_HOST = null
 let MONGO_PORT = null
@@ -22,7 +23,7 @@ const BAD_MONGO_COMMANDS = ['collection']
  * docblocks there for clarification.
  *
  * @param {string} name Parent test name.
- * @param {function} run Provided a db instance and a verify callback.
+ * @param {Function} run Provided a db instance and a verify callback.
  */
 function dbTest(name, run) {
   test(name, async (t) => {
@@ -46,6 +47,12 @@ function dbTest(name, run) {
       await common.close(ctx.nr.client, ctx.nr.db)
       helper.unloadAgent(ctx.nr.agent)
       removeModules(['mongodb'])
+    })
+
+    await t.test('should log tracking metrics', function(t) {
+      const { agent } = t.nr
+      const { version } = require('mongodb/package.json')
+      assertPackageMetrics({ agent, pkg: 'mongodb', version })
     })
 
     await t.test('without transaction', (t, end) => {

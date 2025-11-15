@@ -45,28 +45,59 @@ const newrelicConfigOverrides = {
 }
 
 const jsdocConfig = {
+  settings: {
+    jsdoc: {
+      // This is explicity set, so we don't get TypeScript-specific linting errors.
+      mode: 'jsdoc'
+    }
+  },
   plugins: { jsdoc },
   rules: {
+    // General rules
     'jsdoc/require-jsdoc': 'off',
     'jsdoc/tag-lines': 'off',
-    'jsdoc/check-types': 'off',
+    'jsdoc/check-tag-names': 'error',
+    'jsdoc/check-access': 'error',
+    'jsdoc/implements-on-classes': 'error',
+    // Types rules
+    'jsdoc/check-types': 'error',
     'jsdoc/no-undefined-types': [
       'warn',
       {
         definedTypes: [
-          'Logger',
           'Agent',
-          'Shim',
-          'MessageShim',
-          'TraceSegment',
-          'Transaction',
-          'Tracer',
+          'Context',
+          'EventEmitter',
           'Exception',
+          'Logger',
+          'MessageShim',
           'MetricAggregator',
-          'EventEmitter'
+          'Metrics',
+          'OperationSpec',
+          'Segment',
+          'Shim',
+          'Spec',
+          'Trace',
+          'TraceSegment',
+          'Tracer',
+          'Transaction',
+          'QuerySpec',
+          'WebFrameworkShim'
         ]
       }
-    ]
+    ],
+    'jsdoc/valid-types': 'error',
+    // Parameter rules
+    'jsdoc/require-param-description': 'error',
+    'jsdoc/check-param-names': 'error',
+    'jsdoc/require-param-type': 'error',
+    // Returns rules
+    'jsdoc/require-returns-check': 'error',
+    'jsdoc/require-returns-type': 'error',
+    // Property rules
+    'jsdoc/require-property-description': 'error',
+    'jsdoc/require-property-name': 'error',
+    'jsdoc/require-property-type': 'error',
   }
 }
 const jsdocOverrides = {
@@ -76,7 +107,8 @@ const jsdocOverrides = {
     'api.js'
   ],
   rules: {
-    'jsdoc/require-jsdoc': 'warn'
+    // Public-facing functions should always have jsdoc
+    'jsdoc/require-jsdoc': 'error'
   }
 }
 

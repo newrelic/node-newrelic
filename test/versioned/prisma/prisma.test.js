@@ -11,6 +11,7 @@ const { findSegment } = require('../../lib/metrics_helper')
 const { verify, verifySlowQueries, findMany, raw, rawUpdate } = require('./utils')
 const { initPrismaApp, getPostgresUrl } = require('./setup')
 const { upsertUsers } = require('./app')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 const timeout = 30 * 1_000
 
@@ -33,6 +34,12 @@ test.afterEach(async (ctx) => {
   const { agent } = ctx.nr
   delete process.env.DATABASE_URL
   helper.unloadAgent(agent)
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('@prisma/client/package.json')
+  assertPackageMetrics({ agent, pkg: '@prisma/client', version })
 })
 
 test('Metrics and traces are recorded with a transaction', { timeout }, async (t) => {

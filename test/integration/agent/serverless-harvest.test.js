@@ -236,13 +236,23 @@ test('sending span events', async (t) => {
   agent.config.span_events.enabled = true
 
   helper.runInTransaction(agent, (tx) => {
-    setTimeout(() => {
-      // Just to create an extra span.
-      tx.finalizeNameFromWeb(200)
-      tx.end()
-      agent.once('harvestFinished', end)
-      agent.harvestSync()
-    }, 100)
+    const segment = agent.tracer.createSegment({
+      name: 'genericSegment',
+      transaction: tx,
+      parent: tx.trace.root
+    })
+    segment.setDurationInMillis(300)
+    const child = agent.tracer.createSegment({
+      name: 'childSegment',
+      transaction: tx,
+      parent: segment
+    })
+    child.setDurationInMillis(500)
+    // Just to create an extra span.
+    tx.finalizeNameFromWeb(200)
+    tx.end()
+    agent.once('harvestFinished', end)
+    agent.harvestSync()
   })
 
   await plan.completed

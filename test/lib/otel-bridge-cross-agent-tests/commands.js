@@ -36,7 +36,7 @@ function forceSegmentName(ctx, name) {
  * @param {object} params.tracer otel tracer instance
  * @param {string} params.spanName name of span to force
  * @param {string} params.spanKind span kind to use to create span
- * @param {function} cb function to call after span is created, passes newly created span
+ * @param {Function} cb function to call after span is created, passes newly created span
  */
 function doWorkInSpan({ tracer, spanName, spanKind }, cb) {
   const kind = SpanKind[spanKind.toUpperCase()]
@@ -60,7 +60,7 @@ function doWorkInSpan({ tracer, spanName, spanKind }, cb) {
  * @param {object} params.api agent api
  * @param {object} params.agent agent instance
  * @param {string} params.transactionName name of transaction to force
- * @param {function} cb function to call within transaction and passes active tx handle
+ * @param {Function} cb function to call within transaction and passes active tx handle
  */
 function doWorkInTransaction({ api, agent, transactionName }, cb) {
   api.startBackgroundTransaction(transactionName, () => {
@@ -80,7 +80,7 @@ function doWorkInTransaction({ api, agent, transactionName }, cb) {
  * @param {object} params.api agent api
  * @param {object} params.agent agent instance
  * @param {string} params.segmentName name of segment to force
- * @param {function} cb function to call within segment creation and passes newly created segment
+ * @param {Function} cb function to call within segment creation and passes newly created segment
  */
 function doWorkInSegment({ agent, api, segmentName }, cb) {
   api.startSegment(segmentName, true, () => {
@@ -96,7 +96,7 @@ function doWorkInSegment({ agent, api, segmentName }, cb) {
  * @param {object} params.agent agent instance
  * @param {string} params.name name of attribute
  * @param {string} params.value value of attribute
- * @param {function} cb function to call after attribute has been set on segment
+ * @param {Function} cb function to call after attribute has been set on segment
  */
 function addOTelAttribute({ agent, name, value }, cb) {
   const segment = agent.tracer.getSegment()
@@ -109,7 +109,7 @@ function addOTelAttribute({ agent, name, value }, cb) {
  *
  * @param {object} params to function
  * @param {string} params.errorMessage message to set on exception
- * @param {function} cb function to call after exception is recorded on on active span
+ * @param {Function} cb function to call after exception is recorded on on active span
  */
 function recordExceptionOnSpan({ errorMessage }, cb) {
   const active = trace.getActiveSpan()
@@ -134,7 +134,7 @@ function recordExceptionOnSpan({ errorMessage }, cb) {
  * @param {number} params.traceIdInHeader trace id to set on traceparent
  * @param {number} params.spanIdInHeader span id to set on traceparent
  * @param {number} params.sampledFlagInHeader sampled flag to set on traceparent
- * @param {function} cb function to call after span is created, passes newly created span
+ * @param {Function} cb function to call after span is created, passes newly created span
  */
 function doWorkInSpanWithInboundContext({ tracer, spanKind, traceIdInHeader, spanIdInHeader, sampledFlagInHeader, spanName }, cb) {
   const headers = {
@@ -157,7 +157,7 @@ function doWorkInSpanWithInboundContext({ tracer, spanKind, traceIdInHeader, spa
  * There's nothing we need to do to simulate an external call.
  *
  * @param {object} _unused param
- * @param {function} cb to call with active context
+ * @param {Function} cb to call with active context
  */
 function simulateExternalCall(_unused, cb) {
   const active = context.active()
@@ -171,7 +171,7 @@ function simulateExternalCall(_unused, cb) {
  * @param {object} params to function
  * @param {object} params.agent agent instance
  * @param {object} params.data active context
- * @param {function} cb function to run in new context
+ * @param {Function} cb function to run in new context
  */
 function oTelInjectHeaders({ agent, data }, cb) {
   const ctx = data
@@ -188,7 +188,7 @@ function oTelInjectHeaders({ agent, data }, cb) {
  *
  * @param {object} params to function
  * @param {object} params.agent agent instance
- * @param {function} cb function to run after setting inbound tracecontext
+ * @param {Function} cb function to run after setting inbound tracecontext
  */
 function nrInjectHeaders({ agent }, cb) {
   const tx = agent.tracer.getTransaction()
@@ -205,7 +205,7 @@ function nrInjectHeaders({ agent }, cb) {
  * @param {object} params.tracer otel tracer instance
  * @param {string} params.spanName name of span to force
  * @param {string} params.spanKind span kind to use to create span
- * @param {function} cb function to call after span is created, passes newly created span
+ * @param {Function} cb function to call after span is created, passes newly created span
  */
 function doWorkInSpanWithRemoteParent({ tracer, spanKind, spanName }, cb) {
   const kind = SpanKind[spanKind.toUpperCase()]

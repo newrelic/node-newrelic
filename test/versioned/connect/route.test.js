@@ -9,7 +9,7 @@ const test = require('node:test')
 const http = require('node:http')
 const semver = require('semver')
 const tspl = require('@matteo.collina/tspl')
-
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
 
@@ -27,6 +27,11 @@ test.beforeEach((ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   removeModules(['connect'])
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent, pkgVersion } = t.nr
+  assertPackageMetrics({ agent, pkg: 'connect', version: pkgVersion })
 })
 
 test('should properly name transaction from route name', async (t) => {
@@ -98,18 +103,16 @@ test('should default to `/` when no route is specified', async (t) => {
 })
 
 /**
- * Sets up HTTP server and binds a connect instance
+ * Sets up HTTP server and binds a connect instance.
  * It then makes a request to specified url and asserts the response
- * data is correct
+ * data is correct.
  *
- * @param {Object} params
+ * @param {object} params params object
  * @param {string} params.url url to make request
  * @param {string} params.expectedData expected response data
- * @param {Object} app connect app
- *
- * @param params.plan
- * @param params.app
- * @param params.pkgVersion
+ * @param {object} params.plan plan object
+ * @param {object} params.app connect app
+ * @param {string} params.pkgVersion connect package version
  * @returns {http.Server}
  */
 function createServerAndMakeRequest({ url, expectedData, plan, app, pkgVersion }) {

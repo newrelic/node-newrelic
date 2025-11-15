@@ -9,7 +9,7 @@ const test = require('node:test')
 const tspl = require('@matteo.collina/tspl')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 const utils = require('./utils')
@@ -20,11 +20,6 @@ const broker = `${params.kafka_host}:${params.kafka_port}`
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent({
-    instrumentation: {
-      timers: {
-        enabled: false
-      }
-    },
     feature_flag: {
       kafkajs_instrumentation: true
     }
@@ -32,9 +27,9 @@ test.beforeEach(async (ctx) => {
 
   const { Kafka, logLevel } = require('kafkajs')
   ctx.nr.Kafka = Kafka
-  const topic = utils.randomString()
+  const topic = helper.randomString('topic')
   ctx.nr.topic = topic
-  const clientId = utils.randomString('kafka-test')
+  const clientId = helper.randomString('kafka-test')
   ctx.nr.clientId = clientId
 
   const kafka = new Kafka({
@@ -57,6 +52,12 @@ test.afterEach(async (ctx) => {
   removeModules(['kafkajs'])
   await ctx.nr.consumer.disconnect()
   await ctx.nr.producer.disconnect()
+})
+
+test('should log tracking metrics', function(t) {
+  const { agent } = t.nr
+  const { version } = require('kafkajs/package.json')
+  assertPackageMetrics({ agent, pkg: 'kafkajs', version })
 })
 
 test('send records correctly', async (t) => {

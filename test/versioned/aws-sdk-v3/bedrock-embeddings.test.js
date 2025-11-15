@@ -8,10 +8,10 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const { assertSegments, match } = require('../../lib/custom-assertions')
-const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
-const { afterEach } = require('./common')
+const { afterEach, getAiResponseServer } = require('./common')
+const createAiResponseServer = getAiResponseServer()
 const requests = {
   amazon: (prompt, modelId) => {
     return {
@@ -26,7 +26,6 @@ const requests = {
     }
   }
 }
-const { tspl } = require('@matteo.collina/tspl')
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
@@ -96,7 +95,7 @@ test.afterEach(afterEach)
       const expectedEmbedding = {
         id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
         appName: 'New Relic for Node.js tests',
-        request_id: '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
+        request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
         trace_id: tx.traceId,
         span_id: segment.id,
         'response.model': modelId,
@@ -105,7 +104,8 @@ test.afterEach(afterEach)
         'request.model': modelId,
         duration: segment.getDurationInMillis(),
         input: prompt,
-        error: false
+        error: false,
+        'response.usage.total_tokens': 14
       }
 
       assert.equal(embedding[0].type, 'LlmEmbedding')
@@ -115,18 +115,49 @@ test.afterEach(afterEach)
     })
   })
 
-  test(`${modelId}: text answer (streamed)`, async (t) => {
-    const { bedrock, client, responses } = t.nr
+  // Amazon Bedrock does not currently support streaming responses for amazon titan embeddings
+  // See: https://docs.aws.amazon.com/bedrock/latest/userguide/service_code_examples_bedrock-runtime_amazon_titan_text_embeddings.html
+  test(`${modelId}: text answer (streamed)`, { skip: resKey === 'amazon' }, async (t) => {
+    const { agent, bedrock, client } = t.nr
     const prompt = `text ${resKey} ultimate question streamed`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
-
-    const expected = responses[resKey].get(prompt)
-    try {
-      await client.send(command)
-    } catch (error) {
-      assert.equal(error.message, expected.body.message)
+    function consumeStreamChunk() {
+      // no-op function to consume stream chunks
     }
+
+    await helper.runInTransaction(agent, async (tx) => {
+      const response = await client.send(command)
+      for await (const event of response.body) {
+        // no-op iteration over the stream in order to exercise the instrumentation
+        consumeStreamChunk(event)
+      }
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 1)
+      const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
+      const expectedEmbedding = {
+        id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
+        appName: 'New Relic for Node.js tests',
+        request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+        trace_id: tx.traceId,
+        span_id: segment.id,
+        'response.model': modelId,
+        vendor: 'bedrock',
+        ingest_source: 'Node',
+        'request.model': modelId,
+        duration: segment.getDurationInMillis(),
+        input: prompt,
+        error: false,
+        'response.usage.total_tokens': 14
+      }
+
+      assert.equal(embedding[0].type, 'LlmEmbedding')
+      match(embedding[1], expectedEmbedding)
+
+      tx.end()
+    })
   })
 
   test(`${modelId}: should properly create errors on embeddings`, async (t) => {
@@ -226,33 +257,5 @@ test.afterEach(afterEach)
 
       tx.end()
     })
-  })
-})
-
-test('should utilize tokenCountCallback when set', async (t) => {
-  const plan = tspl(t, { plan: 3 })
-
-  const { bedrock, client, agent } = t.nr
-  const prompt = 'embed text amazon token count callback response'
-  const modelId = 'amazon.titan-embed-text-v1'
-  const input = requests.amazon(prompt, modelId)
-
-  agent.config.ai_monitoring.record_content.enabled = false
-  agent.llm.tokenCountCallback = function (model, content) {
-    plan.equal(model, modelId)
-    plan.equal(content, prompt)
-    return content?.split(' ')?.length
-  }
-  const command = new bedrock.InvokeModelCommand(input)
-
-  await helper.runInTransaction(agent, async (tx) => {
-    await client.send(command)
-
-    const events = agent.customEventAggregator.events.toArray()
-    const embeddings = events.filter((e) => e[0].type === 'LlmEmbedding')
-    const msg = embeddings[0][1]
-    plan.equal(msg.token_count, 7)
-
-    tx.end()
   })
 })

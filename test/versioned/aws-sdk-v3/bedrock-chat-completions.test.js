@@ -10,15 +10,16 @@ const {
   afterEach,
   assertChatCompletionMessages,
   assertChatCompletionSummary,
-  assertChatCompletionMessage
+  assertChatCompletionMessage,
+  getAiResponseServer
 } = require('./common')
 const helper = require('../../lib/agent_helper')
-const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { assertSegments, match } = require('../../lib/custom-assertions')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const { tspl } = require('@matteo.collina/tspl')
+const createAiResponseServer = getAiResponseServer()
 
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.
@@ -99,13 +100,12 @@ test.beforeEach(async (ctx) => {
   ctx.nr.responses = responses
   ctx.nr.expectedExternalPath = (modelId, method = 'invoke') => `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
 
-  const client = new bedrock.BedrockRuntimeClient({
+  ctx.nr.client = new bedrock.BedrockRuntimeClient({
     region: 'us-east-1',
     credentials: FAKE_CREDENTIALS,
     endpoint: baseUrl,
     maxAttempts: 1
   })
-  ctx.nr.client = client
 })
 
 test.afterEach(afterEach)
@@ -192,6 +192,49 @@ test.afterEach(afterEach)
         tx.end()
         resolve()
       })
+    })
+    await promise
+  })
+
+  test(`${modelId}:  supports assigning token counts in callback`, async (t) => {
+    const { bedrock, client, agent } = t.nr
+    const { promise, resolve } = promiseResolvers()
+    const prompt = `text ${resKey} ultimate question`
+    const input = requests[resKey](prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
+    const promptTokens = 9
+    const completionTokens = 14
+
+    function cb(model, content) {
+      assert.equal(model, modelId)
+      if (content === prompt) {
+        return promptTokens
+      } else {
+        return completionTokens
+      }
+    }
+    const api = helper.getAgentApi()
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, async (tx) => {
+      api.addCustomAttribute('llm.conversation_id', 'convo-id')
+      await client.send(command)
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 3)
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+
+      assertChatCompletionMessages({
+        modelId,
+        prompt,
+        resContent: '42',
+        tx,
+        expectedId: modelId.includes('ai21') || modelId.includes('cohere') ? '1234' : null,
+        chatMsgs
+      })
+
+      assertChatCompletionSummary({ tx, modelId, chatSummary, promptTokens, completionTokens })
+      tx.end()
+      resolve()
     })
     await promise
   })
@@ -335,7 +378,8 @@ test.afterEach(afterEach)
         modelId,
         prompt,
         tx,
-        chatMsgs
+        chatMsgs,
+        error: true
       })
 
       assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
@@ -634,18 +678,31 @@ test('models should properly create errors on stream interruption', async (t) =>
   const prompt = 'text amazon bad stream'
   const input = requests.amazon(prompt, modelId)
 
+  const httpError = {
+    code: 'ECONNRESET',
+    message: /aborted/,
+    $response: {
+      statusCode: 500
+    }
+  }
+  const http2Error = {
+    message: /Unterminated string in JSON|Unexpected non-whitespace character/,
+    $response: {
+      statusCode: 500
+    }
+  }
+
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
   await helper.runInTransaction(agent, async (tx) => {
     try {
       await client.send(command)
     } catch (error) {
-      match(error, {
-        code: 'ECONNRESET',
-        message: /aborted/,
-        $response: {
-          statusCode: 500
-        }
-      })
+      // http errors are different from http2 errors
+      if (error.code) {
+        match(error, httpError)
+      } else {
+        match(error, http2Error)
+      }
     }
 
     const events = agent.customEventAggregator.events.toArray()
@@ -687,17 +744,15 @@ test('should not instrument stream when disabled', async (t) => {
       {
         outputText: '42',
         index: 0,
-        totalOutputTextTokenCount: 75,
         completionReason: 'endoftext',
-        inputTextTokenCount: 13,
+        inputTextTokenCount: '14',
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 8,
-          outputTokenCount: 4,
+          inputTokenCount: '14',
+          outputTokenCount: '9',
           invocationLatency: 3879,
           firstByteLatency: 3291
         }
-      },
-      'should not interfere with stream'
+      }
     )
 
     const events = agent.customEventAggregator.events.toArray()
@@ -723,7 +778,7 @@ test('should not instrument stream when disabled', async (t) => {
 })
 
 test('should utilize tokenCountCallback when set', async (t) => {
-  const plan = tspl(t, { plan: 5 })
+  const plan = tspl(t, { plan: 13 })
 
   const { bedrock, client, agent } = t.nr
   const prompt = 'text amazon user token count callback response'
@@ -744,7 +799,7 @@ test('should utilize tokenCountCallback when set', async (t) => {
     const events = agent.customEventAggregator.events.toArray()
     const completions = events.filter((e) => e[0].type === 'LlmChatCompletionMessage')
     plan.equal(
-      completions.some((e) => e[1].token_count === 7),
+      completions.some((e) => e[1].token_count === 0),
       true
     )
 

@@ -134,11 +134,11 @@ async function findMergedPRs(repo, ignoredLabels) {
 
   const filteredPullRequests = mergedPullRequests.filter((pr) => {
     // Find all PRs without an ignored label
-    const withIngored = pr.labels.some(({ name }) => ignoredLabels.includes(name))
+    const withIgnored = pr.labels.some(({ name }) => ignoredLabels.includes(name))
 
     // Sometimes the commit for the PR the tag is set to has an earlier time than
     // the PR merge time and we'll pull in release note PRs. Filters those out.
-    return pr.merge_commit_sha !== tag.commit.sha && !withIngored
+    return pr.merge_commit_sha !== tag.commit.sha && !withIgnored
   })
 
   console.log(`Found ${filteredPullRequests.length} PRs not yet released.`)

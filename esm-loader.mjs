@@ -9,10 +9,10 @@ import subscriptions from './lib/subscriber-configs.js'
 import createSubscriberConfigs from './lib/subscribers/create-config.js'
 // Exclusions must be regexes
 const exclusions = [/@openai\/agents.*/]
-const { packages, instrumentations } = createSubscriberConfigs(subscriptions)
+const { instrumentations } = createSubscriberConfigs(subscriptions)
 
 register('@apm-js-collab/tracing-hooks/hook.mjs', import.meta.url, {
-  data: { instrumentations, packages }
+  data: { instrumentations }
 })
 register('import-in-the-middle/hook.mjs', import.meta.url, {
   data: { exclude: exclusions }

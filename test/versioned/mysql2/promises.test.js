@@ -6,25 +6,14 @@
 'use strict'
 
 const setup = require('../mysql/setup')
-const fs = require('fs')
 const semver = require('semver')
 const test = require('node:test')
 const assert = require('node:assert')
-const path = require('node:path')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 const { DATABASE, USER, TABLE } = require('./constants')
-
-// exports are defined in newer versions so must read file directly
-let pkgVersion
-try {
-  ;({ version: pkgVersion } = require('mysql2/package'))
-} catch {
-  ;({ version: pkgVersion } = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '/node_modules/mysql2/package.json'))
-  ))
-}
+const pkgVersion = helper.readPackageVersion(__dirname, 'mysql2')
 
 test('mysql2 promises', { timeout: 30000 }, async (t) => {
   t.beforeEach(async (ctx) => {
@@ -32,7 +21,7 @@ test('mysql2 promises', { timeout: 30000 }, async (t) => {
     const agent = helper.instrumentMockedAgent({
       slow_sql: { enabled: true },
       transaction_tracer: {
-        recod_sql: 'raw',
+        record_sql: 'raw',
         explain_threshold: 0,
         enabled: true
       }

@@ -30,7 +30,7 @@ test('should properly create a LlmEmbedding event', (t, end) => {
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
-      const segment = api.shim.getActiveSegment()
+      const segment = agent.tracer.getSegment()
       segment.end()
       const embeddingEvent = new LlmEmbedding({
         agent,
@@ -87,7 +87,7 @@ test('should set error to true', (t, end) => {
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, () => {
     api.startSegment('fakeSegment', false, () => {
-      const segment = api.shim.getActiveSegment()
+      const segment = agent.tracer.getSegment()
       const embeddingEvent = new LlmEmbedding({
         agent,
         segment,
@@ -101,17 +101,22 @@ test('should set error to true', (t, end) => {
   })
 })
 
-test('respects record_content', (t, end) => {
+test('respects record_content by not recording content when set to false', (t, end) => {
   const { agent } = t.nr
   const req = {
     input: 'This is my test input',
     model: 'gpt-3.5-turbo-0613'
   }
   agent.config.ai_monitoring.record_content.enabled = false
+  function cb(model, content) {
+    return 65
+  }
 
   const api = helper.getAgentApi()
+  api.setLlmTokenCountCallback(cb)
+
   helper.runInTransaction(agent, () => {
-    const segment = api.shim.getActiveSegment()
+    const segment = agent.tracer.getSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
@@ -119,58 +124,80 @@ test('respects record_content', (t, end) => {
       response: res
     })
     assert.equal(embeddingEvent.input, undefined)
+    assert.equal(embeddingEvent['response.usage.total_tokens'], 65)
     end()
   })
 })
 
-test('should calculate token count from tokenCountCallback', (t, end) => {
+test('respects record_content by recording content when true', (t, end) => {
   const { agent } = t.nr
   const req = {
     input: 'This is my test input',
     model: 'gpt-3.5-turbo-0613'
   }
-
-  const api = helper.getAgentApi()
 
   function cb(model, content) {
-    if (model === req.model) {
-      return content.length
-    }
+    return 65
   }
 
+  const api = helper.getAgentApi()
   api.setLlmTokenCountCallback(cb)
   helper.runInTransaction(agent, () => {
-    const segment = api.shim.getActiveSegment()
-    delete res.usage
+    const segment = agent.tracer.getSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
       request: req,
       response: res
     })
-    assert.equal(embeddingEvent.token_count, 21)
+    assert.equal(embeddingEvent['response.usage.total_tokens'], 65)
+    assert.equal(embeddingEvent.input, req.input)
     end()
   })
 })
 
-test('should not set token count when not present in usage nor tokenCountCallback', (t, end) => {
+test('does not calculate tokens when no content exists', (t, end) => {
+  const { agent } = t.nr
+  const req = {
+    model: 'gpt-3.5-turbo-0613'
+  }
+
+  function cb(model, content) {
+    return 65
+  }
+
+  const api = helper.getAgentApi()
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, () => {
+    const segment = agent.tracer.getSegment()
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
+    })
+    assert.equal(embeddingEvent['response.usage.total_tokens'], undefined)
+    assert.equal(embeddingEvent.input, undefined)
+    end()
+  })
+})
+
+test('assigns total_tokens from response', (t, end) => {
   const { agent } = t.nr
   const req = {
     input: 'This is my test input',
     model: 'gpt-3.5-turbo-0613'
   }
 
-  const api = helper.getAgentApi()
   helper.runInTransaction(agent, () => {
-    const segment = api.shim.getActiveSegment()
-    delete res.usage
+    const segment = agent.tracer.getSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
       request: req,
       response: res
     })
-    assert.equal(embeddingEvent.token_count, undefined)
+    assert.equal(embeddingEvent['response.usage.total_tokens'], 30)
     end()
   })
 })

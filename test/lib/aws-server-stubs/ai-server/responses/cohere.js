@@ -13,8 +13,8 @@ responses.set('text cohere ultimate question', {
     'content-type': contentType,
     'x-amzn-requestid': reqId,
     'x-amzn-bedrock-invocation-latency': '9612',
-    'x-amzn-bedrock-output-token-count': '4',
-    'x-amzn-bedrock-input-token-count': '8'
+    'x-amzn-bedrock-output-token-count': '9',
+    'x-amzn-bedrock-input-token-count': '14'
   },
   statusCode: 200,
   body: {
@@ -55,8 +55,8 @@ responses.set('text cohere ultimate question streamed', {
         id: '1234',
         prompt: 'What is the answer to life, the universe, and everything?',
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 8,
-          outputTokenCount: 4,
+          inputTokenCount: '14',
+          outputTokenCount: '9',
           invocationLatency: 8623,
           firstByteLatency: 8623
         }
@@ -68,9 +68,9 @@ responses.set('text cohere ultimate question streamed', {
 responses.set('embed text cohere success', {
   headers: {
     'content-type': contentType,
-    'x-amzn-requestid': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
+    'x-amzn-requestid': reqId,
     'x-amzn-bedrock-invocation-latency': '195',
-    'x-amzn-bedrock-input-token-count': '13'
+    'x-amzn-bedrock-input-token-count': '14'
   },
   statusCode: 200,
   body: {

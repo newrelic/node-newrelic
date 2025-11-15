@@ -16,8 +16,9 @@ const params = require('../../lib/params')
 const setup = require('./setup')
 const { getClient } = require('./utils')
 const { findSegment } = require('../../lib/metrics_helper')
+const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
-module.exports = function ({ lib, factory, poolFactory, constants }) {
+module.exports = function ({ lib, factory, poolFactory, constants, version }) {
   const { USER, DATABASE, TABLE } = constants
   test('Basic run through mysql functionality', { timeout: 30 * 1000 }, async function (t) {
     t.beforeEach(async function (ctx) {
@@ -25,7 +26,7 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
       const agent = helper.instrumentMockedAgent({
         slow_sql: { enabled: true },
         transaction_tracer: {
-          recod_sql: 'raw',
+          record_sql: 'raw',
           explain_threshold: 0,
           enabled: true
         }
@@ -50,6 +51,11 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
           resolve()
         })
       })
+    })
+
+    await t.test('should log tracking metrics', function(t) {
+      const { agent } = t.nr
+      assertPackageMetrics({ agent, pkg: lib, version })
     })
 
     await t.test('basic transaction', function testTransaction(t, end) {
@@ -154,11 +160,12 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
               assert.ok(!err, 'should not fail to set database')
 
               client.query('SELECT 1 + 1 AS solution', function (err) {
-                const seg = tx.trace.getParent(agent.tracer.getSegment().parentId)
+                assert.ok(!err, 'no errors')
+                const seg = agent.tracer.getSegment()
+                assert.ok(seg, 'there is a segment')
+                assert.equal(seg.name, 'Datastore/statement/MySQL/unknown/select', 'should be in select segment')
                 const attributes = seg.getAttributes()
 
-                assert.ok(!err, 'no errors')
-                assert.ok(seg, 'there is a segment')
                 assert.equal(
                   attributes.host,
                   urltils.isLocalhost(params.mysql_host)
@@ -213,6 +220,7 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
 
     await t.test('streaming query should be timed correctly', function testCB(t, end) {
       const { agent, pool } = t.nr
+      const api = helper.getAgentApi()
       assert.ok(!agent.getTransaction(), 'no transaction should be in play yet')
       helper.runInTransaction(agent, function transactionInScope() {
         assert.ok(agent.getTransaction(), 'we should be in a transaction')
@@ -239,9 +247,17 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
             ended = true
           })
 
-          setTimeout(function actualEnd() {
+          function sleepFunction(cb) {
+            setTimeout(() => {
+              pool.release(client)
+              cb(null, 'done sleeping')
+            }, 2000)
+          }
+
+          api.startSegment('customSegment', true, sleepFunction, function cb(err, output) {
+            assert.ok(!err)
+            assert.equal(output, 'done sleeping')
             const transaction = agent.getTransaction().end()
-            pool.release(client)
             assert.ok(results && ended, 'result and end events should occur')
             const traceRoot = transaction.trace.root
             const traceRootDuration = traceRoot.timer.getDurationInMillis()
@@ -263,7 +279,7 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
             )
 
             end()
-          }, 2000)
+          })
         })
       })
     })
@@ -290,24 +306,14 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
           query.on('end', function endCallback() {
             setTimeout(function actualEnd() {
               const transaction = agent.getTransaction().end()
+              assert.ok(transaction, 'should still have access to')
               pool.release(client)
+
               const traceRoot = transaction.trace.root
               const [querySegment] = transaction.trace.getChildren(traceRoot.id)
+              assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
               const queryChildren = transaction.trace.getChildren(querySegment.id)
-              assert.equal(queryChildren.length, 2, 'the query segment should have two children')
-
-              const childSegment = queryChildren[1]
-              assert.equal(
-                childSegment.name,
-                'Callback: endCallback',
-                'children should be callbacks'
-              )
-              const [grandChildSegment] = transaction.trace.getChildren(childSegment.id)
-              assert.equal(
-                grandChildSegment.name,
-                'timers.setTimeout',
-                'grand children should be timers'
-              )
+              assert.equal(queryChildren.length, 0, 'the Datastore segment should have no children')
               end()
             }, 100)
           })
@@ -373,10 +379,11 @@ module.exports = function ({ lib, factory, poolFactory, constants }) {
             client.query('use test_db;', function (err) {
               assert.ok(!err)
               client.query('SELECT 1 + 1 AS solution', function (err) {
-                const seg = txn.trace.getParent(agent.tracer.getSegment().parentId)
-                const attributes = seg.getAttributes()
                 assert.ok(!err)
+                const seg = agent.tracer.getSegment()
                 assert.ok(seg, 'should have a segment')
+                assert.equal(seg.name, 'Datastore/statement/MySQL/unknown/select', 'should be in select segment')
+                const attributes = seg.getAttributes()
                 assert.equal(
                   attributes.host,
                   urltils.isLocalhost(params.mysql_host)

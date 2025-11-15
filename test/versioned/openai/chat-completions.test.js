@@ -7,8 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const fs = require('node:fs')
-const path = require('node:path')
 const semver = require('semver')
 
 const { removeModules } = require('../../lib/cache-buster')
@@ -19,15 +17,13 @@ const helper = require('../../lib/agent_helper')
 const {
   AI: { OPENAI }
 } = require('../../../lib/metrics/names')
-// have to read and not require because openai does not export the package.json
-const { version: pkgVersion } = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '/node_modules/openai/package.json'))
-)
+const pkgVersion = helper.readPackageVersion(__dirname, 'openai')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const TRACKING_METRIC = `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
 
 const responses = require('./mock-chat-api-responses')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common-chat-api')
+const { tspl } = require('@matteo.collina/tspl')
 
 test('chat.completions.create', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -57,12 +53,34 @@ test('chat.completions.create', async (t) => {
     removeModules('openai')
   })
 
+  // Note: I cannot figure out how to get the mock server to do the right thing,
+  // but this was failing with a different issue before
+  await t.test('should not crash when you call `completions.parse`', { skip: semver.lt(pkgVersion, '5.0.0') }, async (t) => {
+    const plan = tspl(t, { plan: 1 })
+    const { client, agent } = t.nr
+    await helper.runInTransaction(agent, async (tx) => {
+      try {
+        await client.chat.completions.parse({
+          messages: [{ role: 'user', content: 'You are a mathematician.' }]
+        })
+      } catch (err) {
+        plan.match(err.message, /.*Body is unusable.*/)
+      } finally {
+        tx.end()
+      }
+    })
+
+    await plan.completed
+  })
+
   await t.test('should create span on successful chat completion create', (t, end) => {
     const { client, agent, host, port } = t.nr
     helper.runInTransaction(agent, async (tx) => {
-      const results = await client.chat.completions.create({
+      const prom = client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
       })
+
+      const results = await prom
 
       assert.equal(results.headers, undefined, 'should remove response headers from user result')
       assert.equal(results.choices[0].message.content, '1 plus 2 is 3.')
@@ -130,7 +148,7 @@ test('chat.completions.create', async (t) => {
       })
 
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-      assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage: true })
+      assertChatCompletionSummary({ tx, model, chatSummary })
 
       tx.end()
       end()
@@ -209,6 +227,55 @@ test('chat.completions.create', async (t) => {
           id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
           model,
           resContent: res,
+          reqContent: content,
+          noTokenUsage: true
+        })
+
+        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+        assertChatCompletionSummary({ tx, model, chatSummary, noUsageTokens: true })
+
+        tx.end()
+        end()
+      })
+    })
+
+    await t.test('should assign usage information when `include_usage` exists in stream', (t, end) => {
+      const { client, agent } = t.nr
+      helper.runInTransaction(agent, async (tx) => {
+        const content = 'Streamed response usage'
+        const model = 'gpt-4'
+        const stream = await client.chat.completions.create({
+          stream: true,
+          model,
+          messages: [
+            { role: 'user', content },
+            { role: 'user', content: 'What does 1 plus 1 equal?' }
+          ],
+          streaming_options: { include_usage: true }
+        })
+
+        let chunk = {}
+        let res = ''
+        for await (chunk of stream) {
+          if (!chunk.usage) {
+            res += chunk.choices[0]?.delta?.content
+          }
+        }
+        assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
+        assert.equal(chunk.choices[0].message.role, 'assistant')
+        const expectedRes = responses.get(content)
+        assert.equal(chunk.choices[0].message.content, expectedRes.streamData)
+        assert.equal(chunk.choices[0].message.content, res)
+        assert.deepEqual(chunk.usage, { prompt_tokens: 53, completion_tokens: 11, total_tokens: 64 })
+        const events = agent.customEventAggregator.events.toArray()
+        assert.equal(events.length, 4, 'should create a chat completion message and summary event')
+        const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+        assertChatCompletionMessages({
+          tx,
+          chatMsgs,
+          id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+          model,
+          resContent: res,
           reqContent: content
         })
 
@@ -224,15 +291,17 @@ test('chat.completions.create', async (t) => {
       const { client, agent } = t.nr
       const promptContent = 'Streamed response'
       const promptContent2 = 'What does 1 plus 1 equal?'
+      const promptTokens = 11
+      const completionTokens = 53
       let res = ''
       const expectedModel = 'gpt-4'
       const api = helper.getAgentApi()
       function cb(model, content) {
         assert.equal(model, expectedModel)
-        if (content === promptContent || content === promptContent2) {
-          return 53
+        if (content === promptContent + ' ' + promptContent2) {
+          return promptTokens
         } else if (content === res) {
-          return 11
+          return completionTokens
         }
       }
       api.setLlmTokenCountCallback(cb)
@@ -256,7 +325,6 @@ test('chat.completions.create', async (t) => {
         const events = agent.customEventAggregator.events.toArray()
         const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
         assertChatCompletionMessages({
-          tokenUsage: true,
           tx,
           chatMsgs,
           id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
@@ -264,6 +332,9 @@ test('chat.completions.create', async (t) => {
           resContent: res,
           reqContent: promptContent
         })
+
+        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+        assertChatCompletionSummary({ tx, model: expectedModel, chatSummary, promptTokens, completionTokens })
 
         tx.end()
         end()
@@ -387,7 +458,7 @@ test('chat.completions.create', async (t) => {
         assertSegments(
           tx.trace,
           tx.trace.root,
-          ['timers.setTimeout', `External/${host}:${port}/chat/completions`],
+          [`External/${host}:${port}/chat/completions`],
           { exact: false }
         )
 
@@ -407,16 +478,19 @@ test('chat.completions.create', async (t) => {
     assert.equal(events.length, 0, 'should not create llm events')
   })
 
-  await t.test('auth errors should be tracked', (t, end) => {
+  await t.test('auth errors should be tracked', async (t) => {
     const { client, agent } = t.nr
-    helper.runInTransaction(agent, async (tx) => {
+    const plan = tspl(t, { plan: 13 })
+    await helper.runInTransaction(agent, async (tx) => {
       try {
         await client.chat.completions.create({
           messages: [{ role: 'user', content: 'Invalid API key.' }]
         })
-      } catch {}
+      } catch (err) {
+        plan.ok(err)
+      }
 
-      assert.equal(tx.exceptions.length, 1)
+      plan.equal(tx.exceptions.length, 1)
       match(tx.exceptions[0], {
         error: {
           status: 401,
@@ -433,27 +507,30 @@ test('chat.completions.create', async (t) => {
         agentAttributes: {
           spanId: /\w+/
         }
-      })
+      }, { assert: plan })
 
       const summary = agent.customEventAggregator.events.toArray().find((e) => e[0].type === 'LlmChatCompletionSummary')
-      assert.ok(summary)
-      assert.equal(summary[1].error, true)
+      plan.ok(summary)
+      plan.equal(summary[1].error, true)
 
       tx.end()
-      end()
     })
+    await plan.completed
   })
 
-  await t.test('invalid payload errors should be tracked', (t, end) => {
+  await t.test('invalid payload errors should be tracked', async (t) => {
     const { client, agent } = t.nr
-    helper.runInTransaction(agent, async (tx) => {
+    const plan = tspl(t, { plan: 11 })
+    await helper.runInTransaction(agent, async (tx) => {
       try {
         await client.chat.completions.create({
           messages: [{ role: 'bad-role', content: 'Invalid role.' }]
         })
-      } catch {}
+      } catch (err) {
+        plan.ok(err)
+      }
 
-      assert.equal(tx.exceptions.length, 1)
+      plan.equal(tx.exceptions.length, 1)
       match(tx.exceptions[0], {
         error: {
           status: 400,
@@ -470,11 +547,11 @@ test('chat.completions.create', async (t) => {
         agentAttributes: {
           spanId: /\w+/
         }
-      })
+      }, { assert: plan })
 
       tx.end()
-      end()
     })
+    await plan.completed
   })
 
   await t.test('should add llm attribute to transaction', (t, end) => {

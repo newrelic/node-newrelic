@@ -16,6 +16,8 @@ const { match } = require('../../lib/custom-assertions')
 const assert = require('node:assert')
 const SEGMENT_DESTINATION = TRANS_SEGMENT
 const helper = require('../../lib/agent_helper')
+const fs = require('node:fs')
+const path = require('node:path')
 
 function checkAWSAttributes({ trace, segment, pattern, markedSegments = [] }) {
   const expectedAttrs = {
@@ -76,7 +78,7 @@ function checkExternals({ service, operations, tx, end }) {
   end()
 }
 
-function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, prompt, resContent }) {
+function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, prompt, resContent, error }) {
   chatMsgs.forEach((msg) => {
     if (msg[1].sequence > 1) {
       // Streamed responses may have more than two messages.
@@ -92,6 +94,7 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
       modelId,
       expectedContent: isResponse ? resContent : prompt,
       isResponse,
+      error,
       expectedRole: isResponse ? 'assistant' : 'user'
     })
   })
@@ -104,7 +107,8 @@ function assertChatCompletionMessage({
   modelId,
   expectedContent,
   isResponse,
-  expectedRole
+  expectedRole,
+  error
 }) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
@@ -117,7 +121,11 @@ function assertChatCompletionMessage({
     ingest_source: 'Node',
     role: 'user',
     is_response: false,
-    completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+    completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
+  }
+
+  if (!error) {
+    baseMsg.token_count = 0
   }
 
   const [messageBase, messageData] = message
@@ -135,7 +143,7 @@ function assertChatCompletionMessage({
   match(messageData, expectedChatMsg)
 }
 
-function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, numMsgs = 2 }) {
+function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, numMsgs = 2, promptTokens = 14, completionTokens = 9, totalTokens = 23 }) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {
     id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
@@ -154,6 +162,12 @@ function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, 
     'request.temperature': 0.5,
     'request.max_tokens': 100,
     error
+  }
+
+  if (!error) {
+    expectedChatSummary['response.usage.prompt_tokens'] = promptTokens
+    expectedChatSummary['response.usage.completion_tokens'] = completionTokens
+    expectedChatSummary['response.usage.total_tokens'] = totalTokens
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
@@ -176,6 +190,17 @@ function afterEach(ctx) {
   })
 }
 
+function getAiResponseServer() {
+  const semver = require('semver')
+  const { version: pkgVersion } = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '/node_modules/@aws-sdk/client-bedrock-runtime/package.json'))
+  )
+  if (semver.gte(pkgVersion, '3.798.0')) {
+    return require('../../lib/aws-server-stubs/ai-server/http2')
+  }
+  return require('../../lib/aws-server-stubs/ai-server')
+}
+
 module.exports = {
   afterEach,
   assertChatCompletionSummary,
@@ -188,5 +213,6 @@ module.exports = {
   SEGMENT_DESTINATION,
   checkAWSAttributes,
   getMatchingSegments,
-  checkExternals
+  checkExternals,
+  getAiResponseServer
 }
