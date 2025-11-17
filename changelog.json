@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.6.5",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated MessageConsumerSubscriber to wait for consumer callback to end when it is a promise",
+          "Updated express instrumentation to ignore error when the `next` handler passes `route` or `router`"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "13.6.4",
       "changes": {
         "security": [],
