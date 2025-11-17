@@ -1,3 +1,23 @@
+### v13.6.5 (2025-11-17)
+
+#### Bug fixes
+
+* Updated express instrumentation to ignore error when the `next` handler passes `route` or `router` ([#3513](https://github.com/newrelic/node-newrelic/pull/3513)) ([724b218](https://github.com/newrelic/node-newrelic/commit/724b218174bddcf2ecf8cffc317bbfad1f0012eb))
+* Updated MessageConsumerSubscriber to wait for consumer callback to end when it is a promise ([#3510](https://github.com/newrelic/node-newrelic/pull/3510)) ([45667a0](https://github.com/newrelic/node-newrelic/commit/45667a0ce2aaaf57a5e7a8acc8f0feea31e6152f))
+
+#### Documentation
+
+* Updated compatibility report ([#3498](https://github.com/newrelic/node-newrelic/pull/3498)) ([ef41b38](https://github.com/newrelic/node-newrelic/commit/ef41b3851b2096035d5b7b655d5243a9aeb699c8))
+    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Wrap comment for legibility. ([#3507](https://github.com/newrelic/node-newrelic/pull/3507)) ([5f7bbb8](https://github.com/newrelic/node-newrelic/commit/5f7bbb892f47518e01485bd205d68c53818165fb))
+
+#### Tests
+
+* Updated aws sdk v3 s3 test to no longer test DeleteBucketCommand ([#3512](https://github.com/newrelic/node-newrelic/pull/3512)) ([df27448](https://github.com/newrelic/node-newrelic/commit/df274484e0e657fd9c38452e500450878fc24ee4))
+
 ### v13.6.4 (2025-11-13)
 
 #### Bug fixes
