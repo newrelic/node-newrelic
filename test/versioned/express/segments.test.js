@@ -909,7 +909,87 @@ test('should allow an array of middleware to `router.use`', function (t, end) {
   })
 })
 
-test('array of routes', function (t, end) {
+test('array of routes and route path on router', function (t, end) {
+  const { app, express } = t.nr
+
+  const router = express.Router()
+  function mw1(req, res, next) {
+    next()
+  }
+  function mw2(req, res, next) {
+    next()
+  }
+  function routeHandler(req, res) {
+    res.send('ok')
+  }
+  router.use('/test', [mw1, mw2], routeHandler)
+  app.use(router)
+
+  runTest(t, '/test', function (root, transaction) {
+    assertSegments(
+      transaction.trace,
+      root,
+      ['Expressjs/Router: /',
+        [
+        `${NAMES.EXPRESS.MIDDLEWARE}mw1//test`,
+        `${NAMES.EXPRESS.MIDDLEWARE}mw2//test`,
+        `${NAMES.EXPRESS.MIDDLEWARE}routeHandler//test`
+        ]
+      ],
+      assertSegmentsOptions
+    )
+
+    checkMetrics(transaction.metrics, [
+      `${NAMES.EXPRESS.MIDDLEWARE}mw1//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}mw2//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}routeHandler//test`
+    ], '/test')
+    end()
+  })
+})
+
+test('array of routes, regex routes on router', function (t, end) {
+  const { app, express } = t.nr
+  const routeString = '/test,/\\/foo|\\/bar/,/none'
+
+  const router = express.Router()
+  function mw1(req, res, next) {
+    next()
+  }
+  function mw2(req, res, next) {
+    next()
+  }
+  function routeHandler(req, res) {
+    res.send('ok')
+  }
+  router.use(['/test', /\/foo|\/bar/, '/none'], mw1, [mw2, routeHandler])
+  app.use(router)
+
+  runTest(t, '/bar', function (root, transaction) {
+    assert.equal(root.name, `WebTransaction/Expressjs/GET/${routeString}`)
+    assertSegments(
+      transaction.trace,
+      root,
+      ['Expressjs/Router: /',
+        [
+        `${NAMES.EXPRESS.MIDDLEWARE}mw1/${routeString}`,
+        `${NAMES.EXPRESS.MIDDLEWARE}mw2/${routeString}`,
+        `${NAMES.EXPRESS.MIDDLEWARE}routeHandler/${routeString}`
+        ]
+      ],
+      assertSegmentsOptions
+    )
+
+    checkMetrics(transaction.metrics, [
+      `${NAMES.EXPRESS.MIDDLEWARE}mw1/${routeString}`,
+      `${NAMES.EXPRESS.MIDDLEWARE}mw2/${routeString}`,
+      `${NAMES.EXPRESS.MIDDLEWARE}routeHandler/${routeString}`
+    ], routeString)
+    end()
+  })
+})
+
+test('array of routes, regex routes on app.use', function (t, end) {
   const { app, express } = t.nr
   const routeString = '/test,/\\/foo|\\/bar/,/none'
 
