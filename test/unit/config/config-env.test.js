@@ -188,91 +188,96 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
-  await t.test('should set root sampler to always_on', (t, end) => {
-    const env = {
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'always_on',
+  const samplers = ['SAMPLER', 'SAMPLER_FULL_GRANULARITY', 'SAMPLER_PARTIAL_GRANULARITY']
+  for (const samplerName of samplers) {
+    const key = samplerName === 'SAMPLER_FULL_GRANULARITY' ? 'full_granularity' : 'partial_granularity'
+    const samplerTypes = ['root', 'remote_parent_sampled', 'remote_parent_not_sampled']
+    for (const type of samplerTypes) {
+      const envVar = type.toUpperCase()
+      await t.test(`should set ${samplerName}_${envVar} sampler to always_on`, (t, end) => {
+        const env = {
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'always_on',
+        }
+
+        idempotentEnv(env, (tc) => {
+          if (samplerName === 'SAMPLER') {
+            assert.equal(tc.distributed_tracing.sampler[type], 'always_on')
+          } else {
+            assert.equal(tc.distributed_tracing.sampler[key][type], 'always_on')
+          }
+          end()
+        })
+      })
+
+      await t.test(`should set ${samplerName}_${envVar} sampler to trace id based ratio`, (t, end) => {
+        const env = {
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'trace_id_ratio_based',
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}_TRACE_ID_RATIO_BASED_RATIO`]: '0.5'
+        }
+
+        idempotentEnv(env, (tc) => {
+          if (samplerName === 'SAMPLER') {
+            assert.equal(tc.distributed_tracing.sampler[type].trace_id_ratio_based.ratio, 0.5)
+          } else {
+            assert.equal(tc.distributed_tracing.sampler[key][type].trace_id_ratio_based.ratio, 0.5)
+          }
+          end()
+        })
+      })
+
+      await t.test(`should fall back to default ${samplerName}_${envVar} sampler when trace id ratio based is misconfigured`, (t, end) => {
+        const env = {
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'trace_id_ratio_based',
+          // Missing "RATIO" key at the end of this env var
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}_TRACE_ID_RATIO_BASED`]: '0.5'
+        }
+
+        idempotentEnv(env, (tc) => {
+          if (samplerName === 'SAMPLER') {
+            assert.equal(tc.distributed_tracing.sampler[type], 'default')
+          } else {
+            assert.equal(tc.distributed_tracing.sampler[key][type], 'default')
+          }
+          end()
+        })
+      })
+
+      await t.test(`should fall back to default ${samplerName}_${envVar} sampler when trace id ratio is missing sampler ${type}`, (t, end) => {
+        const env = {
+          // NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_<sampler>: 'trace_id_ratio_based' is needed to enable this sampler
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}_TRACE_ID_RATIO_BASED`]: '0.5'
+        }
+
+        idempotentEnv(env, (tc) => {
+          if (samplerName === 'SAMPLER') {
+            assert.equal(tc.distributed_tracing.sampler[type], 'default')
+          } else {
+            assert.equal(tc.distributed_tracing.sampler[key][type], 'default')
+          }
+          end()
+        })
+      })
+
+      await t.test(`should ignore trace id ratio based ratio env var when sampler ${samplerName}_${envVar} is set to a different value`, (t, end) => {
+        const env = {
+          // NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_<sampler>: 'trace_id_ratio_based' is needed to enable this sampler
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'always_on',
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}_TRACE_ID_RATIO_BASED`]: '0.5'
+        }
+
+        idempotentEnv(env, (tc) => {
+          if (samplerName === 'SAMPLER') {
+            assert.equal(tc.distributed_tracing.sampler[type], 'always_on')
+            assert.equal(tc.distributed_tracing.sampler[type].trace_id_ratio_based, undefined)
+          } else {
+            assert.equal(tc.distributed_tracing.sampler[key][type], 'always_on')
+            assert.equal(tc.distributed_tracing.sampler[key][type].trace_id_ratio_based, undefined)
+          }
+          end()
+        })
+      })
     }
-
-    idempotentEnv(env, (tc) => {
-      assert.equal(tc.distributed_tracing.sampler.root, 'always_on')
-      end()
-    })
-  })
-
-  await t.test('should set root sampler to trace id based ratio', (t, end) => {
-    const env = {
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based',
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT_TRACE_ID_RATIO_BASED_RATIO: '0.5'
-    }
-
-    idempotentEnv(env, (tc) => {
-      assert.equal(tc.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
-      end()
-    })
-  })
-
-  await t.test('should set remote_parent_sampled sampler to trace id based ratio', (t, end) => {
-    const env = {
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED: 'trace_id_ratio_based',
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED_TRACE_ID_RATIO_BASED_RATIO: '0.5'
-    }
-
-    idempotentEnv(env, (tc) => {
-      assert.equal(tc.distributed_tracing.sampler.remote_parent_sampled.trace_id_ratio_based.ratio, 0.5)
-      end()
-    })
-  })
-
-  await t.test('should set remote_parent_not_sampled sampler to trace id based ratio', (t, end) => {
-    const env = {
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED: 'trace_id_ratio_based',
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED_TRACE_ID_RATIO_BASED_RATIO: '0.5'
-    }
-
-    idempotentEnv(env, (tc) => {
-      assert.equal(tc.distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.5)
-      end()
-    })
-  })
-
-  await t.test('should fall back to default root sampler when trace id ratio based is misconfigured', (t, end) => {
-    const env = {
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based',
-      // Missing "RATIO" key at the end of this env var
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT_TRACE_ID_RATIO_BASED: '0.5'
-    }
-
-    idempotentEnv(env, (tc) => {
-      assert.equal(tc.distributed_tracing.sampler.root, 'default')
-      end()
-    })
-  })
-
-  await t.test('should fall back to default root sampler when trace id ratio is missing sampler root', (t, end) => {
-    const env = {
-      // NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based' is needed to enable this sampler
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT_TRACE_ID_RATIO_BASED: '0.5'
-    }
-
-    idempotentEnv(env, (tc) => {
-      assert.equal(tc.distributed_tracing.sampler.root, 'default')
-      end()
-    })
-  })
-
-  await t.test('should ignore trace id ratio based ratio env var when sampler root is set to a different value', (t, end) => {
-    const env = {
-      // NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based' is needed to enable this sampler
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'always_on',
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT_TRACE_ID_RATIO_BASED: '0.5'
-    }
-
-    idempotentEnv(env, (tc) => {
-      assert.equal(tc.distributed_tracing.sampler.root, 'always_on')
-      assert.equal(tc.distributed_tracing.sampler.root.trace_id_ratio_based, undefined)
-      end()
-    })
-  })
+  }
 
   await t.test('should set root and remote parent sampled but leave remote parent not sampled as default', (t, end) => {
     const env = {
