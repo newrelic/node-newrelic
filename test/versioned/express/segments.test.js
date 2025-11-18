@@ -233,6 +233,39 @@ test('two root routers', function (t, end) {
   })
 })
 
+test('two root routers not path in app.use', function (t, end) {
+  const { app, express } = t.nr
+
+  const router1 = express.Router()
+  router1.all('/test', function router1Mw(req, res, next) {
+    next()
+  })
+
+  const router2 = express.Router()
+  router2.all('/test', function router2Mw(req, res) {
+    res.end()
+  })
+  app.use(router1, router2)
+
+  runTest(t, '/test', function (root, transaction) {
+    assertSegments(
+      transaction.trace,
+      root,
+      [
+        'Expressjs/Router: /',
+        ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + 'router1Mw']],
+        'Expressjs/Router: /',
+        ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + 'router2Mw']]
+      ],
+      assertSegmentsOptions
+    )
+
+    checkMetrics(transaction.metrics, [NAMES.EXPRESS.MIDDLEWARE + 'router1Mw//test', NAMES.EXPRESS.MIDDLEWARE + 'router2Mw//test'], '/test')
+
+    end()
+  })
+})
+
 test('router mounted as a route handler', function (t, end) {
   const { app, express, isExpress5 } = t.nr
 
@@ -807,7 +840,7 @@ test('route defines middlewares as a series of arrays', function (t, end) {
     res.end()
   }
 
-  app.get('/test', [mw1, mw2], [mw3, mw4], handler)
+  app.get('/test', [mw1, mw2], mw3, [mw4], handler)
 
   runTest(t, '/test', function (root, transaction) {
     assertSegments(
@@ -833,6 +866,86 @@ test('route defines middlewares as a series of arrays', function (t, end) {
       `${NAMES.EXPRESS.MIDDLEWARE}handler//test`
     ], '/test')
 
+    end()
+  })
+})
+
+test('should allow an array of middleware to `router.use`', function (t, end) {
+  const { app, express } = t.nr
+
+  const router = express.Router()
+  function mw1(req, res, next) {
+    next()
+  }
+  function mw2(req, res, next) {
+    next()
+  }
+  router.use([mw1, mw2])
+  router.use('/', function routeHandler(req, res) {
+    res.send('ok')
+  })
+  app.use('/test', router)
+
+  runTest(t, '/test', function (root, transaction) {
+    assertSegments(
+      transaction.trace,
+      root,
+      ['Expressjs/Router: /test',
+        [
+        `${NAMES.EXPRESS.MIDDLEWARE}mw1`,
+        `${NAMES.EXPRESS.MIDDLEWARE}mw2`,
+        `${NAMES.EXPRESS.MIDDLEWARE}routeHandler`
+        ]
+      ],
+      assertSegmentsOptions
+    )
+
+    checkMetrics(transaction.metrics, [
+      `${NAMES.EXPRESS.MIDDLEWARE}mw1//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}mw2//test`,
+      `${NAMES.EXPRESS.MIDDLEWARE}routeHandler//test`
+    ], '/test')
+    end()
+  })
+})
+
+test('array of routes', function (t, end) {
+  const { app, express } = t.nr
+  const routeString = '/test,/\\/foo|\\/bar/,/none'
+
+  const router = express.Router()
+  function mw1(req, res, next) {
+    next()
+  }
+  function mw2(req, res, next) {
+    next()
+  }
+  router.use([mw1, mw2])
+  router.use('/', function routeHandler(req, res) {
+    res.send('ok')
+  })
+  app.use(['/test', /\/foo|\/bar/, '/none'], router)
+
+  runTest(t, '/bar', function (root, transaction) {
+    assert.equal(root.name, `WebTransaction/Expressjs/GET/${routeString}`)
+    assertSegments(
+      transaction.trace,
+      root,
+      [`Expressjs/Router: ${routeString}`,
+        [
+        `${NAMES.EXPRESS.MIDDLEWARE}mw1`,
+        `${NAMES.EXPRESS.MIDDLEWARE}mw2`,
+        `${NAMES.EXPRESS.MIDDLEWARE}routeHandler`
+        ]
+      ],
+      assertSegmentsOptions
+    )
+
+    checkMetrics(transaction.metrics, [
+      `${NAMES.EXPRESS.MIDDLEWARE}mw1/${routeString}`,
+      `${NAMES.EXPRESS.MIDDLEWARE}mw2/${routeString}`,
+      `${NAMES.EXPRESS.MIDDLEWARE}routeHandler/${routeString}`
+    ], routeString)
     end()
   })
 })
