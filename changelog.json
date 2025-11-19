@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.6.6",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `app.use` or `router.use` Express instrumentation to properly wrap all middleware defined"
+        ],
+        "features": [
+          "Added configurations for `distributed_tracing.samplers.partial_granularity` and `distributed_tracing.samplers.full_granularity`"
+        ]
+      }
+    },
+    {
       "version": "13.6.5",
       "changes": {
         "security": [],

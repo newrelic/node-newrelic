@@ -1,3 +1,22 @@
+### v13.6.6 (2025-11-19)
+
+#### Features
+
+* Added configurations for `distributed_tracing.samplers.partial_granularity` and `distributed_tracing.samplers.full_granularity` ([#3517](https://github.com/newrelic/node-newrelic/pull/3517)) ([0f214de](https://github.com/newrelic/node-newrelic/commit/0f214ded7842aa2eef02ffee16ee4bd1935f88a7))
+
+#### Bug fixes
+
+* Updated `app.use` or `router.use` Express instrumentation to properly wrap all middleware defined ([#3520](https://github.com/newrelic/node-newrelic/pull/3520)) ([d3b20d0](https://github.com/newrelic/node-newrelic/commit/d3b20d09a9c3d21bff081771d8c11caff9c6a6e5))
+
+#### Documentation
+
+* Updated compatibility report ([#3522](https://github.com/newrelic/node-newrelic/pull/3522)) ([72ec652](https://github.com/newrelic/node-newrelic/commit/72ec65252700ab5f3831dab35d05b607a0723aa6))
+* Updated compatibility report ([#3516](https://github.com/newrelic/node-newrelic/pull/3516)) ([35defb0](https://github.com/newrelic/node-newrelic/commit/35defb009b7d3bbec0ffe084b434e368aa1cbc7c))
+
+#### Tests
+
+* Pinned next.js to skip 11.0.10 and 11.0.11 ([#3521](https://github.com/newrelic/node-newrelic/pull/3521)) ([20977ee](https://github.com/newrelic/node-newrelic/commit/20977eeb8552b7a445f5407d8df272aae49ea873))
+
 ### v13.6.5 (2025-11-17)
 
 #### Bug fixes
