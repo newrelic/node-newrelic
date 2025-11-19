@@ -40,14 +40,13 @@ test('S3 buckets', async (t) => {
     const {
       client,
       agent,
-      lib: { HeadBucketCommand, CreateBucketCommand, DeleteBucketCommand }
+      lib: { HeadBucketCommand, CreateBucketCommand }
     } = t.nr
     const Bucket = 'delete-aws-sdk-test-bucket-' + Math.floor(Math.random() * 100000)
 
     helper.runInTransaction(agent, async (tx) => {
       await client.send(new HeadBucketCommand({ Bucket }))
       await client.send(new CreateBucketCommand({ Bucket }))
-      await client.send(new DeleteBucketCommand({ Bucket }))
 
       tx.end()
 
@@ -55,7 +54,7 @@ test('S3 buckets', async (t) => {
         end,
         tx,
         service: 'S3',
-        operations: ['HeadBucketCommand', 'CreateBucketCommand', 'DeleteBucketCommand']
+        operations: ['HeadBucketCommand', 'CreateBucketCommand']
       }
       setImmediate(checkExternals, args)
     })

@@ -323,26 +323,31 @@ test('with default properties', async (t) => {
     assert.equal(configuration.instrumentation.domain.enabled, true)
   })
 
-  await t.test('remote parent sampling should default to baseline', () => {
-    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
-    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
-  })
-
-  await t.test('adaptive sampling target should default to 10 transactions/min', () => {
-    assert.equal(configuration.distributed_tracing.sampler.adaptive_sampling_target, 10)
-    assert.equal(configuration.sampling_target, 10)
-  })
-
-  await t.test('root sampler should default to default', () => {
-    assert.equal(configuration.distributed_tracing.sampler.root, 'default')
-  })
-
-  await t.test('remote parent sampled sampler should default to default', () => {
-    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
-  })
-
-  await t.test('remote parent not sampled sampler should default to default', () => {
-    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
+  await t.test('distributed tracing defaults', () => {
+    assert.deepEqual(configuration.distributed_tracing, {
+      enabled: true,
+      exclude_newrelic_header: false,
+      in_process_spans: { enabled: true },
+      sampler: {
+        root: 'default',
+        remote_parent_sampled: 'default',
+        remote_parent_not_sampled: 'default',
+        adaptive_sampling_target: 10,
+        full_granularity: {
+          enabled: true,
+          root: 'default',
+          remote_parent_sampled: 'default',
+          remote_parent_not_sampled: 'default'
+        },
+        partial_granularity: {
+          enabled: false,
+          type: 'essential',
+          root: 'default',
+          remote_parent_sampled: 'default',
+          remote_parent_not_sampled: 'default'
+        }
+      }
+    })
   })
 
   await t.test('opentelemetry', () => {

@@ -14,18 +14,7 @@ const promiseResolvers = require('../../lib/promise-resolvers')
 const metrics = require('../../lib/metrics_helper')
 const { assertPackageMetrics, assertMetrics, assertSegments } = require('./../../lib/custom-assertions')
 const { version } = require('amqplib/package.json')
-
-/*
-TODO:
-
-- promise API
-- callback API
-
-consumer
-- off by default for rum
-- value of the attribute is limited to 255 bytes
-
- */
+const PROMISE_WAIT = 100
 
 test('amqplib promise instrumentation', async function (t) {
   t.beforeEach(async function (ctx) {
@@ -277,7 +266,6 @@ test('amqplib promise instrumentation', async function (t) {
 
       channel.ack(msg)
       publishTx.end()
-      consumeTx.end()
       resolve()
     })
     await helper.runInTransaction(agent, async function (tx) {
@@ -320,7 +308,6 @@ test('amqplib promise instrumentation', async function (t) {
 
       channel.ack(msg)
       publishTx.end()
-      consumeTx.end()
       resolve()
     })
     await helper.runInTransaction(agent, async function (tx) {
@@ -352,7 +339,6 @@ test('amqplib promise instrumentation', async function (t) {
       assert.equal(body, 'hello', 'should receive expected body')
 
       channel.ack(msg)
-      tx.end()
       resolve()
     })
     channel.publish(amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key', Buffer.from('hello'))
@@ -373,7 +359,6 @@ test('amqplib promise instrumentation', async function (t) {
 
       channel.ack(msg)
       ;({ _transaction: tx } = api.getTransaction())
-      tx.end()
       resolve()
     })
     channel.publish(amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key', Buffer.from('hello'))
@@ -407,7 +392,6 @@ test('amqplib promise instrumentation', async function (t) {
 
         channel.ack(msg)
         publishTx.end()
-        consumeTx.end()
         resolve()
       }, { noAck: true })
       amqpUtils.verifyTransaction(agent, tx, 'consume')
@@ -435,7 +419,6 @@ test('amqplib promise instrumentation', async function (t) {
       assert.equal(body, 'hello', 'should receive expected body')
 
       channel.ack(msg)
-      tx.end()
       resolve()
     })
     await channel.bindQueue(queue, fanoutExchange, 'key1')
@@ -447,6 +430,68 @@ test('amqplib promise instrumentation', async function (t) {
       'OtherTransaction/Message/RabbitMQ/Exchange/Temp',
       'should not set transaction name'
     )
+  })
+
+  await t.test('consume with async message handler', async function (t) {
+    const { api, channel } = t.nr
+    const { promise, resolve: promiseResolve } = promiseResolvers()
+
+    await channel.assertExchange(amqpUtils.DIRECT_EXCHANGE, 'direct')
+    const { queue } = await channel.assertQueue('', { exclusive: true })
+    await channel.bindQueue(queue, amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key')
+    let tx
+    await channel.consume(queue, async function (msg) {
+      ;({ _transaction: tx } = api.getTransaction())
+      assert.ok(msg, 'should receive a message')
+
+      const body = msg.content.toString('utf8')
+      assert.equal(body, 'hello', 'should receive expected body')
+
+      await new Promise((resolve) => setTimeout(resolve, PROMISE_WAIT))
+      channel.ack(msg)
+      promiseResolve()
+    })
+    channel.publish(amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key', Buffer.from('hello'))
+    await promise
+    // need to run in assertion in next tick because we end transaction in a `.finally` block
+    process.nextTick(() => {
+      amqpUtils.verifyConsumeTransaction(tx, amqpUtils.DIRECT_EXCHANGE, queue, 'consume-tx-key')
+      assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
+    })
+  })
+
+  await t.test('consume with async message handler that rejects', async function (t) {
+    const { api, channel } = t.nr
+    const { promise, reject } = promiseResolvers()
+
+    await channel.assertExchange(amqpUtils.DIRECT_EXCHANGE, 'direct')
+    const { queue } = await channel.assertQueue('', { exclusive: true })
+    await channel.bindQueue(queue, amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key')
+    let tx
+    await channel.consume(queue, async function (msg) {
+      ;({ _transaction: tx } = api.getTransaction())
+      assert.ok(msg, 'should receive a message')
+
+      const body = msg.content.toString('utf8')
+      assert.equal(body, 'hello', 'should receive expected body')
+
+      await new Promise((resolve) => setTimeout(resolve, PROMISE_WAIT))
+      channel.ack(msg)
+      const error = new Error('async handler failure')
+      reject(error)
+    })
+    channel.publish(amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key', Buffer.from('hello'))
+    try {
+      await promise
+      assert.fail('should not resolve successfully')
+    } catch (err) {
+      assert.equal(err.message, 'async handler failure', 'should reject with correct error')
+      // need to run in assertion in next tick because we end transaction in a `.finally` block
+      process.nextTick(() => {
+        amqpUtils.verifyConsumeTransaction(tx, amqpUtils.DIRECT_EXCHANGE, queue, 'consume-tx-key')
+        assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
+      })
+    }
   })
 
   await t.test('should connect with object', async function (t) {

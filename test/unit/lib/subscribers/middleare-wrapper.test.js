@@ -17,10 +17,16 @@ test.beforeEach((ctx) => {
   function handler (arg1, arg2, arg3) {
     return `${arg1}, ${arg2}, ${arg3}`
   }
+  const txInfo = {}
+  wrapper.extractTxInfo = function() {
+    const request = {}
+    return { txInfo, request, errorWare: false }
+  }
   ctx.nr = {
     agent,
     handler,
     logger,
+    txInfo,
     wrapper
   }
 })
@@ -66,6 +72,65 @@ test('should run wrapped handler in context if transaction present, and properly
     tx.statusCode = 200
     tx.end()
     assert.equal(tx.name, 'WebTransaction/WebFrameworkUri/UnitTest/test/url')
+    end()
+  })
+})
+
+test('should handle error when passed in to done handler', function (t, end) {
+  const { agent, txInfo, wrapper } = t.nr
+  const error = new Error('test error')
+  function handler (req, res, next) {
+    next(error)
+  }
+  const route = '/test/url'
+  const wrapped = wrapper.wrap({ handler, route })
+  helper.runInTransaction(agent, function (tx) {
+    tx.type = 'web'
+    tx.url = route
+    wrapped('one', 'two', function() {})
+    assert.deepEqual(txInfo.error, error)
+    assert.equal(txInfo.errorHandled, false)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not handle error when no error is passed to done handler', function (t, end) {
+  const { agent, txInfo, wrapper } = t.nr
+  function handler (req, res, next) {
+    next()
+  }
+  const route = '/test/url'
+  const wrapped = wrapper.wrap({ handler, route })
+  helper.runInTransaction(agent, function (tx) {
+    tx.type = 'web'
+    tx.url = route
+    wrapped('one', 'two', function() {})
+    assert.deepEqual(txInfo, {})
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not handle error when isError is not using default handler', function (t, end) {
+  const { agent, txInfo, wrapper } = t.nr
+  const error = new Error('test error')
+  function handler (req, res, next) {
+    next(error)
+  }
+  const route = '/test/url'
+  const wrapped = wrapper.wrap({ handler, route })
+  wrapper.isError = function(err) {
+    return err.message !== 'test error'
+  }
+  helper.runInTransaction(agent, function (tx) {
+    tx.type = 'web'
+    tx.url = route
+    wrapped('one', 'two', function() {})
+    assert.deepEqual(txInfo, {})
+    tx.end()
     end()
   })
 })
