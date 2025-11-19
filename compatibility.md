@@ -27,9 +27,9 @@ supported by the agent.
 | `@koa/router` | 12.0.1 | 14.0.0 | 3.2.0 |
 | `@langchain/core` | 0.1.17 | 1.0.6 | 11.13.0 |
 | `@modelcontextprotocol/sdk` | 1.13.0 | 1.22.0 | 13.2.0 |
-| `@nestjs/cli` | 9.0.0 | 11.0.11 | 10.1.0 |
+| `@nestjs/cli` | 9.0.0 | 11.0.12 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
-| `@prisma/client` | 5.0.0 | 6.19.0 | 11.0.0 |
+| `@prisma/client` | 5.0.0 | 7.0.0 | 11.0.0 |
 | `@smithy/smithy-client` | 2.0.0 | 4.9.7 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.9 | 2.0.0 |
 | `aws-sdk` | 2.2.48 | 2.1692.0 | 6.2.0 |
