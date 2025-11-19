@@ -1020,16 +1020,16 @@ test('when sampling_target changes', async (t) => {
 
   await t.test('should adjust the current sampling target', (t) => {
     const { agent } = t.nr
-    assert.notEqual(agent.transactionSampler.samplingTarget, 5)
+    assert.notEqual(agent.sampler.root.samplingTarget, 5)
     agent.config.onConnect({ sampling_target: 5 })
-    assert.equal(agent.transactionSampler.samplingTarget, 5)
+    assert.equal(agent.sampler.root.samplingTarget, 5)
   })
 
   await t.test('should adjust the sampling period', (t) => {
     const { agent } = t.nr
-    assert.notEqual(agent.transactionSampler.samplingPeriod, 100)
+    assert.notEqual(agent.sampler.root.samplingPeriod, 100)
     agent.config.onConnect({ sampling_target_period_in_seconds: 0.1 })
-    assert.equal(agent.transactionSampler.samplingPeriod, 100)
+    assert.equal(agent.sampler.root.samplingPeriod, 100)
   })
 })
 

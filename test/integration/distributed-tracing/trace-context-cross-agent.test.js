@@ -357,7 +357,7 @@ async function runTestCase(testCase, parentTest) {
       // monkey patch this transaction object
       // to force sampled to be true.
       if (testCase.force_sampled_true) {
-        transaction.agent.transactionSampler.shouldSample = function stubShouldSample() {
+        transaction.agent.sampler.root.shouldSample = function stubShouldSample() {
           return true
         }
       }

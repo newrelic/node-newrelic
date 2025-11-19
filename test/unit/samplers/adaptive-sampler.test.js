@@ -93,7 +93,7 @@ test('in serverless mode', async (t) => {
     ctx.nr.agent = helper.loadMockedAgent({
       serverless_mode: { enabled: true }
     })
-    ctx.nr.sampler = ctx.nr.agent.transactionSampler
+    ctx.nr.sampler = ctx.nr.agent.sampler.root
   })
 
   t.afterEach((ctx) => {

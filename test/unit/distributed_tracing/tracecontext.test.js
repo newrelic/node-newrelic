@@ -207,7 +207,7 @@ test('TraceContext', async function (t) {
       agent.config.trusted_account_key = trustedKey
       agent.config.account_id = accountId
       agent.config.primary_application_id = appId
-      agent.transactionSampler.shouldSample = () => false
+      agent.sampler.root.shouldSample = () => false
 
       helper.runInTransaction(agent, function (txn) {
         const childSegment = txn.trace.add('child')
@@ -240,7 +240,7 @@ test('TraceContext', async function (t) {
       agent.config.trusted_account_key = acctKey
       agent.config.account_id = acctKey
       agent.config.primary_application_id = appId
-      agent.transactionSampler.shouldSample = () => false
+      agent.sampler.root.shouldSample = () => false
 
       helper.runInTransaction(agent, function (txn) {
         const childSegment = txn.trace.add('child')
