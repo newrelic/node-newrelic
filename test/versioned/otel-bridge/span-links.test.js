@@ -8,12 +8,19 @@
 const test = require('node:test')
 
 const helper = require('../../lib/agent_helper')
+const promiseResolvers = require('../../lib/promise-resolvers')
 const params = require('../../lib/params')
 
 const CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
 
 test('span links are propagated to new relic', async (t) => {
   t.plan(11, { wait: 5_000 })
+
+  // Under Node.js v20, the `t.plan` will not wait for the assertions
+  // correctly. We need to await this promise in order for the test to have
+  // time to work under that release.
+  // TODO: remove once Node.js 22 is the baseline
+  const { promise, resolve } = promiseResolvers()
 
   const agent = helper.instrumentMockedAgent({
     instrumentation: {
@@ -72,6 +79,8 @@ test('span links are propagated to new relic', async (t) => {
     t.assert.equal(attrs.linkedTraceId.value, produceTx.traceId)
 
     t.assert.equal(consumedMessages.length, 1)
+
+    resolve()
   })
 
   const conn = await amqplib.connect(CON_STRING)
@@ -117,4 +126,6 @@ test('span links are propagated to new relic', async (t) => {
 
     tx.end()
   })
+
+  await promise
 })
