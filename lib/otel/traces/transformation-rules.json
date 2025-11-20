@@ -233,7 +233,7 @@
       "type": "message",
       "system": "messaging.system",
       "name": {
-        "templateValue": "${messaging.system}/${messaging.operation.name}/Named/${messaging.destination.name}"
+        "templateValue": "${messaging.system}/${messaging.operation.name}/Named/${messaging.destination.name || 'unknown'}"
       }
     }
   },
@@ -284,7 +284,7 @@
       "type": "message",
       "system": "messaging.system",
       "name": {
-        "templateValue": "${messaging.system}/${messaging.operation}/Named/${messaging.destination.name}"
+        "templateValue": "${messaging.system}/${messaging.operation}/Named/${messaging.destination.name || 'unknown'}"
       }
     }
   },
@@ -333,7 +333,7 @@
       "type": "message",
       "system": "messaging.system",
       "name": {
-        "templateValue": "${messaging.system}/${messaging.destination_kind}/Named/${messaging.destination}"
+        "templateValue": "${messaging.system}/${messaging.destination_kind}/Named/${messaging.destination || messaging.destination.name || 'unknown'}"
       }
     }
   },
@@ -393,7 +393,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/operation/${type}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -440,7 +440,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -483,7 +483,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -529,7 +529,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/operation/${type}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -576,7 +576,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -625,7 +625,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/operation/${type}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -668,7 +668,7 @@
       "type": "db.system",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
-      } 
+      }
     }
   },
   {
@@ -711,7 +711,7 @@
             {
               "group": 1,
               "name": "url",
-              "target": "segment" 
+              "target": "segment"
             },
             {
              "group": 2,
@@ -721,10 +721,10 @@
                "name": 1,
                "value": 2,
                "prefix": "request.parameters.",
-               "target": "segment" 
+               "target": "segment"
              }
-            } 
-          ] 
+            }
+          ]
         },
         "target": "segment"
       }
@@ -734,7 +734,7 @@
       "url": "url.full",
       "name": {
         "template": "External/${host}${path}"
-      } 
+      }
     }
   },
   {
@@ -789,8 +789,8 @@
                "target": "segment",
                "prefix": "request.parameters."
              }
-            } 
-          ] 
+            }
+          ]
         },
         "target": "segment"
       }
@@ -800,7 +800,7 @@
       "url": "http.url",
       "name": {
         "template": "External/${host}${path}"
-      } 
+      }
     }
   },
   {
@@ -859,7 +859,7 @@
       "system": "rpc.system",
       "name": {
         "template": "External/${server.address}/${rpc.service}/${rpc.method}"
-      } 
+      }
     }
   },
   {
@@ -895,7 +895,7 @@
       },
       "name": {
         "template": "External/${host}"
-      } 
+      }
     }
   },
   {
@@ -954,7 +954,7 @@
       "system": "rpc.system",
       "name": {
         "template": "External/${net.peer.name}/${rpc.service}/${rpc.method}"
-      } 
+      }
     }
   },
   {
@@ -994,7 +994,7 @@
       },
       {
         "key": "server.port",
-        "target": "segment", 
+        "target": "segment",
         "name": "port"
       },
       {
@@ -1040,7 +1040,7 @@
       },
       {
         "key": "server.port",
-        "target": "segment", 
+        "target": "segment",
         "name": "port"
       },
       {
@@ -1061,7 +1061,7 @@
     ],
     "segment": {
       "name": {
-        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination.name}"
+        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination.name || 'unknown'}"
       }
     }
   },
@@ -1111,7 +1111,7 @@
               "name": "cloud.account.id",
               "target": "segment"
             }
-          ] 
+          ]
         }
       },
       {
@@ -1122,7 +1122,7 @@
     ],
     "segment": {
       "name": {
-        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination}"
+        "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination || 'unknown'}"
       }
     }
   },
@@ -1146,7 +1146,7 @@
       },
       {
         "key": "net.peer.port",
-        "target": "segment", 
+        "target": "segment",
         "name": "port"
       },
       {
@@ -1162,7 +1162,7 @@
     ],
     "segment": {
       "name": {
-        "template": "MessageBroker/${messaging.system}/${messaging.destination_kind}/Produce/Named/${messaging.destination}"
+        "template": "MessageBroker/${messaging.system}/${messaging.destination_kind}/Produce/Named/${messaging.destination || 'unknown'}"
       }
     }
   },
