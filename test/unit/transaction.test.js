@@ -1186,7 +1186,9 @@ test('_createDistributedTracePayload', async (t) => {
   await t.test('does not add the span id if the transaction is not sampled', (t) => {
     const { agent, txn, tracer } = t.nr
     agent.config.span_events.enabled = true
-    txn._calculatePriority()
+    if (txn.priority === null) {
+      agent.sampler.root.applySamplingDecision({ transaction: txn })
+    }
     txn.sampled = false
     tracer.setSegment({ segment: txn.trace.root, transaction: txn })
     const payload = JSON.parse(txn._createDistributedTracePayload().text())
