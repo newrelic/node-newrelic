@@ -451,3 +451,106 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.type, 'reduced')
   })
 })
+
+test('distributed tracing reconfigure samplers', async (t) => {
+  await t.test('should change full granularity root sampler from default to match global root sampler', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: 'always_on'
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.equal(configuration.distributed_tracing.sampler.root, 'always_on')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root, 'always_on')
+  })
+
+  await t.test('should set global root sampler to match full granularity root sampler', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          full_granularity: {
+            root: 'adaptive'
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.equal(configuration.distributed_tracing.sampler.root, 'adaptive')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root, 'adaptive')
+  })
+
+  await t.test('should change global root sampler to match full granularity root sampler', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: 'always_off',
+          full_granularity: {
+            root: 'always_on'
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.equal(configuration.distributed_tracing.sampler.root, 'always_on')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root, 'always_on')
+  })
+
+  await t.test('should leave both on \'always_off\' since they are same values', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: 'always_off',
+          full_granularity: {
+            root: 'always_off'
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.equal(configuration.distributed_tracing.sampler.root, 'always_off')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root, 'always_off')
+  })
+
+  await t.test('should leave all samples as default since they are the same values', () => {
+    const config = {}
+
+    const configuration = Config.initialize(config)
+    assert.equal(configuration.distributed_tracing.sampler.root, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_sampled, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_not_sampled, 'default')
+  })
+
+  await t.test('should reconfigure global samplers to match full granularity samplers ', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: 'always_off',
+          remote_parent_sampled: 'always_on',
+          remote_parent_not_sampled: 'adaptive',
+          full_granularity: {
+            root: 'adaptive',
+            remote_parent_sampled: 'always_off',
+            remote_parent_not_sampled: 'always_on',
+          }
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.equal(configuration.distributed_tracing.sampler.root, 'adaptive')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'always_off')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'always_on')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root, 'adaptive')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_sampled, 'always_off')
+    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_not_sampled, 'always_on')
+  })
+})
