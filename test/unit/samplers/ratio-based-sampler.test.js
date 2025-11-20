@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const helper = require('../../lib/agent_helper')
+const helper = require('#testlib/agent_helper.js')
 const hashes = require('#agentlib/util/hashes.js')
 const TraceIdRatioBasedSampler = require('#agentlib/samplers/ratio-based-sampler.js')
 
@@ -83,7 +83,25 @@ test('should sample approximately correct percentage of traces', (t) => {
   assert.ok(actualRatio > ratio - 0.01 && actualRatio < ratio + 0.01)
 })
 
-// TODO: applySamplingDecision
+test('should set `sampled` and `priority` correctly on sampled transaction', (t, end) => {
+  t.nr.agent.sampler.root = new TraceIdRatioBasedSampler({ agent: t.nr.agent, ratio: 1 })
+  helper.runInTransaction(t.nr.agent, (txn) => {
+    txn.end()
+    assert.strictEqual(txn.sampled, true)
+    assert.ok(txn.priority > 1)
+    end()
+  })
+})
+
+test('should set `sampled` and `priority` correctly on not sampled transaction', (t, end) => {
+  t.nr.agent.sampler.root = new TraceIdRatioBasedSampler({ agent: t.nr.agent, ratio: 0 })
+  helper.runInTransaction(t.nr.agent, (txn) => {
+    txn.end()
+    assert.strictEqual(txn.sampled, false)
+    assert.ok(txn.priority < 1)
+    end()
+  })
+})
 
 function generateRandomTraceId() {
   return hashes.makeId(32)

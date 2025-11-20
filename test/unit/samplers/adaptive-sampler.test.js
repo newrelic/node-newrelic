@@ -149,5 +149,3 @@ test('in standard mode', async (t) => {
     })
   })
 })
-
-// TODO: applySamplingDecision
