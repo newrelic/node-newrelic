@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const { performance } = require('node:perf_hooks')
 
-const normalizeTimestamp = require('#agentlib/otel/normalize-timestamp.js.js')
+const normalizeTimestamp = require('#agentlib/otel/normalize-timestamp.js')
 
 const TS_FIXTURE = 1752577200000 // 2026-07-15T07:00:00.000-04:00
 
