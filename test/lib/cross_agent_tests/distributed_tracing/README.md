@@ -18,7 +18,7 @@ the agent under test. Here's what the various fields in each test case mean:
 | `remote_parent_sampled` | The sampler to use for transactions with a remote parent. |
 | `remote_parent_not_sampled` | The sampler to use for transactions with a remote parent that is not sampled. |
 | `expected_priority_between` | The inclusive range of the expected priority value on the generated transaction event. |
-| `force_adaptive_sampled_true` | Whether to force a transaction to be sampled or not when the adaptive sampler is used. |
+| `force_adaptive_sampled` | The sampling decision to force on a transaction whenever the adaptive sampler is used. |
 | `ratio` | The ratio to use for all of the trace ID ratio samplers defined in the test. For testing purposes we are not defining different ratios for each trace ID ratio sampler instance. If that is necessary, we will need a different way to configure the ratios. |
 | `transport_type` | The transport type for the inbound request. |
 | `inbound_headers` | The headers you should mock coming into the agent. |

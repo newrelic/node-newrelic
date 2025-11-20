@@ -268,7 +268,6 @@ async function runTestCase(testCase, parentTest) {
     testExpectedFixtureKeys(testCase, [
       'account_id',
       'expected_metrics',
-      'force_adaptive_sampled_true',
       'inbound_headers',
       'intrinsics',
       'outbound_payloads',
@@ -281,6 +280,7 @@ async function runTestCase(testCase, parentTest) {
       'comment',
       'transaction_events_enabled',
       // Sampling
+      'force_adaptive_sampled',
       'remote_parent_sampled',
       'remote_parent_not_sampled',
       'root',
@@ -376,10 +376,7 @@ async function runTestCase(testCase, parentTest) {
     agent.config.account_id = testCase.account_id
     agent.config.primary_application_id = 4657
     agent.config.span_events.enabled = testCase.span_events_enabled
-    // Some new tests should have this set to true, but they are undefined instead
-    if (testCase.transaction_events_enabled !== undefined) {
-      agent.config.transaction_events.enabled = testCase.transaction_events_enabled
-    } else agent.config.transaction_events.enabled = true
+    agent.config.transaction_events.enabled = testCase.transaction_events_enabled
 
     t.after(() => helper.unloadAgent(agent))
 
@@ -388,7 +385,6 @@ async function runTestCase(testCase, parentTest) {
     const transactionType = testCase.web_transaction ? TYPES.WEB : TYPES.BG
 
     helper.runInTransaction(agent, transactionType, function (transaction) {
-      console.debug(testCase.test_name)
       transaction.baseSegment = transaction.trace.add('MyBaseSegment', (segment) => {
         recorder(
           transaction,
@@ -403,7 +399,7 @@ async function runTestCase(testCase, parentTest) {
         agentApi.noticeError(new Error('should error'))
       }
 
-      forceAdaptiveSamplers(agent, testCase.force_adaptive_sampled_true)
+      forceAdaptiveSamplers(agent, testCase.force_adaptive_sampled)
 
       for (const inboundHeader of testCase.inbound_headers.values()) {
         transaction.acceptDistributedTraceHeaders(testCase.transport_type, inboundHeader)
@@ -502,13 +498,15 @@ async function runTestCase(testCase, parentTest) {
 
 function forceAdaptiveSamplers(agent, forceAdaptiveSampled) {
   if (forceAdaptiveSampled === undefined || forceAdaptiveSampled === null) return
-  // "Whether to force a transaction to be sampled or not when the adaptive sampler is used"
+  // "The sampling decision to force on a transaction whenever the adaptive sampler is used"
   // implies this affects all samplers that are adaptive samplers
-  const samplers = [agent.transactionSampler, agent.remoteParentSampledSampler, agent.remoteParentNotSampledSampler]
+  const samplers = [
+    agent.sampler.root,
+    agent.sampler.remoteParentSampled,
+    agent.sampler.remoteParentNotSampled
+  ]
   for (const sampler of samplers) {
     if (sampler?.toString() === 'AdaptiveSampler') {
-      // monkey patch this transaction object
-      // to force sampled to the given value.
       sampler.shouldSample = function stubShouldSample() {
         return forceAdaptiveSampled
       }

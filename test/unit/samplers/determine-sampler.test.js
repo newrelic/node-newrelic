@@ -191,7 +191,7 @@ test('if trace_id_ratio_based is defined but ratio is not, use adaptive sampler'
     }
   })
   t.nr.agent = helper.loadMockedAgent(config)
-  const sampler = t.nr.agent.transactionSampler
+  const sampler = t.nr.agent.sampler.root
   assert.ok(sampler instanceof AdaptiveSampler)
 })
 
@@ -208,6 +208,6 @@ test('should use traceidratiobasedsampler if trace_id_ratio_based and ratio is d
     }
   })
   t.nr.agent = helper.loadMockedAgent(config)
-  const sampler = t.nr.agent.transactionSampler
+  const sampler = t.nr.agent.sampler.root
   assert.ok(sampler instanceof TraceIdRatioBasedSampler)
 })
