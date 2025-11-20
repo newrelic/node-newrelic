@@ -14,7 +14,7 @@ Customers configure how they would like their transactions to be sampled under o
   - `remote_parent_sampled`: The sampler for when the upstream service has sampled the trace.
   - `remote_parent_not_sampled`: The sampler for when the upstream service has not sampled the trace.
 
-NOTE: `distributed_tracing.sampler` only exists for backward compatiability and will be deprecated in favor of `distributed_tracing.sampler.full_granularity`. For now, `full_granularity` will take precedence over the old path.
+NOTE: `distributed_tracing.sampler` only exists for backward compatiability and may be deprecated in favor of `distributed_tracing.sampler.full_granularity`. For now, `full_granularity` will take precedence over the old path.
 
 ### Full Config in Accordance to Spec
 
@@ -68,64 +68,23 @@ distributed_tracing:
 
 ## Solution
 
-There are three sampler modes, each with three sampler sections, resulting in potentially nine different sampling decisions that the agent would have to support.
-
-### Seperate Sampler Instances
-
-We create a new `Sampler` instance for each sampler modes' section, resulting in 9 samplers. It would be something like (left-hand side represents the current instance's name if it exists):
+There are three sampler modes, each with three sampler sections, resulting in potentially nine different sampling decisions that the agent would have to support. We create a new `Sampler` instance (`AdaptiveSampler`, `AlwaysOnSampler`, `AlwaysOffSampler`, or `TraceIdRatioBasedSampler`, defined in this folder) for each of these sampler modes' sections.
 
 `agent.sampler` would be defined as:
 
-* `agent.sampler.full_granularity.root`
-* `agent.sampler.full_granularity.remote_parent_sampled`
-* `agent.sampler.full_granularity.remote_parent_not_sampled`
-* `agent.sampler.partial_granularity.root`
-* `agent.sampler.partial_granularity.remote_parent_sampled`
-* `agent.sampler.partial_granularity.remote_parent_not_sampled`
+* `agent.sampler.fullGranularity.root`
+* `agent.sampler.fullGranularity.remoteParentSampled`
+* `agent.sampler.fullGranularity.remoteParentNotSampled`
+* `agent.sampler.partialGranularity.root`
+* `agent.sampler.partialGranularity.remoteParentSampled`
+* `agent.sampler.partialGranularity.remoteParentNotSampled`
 
-Will be deprecated, `full_granularity` takes precedence:
+These fields currently exist (before core tracing was implemented); `agent.sampler.fullGranularity.*` will take precedence over these fields:
 
 * `agent.sampler.root`
-* `agent.sampler.remote_parent_sampled`
-* `agent.sampler.remote_parent_not_sampled`
+* `agent.sampler.remoteParentSampled`
+* `agent.sampler.remoteParentNotSampled`
 
-`Transaction.prototype._calculatePriority` would be modified like:
+These samplers have a `applySamplingDecision({transaction})` function, which `Transaction` calls (in `lib/transaction/index.js`) to update its `sampled` field and therefore its `priority`.
 
-```javascript
-...
- // Decide sampling from w3c data
-  let full_sampler = null
-  let partial_sampler = null
-  if (traceparent.isSampled === true) {
-   full_sampler = this.agent.sampler.full_granularity.remote_parent_sampled
-   partial_sampler = this.agent.sampler.partial_granularity.remote_parent_sampled
-  } else if (traceparent.isSampled === false) {
-   full_sampler = this.agent.sampler.full_granularity.remote_parent_not_sampled
-   partial_sampler = this.agent.sampler.partial_granularity.remote_parent_not_sampled
-  }
-  this._calculatePriority(full_sampler, partial_sampler, tracestate)
-...
-
-
-Transaction.prototype._calculatePriority = function _calculatePriority(full_sampler = null, partial_sampler = null, tracestate = null) {
-	// full_sampler would be `agent.sampler.full_granularity`
-	// partial_sampler would be `agent.sampler.partial_granularity`
-	// root is default because there's only one place (see above) where 
-	// `remote_parent_sampled` and `remote_parent_not_sampled` is supplied instead
-	if (!full_sampler){
-		full_sampler = agent.sampler.full_granularity.root
-	}
-	if (!parital_sampler){
-		partial_sampler=agent.sampler.partial_sampler.root
-	}
-
-  if (this.priority === null) {
-    full_sampler.applySamplingDecision({ transaction: this, tracestate })
-
-    // If full_granularity does not sample, it goes to parital_granularity's sampling decision
-    if(this.sampled = false){
-         partial_sampler.applySamplingDecision({ transaction: this, tracestate })
-     }
-  }
-}
-```
+Unlike the other samplers, the `AdaptiveSampler` must share state with other `AdaptiveSamplers` with the same `sampling_target`, which complicates our seperate sampler instances approach. This will be fixed shortly, and this document will be updated to describe that solution.
