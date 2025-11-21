@@ -4,19 +4,19 @@ The New Relic agent supports a robust sampling decision making interface. This i
 
 ## Config
 
-Customers configure how they would like their transactions to be sampled under our `distributed_tracing` section in our config. Remember, sampling will only apply if a customer has `distributed_tracing.enabled` set to `true`.
+Customers configure how they would like their transactions to be sampled under our `distributed_tracing` section in our config. Remember, sampling will only apply if a customer has `distributed_tracing.enabled` set to `true`, `distributed_tracing.sampler.full_granularity.enabled = true`, and if they want partial granularity traces, `distributed_tracing.sampler.partial_granularity.enabled = true`.
 
 ### Types
 
-- A "sampler mode" refers to the following config sections: `distributed_tracing.sampler`, `distributed_tracing.sampler.full_granularity`, and `distributed_tracing.sampler.partial_granularity`. They are defined by the three sections: `root`, `remote_parent_sampled`, and `remote_parent_not_sampled`.
+- A "sampler mode" refers to the following config sections: `distributed_tracing.sampler` (also refered to as "full granularity") and `distributed_tracing.sampler.partial_granularity`. They are defined by the three sections: `root`, `remote_parent_sampled`, and `remote_parent_not_sampled`.
 - A "sampler section" refers to `root`, `remote_parent_sampled`, or `remote_parent_not_sampled` within a particular sampler mode. The config defined at this section, i.e. `SAMPLER_TYPE: SAMPLER_SUBOPTION?`, describes the sampling decision for that particular scenario within that mode.
   - `root`: This is the main sampler for traces originating from the current service.
   - `remote_parent_sampled`: The sampler for when the upstream service has sampled the trace.
   - `remote_parent_not_sampled`: The sampler for when the upstream service has not sampled the trace.
+- `SAMPLER_TYPE` can be `adaptive`, `always_on`, `always_off`, and `trace_id_ratio_based`.
+- `SAMPLER_SUBOPTION` is only valid for `adaptive` and `trace_id_ratio_based` and only required for `trace_id_ratio_based`. `adaptive` will fall back to a global `AdaptiveSampler` with a sampling target defined by `distributed_tracing.sampler.adaptive_sampling_target` if `adaptive.sampling_target` is not given.
 
-NOTE: `distributed_tracing.sampler` only exists for backward compatiability and may be deprecated in favor of `distributed_tracing.sampler.full_granularity`. For now, `full_granularity` will take precedence over the old path.
-
-### Full Config in Accordance to Spec
+Full Config in Accordance to Pending Spec Changes (as of agent team discussions, 11/21/2025):
 
 ```yaml
 ...
@@ -30,35 +30,26 @@ distributed_tracing:
   exclude_newrelic_header: boolean (default false)
   enable_success_metrics (OPTIONAL): boolean (default true, set to false to disable supportability metrics)
   sampler: (section for sampling config options for different scenarios)
-    adaptive_sampling_target (see note on Sampling Target below)
+    adaptive_sampling_target (see note on Sampling Target above)
     root: (when the trace originates from the current service)
-      ${SAMPLER_TYPE} (See `Sampler Options` below)
+      ${SAMPLER_TYPE} (See `Sampler Options` above)
         ${SAMPLER_SUBOPTION}
     remote_parent_sampled: (when the upstream service has sampled the trace)
-      ${SAMPLER_TYPE} (See `Sampler Options` below)
+      ${SAMPLER_TYPE})
         ${SAMPLER_SUBOPTION}
     remote_parent_not_sampled: (when the upstream service has not sampled the trace)
       ${SAMPLER_TYPE}
         ${SAMPLER_SUBOPTION}
     full_granularity:
       enabled
-      root: (when the trace originates from the current service)
-        ${SAMPLER_TYPE} (See `Sampler Options` below)
-          ${SAMPLER_SUBOPTION}
-      remote_parent_sampled: (when the upstream service has sampled the trace)
-        ${SAMPLER_TYPE} (See `Sampler Options` below)
-          ${SAMPLER_SUBOPTION}
-      remote_parent_not_sampled: (when the upstream service has not sampled the trace)
-        ${SAMPLER_TYPE}
-          ${SAMPLER_SUBOPTION}
     partial_granularity:
       enabled
       type   ("reduced", "essential", "compact")
       root: (when the trace originates from the current service)
-        ${SAMPLER_TYPE} (See `Sampler Options` below)
+        ${SAMPLER_TYPE}
           ${SAMPLER_SUBOPTION}
       remote_parent_sampled: (when the upstream service has sampled the trace)
-        ${SAMPLER_TYPE} (See `Sampler Options` below)
+        ${SAMPLER_TYPE}
           ${SAMPLER_SUBOPTION}
       remote_parent_not_sampled: (when the upstream service has not sampled the trace)
         ${SAMPLER_TYPE}
@@ -68,23 +59,17 @@ distributed_tracing:
 
 ## Solution
 
-There are three sampler modes, each with three sampler sections, resulting in potentially nine different sampling decisions that the agent would have to support. We create a new `Sampler` instance (`AdaptiveSampler`, `AlwaysOnSampler`, `AlwaysOffSampler`, or `TraceIdRatioBasedSampler`, defined in this folder) for each of these sampler modes' sections.
+There are two sampler modes, each with three sampler sections, resulting in potentially six different sampling decisions that the agent would have to support. We create a new `Sampler` instance (`AdaptiveSampler`, `AlwaysOnSampler`, `AlwaysOffSampler`, or `TraceIdRatioBasedSampler`, defined in this folder) for each of these sampler modes' sections.
 
-`agent.sampler` would be defined as:
-
-* `agent.sampler.fullGranularity.root`
-* `agent.sampler.fullGranularity.remoteParentSampled`
-* `agent.sampler.fullGranularity.remoteParentNotSampled`
-* `agent.sampler.partialGranularity.root`
-* `agent.sampler.partialGranularity.remoteParentSampled`
-* `agent.sampler.partialGranularity.remoteParentNotSampled`
-
-These fields currently exist (before core tracing was implemented); `agent.sampler.fullGranularity.*` will take precedence over these fields:
+`agent.sampler` is defined as:
 
 * `agent.sampler.root`
 * `agent.sampler.remoteParentSampled`
 * `agent.sampler.remoteParentNotSampled`
+* `agent.sampler.partialGranularity.root`
+* `agent.sampler.partialGranularity.remoteParentSampled`
+* `agent.sampler.partialGranularity.remoteParentNotSampled`
 
-These samplers have a `applySamplingDecision({transaction})` function, which `Transaction` calls (in `lib/transaction/index.js`) to update its `sampled` field and therefore its `priority`.
+These samplers have a `applySamplingDecision({transaction})` function, which the `Transaction` class calls (in `lib/transaction/index.js`) to update the specific `Transaction` instance's `sampled` field and therefore its `priority`.
 
-Unlike the other samplers, the `AdaptiveSampler` must share state with other `AdaptiveSamplers` with the same `sampling_target`, which complicates our seperate sampler instances approach. This will be fixed shortly, and this document will be updated to describe that solution.
+Unlike the other samplers, the `AdaptiveSampler` must share state with other `AdaptiveSampler`s if they do not have their suboption, `sampling_target,` defined. Thus, this introduces our seventh field on `agent.sampler.*`: `agent.sampler._globalAdaptiveSampler `. The intent of this field is to have one instance of an `AdaptiveSampler` for `adaptive` sampler sections that do not specify an `adaptive.sampling_target` to share.
