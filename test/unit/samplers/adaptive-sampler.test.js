@@ -149,3 +149,154 @@ test('in standard mode', async (t) => {
     })
   })
 })
+
+test('should use one global adaptive sampler', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+  })
+
+  t.afterEach((ctx) => {
+    if (ctx?.nr?.agent) {
+      helper.unloadAgent(ctx.nr.agent)
+    }
+  })
+
+  await t.test('when default', async (t) => {
+    t.nr.agent = helper.loadMockedAgent({})
+    const { agent } = t.nr
+    const globalAdaptiveSampler = agent?.sampler?._globalAdaptiveSampler
+    assert.ok(globalAdaptiveSampler)
+    assert.equal(globalAdaptiveSampler.samplingTarget, 10)
+    assert.equal(agent.sampler.root, globalAdaptiveSampler)
+    assert.equal(agent.sampler.remoteParentSampled, globalAdaptiveSampler)
+    assert.equal(agent.sampler.remoteParentNotSampled, globalAdaptiveSampler)
+  })
+
+  await t.test('when all set to `adaptive`', async (t) => {
+    t.nr.agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        sampler: {
+          adaptive_sampling_target: 21,
+          root: 'adaptive',
+          remote_parent_sampled: 'adaptive',
+          remote_parent_not_sampled: 'adaptive'
+        }
+      }
+    })
+    const { agent } = t.nr
+    const globalAdaptiveSampler = agent?.sampler?._globalAdaptiveSampler
+    assert.ok(globalAdaptiveSampler)
+    assert.equal(globalAdaptiveSampler.samplingTarget, 21)
+    assert.equal(agent.sampler.root, globalAdaptiveSampler)
+    assert.equal(agent.sampler.remoteParentSampled, globalAdaptiveSampler)
+    assert.equal(agent.sampler.remoteParentNotSampled, globalAdaptiveSampler)
+  })
+
+  await t.test('when all `adaptive:{}` with `adaptive.sampling_target` not given', async (t) => {
+    t.nr.agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        sampler: {
+          adaptive_sampling_target: 21,
+          root: {
+            adaptive: {}
+          },
+          remote_parent_sampled: {
+            adaptive: {}
+          },
+          remote_parent_not_sampled: {
+            adaptive: {}
+          }
+        }
+      }
+    })
+    const { agent } = t.nr
+    const globalAdaptiveSampler = agent?.sampler?._globalAdaptiveSampler
+    assert.ok(globalAdaptiveSampler)
+    assert.equal(globalAdaptiveSampler.samplingTarget, 21)
+    assert.equal(agent.sampler.root, globalAdaptiveSampler)
+    assert.equal(agent.sampler.remoteParentSampled, globalAdaptiveSampler)
+    assert.equal(agent.sampler.remoteParentNotSampled, globalAdaptiveSampler)
+  })
+})
+
+test('should instantiate seperate adaptive sampler instances', async(t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+  })
+
+  t.afterEach((ctx) => {
+    if (ctx?.nr?.agent) {
+      helper.unloadAgent(ctx.nr.agent)
+    }
+  })
+
+  await t.test('when all `adaptive.sampling_target` have the same value, but `adaptive_sampling_target` differs', async (t) => {
+    t.nr.agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        sampler: {
+          adaptive_sampling_target: 10,
+          root: {
+            adaptive: {
+              sampling_target: 21
+            }
+          },
+          remote_parent_sampled: {
+            adaptive: {
+              sampling_target: 21
+            }
+          },
+          remote_parent_not_sampled: {
+            adaptive: {
+              sampling_target: 21
+            }
+          }
+        }
+      }
+    })
+    const { agent } = t.nr
+    assert.equal(agent.sampler._globalAdaptiveSampler, null, 'should not create _globalAdaptiveSampler if no sampling_target is unspecified')
+    assert.equal(agent.sampler.root?.samplingTarget, 21)
+    assert.equal(agent.sampler.remoteParentSampled?.samplingTarget, 21)
+    assert.equal(agent.sampler.remoteParentNotSampled?.samplingTarget, 21)
+  })
+
+  await t.test('mixed test', async (t) => {
+    t.nr.agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        sampler: {
+          adaptive_sampling_target: 10,
+          root: {
+            adaptive: {
+              sampling_target: 21
+            }
+          },
+          remote_parent_sampled: {
+            adaptive: {
+              sampling_target: 10
+            }
+          },
+          remote_parent_not_sampled: 'adaptive'
+        }
+      }
+    })
+    const { agent } = t.nr
+    // should create the globalAdaptiveSampler
+    // because there is an 'adaptive' section
+    // without an explicit sampling_target
+    const globalAdaptiveSampler = agent?.sampler?._globalAdaptiveSampler
+    assert.ok(globalAdaptiveSampler)
+    assert.equal(globalAdaptiveSampler.samplingTarget, 10)
+    // differing sampling_target should instantiate
+    // a new AdaptiveSampler
+    assert.equal(agent.sampler.root?.samplingTarget, 21)
+    // even if the sampling_targets are the same, if
+    // 'adaptive.sampling_target' is specified,
+    // a new instance of AdaptiveSampler should be created
+    assert.equal(agent.sampler.remoteParentSampled?.samplingTarget, 10)
+    assert.notEqual(agent.sampler.remoteParentSampled, globalAdaptiveSampler)
+    // if the sampling_target is not specified,
+    // use the globalAdaptiveSampler
+    assert.equal(agent.sampler.remoteParentNotSampled?.samplingTarget, 10)
+    assert.equal(agent.sampler.remoteParentNotSampled, globalAdaptiveSampler)
+  })
+})
