@@ -209,6 +209,22 @@ test('when overriding configuration values via environment variables', async (t)
         })
       })
 
+      await t.test(`should set ${samplerName}_${envVar} sampler to adaptive with sampling target`, (t, end) => {
+        const env = {
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'adaptive',
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}_ADAPTIVE_SAMPLING_TARGET`]: '21'
+        }
+
+        idempotentEnv(env, (tc) => {
+          if (samplerName === 'SAMPLER') {
+            assert.equal(tc.distributed_tracing.sampler[type].adaptive.sampling_target, 21)
+          } else {
+            assert.equal(tc.distributed_tracing.sampler[key][type].adaptive.sampling_target, 21)
+          }
+          end()
+        })
+      })
+
       await t.test(`should set ${samplerName}_${envVar} sampler to trace id based ratio`, (t, end) => {
         const env = {
           [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'trace_id_ratio_based',

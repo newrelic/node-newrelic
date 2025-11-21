@@ -33,7 +33,7 @@ test('should throw error if config is null', (t) => {
   })
 })
 
-test('root sampler', async (t) => {
+test('agent.sampler.root is determined correctly', async (t) => {
   await t.test('should choose adaptive sampler by default', (t) => {
     const config = new Config({})
     t.nr.agent = helper.loadMockedAgent(config)
@@ -52,6 +52,25 @@ test('root sampler', async (t) => {
     t.nr.agent = helper.loadMockedAgent(config)
     const sampler = t.nr.agent.sampler.root
     assert.ok(sampler instanceof AdaptiveSampler)
+    assert.equal(sampler, t.nr.agent.sampler._globalAdaptiveSampler)
+  })
+
+  await t.test('should create new instance of adaptive sampler if specified', (t) => {
+    const config = new Config({
+      distributed_tracing: {
+        sampler: {
+          root: {
+            adaptive: {
+              sampling_target: 21
+            }
+          }
+        }
+      }
+    })
+    t.nr.agent = helper.loadMockedAgent(config)
+    const sampler = t.nr.agent.sampler.root
+    assert.ok(sampler instanceof AdaptiveSampler)
+    assert.equal(sampler.samplingTarget, 21)
   })
 
   await t.test('should use AlwaysOnSampler if always_on is specified', (t) => {
@@ -100,6 +119,25 @@ test('agent.sampler.remoteParentSampled is determined correctly', async (t) => {
     t.nr.agent = helper.loadMockedAgent(config)
     const sampler = t.nr.agent.sampler.remoteParentSampled
     assert.ok(sampler instanceof AdaptiveSampler)
+    assert.equal(sampler, t.nr.agent.sampler._globalAdaptiveSampler)
+  })
+
+  await t.test('should create new instance of adaptive sampler if specified', (t) => {
+    const config = new Config({
+      distributed_tracing: {
+        sampler: {
+          remote_parent_sampled: {
+            adaptive: {
+              sampling_target: 21
+            }
+          }
+        }
+      }
+    })
+    t.nr.agent = helper.loadMockedAgent(config)
+    const sampler = t.nr.agent.sampler.remoteParentSampled
+    assert.ok(sampler instanceof AdaptiveSampler)
+    assert.equal(sampler.samplingTarget, 21)
   })
 
   await t.test('should use AlwaysOnSampler if always_on is specified', (t) => {
@@ -148,6 +186,25 @@ test('agent.sampler.remoteParentNotSampled is determined correctly', async (t) =
     t.nr.agent = helper.loadMockedAgent(config)
     const sampler = t.nr.agent.sampler.remoteParentNotSampled
     assert.ok(sampler instanceof AdaptiveSampler)
+    assert.equal(sampler, t.nr.agent.sampler._globalAdaptiveSampler)
+  })
+
+  await t.test('should create new instance of adaptive sampler if specified', (t) => {
+    const config = new Config({
+      distributed_tracing: {
+        sampler: {
+          remote_parent_not_sampled: {
+            adaptive: {
+              sampling_target: 21
+            }
+          }
+        }
+      }
+    })
+    t.nr.agent = helper.loadMockedAgent(config)
+    const sampler = t.nr.agent.sampler.remoteParentNotSampled
+    assert.ok(sampler instanceof AdaptiveSampler)
+    assert.equal(sampler.samplingTarget, 21)
   })
 
   await t.test('should use AlwaysOnSampler if always_on is specified', (t) => {
