@@ -305,6 +305,34 @@ test('distributed tracing samplers', async (t) => {
           assert.equal(configuration.distributed_tracing.sampler[name][type], 'default')
         }
       })
+
+      await t.test(`should set ${samplerName}.${type} to adaptive when adaptive.sampling_target is specified`, () => {
+        const config = {
+          distributed_tracing: {
+            sampler: {}
+          }
+        }
+        const typeConfig = {
+          [type]: {
+            adaptive: {
+              sampling_target: 21
+            }
+          }
+        }
+
+        if (samplerName === 'sampler') {
+          config.distributed_tracing.sampler = typeConfig
+        } else {
+          config.distributed_tracing.sampler[name] = { ...typeConfig }
+        }
+
+        const configuration = Config.initialize(config)
+        if (samplerName === 'sampler') {
+          assert.equal(configuration.distributed_tracing.sampler[type].adaptive.sampling_target, 21)
+        } else {
+          assert.equal(configuration.distributed_tracing.sampler[name][type].adaptive.sampling_target, 21)
+        }
+      })
     }
   }
 
