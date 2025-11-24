@@ -335,9 +335,6 @@ test('with default properties', async (t) => {
         adaptive_sampling_target: 10,
         full_granularity: {
           enabled: true,
-          root: 'default',
-          remote_parent_sampled: 'default',
-          remote_parent_not_sampled: 'default'
         },
         partial_granularity: {
           enabled: false,

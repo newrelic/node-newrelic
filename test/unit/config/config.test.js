@@ -245,7 +245,7 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'adaptive')
   })
 
-  const samplers = ['sampler', 'sampler.full_granularity', 'sampler.partial_granularity']
+  const samplers = ['sampler', 'sampler.partial_granularity']
   const samplerTypes = ['root', 'remote_parent_sampled', 'remote_parent_not_sampled']
   for (const samplerName of samplers) {
     const name = samplerName.split('.')[1]
@@ -347,23 +347,6 @@ test('distributed tracing samplers', async (t) => {
               ratio: 0.85
             }
           },
-          full_granularity: {
-            root: {
-              trace_id_ratio_based: {
-                ratio: 0.6
-              }
-            },
-            remote_parent_sampled: {
-              trace_id_ratio_based: {
-                ratio: 0.5
-              }
-            },
-            remote_parent_not_sampled: {
-              trace_id_ratio_based: {
-                ratio: 0.4
-              }
-            }
-          },
           partial_granularity: {
             root: {
               trace_id_ratio_based: {
@@ -389,9 +372,6 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled.trace_id_ratio_based.ratio, 0.6)
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.85)
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root.trace_id_ratio_based.ratio, 0.6)
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_sampled.trace_id_ratio_based.ratio, 0.5)
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.4)
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.root.trace_id_ratio_based.ratio, 0.4)
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_sampled.trace_id_ratio_based.ratio, 0.5)
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.6)
@@ -404,11 +384,6 @@ test('distributed tracing samplers', async (t) => {
           root: 'always_on',
           remote_parent_sampled: 'default',
           remote_parent_not_sampled: 'adaptive',
-          full_granularity: {
-            root: 'always_off',
-            remote_parent_sampled: 'adaptive',
-            remote_parent_not_sampled: 'always_on'
-          },
           partial_granularity: {
             root: 'adaptive',
             remote_parent_sampled: 'always_on',
@@ -422,9 +397,6 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.root, 'always_on')
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'adaptive')
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root, 'always_off')
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_sampled, 'adaptive')
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_not_sampled, 'always_on')
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.root, 'adaptive')
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_sampled, 'always_on')
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_not_sampled, 'default')

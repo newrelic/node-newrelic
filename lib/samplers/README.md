@@ -8,13 +8,13 @@ Customers configure how they would like their transactions to be sampled under o
 
 ### Types
 
-- A "sampler mode" refers to the following config sections: `distributed_tracing.sampler`, `distributed_tracing.sampler.full_granularity`, and `distributed_tracing.sampler.partial_granularity`. They are defined by the three sections: `root`, `remote_parent_sampled`, and `remote_parent_not_sampled`.
+- A "sampler mode" refers to the following config sections: `distributed_tracing.sampler` and `distributed_tracing.sampler.partial_granularity`. They are defined by the three sections: `root`, `remote_parent_sampled`, and `remote_parent_not_sampled`.
 - A "sampler section" refers to `root`, `remote_parent_sampled`, or `remote_parent_not_sampled` within a particular sampler mode. The config defined at this section, i.e. `SAMPLER_TYPE: SAMPLER_SUBOPTION?`, describes the sampling decision for that particular scenario within that mode.
   - `root`: This is the main sampler for traces originating from the current service.
   - `remote_parent_sampled`: The sampler for when the upstream service has sampled the trace.
   - `remote_parent_not_sampled`: The sampler for when the upstream service has not sampled the trace.
 
-NOTE: `distributed_tracing.sampler` only exists for backward compatiability and may be deprecated in favor of `distributed_tracing.sampler.full_granularity`. For now, `full_granularity` will take precedence over the old path.
+NOTE: `distributed_tracing.sampler` will be used as the setting for the full granularity samplers.
 
 ### Full Config in Accordance to Spec
 
@@ -42,15 +42,6 @@ distributed_tracing:
         ${SAMPLER_SUBOPTION}
     full_granularity:
       enabled
-      root: (when the trace originates from the current service)
-        ${SAMPLER_TYPE} (See `Sampler Options` below)
-          ${SAMPLER_SUBOPTION}
-      remote_parent_sampled: (when the upstream service has sampled the trace)
-        ${SAMPLER_TYPE} (See `Sampler Options` below)
-          ${SAMPLER_SUBOPTION}
-      remote_parent_not_sampled: (when the upstream service has not sampled the trace)
-        ${SAMPLER_TYPE}
-          ${SAMPLER_SUBOPTION}
     partial_granularity:
       enabled
       type   ("reduced", "essential", "compact")
@@ -72,18 +63,12 @@ There are three sampler modes, each with three sampler sections, resulting in po
 
 `agent.sampler` would be defined as:
 
-* `agent.sampler.fullGranularity.root`
-* `agent.sampler.fullGranularity.remoteParentSampled`
-* `agent.sampler.fullGranularity.remoteParentNotSampled`
-* `agent.sampler.partialGranularity.root`
-* `agent.sampler.partialGranularity.remoteParentSampled`
-* `agent.sampler.partialGranularity.remoteParentNotSampled`
-
-These fields currently exist (before core tracing was implemented); `agent.sampler.fullGranularity.*` will take precedence over these fields:
-
 * `agent.sampler.root`
 * `agent.sampler.remoteParentSampled`
 * `agent.sampler.remoteParentNotSampled`
+* `agent.sampler.partialGranularity.root`
+* `agent.sampler.partialGranularity.remoteParentSampled`
+* `agent.sampler.partialGranularity.remoteParentNotSampled`
 
 These samplers have a `applySamplingDecision({transaction})` function, which `Transaction` calls (in `lib/transaction/index.js`) to update its `sampled` field and therefore its `priority`.
 
