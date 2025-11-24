@@ -188,9 +188,9 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
-  const samplers = ['SAMPLER', 'SAMPLER_FULL_GRANULARITY', 'SAMPLER_PARTIAL_GRANULARITY']
+  const samplers = ['SAMPLER', 'SAMPLER_PARTIAL_GRANULARITY']
   for (const samplerName of samplers) {
-    const key = samplerName === 'SAMPLER_FULL_GRANULARITY' ? 'full_granularity' : 'partial_granularity'
+    const key = samplerName === 'SAMPLER' ? 'sampler' : 'partial_granularity'
     const samplerTypes = ['root', 'remote_parent_sampled', 'remote_parent_not_sampled']
     for (const type of samplerTypes) {
       const envVar = type.toUpperCase()
