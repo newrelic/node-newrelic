@@ -86,7 +86,7 @@ test('should sample approximately correct percentage of traces', (t) => {
 })
 
 test('should set `sampled` and `priority` correctly on sampled transaction', (t, end) => {
-  t.nr.agent.sampler.root = new TraceIdRatioBasedSampler({ agent: t.nr.agent, ratio: 1 })
+  t.nr.agent.samplers.root = new TraceIdRatioBasedSampler({ agent: t.nr.agent, ratio: 1 })
   helper.runInTransaction(t.nr.agent, (txn) => {
     txn.end()
     assert.strictEqual(txn.sampled, true)
@@ -96,7 +96,7 @@ test('should set `sampled` and `priority` correctly on sampled transaction', (t,
 })
 
 test('should set `sampled` and `priority` correctly on not sampled transaction', (t, end) => {
-  t.nr.agent.sampler.root = new TraceIdRatioBasedSampler({ agent: t.nr.agent, ratio: 0 })
+  t.nr.agent.samplers.root = new TraceIdRatioBasedSampler({ agent: t.nr.agent, ratio: 0 })
   helper.runInTransaction(t.nr.agent, (txn) => {
     txn.end()
     assert.strictEqual(txn.sampled, false)

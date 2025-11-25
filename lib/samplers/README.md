@@ -64,14 +64,15 @@ distributed_tracing:
 
 There are two sampler modes, each with three sampler sections, resulting in potentially six different sampling decisions that the agent would have to support. We create a new `Sampler` instance (`AdaptiveSampler`, `AlwaysOnSampler`, `AlwaysOffSampler`, or `TraceIdRatioBasedSampler`, defined in this folder) for each of these sampler modes' sections.
 
-`agent.sampler` is defined as:
+`agent.samplers` is defined as:
 
-* `agent.sampler.root`
-* `agent.sampler.remoteParentSampled`
-* `agent.sampler.remoteParentNotSampled`
-* `agent.sampler.partialGranularity.root`
-* `agent.sampler.partialGranularity.remoteParentSampled`
-* `agent.sampler.partialGranularity.remoteParentNotSampled`
+* `agent.samplers.root`
+* `agent.samplers.remoteParentSampled`
+* `agent.samplers.remoteParentNotSampled`
+* `agent.samplers.partialRoot`
+* `agent.samplers.partialRemoteParentSampled`
+* `agent.samplers.partialRemoteParentNotSampled`
+* `agent.samplers.adaptiveSampler` (if needed, see below)
 
 These samplers have a `applySamplingDecision({transaction})` function, which `Transaction` calls (in `lib/transaction/index.js`) to update its `sampled` field and therefore its `priority`.
 
