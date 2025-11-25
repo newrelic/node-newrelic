@@ -1955,7 +1955,7 @@ test('when being named with finalizeNameFromWeb', async (t) => {
 
   await t.test(
     'when namestate populated, ' +
-      'should add finalized via rule transaction name to active span intrinsics',
+    'should add finalized via rule transaction name to active span intrinsics',
     (t) => {
       const { agent, txn, tracer } = t.nr
       setupNameState(txn)
@@ -1985,7 +1985,7 @@ test('when being named with finalizeNameFromWeb', async (t) => {
 
   await t.test(
     'when namestate populated and high_security enabled, ' +
-      'should not copy parameters from the name stack',
+    'should not copy parameters from the name stack',
     (t) => {
       const { agent, txn } = t.nr
       setupNameState(txn)

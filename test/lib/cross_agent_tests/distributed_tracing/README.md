@@ -14,7 +14,12 @@ the agent under test. Here's what the various fields in each test case mean:
 | `account_id` | The account id the agent would receive on connect. |
 | `web_transaction` | Whether the transaction that's tested is a web transaction or not. |
 | `raises_exception` | Whether to simulate an exception happening within the transaction or not, resulting in a transaction error event. |
-| `force_sampled_true` | Whether to force a transaction to be sampled or not. |
+| `root` | The sampler to use for transactions at the root of a trace. |
+| `remote_parent_sampled` | The sampler to use for transactions with a remote parent. |
+| `remote_parent_not_sampled` | The sampler to use for transactions with a remote parent that is not sampled. |
+| `expected_priority_between` | The inclusive range of the expected priority value on the generated transaction event. |
+| `force_adaptive_sampled` | The sampling decision to force on a transaction whenever the adaptive sampler is used. |
+| `ratio` | The ratio to use for all of the trace ID ratio samplers defined in the test. For testing purposes we are not defining different ratios for each trace ID ratio sampler instance. If that is necessary, we will need a different way to configure the ratios. |
 | `transport_type` | The transport type for the inbound request. |
 | `inbound_headers` | The headers you should mock coming into the agent. |
 | `outbound_payloads` | The exact/expected/unexpected values for outbound `w3c` headers. |
@@ -22,6 +27,14 @@ the agent under test. Here's what the various fields in each test case mean:
 | `expected_metrics` | The expected metrics and associated counts as a result of the test. |
 | `span_events_enabled` | Whether span events are enabled in the agent or not. |
 | `transaction_events_enabled` | Whether transaction events are enabled in the agent or not. |
+
+The samplers that can referenced in the `root`, `remote_parent_sampled`, and `remote_parent_not_sampled` fields are:
+
+- `default`: Use the adaptive sampler.
+- `adaptive`: Use the adaptive sampler.
+- `trace_id_ratio_based`: Use the trace ID ratio sampler.
+- `always_on`: Use the always on sampler.
+- `always_off`: Use the always off sampler.
 
 The `outbound_payloads` and `intrinsics` field can have nested values, for example:
 ```javascript
