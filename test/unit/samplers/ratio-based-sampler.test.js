@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// TODO: more tests
-
 const test = require('node:test')
 const assert = require('node:assert')
 const helper = require('#testlib/agent_helper.js')
@@ -68,8 +66,12 @@ test('should sample consistently for same trace ID', (t) => {
 
 test('should sample approximately correct percentage of traces', (t) => {
   const ratio = 0.5
+  const iterations = 25000
+  // For 25000 iterations, binomial distribution states that
+  // the standard error rate should be around 0.3%, but this
+  // test is very flaky, so we will use 1% as the error margin.
+  const errorMargin = 0.01
   const sampler = new TraceIdRatioBasedSampler({ agent: t.nr.agent, ratio })
-  const iterations = 10000
   let sampledCount = 0
 
   for (let i = 0; i < iterations; i++) {
@@ -79,8 +81,8 @@ test('should sample approximately correct percentage of traces', (t) => {
   }
 
   const actualRatio = sampledCount / iterations
-  // Allow 1% margin of error
-  assert.ok(actualRatio > ratio - 0.01 && actualRatio < ratio + 0.01)
+  assert.ok(actualRatio > ratio - errorMargin && actualRatio < ratio + errorMargin,
+    `should sample approximately ${ratio * 100}% of traces, got ${actualRatio * 100}%`)
 })
 
 test('should set `sampled` and `priority` correctly on sampled transaction', (t, end) => {
