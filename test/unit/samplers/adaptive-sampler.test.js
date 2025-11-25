@@ -300,3 +300,60 @@ test('should instantiate seperate adaptive sampler instances', async(t) => {
     assert.equal(agent.sampler.remoteParentNotSampled, globalAdaptiveSampler)
   })
 })
+
+test('should create correct sampler instances if adaptive.sampling_target is bad', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+  })
+
+  t.afterEach((ctx) => {
+    if (ctx?.nr?.agent) {
+      helper.unloadAgent(ctx.nr.agent)
+    }
+  })
+
+  await t.test('when set to a number not in range [1,120]', async (t) => {
+    t.nr.agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        sampler: {
+          root: {
+            adaptive: {
+              sampling_target: 121
+            }
+          },
+          remote_parent_sampled: {
+            adaptive: {
+              sampling_target: 0
+            }
+          }
+        }
+      }
+    })
+    const { agent } = t.nr
+    assert.ok(agent.sampler._globalAdaptiveSampler, 'should create _globalAdaptiveSampler if sampling_targets provided are outside of range')
+    assert.equal(agent.sampler.root, agent.sampler._globalAdaptiveSampler)
+    assert.equal(agent.sampler.remoteParentSampled, agent.sampler._globalAdaptiveSampler)
+  })
+
+  await t.test('when set to a float in range [1,120]', async (t) => {
+    t.nr.agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        sampler: {
+          root: {
+            adaptive: {
+              sampling_target: 119.5
+            }
+          },
+          remote_parent_sampled: {
+            adaptive: {
+              sampling_target: 1.5
+            }
+          }
+        }
+      }
+    })
+    const { agent } = t.nr
+    assert.equal(agent.sampler.root?.samplingTarget, 119)
+    assert.equal(agent.sampler.remoteParentSampled?.samplingTarget, 1)
+  })
+})
