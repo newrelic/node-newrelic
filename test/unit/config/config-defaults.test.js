@@ -329,9 +329,9 @@ test('with default properties', async (t) => {
       exclude_newrelic_header: false,
       in_process_spans: { enabled: true },
       sampler: {
-        root: 'default',
-        remote_parent_sampled: 'default',
-        remote_parent_not_sampled: 'default',
+        root: 'adaptive',
+        remote_parent_sampled: 'adaptive',
+        remote_parent_not_sampled: 'adaptive',
         adaptive_sampling_target: 10,
         full_granularity: {
           enabled: true,
@@ -339,9 +339,9 @@ test('with default properties', async (t) => {
         partial_granularity: {
           enabled: false,
           type: 'essential',
-          root: 'default',
-          remote_parent_sampled: 'default',
-          remote_parent_not_sampled: 'default'
+          root: 'adaptive',
+          remote_parent_sampled: 'adaptive',
+          remote_parent_not_sampled: 'adaptive'
         }
       }
     })
