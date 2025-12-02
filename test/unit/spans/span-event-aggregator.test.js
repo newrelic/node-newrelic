@@ -60,7 +60,7 @@ test('SpanAggregator', async (t) => {
     const { agent, spanEventAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
-      tx.sample = true
+      tx.sampled = true
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
@@ -85,7 +85,7 @@ test('SpanAggregator', async (t) => {
     const { agent, spanEventAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
-      tx.sample = true
+      tx.sampled = true
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
@@ -139,7 +139,7 @@ test('SpanAggregator', async (t) => {
 
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
-      tx.sample = true
+      tx.sampled = true
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
@@ -182,7 +182,7 @@ test('SpanAggregator', async (t) => {
     const { agent, spanEventAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 1
-      tx.sample = true
+      tx.sampled = true
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
