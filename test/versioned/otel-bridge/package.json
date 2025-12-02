@@ -27,6 +27,21 @@
       "files": [
         "logs.test.js"
       ]
+    },
+
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "@opentelemetry/sdk-trace-node": "^2.2.0",
+        "@opentelemetry/instrumentation": "^0.203.0",
+        "@opentelemetry/instrumentation-amqplib": "^0.54.0",
+        "amqplib": "^0.10.9"
+      },
+      "files": [
+        "span-links.test.js"
+      ]
     }
   ]
 }

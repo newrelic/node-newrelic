@@ -4,11 +4,12 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
 const sinon = require('sinon')
 
-const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
+const StreamingSpanEventAggregator = require('#agentlib/spans/streaming-span-event-aggregator.js')
 const agent = {
   config: {
     distributed_tracing: {

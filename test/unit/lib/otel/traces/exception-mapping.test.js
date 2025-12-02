@@ -4,9 +4,11 @@
  */
 
 'use strict'
-const exceptionAttr = require('#agentlib/otel/traces/exception-mapping.js')
+
 const test = require('node:test')
 const assert = require('node:assert')
+const exceptionAttr = require('#agentlib/otel/traces/exception-mapping.js')
+
 const {
   EXCEPTION_TYPE
 } = require('#agentlib/otel/traces/constants.js')
