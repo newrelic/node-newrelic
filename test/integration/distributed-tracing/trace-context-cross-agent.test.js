@@ -501,9 +501,9 @@ function forceAdaptiveSamplers(agent, forceAdaptiveSampled) {
   // "The sampling decision to force on a transaction whenever the adaptive sampler is used"
   // implies this affects all samplers that are adaptive samplers
   const samplers = [
-    agent.sampler.root,
-    agent.sampler.remoteParentSampled,
-    agent.sampler.remoteParentNotSampled
+    agent.samplers.root,
+    agent.samplers.remoteParentSampled,
+    agent.samplers.remoteParentNotSampled
   ]
   for (const sampler of samplers) {
     if (sampler?.toString() === 'AdaptiveSampler') {

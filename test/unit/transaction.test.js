@@ -1187,7 +1187,7 @@ test('_createDistributedTracePayload', async (t) => {
     const { agent, txn, tracer } = t.nr
     agent.config.span_events.enabled = true
     if (txn.priority === null) {
-      agent.sampler.root.applySamplingDecision({ transaction: txn })
+      agent.samplers.root.applySamplingDecision({ transaction: txn })
     }
     txn.sampled = false
     tracer.setSegment({ segment: txn.trace.root, transaction: txn })
