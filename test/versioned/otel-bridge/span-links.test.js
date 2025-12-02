@@ -48,6 +48,7 @@ test('span links are propagated to new relic', async (t) => {
 
   let produceTx
   let produceSegment
+  let produceSpan
   agent.on('transactionFinished', async (tx) => {
     const segment = tx.trace.root
     const segmentChildren = tx.trace.getChildren(segment.id)
@@ -56,27 +57,50 @@ test('span links are propagated to new relic', async (t) => {
     if (foundSegment) {
       produceTx = tx
       produceSegment = foundSegment
+      produceSpan = tx.agent.spanEventAggregator.getEvents().find(
+        (s) => s.intrinsics.name.includes('Produce/Named/unknown')
+      )
+      t.assert.ok(produceSpan)
       return
     }
-
-    const originalSpans = produceTx.agent.spanEventAggregator.getEvents()
-    const originalSpan = originalSpans.find((s) => s.attributes.type === 'SpanLink')
-    t.assert.ok(originalSpan)
 
     foundSegment = segmentChildren.find((c) => c.name.startsWith('OtherTransaction/Message'))
     t.assert.ok(foundSegment)
     // OTEL will set the queue name (messaging.destination.name) to an empty
     // string. So we'll get "unknown" via our rules mapping.
     t.assert.equal(foundSegment.name, 'OtherTransaction/Message/rabbitmq/topic/Named/unknown')
+    t.assert.equal(foundSegment.spanLinks.length, 1)
 
-    const attrs = foundSegment.attributes.attributes
-    t.assert.ok(attrs)
-    t.assert.equal(attrs.type.value, 'SpanLink')
-    t.assert.equal(attrs.timestamp.value, originalSpan.attributes.timestamp)
-    t.assert.equal(attrs.id.value, originalSpan.attributes.id)
-    t.assert.equal(attrs['trace.id'].value, originalSpan.attributes['trace.id'])
-    t.assert.equal(attrs.linkedSpanId.value, produceSegment.getSpanId())
-    t.assert.equal(attrs.linkedTraceId.value, produceTx.traceId)
+    const link = foundSegment.spanLinks[0]
+    t.assert.equal(link.intrinsics.type, 'SpanLink')
+    // OTEL sets the timestamp to a hrtime tuple. Which can't actually be
+    // converted to an epoch millisecond representation. So the best we can do
+    // is to verify that the two times are within a narrow window.
+    t.assert.equal(
+      (produceSpan.intrinsics.timestamp - link.intrinsics.timestamp) <= 10,
+      true,
+      'timestamp should be within expected window'
+    )
+    t.assert.equal(
+      link.intrinsics.id,
+      foundSegment.id,
+      'intrinsics.id should match consumer span id'
+    )
+    t.assert.equal(
+      link.intrinsics['trace.id'],
+      tx.traceId,
+      'trace.id should match consumer transaction id'
+    )
+    t.assert.equal(
+      link.intrinsics.linkedSpanId,
+      produceSegment.getSpanId(),
+      'linkedSpanId should match producer span id'
+    )
+    t.assert.equal(
+      link.intrinsics.linkedTraceId,
+      produceTx.traceId,
+      'linkedTraceId should match producer transaction id'
+    )
 
     t.assert.equal(consumedMessages.length, 1)
 

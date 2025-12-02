@@ -4,13 +4,14 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
-const helper = require('#testlib/agent_helper.js')
-const otel = require('@opentelemetry/api')
-const NewRelicSampler = require('#agentlib/otel/traces/sampler.js')
-const { SpanKind } = require('@opentelemetry/api')
 const sinon = require('sinon')
+const otel = require('@opentelemetry/api')
+const { SpanKind } = require('@opentelemetry/api')
+const helper = require('#testlib/agent_helper.js')
+const NewRelicSampler = require('#agentlib/otel/traces/sampler.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
