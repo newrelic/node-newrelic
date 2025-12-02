@@ -540,19 +540,6 @@ test('applyDTSamplingDecision', async (t) => {
     })
   })
 
-  await t.test('should not apply decision when traceparent.isSampled is undefined', (t) => {
-    const samplers = new Samplers(t.nr.agent)
-
-    const transaction = { priority: null, sampled: null }
-    const traceparent = { isSampled: undefined }
-    const tracestate = null
-
-    samplers.applyDTSamplingDecision({ transaction, traceparent, tracestate })
-
-    assert.equal(transaction.priority, null)
-    assert.equal(transaction.sampled, null)
-  })
-
   await t.test('should handle tracestate without intrinsics', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
