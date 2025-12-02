@@ -365,4 +365,44 @@ test('SpanAggregator', async (t) => {
     )
     assert.equal(recordValueStub.args[0][0], harvestLimit, `should set limit to ${harvestLimit}`)
   })
+
+  await t.test('adds links to the stack', (t) => {
+    const { spanEventAggregator: agg } = t.nr
+    const stack = []
+
+    agg.add = (item, priority) => {
+      stack.push({ item, priority })
+    }
+
+    const segment = {
+      spanLinks: [{ test: 'link' }],
+      getSpanContext() {
+        return {
+          hasError: false,
+          customAttributes: { get() {} },
+          intrinsicAttributes: {}
+        }
+      },
+      attributes: {
+        get() {
+          return {
+            host: 'test',
+            port: 1234
+          }
+        }
+      },
+      timer: {
+        start() {},
+        getDurationInMillis() { return 1 }
+      }
+    }
+    const transaction = {
+      priority: 0.5
+    }
+    agg.addSegment({ segment, transaction })
+
+    assert.equal(stack.length, 2)
+    const link = stack.pop()
+    assert.deepStrictEqual(link, { item: { test: 'link' }, priority: 0.5 })
+  })
 })

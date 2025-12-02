@@ -4,11 +4,12 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
 const sinon = require('sinon')
 
-const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
+const StreamingSpanEventAggregator = require('#agentlib/spans/streaming-span-event-aggregator.js')
 const agent = {
   config: {
     distributed_tracing: {
@@ -83,4 +84,31 @@ test('Should attempt to connect on start() after stop() call', () => {
 
   streamingSpanAggregator.start()
   assert.equal(connectCount, 2)
+})
+
+test('adds links to the stack', () => {
+  const stack = []
+  const opts = {
+    span_streamer: {
+      connect() {},
+      disconnect() {}
+    }
+  }
+  const agg = new StreamingSpanEventAggregator(opts, agent)
+  agg.start()
+
+  agg.add = (item, priority) => {
+    stack.push({ item, priority })
+  }
+
+  const segment = {
+    spanLinks: [{ test: 'link' }]
+  }
+  const transaction = {
+    priority: 0.5
+  }
+  agg.addSegment({ segment, transaction })
+
+  assert.deepStrictEqual(stack, [{ item: { test: 'link' }, priority: 0.5 }])
+  agg.stop()
 })

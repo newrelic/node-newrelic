@@ -56,8 +56,8 @@ module.exports = function match(actual, expected, { assert = require('node:asser
     return
   }
 
-  for (const key in expected) {
-    if (key in actual) {
+  for (const key of Object.keys(expected)) {
+    if (Object.hasOwn(actual, key) === true) {
       if (typeof expected[key] === 'function') {
         const type = expected[key]
         // eslint-disable-next-line valid-typeof
