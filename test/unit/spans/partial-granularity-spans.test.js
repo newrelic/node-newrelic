@@ -152,7 +152,7 @@ test('Partial Granularity Spans - reduced mode', async (t) => {
 })
 
 test('Partial Granularity Spans - essential mode', async (t) => {
-  t.beforeEach((ctx) => {
+  test.beforeEach((ctx) => {
     const agent = helper.instrumentMockedAgent({
       distributed_tracing: {
         enabled: true,
@@ -165,11 +165,11 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     ctx.nr = { agent }
   })
 
-  t.afterEach((ctx) => {
+  test.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should include entry span', (t, end) => {
+  test('should include entry span', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -184,7 +184,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  await t.test('should include Llm span', (t, end) => {
+  test('should include Llm span', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -195,7 +195,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  await t.test('should include exit span with entity relationship and error attrs but no custom attrs', (t, end) => {
+  test('should include exit span with entity relationship and error attrs but no custom attrs', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -226,7 +226,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  await t.test('should not include exit span that does not have entity relationship attrs', (t, end) => {
+  test('should not include exit span that does not have entity relationship attrs', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -238,7 +238,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  await t.test('should not include in process span', (t, end) => {
+  test('should not include in process span', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
