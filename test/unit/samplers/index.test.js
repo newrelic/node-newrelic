@@ -323,7 +323,7 @@ test('applySamplingDecision', async (t) => {
     assert.equal(transaction.isPartialTrace, false)
   })
 
-  await t.test('should not apply any samplers if both full and partial are disabled', (t) => {
+  await t.test('should not apply any samplers if both full and partial are disabled and default to assigning priority 0 and sampled false', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
         sampler: {
@@ -594,6 +594,25 @@ test('applyDTSamplingDecision', async (t) => {
     assert.equal(transaction.priority, 0)
     assert.equal(transaction.isPartialTrace, null)
   })
+
+  await t.test('should not apply any samplers if both full and partial are disabled, and no transaction', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          full_granularity: {
+            enabled: false
+          },
+          partial_granularity: {
+            enabled: false,
+          }
+        }
+      }
+    })
+    const samplers = new Samplers(t.nr.agent)
+    assert.doesNotThrow(() => {
+      samplers.applyDTSamplingDecision({ transaction: null })
+    })
+  })
 })
 
 test('applyLegacyDTSamplingDecision', async (t) => {
@@ -752,6 +771,26 @@ test('applyLegacyDTSamplingDecision', async (t) => {
   })
 
   await t.test('should NOT apply decision when sampler is AdaptiveSampler and isSampled is false', (t) => {
+    const samplers = new Samplers(t.nr.agent)
+
+    const transaction = { priority: null, sampled: null }
+    samplers.applyLegacyDTSamplingDecision({ transaction, isSampled: false })
+
+    assert.equal(transaction.priority, null)
+    assert.equal(transaction.sampled, null)
+    assert.equal(transaction.isPartialTrace, null)
+  })
+
+  await t.test('should NOT apply decision when sampler is AdaptiveSampler and isSampled is false', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          partial_granularity: {
+            enabled: true
+          }
+        }
+      }
+    })
     const samplers = new Samplers(t.nr.agent)
 
     const transaction = { priority: null, sampled: null }
