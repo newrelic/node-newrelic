@@ -593,7 +593,7 @@ test('non-specific error statuses', async (t) => {
   t.afterEach(afterEach)
 
   await t.test('should update health status for responses with status code', async (t) => {
-    const plan = tspl(t, { plan: 2 })
+    const plan = tspl(t, { plan: 3 })
     const { agent, collector, collectorApi } = t.nr
 
     collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {

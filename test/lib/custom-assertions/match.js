@@ -56,6 +56,13 @@ module.exports = function match(actual, expected, { assert = require('node:asser
     return
   }
 
+  if (expected !== Object(expected)) {
+    // Looks like `expected` is a primitive. So we are likely iterating an array
+    // of primitive values, e.g. `[null, 'string']`.
+    assert.equal(actual, expected)
+    return
+  }
+
   for (const key of Object.keys(expected)) {
     if (Object.hasOwn(actual, key) === true) {
       if (typeof expected[key] === 'function') {

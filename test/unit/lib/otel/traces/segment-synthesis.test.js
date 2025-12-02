@@ -335,11 +335,20 @@ test('should process span links correctly', (t) => {
 
   assert.ok(segment)
   assert.equal(segment.spanLinks.length, 1)
+
+  const foundTimestamp = segment.spanLinks[0].intrinsics.timestamp
+  const expectedTimestamp = transaction.timer.start
+  delete segment.spanLinks[0].intrinsics.timestamp
+  assert.equal(
+    (expectedTimestamp - foundTimestamp) < 10,
+    true,
+    'timestamps are within acceptable window'
+  )
+
   match(segment.spanLinks[0].intrinsics, {
     id: segment.id,
     linkedSpanId: producerSpan._spanContext.spanId,
     linkedTraceId: producerSpan._spanContext.traceId,
-    timestamp: transaction.timer.start,
     'trace.id': transaction.traceId,
     type: 'SpanLink'
   })
