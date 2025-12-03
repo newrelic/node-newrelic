@@ -39,7 +39,7 @@ test('SpanAggregator', async (t) => {
         harvester: { add() {} }
       }
     )
-    ctx.nr.agent = helper.instrumentMockedAgent({
+    ctx.nr.agent = helper.loadMockedAgent({
       distributed_tracing: {
         enabled: true
       }
