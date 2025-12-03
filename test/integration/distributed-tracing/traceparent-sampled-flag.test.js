@@ -84,11 +84,11 @@ test('remote_parent_sampled: always_off', async (t) => {
   }
 })
 
-test('remote_parent_sampled: default', async (t) => {
+test('remote_parent_sampled: adaptive', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
-        remote_parent_sampled: 'default'
+        remote_parent_sampled: 'adaptive'
       }
     }
   })
@@ -108,11 +108,11 @@ test('remote_parent_sampled: default', async (t) => {
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag true)', async (t) => {
+test('remote_parent_sampled: adaptive, remote_parent_not_sampled: always_on (flag true)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
-        remote_parent_sampled: 'default',
+        remote_parent_sampled: 'adaptive',
         remote_parent_not_sampled: 'always_on'
       }
     }
@@ -133,11 +133,11 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag false)', async (t) => {
+test('remote_parent_sampled: adaptive, remote_parent_not_sampled: always_on (flag false)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
-        remote_parent_sampled: 'default',
+        remote_parent_sampled: 'adaptive',
         remote_parent_not_sampled: 'always_on'
       }
     }
@@ -158,11 +158,11 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_on (flag
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (flag true)', async (t) => {
+test('remote_parent_sampled: adaptive, remote_parent_not_sampled: always_off (flag true)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
-        remote_parent_sampled: 'default',
+        remote_parent_sampled: 'adaptive',
         remote_parent_not_sampled: 'always_off'
       }
     }
@@ -183,11 +183,11 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (fla
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (flag false)', async (t) => {
+test('remote_parent_sampled: adaptive, remote_parent_not_sampled: always_off (flag false)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
-        remote_parent_sampled: 'default',
+        remote_parent_sampled: 'adaptive',
         remote_parent_not_sampled: 'always_off'
       }
     }
@@ -208,12 +208,12 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: always_off (fla
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag true)', async (t) => {
+test('remote_parent_sampled: adaptive, remote_parent_not_sampled: adaptive (flag true)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
-        remote_parent_sampled: 'default',
-        remote_parent_not_sampled: 'default'
+        remote_parent_sampled: 'adaptive',
+        remote_parent_not_sampled: 'adaptive'
       }
     }
   })
@@ -233,12 +233,12 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag t
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag false)', async (t) => {
+test('remote_parent_sampled: adaptive, remote_parent_not_sampled: adaptive (flag false)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
-        remote_parent_sampled: 'default',
-        remote_parent_not_sampled: 'default'
+        remote_parent_sampled: 'adaptive',
+        remote_parent_not_sampled: 'adaptive'
       }
     }
   })
@@ -258,12 +258,12 @@ test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag f
   }
 })
 
-test('remote_parent_sampled: default, remote_parent_not_sampled: default (flag false, intrinsics available)', async (t) => {
+test('remote_parent_sampled: adaptive, remote_parent_not_sampled: adaptive (flag false, intrinsics available)', async (t) => {
   const agentConfig = Object.assign({}, defaultAgentConfig, {
     distributed_tracing: {
       sampler: {
-        remote_parent_sampled: 'default',
-        remote_parent_not_sampled: 'default'
+        remote_parent_sampled: 'adaptive',
+        remote_parent_not_sampled: 'adaptive'
       }
     }
   })

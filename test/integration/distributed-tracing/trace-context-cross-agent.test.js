@@ -342,9 +342,9 @@ async function runTestCase(testCase, parentTest) {
         }
       }
     }
-    initConfig.distributed_tracing.sampler.remote_parent_sampled = testCase.remote_parent_sampled ?? 'default'
-    initConfig.distributed_tracing.sampler.remote_parent_not_sampled = testCase.remote_parent_not_sampled ?? 'default'
-    initConfig.distributed_tracing.sampler.root = testCase.root ?? 'default'
+    initConfig.distributed_tracing.sampler.remote_parent_sampled = testCase.remote_parent_sampled ?? 'adaptive'
+    initConfig.distributed_tracing.sampler.remote_parent_not_sampled = testCase.remote_parent_not_sampled ?? 'adaptive'
+    initConfig.distributed_tracing.sampler.root = testCase.root ?? 'adaptive'
     if (testCase.ratio) {
       // The ratio to use for all of the trace ID ratio samplers defined in the test.
       // For testing purposes we are not defining different ratios for each trace ID ratio sampler instance.
