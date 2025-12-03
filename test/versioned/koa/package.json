@@ -40,7 +40,7 @@
       },
       "files": [
         "koa-router.test.js",
-        "code-level-metrics.test.js"
+        "koa-router-clm.test.js"
       ]
     },
     {
@@ -59,7 +59,7 @@
       },
       "files": [
         "scoped-koa-router.test.js",
-        "code-level-metrics.test.js"
+        "scoped-koa-router-clm.test.js"
       ]
     },
     {

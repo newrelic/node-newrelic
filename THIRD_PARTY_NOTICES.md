@@ -42,7 +42,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 * [@aws-sdk/client-s3](#aws-sdkclient-s3)
 * [@aws-sdk/s3-request-presigner](#aws-sdks3-request-presigner)
-* [@koa/router](#koarouter)
 * [@matteo.collina/tspl](#matteocollinatspl)
 * [@newrelic/eslint-config](#newreliceslint-config)
 * [@newrelic/newrelic-oss-cli](#newrelicnewrelic-oss-cli)
@@ -69,9 +68,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [got](#got)
 * [husky](#husky)
 * [jsdoc](#jsdoc)
-* [koa-route](#koa-route)
-* [koa-router](#koa-router)
-* [koa](#koa)
 * [lint-staged](#lint-staged)
 * [lockfile-lint](#lockfile-lint)
 * [nock](#nock)
@@ -1190,7 +1186,7 @@ This product includes source derived from [@opentelemetry/api](https://github.co
 
 ### @opentelemetry/core
 
-This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.1.0/LICENSE):
+This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.2.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.2.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.2.0/LICENSE):
 
 ```
                                  Apache License
@@ -1608,7 +1604,7 @@ This product includes source derived from [@opentelemetry/exporter-metrics-otlp-
 
 ### @opentelemetry/resources
 
-This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.1.0/LICENSE):
+This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.2.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.2.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.2.0/LICENSE):
 
 ```
                                  Apache License
@@ -2026,7 +2022,7 @@ This product includes source derived from [@opentelemetry/sdk-logs](https://gith
 
 ### @opentelemetry/sdk-metrics
 
-This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.1.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.2.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.2.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.2.0/LICENSE):
 
 ```
                                  Apache License
@@ -2235,7 +2231,7 @@ This product includes source derived from [@opentelemetry/sdk-metrics](https://g
 
 ### @opentelemetry/sdk-trace-base
 
-This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.1.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.2.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.2.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.2.0/LICENSE):
 
 ```
                                  Apache License
@@ -2533,7 +2529,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.14.4](https://github.com/nodejs/import-in-the-middle/tree/v1.14.4)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.14.4/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.15.0](https://github.com/nodejs/import-in-the-middle/tree/v1.15.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.15.0/LICENSE):
 
 ```
                                  Apache License
@@ -2908,7 +2904,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.2](https://github.com/npm/node-semver/tree/v7.7.2)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.2/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.3](https://github.com/npm/node-semver/tree/v7.7.3)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.3/LICENSE):
 
 ```
 The ISC License
@@ -2964,7 +2960,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.896.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.896.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.896.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.919.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.919.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.919.0/LICENSE):
 
 ```
                                 Apache License
@@ -3173,7 +3169,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.896.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.896.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.896.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.919.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.919.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.919.0/LICENSE):
 
 ```
                                 Apache License
@@ -3377,35 +3373,6 @@ This product includes source derived from [@aws-sdk/s3-request-presigner](https:
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-```
-
-### @koa/router
-
-This product includes source derived from [@koa/router](https://github.com/koajs/router) ([v12.0.2](https://github.com/koajs/router/tree/v12.0.2)), distributed under the [MIT License](https://github.com/koajs/router/blob/v12.0.2/LICENSE):
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2015 Alexander C. Mingoia and @koajs contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 
 ```
 
@@ -5033,7 +5000,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.36.0](https://github.com/eslint/eslint/tree/v9.36.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.36.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.38.0](https://github.com/eslint/eslint/tree/v9.38.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.38.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -5196,7 +5163,7 @@ SOFTWARE.
 
 ### jsdoc
 
-This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.4](https://github.com/jsdoc/jsdoc/tree/v4.0.4)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.4/LICENSE.md):
+This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.5](https://github.com/jsdoc/jsdoc/tree/v4.0.5)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.5/LICENSE.md):
 
 ```
 # License
@@ -5301,90 +5268,6 @@ Copyright (c) 2016 Yoshihide Jimbo.
 
 The source code for the Tomorrow theme is available at:
 https://github.com/jmblog/color-themes-for-google-code-prettify
-
-```
-
-### koa-route
-
-This product includes source derived from [koa-route](https://github.com/koajs/route) ([v4.0.1](https://github.com/koajs/route/tree/v4.0.1)), distributed under the [MIT License](https://github.com/koajs/route/blob/v4.0.1/Readme.md):
-
-```
-MIT License
-
-Copyright (c) <year> <copyright holders>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
-associated documentation files (the "Software"), to deal in the Software without restriction, including 
-without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the 
-following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial 
-portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT 
-LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO 
-EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
-USE OR OTHER DEALINGS IN THE SOFTWARE.
-```
-
-### koa-router
-
-This product includes source derived from [koa-router](https://github.com/koajs/router) ([v12.0.1](https://github.com/koajs/router/tree/v12.0.1)), distributed under the [MIT License](https://github.com/koajs/router/blob/v12.0.1/LICENSE):
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2015 Alexander C. Mingoia and @koajs contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-```
-
-### koa
-
-This product includes source derived from [koa](https://github.com/koajs/koa) ([v2.16.2](https://github.com/koajs/koa/tree/v2.16.2)), distributed under the [MIT License](https://github.com/koajs/koa/blob/v2.16.2/LICENSE):
-
-```
-(The MIT License)
-
-Copyright (c) 2019 Koa contributors
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
