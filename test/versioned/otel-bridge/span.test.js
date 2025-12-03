@@ -11,6 +11,7 @@ const otel = require('@opentelemetry/api')
 const { hrTimeToMilliseconds } = require('@opentelemetry/core')
 
 const helper = require('../../lib/agent_helper')
+const match = require('../../../test/lib/custom-assertions/match')
 const { otelSynthesis } = require('../../../lib/symbols')
 const { DESTINATIONS: ATTR_DESTINATION } = require('../../../lib/config/attribute-filter')
 
@@ -75,12 +76,40 @@ test.beforeEach((ctx) => {
     }
   })
   const api = helper.getAgentApi()
-  const tracer = otel.trace.getTracer('hello-world')
+  const tracer = otel.trace.getTracer('hello-world', '1.2.3')
   ctx.nr = { agent, api, tracer }
 })
 
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
+})
+
+test('copies instrumentation scope attributes', (t, end) => {
+  const { agent, tracer } = t.nr
+
+  agent.on('transactionFinished', () => {
+    const segment = agent.tracer.getSegment()
+    assert.ok(segment)
+
+    const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+    match(attrs, {
+      'otel.scope.name': 'hello-world',
+      'otel.scope.version': '1.2.3',
+      'otel.library.name': 'hello-world',
+      'otel.library.version': '1.2.3'
+    })
+
+    end()
+  })
+
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'otel-example-tx'
+
+    tracer.startActiveSpan('main', (span) => {
+      span.end()
+      tx.end()
+    })
+  })
 })
 
 test('mix internal and NR span tests', (t, end) => {
