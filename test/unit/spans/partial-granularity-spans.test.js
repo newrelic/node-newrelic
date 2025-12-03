@@ -10,7 +10,7 @@ const helper = require('#testlib/agent_helper.js')
 const SpanEvent = require('#agentlib/spans/span-event.js')
 
 test('Partial Granularity Spans - reduced mode', async (t) => {
-  test.beforeEach((ctx) => {
+  t.beforeEach((ctx) => {
     const agent = helper.instrumentMockedAgent({
       distributed_tracing: {
         enabled: true,
@@ -26,11 +26,11 @@ test('Partial Granularity Spans - reduced mode', async (t) => {
     ctx.nr = { agent }
   })
 
-  test.afterEach((ctx) => {
+  t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  test('should include entry span', (t, end) => {
+  await t.test('should include entry span', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -45,7 +45,7 @@ test('Partial Granularity Spans - reduced mode', async (t) => {
     })
   })
 
-  test('should include Llm span', (t, end) => {
+  await t.test('should include Llm span', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -56,7 +56,7 @@ test('Partial Granularity Spans - reduced mode', async (t) => {
     })
   })
 
-  test('should include exit span that has entity relationship attrs', (t, end) => {
+  await t.test('should include exit span that has entity relationship attrs', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -85,7 +85,7 @@ test('Partial Granularity Spans - reduced mode', async (t) => {
     })
   })
 
-  test('should not include exit span that does not have entity relationship attrs', (t, end) => {
+  await t.test('should not include exit span that does not have entity relationship attrs', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -97,7 +97,7 @@ test('Partial Granularity Spans - reduced mode', async (t) => {
     })
   })
 
-  test('should not include in process span', (t, end) => {
+  await t.test('should not include in process span', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -109,7 +109,7 @@ test('Partial Granularity Spans - reduced mode', async (t) => {
     })
   })
 
-  test('should include exit span that does not have entity relationship attrs when not part of partialTrace', (t, end) => {
+  await t.test('should include exit span that does not have entity relationship attrs when not part of partialTrace', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = false
@@ -127,7 +127,7 @@ test('Partial Granularity Spans - reduced mode', async (t) => {
     })
   })
 
-  test('should include in process span when not part of partialTrace', (t, end) => {
+  await t.test('should include in process span when not part of partialTrace', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = false
@@ -152,7 +152,7 @@ test('Partial Granularity Spans - reduced mode', async (t) => {
 })
 
 test('Partial Granularity Spans - essential mode', async (t) => {
-  test.beforeEach((ctx) => {
+  t.beforeEach((ctx) => {
     const agent = helper.instrumentMockedAgent({
       distributed_tracing: {
         enabled: true,
@@ -165,11 +165,11 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     ctx.nr = { agent }
   })
 
-  test.afterEach((ctx) => {
+  t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  test('should include entry span', (t, end) => {
+  await t.test('should include entry span', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -184,7 +184,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  test('should include Llm span', (t, end) => {
+  await t.test('should include Llm span', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -195,7 +195,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  test('should include exit span with entity relationship and error attrs but no custom attrs', (t, end) => {
+  await t.test('should include exit span with entity relationship and error attrs but no custom attrs', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -226,7 +226,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  test('should not include exit span that does not have entity relationship attrs', (t, end) => {
+  await t.test('should not include exit span that does not have entity relationship attrs', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -238,7 +238,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  test('should not include in process span', (t, end) => {
+  await t.test('should not include in process span', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = true
@@ -250,7 +250,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  test('should include exit span that does not have entity relationship attrs when not part of partialTrace', (t, end) => {
+  await t.test('should include exit span that does not have entity relationship attrs when not part of partialTrace', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = false
@@ -268,7 +268,7 @@ test('Partial Granularity Spans - essential mode', async (t) => {
     })
   })
 
-  test('should include in process span when not part of partialTrace', (t, end) => {
+  await t.test('should include in process span when not part of partialTrace', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.isPartialTrace = false
