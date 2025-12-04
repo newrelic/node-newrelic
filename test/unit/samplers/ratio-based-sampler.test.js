@@ -17,6 +17,12 @@ function generateRandomTraceId() {
   return hashes.makeId(32)
 }
 
+test('should set toString and Object.prototype.toString correctly', (t) => {
+  const sampler = new TraceIdRatioBasedSampler({ ratio: 0.5 })
+  assert.equal(sampler.toString(), 'TraceIdRatioBasedSampler')
+  assert.equal(Object.prototype.toString.call(sampler), '[object TraceIdRatioBasedSampler]')
+})
+
 test('should create a TraceIdRatioBasedSampler with the correct ratio', (t) => {
   const sampler = new TraceIdRatioBasedSampler({ ratio: 0.5 })
   assert.strictEqual(sampler._ratio, 0.5)

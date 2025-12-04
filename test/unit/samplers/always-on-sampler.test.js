@@ -13,6 +13,12 @@ test.beforeEach((ctx) => {
   ctx.nr = { sampler }
 })
 
+test('should set toString and Object.prototype.toString correctly', (t) => {
+  const { sampler } = t.nr
+  assert.equal(sampler.toString(), 'AlwaysOnSampler')
+  assert.equal(Object.prototype.toString.call(sampler), '[object AlwaysOnSampler]')
+})
+
 test('AlwaysOnSampler should always sample', (t) => {
   const { sampler } = t.nr
   const transaction = {}
