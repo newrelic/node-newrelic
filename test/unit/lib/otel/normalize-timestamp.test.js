@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const { performance } = require('node:perf_hooks')
+const { hrTime } = require('@opentelemetry/core')
 
 const normalizeTimestamp = require('#agentlib/otel/normalize-timestamp.js')
 
@@ -43,7 +44,7 @@ test('normalizes performance.now', () => {
 
 test('normalizes hrtime', () => {
   const dnow = Date.now()
-  const input = process.hrtime()
+  const input = hrTime()
   const found = normalizeTimestamp(input)
   assert.equal(found >= dnow, true)
   assert.equal(isNaN(new Date(found)), false)
