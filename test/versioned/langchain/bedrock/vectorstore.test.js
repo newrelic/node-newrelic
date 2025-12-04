@@ -8,33 +8,36 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { removeModules } = require('../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { removeModules } = require('../../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../../lib/custom-assertions')
 const {
   assertLangChainVectorSearch,
   assertLangChainVectorSearchResult,
   filterLangchainEvents,
   filterLangchainEventsByType
-} = require('./common')
+} = require('../common')
 const { Document } = require('@langchain/core/documents')
-const createOpenAIMockServer = require('../openai/mock-server')
-const params = require('../../lib/params')
-const helper = require('../../lib/agent_helper')
+const { getAiResponseServer } = require('../../aws-sdk-v3/common')
+const { FAKE_CREDENTIALS } = require('../../../lib/aws-server-stubs')
+const params = require('../../../lib/params')
+const helper = require('../../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
     enabled: true
   }
 }
-const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 const { tspl } = require('@matteo.collina/tspl')
+const createAiResponseServer = getAiResponseServer()
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
-  const { host, port, server } = await createOpenAIMockServer()
+  const { server, baseUrl } = await createAiResponseServer()
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent(config)
-  const { OpenAIEmbeddings } = require('@langchain/openai')
+  const { BedrockEmbeddings } = require('@langchain/aws')
+  const { BedrockRuntimeClient } = require('@aws-sdk/client-bedrock-runtime')
 
   const { Client } = require('@elastic/elasticsearch')
   const clientArgs = {
@@ -44,11 +47,18 @@ test.beforeEach(async (ctx) => {
   }
   const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
 
-  ctx.nr.embedding = new OpenAIEmbeddings({
-    apiKey: 'fake-key',
-    configuration: {
-      baseURL: `http://${host}:${port}`
-    }
+  // Create the BedrockRuntimeClient with our mock endpoint
+  const bedrockClient = new BedrockRuntimeClient({
+    region: 'us-east-1',
+    credentials: FAKE_CREDENTIALS,
+    endpoint: baseUrl,
+    maxAttempts: 1
+  })
+
+  ctx.nr.embedding = new BedrockEmbeddings({
+    model: 'amazon.titan-embed-text-v1',
+    region: 'us-east-1',
+    client: bedrockClient
   })
   const docs = [
     new Document({
@@ -63,10 +73,10 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(async (ctx) => {
-  ctx.nr?.server?.close()
+  ctx.nr?.server?.destroy()
   helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument
-  removeModules(['@langchain/core', 'openai', '@elastic', '@langchain/community'])
+  removeModules(['@langchain/core', '@langchain/aws', '@aws-sdk', '@elastic', '@langchain/community'])
 })
 
 test('should log tracking metrics', function(t) {
@@ -117,7 +127,7 @@ test('should increment tracking metric for each langchain vectorstore event', as
   await helper.runInTransaction(agent, async (tx) => {
     await vs.similaritySearch('This is an embedding test.', 1)
 
-    // `@langchain/community` and `@langchain/openai` have diverged on the `@langchain/core`
+    // `@langchain/community` and `@langchain/aws` have diverged on the `@langchain/core`
     // version. Find the right one that has a call count
 
     for (const metric in agent.metrics._metrics.unscoped) {
