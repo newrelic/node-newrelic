@@ -93,4 +93,101 @@ responses.set('text converse ultimate question error', {
   }
 })
 
+// LangChain test responses
+responses.set('You are a scientist.', {
+  headers: {
+    'content-type': contentType,
+    'x-amzn-requestid': reqId,
+    'x-amzn-bedrock-invocation-latency': '9677',
+    'x-amzn-bedrock-output-token-count': '9',
+    'x-amzn-bedrock-input-token-count': '14',
+  },
+  statusCode: 200,
+  body: {
+    metrics: { latencyMs: 273 },
+    output: { message: { content: [{ text: '212 degrees Fahrenheit is equal to 100 degrees Celsius.' }], role: 'assistant' } },
+    stopReason: 'endoftext',
+    usage: { inputTokens: 14, outputTokens: 9, totalTokens: 23 }
+  }
+})
+
+responses.set('Streamed response', {
+  headers: {
+    'content-type': 'application/vnd.amazon.eventstream',
+    'x-amzn-requestid': reqId,
+    'x-amzn-bedrock-content-type': contentType
+  },
+  statusCode: 200,
+  chunks: [
+    {
+      headers: {
+        ':event-type': { type: 'string', value: 'messageStart', },
+        ':content-type': { type: 'string', value: 'application/json', },
+        ':message-type': { type: 'string', value: 'event', },
+      },
+      body: { p: 'abcdefghijk', role: 'assistant', }
+    },
+    {
+      headers: {
+        ':event-type': { type: 'string', value: 'contentBlockDelta', },
+        ':content-type': { type: 'string', value: 'application/json', },
+        ':message-type': { type: 'string', value: 'event', },
+      },
+      body: { contentBlockIndex: 0, delta: { text: '212 degrees Fahrenheit is equal to 100 degrees Celsius.', }, p: 'abcdefghijklmnop' }
+    },
+    {
+      headers: {
+        ':event-type': { type: 'string', value: 'contentBlockStop', },
+        ':content-type': { type: 'string', value: 'application/json', },
+        ':message-type': { type: 'string', value: 'event', },
+      },
+      body: { contentBlockIndex: 0, p: 'abcdefghijklmnopqrstuvwx', }
+    },
+    {
+      headers: {
+        ':event-type': { type: 'string', value: 'messageStop', },
+        ':content-type': { type: 'string', value: 'application/json', },
+        ':message-type': { type: 'string', value: 'event', },
+      },
+      body: { p: 'abcdefghijklmno', stopReason: 'endoftext', }
+    },
+    {
+      headers: {
+        ':event-type': { type: 'string', value: 'metadata', },
+        ':content-type': { type: 'string', value: 'application/json', },
+        ':message-type': { type: 'string', value: 'event', },
+      },
+      body: {
+        metrics: { latencyMs: 232, },
+        p: 'abc',
+        usage: { inputTokens: 14, outputTokens: 9, totalTokens: 23, },
+      }
+    }
+  ]
+})
+
+responses.set('Invalid API key.', {
+  headers: {
+    'content-type': contentType,
+    'x-amzn-requestid': reqId,
+    'x-amzn-errortype': 'ValidationException:http://internal.amazon.com/coral/com.amazon.bedrock/'
+  },
+  statusCode: 400,
+  body: {
+    message: 'Invalid API key provided.'
+  }
+})
+
+responses.set('bad stream', {
+  headers: {
+    'content-type': contentType,
+    'x-amzn-requestid': reqId,
+    'x-amzn-errortype': 'InternalServerException:http://internal.amazon.com/coral/com.amazon.bedrock/'
+  },
+  statusCode: 500,
+  body: {
+    message: 'Internal server error during streaming.'
+  }
+})
+
 module.exports = responses

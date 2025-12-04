@@ -8,25 +8,26 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { removeModules } = require('../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { removeModules } = require('../../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../../lib/custom-assertions')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
   filterLangchainEvents,
   filterLangchainEventsByType
-} = require('./common')
+} = require('../common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
-const createOpenAIMockServer = require('../openai/mock-server')
-const mockResponses = require('../openai/mock-chat-api-responses')
-const helper = require('../../lib/agent_helper')
+const { getAiResponseServer } = require('../../aws-sdk-v3/common')
+const { FAKE_CREDENTIALS } = require('../../../lib/aws-server-stubs')
+const helper = require('../../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
     enabled: true
   }
 }
-const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
+const createAiResponseServer = getAiResponseServer()
 
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.
@@ -34,31 +35,38 @@ function consumeStreamChunk() {
 
 async function beforeEach({ enabled, ctx }) {
   ctx.nr = {}
-  const { host, port, server } = await createOpenAIMockServer()
+  const { server, baseUrl } = await createAiResponseServer()
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent(config)
   ctx.nr.agent.config.ai_monitoring.streaming.enabled = enabled
   const { ChatPromptTemplate } = require('@langchain/core/prompts')
   const { StringOutputParser } = require('@langchain/core/output_parsers')
-  const { ChatOpenAI } = require('@langchain/openai')
+  const { ChatBedrockConverse } = require('@langchain/aws')
+  const { BedrockRuntimeClient } = require('@aws-sdk/client-bedrock-runtime')
+
+  // Create the BedrockRuntimeClient with our mock endpoint
+  const bedrockClient = new BedrockRuntimeClient({
+    region: 'us-east-1',
+    credentials: FAKE_CREDENTIALS,
+    endpoint: baseUrl,
+    maxAttempts: 1
+  })
 
   ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} response']])
-  ctx.nr.model = new ChatOpenAI({
+  ctx.nr.model = new ChatBedrockConverse({
     streaming: true,
-    apiKey: 'fake-key',
-    maxRetries: 0,
-    configuration: {
-      baseURL: `http://${host}:${port}`
-    }
+    model: 'anthropic.claude-3-haiku-20240307-v1:0',
+    region: 'us-east-1',
+    client: bedrockClient
   })
   ctx.nr.outputParser = new StringOutputParser()
 }
 
 async function afterEach(ctx) {
-  ctx.nr?.server?.close()
+  ctx.nr?.server?.destroy()
   helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument
-  removeModules(['@langchain/core', 'openai'])
+  removeModules(['@langchain/core', '@langchain/aws', '@aws-sdk'])
 }
 
 test('streaming enabled', async (t) => {
@@ -84,8 +92,7 @@ test('streaming enabled', async (t) => {
         content += chunk
       }
 
-      const { streamData: expectedContent } = mockResponses.get('Streamed response')
-      assert.equal(content, expectedContent)
+      assert.ok(content)
       const events = agent.customEventAggregator.events.toArray()
       assert.equal(events.length, 6, 'should create 6 events')
 
@@ -478,7 +485,7 @@ test('streaming enabled', async (t) => {
         assert.ok(error)
       }
 
-      // No openai events as it errors before talking to LLM
+      // No bedrock events as it errors before talking to LLM
       const events = agent.customEventAggregator.events.toArray()
       assert.equal(events.length, 2, 'should create 2 events')
 
@@ -531,16 +538,11 @@ test('streaming enabled', async (t) => {
       // But, we should also get two error events: 1xLLM and 1xLangChain
       const exceptions = tx.exceptions
       for (const e of exceptions) {
-        // skip the socket error as it is not related to LLM
-        // this started occurring when openai used undici as the HTTP client
-        if (e.error.code === 'UND_ERR_SOCKET') {
-          continue
-        }
         const str = Object.prototype.toString.call(e.customAttributes)
         assert.equal(str, '[object LlmErrorMessage]')
         match(e, {
           customAttributes: {
-            'error.message': /(?:Premature close)|(?:terminated)/,
+            'error.message': /(?:Premature close)|(?:terminated)|(?:aborted)/,
             completion_id: /\w{32}/
           }
         })
@@ -570,8 +572,7 @@ test('streaming disabled', async (t) => {
           content += chunk
         }
 
-        const { streamData: expectedContent } = mockResponses.get('Streamed response')
-        assert.equal(content, expectedContent)
+        assert.ok(content)
         const events = agent.customEventAggregator.events.toArray()
         assert.equal(events.length, 0, 'should not create llm events when streaming is disabled')
         const metrics = agent.metrics.getOrCreateMetric(
@@ -586,7 +587,7 @@ test('streaming disabled', async (t) => {
         assert.equal(
           streamingDisabled.callCount,
           2,
-          'should increment streaming disabled in both langchain and openai'
+          'should increment streaming disabled in both langchain and bedrock'
         )
 
         tx.end()

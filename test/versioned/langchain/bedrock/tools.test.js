@@ -8,10 +8,10 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { removeModules, removeMatchedModules } = require('../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { removeModules, removeMatchedModules } = require('../../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../../lib/custom-assertions')
 const { version: pkgVersion } = require('@langchain/core/package.json')
-const helper = require('../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 
 const baseUrl = 'http://httpbin.org'
 const config = {
@@ -19,12 +19,12 @@ const config = {
     enabled: true
   }
 }
-const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent(config)
-  const TestTool = require('./helpers/custom-tool')
+  const TestTool = require('../helpers/custom-tool')
   const tool = new TestTool({
     baseUrl
   })

@@ -8,24 +8,24 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { removeModules } = require('../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { removeModules } = require('../../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../../lib/custom-assertions')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
   filterLangchainEvents,
   filterLangchainEventsByType
-} = require('./common')
+} = require('../common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
-const createOpenAIMockServer = require('../openai/mock-server')
-const helper = require('../../lib/agent_helper')
+const createOpenAIMockServer = require('../../openai/mock-server')
+const helper = require('../../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
     enabled: true
   }
 }
-const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}

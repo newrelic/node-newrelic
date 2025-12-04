@@ -167,4 +167,31 @@ responses.set('embed text amazon token count callback response', {
   }
 })
 
+// LangChain test responses
+responses.set('This is an embedding test.', {
+  headers: {
+    'content-type': contentType,
+    'x-amzn-requestid': reqId,
+    'x-amzn-bedrock-invocation-latency': '195',
+    'x-amzn-bedrock-input-token-count': '14'
+  },
+  statusCode: 200,
+  body: {
+    embedding: [0.18945312, -0.36914062, -0.33984375, 0.14355469, 0.25, -0.15, 0.42, -0.28],
+    inputTextTokenCount: 6
+  }
+})
+
+responses.set('Embedding not allowed.', {
+  headers: {
+    'content-type': contentType,
+    'x-amzn-requestid': reqId,
+    'x-amzn-errortype': errValidationException
+  },
+  statusCode: 400,
+  body: {
+    message: 'Embedding not allowed for this input.'
+  }
+})
+
 module.exports = responses
