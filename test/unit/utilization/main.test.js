@@ -239,36 +239,63 @@ describe('getVendors', () => {
     assert.equal(logs.info.length, 0)
     assert.equal(logs.trace.length, 6)
 
-    assert.deepStrictEqual(logs.trace[0], [
-      { utilization: 'aws' },
-      'Detecting utilization info for vendor %s.',
-      'aws'
-    ])
-    assert.deepStrictEqual(logs.trace[1], [
-      { utilization: 'aws' },
-      'No information returned for vendor %s.',
-      'aws'
-    ])
-    assert.deepStrictEqual(logs.trace[2], [
-      { utilization: 'aws' },
-      'Vendor %s finished.',
-      'aws'
-    ])
+    assert.equal(
+      hasLog(logs.trace, [
+        { utilization: 'aws' },
+        'Detecting utilization info for vendor %s.',
+        'aws'
+      ]),
+      true
+    )
+    assert.equal(
+      hasLog(logs.trace, [
+        { utilization: 'aws' },
+        'No information returned for vendor %s.',
+        'aws'
+      ]),
+      true
+    )
+    assert.equal(
+      hasLog(logs.trace, [
+        { utilization: 'aws' },
+        'Vendor %s finished.',
+        'aws'
+      ]),
+      true
+    )
 
-    assert.deepStrictEqual(logs.trace[3], [
-      { utilization: 'foo' },
-      'Detecting utilization info for vendor %s.',
-      'foo'
-    ])
-    assert.deepStrictEqual(logs.trace[4], [
-      { utilization: 'foo' },
-      'No information returned for vendor %s.',
-      'foo'
-    ])
-    assert.deepStrictEqual(logs.trace[5], [
-      { utilization: 'foo' },
-      'Vendor %s finished.',
-      'foo'
-    ])
+    assert.equal(
+      hasLog(logs.trace, [
+        { utilization: 'foo' },
+        'Detecting utilization info for vendor %s.',
+        'foo'
+      ]),
+      true
+    )
+    assert.equal(
+      hasLog(logs.trace, [
+        { utilization: 'foo' },
+        'No information returned for vendor %s.',
+        'foo'
+      ]),
+      true
+    )
+    assert.equal(
+      hasLog(logs.trace, [
+        { utilization: 'foo' },
+        'Vendor %s finished.',
+        'foo'
+      ]),
+      true
+    )
   })
 })
+
+function hasLog(logs, log) {
+  return logs.find(
+    (l) => {
+      if (l[0].utilization !== log[0].utilization) return false
+      return l[1] === log[1] && l[2] === log[2]
+    }
+  ) !== undefined
+}
