@@ -14,3 +14,9 @@ test('should throw error if applySamplingDecision is not implemented', () => {
     sampler.applySamplingDecision({ transaction: { id: 1 }, tracestate: 'tracestate', partialType: 'reduced' })
   }, /^Error: must implement applySamplingDecision, arguments are: { transaction: 1, tracestate: tracestate, partialType: reduced/)
 })
+
+test('should generate a random priority between 0 and 1 with at most 6 decimal places', () => {
+  const priority = Sampler.generatePriority()
+  // must cast priority to string to match regex
+  assert.match(`${priority}`, /[01]\.\d{1,6}/)
+})

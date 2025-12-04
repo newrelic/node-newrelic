@@ -323,7 +323,29 @@ test('applySamplingDecision', async (t) => {
     assert.equal(transaction.partialType, undefined)
   })
 
-  await t.test('should not apply any samplers if both full and partial are disabled and default to assigning priority 0 and sampled false', (t) => {
+  await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if DT is disabled', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        enabled: false,
+        sampler: {
+          full_granularity: {
+            enabled: true
+          },
+          partial_granularity: {
+            enabled: true,
+          }
+        }
+      }
+    })
+    const samplers = new Samplers(t.nr.agent)
+    const transaction = { priority: null, sampled: null }
+    samplers.applySamplingDecision({ transaction })
+    assert.equal(transaction.sampled, false)
+    assert.ok(transaction.priority > 0 && transaction.priority < 1)
+    assert.equal(transaction.isPartialTrace, null)
+  })
+
+  await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if both full and partial are disabled', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
         sampler: {
@@ -340,7 +362,8 @@ test('applySamplingDecision', async (t) => {
     const transaction = { priority: null, sampled: null }
     samplers.applySamplingDecision({ transaction })
     assert.equal(transaction.sampled, false)
-    assert.equal(transaction.priority, 0)
+    assert.ok(transaction.priority > 0 && transaction.priority < 1)
+    assert.equal(transaction.isPartialTrace, null)
     assert.equal(transaction.partialType, null)
   })
 })
@@ -561,7 +584,29 @@ test('applyDTSamplingDecision', async (t) => {
     assert.equal(transaction.partialType, undefined)
   })
 
-  await t.test('should not apply any samplers if both full and partial are disabled', (t) => {
+  await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if DT is disabled', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        enabled: false,
+        sampler: {
+          full_granularity: {
+            enabled: true
+          },
+          partial_granularity: {
+            enabled: true,
+          }
+        }
+      }
+    })
+    const samplers = new Samplers(t.nr.agent)
+    const transaction = { priority: null, sampled: null }
+    samplers.applyDTSamplingDecision({ transaction })
+    assert.equal(transaction.sampled, false)
+    assert.ok(transaction.priority > 0 && transaction.priority < 1)
+    assert.equal(transaction.isPartialTrace, null)
+  })
+
+  await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if both full and partial are disabled', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
         sampler: {
@@ -578,7 +623,7 @@ test('applyDTSamplingDecision', async (t) => {
     const transaction = { priority: null, sampled: null }
     samplers.applyDTSamplingDecision({ transaction })
     assert.equal(transaction.sampled, false)
-    assert.equal(transaction.priority, 0)
+    assert.ok(transaction.priority > 0 && transaction.priority < 1)
     assert.equal(transaction.partialType, null)
   })
 
@@ -808,7 +853,29 @@ test('applyLegacyDTSamplingDecision', async (t) => {
     assert.equal(transaction2.sampled, false)
   })
 
-  await t.test('should not apply any samplers if both full and partial are disabled', (t) => {
+  await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if DT is disabled', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        enabled: false,
+        sampler: {
+          full_granularity: {
+            enabled: true
+          },
+          partial_granularity: {
+            enabled: true,
+          }
+        }
+      }
+    })
+    const samplers = new Samplers(t.nr.agent)
+    const transaction = { priority: null, sampled: null }
+    samplers.applyLegacyDTSamplingDecision({ transaction })
+    assert.equal(transaction.sampled, false)
+    assert.ok(transaction.priority > 0 && transaction.priority < 1)
+    assert.equal(transaction.isPartialTrace, null)
+  })
+
+  await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if both full and partial are disabled', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
         sampler: {
@@ -825,7 +892,7 @@ test('applyLegacyDTSamplingDecision', async (t) => {
     const transaction = { priority: null, sampled: null }
     samplers.applyLegacyDTSamplingDecision({ transaction })
     assert.equal(transaction.sampled, false)
-    assert.equal(transaction.priority, 0)
+    assert.ok(transaction.priority > 0 && transaction.priority < 1)
     assert.equal(transaction.partialType, null)
   })
 })
