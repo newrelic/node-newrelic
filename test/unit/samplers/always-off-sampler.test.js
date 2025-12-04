@@ -22,24 +22,24 @@ test('should set toString and Object.prototype.toString correctly', (t) => {
 test('AlwaysOffSampler should always sample', (t) => {
   const { sampler } = t.nr
   const transaction = {}
-  sampler.applySamplingDecision({ transaction, isFullTrace: true })
+  sampler.applySamplingDecision({ transaction })
   assert.equal(transaction.sampled, false)
   assert.equal(transaction.priority, 0)
-  assert.equal(transaction.isPartialTrace, false)
+  assert.equal(transaction.partialType, undefined)
 })
 
-test('AlwaysOffSampler should assign isPartialTrace to true when not a fullTrace', (t) => {
+test('AlwaysOffSampler should assign partialType to true when not a fullTrace', (t) => {
   const { sampler } = t.nr
   const transaction = {}
-  sampler.applySamplingDecision({ transaction, isFullTrace: false })
+  sampler.applySamplingDecision({ transaction, partialType: 'reduced' })
   assert.equal(transaction.sampled, false)
   assert.equal(transaction.priority, 0)
-  assert.equal(transaction.isPartialTrace, true)
+  assert.equal(transaction.partialType, 'reduced')
 })
 
 test('AlwaysOffSampler should return null when transaction is not provided', (t) => {
   const { sampler } = t.nr
   assert.doesNotThrow(() => {
-    sampler.applySamplingDecision({ transaction: null, isFullTrace: true })
+    sampler.applySamplingDecision({ transaction: null })
   })
 })

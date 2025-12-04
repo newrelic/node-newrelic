@@ -11,6 +11,6 @@ const Sampler = require('#agentlib/samplers/sampler.js')
 test('should throw error if applySamplingDecision is not implemented', () => {
   const sampler = new Sampler()
   assert.throws(() => {
-    sampler.applySamplingDecision({ transaction: { id: 1 }, tracestate: 'tracestate', isFullTrace: true })
-  }, /^Error: must implement applySamplingDecision, arguments are: { transaction: 1, tracestate: tracestate, isFullTrace: true/)
+    sampler.applySamplingDecision({ transaction: { id: 1 }, tracestate: 'tracestate', partialType: 'reduced' })
+  }, /^Error: must implement applySamplingDecision, arguments are: { transaction: 1, tracestate: tracestate, partialType: reduced/)
 })
