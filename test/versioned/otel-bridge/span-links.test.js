@@ -28,7 +28,7 @@ test('span links are propagated to new relic', async (t) => {
         enabled: false
       }
     },
-    opentelemetry_bridge: {
+    opentelemetry: {
       enabled: true,
       traces: { enabled: true }
     }

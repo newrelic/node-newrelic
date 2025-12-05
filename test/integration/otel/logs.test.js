@@ -12,7 +12,7 @@ const logsApi = require('@opentelemetry/api-logs')
 const helper = require('#testlib/agent_helper.js')
 
 const BASE_AGENT_CONFIG = {
-  opentelemetry_bridge: {
+  opentelemetry: {
     enabled: true,
     logs: { enabled: true }
   }

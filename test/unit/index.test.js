@@ -185,7 +185,7 @@ test('index tests', async (t) => {
       feature_flag: { flag_1: true, flag_2: false },
       security: { agent: { enabled: false } },
       worker_threads: { enabled: false },
-      opentelemetry_bridge: { enabled: false }
+      opentelemetry: { enabled: false }
     }
     const configMock = {
       getOrCreateInstance: sandbox.stub().returns(mockConfig)

@@ -16,7 +16,7 @@ const NewRelicSampler = require('#agentlib/otel/traces/sampler.js')
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
     feature_flag: {
-      opentelemetry_bridge: true
+      opentelemetry: true
     }
   })
 

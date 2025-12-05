@@ -17,7 +17,7 @@ const Module = require('node:module')
 const proxyquire = require('proxyquire')
 
 test('logs warning when missing otel packages', () => {
-  process.env.NEW_RELIC_OPENTELEMETRY_BRIDGE_ENABLED = true
+  process.env.NEW_RELIC_OPENTELEMETRY_ENABLED = true
 
   require.resolve = function resolve (...args) {
     if (args[0].startsWith('@opentelemetry') === true) {

@@ -12,7 +12,7 @@ const { otelSynthesis } = require('../../../../lib/symbols')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
-    opentelemetry_bridge: {
+    opentelemetry: {
       enabled: true,
       traces: { enabled: true }
     }
