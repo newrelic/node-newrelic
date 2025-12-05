@@ -27,11 +27,10 @@
         "@langchain/aws": ">=1.1.0"
       },
       "files": [
-        "openai/tools.test.js",
+        "tools.test.js",
         "openai/runnables.test.js",
         "openai/runnables-streaming.test.js",
         "openai/vectorstore.test.js",
-        "bedrock/tools.test.js",
         "bedrock/runnables.test.js",
         "bedrock/runnables-streaming.test.js",
         "bedrock/vectorstore.test.js"

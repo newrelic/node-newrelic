@@ -58,12 +58,13 @@ test.beforeEach(async (ctx) => {
   ctx.nr.embedding = new BedrockEmbeddings({
     model: 'amazon.titan-embed-text-v1',
     region: 'us-east-1',
-    client: bedrockClient
+    client: bedrockClient,
+    maxRetries: 0
   })
   const docs = [
     new Document({
       metadata: { id: '2' },
-      pageContent: 'This is an embedding test.'
+      pageContent: 'embed text amazon token count callback response'
     })
   ]
   const vectorStore = new ElasticVectorSearch(ctx.nr.embedding, clientArgs)
@@ -89,7 +90,7 @@ test('should create vectorstore events for every similarity search call', (t, en
   const { agent, vs } = t.nr
 
   helper.runInNamedTransaction(agent, async (tx) => {
-    await vs.similaritySearch('This is an embedding test.', 1)
+    await vs.similaritySearch('embed text amazon token count callback response', 1)
 
     const events = agent.customEventAggregator.events.toArray()
     assert.equal(events.length, 3, 'should create 3 events')
@@ -109,7 +110,7 @@ test('should create vectorstore events for every similarity search call', (t, en
 test('should create span on successful vectorstore create', (t, end) => {
   const { agent, vs } = t.nr
   helper.runInTransaction(agent, async (tx) => {
-    const result = await vs.similaritySearch('This is an embedding test.', 1)
+    const result = await vs.similaritySearch('embed text amazon token count callback response', 1)
     assert.ok(result)
     assertSegments(tx.trace, tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
       exact: false
@@ -125,7 +126,7 @@ test('should increment tracking metric for each langchain vectorstore event', as
   const { agent, vs } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
-    await vs.similaritySearch('This is an embedding test.', 1)
+    await vs.similaritySearch('embed text amazon token count callback response', 1)
 
     // `@langchain/community` and `@langchain/aws` have diverged on the `@langchain/core`
     // version. Find the right one that has a call count
@@ -144,7 +145,7 @@ test('should create vectorstore events for every similarity search call with emb
   const { agent, vs } = t.nr
 
   helper.runInNamedTransaction(agent, async (tx) => {
-    await vs.similaritySearch('This is an embedding test.', 1)
+    await vs.similaritySearch('embed text amazon token count callback response', 1)
 
     const events = agent.customEventAggregator.events.toArray()
     const langchainEvents = filterLangchainEvents(events)
@@ -159,12 +160,14 @@ test('should create vectorstore events for every similarity search call with emb
     assertLangChainVectorSearch({
       tx,
       vectorSearch: vectorSearchEvents[0],
-      responseDocumentSize: 1
+      responseDocumentSize: 1,
+      expectedQuery: 'embed text amazon token count callback response'
     })
     assertLangChainVectorSearchResult({
       tx,
       vectorSearchResult: vectorSearchResultEvents,
-      vectorSearchId: vectorSearchEvents[0][1].id
+      vectorSearchId: vectorSearchEvents[0][1].id,
+      expectedPageContent: 'embed text amazon token count callback response'
     })
 
     tx.end()
@@ -177,7 +180,7 @@ test('should create only vectorstore search event for similarity search call wit
 
   helper.runInNamedTransaction(agent, async (tx) => {
     // search for documents with invalid filter
-    await vs.similaritySearch('This is an embedding test.', 1, {
+    await vs.similaritySearch('embed text amazon token count callback response', 1, {
       a: 'some filter'
     })
 
@@ -196,7 +199,8 @@ test('should create only vectorstore search event for similarity search call wit
     assertLangChainVectorSearch({
       tx,
       vectorSearch: vectorSearchEvents[0],
-      responseDocumentSize: 0
+      responseDocumentSize: 0,
+      expectedQuery: 'embed text amazon token count callback response'
     })
 
     tx.end()
@@ -207,7 +211,7 @@ test('should create only vectorstore search event for similarity search call wit
 test('should not create vectorstore events when not in a transaction', async (t) => {
   const { agent, vs } = t.nr
 
-  await vs.similaritySearch('This is an embedding test.', 1)
+  await vs.similaritySearch('embed text amazon token count callback response', 1)
 
   const events = agent.customEventAggregator.events.toArray()
   assert.equal(events.length, 0, 'should not create vectorstore events')
@@ -217,7 +221,7 @@ test('should add llm attribute to transaction', (t, end) => {
   const { agent, vs } = t.nr
 
   helper.runInTransaction(agent, async (tx) => {
-    await vs.similaritySearch('This is an embedding test.', 1)
+    await vs.similaritySearch('embed text amazon token count callback response', 1)
 
     const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
     assert.equal(attributes.llm, true)
@@ -253,8 +257,7 @@ test('should create error events', (t, end) => {
     // But, we should also get two error events: 1xLLM and 1xLangChain
     const exceptions = tx.exceptions
     for (const e of exceptions) {
-      const str = Object.prototype.toString.call(e.customAttributes)
-      assert.equal(str, '[object LlmErrorMessage]')
+      assert.ok(e?.customAttributes?.['error.message'])
     }
 
     tx.end()

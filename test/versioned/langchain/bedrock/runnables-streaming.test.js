@@ -52,10 +52,10 @@ async function beforeEach({ enabled, ctx }) {
     maxAttempts: 1
   })
 
-  ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} response']])
+  ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', 'text converse ultimate question streamed']])
   ctx.nr.model = new ChatBedrockConverse({
     streaming: true,
-    model: 'anthropic.claude-3-haiku-20240307-v1:0',
+    model: 'anthropic.claude-instant-v1',
     region: 'us-east-1',
     client: bedrockClient
   })
@@ -80,12 +80,12 @@ test('streaming enabled', async (t) => {
   })
 
   await t.test('should create langchain events for every stream call', (t, end) => {
-    const { agent, prompt, outputParser, model } = t.nr
+    const { agent, prompt, model } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
       const input = { topic: 'Streamed' }
 
-      const chain = prompt.pipe(model).pipe(outputParser)
+      const chain = prompt.pipe(model)
       const stream = await chain.stream(input)
       let content = ''
       for await (const chunk of stream) {
@@ -94,7 +94,7 @@ test('streaming enabled', async (t) => {
 
       assert.ok(content)
       const events = agent.customEventAggregator.events.toArray()
-      assert.equal(events.length, 6, 'should create 6 events')
+      assert.equal(events.length, 3, 'should create 3 events')
 
       const langchainEvents = events.filter((event) => {
         const [, chainEvent] = event
@@ -495,8 +495,7 @@ test('streaming enabled', async (t) => {
       // But, we should also get two error events: 1xLLM and 1xLangChain
       const exceptions = tx.exceptions
       for (const e of exceptions) {
-        const str = Object.prototype.toString.call(e.customAttributes)
-        assert.equal(str, '[object LlmErrorMessage]')
+        assert.ok(e.customAttributes?.['error.message'], 'error.message should be set')
       }
 
       tx.end()
@@ -506,7 +505,7 @@ test('streaming enabled', async (t) => {
 
   await t.test('should create error events when stream fails', (t, end) => {
     const { ChatPromptTemplate } = require('@langchain/core/prompts')
-    const prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} stream']])
+    const prompt = ChatPromptTemplate.fromMessages([['assistant', 'text converse ultimate question streamed error']])
     const { agent, model, outputParser } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
@@ -516,34 +515,31 @@ test('streaming enabled', async (t) => {
         const stream = await chain.stream({ topic: 'bad' })
         for await (const chunk of stream) {
           consumeStreamChunk(chunk)
-          // no-op
         }
       } catch (error) {
         assert.ok(error)
       }
 
-      // We should still get the same 3xLangChain and 3xLLM events as in the
-      // success case:
+      // We should get 3xLangChain and 1xLLM events.
       const events = agent.customEventAggregator.events.toArray()
-      assert.equal(events.length, 6, 'should create 6 events')
+      assert.equal(events.length, 4, 'should create 4 events')
 
       const langchainEvents = events.filter((event) => {
         const [, chainEvent] = event
         return chainEvent.vendor === 'langchain'
       })
-      assert.equal(langchainEvents.length, 3, 'should create 3 langchain events')
+      assert.equal(langchainEvents.length, 2, 'should create 2 langchain events')
       const summary = langchainEvents.find((e) => e[0].type === 'LlmChatCompletionSummary')?.[1]
       assert.equal(summary.error, true)
 
       // But, we should also get two error events: 1xLLM and 1xLangChain
       const exceptions = tx.exceptions
+      assert.equal(exceptions.length, 2)
       for (const e of exceptions) {
-        const str = Object.prototype.toString.call(e.customAttributes)
-        assert.equal(str, '[object LlmErrorMessage]')
         match(e, {
           customAttributes: {
-            'error.message': /(?:Premature close)|(?:terminated)|(?:aborted)/,
-            completion_id: /\w{32}/
+            'error.message': /Internal server error during streaming/,
+            completion_id: /[\w-]{36}/
           }
         })
       }

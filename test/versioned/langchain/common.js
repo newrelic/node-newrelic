@@ -22,7 +22,8 @@ function filterLangchainEventsByType(events, msgType) {
 }
 
 function assertLangChainVectorSearch(
-  { tx, vectorSearch, responseDocumentSize },
+  { tx, vectorSearch, responseDocumentSize,
+    expectedQuery = 'This is an embedding test.' },
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
@@ -32,7 +33,7 @@ function assertLangChainVectorSearch(
     span_id: segment.id,
     trace_id: tx.traceId,
     'request.k': 1,
-    'request.query': 'This is an embedding test.',
+    'request.query': expectedQuery,
     ingest_source: 'Node',
     vendor: 'langchain',
     virtual_llm: true,
@@ -45,7 +46,8 @@ function assertLangChainVectorSearch(
 }
 
 function assertLangChainVectorSearchResult(
-  { tx, vectorSearchResult, vectorSearchId },
+  { tx, vectorSearchResult, vectorSearchId,
+    expectedPageContent = 'This is an embedding test.' },
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
@@ -65,7 +67,7 @@ function assertLangChainVectorSearchResult(
     const expectedChatMsg = { ...baseSearchResult }
     if (search[1].sequence === 0) {
       expectedChatMsg.sequence = 0
-      expectedChatMsg.page_content = 'This is an embedding test.'
+      expectedChatMsg.page_content = expectedPageContent
     } else if (search[1].sequence === 1) {
       expectedChatMsg.sequence = 1
       expectedChatMsg.page_content = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
