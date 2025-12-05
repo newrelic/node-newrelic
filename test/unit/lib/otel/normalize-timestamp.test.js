@@ -44,10 +44,15 @@ test('normalizes performance.now', () => {
 
 test('normalizes hrtime', () => {
   const dnow = Date.now()
-  const input = hrTime()
-  const found = normalizeTimestamp(input)
+  let input = hrTime()
+  let found = normalizeTimestamp(input)
   assert.equal(found >= dnow, true)
   assert.equal(isNaN(new Date(found)), false)
+
+  input = [1764938931, 327000000]
+  found = normalizeTimestamp(input)
+  assert.equal(`${found}`[0], '1')
+  assert.equal(new Date(found).toISOString(), '2025-12-05T12:48:51.327Z')
 })
 
 test('normalizes junk', () => {
