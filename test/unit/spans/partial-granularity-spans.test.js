@@ -203,14 +203,14 @@ for (const mode of MODES) {
     await t.test('should record a instrumented and kept metric for exit span that has entity relationship attrs', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = true
+        transaction.partialType = mode
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('host', 'redis-service')
         segment.addAttribute('port_path_or_id', 6379)
         segment.addAttribute('foo', 'bar')
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('custom', 'test')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(span)
         transaction.end()
 
@@ -224,10 +224,10 @@ for (const mode of MODES) {
     await t.test('should record instrumented metric only for dropped exit span that does not have entity relationship attrs', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = true
+        transaction.partialType = mode
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(!span)
         transaction.end()
         const unscopedMetrics = agent.metrics._metrics.unscoped
@@ -241,10 +241,10 @@ for (const mode of MODES) {
     await t.test('should record instrumented metric only for dropped in process span', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = true
+        transaction.partialType = mode
         const segment = transaction.trace.add('test-segment')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(!span)
         transaction.end()
         const unscopedMetrics = agent.metrics._metrics.unscoped
