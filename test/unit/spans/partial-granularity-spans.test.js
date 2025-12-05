@@ -9,37 +9,11 @@ const test = require('node:test')
 const helper = require('#testlib/agent_helper.js')
 const SpanEvent = require('#agentlib/spans/span-event.js')
 const MODES = ['reduced', 'essential']
-const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
-const Metrics = require('../../../lib/metrics')
-
-const RUN_ID = 1337
-const DEFAULT_LIMIT = 2000
-const DEFAULT_PERIOD = 60000
 
 for (const mode of MODES) {
   test(`Partial Granularity Spans - ${mode} mode`, async (t) => {
     t.beforeEach((ctx) => {
-      ctx.nr = {}
-      ctx.nr.spanEventAggregator = new SpanEventAggregator(
-        {
-          runId: RUN_ID,
-          limit: DEFAULT_LIMIT,
-          periodMs: DEFAULT_PERIOD
-        },
-        {
-          config: {
-            distributed_tracing: {
-              in_process_spans: {
-                enabled: true
-              }
-            }
-          },
-          collector: {},
-          metrics: new Metrics(5, {}, {}),
-          harvester: { add() {} }
-        }
-      )
-      ctx.nr.agent = helper.loadMockedAgent({
+      const agent = helper.loadMockedAgent({
         distributed_tracing: {
           enabled: true,
           sampler: {
@@ -53,6 +27,7 @@ for (const mode of MODES) {
           }
         }
       })
+      ctx.nr = { agent }
     })
 
     t.afterEach((ctx) => {
