@@ -19,7 +19,7 @@ test('logs notice when application logging is disabled', () => {
       license_key: 'license-123456',
       host: 'example.com',
       port: 443,
-      opentelemetry_bridge: {
+      opentelemetry: {
         enabled: true,
         logs: { enabled: false }
       },
