@@ -124,6 +124,7 @@ test('integration tests', async (t) => {
     t.after(() => {
       helper.unloadAgent(agent)
     })
+
     helper.runInTransaction(agent, (txn) => {
       txn.end()
       assert.strictEqual(txn.sampled, false)
@@ -170,7 +171,7 @@ test('integration tests', async (t) => {
     }
 
     const sampledTraces = txns.filter((tx) => tx.sampled)
-    const partialTraces = sampledTraces.filter((tx) => tx.isPartialTrace)
+    const partialTraces = sampledTraces.filter((tx) => tx.partialType)
     const fullTraces = sampledTraces.length - partialTraces.length
 
     const totalRatio = sampledTraces.length / numTxs

@@ -35,10 +35,10 @@ for (const mode of MODES) {
     await t.test('should include entry span', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = true
+        transaction.partialType = mode
         const segment = transaction.trace.add('entrySpan')
         transaction.baseSegment = segment
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(span)
         const [intrinsics] = span.toJSON()
         assert.equal(intrinsics['nr.entryPoint'], true)
@@ -52,9 +52,9 @@ for (const mode of MODES) {
     await t.test('should include Llm span', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = true
+        transaction.partialType = mode
         const segment = transaction.trace.add('Llm/foobar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(span)
         transaction.end()
         end()
@@ -67,14 +67,14 @@ for (const mode of MODES) {
     await t.test('should include exit span that has entity relationship attrs', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = true
+        transaction.partialType = mode
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('host', 'redis-service')
         segment.addAttribute('port_path_or_id', 6379)
         segment.addAttribute('foo', 'bar')
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('custom', 'test')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(span)
         const [intrinsics, customAttrs, agentAttrs] = span.toJSON()
         assert.equal(intrinsics['name'], 'Datastore/operation/Redis/SET')
@@ -103,10 +103,10 @@ for (const mode of MODES) {
     await t.test('should not include exit span that does not have entity relationship attrs', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = true
+        transaction.partialType = mode
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(!span)
         end()
       })
@@ -115,10 +115,10 @@ for (const mode of MODES) {
     await t.test('should not include in process span', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = true
+        transaction.partialType = mode
         const segment = transaction.trace.add('test-segment')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(!span)
         transaction.end()
         end()
@@ -128,12 +128,12 @@ for (const mode of MODES) {
     await t.test('should include exit span that does not have entity relationship attrs when not part of partialTrace', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = false
+        transaction.partialType = undefined
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('foo', 'bar')
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('custom', 'test')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(span)
         const [intrinsics, customAttrs, agentAttrs] = span.toJSON()
         assert.equal(intrinsics['name'], 'Datastore/operation/Redis/SET')
@@ -152,12 +152,12 @@ for (const mode of MODES) {
     await t.test('should include in process span when not part of partialTrace', (t, end) => {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
-        transaction.isPartialTrace = false
+        transaction.partialType = undefined
         const segment = transaction.trace.add('test-segment')
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('custom', 'test')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
         assert.ok(span)
         const [intrinsics, customAttrs, agentAttrs] = span.toJSON()
         assert.equal(intrinsics['name'], 'test-segment')
