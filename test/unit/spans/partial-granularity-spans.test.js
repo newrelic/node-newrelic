@@ -9,23 +9,50 @@ const test = require('node:test')
 const helper = require('#testlib/agent_helper.js')
 const SpanEvent = require('#agentlib/spans/span-event.js')
 const MODES = ['reduced', 'essential']
+const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
+const Metrics = require('../../../lib/metrics')
+
+const RUN_ID = 1337
+const DEFAULT_LIMIT = 2000
+const DEFAULT_PERIOD = 60000
 
 for (const mode of MODES) {
   test(`Partial Granularity Spans - ${mode} mode`, async (t) => {
     t.beforeEach((ctx) => {
-      const agent = helper.loadMockedAgent({
+      ctx.nr = {}
+      ctx.nr.spanEventAggregator = new SpanEventAggregator(
+        {
+          runId: RUN_ID,
+          limit: DEFAULT_LIMIT,
+          periodMs: DEFAULT_PERIOD
+        },
+        {
+          config: {
+            distributed_tracing: {
+              in_process_spans: {
+                enabled: true
+              }
+            }
+          },
+          collector: {},
+          metrics: new Metrics(5, {}, {}),
+          harvester: { add() {} }
+        }
+      )
+      ctx.nr.agent = helper.loadMockedAgent({
         distributed_tracing: {
           enabled: true,
-          full_granularity: {
-            enabled: false
-          },
-          partial_granularity: {
-            enabled: true,
-            type: mode
+          sampler: {
+            full_granularity: {
+              enabled: false
+            },
+            partial_granularity: {
+              enabled: true,
+              type: mode
+            }
           }
         }
       })
-      ctx.nr = { agent }
     })
 
     t.afterEach((ctx) => {
@@ -169,6 +196,61 @@ for (const mode of MODES) {
         assert.equal(intrinsics['nr.pg'], null)
         assert.equal(agentAttrs.foo, 'bar')
         transaction.end()
+        end()
+      })
+    })
+
+    await t.test('should record a instrumented and kept metric for exit span that has entity relationship attrs', (t, end) => {
+      const { agent } = t.nr
+      helper.runInTransaction(agent, (transaction) => {
+        transaction.isPartialTrace = true
+        const segment = transaction.trace.add('Datastore/operation/Redis/SET')
+        segment.addAttribute('host', 'redis-service')
+        segment.addAttribute('port_path_or_id', 6379)
+        segment.addAttribute('foo', 'bar')
+        const spanContext = segment.getSpanContext()
+        spanContext.addCustomAttribute('custom', 'test')
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        assert.ok(span)
+        transaction.end()
+
+        const unscopedMetrics = agent.metrics._metrics.unscoped
+        assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Instrumented`].callCount, 1)
+        assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Kept`].callCount, 1)
+        end()
+      })
+    })
+
+    await t.test('should record instrumented metric only for dropped exit span that does not have entity relationship attrs', (t, end) => {
+      const { agent } = t.nr
+      helper.runInTransaction(agent, (transaction) => {
+        transaction.isPartialTrace = true
+        const segment = transaction.trace.add('Datastore/operation/Redis/SET')
+        segment.addAttribute('foo', 'bar')
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        assert.ok(!span)
+        transaction.end()
+        const unscopedMetrics = agent.metrics._metrics.unscoped
+        assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Instrumented`].callCount, 1)
+        // span was dropped so kept metric was not recorded
+        assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Kept`], undefined)
+        end()
+      })
+    })
+
+    await t.test('should record instrumented metric only for dropped in process span', (t, end) => {
+      const { agent } = t.nr
+      helper.runInTransaction(agent, (transaction) => {
+        transaction.isPartialTrace = true
+        const segment = transaction.trace.add('test-segment')
+        segment.addAttribute('foo', 'bar')
+        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true, partialGranularityMode: mode })
+        assert.ok(!span)
+        transaction.end()
+        const unscopedMetrics = agent.metrics._metrics.unscoped
+        assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Instrumented`].callCount, 1)
+        // span was dropped so kept metric was not recorded
+        assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Kept`], undefined)
         end()
       })
     })
