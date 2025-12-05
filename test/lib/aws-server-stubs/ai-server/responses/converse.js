@@ -93,4 +93,17 @@ responses.set('text converse ultimate question error', {
   }
 })
 
+responses.set('text converse ultimate question streamed error', {
+  headers: {
+    'content-type': contentType,
+    'x-amzn-requestid': reqId,
+    'x-amzn-errortype':
+      'InternalServerException:http://internal.amazon.com/coral/com.amazon.bedrock/'
+  },
+  statusCode: 500,
+  body: {
+    message: 'Internal server error during streaming.'
+  }
+})
+
 module.exports = responses

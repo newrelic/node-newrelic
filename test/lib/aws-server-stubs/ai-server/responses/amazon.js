@@ -167,4 +167,16 @@ responses.set('embed text amazon token count callback response', {
   }
 })
 
+responses.set('Embedding not allowed.', {
+  headers: {
+    'content-type': contentType,
+    'x-amzn-requestid': reqId,
+    'x-amzn-errortype': errValidationException
+  },
+  statusCode: 400,
+  body: {
+    message: 'Embedding not allowed for this input.'
+  }
+})
+
 module.exports = responses
