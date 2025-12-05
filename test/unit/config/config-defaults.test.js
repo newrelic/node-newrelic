@@ -348,7 +348,7 @@ test('with default properties', async (t) => {
   })
 
   await t.test('opentelemetry', () => {
-    const otel = configuration.opentelemetry_bridge
+    const otel = configuration.opentelemetry
     assert.equal(otel.enabled, false)
     assert.equal(otel.traces.enabled, false)
     assert.equal(otel.logs.enabled, false)

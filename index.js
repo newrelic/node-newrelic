@@ -102,7 +102,7 @@ function initialize() {
       logger.warn(
         'New Relic for Node.js in worker_threads is not officially supported. Not starting! To bypass this, set `config.worker_threads.enabled` to true in configuration.'
       )
-    } else if (config.opentelemetry_bridge.enabled === true && otelBridgeAvailable() === false) {
+    } else if (config.opentelemetry.enabled === true && otelBridgeAvailable() === false) {
       logger.warn(
         'OpenTelemetry bridge enabled, but packages are missing. Not starting!'
       )

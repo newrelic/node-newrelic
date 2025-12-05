@@ -64,7 +64,7 @@ const { assertSpanKind } = require('../../lib/custom-assertions')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
-    opentelemetry_bridge: {
+    opentelemetry: {
       enabled: true,
       traces: { enabled: true }
     },

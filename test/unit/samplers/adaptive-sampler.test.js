@@ -13,6 +13,12 @@ const helper = require('../../lib/agent_helper')
 const AdaptiveSampler = require('../../../lib/samplers/adaptive-sampler')
 
 const shared = {
+  'should set toString and Object.prototype.toString correctly': (t) => {
+    const { sampler } = t.nr
+    assert.equal(sampler.toString(), 'AdaptiveSampler')
+    assert.equal(Object.prototype.toString.call(sampler), '[object AdaptiveSampler]')
+  },
+
   'should count the number of traces sampled': (t) => {
     const { sampler } = t.nr
     assert.equal(sampler.sampled, 0)

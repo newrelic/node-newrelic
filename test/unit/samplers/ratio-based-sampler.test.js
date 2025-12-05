@@ -17,6 +17,12 @@ function generateRandomTraceId() {
   return hashes.makeId(32)
 }
 
+test('should set toString and Object.prototype.toString correctly', (t) => {
+  const sampler = new TraceIdRatioBasedSampler({ ratio: 0.5 })
+  assert.equal(sampler.toString(), 'TraceIdRatioBasedSampler')
+  assert.equal(Object.prototype.toString.call(sampler), '[object TraceIdRatioBasedSampler]')
+})
+
 test('should create a TraceIdRatioBasedSampler with the correct ratio', (t) => {
   const sampler = new TraceIdRatioBasedSampler({ ratio: 0.5 })
   assert.strictEqual(sampler._ratio, 0.5)
@@ -118,6 +124,7 @@ test('integration tests', async (t) => {
     t.after(() => {
       helper.unloadAgent(agent)
     })
+
     helper.runInTransaction(agent, (txn) => {
       txn.end()
       assert.strictEqual(txn.sampled, false)
@@ -164,7 +171,7 @@ test('integration tests', async (t) => {
     }
 
     const sampledTraces = txns.filter((tx) => tx.sampled)
-    const partialTraces = sampledTraces.filter((tx) => tx.isPartialTrace)
+    const partialTraces = sampledTraces.filter((tx) => tx.partialType)
     const fullTraces = sampledTraces.length - partialTraces.length
 
     const totalRatio = sampledTraces.length / numTxs

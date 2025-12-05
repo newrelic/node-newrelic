@@ -24,7 +24,7 @@ const used = [
   'legacy_context_manager',
   'native_metrics',
   'new_promise_tracking',
-  'opentelemetry_bridge',
+  'opentelemetry',
   'promise_segments',
   'protocol_17',
   'serverless_mode',

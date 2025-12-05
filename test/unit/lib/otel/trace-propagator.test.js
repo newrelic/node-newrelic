@@ -14,7 +14,7 @@ const sinon = require('sinon')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
-    opentelemetry_bridge: {
+    opentelemetry: {
       enabled: true
     }
   })
