@@ -47,7 +47,7 @@ test.beforeEach(async (ctx) => {
     maxAttempts: 1
   })
 
-  ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', 'You are a {topic}.']])
+  ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', 'text converse ultimate question']])
   ctx.nr.model = new ChatBedrockConverse({
     model: 'anthropic.claude-3-haiku-20240307-v1:0',
     region: 'us-east-1',
@@ -163,7 +163,8 @@ test('should create langchain events for every invoke call on chat prompt + mode
     assertLangChainChatCompletionMessages({
       tx,
       chatMsgs: langChainMessageEvents,
-      chatSummary: langChainSummaryEvents[0][1]
+      chatSummary: langChainSummaryEvents[0][1],
+      output: 'This is a test.'
     })
 
     tx.end()
@@ -201,7 +202,8 @@ test('should create langchain events for every invoke call on chat prompt + mode
     assertLangChainChatCompletionMessages({
       tx,
       chatMsgs: langChainMessageEvents,
-      chatSummary: langChainSummaryEvents[0][1]
+      chatSummary: langChainSummaryEvents[0][1],
+      output: 'This is a test.'
     })
 
     tx.end()
@@ -243,7 +245,7 @@ test('should create langchain events for every invoke call with parser that retu
       tx,
       chatMsgs: langChainMessageEvents,
       chatSummary: langChainSummaryEvents[0][1],
-      output: '["212 degrees Fahrenheit is equal to 100 degrees Celsius."]'
+      output: '["This is a test."]'
     })
 
     tx.end()
@@ -323,7 +325,8 @@ test('should create langchain events for every invoke call on chat prompt + mode
       tx,
       chatMsgs: langChainMessageEvents,
       chatSummary: langChainSummaryEvents[0][1],
-      withCallback: cbHandler
+      withCallback: cbHandler,
+      output: 'This is a test.'
     })
 
     tx.end()
@@ -411,7 +414,7 @@ test('should use empty string for content property on completion message event w
 
 test('should create error events', (t, end) => {
   const { ChatPromptTemplate } = require('@langchain/core/prompts')
-  const prompt = ChatPromptTemplate.fromMessages([['assistant', 'Invalid API key.']])
+  const prompt = ChatPromptTemplate.fromMessages([['assistant', 'text converse ultimate question error']])
   const { agent, outputParser, model } = t.nr
 
   helper.runInTransaction(agent, async (tx) => {
@@ -423,10 +426,10 @@ test('should create error events', (t, end) => {
       assert.ok(error)
     }
 
-    // We should still get the same 3xLangChain and 3xLLM events as in the
+    // We should still get the same 3xLangChain and 2xLLM events as in the
     // success case:
     const events = agent.customEventAggregator.events.toArray()
-    assert.equal(events.length, 6, 'should create 6 events')
+    assert.equal(events.length, 5, 'should create 5 events')
 
     const langchainEvents = events.filter((event) => {
       const [, chainEvent] = event
@@ -438,9 +441,9 @@ test('should create error events', (t, end) => {
 
     // But, we should also get two error events: 1xLLM and 1xLangChain
     const exceptions = tx.exceptions
+    assert.equal(exceptions.length, 2)
     for (const e of exceptions) {
-      const str = Object.prototype.toString.call(e.customAttributes)
-      assert.equal(str, '[object LlmErrorMessage]')
+      assert.ok(e.customAttributes?.['error.message'])
     }
 
     tx.end()
