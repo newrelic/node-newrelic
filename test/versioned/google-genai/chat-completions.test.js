@@ -29,11 +29,11 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: true
+      enabled: true,
+      streaming: {
+        enabled: true
+      }
     },
-    streaming: {
-      enabled: true
-    }
   })
   const { GoogleGenAI } = require('@google/genai')
 
@@ -376,6 +376,75 @@ test('should not create llm events when ai_monitoring.streaming.enabled is false
     tx.end()
     end()
   })
+})
+
+test('should not create llm events when streaming is enabled but ai_monitoring is not enabled', (t, end) => {
+  const { client, agent } = t.nr
+  agent.config.ai_monitoring.streaming.enabled = true
+  agent.config.ai_monitoring.enabled = false
+  helper.runInTransaction(agent, async (tx) => {
+    const content = 'Streamed response'
+    const model = 'gemini-2.0-flash'
+    const stream = await client.models.generateContentStream({
+      config: {
+        maxOutputTokens: 100,
+        temperature: 0.5
+      },
+      model,
+      contents: content
+    })
+
+    let res = ''
+    let chunk = {}
+
+    for await (chunk of stream) {
+      assert.ok(chunk.text, 'should have text in chunk')
+      res += chunk.text
+    }
+    const expectedRes = responses.get(content)
+    assert.equal(res, expectedRes.body.candidates[0].content.parts[0].text)
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 0, 'should not create llm events when ai_monitoring is disabled')
+
+    const activeSeg = agent.tracer.getSegment()
+    assert.equal(activeSeg?.isRoot, true)
+    const children = tx.trace.getChildren(activeSeg.id)
+    assert.notEqual(children?.[0]?.name, GEMINI.COMPLETION)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not create llm events when streaming and ai_monitoring are enabled but no active transaction', async (t) => {
+  const { client, agent } = t.nr
+  agent.config.ai_monitoring.streaming.enabled = true
+  agent.config.ai_monitoring.enabled = true
+
+  const content = 'Streamed response'
+  const model = 'gemini-2.0-flash'
+  const stream = await client.models.generateContentStream({
+    config: {
+      maxOutputTokens: 100,
+      temperature: 0.5
+    },
+    model,
+    contents: content
+  })
+
+  let res = ''
+  let chunk = {}
+
+  for await (chunk of stream) {
+    assert.ok(chunk.text, 'should have text in chunk')
+    res += chunk.text
+  }
+  const expectedRes = responses.get(content)
+  assert.equal(res, expectedRes.body.candidates[0].content.parts[0].text)
+
+  const events = agent.customEventAggregator.events.toArray()
+  assert.equal(events.length, 0, 'should not create llm events when not in transaction')
 })
 
 test('should not create llm events when not in a transaction', async (t) => {

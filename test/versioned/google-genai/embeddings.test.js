@@ -26,11 +26,11 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: true
+      enabled: true,
+      streaming: {
+        enabled: true
+      }
     },
-    streaming: {
-      enabled: true
-    }
   })
   const { GoogleGenAI } = require('@google/genai')
   ctx.nr.client = new GoogleGenAI({
@@ -178,4 +178,42 @@ test('should add llm attribute to transaction', (t, end) => {
     tx.end()
     end()
   })
+})
+
+test('should not create llm events when ai_monitoring is disabled', (t, end) => {
+  const { client, agent } = t.nr
+  agent.config.ai_monitoring.enabled = false
+  helper.runInTransaction(agent, async (tx) => {
+    const model = 'text-embedding-004'
+    const result = await client.models.embedContent({
+      contents: 'This is an embedding test.',
+      model
+    })
+    assert.ok(result)
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 0, 'should not create llm events')
+
+    const activeSeg = agent.tracer.getSegment()
+    assert.equal(activeSeg?.isRoot, true)
+    const children = tx.trace.getChildren(activeSeg.id)
+    assert.notEqual(children?.[0]?.name, GEMINI.EMBEDDING)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not create llm events when ai_monitoring is enabled but not in active transaction', async (t) => {
+  const { client, agent } = t.nr
+  agent.config.ai_monitoring.enabled = true
+
+  const result = await client.models.embedContent({
+    contents: 'This is an embedding test.',
+    model: 'text-embedding-004'
+  })
+  assert.ok(result)
+
+  const events = agent.customEventAggregator.events.toArray()
+  assert.equal(events.length, 0, 'should not create llm events when not in transaction')
 })
