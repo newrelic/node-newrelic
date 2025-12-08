@@ -56,7 +56,7 @@ test('remote_parent_sampled: always_on', async (t) => {
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
     assert.equal(tx.sampled, true)
-    assert.equal(tx.priority, 2.0)
+    assert.equal(tx.priority, 3.0)
   }
 })
 
@@ -154,7 +154,7 @@ test('remote_parent_sampled: adaptive, remote_parent_not_sampled: always_on (fla
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
     assert.equal(tx.sampled, true)
-    assert.equal(tx.priority, 2.0)
+    assert.equal(tx.priority, 3.0)
   }
 })
 

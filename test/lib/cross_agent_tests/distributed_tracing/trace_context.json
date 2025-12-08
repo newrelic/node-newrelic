@@ -233,7 +233,7 @@
       "common": {
         "exact": {
           "traceId": "0af7651916cd43dd8448eb211c80319c",
-          "priority": 2.0,
+          "priority": 3.0,
           "sampled": true
         },
         "expected": [ "guid" ]
@@ -263,7 +263,7 @@
       "common": {
         "exact": {
           "traceId": "0af7651916cd43dd8448eb211c80319c",
-          "priority": 2.0,
+          "priority": 3.0,
           "sampled": true
         },
         "expected": [ "guid" ]
@@ -321,7 +321,7 @@
       ],
       "common": {
         "exact": {
-          "priority": 2.0,
+          "priority": 3.0,
           "sampled": true
         },
         "expected": [
