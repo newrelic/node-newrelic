@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const path = require('node:path')
 
 const { removeModules } = require('../../../lib/cache-buster')
 const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../../lib/custom-assertions')
@@ -23,11 +24,14 @@ const helper = require('../../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
-    enabled: true
+    enabled: true,
+    streaming: {
+      enabled: true
+    }
   }
 }
 const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
-const createAiResponseServer = getAiResponseServer()
+const createAiResponseServer = getAiResponseServer(path.join(__dirname, '../'))
 
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.
