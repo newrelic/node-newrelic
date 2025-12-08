@@ -468,4 +468,20 @@ test('fromSegment()', async (t) => {
       })
     })
   }
+
+  await t.test('should not record partial granularity metrics when not part of partialTrace', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.add('Datastore/operation/Redis/SET')
+      const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+      assert.ok(span)
+      transaction.end()
+      const unscopedMetrics = agent.metrics._metrics.unscoped
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Instrumented'], undefined)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Kept'], undefined)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/essential/Span/Instrumented'], undefined)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/essential/Span/Kept'], undefined)
+      end()
+    })
+  })
 })
