@@ -1,3 +1,49 @@
+### v13.7.0 (2025-12-08)
+
+#### Features
+
+* `adaptive.sampling_target` can be set under sampler sections ([#3532](https://github.com/newrelic/node-newrelic/pull/3532)) ([44f51dd](https://github.com/newrelic/node-newrelic/commit/44f51dd5583e74aef1e2d0ee9483d51d5ff786c3))
+* `TraceIdRatioBasedSampler` and re-sync cross agent tests ([#3501](https://github.com/newrelic/node-newrelic/pull/3501)) ([f300bd5](https://github.com/newrelic/node-newrelic/commit/f300bd5eacf9d6509b56484e7ad36d5c0725b497))
+* Added `essential` type for partial granularity traces ([#3547](https://github.com/newrelic/node-newrelic/pull/3547)) ([3d85fb5](https://github.com/newrelic/node-newrelic/commit/3d85fb5fa16d411892eb4a23067e66669461ada0))
+* Added `reduced` type for partial granularity traces. ([#3540](https://github.com/newrelic/node-newrelic/pull/3540)) ([cfa8f41](https://github.com/newrelic/node-newrelic/commit/cfa8f41618595cc5ffb3e3b5574673721c64580c))
+* Added partial granularity samplers and assign transactions with `isPartialTrace` when partial granularity sampling decisions have been made ([#3544](https://github.com/newrelic/node-newrelic/pull/3544)) ([1535a82](https://github.com/newrelic/node-newrelic/commit/1535a82331ce40d7c96e0c6746ec70bcdbd6e4f6))
+* Removed samplers under `distributed_tracing.sampler.full_granularity.*` ([#3535](https://github.com/newrelic/node-newrelic/pull/3535)) ([36d907f](https://github.com/newrelic/node-newrelic/commit/36d907f4d994aad33a733e21b9c5a2e9aeceb4fc))
+* Replaced `default` with `adaptive` as the default for samplers ([#3543](https://github.com/newrelic/node-newrelic/pull/3543)) ([3f03162](https://github.com/newrelic/node-newrelic/commit/3f0316285fdde6d3c38ce819aa41221a71bd4fcb))
+* Support OTEL span links ([#3528](https://github.com/newrelic/node-newrelic/pull/3528)) ([e840690](https://github.com/newrelic/node-newrelic/commit/e8406903dd0c92cd003fac69770785489e1bba85))
+* Updated `koa` instrumentation to properly wrap `Router` when using `@koa/router@15.0.0`+ ([#3550](https://github.com/newrelic/node-newrelic/pull/3550)) ([f1e08ad](https://github.com/newrelic/node-newrelic/commit/f1e08ad9fe200138ab9ed32e423517f64e41af49))
+
+#### Bug fixes
+
+* Fix normalization of OTEL hrtime ([#3564](https://github.com/newrelic/node-newrelic/pull/3564)) ([707fe7d](https://github.com/newrelic/node-newrelic/commit/707fe7d6395f0e15b5e6c6195f93df1c27540423))
+
+#### Code refactoring
+
+* Break samplers into classes and store them on `agent.sampler.*` ([#3527](https://github.com/newrelic/node-newrelic/pull/3527)) ([ad63441](https://github.com/newrelic/node-newrelic/commit/ad634411a0d91240c0c16c7a372b00b36651589f))
+* Updated Samplers class to normalize logger messages, short circuit when applicable and remove optional chaining checks ([#3546](https://github.com/newrelic/node-newrelic/pull/3546)) ([4f7684c](https://github.com/newrelic/node-newrelic/commit/4f7684cb4c64a89545704c70c110d2fd13815197))
+* Updated samplers to assign priority between 0-1 when DT is disabled or both full and partial granualrity are disabled ([#3559](https://github.com/newrelic/node-newrelic/pull/3559)) ([7a1c37e](https://github.com/newrelic/node-newrelic/commit/7a1c37e3e04fef0538a8af15fa690915bce65262))
+* Updated transaction to store partial granualrity indicator as `.partialType` ([#3561](https://github.com/newrelic/node-newrelic/pull/3561)) ([a7f20d8](https://github.com/newrelic/node-newrelic/commit/a7f20d8e83b44556434bae90bd3924c54af9f587))
+* Updated when partial granularity rules are applied ([#3553](https://github.com/newrelic/node-newrelic/pull/3553)) ([a4bdf4f](https://github.com/newrelic/node-newrelic/commit/a4bdf4fbbbdac102519020c5ca4d3dc92eeff844))
+
+#### Documentation
+
+* Updated compatibility report ([#3551](https://github.com/newrelic/node-newrelic/pull/3551)) ([02268a4](https://github.com/newrelic/node-newrelic/commit/02268a4e3fe7b2f2f5c2fd035bcb337fd7b2bfc2))
+    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
+* Updated compatibility report ([#3545](https://github.com/newrelic/node-newrelic/pull/3545)) ([fe65ff4](https://github.com/newrelic/node-newrelic/commit/fe65ff442274bc7b06f10c212058f1fe543646eb))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#3526](https://github.com/newrelic/node-newrelic/pull/3526)) ([d89aae9](https://github.com/newrelic/node-newrelic/commit/d89aae993c112a60769a61bf9419fa3004b707c8))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* add `toString` and `get [Symbol.toStringTag]()` to default Sampler class ([#3562](https://github.com/newrelic/node-newrelic/pull/3562)) ([771168d](https://github.com/newrelic/node-newrelic/commit/771168dcd927240b6efc703f238046e9a7f7766b))
+* Add internal doc for attributes ([#3539](https://github.com/newrelic/node-newrelic/pull/3539)) ([68543b6](https://github.com/newrelic/node-newrelic/commit/68543b606fc53e59e9a6fcb08173e423bc6437a9))
+* Added more logging around assigning hostname during preconnect ([#3568](https://github.com/newrelic/node-newrelic/pull/3568)) ([3ee4d38](https://github.com/newrelic/node-newrelic/commit/3ee4d383cd7d9e7bf16e9da5e7f130fc2a103ca4))
+* Collect OTEL instrumentation scope metadata ([#3554](https://github.com/newrelic/node-newrelic/pull/3554)) ([75703c4](https://github.com/newrelic/node-newrelic/commit/75703c41a8db1d204a1500b8b43dff0d04a5b286))
+* Concurrent vendors info resolution ([#3556](https://github.com/newrelic/node-newrelic/pull/3556)) ([8386360](https://github.com/newrelic/node-newrelic/commit/8386360fe7fb4b7278e001dac8c8293581654069))
+* Improve GCP utilization logging ([#3552](https://github.com/newrelic/node-newrelic/pull/3552)) ([e6c4141](https://github.com/newrelic/node-newrelic/commit/e6c4141b55860b5f1fe5cd14049abb9eca9b3859))
+* Improve OTEL hrtime processing ([#3557](https://github.com/newrelic/node-newrelic/pull/3557)) ([8f187b1](https://github.com/newrelic/node-newrelic/commit/8f187b11eac96f78d9743cadb2302001ed94412a))
+* Rename opentelemetry_bridge to opentelemetry ([#3565](https://github.com/newrelic/node-newrelic/pull/3565)) ([c9d156f](https://github.com/newrelic/node-newrelic/commit/c9d156fe302ffb99b262ffd3e256d953301f08f2))
+
 ### v13.6.6 (2025-11-19)
 
 #### Bug fixes

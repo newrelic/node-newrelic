@@ -2,6 +2,26 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.7.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fix normalization of OTEL hrtime"
+        ],
+        "features": [
+          "Added `essential` type for partial granularity traces",
+          "Replaced `default` with `adaptive` as the default for samplers",
+          "Updated `koa` instrumentation to properly wrap `Router` when using `@koa/router@15.0.0`+",
+          "Added `reduced` type for partial granularity traces.",
+          "Support OTEL span links",
+          "Added partial granularity samplers and assign transactions with `isPartialTrace` when partial granularity sampling decisions have been made",
+          "`adaptive.sampling_target` can be set under sampler sections",
+          "`TraceIdRatioBasedSampler` and re-sync cross agent tests",
+          "Removed samplers under `distributed_tracing.sampler.full_granularity.*`"
+        ]
+      }
+    },
+    {
       "version": "13.6.6",
       "changes": {
         "security": [],
