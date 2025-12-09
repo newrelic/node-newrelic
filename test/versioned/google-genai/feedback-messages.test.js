@@ -21,11 +21,11 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: true
+      enabled: true,
+      streaming: {
+        enabled: true
+      }
     },
-    streaming: {
-      enabled: true
-    }
   })
   const { GoogleGenAI } = require('@google/genai')
   ctx.nr.client = new GoogleGenAI({
