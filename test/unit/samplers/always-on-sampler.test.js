@@ -28,6 +28,15 @@ test('AlwaysOnSampler should always sample with priority set to 3 in a full trac
   assert.equal(transaction.partialType, undefined)
 })
 
+test('AlwaysOnSampler should always sample with priority set to 2 in a partial trace', (t) => {
+  const { sampler } = t.nr
+  const transaction = {}
+  sampler.applySamplingDecision({ transaction, partialType: 'essential' })
+  assert.equal(transaction.sampled, true)
+  assert.equal(transaction.priority, 2)
+  assert.equal(transaction.partialType, 'essential')
+})
+
 test('AlwaysOnSampler should assign partialType to true when not a fullTrace', (t) => {
   const { sampler } = t.nr
   const transaction = {}
