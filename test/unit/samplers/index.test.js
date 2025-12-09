@@ -319,7 +319,7 @@ test('applySamplingDecision', async (t) => {
     const transaction = { priority: null, sampled: null }
     samplers.applySamplingDecision({ transaction })
     assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
+    assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
   })
 
@@ -386,7 +386,7 @@ test('applyDTSamplingDecision', async (t) => {
     samplers.applyDTSamplingDecision({ transaction, traceparent })
 
     assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
+    assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
   })
 
@@ -434,7 +434,7 @@ test('applyDTSamplingDecision', async (t) => {
     samplers.applyDTSamplingDecision({ transaction, traceparent })
 
     assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
+    assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
   })
 
@@ -542,7 +542,7 @@ test('applyDTSamplingDecision', async (t) => {
     samplers.applyDTSamplingDecision({ transaction, traceparent })
 
     assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
+    assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
   })
 
@@ -580,7 +580,7 @@ test('applyDTSamplingDecision', async (t) => {
     samplers.applyDTSamplingDecision({ transaction, traceparent, tracestate })
 
     assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
+    assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
   })
 
@@ -663,7 +663,7 @@ test('applyLegacyDTSamplingDecision', async (t) => {
     samplers.applyLegacyDTSamplingDecision({ transaction, isSampled: true })
 
     assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
+    assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
   })
 
@@ -725,7 +725,7 @@ test('applyLegacyDTSamplingDecision', async (t) => {
     samplers.applyLegacyDTSamplingDecision({ transaction, isSampled: true })
 
     assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
+    assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
   })
 
@@ -787,7 +787,7 @@ test('applyLegacyDTSamplingDecision', async (t) => {
     samplers.applyLegacyDTSamplingDecision({ transaction, isSampled: false })
 
     assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
+    assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
   })
 
