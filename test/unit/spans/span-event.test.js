@@ -501,8 +501,10 @@ test('fromSegment()', async (t) => {
       assert.ok(span)
       transaction.end()
       const unscopedMetrics = agent.metrics._metrics.unscoped
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced'], undefined)
       assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Instrumented'], undefined)
       assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Kept'], undefined)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/essential'], undefined)
       assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/essential/Span/Instrumented'], undefined)
       assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/essential/Span/Kept'], undefined)
       end()

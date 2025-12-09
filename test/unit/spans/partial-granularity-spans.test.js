@@ -190,6 +190,7 @@ for (const mode of MODES) {
         transaction.end()
 
         const unscopedMetrics = agent.metrics._metrics.unscoped
+        assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}`].callCount, 1)
         assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Instrumented`].callCount, 1)
         assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Kept`].callCount, 1)
         end()
@@ -206,6 +207,7 @@ for (const mode of MODES) {
         assert.ok(!span)
         transaction.end()
         const unscopedMetrics = agent.metrics._metrics.unscoped
+        assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}`].callCount, 1)
         assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Instrumented`].callCount, 1)
         // span was dropped so kept metric was not recorded
         assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Kept`], undefined)
@@ -223,6 +225,7 @@ for (const mode of MODES) {
         assert.ok(!span)
         transaction.end()
         const unscopedMetrics = agent.metrics._metrics.unscoped
+        assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}`].callCount, 1)
         assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Instrumented`].callCount, 1)
         // span was dropped so kept metric was not recorded
         assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Kept`], undefined)

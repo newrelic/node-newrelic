@@ -158,6 +158,100 @@ test('Trace', async (t) => {
     assert.ok(testSpan.intrinsics.timestamp)
   })
 
+  await t.test('should generate span events and finalize when partial trace', (t) => {
+    const { agent } = t.nr
+    agent.config.span_events.enabled = true
+    agent.config.distributed_tracing.enabled = true
+    agent.samplers.fullEnabled = false
+    agent.samplers.partialEnabled = true
+
+    const transaction = new Transaction(agent)
+
+    const trace = transaction.trace
+    const child1 = (transaction.baseSegment = trace.add('test'))
+    child1.start()
+    const child2 = trace.add('nested', null, child1)
+    const child3 = trace.add('Datastore/operation/Redis/GET', null, child2)
+    child3.addAttribute('host', 'unit-test')
+    const child4 = trace.add('nested1', null, child3)
+    const child5 = trace.add('nested2', null, child4)
+    const child6 = trace.add('Datastore/operation/Redis/SET', null, child5)
+    child6.addAttribute('host', 'localhost')
+    child2.start()
+    child3.start()
+    child4.start()
+    child5.start()
+    child6.start()
+    child1.end()
+    child2.end()
+    child3.end()
+    child4.end()
+    child5.end()
+    child6.end()
+    trace.root.end()
+    transaction.end()
+
+    assert.equal(agent.spanEventAggregator.events.length, 3)
+    const [redisSet, testSpan, redisGet] = agent.spanEventAggregator.getEvents()
+    assert.ok(redisSet.intrinsics)
+    assert.ok(testSpan.intrinsics)
+    assert.ok(redisGet.intrinsics)
+
+    // its parent and grandparent were dropped, so parentId is `child3` aka redisGet
+    assert.ok(redisSet.intrinsics.parentId)
+    assert.equal(redisSet.intrinsics.parentId, redisGet.intrinsics.guid)
+    assert.ok(redisSet.intrinsics.category)
+    assert.equal(redisSet.intrinsics.category, 'datastore')
+    assert.ok(redisSet.intrinsics.priority)
+    assert.equal(redisSet.intrinsics.priority, transaction.priority)
+    assert.ok(redisSet.intrinsics.transactionId)
+    assert.equal(redisSet.intrinsics.transactionId, transaction.id)
+    assert.ok(redisSet.intrinsics.sampled)
+    assert.equal(redisSet.intrinsics.sampled, transaction.sampled)
+    assert.ok(redisSet.intrinsics.name)
+    assert.equal(redisSet.intrinsics.name, 'Datastore/operation/Redis/SET')
+    assert.ok(redisSet.intrinsics.traceId)
+    assert.equal(redisSet.intrinsics.traceId, transaction.traceId)
+    assert.ok(redisSet.intrinsics.timestamp)
+    assert.equal(redisSet.attributes['server.address'], 'localhost')
+    assert.equal(redisSet.attributes['peer.hostname'], 'localhost')
+
+    assert.equal(testSpan.intrinsics.parentId, null)
+    assert.ok(testSpan.intrinsics['nr.entryPoint'])
+    assert.ok(testSpan.intrinsics.category)
+    assert.equal(testSpan.intrinsics.category, 'generic')
+    assert.ok(testSpan.intrinsics.priority)
+    assert.equal(testSpan.intrinsics.priority, transaction.priority)
+    assert.ok(testSpan.intrinsics.transactionId)
+    assert.equal(testSpan.intrinsics.transactionId, transaction.id)
+    assert.ok(testSpan.intrinsics.sampled)
+    assert.equal(testSpan.intrinsics.sampled, transaction.sampled)
+    assert.ok(testSpan.intrinsics.name)
+    assert.equal(testSpan.intrinsics.name, 'test')
+    assert.ok(testSpan.intrinsics.traceId)
+    assert.equal(testSpan.intrinsics.traceId, transaction.traceId)
+    assert.ok(testSpan.intrinsics.timestamp)
+
+    // its parent was dropped, so parentId is `child1` aka testSpan
+    assert.ok(redisGet.intrinsics.parentId)
+    assert.equal(redisGet.intrinsics.parentId, testSpan.intrinsics.guid)
+    assert.ok(redisGet.intrinsics.category)
+    assert.equal(redisGet.intrinsics.category, 'datastore')
+    assert.ok(redisGet.intrinsics.priority)
+    assert.equal(redisGet.intrinsics.priority, transaction.priority)
+    assert.ok(redisGet.intrinsics.transactionId)
+    assert.equal(redisGet.intrinsics.transactionId, transaction.id)
+    assert.ok(redisGet.intrinsics.sampled)
+    assert.equal(redisGet.intrinsics.sampled, transaction.sampled)
+    assert.ok(redisGet.intrinsics.name)
+    assert.equal(redisGet.intrinsics.name, 'Datastore/operation/Redis/GET')
+    assert.ok(redisGet.intrinsics.traceId)
+    assert.equal(redisGet.intrinsics.traceId, transaction.traceId)
+    assert.ok(redisGet.intrinsics.timestamp)
+    assert.equal(redisGet.attributes['server.address'], 'unit-test')
+    assert.equal(redisGet.attributes['peer.hostname'], 'unit-test')
+  })
+
   await t.test('should not generate span events on end if span_events is disabled', (t) => {
     const { agent } = t.nr
     agent.config.span_events.enabled = false
