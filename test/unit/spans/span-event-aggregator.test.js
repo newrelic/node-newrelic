@@ -11,6 +11,7 @@ const sinon = require('sinon')
 const helper = require('../../lib/agent_helper')
 const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const Metrics = require('../../../lib/metrics')
+const SpanLink = require('#agentlib/spans/span-link.js')
 
 const RUN_ID = 1337
 const DEFAULT_LIMIT = 2000
@@ -209,6 +210,70 @@ test('SpanAggregator', async (t) => {
     })
   })
 
+  await t.test('serialized data should be in correct order', (t, end) => {
+    const { agent, spanEventAggregator } = t.nr
+    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
+    helper.runInTransaction(agent, (tx) => {
+      tx.priority = 1
+      tx.sampled = true
+
+      setTimeout(() => {
+        const rootSegment = agent.tracer.getSegment()
+
+        const child1Segment = agent.tracer.createSegment({
+          id: 'child1',
+          name: 'child1-segment',
+          parent: rootSegment,
+          transaction: tx
+        })
+        child1Segment.spanLinks.push(new SpanLink({
+          link: {
+            attributes: {},
+            context: { spanId: 'parent1', traceId: 'trace1' }
+          },
+          spanContext: {
+            spanId: 'span1',
+            traceId: 'trace1'
+          },
+          timestamp
+        }))
+
+        const child2Segment = agent.tracer.createSegment({
+          id: 'child2',
+          name: 'child2-segment',
+          parent: rootSegment,
+          transaction: tx
+        })
+
+        spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx })
+        spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx })
+        spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx })
+
+        const payload = spanEventAggregator._toPayloadSync()
+
+        const [, metrics, events] = payload
+        assert.equal(metrics.events_seen, 3, 'span links do not count')
+
+        const linkIdx = events.findIndex((e) => e.intrinsics.type === 'SpanLink')
+        assert.equal(linkIdx > 0, true, 'must be subsequent to a Span event')
+
+        const link = events[linkIdx]
+        assert.equal(link.intrinsics.id, 'span1')
+        assert.equal(link.intrinsics.timestamp, timestamp)
+        assert.equal(link.intrinsics['trace.id'], 'trace1')
+        assert.equal(link.intrinsics.linkedSpanId, 'parent1')
+        assert.equal(link.intrinsics.linkedTraceId, 'trace1')
+
+        const span = events[linkIdx - 1]
+        assert.equal(span.intrinsics.type, 'Span')
+        assert.equal(span.intrinsics.guid, 'child1')
+        assert.equal(span.intrinsics.name, 'child1-segment')
+
+        end()
+      }, 10)
+    })
+  })
+
   await t.test('should use default value for periodMs', (t) => {
     const { spanEventAggregator } = t.nr
     const fakeConfig = {
@@ -364,45 +429,5 @@ test('SpanAggregator', async (t) => {
       'should name event appropriately'
     )
     assert.equal(recordValueStub.args[0][0], harvestLimit, `should set limit to ${harvestLimit}`)
-  })
-
-  await t.test('adds links to the stack', (t) => {
-    const { spanEventAggregator: agg } = t.nr
-    const stack = []
-
-    agg.add = (item, priority) => {
-      stack.push({ item, priority })
-    }
-
-    const segment = {
-      spanLinks: [{ test: 'link' }],
-      getSpanContext() {
-        return {
-          hasError: false,
-          customAttributes: { get() {} },
-          intrinsicAttributes: {}
-        }
-      },
-      attributes: {
-        get() {
-          return {
-            host: 'test',
-            port: 1234
-          }
-        }
-      },
-      timer: {
-        start() {},
-        getDurationInMillis() { return 1 }
-      }
-    }
-    const transaction = {
-      priority: 0.5
-    }
-    agg.addSegment({ segment, transaction })
-
-    assert.equal(stack.length, 2)
-    const link = stack.pop()
-    assert.deepStrictEqual(link, { item: { test: 'link' }, priority: 0.5 })
   })
 })

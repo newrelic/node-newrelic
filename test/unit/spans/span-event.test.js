@@ -5,7 +5,7 @@
 
 'use strict'
 const assert = require('node:assert')
-const test = require('node:test')
+const { describe, test } = require('node:test')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const helper = require('../../lib/agent_helper')
 const http = require('http')
@@ -39,6 +39,30 @@ test('#constructor() should construct an empty span event', () => {
   ]
   emptyProps.forEach((prop) => {
     assert.equal(span.intrinsics[prop], null)
+  })
+})
+
+describe('createSpan()', () => {
+  test('adds empty spanLinks if none present', () => {
+    const span = SpanEvent.createSpan({
+      segment: {},
+      attributes: {},
+      customAttributes: {}
+    })
+    assert.equal(Array.isArray(span.spanLinks), true)
+    assert.equal(span.spanLinks.length, 0)
+  })
+
+  test('propagates spanLinks', () => {
+    const segment = {
+      spanLinks: [{ id: 1 }]
+    }
+    const span = SpanEvent.createSpan({
+      segment,
+      attributes: {},
+      customAttributes: {}
+    })
+    assert.deepStrictEqual(span.spanLinks, [{ id: 1 }])
   })
 })
 
