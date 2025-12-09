@@ -359,7 +359,8 @@ test('should instrument text stream', async (t) => {
   await helper.runInTransaction(agent, async (tx) => {
     api.addCustomAttribute('llm.conversation_id', 'convo-id')
     const response = await client.send(command)
-    for await (const event of response?.output?.message?.content) {
+    assert.ok(response)
+    for await (const event of response.stream) {
       // no-op iteration over the stream in order to exercise the instrumentation
       consumeStreamChunk(event)
     }

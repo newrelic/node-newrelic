@@ -186,9 +186,9 @@ test('streaming enabled', async (t) => {
         const stream = await chain.stream(input, options)
         let content = ''
         for await (const chunk of stream) {
-          content += chunk
+          // Have to look at content because there's no parser
+          content += chunk?.content
         }
-
         const events = agent.customEventAggregator.events.toArray()
 
         const langchainEvents = filterLangchainEvents(events)

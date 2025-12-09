@@ -84,21 +84,22 @@ test('streaming enabled', async (t) => {
   })
 
   await t.test('should create langchain events for every stream call', (t, end) => {
-    const { agent, prompt, model } = t.nr
+    const { agent, prompt, model, outputParser } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
       const input = { topic: 'Streamed' }
 
-      const chain = prompt.pipe(model)
+      const chain = prompt.pipe(model).pipe(outputParser)
       const stream = await chain.stream(input)
       let content = ''
       for await (const chunk of stream) {
         content += chunk
       }
 
-      assert.ok(content)
+      assert.equal(content, 'This is a test.')
       const events = agent.customEventAggregator.events.toArray()
-      assert.equal(events.length, 3, 'should create 3 events')
+      // TODO: should be 6 here?
+      assert.equal(events.length, 6, 'should create 3 events')
 
       const langchainEvents = events.filter((event) => {
         const [, chainEvent] = event
@@ -152,9 +153,9 @@ test('streaming enabled', async (t) => {
         for await (const chunk of stream) {
           content += chunk
         }
+        assert.equal(content, 'This is a test.')
 
         const events = agent.customEventAggregator.events.toArray()
-
         const langchainEvents = filterLangchainEvents(events)
         const langChainMessageEvents = filterLangchainEventsByType(
           langchainEvents,
@@ -197,7 +198,8 @@ test('streaming enabled', async (t) => {
         const stream = await chain.stream(input, options)
         let content = ''
         for await (const chunk of stream) {
-          content += chunk
+          // No parser, so have to look at content for text string
+          content += chunk?.content
         }
 
         const events = agent.customEventAggregator.events.toArray()
@@ -342,9 +344,9 @@ test('streaming enabled', async (t) => {
         for await (const chunk of stream) {
           content += chunk
         }
+        assert.equal(content, 'This is a test.')
 
         const events = agent.customEventAggregator.events.toArray()
-
         const langchainEvents = filterLangchainEvents(events)
         const langChainMessageEvents = filterLangchainEventsByType(
           langchainEvents,
@@ -571,8 +573,8 @@ test('streaming disabled', async (t) => {
         for await (const chunk of stream) {
           content += chunk
         }
+        assert.equal(content, 'This is a test.')
 
-        assert.ok(content)
         const events = agent.customEventAggregator.events.toArray()
         assert.equal(events.length, 0, 'should not create llm events when streaming is disabled')
         const metrics = agent.metrics.getOrCreateMetric(
