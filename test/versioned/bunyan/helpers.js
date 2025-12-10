@@ -108,3 +108,36 @@ helpers.logForwardingMsgAssertion = function logForwardingMsgAssertion(logLine, 
   const commonAttrs = payload.common.attributes
   validateCommonAttrs({ commonAttrs, config: agent.config })
 }
+
+helpers.createCustomLogger = function(Bunyan, options) {
+  class Logger extends Bunyan {
+    constructor(options, context = {}) {
+      // Default name or level if not set in options
+      options = Object.assign({}, { name: 'test-logger', level: 'info' }, options)
+      super(options)
+      this.context = context
+    }
+
+    info(...args) {
+      return this.log('info', ...args)
+    }
+
+    error(...args) {
+      return this.log('error', ...args)
+    }
+
+    warn(...args) {
+      return this.log('warn', ...args)
+    }
+
+    log(levelName, msg, context) {
+      const logObject = { levelName }
+      if (this.context || context) {
+        logObject.context = { ...this.context, ...context }
+      }
+      return super[levelName](logObject, msg)
+    }
+  }
+
+  return new Logger(options, { service: 'test-service' })
+}
