@@ -114,6 +114,7 @@ test('fromSegment()', async (t) => {
       assert.equal(span.intrinsics.traceId, transaction.traceId)
       assert.equal(span.intrinsics.guid, segment.id)
       assert.equal(span.intrinsics.parentId, 'parent')
+      assert.equal(span.parentId, 'parent')
       assert.equal(span.intrinsics.transactionId, transaction.id)
       assert.equal(span.intrinsics.sampled, true)
       assert.equal(span.intrinsics.priority, 42)

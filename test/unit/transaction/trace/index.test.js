@@ -384,6 +384,102 @@ test('Trace', async (t) => {
 
     assert.deepEqual(trace.attributes.get(DESTINATIONS.TRANS_TRACE), {})
   })
+
+  await t.test('should add span to array when `addSpan is called and span is present', (t) => {
+    const { agent } = t.nr
+    const trace = new Trace(new Transaction(agent))
+    assert.deepEqual(trace.spans, [])
+    const span = { key: 'value' }
+    trace.addSpan({ span })
+    assert.deepEqual(trace.spans, [span])
+    assert.equal(trace.droppedSpans.size, 0)
+  })
+
+  await t.test('should not add span to array when `addSpan is called and span is not present', (t) => {
+    const { agent } = t.nr
+    const trace = new Trace(new Transaction(agent))
+    assert.deepEqual(trace.spans, [])
+    trace.addSpan({ id: 1, parentId: 0 })
+    assert.deepEqual(trace.spans, [])
+    assert.equal(trace.droppedSpans.size, 1)
+    assert.equal(trace.droppedSpans.get(1), 0)
+  })
+
+  await t.test('should not add spans to aggregator when not a partial trace', (t) => {
+    const { agent } = t.nr
+    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+
+    const trace = new Trace(new Transaction(agent))
+    trace.spans = [1, 2]
+    trace.finalizeSpanEvents()
+
+    assert.equal(addSpy.callCount, 0)
+  })
+
+  await t.test('should add spans to aggregator when partial trace', (t) => {
+    const { agent } = t.nr
+    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+
+    const trace = new Trace(new Transaction(agent))
+    trace.transaction.partialType = 'reduced'
+    trace.spans = [1, 2]
+    trace.finalizeSpanEvents()
+
+    assert.equal(addSpy.callCount, 2)
+    assert.deepEqual(trace.spans, [])
+    assert.equal(trace.droppeSpans, null)
+  })
+
+  await t.test('should reparent span to grandparent if its parent was dropped', (t) => {
+    const { agent } = t.nr
+    let newParent
+    const trace = new Trace(new Transaction(agent))
+    trace.droppedSpans.set(1, 4)
+    const span = {
+      parentId: 1,
+      addIntrinsicAttribute: function(key, value) {
+        newParent = value
+      }
+    }
+    trace.maybeReparentSpan(span)
+    assert.equal(newParent, 4)
+  })
+
+  await t.test('should reparent span to 6 levels if 5 parents above were dropped', (t) => {
+    const { agent } = t.nr
+    let newParent
+    const trace = new Trace(new Transaction(agent))
+    trace.droppedSpans.set(1, 2)
+    trace.droppedSpans.set(2, 3)
+    trace.droppedSpans.set(3, 4)
+    trace.droppedSpans.set(4, 5)
+    trace.droppedSpans.set(5, 6)
+    const span = {
+      parentId: 1,
+      addIntrinsicAttribute: function(key, value) {
+        newParent = value
+      }
+    }
+
+    trace.maybeReparentSpan(span)
+    assert.equal(newParent, 6)
+  })
+
+  await t.test('should not reparent span if parent id is not in droppedSpans', (t) => {
+    const { agent } = t.nr
+    let newParent = null
+    const trace = new Trace(new Transaction(agent))
+    trace.droppedSpans.set(2, 1)
+    const span = {
+      parentId: 1,
+      addIntrinsicAttribute: function(key, value) {
+        newParent = value
+      }
+    }
+
+    trace.maybeReparentSpan(span)
+    assert.equal(newParent, null)
+  })
 })
 
 test('when serializing synchronously', async (t) => {
@@ -1060,6 +1156,31 @@ test('infinite tracing', async (t) => {
       assert.equal(spy.callCount, 0)
     }
   )
+
+  await t.test('should not reparent nor add spans to aggregator when `finalizeSpanEvents` is called', (t) => {
+    const { agent } = t.nr
+    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+
+    const transaction = new Transaction(agent)
+
+    addTwoSegments(transaction)
+
+    transaction.trace.generateSpanEvents()
+    assert.equal(addSpy.callCount, 0)
+  })
+
+  await t.test('should not reparent nor add spans to aggregator when transaction is partial trace and when `finalizeSpanEvents` is called', (t) => {
+    const { agent } = t.nr
+    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+
+    const transaction = new Transaction(agent)
+    transaction.partialType = 'reduced'
+
+    addTwoSegments(transaction)
+
+    transaction.trace.generateSpanEvents()
+    assert.equal(addSpy.callCount, 0)
+  })
 })
 
 function addTwoSegments(transaction) {
