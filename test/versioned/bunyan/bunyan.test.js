@@ -11,7 +11,7 @@ const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
-const { makeSink, logStuff, originalMsgAssertion, logForwardingMsgAssertion } = require('./helpers')
+const { createCustomLogger, makeSink, logStuff, originalMsgAssertion, logForwardingMsgAssertion } = require('./helpers')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 function setup(testContext, config) {
@@ -105,7 +105,24 @@ test('local log decorating', async (t) => {
 
     logStuff({ logger, helper, agent })
 
-    assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+    assert.equal(stream.logs.length, 2, 'should have two original log lines in sink')
+    stream.logs.forEach((line) => {
+      originalMsgAssertion({
+        includeLocalDecorating: true,
+        hostname: agent.config.getHostnameSafe(),
+        logLine: JSON.parse(line)
+      })
+    })
+  })
+
+  await t.test('should add the NR-LINKING metadata to the log message field(custom Logger)', (t) => {
+    const { agent, bunyan } = t.nr
+    const stream = makeSink()
+    const logger = createCustomLogger(bunyan, { stream })
+
+    logStuff({ logger, helper, agent })
+
+    assert.equal(stream.logs.length, 2, 'should have two original log lines in sink')
     stream.logs.forEach((line) => {
       originalMsgAssertion({
         includeLocalDecorating: true,
@@ -149,6 +166,29 @@ test('log forwarding enabled', async (t) => {
       logForwardingMsgAssertion(msg, agent)
     })
 
+    assert.equal(stream.logs.length, 2, 'should have two original log lines in sink')
+    stream.logs.forEach((logLine) => {
+      originalMsgAssertion({
+        logLine: JSON.parse(logLine),
+        hostname: agent.config.getHostnameSafe()
+      })
+    })
+  })
+
+  await t.test('should add linking metadata to log aggregator(custom Logger)', (t) => {
+    const { agent, bunyan } = t.nr
+    const stream = makeSink()
+    const logger = createCustomLogger(bunyan, { stream })
+
+    logStuff({ logger, helper, agent })
+
+    const msgs = agent.logs.getEvents()
+    assert.equal(msgs.length, 2, 'should add both logs to aggregator')
+    msgs.forEach((msg) => {
+      logForwardingMsgAssertion(msg, agent)
+    })
+
+    assert.equal(stream.logs.length, 2, 'should have two original log lines in sink')
     stream.logs.forEach((logLine) => {
       originalMsgAssertion({
         logLine: JSON.parse(logLine),
@@ -176,12 +216,20 @@ test('log forwarding enabled', async (t) => {
 
     const msgs = agent.logs.getEvents()
     assert.equal(msgs.length, 1, 'should add error line to aggregator')
+    assert.equal(stream.logs.length, 1, 'should have one original log line in sink')
     const [msg] = msgs
     assert.equal(msg['error.message'], errorMsg, 'error.message should match')
     assert.equal(msg['error.class'], name, 'error.class should match')
     assert.ok(typeof msg['error.stack'] === 'string', 'error.stack should be a string')
     assert.equal(msg.stack, undefined, 'stack should be removed')
     assert.equal(msg.trace, undefined, 'trace should be removed')
+    stream.logs.forEach((logLine) => {
+      originalMsgAssertion({
+        logLine: JSON.parse(logLine),
+        hostname: agent.config.getHostnameSafe(),
+        level: 50
+      })
+    })
   })
 })
 
@@ -237,6 +285,44 @@ test('metrics enabled', async (t) => {
       const metric = agent.metrics.getMetric(metricName)
       assert.ok(metric, `ensure ${metricName} exists`)
       assert.equal(metric.callCount, grandTotal, `ensure ${metricName} has the right value`)
+      assert.equal(stream.logs.length, grandTotal, 'ensure all log lines were written to stream')
+      end()
+    })
+  })
+
+  await t.test('should count logger metrics(custom Logger)', (t, end) => {
+    const { agent, bunyan } = t.nr
+    const stream = makeSink()
+    const logger = createCustomLogger(bunyan, { name: 'custom-logger', stream, level: 'debug' })
+
+    helper.runInTransaction(agent, 'bunyan-test', () => {
+      const logLevels = {
+        debug: 20,
+        info: 5,
+        warn: 3,
+        error: 2,
+        fatal: 1
+      }
+      for (const [logLevel, maxCount] of Object.entries(logLevels)) {
+        for (let count = 0; count < maxCount; count++) {
+          const msg = `This is log message #${count} at ${logLevel} level`
+          logger[logLevel](msg)
+        }
+      }
+
+      let grandTotal = 0
+      for (const [logLevel, maxCount] of Object.entries(logLevels)) {
+        grandTotal += maxCount
+        const metricName = LOGGING.LEVELS[logLevel.toUpperCase()]
+        const metric = agent.metrics.getMetric(metricName)
+        assert.ok(metric, `ensure ${metricName} exists`)
+        assert.equal(metric.callCount, maxCount, `ensure ${metricName} has the right value`)
+      }
+      const metricName = LOGGING.LINES
+      const metric = agent.metrics.getMetric(metricName)
+      assert.ok(metric, `ensure ${metricName} exists`)
+      assert.equal(metric.callCount, grandTotal, `ensure ${metricName} has the right value`)
+      assert.equal(stream.logs.length, grandTotal, 'ensure all log lines were written to stream')
 
       end()
     })
