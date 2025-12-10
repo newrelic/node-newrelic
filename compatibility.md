@@ -11,17 +11,17 @@ supported by the agent.
 
 | Package name | Minimum supported version | Latest published version | Introduced in* |
 | --- | --- | --- | --- |
-| `@apollo/gateway` | 2.3.0 | 2.12.1 | `@newrelic/apollo-server-plugin@1.0.0` |
+| `@apollo/gateway` | 2.3.0 | 2.12.2 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 5.2.0 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.946.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.946.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.946.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.946.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.946.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.948.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.948.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.948.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.948.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.948.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.10.0 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.2.0 | 11.9.0 |
-| `@google/genai` | 1.1.0 | 1.31.0 | 12.21.0 |
+| `@google/genai` | 1.1.0 | 1.32.0 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.14.2 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.4 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 15.0.0 | 3.2.0 |
@@ -32,7 +32,7 @@ supported by the agent.
 | `@prisma/client` | 5.0.0 | 7.1.0 | 11.0.0 |
 | `@smithy/smithy-client` | 2.0.0 | 4.9.10 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.9 | 2.0.0 |
-| `aws-sdk` | 2.2.48 | 2.1692.0 | 6.2.0 |
+| `aws-sdk` | 2.2.48 | 2.1693.0 | 6.2.0 |
 | `bluebird` | 2.0.0 | 3.7.2 | 1.27.0 |
 | `bunyan` | 1.8.12 | 1.8.15 | 9.3.0 |
 | `cassandra-driver` | 3.4.0 | 4.8.0 | 1.7.1 |
@@ -49,7 +49,7 @@ supported by the agent.
 | `mongodb` | 4.1.4 | 7.0.0 | 1.32.0 |
 | `mysql` | 2.16.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.15.3 | 1.32.0 |
-| `next` | 13.4.19 | 16.0.7 | 12.0.0 |
+| `next` | 13.4.19 | 16.0.8 | 12.0.0 |
 | `openai` | 4.0.0 | 6.10.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.16.3 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.5.2 | 9.0.0 |
