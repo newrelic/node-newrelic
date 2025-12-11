@@ -12,6 +12,7 @@ const helper = require('../../lib/agent_helper')
 const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 const SpanLink = require('#agentlib/spans/span-link.js')
+const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 
 const RUN_ID = 1337
 const DEFAULT_LIMIT = 2000
@@ -76,6 +77,12 @@ test('SpanAggregator', async (t) => {
         assert.ok(event.intrinsics)
         assert.equal(event.intrinsics.name, segment.name)
         assert.equal(event.intrinsics.parentId, 'p')
+        const metrics = spanEventAggregator._metrics.unscoped
+        const metricKeys = Object.keys(metrics)
+        // verifies it also does not create the `Supportability/DistributedTrace/PartialGranularity/*`` metrics
+        assert.equal(metricKeys.length, 2)
+        assert.equal(metrics['Supportability/SpanEvent/TotalEventsSeen'].callCount, 1)
+        assert.equal(metrics['Supportability/SpanEvent/TotalEventsSent'].callCount, 1)
 
         end()
       }, 10)
@@ -429,5 +436,52 @@ test('SpanAggregator', async (t) => {
       'should name event appropriately'
     )
     assert.equal(recordValueStub.args[0][0], harvestLimit, `should set limit to ${harvestLimit}`)
+  })
+
+  await t.test('should not add span to aggregator but instead to trace when transaction.partialType is set', (t, end) => {
+    const { agent, spanEventAggregator } = t.nr
+    helper.runInTransaction(agent, (tx) => {
+      tx.priority = 42
+      tx.sampled = true
+      tx.partialType = PARTIAL_TYPES.REDUCED
+      const segment = agent.tracer.getSegment()
+      tx.baseSegment = segment
+
+      assert.equal(spanEventAggregator.length, 0)
+      assert.equal(tx.trace.spans.length, 0)
+
+      spanEventAggregator.addSegment({ segment, transaction: tx, parentId: 'p' })
+      assert.equal(spanEventAggregator.length, 0)
+      assert.equal(tx.trace.spans.length, 1)
+      const unscopedMetrics = spanEventAggregator._metrics.unscoped
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced'].callCount, 1)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Instrumented'].callCount, 1)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Kept'].callCount, 1)
+
+      end()
+    })
+  })
+
+  await t.test('should not add span to aggregator nor to trace when transaction.partialType is set', (t, end) => {
+    const { agent, spanEventAggregator } = t.nr
+    helper.runInTransaction(agent, (tx) => {
+      tx.priority = 42
+      tx.sampled = true
+      tx.partialType = PARTIAL_TYPES.REDUCED
+      const segment = agent.tracer.getSegment()
+
+      assert.equal(spanEventAggregator.length, 0)
+      assert.equal(tx.trace.spans.length, 0)
+
+      spanEventAggregator.addSegment({ segment, transaction: tx, parentId: 'p' })
+      assert.equal(spanEventAggregator.length, 0)
+      assert.equal(tx.trace.spans.length, 0)
+      const unscopedMetrics = spanEventAggregator._metrics.unscoped
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced'].callCount, 1)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Instrumented'].callCount, 1)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Kept'], undefined)
+
+      end()
+    })
   })
 })

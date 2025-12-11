@@ -7,6 +7,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const AlwaysOnSampler = require('#agentlib/samplers/always-on-sampler.js')
+const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 
 test.beforeEach((ctx) => {
   const sampler = new AlwaysOnSampler()
@@ -31,7 +32,7 @@ test('AlwaysOnSampler should always sample with priority set to 3 in a full trac
 test('AlwaysOnSampler should always sample with priority set to 2 in a partial trace', (t) => {
   const { sampler } = t.nr
   const transaction = {}
-  sampler.applySamplingDecision({ transaction, partialType: 'essential' })
+  sampler.applySamplingDecision({ transaction, partialType: PARTIAL_TYPES.ESSENTIAL })
   assert.equal(transaction.sampled, true)
   assert.equal(transaction.priority, 2)
   assert.equal(transaction.partialType, 'essential')
@@ -40,7 +41,7 @@ test('AlwaysOnSampler should always sample with priority set to 2 in a partial t
 test('AlwaysOnSampler should assign partialType to true when not a fullTrace', (t) => {
   const { sampler } = t.nr
   const transaction = {}
-  sampler.applySamplingDecision({ transaction, partialType: 'reduced' })
+  sampler.applySamplingDecision({ transaction, partialType: PARTIAL_TYPES.REDUCED })
   assert.equal(transaction.sampled, true)
   assert.equal(transaction.priority, 2)
   assert.equal(transaction.partialType, 'reduced')

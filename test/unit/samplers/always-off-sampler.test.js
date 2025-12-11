@@ -7,6 +7,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const AlwaysOffSampler = require('#agentlib/samplers/always-off-sampler.js')
+const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 
 test.beforeEach((ctx) => {
   const sampler = new AlwaysOffSampler()
@@ -31,7 +32,7 @@ test('AlwaysOffSampler should always sample', (t) => {
 test('AlwaysOffSampler should assign partialType to true when not a fullTrace', (t) => {
   const { sampler } = t.nr
   const transaction = {}
-  sampler.applySamplingDecision({ transaction, partialType: 'reduced' })
+  sampler.applySamplingDecision({ transaction, partialType: PARTIAL_TYPES.REDUCED })
   assert.equal(transaction.sampled, false)
   assert.equal(transaction.priority, 0)
   assert.equal(transaction.partialType, 'reduced')
