@@ -56,7 +56,7 @@ async function beforeEach({ enabled, ctx }) {
     maxAttempts: 1
   })
 
-  ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', 'text converse ultimate question streamed']])
+  ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', 'text converse ultimate question {topic}']])
   ctx.nr.model = new ChatBedrockConverse({
     streaming: true,
     model: 'anthropic.claude-instant-v1',
@@ -87,7 +87,7 @@ test('streaming enabled', async (t) => {
     const { agent, prompt, model, outputParser } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
-      const input = { topic: 'Streamed' }
+      const input = { topic: 'streamed' }
 
       const chain = prompt.pipe(model).pipe(outputParser)
       const stream = await chain.stream(input)
@@ -98,8 +98,7 @@ test('streaming enabled', async (t) => {
 
       assert.equal(content, 'This is a test.')
       const events = agent.customEventAggregator.events.toArray()
-      // TODO: should be 6 here?
-      assert.equal(events.length, 6, 'should create 3 events')
+      assert.equal(events.length, 6, 'should create 6 events')
 
       const langchainEvents = events.filter((event) => {
         const [, chainEvent] = event
@@ -119,7 +118,7 @@ test('streaming enabled', async (t) => {
       const { agent, prompt, outputParser, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
-        const input = { topic: 'Streamed' }
+        const input = { topic: 'streamed' }
 
         const chain = prompt.pipe(model).pipe(outputParser)
         const stream = await chain.stream(input)
@@ -144,7 +143,7 @@ test('streaming enabled', async (t) => {
       const { agent, prompt, outputParser, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
-        const input = { topic: 'Streamed' }
+        const input = { topic: 'streamed' }
         const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
         const chain = prompt.pipe(model).pipe(outputParser)
@@ -175,7 +174,7 @@ test('streaming enabled', async (t) => {
           tx,
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1],
-          input: '{"topic":"Streamed"}',
+          input: '{"topic":"streamed"}',
           output: content
         })
 
@@ -191,7 +190,7 @@ test('streaming enabled', async (t) => {
       const { agent, prompt, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
-        const input = { topic: 'Streamed' }
+        const input = { topic: 'streamed' }
         const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
         const chain = prompt.pipe(model)
@@ -223,7 +222,7 @@ test('streaming enabled', async (t) => {
           tx,
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1],
-          input: '{"topic":"Streamed"}',
+          input: '{"topic":"streamed"}',
           output: content
         })
 
@@ -242,7 +241,7 @@ test('streaming enabled', async (t) => {
       helper.runInTransaction(agent, async (tx) => {
         const parser = new CommaSeparatedListOutputParser()
 
-        const input = { topic: 'Streamed' }
+        const input = { topic: 'streamed' }
         const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
         const chain = prompt.pipe(model).pipe(parser)
@@ -273,7 +272,7 @@ test('streaming enabled', async (t) => {
           tx,
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1],
-          input: '{"topic":"Streamed"}',
+          input: '{"topic":"streamed"}',
           output: content
         })
 
@@ -295,7 +294,7 @@ test('streaming enabled', async (t) => {
     const { agent, prompt, outputParser, model } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
-      const input = { topic: 'Streamed' }
+      const input = { topic: 'streamed' }
       const options = {
         metadata: { key: 'value', hello: 'world' },
         callbacks: [cbHandler],
@@ -330,7 +329,7 @@ test('streaming enabled', async (t) => {
       const { agent, prompt, outputParser, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
-        const input = { topic: 'Streamed' }
+        const input = { topic: 'streamed' }
         const options = {
           metadata: { key: 'value', hello: 'world' },
           callbacks: [cbHandler],
@@ -367,7 +366,7 @@ test('streaming enabled', async (t) => {
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1],
           withCallback: cbHandler,
-          input: '{"topic":"Streamed"}',
+          input: '{"topic":"streamed"}',
           output: content
         })
 
@@ -380,7 +379,7 @@ test('streaming enabled', async (t) => {
   await t.test('should not create langchain events when not in a transaction', async (t) => {
     const { agent, prompt, outputParser, model } = t.nr
 
-    const input = { topic: 'Streamed' }
+    const input = { topic: 'streamed' }
 
     const chain = prompt.pipe(model).pipe(outputParser)
     const stream = await chain.stream(input)
@@ -396,7 +395,7 @@ test('streaming enabled', async (t) => {
   await t.test('should add llm attribute to transaction', (t, end) => {
     const { agent, prompt, model } = t.nr
 
-    const input = { topic: 'Streamed' }
+    const input = { topic: 'streamed' }
 
     helper.runInTransaction(agent, async (tx) => {
       const chain = prompt.pipe(model)
@@ -417,7 +416,7 @@ test('streaming enabled', async (t) => {
   await t.test('should create span on successful runnables create', (t, end) => {
     const { agent, prompt, model } = t.nr
 
-    const input = { topic: 'Streamed' }
+    const input = { topic: 'streamed' }
 
     helper.runInTransaction(agent, async (tx) => {
       const chain = prompt.pipe(model)
@@ -441,7 +440,7 @@ test('streaming enabled', async (t) => {
       const { agent, prompt, outputParser, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
-        const input = { topic: 'Streamed' }
+        const input = { topic: 'streamed' }
         input.myself = input
 
         const chain = prompt.pipe(model).pipe(outputParser)
@@ -565,7 +564,7 @@ test('streaming disabled', async (t) => {
       const { agent, prompt, outputParser, model } = t.nr
 
       helper.runInTransaction(agent, async (tx) => {
-        const input = { topic: 'Streamed' }
+        const input = { topic: 'streamed' }
 
         const chain = prompt.pipe(model).pipe(outputParser)
         const stream = await chain.stream(input)

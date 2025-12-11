@@ -48,7 +48,7 @@ test.beforeEach(async (ctx) => {
     maxAttempts: 1
   })
 
-  ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', 'text converse ultimate question']])
+  ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', 'text converse ultimate {topic}']])
   ctx.nr.model = new ChatBedrockConverse({
     model: 'anthropic.claude-3-haiku-20240307-v1:0',
     region: 'us-east-1',
@@ -73,7 +73,7 @@ test('should log tracking metrics', function(t) {
 test('should create langchain events for every invoke call', (t, end) => {
   const { agent, prompt, outputParser, model } = t.nr
   helper.runInTransaction(agent, async (tx) => {
-    const input = { topic: 'scientist' }
+    const input = { topic: 'question' }
     const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
     const chain = prompt.pipe(model).pipe(outputParser)
@@ -98,7 +98,7 @@ test('should increment tracking metric for each langchain chat prompt event', (t
   const { agent, prompt, outputParser, model } = t.nr
 
   helper.runInTransaction(agent, async (tx) => {
-    const input = { topic: 'scientist' }
+    const input = { topic: 'question' }
     const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
     const chain = prompt.pipe(model).pipe(outputParser)
@@ -119,7 +119,7 @@ test('should support custom attributes on the LLM events', (t, end) => {
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, async (tx) => {
     api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
-      const input = { topic: 'scientist' }
+      const input = { topic: 'question' }
       const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
       const chain = prompt.pipe(model).pipe(outputParser)
@@ -138,7 +138,7 @@ test('should support custom attributes on the LLM events', (t, end) => {
 test('should create langchain events for every invoke call on chat prompt + model + parser', (t, end) => {
   const { agent, prompt, outputParser, model } = t.nr
   helper.runInTransaction(agent, async (tx) => {
-    const input = { topic: 'scientist' }
+    const input = { topic: 'question' }
     const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
     const chain = prompt.pipe(model).pipe(outputParser)
@@ -165,6 +165,7 @@ test('should create langchain events for every invoke call on chat prompt + mode
       tx,
       chatMsgs: langChainMessageEvents,
       chatSummary: langChainSummaryEvents[0][1],
+      input: '{"topic":"question"}',
       output: 'This is a test.'
     })
 
@@ -177,7 +178,7 @@ test('should create langchain events for every invoke call on chat prompt + mode
   const { agent, prompt, model } = t.nr
 
   helper.runInTransaction(agent, async (tx) => {
-    const input = { topic: 'scientist' }
+    const input = { topic: 'question' }
     const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
     const chain = prompt.pipe(model)
@@ -204,6 +205,7 @@ test('should create langchain events for every invoke call on chat prompt + mode
       tx,
       chatMsgs: langChainMessageEvents,
       chatSummary: langChainSummaryEvents[0][1],
+      input: '{"topic":"question"}',
       output: 'This is a test.'
     })
 
@@ -219,7 +221,7 @@ test('should create langchain events for every invoke call with parser that retu
   helper.runInTransaction(agent, async (tx) => {
     const parser = new CommaSeparatedListOutputParser()
 
-    const input = { topic: 'scientist' }
+    const input = { topic: 'question' }
     const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
     const chain = prompt.pipe(model).pipe(parser)
@@ -246,6 +248,7 @@ test('should create langchain events for every invoke call with parser that retu
       tx,
       chatMsgs: langChainMessageEvents,
       chatSummary: langChainSummaryEvents[0][1],
+      input: '{"topic":"question"}',
       output: '["This is a test."]'
     })
 
@@ -266,7 +269,7 @@ test('should add runId when a callback handler exists', (t, end) => {
   const { agent, prompt, outputParser, model } = t.nr
 
   helper.runInTransaction(agent, async (tx) => {
-    const input = { topic: 'scientist' }
+    const input = { topic: 'question' }
     const options = {
       metadata: { key: 'value', hello: 'world' },
       callbacks: [cbHandler],
@@ -295,7 +298,7 @@ test('should create langchain events for every invoke call on chat prompt + mode
   const { agent, prompt, outputParser, model } = t.nr
 
   helper.runInTransaction(agent, async (tx) => {
-    const input = { topic: 'scientist' }
+    const input = { topic: 'question' }
     const options = {
       metadata: { key: 'value', hello: 'world' },
       callbacks: [cbHandler],
@@ -327,6 +330,7 @@ test('should create langchain events for every invoke call on chat prompt + mode
       chatMsgs: langChainMessageEvents,
       chatSummary: langChainSummaryEvents[0][1],
       withCallback: cbHandler,
+      input: '{"topic":"question"}',
       output: 'This is a test.'
     })
 
@@ -338,7 +342,7 @@ test('should create langchain events for every invoke call on chat prompt + mode
 test('should not create langchain events when not in a transaction', async (t) => {
   const { agent, prompt, outputParser, model } = t.nr
 
-  const input = { topic: 'scientist' }
+  const input = { topic: 'question' }
   const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
   const chain = prompt.pipe(model).pipe(outputParser)
@@ -351,7 +355,7 @@ test('should not create langchain events when not in a transaction', async (t) =
 test('should add llm attribute to transaction', (t, end) => {
   const { agent, prompt, model } = t.nr
 
-  const input = { topic: 'scientist' }
+  const input = { topic: 'question' }
   const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
   helper.runInTransaction(agent, async (tx) => {
@@ -369,7 +373,7 @@ test('should add llm attribute to transaction', (t, end) => {
 test('should create span on successful runnables create', (t, end) => {
   const { agent, prompt, model } = t.nr
 
-  const input = { topic: 'scientist' }
+  const input = { topic: 'question' }
   const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
   helper.runInTransaction(agent, async (tx) => {
@@ -389,7 +393,7 @@ test('should use empty string for content property on completion message event w
   const { agent, prompt, outputParser, model } = t.nr
 
   helper.runInTransaction(agent, async (tx) => {
-    const input = { topic: 'scientist' }
+    const input = { topic: 'question' }
     input.myself = input
     const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
