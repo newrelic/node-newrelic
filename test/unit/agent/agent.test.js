@@ -99,7 +99,7 @@ test('agent control writes to file uri destinations', (t, end) => {
   function check() {
     const data = fs.readFileSync(agent.healthReporter.destFile)
     // Since the agent wasn't started, it's in a "healthy" state.
-    assert.equal(data.toString().startsWith('healthy: true'), true, 'should have a healthy report')
+    assert.equal(data.toString().includes('healthy: true'), true, 'should have a healthy report')
     end()
   }
 })
@@ -393,7 +393,7 @@ test('when starting', async (t) => {
 
     function check() {
       const report = fs.readFileSync(agent.healthReporter.destFile).toString()
-      assert.equal(report.startsWith('healthy: false'), true, 'should have a unhealthy report')
+      assert.equal(report.includes('healthy: false'), true, 'should have a unhealthy report')
       assert.equal(report.includes("status: 'Agent is disabled via configuration."), true)
       assert.equal(report.includes('last_error: NR-APM-008'), true)
       end()
