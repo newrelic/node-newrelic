@@ -190,10 +190,18 @@ function afterEach(ctx) {
   })
 }
 
-function getAiResponseServer() {
+/**
+ * Determines whether to use the http or http2 mock server
+ * given the `@aws-sdk/client-bedrock-runtime` package
+ * version.
+ * @param {string} rootPath The root path to the `node_modules` folder with AWS Bedrock `package.json`.
+ * @returns {object} The mock AWS Bedrock server, http or http2.
+ */
+function getAiResponseServer(rootPath = __dirname) {
+  const bedrockPackagePath = path.join(rootPath, '/node_modules/@aws-sdk/client-bedrock-runtime/package.json')
   const semver = require('semver')
   const { version: pkgVersion } = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '/node_modules/@aws-sdk/client-bedrock-runtime/package.json'))
+    fs.readFileSync(bedrockPackagePath)
   )
   if (semver.gte(pkgVersion, '3.798.0')) {
     return require('../../lib/aws-server-stubs/ai-server/http2')

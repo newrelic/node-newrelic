@@ -8,25 +8,25 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { removeModules } = require('../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { removeModules } = require('../../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../../lib/custom-assertions')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
   filterLangchainEvents,
   filterLangchainEventsByType
-} = require('./common')
+} = require('../common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
-const createOpenAIMockServer = require('../openai/mock-server')
-const mockResponses = require('../openai/mock-chat-api-responses')
-const helper = require('../../lib/agent_helper')
+const createOpenAIMockServer = require('../../openai/mock-server')
+const mockResponses = require('../../openai/mock-chat-api-responses')
+const helper = require('../../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
     enabled: true
   }
 }
-const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.
@@ -186,9 +186,9 @@ test('streaming enabled', async (t) => {
         const stream = await chain.stream(input, options)
         let content = ''
         for await (const chunk of stream) {
-          content += chunk
+          // Have to look at content because there's no parser
+          content += chunk?.content
         }
-
         const events = agent.customEventAggregator.events.toArray()
 
         const langchainEvents = filterLangchainEvents(events)

@@ -7,34 +7,38 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const path = require('node:path')
 
-const { removeModules } = require('../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { removeModules } = require('../../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../../lib/custom-assertions')
 const {
   assertLangChainVectorSearch,
   assertLangChainVectorSearchResult,
   filterLangchainEvents,
   filterLangchainEventsByType
-} = require('./common')
+} = require('../common')
 const { Document } = require('@langchain/core/documents')
-const createOpenAIMockServer = require('../openai/mock-server')
-const params = require('../../lib/params')
-const helper = require('../../lib/agent_helper')
+const { getAiResponseServer } = require('../../aws-sdk-v3/common')
+const { FAKE_CREDENTIALS } = require('../../../lib/aws-server-stubs')
+const params = require('../../../lib/params')
+const helper = require('../../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
     enabled: true
   }
 }
-const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 const { tspl } = require('@matteo.collina/tspl')
+const createAiResponseServer = getAiResponseServer(path.join(__dirname, '../'))
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
-  const { host, port, server } = await createOpenAIMockServer()
+  const { server, baseUrl } = await createAiResponseServer()
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent(config)
-  const { OpenAIEmbeddings } = require('@langchain/openai')
+  const { BedrockEmbeddings } = require('@langchain/aws')
+  const { BedrockRuntimeClient } = require('@aws-sdk/client-bedrock-runtime')
 
   const { Client } = require('@elastic/elasticsearch')
   const clientArgs = {
@@ -44,16 +48,24 @@ test.beforeEach(async (ctx) => {
   }
   const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
 
-  ctx.nr.embedding = new OpenAIEmbeddings({
-    apiKey: 'fake-key',
-    configuration: {
-      baseURL: `http://${host}:${port}`
-    }
+  // Create the BedrockRuntimeClient with our mock endpoint
+  const bedrockClient = new BedrockRuntimeClient({
+    region: 'us-east-1',
+    credentials: FAKE_CREDENTIALS,
+    endpoint: baseUrl,
+    maxAttempts: 1
+  })
+
+  ctx.nr.embedding = new BedrockEmbeddings({
+    model: 'amazon.titan-embed-text-v1',
+    region: 'us-east-1',
+    client: bedrockClient,
+    maxRetries: 0
   })
   const docs = [
     new Document({
       metadata: { id: '2' },
-      pageContent: 'This is an embedding test.'
+      pageContent: 'embed text amazon token count callback response'
     })
   ]
   const vectorStore = new ElasticVectorSearch(ctx.nr.embedding, clientArgs)
@@ -63,10 +75,10 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(async (ctx) => {
-  ctx.nr?.server?.close()
+  ctx.nr?.server?.destroy()
   helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument
-  removeModules(['@langchain/core', 'openai', '@elastic', '@langchain/community'])
+  removeModules(['@langchain/core', '@langchain/aws', '@aws-sdk', '@elastic', '@langchain/community'])
 })
 
 test('should log tracking metrics', function(t) {
@@ -79,7 +91,7 @@ test('should create vectorstore events for every similarity search call', (t, en
   const { agent, vs } = t.nr
 
   helper.runInNamedTransaction(agent, async (tx) => {
-    await vs.similaritySearch('This is an embedding test.', 1)
+    await vs.similaritySearch('embed text amazon token count callback response', 1)
 
     const events = agent.customEventAggregator.events.toArray()
     assert.equal(events.length, 3, 'should create 3 events')
@@ -99,7 +111,7 @@ test('should create vectorstore events for every similarity search call', (t, en
 test('should create span on successful vectorstore create', (t, end) => {
   const { agent, vs } = t.nr
   helper.runInTransaction(agent, async (tx) => {
-    const result = await vs.similaritySearch('This is an embedding test.', 1)
+    const result = await vs.similaritySearch('embed text amazon token count callback response', 1)
     assert.ok(result)
     assertSegments(tx.trace, tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
       exact: false
@@ -115,9 +127,9 @@ test('should increment tracking metric for each langchain vectorstore event', as
   const { agent, vs } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
-    await vs.similaritySearch('This is an embedding test.', 1)
+    await vs.similaritySearch('embed text amazon token count callback response', 1)
 
-    // `@langchain/community` and `@langchain/openai` have diverged on the `@langchain/core`
+    // `@langchain/community` and `@langchain/aws` have diverged on the `@langchain/core`
     // version. Find the right one that has a call count
 
     for (const metric in agent.metrics._metrics.unscoped) {
@@ -134,7 +146,7 @@ test('should create vectorstore events for every similarity search call with emb
   const { agent, vs } = t.nr
 
   helper.runInNamedTransaction(agent, async (tx) => {
-    await vs.similaritySearch('This is an embedding test.', 1)
+    await vs.similaritySearch('embed text amazon token count callback response', 1)
 
     const events = agent.customEventAggregator.events.toArray()
     const langchainEvents = filterLangchainEvents(events)
@@ -149,12 +161,14 @@ test('should create vectorstore events for every similarity search call with emb
     assertLangChainVectorSearch({
       tx,
       vectorSearch: vectorSearchEvents[0],
-      responseDocumentSize: 1
+      responseDocumentSize: 1,
+      expectedQuery: 'embed text amazon token count callback response'
     })
     assertLangChainVectorSearchResult({
       tx,
       vectorSearchResult: vectorSearchResultEvents,
-      vectorSearchId: vectorSearchEvents[0][1].id
+      vectorSearchId: vectorSearchEvents[0][1].id,
+      expectedPageContent: 'embed text amazon token count callback response'
     })
 
     tx.end()
@@ -167,7 +181,7 @@ test('should create only vectorstore search event for similarity search call wit
 
   helper.runInNamedTransaction(agent, async (tx) => {
     // search for documents with invalid filter
-    await vs.similaritySearch('This is an embedding test.', 1, {
+    await vs.similaritySearch('embed text amazon token count callback response', 1, {
       a: 'some filter'
     })
 
@@ -186,7 +200,8 @@ test('should create only vectorstore search event for similarity search call wit
     assertLangChainVectorSearch({
       tx,
       vectorSearch: vectorSearchEvents[0],
-      responseDocumentSize: 0
+      responseDocumentSize: 0,
+      expectedQuery: 'embed text amazon token count callback response'
     })
 
     tx.end()
@@ -197,7 +212,7 @@ test('should create only vectorstore search event for similarity search call wit
 test('should not create vectorstore events when not in a transaction', async (t) => {
   const { agent, vs } = t.nr
 
-  await vs.similaritySearch('This is an embedding test.', 1)
+  await vs.similaritySearch('embed text amazon token count callback response', 1)
 
   const events = agent.customEventAggregator.events.toArray()
   assert.equal(events.length, 0, 'should not create vectorstore events')
@@ -207,7 +222,7 @@ test('should add llm attribute to transaction', (t, end) => {
   const { agent, vs } = t.nr
 
   helper.runInTransaction(agent, async (tx) => {
-    await vs.similaritySearch('This is an embedding test.', 1)
+    await vs.similaritySearch('embed text amazon token count callback response', 1)
 
     const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
     assert.equal(attributes.llm, true)
@@ -243,8 +258,7 @@ test('should create error events', (t, end) => {
     // But, we should also get two error events: 1xLLM and 1xLangChain
     const exceptions = tx.exceptions
     for (const e of exceptions) {
-      const str = Object.prototype.toString.call(e.customAttributes)
-      assert.equal(str, '[object LlmErrorMessage]')
+      assert.ok(e?.customAttributes?.['error.message'])
     }
 
     tx.end()
