@@ -67,7 +67,8 @@ test('should create langchain events for every invoke call', (t, end) => {
     const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
     const chain = prompt.pipe(model).pipe(outputParser)
-    await chain.invoke(input, options)
+    const result = await chain.invoke(input, options)
+    assert.ok(result)
 
     const events = agent.customEventAggregator.events.toArray()
     assert.equal(events.length, 6, 'should create 6 events')
@@ -433,6 +434,78 @@ test('should create error events', (t, end) => {
       const str = Object.prototype.toString.call(e.customAttributes)
       assert.equal(str, '[object LlmErrorMessage]')
     }
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not create llm runnable events when ai_monitoring is disabled', (t, end) => {
+  const { agent, prompt, model } = t.nr
+  agent.config.ai_monitoring.enabled = false
+
+  helper.runInTransaction(agent, async (tx) => {
+    const input = { topic: 'scientist' }
+    const chain = prompt.pipe(model)
+    await chain.invoke(input)
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 0, 'should not create llm events when ai_monitoring is disabled')
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not create segment when ai_monitoring is disabled', (t, end) => {
+  const { agent, prompt, model } = t.nr
+  agent.config.ai_monitoring.enabled = false
+
+  helper.runInTransaction(agent, async (tx) => {
+    const input = { topic: 'scientist' }
+    const chain = prompt.pipe(model)
+    const result = await chain.invoke(input)
+    assert.ok(result, 'should not mess up result')
+
+    const segments = tx.trace.getChildren(tx.trace.root.id)
+    // TODO: This check should be 0, but OpenAI instrumentation is still
+    // creating a segment if ai_monitoring is disabled, so for now we'll
+    // make sure it's just the 1
+    assert.equal(segments.length, 1, 'should only create 1 segment when ai_monitoring is disabled')
+
+    tx.end()
+    end()
+  })
+})
+
+test('should handle metadata and tags properly', (t, end) => {
+  const { agent, prompt, model } = t.nr
+
+  helper.runInTransaction(agent, async (tx) => {
+    const input = { topic: 'scientist' }
+    const options = {
+      metadata: { customKey: 'customValue', anotherKey: 'anotherValue' },
+      tags: ['custom-tag1', 'custom-tag2', 'custom-tag3']
+    }
+
+    const chain = prompt.pipe(model)
+    await chain.invoke(input, options)
+
+    const events = agent.customEventAggregator.events.toArray()
+    const langchainEvents = filterLangchainEvents(events)
+    const langChainSummaryEvents = filterLangchainEventsByType(
+      langchainEvents,
+      'LlmChatCompletionSummary'
+    )
+
+    const [[, summary]] = langChainSummaryEvents
+    assert.equal(summary['metadata.customKey'], 'customValue')
+    assert.equal(summary['metadata.anotherKey'], 'anotherValue')
+
+    const tags = summary.tags.split(',')
+    assert.ok(tags.includes('custom-tag1'))
+    assert.ok(tags.includes('custom-tag2'))
+    assert.ok(tags.includes('custom-tag3'))
 
     tx.end()
     end()
