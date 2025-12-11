@@ -72,6 +72,42 @@ test('receiving 200 response, with valid data', async (t) => {
       end()
     })
   })
+
+  await t.test('should set entity guid on health reporter when present', (t, end) => {
+    const { agent, collector, collectorApi } = t.nr
+    const expectedGuid = 'test-entity-guid-12345'
+
+    collector.addHandler(helper.generateCollectorPath('connect', RUN_ID), (req, res) => {
+      res.json({ payload: { return_value: { agent_run_id: RUN_ID, entity_guid: expectedGuid } } })
+    })
+
+    let setEntityGuidCalled = false
+    agent.healthReporter.setEntityGuid = (guid) => {
+      setEntityGuidCalled = true
+      assert.equal(guid, expectedGuid)
+    }
+
+    collectorApi.connect((error) => {
+      assert.ifError(error)
+      assert.equal(setEntityGuidCalled, true, 'setEntityGuid should have been called')
+      end()
+    })
+  })
+
+  await t.test('should handle missing entity guid gracefully', (t, end) => {
+    const { agent, collectorApi } = t.nr
+
+    let setEntityGuidCalled = false
+    agent.healthReporter.setEntityGuid = () => {
+      setEntityGuidCalled = true
+    }
+
+    collectorApi.connect((error) => {
+      assert.ifError(error)
+      assert.equal(setEntityGuidCalled, false, 'setEntityGuid should not be called when entity_guid is missing')
+      end()
+    })
+  })
 })
 
 test('succeeds when given a different port number for redirect', async (t) => {
@@ -427,6 +463,29 @@ test('retries on receiving invalid license key (401)', async (t) => {
     collectorApi.connect(() => {})
 
     await plan.completed
+  })
+
+  await t.test('should set entity guid on health reporter after retry success', (t, end) => {
+    const { agent, collector, collectorApi } = t.nr
+    const expectedGuid = 'entity-guid-after-retry'
+
+    // Override the connect handler to include entity_guid
+    collector.addHandler(helper.generateCollectorPath('connect', RUN_ID), (req, res) => {
+      res.json({ payload: { return_value: { agent_run_id: 31338, entity_guid: expectedGuid } } })
+    })
+
+    let setEntityGuidCalled = false
+    agent.healthReporter.setEntityGuid = (guid) => {
+      setEntityGuidCalled = true
+      assert.equal(guid, expectedGuid)
+    }
+
+    collectorApi.connect((error, res) => {
+      assert.ifError(error)
+      assert.equal(res.payload.agent_run_id, 31338)
+      assert.equal(setEntityGuidCalled, true, 'setEntityGuid should be called after successful retry')
+      end()
+    })
   })
 })
 
