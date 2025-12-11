@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.8.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added support for `@langchain/aws`",
+          "Additional support for partial granularity traces (Not available for production use)"
+        ]
+      }
+    },
+    {
       "version": "13.7.0",
       "changes": {
         "security": [],

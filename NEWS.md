@@ -1,3 +1,31 @@
+### v13.8.0 (2025-12-11)
+
+#### Features
+
+* Added support for `@langchain/aws` ([#3563](https://github.com/newrelic/node-newrelic/pull/3563)) ([56c4a78](https://github.com/newrelic/node-newrelic/commit/56c4a782c7e05d94dc78ec0bd5eed19bfcc8a835))
+* Additional support for partial granularity traces (Not available for production use)
+    * Added partial granularity tracking metrics ([#3566](https://github.com/newrelic/node-newrelic/pull/3566)) ([061f0fc](https://github.com/newrelic/node-newrelic/commit/061f0fca7e61b24fe08cb55538df4c4326c7dd69))
+    * updated `AlwaysOn` sampler to set priority to 3 for full trace and 2 for partial trace ([#3577](https://github.com/newrelic/node-newrelic/pull/3577)) ([e7bcff4](https://github.com/newrelic/node-newrelic/commit/e7bcff4364b5ea8a8af7a7ee58ff05e9e2edb977))
+    * Updated the span generation process ([#3585](https://github.com/newrelic/node-newrelic/pull/3585)) ([74777d5](https://github.com/newrelic/node-newrelic/commit/74777d5f7bfc182f5e36480a9bce1b67db13ce45))
+
+#### Code refactoring
+
+* Converted AWS Bedrock's `LlmError` to use `LlmErrorMessage` ([#3567](https://github.com/newrelic/node-newrelic/pull/3567)) ([8b2bb42](https://github.com/newrelic/node-newrelic/commit/8b2bb428eb3830b7cee4fa30e77a9562628fdd01))
+* Updated `@google/genai` instrumentation to subscribe to events emitted ([#3467](https://github.com/newrelic/node-newrelic/pull/3467)) ([e8d9ba1](https://github.com/newrelic/node-newrelic/commit/e8d9ba188b4399604c6410b2fca406f8d7f338b5))
+* Updated `bunyan` instrumentation to subscribe to events emitted ([#3589](https://github.com/newrelic/node-newrelic/pull/3589)) ([f1e5f12](https://github.com/newrelic/node-newrelic/commit/f1e5f129594a4c3acd8075604bae52013555cf52))
+
+#### Documentation
+
+* Updated compatibility report ([#3592](https://github.com/newrelic/node-newrelic/pull/3592)) ([7455533](https://github.com/newrelic/node-newrelic/commit/7455533e64d88233adf5aa0246261417049c2122))
+
+#### Miscellaneous chores
+
+* Refactor span link serialization ([#3574](https://github.com/newrelic/node-newrelic/pull/3574)) ([103044d](https://github.com/newrelic/node-newrelic/commit/103044d25a968649bdb0e39df054757163cd986f))
+
+#### Tests
+
+* Moved mock aws bedrock server creation to `test/lib/aws-server-stubs/index.js` ([#3593](https://github.com/newrelic/node-newrelic/pull/3593)) ([270df81](https://github.com/newrelic/node-newrelic/commit/270df8109a2adbcb3ff405030e2be7104bee6511))
+
 ### v13.7.0 (2025-12-08)
 
 #### Features
