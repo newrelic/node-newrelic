@@ -322,7 +322,3 @@ function encodeChunks(chunks) {
     }
   }).pause()
 }
-
-module.exports.internals = {
-  encodeChunks
-}

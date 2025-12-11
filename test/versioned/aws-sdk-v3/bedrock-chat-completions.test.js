@@ -11,15 +11,14 @@ const {
   assertChatCompletionMessages,
   assertChatCompletionSummary,
   assertChatCompletionMessage,
-  getAiResponseServer
 } = require('./common')
 const helper = require('../../lib/agent_helper')
-const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
+const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { assertSegments, match } = require('../../lib/custom-assertions')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const { tspl } = require('@matteo.collina/tspl')
-const createAiResponseServer = getAiResponseServer()
+const createAiResponseServer = getAiResponseServer(__dirname)
 
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.

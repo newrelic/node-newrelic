@@ -18,8 +18,7 @@ const {
   filterLangchainEventsByType
 } = require('../common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
-const { getAiResponseServer } = require('../../aws-sdk-v3/common')
-const { FAKE_CREDENTIALS } = require('../../../lib/aws-server-stubs')
+const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../../lib/aws-server-stubs')
 const helper = require('../../../lib/agent_helper')
 
 const config = {

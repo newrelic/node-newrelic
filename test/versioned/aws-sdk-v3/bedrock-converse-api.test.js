@@ -10,15 +10,14 @@ const {
   afterEach,
   assertChatCompletionMessages,
   assertChatCompletionSummary,
-  getAiResponseServer
 } = require('./common')
 const helper = require('../../lib/agent_helper')
-const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
+const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { assertPackageMetrics, assertSegments, match } = require('../../lib/custom-assertions')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const responseConstants = require('../../lib/aws-server-stubs/ai-server/responses/constants')
-const createAiResponseServer = getAiResponseServer()
+const createAiResponseServer = getAiResponseServer(__dirname)
 
 // We'll test with only one model because the
 // request and response structure is the same
