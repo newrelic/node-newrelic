@@ -385,7 +385,7 @@ test('Trace', async (t) => {
     assert.deepEqual(trace.attributes.get(DESTINATIONS.TRANS_TRACE), {})
   })
 
-  await t.test('should add span to array when `addSpan is called and span is present', (t) => {
+  await t.test('should add span to array when `addSpan` is called and span is present', (t) => {
     const { agent } = t.nr
     const trace = new Trace(new Transaction(agent))
     assert.deepEqual(trace.spans, [])
@@ -395,7 +395,7 @@ test('Trace', async (t) => {
     assert.equal(trace.droppedSpans.size, 0)
   })
 
-  await t.test('should not add span to array when `addSpan is called and span is not present', (t) => {
+  await t.test('should not add span to array when `addSpan` is called and span is not present', (t) => {
     const { agent } = t.nr
     const trace = new Trace(new Transaction(agent))
     assert.deepEqual(trace.spans, [])
