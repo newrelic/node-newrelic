@@ -8,9 +8,7 @@
         "bugfixes": [],
         "features": [
           "Added support for `@langchain/aws`",
-          "Updated the span generation process",
-          "updated `AlwaysOn` sampler to set priority to 3 for full trace and 2 for partial trace",
-          "Added partial granularity tracking metrics"
+          "Additional support for partial granularity traces (Not available for production use)"
         ]
       }
     },
