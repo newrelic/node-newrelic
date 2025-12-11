@@ -421,13 +421,14 @@ test('Trace', async (t) => {
     const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
 
     const trace = new Trace(new Transaction(agent))
-    trace.transaction.partialType = 'reduced'
+    trace.transaction.partialType = Transaction.PARTIAL_TYPES.REDUCED
+    trace.droppedSpans.set(3, 4)
     trace.spans = [1, 2]
     trace.finalizeSpanEvents()
 
     assert.equal(addSpy.callCount, 2)
     assert.deepEqual(trace.spans, [])
-    assert.equal(trace.droppeSpans, null)
+    assert.equal(trace.droppedSpans.size, 0)
   })
 
   await t.test('should reparent span to grandparent if its parent was dropped', (t) => {
@@ -1174,7 +1175,7 @@ test('infinite tracing', async (t) => {
     const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
 
     const transaction = new Transaction(agent)
-    transaction.partialType = 'reduced'
+    transaction.partialType = Transaction.PARTIAL_TYPES.REDUCED
 
     addTwoSegments(transaction)
 

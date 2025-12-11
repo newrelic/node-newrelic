@@ -12,6 +12,7 @@ const helper = require('../../lib/agent_helper')
 const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 const SpanLink = require('#agentlib/spans/span-link.js')
+const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 
 const RUN_ID = 1337
 const DEFAULT_LIMIT = 2000
@@ -439,11 +440,10 @@ test('SpanAggregator', async (t) => {
 
   await t.test('should not add span to aggregator but instead to trace when transaction.partialType is set', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const mode = 'reduced'
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
       tx.sampled = true
-      tx.partialType = mode
+      tx.partialType = PARTIAL_TYPES.REDUCED
       const segment = agent.tracer.getSegment()
       tx.baseSegment = segment
 
@@ -454,9 +454,9 @@ test('SpanAggregator', async (t) => {
       assert.equal(spanEventAggregator.length, 0)
       assert.equal(tx.trace.spans.length, 1)
       const unscopedMetrics = spanEventAggregator._metrics.unscoped
-      assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}`].callCount, 1)
-      assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Instrumented`].callCount, 1)
-      assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Kept`].callCount, 1)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced'].callCount, 1)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Instrumented'].callCount, 1)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Kept'].callCount, 1)
 
       end()
     })
@@ -464,11 +464,10 @@ test('SpanAggregator', async (t) => {
 
   await t.test('should not add span to aggregator nor to trace when transaction.partialType is set', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const mode = 'reduced'
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
       tx.sampled = true
-      tx.partialType = mode
+      tx.partialType = PARTIAL_TYPES.REDUCED
       const segment = agent.tracer.getSegment()
 
       assert.equal(spanEventAggregator.length, 0)
@@ -478,9 +477,9 @@ test('SpanAggregator', async (t) => {
       assert.equal(spanEventAggregator.length, 0)
       assert.equal(tx.trace.spans.length, 0)
       const unscopedMetrics = spanEventAggregator._metrics.unscoped
-      assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}`].callCount, 1)
-      assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Instrumented`].callCount, 1)
-      assert.equal(unscopedMetrics[`Supportability/DistributedTrace/PartialGranularity/${mode}/Span/Kept`], undefined)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced'].callCount, 1)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Instrumented'].callCount, 1)
+      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Kept'], undefined)
 
       end()
     })

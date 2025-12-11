@@ -7,11 +7,12 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const Sampler = require('#agentlib/samplers/sampler.js')
+const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 
 test('should throw error if applySamplingDecision is not implemented', () => {
   const sampler = new Sampler()
   assert.throws(() => {
-    sampler.applySamplingDecision({ transaction: { id: 1 }, tracestate: 'tracestate', partialType: 'reduced' })
+    sampler.applySamplingDecision({ transaction: { id: 1 }, tracestate: 'tracestate', partialType: PARTIAL_TYPES.REDUCED })
   }, /^Error: must implement applySamplingDecision, arguments are: { transaction: 1, tracestate: tracestate, partialType: reduced/)
 })
 

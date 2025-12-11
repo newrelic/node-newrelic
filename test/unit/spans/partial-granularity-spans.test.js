@@ -8,7 +8,9 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('#testlib/agent_helper.js')
 const SpanEvent = require('#agentlib/spans/span-event.js')
-const MODES = ['reduced', 'essential']
+const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
+// TODO: update to be Object.keys(PARTIAL_TYPES) when we add compact
+const MODES = [PARTIAL_TYPES.REDUCED, PARTIAL_TYPES.ESSENTIAL]
 
 for (const mode of MODES) {
   test(`Partial Granularity Spans - ${mode} mode`, async (t) => {
@@ -81,13 +83,13 @@ for (const mode of MODES) {
         assert.equal(intrinsics['span.kind'], 'client')
         assert.equal(intrinsics['nr.entryPoint'], null)
         assert.equal(intrinsics['nr.pg'], null)
-        if (mode === 'reduced') {
+        if (mode === PARTIAL_TYPES.REDUCED) {
           assert.equal(agentAttrs['peer.address'], 'redis-service:6379')
           assert.deepEqual(customAttrs, {
             custom: 'test'
           })
           assert.equal(agentAttrs.foo, 'bar')
-        } else if (mode === 'essential') {
+        } else if (mode === PARTIAL_TYPES.ESSENTIAL) {
           assert.equal(agentAttrs['peer.address'], undefined)
           assert.deepEqual(customAttrs, {})
           assert.equal(agentAttrs.foo, undefined)
