@@ -106,9 +106,8 @@ test('should properly attach span event data for one span event', async (t) => {
       assert.equal(event.intrinsics.type, 'SpanEvent')
       assert.equal(event.intrinsics['span.id'], httpSpanEvent.intrinsics.guid)
       assert.equal(event.intrinsics['trace.id'], tx.traceId)
-      // OTEL sets the timestamp to a hrtime tuple. Which can't actually be
-      // converted to an epoch millisecond representation. So the best we can do
-      // is to verify that the two times are within a narrow window.
+      // It's best we check the window between the two timestamps since we can't
+      // easily set the timestamp on the event.
       assert.equal(
         httpSpanEvent.intrinsics.timestamp - event.intrinsics.timestamp <= 10,
         true,
@@ -156,9 +155,8 @@ test('should properly attach span event data for two span events', async (t) => 
       assert.equal(eventOne.intrinsics.type, 'SpanEvent')
       assert.equal(eventOne.intrinsics['span.id'], httpSpanEvent.intrinsics.guid)
       assert.equal(eventOne.intrinsics['trace.id'], tx.traceId)
-      // OTEL sets the timestamp to a hrtime tuple. Which can't actually be
-      // converted to an epoch millisecond representation. So the best we can do
-      // is to verify that the two times are within a narrow window.
+      // It's best we check the window between the two timestamps since we can't
+      // easily set the timestamp on the event.
       assert.equal(
         httpSpanEvent.intrinsics.timestamp - eventOne.intrinsics.timestamp <= 10,
         true,
@@ -173,9 +171,8 @@ test('should properly attach span event data for two span events', async (t) => 
       assert.equal(eventTwo.intrinsics.type, 'SpanEvent')
       assert.equal(eventTwo.intrinsics['span.id'], httpSpanEvent.intrinsics.guid)
       assert.equal(eventTwo.intrinsics['trace.id'], tx.traceId)
-      // OTEL sets the timestamp to a hrtime tuple. Which can't actually be
-      // converted to an epoch millisecond representation. So the best we can do
-      // is to verify that the two times are within a narrow window.
+      // It's best we check the window between the two timestamps since we can't
+      // easily set the timestamp on the event.
       assert.equal(
         httpSpanEvent.intrinsics.timestamp - eventTwo.intrinsics.timestamp <= 10,
         true,
