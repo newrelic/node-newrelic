@@ -10,11 +10,12 @@ const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const params = require('../../lib/params')
+const { DESTINATIONS } = require('../../../lib/transaction')
 
 const CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
 
 test('span links are propagated to new relic', async (t) => {
-  t.plan(11, { wait: 5_000 })
+  t.plan(13, { wait: 5_000 })
 
   // Under Node.js v20, the `t.plan` will not wait for the assertions
   // correctly. We need to await this promise in order for the test to have
@@ -39,7 +40,17 @@ test('span links are propagated to new relic', async (t) => {
   const { registerInstrumentations } = require('@opentelemetry/instrumentation')
   const { AmqplibInstrumentation } = require('@opentelemetry/instrumentation-amqplib')
   registerInstrumentations([
-    new AmqplibInstrumentation({ useLinksForConsume: true })
+    new AmqplibInstrumentation({
+      useLinksForConsume: true,
+      consumeHook (span) {
+        span.addLink({
+          context: span.spanContext(),
+          attributes: {
+            test: 'test'
+          }
+        })
+      }
+    })
   ])
 
   const amqplib = require('amqplib')
@@ -69,13 +80,14 @@ test('span links are propagated to new relic', async (t) => {
     // OTEL will set the queue name (messaging.destination.name) to an empty
     // string. So we'll get "unknown" via our rules mapping.
     t.assert.equal(foundSegment.name, 'OtherTransaction/Message/rabbitmq/topic/Named/unknown')
-    t.assert.equal(foundSegment.spanLinks.length, 1)
+    t.assert.equal(
+      foundSegment.spanLinks.length,
+      2,
+      'should have auto added and manually added (through hook) links'
+    )
 
-    const link = foundSegment.spanLinks[0]
+    let link = foundSegment.spanLinks[0]
     t.assert.equal(link.intrinsics.type, 'SpanLink')
-    // OTEL sets the timestamp to a hrtime tuple. Which can't actually be
-    // converted to an epoch millisecond representation. So the best we can do
-    // is to verify that the two times are within a narrow window.
     t.assert.equal(
       (produceSpan.intrinsics.timestamp - link.intrinsics.timestamp) <= 10,
       true,
@@ -102,20 +114,16 @@ test('span links are propagated to new relic', async (t) => {
       'linkedTraceId should match producer transaction id'
     )
 
+    link = foundSegment.spanLinks[1]
+    t.assert.equal(link.intrinsics.type, 'SpanLink')
+    t.assert.deepEqual(
+      link.userAttributes.get(DESTINATIONS.TRANS_SEGMENT),
+      { test: 'test' }
+    )
+
     t.assert.equal(consumedMessages.length, 1)
 
     resolve()
-  })
-
-  const conn = await amqplib.connect(CON_STRING)
-  const produceChannel = await conn.createConfirmChannel()
-  const consumeChannel = await conn.createChannel()
-  await consumeChannel.assertQueue(queue)
-
-  t.after(async () => {
-    await produceChannel.close()
-    await consumeChannel.close()
-    await conn.close()
   })
 
   // The structure of this is important:
@@ -131,25 +139,50 @@ test('span links are propagated to new relic', async (t) => {
   // want to register it prior to the message being on the queue. If we did,
   // we wouldn't be able to guarantee the transaction processing order in the
   // `transactionFinished` handler.
-  helper.runInTransaction(agent, async (tx) => {
-    // Send a message to the queue and wait for it to be ready for consumption.
-    await new Promise((resolve, reject) => {
-      produceChannel.sendToQueue(queue, Buffer.from('hello world'), {}, (error) => {
-        if (error) return reject(error)
+  await helper.runInTransaction(agent, async (tx) => {
+    await postMessage()
+    tx.end()
+  })
+  await consumeMessage()
 
-        // We can't use `consumeChannel.get` because the instrumentation does not
-        // patch that method, and hence does not generate consumer spans for it.
+  await promise
+
+  async function postMessage() {
+    const conn = await amqplib.connect(CON_STRING)
+    const produceChannel = await conn.createConfirmChannel()
+    await produceChannel.assertQueue(queue)
+    try {
+      await new Promise((resolve, reject) => {
+        produceChannel.sendToQueue(queue, Buffer.from('hello world'), {}, (error) => {
+          if (error) return reject(error)
+          resolve()
+        })
+      })
+    } catch (error) {
+      t.assert.ifError(error)
+    } finally {
+      await produceChannel.close()
+      await conn.close()
+    }
+  }
+
+  async function consumeMessage() {
+    const conn = await amqplib.connect(CON_STRING)
+    const consumeChannel = await conn.createChannel()
+    await consumeChannel.assertQueue(queue)
+    try {
+      await new Promise((resolve) => {
         consumeChannel.consume(queue, (msg) => {
           consumedMessages.push(msg)
           consumeChannel.ack(msg)
+          resolve()
         })
-
-        resolve()
       })
-    })
-
-    tx.end()
-  })
-
-  await promise
+    } catch (error) {
+      t.assert.ifError(error)
+    } finally {
+      await consumeChannel.close()
+      await conn.close()
+    }
+  }
 })

@@ -12,7 +12,6 @@ const { SpanKind, TraceFlags } = require('@opentelemetry/api')
 
 const helper = require('#testlib/agent_helper.js')
 const hashes = require('#agentlib/util/hashes.js')
-const { match } = require('#test/assert')
 const SegmentSynthesizer = require('#agentlib/otel/traces/segment-synthesis.js')
 const createMockLogger = require('../../../mocks/logger')
 const {
@@ -302,58 +301,5 @@ test('should log warning span does not match a rule', (t, end) => {
     ])
     tx.end()
     end()
-  })
-})
-
-test('should process span links correctly', (t) => {
-  // Span links are typically found in a pub/sub environment. Therefore,
-  // this test simulates the publishing and consumption of a message in such
-  // a system.
-  const { synthesizer, tracer } = t.nr
-
-  const spanContext = {
-    traceId: hashes.makeId(),
-    spanId: hashes.makeId(),
-    traceFlags: TraceFlags.SAMPLED
-  }
-  const producerSpan = createProducerSpan({ tracer, name: 'upstream-span' })
-  const consumerSpan = createConsumerSpan({ tracer, name: 'local-span', spanContext })
-
-  // OTEL's libraries don't seem to export a constructor for a `Link`. So we
-  // are faking it with a plain object.
-  const link1 = {
-    context: producerSpan._spanContext,
-    attributes: {
-      testAttr1: 'ok1',
-      testAttr2: 'ok2'
-    }
-  }
-  consumerSpan.links.push(link1)
-
-  const { segment, transaction } = synthesizer.synthesize(consumerSpan)
-  transaction.end()
-
-  assert.ok(segment)
-  assert.equal(segment.spanLinks.length, 1)
-
-  const foundTimestamp = segment.spanLinks[0].intrinsics.timestamp
-  const expectedTimestamp = transaction.timer.start
-  delete segment.spanLinks[0].intrinsics.timestamp
-  assert.equal(
-    (expectedTimestamp - foundTimestamp) < 10,
-    true,
-    'timestamps are within acceptable window'
-  )
-
-  match(segment.spanLinks[0].intrinsics, {
-    id: segment.id,
-    linkedSpanId: producerSpan._spanContext.spanId,
-    linkedTraceId: producerSpan._spanContext.traceId,
-    'trace.id': transaction.traceId,
-    type: 'SpanLink'
-  })
-  match(segment.spanLinks[0].userAttributes.attributes, {
-    testAttr1: { value: 'ok1' },
-    testAttr2: { value: 'ok2' }
   })
 })
