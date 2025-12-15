@@ -277,39 +277,6 @@ test('stop logs writing error', async (t) => {
   await plan.completed
 })
 
-test('setEntityGuid updates entity_guid in output', async (t) => {
-  const plan = tspl(t, { plan: 3 })
-  fs.writeFile = (dest, data, options, callback) => {
-    plan.match(dest, /health-\w{32}\.yaml/)
-    plan.equal(
-      data,
-      [
-        'entity_guid: test-entity-guid-123',
-        'healthy: true',
-        "status: 'Healthy.'",
-        'last_error: NR-APM-000',
-        'start_time_unix_nano: 1000000',
-        'status_time_unix_nano: 2000000'
-      ].join('\n')
-    )
-    callback()
-  }
-
-  function localInterval(method) {
-    // Don't call immediately - let test control timing
-    setImmediate(() => method.call())
-    return {
-      unref() {}
-    }
-  }
-
-  const reporter = new HealthReporter({ ...t.nr, setInterval: localInterval })
-  reporter.setEntityGuid('test-entity-guid-123')
-  plan.ok(reporter)
-
-  await plan.completed
-})
-
 test('entity_guid is empty string by default', async (t) => {
   const plan = tspl(t, { plan: 3 })
   fs.writeFile = (dest, data, options, callback) => {
@@ -359,9 +326,8 @@ test('entity_guid persists across health checks', async (t) => {
   }
 
   const reporter = new HealthReporter({ ...t.nr, setInterval: localInterval })
-  reporter.setEntityGuid('test-guid-456')
+  t.nr.agentConfig.entity_guid = 'test-guid-456'
   reporter.setStatus(HealthReporter.STATUS_BACKEND_ERROR)
-  // Trigger second health check to verify persistence
   setImmediate(() => healthCheckMethod.call())
   plan.ok(reporter)
 
@@ -392,7 +358,7 @@ test('entity_guid is included in stop output', async (t) => {
   }
 
   const reporter = new HealthReporter({ ...t.nr, setInterval: simpleInterval })
-  reporter.setEntityGuid('my-entity-guid-789')
+  t.nr.agentConfig.entity_guid = 'my-entity-guid-789'
   reporter.stop(() => {
     plan.deepStrictEqual(t.nr.logs.error, [])
   })
