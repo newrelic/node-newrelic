@@ -46,7 +46,7 @@
 
     {
       "engines": {
-        "node": ">=18"
+        "node": ">=20"
       },
       "dependencies": {
         "@opentelemetry/sdk-trace-node": "^2.2.0",
