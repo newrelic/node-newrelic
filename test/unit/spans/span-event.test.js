@@ -64,6 +64,28 @@ describe('createSpan()', () => {
     })
     assert.deepStrictEqual(span.spanLinks, [{ id: 1 }])
   })
+
+  test('adds empty timedEvents (otel span events) if none present', () => {
+    const span = SpanEvent.createSpan({
+      segment: {},
+      attributes: {},
+      customAttributes: {}
+    })
+    assert.equal(Array.isArray(span.timedEvents), true)
+    assert.equal(span.timedEvents.length, 0)
+  })
+
+  test('propagates timedEvents (otel span events)', () => {
+    const segment = {
+      timedEvents: [{ name: 'custom.otel.span-event', attributes: { 'event.type': 'custom' } }]
+    }
+    const span = SpanEvent.createSpan({
+      segment,
+      attributes: {},
+      customAttributes: {}
+    })
+    assert.deepStrictEqual(span.timedEvents, [{ name: 'custom.otel.span-event', attributes: { 'event.type': 'custom' } }])
+  })
 })
 
 test('fromSegment()', async (t) => {
