@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.8.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated AWS Lambda instrumentation to skip wrapping handler callback if not present"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "13.8.0",
       "changes": {
         "security": [],
