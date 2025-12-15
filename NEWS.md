@@ -1,3 +1,13 @@
+### v13.8.1 (2025-12-15)
+
+#### Bug fixes
+
+* Updated AWS Lambda instrumentation to skip wrapping handler callback if not present ([#3602](https://github.com/newrelic/node-newrelic/pull/3602)) ([d56e27d](https://github.com/newrelic/node-newrelic/commit/d56e27d5764b4c0a7d513fffa3310148d7cebea6))
+
+#### Documentation
+
+* Updated compatibility report ([#3596](https://github.com/newrelic/node-newrelic/pull/3596)) ([ed24527](https://github.com/newrelic/node-newrelic/commit/ed24527cfd2e836de67a769cbeaa63683b207506))
+
 ### v13.8.0 (2025-12-11)
 
 #### Features
