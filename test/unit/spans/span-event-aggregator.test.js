@@ -424,23 +424,23 @@ test('SpanAggregator', async (t) => {
     assert.equal(recordValueStub.args[0][0], harvestLimit, `should set limit to ${harvestLimit}`)
   })
 
-  await t.test('should not add span to aggregator but instead to trace when transaction.partialType is set', (t, end) => {
+  await t.test('should not add span to aggregator but instead to trace when transaction.partialType is set and span is retained', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
       tx.sampled = true
       tx.partialType = PARTIAL_TYPES.REDUCED
+      tx.createPartialTrace()
       const segment = agent.tracer.getSegment()
-      tx.baseSegment = segment
 
       assert.equal(spanEventAggregator.length, 0)
-      assert.equal(tx.trace.spans.length, 0)
+      assert.equal(tx.partialTrace.spans.length, 0)
 
-      spanEventAggregator.addSegment({ segment, transaction: tx, parentId: 'p' })
+      spanEventAggregator.addSegment({ segment, transaction: tx, parentId: 'p', isEntry: true })
       assert.equal(spanEventAggregator.length, 0)
-      assert.equal(tx.trace.spans.length, 1)
-      const unscopedMetrics = spanEventAggregator._metrics.unscoped
-      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced'].callCount, 1)
+      assert.equal(tx.partialTrace.spans.length, 1)
+      const unscopedMetrics = tx.metrics.unscoped
+      assert.equal(unscopedMetrics['Supportability/Nodejs/PartialGranularity/reduced'].callCount, 1)
       assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Instrumented'].callCount, 1)
       assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Kept'].callCount, 1)
 
@@ -448,22 +448,23 @@ test('SpanAggregator', async (t) => {
     })
   })
 
-  await t.test('should not add span to aggregator nor to trace when transaction.partialType is set', (t, end) => {
+  await t.test('should not add span to aggregator nor to trace when transaction.partialType is set and span not retained', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
       tx.sampled = true
       tx.partialType = PARTIAL_TYPES.REDUCED
+      tx.createPartialTrace()
       const segment = agent.tracer.getSegment()
 
       assert.equal(spanEventAggregator.length, 0)
-      assert.equal(tx.trace.spans.length, 0)
+      assert.equal(tx.partialTrace.spans.length, 0)
 
       spanEventAggregator.addSegment({ segment, transaction: tx, parentId: 'p' })
       assert.equal(spanEventAggregator.length, 0)
-      assert.equal(tx.trace.spans.length, 0)
-      const unscopedMetrics = spanEventAggregator._metrics.unscoped
-      assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced'].callCount, 1)
+      assert.equal(tx.partialTrace.spans.length, 0)
+      const unscopedMetrics = tx.metrics.unscoped
+      assert.equal(unscopedMetrics['Supportability/Nodejs/PartialGranularity/reduced'].callCount, 1)
       assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Instrumented'].callCount, 1)
       assert.equal(unscopedMetrics['Supportability/DistributedTrace/PartialGranularity/reduced/Span/Kept'], undefined)
 

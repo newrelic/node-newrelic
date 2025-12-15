@@ -73,7 +73,7 @@ test('fromSegment()', async (t) => {
       segment.addSpanAttribute('host', 'my-host')
       segment.addSpanAttribute('port', 22)
 
-      const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+      const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent', isEntry: true })
 
       // Should have all the normal properties.
       assert.ok(span)
@@ -82,6 +82,7 @@ test('fromSegment()', async (t) => {
       assert.ok(span._intrinsicAttributes)
       assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
       assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.GENERIC })
+      assert.deepEqual(span._intrinsicAttributes['nr.entryPoint'], { [BOOL_TYPE]: true })
 
       assert.deepEqual(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
       assert.deepEqual(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
