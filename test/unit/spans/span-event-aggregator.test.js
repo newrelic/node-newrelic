@@ -29,13 +29,6 @@ test('SpanAggregator', async (t) => {
         periodMs: DEFAULT_PERIOD
       },
       {
-        config: {
-          distributed_tracing: {
-            in_process_spans: {
-              enabled: true
-            }
-          }
-        },
         collector: {},
         metrics: new Metrics(5, {}, {}),
         harvester: { add() {} }
@@ -132,13 +125,6 @@ test('SpanAggregator', async (t) => {
         metricNames: METRIC_NAMES
       },
       {
-        config: {
-          distributed_tracing: {
-            in_process_spans: {
-              enabled: true
-            }
-          }
-        },
         collector: {},
         metrics,
         harvester: { add() {} }
