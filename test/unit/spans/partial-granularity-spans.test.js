@@ -42,7 +42,7 @@ for (const mode of MODES) {
         transaction.partialType = mode
         const segment = transaction.trace.add('entrySpan')
         transaction.baseSegment = segment
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(span)
         const [intrinsics] = span.toJSON()
         assert.equal(intrinsics['nr.entryPoint'], true)
@@ -57,7 +57,7 @@ for (const mode of MODES) {
       helper.runInTransaction(agent, (transaction) => {
         transaction.partialType = mode
         const segment = transaction.trace.add('Llm/foobar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(span)
         end()
       })
@@ -76,7 +76,7 @@ for (const mode of MODES) {
         segment.addAttribute('foo', 'bar')
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('custom', 'test')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(span)
         const [intrinsics, customAttrs, agentAttrs] = span.toJSON()
         assert.equal(intrinsics['name'], 'Datastore/operation/Redis/SET')
@@ -107,7 +107,7 @@ for (const mode of MODES) {
         transaction.partialType = mode
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(!span)
         end()
       })
@@ -119,7 +119,7 @@ for (const mode of MODES) {
         transaction.partialType = mode
         const segment = transaction.trace.add('test-segment')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(!span)
         end()
       })
@@ -133,7 +133,7 @@ for (const mode of MODES) {
         segment.addAttribute('foo', 'bar')
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('custom', 'test')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(span)
         const [intrinsics, customAttrs, agentAttrs] = span.toJSON()
         assert.equal(intrinsics['name'], 'Datastore/operation/Redis/SET')
@@ -156,7 +156,7 @@ for (const mode of MODES) {
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('custom', 'test')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(span)
         const [intrinsics, customAttrs, agentAttrs] = span.toJSON()
         assert.equal(intrinsics['name'], 'test-segment')
@@ -181,7 +181,7 @@ for (const mode of MODES) {
         segment.addAttribute('foo', 'bar')
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('custom', 'test')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(span)
         end()
       })
@@ -193,7 +193,7 @@ for (const mode of MODES) {
         transaction.partialType = mode
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(!span)
         end()
       })
@@ -205,7 +205,7 @@ for (const mode of MODES) {
         transaction.partialType = mode
         const segment = transaction.trace.add('test-segment')
         segment.addAttribute('foo', 'bar')
-        const span = SpanEvent.fromSegment({ segment, transaction, inProcessSpans: true })
+        const span = SpanEvent.fromSegment({ segment, transaction })
         assert.ok(!span)
         end()
       })
