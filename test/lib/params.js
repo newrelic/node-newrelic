@@ -23,6 +23,9 @@ module.exports = {
   redis_tls_host: process.env.NR_NODE_TEST_REDIS_TLS_HOST || '127.0.0.1',
   redis_tls_port: process.env.NR_NODE_TEST_REDIS_TLS_PORT || 6380,
 
+  valkey_host: process.env.NR_NODE_TEST_VALKEY_HOST || process.env.NR_NODE_TEST_REDIS_HOST || 'localhost',
+  valkey_port: process.env.NR_NODE_TEST_VALKEY_PORT || process.env.NR_NODE_TEST_REDIS_PORT || 6379,
+
   cassandra_host: process.env.NR_NODE_TEST_CASSANDRA_HOST || 'localhost',
   cassandra_port: process.env.NR_NODE_TEST_CASSANDRA_PORT || 9042,
 
