@@ -10,6 +10,7 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../../lib/cache-buster')
 const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../../lib/custom-assertions')
+const { findSegment } = require('../../../lib/metrics_helper')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
@@ -645,11 +646,8 @@ test('ai_monitoring disabled', async (t) => {
           consumeStreamChunk(chunk)
         }
 
-        const segments = tx.trace.getChildren(tx.trace.root.id)
-        // TODO: This check should be 0, but OpenAI instrumentation is still
-        // creating a segment if ai_monitoring is disabled, so for now we'll
-        // make sure it's just the 1
-        assert.equal(segments.length, 1, 'should only create 1 segment when ai_monitoring is disabled')
+        const segment = findSegment(tx.trace, tx.trace.root, 'Llm/chain/Langchain/stream')
+        assert.equal(segment, undefined, 'should not create Llm/chain/Langchain/stream segment when ai_monitoring is disabled')
 
         tx.end()
         end()
@@ -745,6 +743,7 @@ test('streaming enabled - edge cases', async (t) => {
         const stream = await chain.stream(input)
 
         const [segment] = tx.trace.getChildren(tx.trace.root.id)
+        assert.equal(segment.name, 'Llm/chain/Langchain/stream', 'should find the Langchain stream segment')
 
         let chunkCount = 0
         for await (const chunk of stream) {
@@ -754,8 +753,6 @@ test('streaming enabled - edge cases', async (t) => {
 
         // Segment should have been touched multiple times during streaming
         assert.ok(chunkCount > 1, 'should have received multiple chunks')
-        // Note: We can't reliably test that timer was extended in unit tests
-        // but we verify that streaming completed successfully
         assert.ok(segment.timer.hrDuration)
 
         tx.end()

@@ -10,6 +10,7 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../../lib/cache-buster')
 const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../../lib/custom-assertions')
+const { findSegment } = require('../../../lib/metrics_helper')
 const {
   assertLangChainVectorSearch,
   assertLangChainVectorSearchResult,
@@ -274,13 +275,8 @@ test('should not create segment when ai_monitoring is disabled', (t, end) => {
   helper.runInTransaction(agent, async (tx) => {
     await vs.similaritySearch('This is an embedding test.', 1)
 
-    const segments = tx.trace.getChildren(tx.trace.root.id)
-    // TODO: This check should be one less because OpenAI instrumentation is still
-    // creating a segment if ai_monitoring is disabled. This will be fixed later.
-    //
-    // Also, for this one, a "Datastore/statement/ElasticSearch/documents/search" segment is
-    // being created, which I'm not sure if we should have or not.
-    assert.equal(segments.length, 2, 'should only create 2 segments when ai_monitoring is disabled')
+    const segment = findSegment(tx.trace, tx.trace.root, 'Llm/vectorstore/Langchain/similaritySearch')
+    assert.equal(segment, undefined, 'should not create Llm/vectorstore/Langchain/similaritySearch segment when ai_monitoring is disabled')
 
     tx.end()
     end()

@@ -10,6 +10,7 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../../lib/cache-buster')
 const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../../lib/custom-assertions')
+const { findSegment } = require('../../../lib/metrics_helper')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
@@ -467,11 +468,8 @@ test('should not create segment when ai_monitoring is disabled', (t, end) => {
     const result = await chain.invoke(input)
     assert.ok(result, 'should not mess up result')
 
-    const segments = tx.trace.getChildren(tx.trace.root.id)
-    // TODO: This check should be 0, but OpenAI instrumentation is still
-    // creating a segment if ai_monitoring is disabled, so for now we'll
-    // make sure it's just the 1
-    assert.equal(segments.length, 1, 'should only create 1 segment when ai_monitoring is disabled')
+    const segment = findSegment(tx.trace, tx.trace.root, 'Llm/chain/Langchain/stream')
+    assert.equal(segment, undefined, 'should not create Llm/chain/Langchain/stream segment when ai_monitoring is disabled')
 
     tx.end()
     end()
