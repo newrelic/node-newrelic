@@ -10,6 +10,7 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../../lib/cache-buster')
 const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../../lib/custom-assertions')
+const { findSegment } = require('../../../lib/metrics_helper')
 const {
   assertLangChainVectorSearch,
   assertLangChainVectorSearchResult,
@@ -246,6 +247,36 @@ test('should create error events', (t, end) => {
       const str = Object.prototype.toString.call(e.customAttributes)
       assert.equal(str, '[object LlmErrorMessage]')
     }
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not create llm vectorstore events when ai_monitoring is disabled', (t, end) => {
+  const { agent, vs } = t.nr
+  agent.config.ai_monitoring.enabled = false
+
+  helper.runInTransaction(agent, async (tx) => {
+    await vs.similaritySearch('This is an embedding test.', 1)
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 0, 'should not create llm events when ai_monitoring is disabled')
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not create segment when ai_monitoring is disabled', (t, end) => {
+  const { agent, vs } = t.nr
+  agent.config.ai_monitoring.enabled = false
+
+  helper.runInTransaction(agent, async (tx) => {
+    await vs.similaritySearch('This is an embedding test.', 1)
+
+    const segment = findSegment(tx.trace, tx.trace.root, 'Llm/vectorstore/Langchain/similaritySearch')
+    assert.equal(segment, undefined, 'should not create Llm/vectorstore/Langchain/similaritySearch segment when ai_monitoring is disabled')
 
     tx.end()
     end()
