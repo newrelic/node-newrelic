@@ -7,9 +7,10 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
-const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 const sinon = require('sinon')
 const helper = require('#testlib/agent_helper.js')
+const { match } = require('#test/assert')
+const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 const TraceSegment = require('#agentlib/transaction/trace/segment.js')
 const Transaction = require('#agentlib/transaction/index.js')
 const hashes = require('#agentlib/util/hashes.js')
@@ -663,5 +664,70 @@ test('getSpanContext', async (t) => {
     const originalContext = segment.getSpanContext()
     const secondContext = segment.getSpanContext()
     assert.equal(originalContext, secondContext)
+  })
+})
+
+test('addSpanLink', async (t) => {
+  t.beforeEach((ctx) => {
+    const agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      }
+    })
+    ctx.nr = {
+      logs: {
+        trace: []
+      }
+    }
+    const logger = {
+      trace(...args) {
+        ctx.nr.logs.trace.push(args)
+      }
+    }
+    const transaction = new Transaction(agent)
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      root
+    }, { logger })
+
+    ctx.nr.agent = agent
+    ctx.nr.segment = segment
+    ctx.nr.transaction = transaction
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await test('adds link to the internal array', (t) => {
+    const { segment } = t.nr
+    assert.equal(segment.spanLinks.length, 0)
+    segment.addSpanLink({ fake: 'link' })
+    assert.equal(segment.spanLinks.length, 1)
+    assert.deepStrictEqual(segment.spanLinks[0], { fake: 'link' })
+  })
+
+  await test('logs message if array is full', (t) => {
+    const { segment } = t.nr
+    assert.equal(segment.spanLinks.length, 0)
+    for (let i = 0; i < 100; i += 1) {
+      segment.addSpanLink({ fake: 'link' })
+    }
+    assert.equal(segment.spanLinks.length, 100)
+
+    segment.addSpanLink({ to: 'drop' })
+    assert.equal(segment.spanLinks.length, 100)
+    for (const link of segment.spanLinks) {
+      assert.deepStrictEqual(link, { fake: 'link' })
+    }
+    match(t.nr.logs.trace, [
+      [
+        { spanLink: { to: 'drop' } },
+        'Span links limit reached. Not adding new link.'
+      ]
+    ])
   })
 })
