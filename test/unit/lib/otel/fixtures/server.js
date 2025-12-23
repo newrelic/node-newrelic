@@ -10,12 +10,17 @@ const createSpan = require('./span')
 
 const {
   ATTR_HTTP_METHOD,
+  ATTR_HTTP_REQUEST_METHOD,
   ATTR_HTTP_ROUTE,
   ATTR_HTTP_URL,
   ATTR_RPC_METHOD,
   ATTR_RPC_SERVICE,
   ATTR_RPC_SYSTEM,
 } = require('#agentlib/otel/traces/constants.js')
+
+function createFallbackServer({ tracer, name = 'test-span', spanContext }) {
+  return createSpan({ name, kind: SpanKind.SERVER, tracer, spanContext })
+}
 
 function createRpcServerSpan({ tracer, name = 'test-span', spanContext }) {
   const span = createSpan({ name, kind: SpanKind.SERVER, tracer, spanContext })
@@ -33,7 +38,17 @@ function createHttpServerSpan({ tracer, name = 'test-span', spanContext }) {
   return span
 }
 
+function createHttpServer1dot23Span({ tracer, name = 'test-span', spanContext }) {
+  const span = createSpan({ name, kind: SpanKind.SERVER, tracer, spanContext })
+  span.setAttribute(ATTR_HTTP_REQUEST_METHOD, 'PUT')
+  span.setAttribute(ATTR_HTTP_ROUTE, '/user/:id')
+  span.setAttribute(ATTR_HTTP_URL, '/user/1')
+  return span
+}
+
 module.exports = {
+  createFallbackServer,
   createHttpServerSpan,
+  createHttpServer1dot23Span,
   createRpcServerSpan
 }

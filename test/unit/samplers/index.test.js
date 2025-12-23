@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const helper = require('../../lib/agent_helper')
 
 const Config = require('#agentlib/config/index.js')
 const Samplers = require('#agentlib/samplers/index.js')
@@ -17,12 +18,16 @@ const TraceIdRatioBasedSampler = require('#agentlib/samplers/ratio-based-sampler
 
 function beforeEach(ctx) {
   const config = Config.createInstance({})
-  const mockAgent = { config }
-  ctx.nr = { agent: mockAgent }
+  ctx.nr = { agent: helper.loadMockedAgent(config) }
+}
+
+function afterEach(ctx) {
+  helper.unloadAgent(ctx.nr.agent)
 }
 
 test('Samplers constructor', async (t) => {
   t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
   await t.test('should initialize with default samplers', (t) => {
     const samplers = new Samplers(t.nr.agent)
     assert.ok(samplers instanceof Samplers)
@@ -230,10 +235,264 @@ test('Samplers constructor', async (t) => {
     assert.equal(samplers.partialRemoteParentSampled._ratio, 0.9)
     assert.equal(samplers.partialRemoteParentNotSampled._ratio, 0.2)
   })
+
+  await t.test('should send partial granularity metrics when partial is enabled', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          full_granularity: {
+            enabled: false
+          },
+          partial_granularity: {
+            enabled: true
+          }
+        }
+      }
+    })
+
+    const samplers = new Samplers(t.nr.agent)
+    assert.ok(samplers)
+
+    const pgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/Root/Adaptive/Shared')
+    const pgRemoteSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/RemoteParentSampled/Adaptive/Shared')
+    const pgRemoteNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/RemoteParentNotSampled/Adaptive/Shared')
+
+    assert.ok(pgRootMetric)
+    assert.ok(pgRemoteSampledMetric)
+    assert.ok(pgRemoteNotSampledMetric)
+  })
+
+  await t.test('should send full granularity metrics when full is enabled', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          full_granularity: {
+            enabled: true
+          },
+          partial_granularity: {
+            enabled: false
+          }
+        }
+      }
+    })
+
+    const samplers = new Samplers(t.nr.agent)
+    assert.ok(samplers)
+
+    const fgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/Root/Adaptive/Shared')
+    const fgRemoteSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentSampled/Adaptive/Shared')
+    const fgRemoteNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentNotSampled/Adaptive/Shared')
+
+    assert.ok(fgRootMetric)
+    assert.ok(fgRemoteSampledMetric)
+    assert.ok(fgRemoteNotSampledMetric)
+  })
+
+  await t.test('should send both partial and full granularity metrics when both are enabled', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          full_granularity: {
+            enabled: true
+          },
+          partial_granularity: {
+            enabled: true
+          }
+        }
+      }
+    })
+
+    const samplers = new Samplers(t.nr.agent)
+    assert.ok(samplers)
+
+    // Partial granularity metrics
+    const pgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/Root/Adaptive/Shared')
+    const pgRemoteParentSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/RemoteParentSampled/Adaptive/Shared')
+    const pgRemoteParentNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/RemoteParentNotSampled/Adaptive/Shared')
+
+    // Full granularity metrics
+    const fgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/Root/Adaptive/Shared')
+    const fgRemoteParentSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentSampled/Adaptive/Shared')
+    const fgRemoteParentNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentNotSampled/Adaptive/Shared')
+
+    assert.ok(pgRootMetric)
+    assert.ok(pgRemoteParentSampledMetric)
+    assert.ok(pgRemoteParentNotSampledMetric)
+    assert.ok(fgRootMetric)
+    assert.ok(fgRemoteParentSampledMetric)
+    assert.ok(fgRemoteParentNotSampledMetric)
+  })
+
+  await t.test('should send correct sampler type for always_on sampler', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          root: 'always_on',
+          remote_parent_sampled: 'always_on',
+          remote_parent_not_sampled: 'always_on'
+        }
+      }
+    })
+
+    const samplers = new Samplers(t.nr.agent)
+    assert.ok(samplers)
+
+    const fgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/Root/AlwaysOn')
+    const fgRemoteSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentSampled/AlwaysOn')
+    const fgRemoteNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentNotSampled/AlwaysOn')
+
+    assert.ok(fgRootMetric)
+    assert.ok(fgRemoteSampledMetric)
+    assert.ok(fgRemoteNotSampledMetric)
+  })
+
+  await t.test('should send correct sampler type for always_off sampler', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          root: 'always_off',
+          remote_parent_sampled: 'always_off',
+          remote_parent_not_sampled: 'always_off'
+        }
+      }
+    })
+
+    const samplers = new Samplers(t.nr.agent)
+    assert.ok(samplers)
+
+    const fgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/Root/AlwaysOff')
+    const fgRemoteSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentSampled/AlwaysOff')
+    const fgRemoteNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentNotSampled/AlwaysOff')
+
+    assert.ok(fgRootMetric)
+    assert.ok(fgRemoteSampledMetric)
+    assert.ok(fgRemoteNotSampledMetric)
+  })
+
+  await t.test('should send correct sampler type for trace_id_ratio_based sampler', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          root: {
+            trace_id_ratio_based: {
+              ratio: 0.5
+            }
+          },
+          remote_parent_sampled: {
+            trace_id_ratio_based: {
+              ratio: 0.5
+            }
+          },
+          remote_parent_not_sampled: {
+            trace_id_ratio_based: {
+              ratio: 0.5
+            }
+          }
+        }
+      }
+    })
+
+    const samplers = new Samplers(t.nr.agent)
+    assert.ok(samplers)
+
+    const fgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/Root/TraceIdRatioBased')
+    const fgRemoteSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentSampled/TraceIdRatioBased')
+    const fgRemoteNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentNotSampled/TraceIdRatioBased')
+
+    assert.ok(fgRootMetric)
+    assert.ok(fgRemoteSampledMetric)
+    assert.ok(fgRemoteNotSampledMetric)
+  })
+
+  await t.test('should send correct sampler type for non-shared adaptive sampler', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          root: {
+            adaptive: {
+              sampling_target: 25
+            }
+          },
+          remote_parent_sampled: {
+            adaptive: {
+              sampling_target: 50
+            }
+          },
+          remote_parent_not_sampled: {
+            adaptive: {
+              sampling_target: 75
+            }
+          }
+        }
+      }
+    })
+
+    const samplers = new Samplers(t.nr.agent)
+    assert.ok(samplers)
+
+    const fgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/Root/Adaptive')
+    const fgRemoteSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentSampled/Adaptive')
+    const fgRemoteNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentNotSampled/Adaptive')
+
+    assert.ok(fgRootMetric)
+    assert.ok(fgRemoteSampledMetric)
+    assert.ok(fgRemoteNotSampledMetric)
+  })
+
+  await t.test('should send mixed sampler types correctly', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          root: 'always_on',
+          remote_parent_sampled: {
+            trace_id_ratio_based: {
+              ratio: 0.5
+            }
+          },
+          remote_parent_not_sampled: 'always_off'
+        }
+      }
+    })
+
+    const samplers = new Samplers(t.nr.agent)
+    assert.ok(samplers)
+
+    const fgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/Root/AlwaysOn')
+    const fgRemoteSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentSampled/TraceIdRatioBased')
+    const fgRemoteNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentNotSampled/AlwaysOff')
+
+    assert.ok(fgRootMetric)
+    assert.ok(fgRemoteSampledMetric)
+    assert.ok(fgRemoteNotSampledMetric)
+  })
+
+  await t.test('should not send any metrics when both full and partial are disabled', (t) => {
+    t.nr.agent.config = new Config({
+      distributed_tracing: {
+        sampler: {
+          full_granularity: {
+            enabled: false
+          },
+          partial_granularity: {
+            enabled: false
+          }
+        }
+      }
+    })
+
+    const metricsCountBefore = Object.keys(t.nr.agent.metrics._metrics.unscoped).length
+
+    const samplers = new Samplers(t.nr.agent)
+    assert.ok(samplers)
+
+    const metricsCountAfter = Object.keys(t.nr.agent.metrics._metrics.unscoped).length
+    assert.equal(metricsCountBefore, metricsCountAfter, 'No new metrics should be created when both granularities are disabled')
+  })
 })
 
 test('applySamplingDecision', async (t) => {
   t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
   await t.test('should apply sampling decision for root type by default', (t) => {
     const samplers = new Samplers(t.nr.agent)
 
@@ -370,6 +629,7 @@ test('applySamplingDecision', async (t) => {
 
 test('applyDTSamplingDecision', async (t) => {
   t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
   await t.test('should apply remoteParentSampled when traceparent is sampled', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
@@ -649,6 +909,7 @@ test('applyDTSamplingDecision', async (t) => {
 
 test('applyLegacyDTSamplingDecision', async (t) => {
   t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
   await t.test('should apply remoteParentSampled when isSampled is true', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
@@ -899,6 +1160,7 @@ test('applyLegacyDTSamplingDecision', async (t) => {
 
 test('updateAdaptiveTarget', async (t) => {
   t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
   await t.test('should update adaptive sampler target when it exists', (t) => {
     const samplers = new Samplers(t.nr.agent)
 
@@ -922,6 +1184,7 @@ test('updateAdaptiveTarget', async (t) => {
 
 test('updateAdaptivePeriod', async (t) => {
   t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
   await t.test('should update adaptive sampler period when it exists', (t) => {
     const samplers = new Samplers(t.nr.agent)
 
@@ -942,6 +1205,7 @@ test('updateAdaptivePeriod', async (t) => {
 
 test('getAdaptiveSampler', async (t) => {
   t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
   await t.test('should create adaptive sampler if it does not exist', (t) => {
     const samplers = new Samplers(t.nr.agent)
     samplers.adaptiveSampler = null

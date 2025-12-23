@@ -122,7 +122,8 @@ test('sending metrics', async (t) => {
     'metric_data',
     function checkData(payload) {
       plan.ok(payload, 'should have a payload')
-      plan.deepStrictEqual(payload[3][0][0], { name: 'TEST/discard' }, 'should have test metric')
+      // First 3 are FullGranularity supportability metrics
+      plan.deepStrictEqual(payload[3][3][0], { name: 'TEST/discard' }, 'should have test metric')
     }
   )
 
