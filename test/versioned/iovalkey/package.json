@@ -1,0 +1,19 @@
+{
+  "name": "iovalkey-test",
+  "targets": [{"name":"iovalkey","minAgentVersion":"13.9.0"}],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "iovalkey": ">=0.1.0"
+      },
+      "files": [
+        "iovalkey.test.js"
+      ]
+    }
+  ]
+}
