@@ -1,6 +1,6 @@
 {
   "name": "iovalkey-test",
-  "targets": [{"name":"iovalkey","minAgentVersion":"13.8.1"}],
+  "targets": [{"name":"iovalkey","minAgentVersion":"13.9.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [
