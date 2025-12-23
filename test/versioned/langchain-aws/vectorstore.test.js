@@ -6,12 +6,12 @@
 'use strict'
 
 const test = require('node:test')
-const assert = require('node:assert')
+const path = require('node:path')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { runVectorstoreTests } = require('../langchain/vectorstore')
 const { Document } = require('@langchain/core/documents')
-const createOpenAIMockServer = require('../openai/mock-server')
+const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 
@@ -20,13 +20,15 @@ const config = {
     enabled: true
   }
 }
+const createAiResponseServer = getAiResponseServer(path.join(__dirname, './'))
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
-  const { host, port, server } = await createOpenAIMockServer()
+  const { server, baseUrl } = await createAiResponseServer()
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent(config)
-  const { OpenAIEmbeddings } = require('@langchain/openai')
+  const { BedrockEmbeddings } = require('@langchain/aws')
+  const { BedrockRuntimeClient } = require('@aws-sdk/client-bedrock-runtime')
 
   const { Client } = require('@elastic/elasticsearch')
   const clientArgs = {
@@ -36,16 +38,24 @@ test.beforeEach(async (ctx) => {
   }
   const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
 
-  ctx.nr.embedding = new OpenAIEmbeddings({
-    apiKey: 'fake-key',
-    configuration: {
-      baseURL: `http://${host}:${port}`
-    }
+  // Create the BedrockRuntimeClient with our mock endpoint
+  const bedrockClient = new BedrockRuntimeClient({
+    region: 'us-east-1',
+    credentials: FAKE_CREDENTIALS,
+    endpoint: baseUrl,
+    maxAttempts: 1
+  })
+
+  ctx.nr.embedding = new BedrockEmbeddings({
+    model: 'amazon.titan-embed-text-v1',
+    region: 'us-east-1',
+    client: bedrockClient,
+    maxRetries: 0
   })
   const docs = [
     new Document({
       metadata: { id: '2' },
-      pageContent: 'This is an embedding test.'
+      pageContent: 'embed text amazon token count callback response'
     })
   ]
   const vectorStore = new ElasticVectorSearch(ctx.nr.embedding, clientArgs)
@@ -55,18 +65,14 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(async (ctx) => {
-  ctx.nr?.server?.close()
+  ctx.nr?.server?.destroy()
   helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument
-  removeModules(['@langchain/core', 'openai', '@elastic', '@langchain/community'])
+  removeModules(['@langchain/core', '@langchain/aws', '@aws-sdk', '@elastic', '@langchain/community'])
 })
 
 runVectorstoreTests({
-  searchQuery: 'This is an embedding test.',
-  errorAssertion: (exceptions) => {
-    for (const e of exceptions) {
-      const str = Object.prototype.toString.call(e.customAttributes)
-      assert.equal(str, '[object LlmErrorMessage]')
-    }
-  }
+  searchQuery: 'embed text amazon token count callback response',
+  expectedQuery: 'embed text amazon token count callback response',
+  expectedPageContent: 'embed text amazon token count callback response'
 })
