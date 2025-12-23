@@ -16,10 +16,7 @@ const helper = require('../../lib/agent_helper')
 const baseUrl = 'http://httpbin.org'
 const config = {
   ai_monitoring: {
-    enabled: true,
-    streaming: {
-      enabled: true
-    }
+    enabled: true
   }
 }
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')

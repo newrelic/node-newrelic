@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 New Relic Corporation. All rights reserved.
+ * Copyright 2025 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,9 +34,15 @@ async function beforeEach({ enabled, ctx }) {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent(config)
   ctx.nr.agent.config.ai_monitoring.streaming.enabled = enabled
+
   const { ChatPromptTemplate } = require('@langchain/core/prompts')
-  const { StringOutputParser } = require('@langchain/core/output_parsers')
+  const { StringOutputParser, CommaSeparatedListOutputParser } = require('@langchain/core/output_parsers')
+  const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
   const { ChatOpenAI } = require('@langchain/openai')
+  ctx.nr.ChatPromptTemplate = ChatPromptTemplate
+  ctx.nr.CommaSeparatedListOutputParser = CommaSeparatedListOutputParser
+  ctx.nr.BaseCallbackHandler = BaseCallbackHandler
+  ctx.nr.langchainCoreVersion = require('@langchain/core/package.json').version
 
   ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} response']])
   ctx.nr.model = new ChatOpenAI({

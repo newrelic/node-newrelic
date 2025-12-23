@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 New Relic Corporation. All rights reserved.
+ * Copyright 2025 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -27,14 +27,17 @@ test.beforeEach(async (ctx) => {
   const { server, baseUrl } = await createAiResponseServer()
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent(config)
+
   const { BedrockEmbeddings } = require('@langchain/aws')
   const { BedrockRuntimeClient } = require('@aws-sdk/client-bedrock-runtime')
+  ctx.nr.langchainCoreVersion = require('@langchain/core/package.json').version
 
   const { Client } = require('@elastic/elasticsearch')
   const clientArgs = {
     client: new Client({
       node: `http://${params.elastic_host}:${params.elastic_port}`
-    })
+    }),
+    indexName: 'test_langchain_aws_vectorstore'
   }
   const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
 
@@ -65,6 +68,7 @@ test.beforeEach(async (ctx) => {
 })
 
 test.afterEach(async (ctx) => {
+  await ctx.nr?.vs?.deleteIfExists()
   ctx.nr?.server?.destroy()
   helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument

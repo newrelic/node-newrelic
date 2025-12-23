@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 New Relic Corporation. All rights reserved.
+ * Copyright 2025 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -37,9 +37,8 @@ function runVectorstoreTests(config) {
   } = config
 
   test('should log tracking metrics', function(t) {
-    const { agent } = t.nr
-    const { version } = require('@langchain/core/package.json')
-    assertPackageMetrics({ agent, pkg: '@langchain/core', version })
+    const { agent, langchainCoreVersion } = t.nr
+    assertPackageMetrics({ agent, pkg: '@langchain/core', version: langchainCoreVersion })
   })
 
   test('should create vectorstore events for every similarity search call', (t, end) => {

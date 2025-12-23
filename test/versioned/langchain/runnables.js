@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 New Relic Corporation. All rights reserved.
+ * Copyright 2025 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,6 @@ const {
   filterLangchainEvents,
   filterLangchainEventsByType
 } = require('./common')
-const { version: pkgVersion } = require('@langchain/core/package.json')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const helper = require('../../lib/agent_helper')
 
@@ -43,9 +42,8 @@ function runRunnablesTests(config) {
   } = config
 
   test('should log tracking metrics', function(t) {
-    const { agent } = t.nr
-    const { version } = require('@langchain/core/package.json')
-    assertPackageMetrics({ agent, pkg: '@langchain/core', version })
+    const { agent, langchainCoreVersion } = t.nr
+    assertPackageMetrics({ agent, pkg: '@langchain/core', version: langchainCoreVersion })
   })
 
   test('should create langchain events for every invoke call', (t, end) => {
@@ -74,7 +72,7 @@ function runRunnablesTests(config) {
   })
 
   test('should increment tracking metric for each langchain chat prompt event', (t, end) => {
-    const { agent, prompt, outputParser, model } = t.nr
+    const { agent, prompt, outputParser, model, langchainCoreVersion } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
       const input = inputData
@@ -84,7 +82,7 @@ function runRunnablesTests(config) {
       await chain.invoke(input, options)
 
       const metrics = agent.metrics.getOrCreateMetric(
-        `Supportability/Nodejs/ML/Langchain/${pkgVersion}`
+        `Supportability/Nodejs/ML/Langchain/${langchainCoreVersion}`
       )
       assert.equal(metrics.callCount > 0, true)
 
@@ -210,8 +208,7 @@ function runRunnablesTests(config) {
   })
 
   test('should create langchain events for every invoke call with parser that returns an array as output', (t, end) => {
-    const { CommaSeparatedListOutputParser } = require('@langchain/core/output_parsers')
-    const { agent, prompt, model } = t.nr
+    const { agent, prompt, model, CommaSeparatedListOutputParser } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
       const parser = new CommaSeparatedListOutputParser()
@@ -261,7 +258,7 @@ function runRunnablesTests(config) {
   })
 
   test('should add runId when a callback handler exists', (t, end) => {
-    const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
+    const { BaseCallbackHandler } = t.nr
     let runId
     const cbHandler = BaseCallbackHandler.fromMethods({
       handleChainStart(...args) {
@@ -293,7 +290,7 @@ function runRunnablesTests(config) {
   })
 
   test('should create langchain events for every invoke call on chat prompt + model + parser with callback', (t, end) => {
-    const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
+    const { BaseCallbackHandler } = t.nr
     const cbHandler = BaseCallbackHandler.fromMethods({
       handleChainStart() {}
     })
@@ -428,9 +425,8 @@ function runRunnablesTests(config) {
   })
 
   test('should create error events', (t, end) => {
-    const { ChatPromptTemplate } = require('@langchain/core/prompts')
+    const { ChatPromptTemplate, agent, outputParser, model } = t.nr
     const prompt = ChatPromptTemplate.fromMessages([[errorPromptTemplate[0], errorPromptTemplate[1]]])
-    const { agent, outputParser, model } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
       const chain = prompt.pipe(model).pipe(outputParser)
