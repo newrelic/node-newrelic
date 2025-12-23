@@ -9,27 +9,27 @@ const test = require('node:test')
 const assert = require('node:assert')
 const path = require('node:path')
 
-const { removeModules } = require('../../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../../lib/custom-assertions')
+const { removeModules } = require('../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const {
   assertLangChainVectorSearch,
   assertLangChainVectorSearchResult,
   filterLangchainEvents,
   filterLangchainEventsByType
-} = require('../common')
+} = require('../langchain/common')
 const { Document } = require('@langchain/core/documents')
-const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../../lib/aws-server-stubs')
-const params = require('../../../lib/params')
-const helper = require('../../../lib/agent_helper')
+const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
+const params = require('../../lib/params')
+const helper = require('../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
     enabled: true
   }
 }
-const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { tspl } = require('@matteo.collina/tspl')
-const createAiResponseServer = getAiResponseServer(path.join(__dirname, '../'))
+const createAiResponseServer = getAiResponseServer(path.join(__dirname, './'))
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}

@@ -9,17 +9,17 @@ const test = require('node:test')
 const assert = require('node:assert')
 const path = require('node:path')
 
-const { removeModules } = require('../../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../../lib/custom-assertions')
+const { removeModules } = require('../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
   filterLangchainEvents,
   filterLangchainEventsByType
-} = require('../common')
+} = require('../langchain/common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
-const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../../lib/aws-server-stubs')
-const helper = require('../../../lib/agent_helper')
+const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
+const helper = require('../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
@@ -29,8 +29,8 @@ const config = {
     }
   }
 }
-const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
-const createAiResponseServer = getAiResponseServer(path.join(__dirname, '../'))
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const createAiResponseServer = getAiResponseServer(path.join(__dirname, './'))
 
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.

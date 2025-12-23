@@ -8,19 +8,19 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { removeModules } = require('../../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../../lib/custom-assertions')
-const { findSegment } = require('../../../lib/metrics_helper')
+const { removeModules } = require('../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
+const { findSegment } = require('../../lib/metrics_helper')
 const {
   assertLangChainChatCompletionMessages,
   assertLangChainChatCompletionSummary,
   filterLangchainEvents,
   filterLangchainEventsByType
-} = require('../common')
+} = require('../langchain/common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
-const createOpenAIMockServer = require('../../openai/mock-server')
-const mockResponses = require('../../openai/mock-chat-api-responses')
-const helper = require('../../../lib/agent_helper')
+const createOpenAIMockServer = require('../openai/mock-server')
+const mockResponses = require('../openai/mock-chat-api-responses')
+const helper = require('../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
@@ -30,7 +30,7 @@ const config = {
     }
   }
 }
-const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 function consumeStreamChunk() {
   // A no-op function used to consume chunks of a stream.

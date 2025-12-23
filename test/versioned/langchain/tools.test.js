@@ -16,7 +16,10 @@ const helper = require('../../lib/agent_helper')
 const baseUrl = 'http://httpbin.org'
 const config = {
   ai_monitoring: {
-    enabled: true
+    enabled: true,
+    streaming: {
+      enabled: true
+    }
   }
 }
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
@@ -24,7 +27,7 @@ const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent(config)
-  const TestTool = require('./helpers/custom-tool')
+  const TestTool = require('./custom-tool')
   const tool = new TestTool({
     baseUrl
   })
@@ -36,7 +39,7 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument
   removeModules(['@langchain/core'])
-  removeMatchedModules(/helpers\/custom-tool\.js$/)
+  removeMatchedModules(/custom-tool\.js$/)
 })
 
 test('should log tracking metrics', function(t) {

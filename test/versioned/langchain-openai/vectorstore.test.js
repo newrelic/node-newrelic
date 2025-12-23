@@ -8,26 +8,26 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { removeModules } = require('../../../lib/cache-buster')
-const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../../lib/custom-assertions')
-const { findSegment } = require('../../../lib/metrics_helper')
+const { removeModules } = require('../../lib/cache-buster')
+const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { findSegment } = require('../../lib/metrics_helper')
 const {
   assertLangChainVectorSearch,
   assertLangChainVectorSearchResult,
   filterLangchainEvents,
   filterLangchainEventsByType
-} = require('../common')
+} = require('../langchain/common')
 const { Document } = require('@langchain/core/documents')
-const createOpenAIMockServer = require('../../openai/mock-server')
-const params = require('../../../lib/params')
-const helper = require('../../../lib/agent_helper')
+const createOpenAIMockServer = require('../openai/mock-server')
+const params = require('../../lib/params')
+const helper = require('../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
     enabled: true
   }
 }
-const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { tspl } = require('@matteo.collina/tspl')
 
 test.beforeEach(async (ctx) => {
