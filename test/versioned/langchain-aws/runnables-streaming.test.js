@@ -7,7 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const path = require('node:path')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { match } = require('../../lib/custom-assertions')
@@ -27,7 +26,7 @@ const config = {
     }
   }
 }
-const createAiResponseServer = getAiResponseServer(path.join(__dirname, './'))
+const createAiResponseServer = getAiResponseServer(__dirname)
 
 async function beforeEach({ enabled, ctx }) {
   ctx.nr = {}

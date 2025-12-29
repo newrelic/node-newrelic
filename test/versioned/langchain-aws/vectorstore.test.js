@@ -6,7 +6,6 @@
 'use strict'
 
 const test = require('node:test')
-const path = require('node:path')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { runVectorstoreTests } = require('../langchain/vectorstore')
@@ -20,7 +19,7 @@ const config = {
     enabled: true
   }
 }
-const createAiResponseServer = getAiResponseServer(path.join(__dirname, './'))
+const createAiResponseServer = getAiResponseServer(__dirname)
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
