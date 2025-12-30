@@ -82,7 +82,7 @@ function runRunnablesTests(config) {
       await chain.invoke(input, options)
 
       const metrics = agent.metrics.getOrCreateMetric(
-        `Supportability/Nodejs/ML/Langchain/${langchainCoreVersion}`
+        `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
       )
       assert.equal(metrics.callCount > 0, true)
 
@@ -389,9 +389,9 @@ function runRunnablesTests(config) {
       const result = await chain.invoke(input, options)
 
       assert.ok(result)
-      assertSegments(tx.trace, tx.trace.root, ['Llm/chain/Langchain/invoke'], { exact: false })
+      assertSegments(tx.trace, tx.trace.root, ['Llm/chain/LangChain/invoke'], { exact: false })
       tx.end()
-      assertSpanKind({ agent, segments: [{ name: 'Llm/chain/Langchain/invoke', kind: 'internal' }] })
+      assertSpanKind({ agent, segments: [{ name: 'Llm/chain/LangChain/invoke', kind: 'internal' }] })
       end()
     })
   })
@@ -491,8 +491,8 @@ function runRunnablesTests(config) {
       const result = await chain.invoke(input)
       assert.ok(result, 'should not mess up result')
 
-      const segment = findSegment(tx.trace, tx.trace.root, 'Llm/chain/Langchain/stream')
-      assert.equal(segment, undefined, 'should not create Llm/chain/Langchain/stream segment when ai_monitoring is disabled')
+      const segment = findSegment(tx.trace, tx.trace.root, 'Llm/chain/LangChain/stream')
+      assert.equal(segment, undefined, 'should not create Llm/chain/LangChain/stream segment when ai_monitoring is disabled')
 
       tx.end()
       end()

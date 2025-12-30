@@ -17,8 +17,9 @@
       "engines": {
         "node": ">=20"
       },
+       "comment": "because @langchain/core and @langchain/aws need to be same major version, we will only test >=1.0.0 for both of them",
       "dependencies": {
-        "@langchain/aws": ">=1.1.0",
+        "@langchain/aws": ">=1.0.0",
         "@langchain/core": ">=1.0.0",
         "@langchain/community": ">=1.0.0",
         "@elastic/elasticsearch": "8.13.1"
