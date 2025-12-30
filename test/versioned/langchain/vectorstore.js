@@ -87,7 +87,7 @@ function runVectorstoreTests(config) {
       // version. Find the right one that has a call count
 
       for (const metric in agent.metrics._metrics.unscoped) {
-        if (metric.startsWith('Supportability/Nodejs/ML/Langchain')) {
+        if (metric.startsWith('Supportability/Nodejs/ML/LangChain')) {
           plan.equal(agent.metrics._metrics.unscoped[metric].callCount > 0, true)
         }
       }
