@@ -188,3 +188,23 @@ test('should add llm attribute to transaction', (t, end) => {
     end()
   })
 })
+
+test('should not create segment or llm events when ai_monitoring.enabled is false', (t, end) => {
+  const { client, agent } = t.nr
+  agent.config.ai_monitoring.enabled = false
+  helper.runInTransaction(agent, async (tx) => {
+    await client.embeddings.create({
+      input: 'This is an embedding test.',
+      model: 'text-embedding-ada-002'
+    })
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.equal(events.length, 0, 'should not create llm events when ai_monitoring is disabled')
+
+    const children = tx.trace.segments.root.children
+    assert.equal(children.length, 0, 'should not create OpenAI completion segment')
+
+    tx.end()
+    end()
+  })
+})
