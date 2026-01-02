@@ -18,7 +18,7 @@ const helper = require('#testlib/agent_helper.js')
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent({
-    opentelemetry_bridge: {
+    opentelemetry: {
       enabled: true,
       metrics: {
         enabled: true,

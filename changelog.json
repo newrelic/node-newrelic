@@ -2,6 +2,54 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.8.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated AWS Lambda instrumentation to skip wrapping handler callback if not present"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.8.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added support for `@langchain/aws`",
+          "Additional support for partial granularity traces (Not available for production use)"
+        ]
+      }
+    },
+    {
+      "version": "13.7.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed normalization of OTEL hrtime"
+        ],
+        "features": [
+          "Updated `koa` instrumentation to properly wrap `Router` when using `@koa/router@15.0.0`+",
+          "Added ability to configure a ratio based sampler",
+          "Updated configuration to allow `adaptive.sampling_target` to be set for `config.distributed_tracing.sampler.root`, `config.distributed_tracing.sampler.remote_parent_sampled`, and `config.distributed_tracing.sampler.remote_parent_not_sampled`",
+          "Added support for OTEL span links",
+          "Replaced `default` with `adaptive` as the default for samplers",
+          "Preliminary support for partial granularity traces (Not available for production use)"
+        ]
+      }
+    },
+    {
+      "version": "13.6.6",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `app.use` or `router.use` Express instrumentation to properly wrap all middleware defined"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "13.6.5",
       "changes": {
         "security": [],

@@ -18,7 +18,7 @@ const recordSupportability = require('../../../lib/agent').prototype.recordSuppo
 
 const getDescendantValue = function (object, descendants) {
   const arrayDescendants = descendants.split('.')
-  const noop = () => {}
+  const noop = () => { }
   while (arrayDescendants.length && (object = object[arrayDescendants.shift()])) {
     noop()
   }
@@ -268,7 +268,6 @@ async function runTestCase(testCase, parentTest) {
     testExpectedFixtureKeys(testCase, [
       'account_id',
       'expected_metrics',
-      'force_sampled_true',
       'inbound_headers',
       'intrinsics',
       'outbound_payloads',
@@ -279,7 +278,14 @@ async function runTestCase(testCase, parentTest) {
       'trusted_account_key',
       'web_transaction',
       'comment',
-      'transaction_events_enabled'
+      'transaction_events_enabled',
+      // Sampling
+      'force_adaptive_sampled',
+      'remote_parent_sampled',
+      'remote_parent_not_sampled',
+      'root',
+      'ratio',
+      'expected_priority_between'
     ])
 
     if (testCase.outbound_payloads) {
@@ -325,14 +331,53 @@ async function runTestCase(testCase, parentTest) {
   })
 
   await parentTest.test('trace context: ' + testCase.test_name, (t, end) => {
-    const agent = helper.instrumentMockedAgent({})
+    // Sampling config has to be given on agent initialization
+    const initConfig = {
+      distributed_tracing: {
+        enabled: true,
+        sampler: {
+          root: {},
+          remote_parent_sampled: {},
+          remote_parent_not_sampled: {}
+        }
+      }
+    }
+    initConfig.distributed_tracing.sampler.remote_parent_sampled = testCase.remote_parent_sampled ?? 'adaptive'
+    initConfig.distributed_tracing.sampler.remote_parent_not_sampled = testCase.remote_parent_not_sampled ?? 'adaptive'
+    initConfig.distributed_tracing.sampler.root = testCase.root ?? 'adaptive'
+    if (testCase.ratio) {
+      // The ratio to use for all of the trace ID ratio samplers defined in the test.
+      // For testing purposes we are not defining different ratios for each trace ID ratio sampler instance.
+      if (initConfig.distributed_tracing.sampler.root === 'trace_id_ratio_based') {
+        initConfig.distributed_tracing.sampler.root = {
+          trace_id_ratio_based: {
+            ratio: testCase.ratio
+          }
+        }
+      }
+      if (initConfig.distributed_tracing.sampler.remote_parent_sampled === 'trace_id_ratio_based') {
+        initConfig.distributed_tracing.sampler.remote_parent_sampled = {
+          trace_id_ratio_based: {
+            ratio: testCase.ratio
+          }
+        }
+      }
+      if (initConfig.distributed_tracing.sampler.remote_parent_not_sampled === 'trace_id_ratio_based') {
+        initConfig.distributed_tracing.sampler.remote_parent_not_sampled = {
+          trace_id_ratio_based: {
+            ratio: testCase.ratio
+          }
+        }
+      }
+    }
+    const agent = helper.instrumentMockedAgent(initConfig)
     agent.recordSupportability = recordSupportability
     agent.config.trusted_account_key = testCase.trusted_account_key
     agent.config.account_id = testCase.account_id
     agent.config.primary_application_id = 4657
     agent.config.span_events.enabled = testCase.span_events_enabled
     agent.config.transaction_events.enabled = testCase.transaction_events_enabled
-    agent.config.distributed_tracing.enabled = true
+
     t.after(() => helper.unloadAgent(agent))
 
     const agentApi = new API(agent)
@@ -354,13 +399,7 @@ async function runTestCase(testCase, parentTest) {
         agentApi.noticeError(new Error('should error'))
       }
 
-      // monkey patch this transaction object
-      // to force sampled to be true.
-      if (testCase.force_sampled_true) {
-        transaction.agent.transactionSampler.shouldSample = function stubShouldSample() {
-          return true
-        }
-      }
+      forceAdaptiveSamplers(agent, testCase.force_adaptive_sampled)
 
       for (const inboundHeader of testCase.inbound_headers.values()) {
         transaction.acceptDistributedTraceHeaders(testCase.transport_type, inboundHeader)
@@ -406,6 +445,16 @@ async function runTestCase(testCase, parentTest) {
         transaction.trace.root.touch()
         transaction.end()
 
+        // check `expected_priority_between`
+        if (testCase.expected_priority_between) {
+          const [minPriority, maxPriority] = testCase.expected_priority_between
+          const actualPriority = transaction.priority
+          assert.ok(
+            actualPriority >= minPriority && actualPriority <= maxPriority,
+            `Expected transaction.priority (${actualPriority}) to be between ${minPriority} and ${maxPriority}`
+          )
+        }
+
         // These tests assume setting a transport type even when there are not valid
         // trace headers. This is slightly inconsistent with the spec. Given DT
         // (NR format) does not include transport when there is no trace AND the
@@ -445,4 +494,22 @@ async function runTestCase(testCase, parentTest) {
 
     end()
   })
+}
+
+function forceAdaptiveSamplers(agent, forceAdaptiveSampled) {
+  if (forceAdaptiveSampled === undefined || forceAdaptiveSampled === null) return
+  // "The sampling decision to force on a transaction whenever the adaptive sampler is used"
+  // implies this affects all samplers that are adaptive samplers
+  const samplers = [
+    agent.samplers.root,
+    agent.samplers.remoteParentSampled,
+    agent.samplers.remoteParentNotSampled
+  ]
+  for (const sampler of samplers) {
+    if (sampler?.toString() === 'AdaptiveSampler') {
+      sampler.shouldSample = function stubShouldSample() {
+        return forceAdaptiveSampled
+      }
+    }
+  }
 }

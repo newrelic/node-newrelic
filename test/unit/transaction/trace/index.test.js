@@ -11,12 +11,12 @@ const sinon = require('sinon')
 const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 const helper = require('../../../lib/agent_helper')
 const codec = require('../../../../lib/util/codec')
-const codecEncodeAsync = util.promisify(codec.encode)
 const codecDecodeAsync = util.promisify(codec.decode)
 const Segment = require('../../../../lib/transaction/trace/segment')
 const DTPayload = require('../../../../lib/transaction/dt-payload')
 const Trace = require('../../../../lib/transaction/trace')
 const Transaction = require('../../../../lib/transaction')
+const { assertSpanEvent, addSegment, addTwoSegments, makeTrace, addBaseSegment, setupPartialTrace } = require('./helpers')
 
 const NEWRELIC_TRACE_HEADER = 'newrelic'
 
@@ -108,54 +108,76 @@ test('Trace', async (t) => {
 
     const transaction = new Transaction(agent)
 
-    const trace = transaction.trace
-    const child1 = (transaction.baseSegment = trace.add('test'))
-    child1.start()
-    const child2 = trace.add('nested', null, child1)
-    child2.start()
-    child1.end()
-    child2.end()
-    trace.root.end()
+    addTwoSegments(transaction)
     transaction.end()
 
     const events = agent.spanEventAggregator.getEvents()
     const nested = events[0]
     const testSpan = events[1]
-    assert.ok(nested.intrinsics)
-    assert.ok(testSpan.intrinsics)
+    assertSpanEvent({ span: nested, transaction, name: 'span', category: 'generic', parentId: testSpan.intrinsics.guid })
+    assertSpanEvent({ span: testSpan, transaction, name: 'test', category: 'generic', isEntry: true })
+  })
 
-    assert.ok(nested.intrinsics.parentId)
-    assert.equal(nested.intrinsics.parentId, testSpan.intrinsics.guid)
-    assert.ok(nested.intrinsics.category)
-    assert.equal(nested.intrinsics.category, 'generic')
-    assert.ok(nested.intrinsics.priority)
-    assert.equal(nested.intrinsics.priority, transaction.priority)
-    assert.ok(nested.intrinsics.transactionId)
-    assert.equal(nested.intrinsics.transactionId, transaction.id)
-    assert.ok(nested.intrinsics.sampled)
-    assert.equal(nested.intrinsics.sampled, transaction.sampled)
-    assert.ok(nested.intrinsics.name)
-    assert.equal(nested.intrinsics.name, 'nested')
-    assert.ok(nested.intrinsics.traceId)
-    assert.equal(nested.intrinsics.traceId, transaction.traceId)
-    assert.ok(nested.intrinsics.timestamp)
+  await t.test('should generate span events and finalize when partial trace reduced', (t) => {
+    const { agent } = t.nr
+    const transaction = setupPartialTrace({ agent, type: 'reduced' })
+    assert.equal(agent.spanEventAggregator.events.length, 3)
+    const [redisSet, testSpan, redisGet] = agent.spanEventAggregator.getEvents()
+    const attributes = { foo: 'bar', 'server.address': 'unit-test', 'peer.hostname': 'unit-test' }
+    assertSpanEvent({ span: testSpan, transaction, name: 'test', category: 'generic', isEntry: true })
+    // its parent was dropped, so parentId is `child1` aka testSpan
+    assertSpanEvent({ span: redisGet, transaction, name: 'Datastore/operation/Redis/GET', category: 'datastore', parentId: testSpan.intrinsics.guid, attributes })
+    // its parent and grandparent were dropped, so parentId is `child3` aka redisGet
+    assertSpanEvent({ span: redisSet, transaction, name: 'Datastore/operation/Redis/SET', category: 'datastore', parentId: redisGet.intrinsics.guid, attributes })
+    assert.ok(!redisGet.intrinsics['nr.durations'])
+    assert.ok(!redisGet.intrinsics['nr.ids'])
+  })
 
-    assert.equal(testSpan.intrinsics.parentId, null)
-    assert.ok(testSpan.intrinsics['nr.entryPoint'])
-    assert.ok(testSpan.intrinsics['nr.entryPoint'])
-    assert.ok(testSpan.intrinsics.category)
-    assert.equal(testSpan.intrinsics.category, 'generic')
-    assert.ok(testSpan.intrinsics.priority)
-    assert.equal(testSpan.intrinsics.priority, transaction.priority)
-    assert.ok(testSpan.intrinsics.transactionId)
-    assert.equal(testSpan.intrinsics.transactionId, transaction.id)
-    assert.ok(testSpan.intrinsics.sampled)
-    assert.equal(testSpan.intrinsics.sampled, transaction.sampled)
-    assert.ok(testSpan.intrinsics.name)
-    assert.equal(testSpan.intrinsics.name, 'test')
-    assert.ok(testSpan.intrinsics.traceId)
-    assert.equal(testSpan.intrinsics.traceId, transaction.traceId)
-    assert.ok(testSpan.intrinsics.timestamp)
+  await t.test('should generate span events and finalize when partial trace essential', (t) => {
+    const { agent } = t.nr
+    const transaction = setupPartialTrace({ agent, type: 'essential' })
+    assert.equal(agent.spanEventAggregator.events.length, 3)
+    const [redisSet, testSpan, redisGet] = agent.spanEventAggregator.getEvents()
+    // drops non entity relationship attributes
+    const attributes = { 'server.address': 'unit-test', 'peer.hostname': 'unit-test' }
+    assertSpanEvent({ span: testSpan, transaction, name: 'test', category: 'generic', isEntry: true })
+    // its parent was dropped, so parentId is `child1` aka testSpan
+    assertSpanEvent({ span: redisGet, transaction, name: 'Datastore/operation/Redis/GET', category: 'datastore', parentId: testSpan.intrinsics.guid, attributes })
+    // its parent and grandparent were dropped, so parentId is `child3` aka redisGet
+    assertSpanEvent({ span: redisSet, transaction, name: 'Datastore/operation/Redis/SET', category: 'datastore', parentId: redisGet.intrinsics.guid, attributes })
+    assert.ok(!redisGet.intrinsics['nr.durations'])
+    assert.ok(!redisGet.intrinsics['nr.ids'])
+  })
+
+  await t.test('should generate span events and finalize when partial trace compact', (t) => {
+    const { agent } = t.nr
+    const transaction = setupPartialTrace({ agent, type: 'compact' })
+    assert.equal(agent.spanEventAggregator.events.length, 2)
+    const [redisGet, testSpan] = agent.spanEventAggregator.getEvents()
+    // drops non entity relationship attributes
+    const attributes = { 'server.address': 'unit-test', 'peer.hostname': 'unit-test' }
+    assertSpanEvent({ span: testSpan, transaction, name: 'test', category: 'generic', isEntry: true })
+    // its parent was dropped, so parentId is `child1` aka testSpan
+    assertSpanEvent({ span: redisGet, transaction, name: 'Datastore/operation/Redis/GET', category: 'datastore', parentId: testSpan.intrinsics.guid, attributes })
+    // explicit assertions of these values are done in `applyCompaction` tests below
+    assert.ok(redisGet.intrinsics['nr.durations'])
+    assert.ok(redisGet.intrinsics['nr.ids'])
+  })
+
+  await t.test('should generate span events and take last error when partial trace compact', (t) => {
+    const { agent } = t.nr
+    const attributes = { 'server.address': 'unit-test', 'error.class': 'TestError', 'error.message': 'You failed' }
+    const transaction = setupPartialTrace({ agent, type: 'compact', attributes, randomizeErrorAttrs: true })
+    assert.equal(agent.spanEventAggregator.events.length, 2)
+    const [redisGet, testSpan] = agent.spanEventAggregator.getEvents()
+    // drops non entity relationship attributes
+    assertSpanEvent({ span: testSpan, transaction, name: 'test', category: 'generic', isEntry: true })
+    // its parent was dropped, so parentId is `child1` aka testSpan
+    const finalAttrs = { 'server.address': 'unit-test', 'error.class': 'FinalClass', 'error.message': 'This should be the one', 'error.expected': false }
+    assertSpanEvent({ span: redisGet, transaction, name: 'Datastore/operation/Redis/GET', category: 'datastore', parentId: testSpan.intrinsics.guid, attributes: finalAttrs })
+    // explicit assertions of these values are done in `applyCompaction` tests below
+    assert.ok(redisGet.intrinsics['nr.durations'])
+    assert.ok(redisGet.intrinsics['nr.ids'])
   })
 
   await t.test('should not generate span events on end if span_events is disabled', (t) => {
@@ -166,10 +188,8 @@ test('Trace', async (t) => {
     const transaction = new Transaction(agent)
 
     const trace = transaction.trace
-    const child1 = trace.add('test')
-    child1.start()
-    const child2 = trace.add('nested', null, child1)
-    child2.start()
+    const child1 = addSegment({ trace, name: 'test' })
+    const child2 = addSegment({ trace, name: 'nested', child: child1 })
     child1.end()
     child2.end()
     trace.root.end()
@@ -187,10 +207,8 @@ test('Trace', async (t) => {
     const transaction = new Transaction(agent)
 
     const trace = transaction.trace
-    const child1 = trace.add('test')
-    child1.start()
-    const child2 = trace.add('nested', null, child1)
-    child2.start()
+    const child1 = addSegment({ trace, name: 'test' })
+    const child2 = addSegment({ trace, name: 'nested', child: child1 })
     child1.end()
     child2.end()
     trace.root.end()
@@ -230,9 +248,7 @@ test('Trace', async (t) => {
 
     // Create at least one segment
     const trace = transaction.trace
-    const child = (transaction.baseSegment = trace.add('test'))
-
-    child.start()
+    const child = addBaseSegment({ transaction, name: 'test' })
     child.end()
 
     // This should add the parent attributes onto a child span event
@@ -272,9 +288,7 @@ test('Trace', async (t) => {
     const trace = transaction.trace
 
     // add a child segment
-    const child = (transaction.baseSegment = trace.add('test'))
-
-    child.start()
+    const child = addBaseSegment({ transaction, name: 'test' })
     child.end()
 
     trace.generateSpanEvents()
@@ -966,124 +980,29 @@ test('infinite tracing', async (t) => {
       assert.equal(spy.callCount, 0)
     }
   )
+
+  await t.test('should not reparent nor add spans to aggregator when `finalizeSpanEvents` is called', (t) => {
+    const { agent } = t.nr
+    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+
+    const transaction = new Transaction(agent)
+
+    addTwoSegments(transaction)
+
+    transaction.trace.generateSpanEvents()
+    assert.equal(addSpy.callCount, 0)
+  })
+
+  await t.test('should not reparent nor add spans to aggregator when transaction is partial trace and when `finalizeSpanEvents` is called', (t) => {
+    const { agent } = t.nr
+    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+
+    const transaction = new Transaction(agent)
+    transaction.partialType = Transaction.PARTIAL_TYPES.REDUCED
+
+    addTwoSegments(transaction)
+
+    transaction.trace.generateSpanEvents()
+    assert.equal(addSpy.callCount, 0)
+  })
 })
-
-function addTwoSegments(transaction) {
-  const trace = transaction.trace
-  const child1 = (transaction.baseSegment = trace.add('test'))
-  child1.start()
-  const child2 = trace.add('nested', null, child1)
-  child2.start()
-  child1.end()
-  child2.end()
-  trace.root.end()
-}
-
-async function makeTrace(agent) {
-  const DURATION = 33
-  const url = '/test'
-  agent.config.attributes.enabled = true
-  agent.config.attributes.include = ['request.parameters.*']
-  agent.config.emit('attributes.include')
-
-  const transaction = new Transaction(agent)
-  transaction.url = url
-  transaction.verb = 'GET'
-
-  const trace = transaction.trace
-
-  // promisifying `trace.generateJSON` so tests do not have to call done
-  // and instead use async/await
-  trace.generateJSONAsync = util.promisify(trace.generateJSON)
-  const start = trace.root.timer.start
-  assert.ok(start > 0, "root segment's start time")
-  trace.setDurationInMillis(DURATION, 0)
-
-  const web = trace.add(URL)
-  transaction.baseSegment = web
-  transaction.addRequestParameters({ test: 'value' })
-  transaction.finalizeNameFromWeb(200)
-  // top-level element will share a duration with the quasi-ROOT node
-  web.setDurationInMillis(DURATION, 0)
-
-  const db = trace.add('Database/statement/AntiSQL/select/getSome', null, web)
-  db.setDurationInMillis(14, 3)
-
-  const memcache = trace.add('Datastore/operation/Memcache/lookup', null, web)
-  memcache.setDurationInMillis(20, 8)
-
-  transaction.timer.setDurationInMillis(DURATION)
-  trace.end()
-
-  /*
-   * Segment data repeats the outermost data, nested, with the scope for the
-   * outermost version having its scope always set to 'ROOT'. The null bits
-   * are parameters, which are optional, and so far, unimplemented for Node.
-   */
-  const dbSegment = [
-    3,
-    17,
-    'Database/statement/AntiSQL/select/getSome',
-    { nr_exclusive_duration_millis: 14 },
-    []
-  ]
-  const memcacheSegment = [
-    8,
-    28,
-    'Datastore/operation/Memcache/lookup',
-    { nr_exclusive_duration_millis: 20 },
-    []
-  ]
-
-  const rootSegment = [
-    0,
-    DURATION,
-    'ROOT',
-    { nr_exclusive_duration_millis: 0 },
-    [
-      [
-        0,
-        DURATION,
-        'WebTransaction/NormalizedUri/*',
-        {
-          'request.parameters.test': 'value',
-          nr_exclusive_duration_millis: 8
-        },
-        [dbSegment, memcacheSegment]
-      ]
-    ]
-  ]
-  const rootNode = [
-    trace.root.timer.start / 1000,
-    {},
-    { nr_flatten_leading: false },
-    rootSegment,
-    {
-      agentAttributes: {
-        'request.parameters.test': 'value'
-      },
-      userAttributes: {},
-      intrinsics: {}
-    },
-    [] // FIXME: parameter groups
-  ]
-
-  const encoded = await codecEncodeAsync(rootNode)
-  return {
-    transaction,
-    trace,
-    rootNode,
-    expectedEncoding: [
-      0,
-      DURATION,
-      'WebTransaction/NormalizedUri/*', // scope
-      '/test', // URI path
-      encoded, // compressed segment / segment data
-      transaction.id, // guid
-      null, // reserved, always NULL
-      false, // FIXME: RUM2 session persistence, not worrying about it for now
-      null, // FIXME: xraysessionid
-      null // syntheticsResourceId
-    ]
-  }
-}

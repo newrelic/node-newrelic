@@ -13,7 +13,12 @@ const {
 } = require('./db-sql')
 const createSpan = require('./span')
 const createHttpClientSpan = require('./http-client')
-const { createRpcServerSpan, createHttpServerSpan } = require('./server')
+const {
+  createFallbackServer,
+  createRpcServerSpan,
+  createHttpServerSpan,
+  createHttpServer1dot23Span
+} = require('./server')
 const { createProducerSpan } = require('./producer')
 const { createConsumerSpan } = require('./consumer')
 
@@ -21,8 +26,10 @@ module.exports = {
   createConsumerSpan,
   createDbSpan,
   createDbClientSpan,
+  createFallbackServer,
   createHttpClientSpan,
   createHttpServerSpan,
+  createHttpServer1dot23Span,
   createMemcachedDbSpan,
   createMongoDbSpan,
   createRedisDbSpan,

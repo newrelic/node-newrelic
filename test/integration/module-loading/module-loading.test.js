@@ -133,7 +133,8 @@ test('Should create usage metric onRequire for built-in', (t) => {
   assert.ok(onRequireMetric)
   assert.equal(onRequireMetric.callCount, 1)
   const domainMetrics = Object.keys(agent.metrics._metrics.unscoped)
-  assert.equal(domainMetrics.length, 1, 'should not log a version metric for a built-in')
+  // 3 of these are FullGranularity supportability metrics
+  assert.equal(domainMetrics.length, 4, 'should not log a version metric for a built-in')
 })
 
 test('should instrument a local package', (t, end) => {

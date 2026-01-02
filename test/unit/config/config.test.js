@@ -245,7 +245,7 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'adaptive')
   })
 
-  const samplers = ['sampler', 'sampler.full_granularity', 'sampler.partial_granularity']
+  const samplers = ['sampler', 'sampler.partial_granularity']
   const samplerTypes = ['root', 'remote_parent_sampled', 'remote_parent_not_sampled']
   for (const samplerName of samplers) {
     const name = samplerName.split('.')[1]
@@ -278,7 +278,7 @@ test('distributed tracing samplers', async (t) => {
         }
       })
 
-      await t.test(`should set ${samplerName}.${type} to default when ratio for trace id ratio based is not set - used wrong key`, () => {
+      await t.test(`should set ${samplerName}.${type} to adaptive when ratio for trace id ratio based is not set - used wrong key`, () => {
         const config = {
           distributed_tracing: {
             sampler: {}
@@ -300,15 +300,73 @@ test('distributed tracing samplers', async (t) => {
 
         const configuration = Config.initialize(config)
         if (samplerName === 'sampler') {
-          assert.equal(configuration.distributed_tracing.sampler[type], 'default')
+          assert.equal(configuration.distributed_tracing.sampler[type], 'adaptive')
         } else {
-          assert.equal(configuration.distributed_tracing.sampler[name][type], 'default')
+          assert.equal(configuration.distributed_tracing.sampler[name][type], 'adaptive')
+        }
+      })
+
+      await t.test(`should set ${samplerName}.${type} to adaptive when adaptive.sampling_target is specified`, () => {
+        const config = {
+          distributed_tracing: {
+            sampler: {}
+          }
+        }
+        const typeConfig = {
+          [type]: {
+            adaptive: {
+              sampling_target: 21
+            }
+          }
+        }
+
+        if (samplerName === 'sampler') {
+          config.distributed_tracing.sampler = typeConfig
+        } else {
+          config.distributed_tracing.sampler[name] = { ...typeConfig }
+        }
+
+        const configuration = Config.initialize(config)
+        if (samplerName === 'sampler') {
+          assert.equal(configuration.distributed_tracing.sampler[type].adaptive.sampling_target, 21)
+        } else {
+          assert.equal(configuration.distributed_tracing.sampler[name][type].adaptive.sampling_target, 21)
+        }
+      })
+
+      await t.test(`should not set ${samplerName}.${type} adaptive.sampling_target when it is not between 1-120`, () => {
+        const config = {
+          distributed_tracing: {
+            sampler: {}
+          }
+        }
+        const typeConfig = {
+          [type]: {
+            adaptive: {
+              sampling_target: 'foo'
+            }
+          }
+        }
+
+        if (samplerName === 'sampler') {
+          config.distributed_tracing.sampler = typeConfig
+        } else {
+          config.distributed_tracing.sampler[name] = { ...typeConfig }
+        }
+
+        const configuration = Config.initialize(config)
+        if (samplerName === 'sampler') {
+          assert.equal(configuration.distributed_tracing.sampler[type], 'adaptive')
+          assert.notEqual(configuration.distributed_tracing.sampler[type]?.adaptive?.sampling_target, 'foo')
+        } else {
+          assert.equal(configuration.distributed_tracing.sampler[name][type], 'adaptive')
+          assert.notEqual(configuration.distributed_tracing.sampler[name][type]?.adaptive?.sampling_target, 'foo')
         }
       })
     }
   }
 
-  await t.test('should set root and remote parent sampled but leave remote parent not sampled as default', () => {
+  await t.test('should set root and remote parent sampled but leave remote parent not sampled as adaptive', () => {
     const config = {
       distributed_tracing: {
         sampler: {
@@ -325,7 +383,7 @@ test('distributed tracing samplers', async (t) => {
     const configuration = Config.initialize(config)
     assert.equal(configuration.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'always_on')
-    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'adaptive')
   })
 
   await t.test('should set all samplers to trace id ratio based', () => {
@@ -345,23 +403,6 @@ test('distributed tracing samplers', async (t) => {
           remote_parent_not_sampled: {
             trace_id_ratio_based: {
               ratio: 0.85
-            }
-          },
-          full_granularity: {
-            root: {
-              trace_id_ratio_based: {
-                ratio: 0.6
-              }
-            },
-            remote_parent_sampled: {
-              trace_id_ratio_based: {
-                ratio: 0.5
-              }
-            },
-            remote_parent_not_sampled: {
-              trace_id_ratio_based: {
-                ratio: 0.4
-              }
             }
           },
           partial_granularity: {
@@ -389,12 +430,66 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.root.trace_id_ratio_based.ratio, 0.5)
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled.trace_id_ratio_based.ratio, 0.6)
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.85)
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root.trace_id_ratio_based.ratio, 0.6)
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_sampled.trace_id_ratio_based.ratio, 0.5)
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.4)
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.root.trace_id_ratio_based.ratio, 0.4)
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_sampled.trace_id_ratio_based.ratio, 0.5)
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_not_sampled.trace_id_ratio_based.ratio, 0.6)
+  })
+
+  await t.test('should set to adaptive when trace_id_ratio_based.ratio misconfigured', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: {
+            trace_id_ratio_based: {
+              ratio: 'invalid'
+            }
+          },
+          remote_parent_sampled: {
+            trace_id_ratio_based:
+              'ratio'
+          },
+          remote_parent_not_sampled: {
+            trace_id_ratio_based: {
+              ratio: null
+            }
+          },
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.equal(configuration.distributed_tracing.sampler.root, 'adaptive')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'adaptive')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'adaptive')
+  })
+
+  await t.test('should not assign adaptive.sampling_target if not within [1, 120] range', () => {
+    const config = {
+      distributed_tracing: {
+        sampler: {
+          root: {
+            adaptive: {
+              sampling_target: 121
+            }
+          },
+          remote_parent_sampled: {
+            adaptive: {
+              sampling_target: 0
+            }
+          },
+          remote_parent_not_sampled: {
+            adaptive: {
+              sampling_target: null
+            }
+          },
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.equal(configuration.distributed_tracing.sampler.root, 'adaptive')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'adaptive')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'adaptive')
   })
 
   await t.test('should set all samplers to a string', () => {
@@ -402,17 +497,12 @@ test('distributed tracing samplers', async (t) => {
       distributed_tracing: {
         sampler: {
           root: 'always_on',
-          remote_parent_sampled: 'default',
+          remote_parent_sampled: 'adaptive',
           remote_parent_not_sampled: 'adaptive',
-          full_granularity: {
-            root: 'always_off',
-            remote_parent_sampled: 'adaptive',
-            remote_parent_not_sampled: 'always_on'
-          },
           partial_granularity: {
             root: 'adaptive',
             remote_parent_sampled: 'always_on',
-            remote_parent_not_sampled: 'default'
+            remote_parent_not_sampled: 'adaptive'
           }
         }
       }
@@ -420,14 +510,11 @@ test('distributed tracing samplers', async (t) => {
 
     const configuration = Config.initialize(config)
     assert.equal(configuration.distributed_tracing.sampler.root, 'always_on')
-    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.remote_parent_sampled, 'adaptive')
     assert.equal(configuration.distributed_tracing.sampler.remote_parent_not_sampled, 'adaptive')
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.root, 'always_off')
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_sampled, 'adaptive')
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.remote_parent_not_sampled, 'always_on')
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.root, 'adaptive')
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_sampled, 'always_on')
-    assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_not_sampled, 'default')
+    assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_not_sampled, 'adaptive')
   })
 
   await t.test('should set full/granularity options', () => {

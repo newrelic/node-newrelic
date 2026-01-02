@@ -11,13 +11,15 @@ const JSONbig = require('json-bigint')({ useNativeBigInt: true })
 const path = require('path')
 
 function checkMetrics(agent, expectedMetrics) {
+  const metrics = agent.metrics
   if (!expectedMetrics) {
-    assert.equal(agent.metrics._metrics.toJSON().length, 0, 'should not have any metrics')
+    // 3 FullGranularity supportability metrics will always exist
+    assert.equal(metrics._metrics.toJSON().length, 3, 'should not have any additional metrics')
     return
   }
 
   Object.keys(expectedMetrics).forEach(function (expectedMetric) {
-    const metric = agent.metrics.getOrCreateMetric(expectedMetric)
+    const metric = metrics.getOrCreateMetric(expectedMetric)
     assert.equal(
       metric.callCount,
       expectedMetrics[expectedMetric].call_count,

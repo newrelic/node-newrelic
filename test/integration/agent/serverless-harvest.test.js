@@ -35,6 +35,7 @@ test.beforeEach(async (ctx) => {
   }
 
   ctx.nr.agent = helper.instrumentMockedAgent({
+    account_id: 1, // assign to enabled DT in serverless mode
     serverless_mode: { enabled: true },
     app_name: 'serverless mode tests',
     license_key: '' // serverless mode doesn't require license key
@@ -121,7 +122,8 @@ test('sending metrics', async (t) => {
     'metric_data',
     function checkData(payload) {
       plan.ok(payload, 'should have a payload')
-      plan.deepStrictEqual(payload[3][0][0], { name: 'TEST/discard' }, 'should have test metric')
+      // First 3 are FullGranularity supportability metrics
+      plan.deepStrictEqual(payload[3][3][0], { name: 'TEST/discard' }, 'should have test metric')
     }
   )
 
@@ -231,9 +233,6 @@ test('serverless_mode harvest should disregard sampling limits', async (t) => {
 test('sending span events', async (t) => {
   const plan = tspl(t, { plan: 5 })
   const { agent } = t.nr
-
-  agent.config.distributed_tracing.enabled = true
-  agent.config.span_events.enabled = true
 
   helper.runInTransaction(agent, (tx) => {
     const segment = agent.tracer.createSegment({

@@ -20,7 +20,7 @@ test('otel decorated logs do not overwrite NR data', (t, end) => {
         enabled: false
       }
     },
-    opentelemetry_bridge: {
+    opentelemetry: {
       enabled: true,
       logs: { enabled: true }
     }

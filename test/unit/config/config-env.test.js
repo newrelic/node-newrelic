@@ -188,9 +188,9 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
-  const samplers = ['SAMPLER', 'SAMPLER_FULL_GRANULARITY', 'SAMPLER_PARTIAL_GRANULARITY']
+  const samplers = ['SAMPLER', 'SAMPLER_PARTIAL_GRANULARITY']
   for (const samplerName of samplers) {
-    const key = samplerName === 'SAMPLER_FULL_GRANULARITY' ? 'full_granularity' : 'partial_granularity'
+    const key = samplerName === 'SAMPLER' ? 'sampler' : 'partial_granularity'
     const samplerTypes = ['root', 'remote_parent_sampled', 'remote_parent_not_sampled']
     for (const type of samplerTypes) {
       const envVar = type.toUpperCase()
@@ -204,6 +204,58 @@ test('when overriding configuration values via environment variables', async (t)
             assert.equal(tc.distributed_tracing.sampler[type], 'always_on')
           } else {
             assert.equal(tc.distributed_tracing.sampler[key][type], 'always_on')
+          }
+          end()
+        })
+      })
+
+      await t.test(`should set ${samplerName}_${envVar} sampler to adaptive with sampling target`, (t, end) => {
+        const env = {
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'adaptive',
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}_ADAPTIVE_SAMPLING_TARGET`]: '21'
+        }
+
+        idempotentEnv(env, (tc) => {
+          if (samplerName === 'SAMPLER') {
+            assert.equal(tc.distributed_tracing.sampler[type].adaptive.sampling_target, 21)
+          } else {
+            assert.equal(tc.distributed_tracing.sampler[key][type].adaptive.sampling_target, 21)
+          }
+          end()
+        })
+      })
+
+      await t.test(`should not set ${samplerName}_${envVar} sampler.adaptive.sampling_target if adaptive.sampling.target < 1`, (t, end) => {
+        const env = {
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'adaptive',
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}_ADAPTIVE_SAMPLING_TARGET`]: '0'
+        }
+
+        idempotentEnv(env, (tc) => {
+          if (samplerName === 'SAMPLER') {
+            assert.equal(tc.distributed_tracing.sampler[type], 'adaptive')
+            assert.notEqual(tc.distributed_tracing.sampler[type]?.adaptive?.sampling_target, 0)
+          } else {
+            assert.equal(tc.distributed_tracing.sampler[key][type], 'adaptive')
+            assert.notEqual(tc.distributed_tracing.sampler[key][type]?.adaptive?.sampling_target, 0)
+          }
+          end()
+        })
+      })
+
+      await t.test(`should not set ${samplerName}_${envVar} sampler.adaptive.sampling_target if adaptive.sampling.target > 120`, (t, end) => {
+        const env = {
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'adaptive',
+          [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}_ADAPTIVE_SAMPLING_TARGET`]: '121'
+        }
+
+        idempotentEnv(env, (tc) => {
+          if (samplerName === 'SAMPLER') {
+            assert.equal(tc.distributed_tracing.sampler[type], 'adaptive')
+            assert.notEqual(tc.distributed_tracing.sampler[type]?.adaptive?.sampling_target, 121)
+          } else {
+            assert.equal(tc.distributed_tracing.sampler[key][type], 'adaptive')
+            assert.notEqual(tc.distributed_tracing.sampler[key][type]?.adaptive?.sampling_target, 121)
           }
           end()
         })
@@ -225,7 +277,7 @@ test('when overriding configuration values via environment variables', async (t)
         })
       })
 
-      await t.test(`should fall back to default ${samplerName}_${envVar} sampler when trace id ratio based is misconfigured`, (t, end) => {
+      await t.test(`should fall back to adaptive ${samplerName}_${envVar} sampler when trace id ratio based is misconfigured`, (t, end) => {
         const env = {
           [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}`]: 'trace_id_ratio_based',
           // Missing "RATIO" key at the end of this env var
@@ -234,15 +286,15 @@ test('when overriding configuration values via environment variables', async (t)
 
         idempotentEnv(env, (tc) => {
           if (samplerName === 'SAMPLER') {
-            assert.equal(tc.distributed_tracing.sampler[type], 'default')
+            assert.equal(tc.distributed_tracing.sampler[type], 'adaptive')
           } else {
-            assert.equal(tc.distributed_tracing.sampler[key][type], 'default')
+            assert.equal(tc.distributed_tracing.sampler[key][type], 'adaptive')
           }
           end()
         })
       })
 
-      await t.test(`should fall back to default ${samplerName}_${envVar} sampler when trace id ratio is missing sampler ${type}`, (t, end) => {
+      await t.test(`should fall back to adaptive ${samplerName}_${envVar} sampler when trace id ratio is missing sampler ${type}`, (t, end) => {
         const env = {
           // NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_<sampler>: 'trace_id_ratio_based' is needed to enable this sampler
           [`NEW_RELIC_DISTRIBUTED_TRACING_${samplerName}_${envVar}_TRACE_ID_RATIO_BASED`]: '0.5'
@@ -250,9 +302,9 @@ test('when overriding configuration values via environment variables', async (t)
 
         idempotentEnv(env, (tc) => {
           if (samplerName === 'SAMPLER') {
-            assert.equal(tc.distributed_tracing.sampler[type], 'default')
+            assert.equal(tc.distributed_tracing.sampler[type], 'adaptive')
           } else {
-            assert.equal(tc.distributed_tracing.sampler[key][type], 'default')
+            assert.equal(tc.distributed_tracing.sampler[key][type], 'adaptive')
           }
           end()
         })
@@ -279,7 +331,7 @@ test('when overriding configuration values via environment variables', async (t)
     }
   }
 
-  await t.test('should set root and remote parent sampled but leave remote parent not sampled as default', (t, end) => {
+  await t.test('should set root and remote parent sampled but leave remote parent not sampled as adaptive', (t, end) => {
     const env = {
       NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'trace_id_ratio_based',
       NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT_TRACE_ID_RATIO_BASED_RATIO: '0.5',
@@ -314,13 +366,13 @@ test('when overriding configuration values via environment variables', async (t)
   await t.test('should set all samplers to a string', (t, end) => {
     const env = {
       NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'always_on',
-      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED: 'default',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_SAMPLED: 'adaptive',
       NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_REMOTE_PARENT_NOT_SAMPLED: 'adaptive',
     }
 
     idempotentEnv(env, (tc) => {
       assert.equal(tc.distributed_tracing.sampler.root, 'always_on')
-      assert.equal(tc.distributed_tracing.sampler.remote_parent_sampled, 'default')
+      assert.equal(tc.distributed_tracing.sampler.remote_parent_sampled, 'adaptive')
       assert.equal(tc.distributed_tracing.sampler.remote_parent_not_sampled, 'adaptive')
       end()
     })

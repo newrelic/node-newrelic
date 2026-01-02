@@ -7,15 +7,16 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmError = require('../../../../lib/llm-events/aws-bedrock/error')
+const LlmErrorMessage = require('#agentlib/llm-events/error-message.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-  ctx.nr.bedrockResponse = {
+  ctx.nr.response = {
     statusCode: 400
   }
 
-  ctx.nr.err = {
+  // The cause of the error.
+  ctx.nr.cause = {
     message: 'No soup for you',
     name: 'SoupRule'
   }
@@ -23,10 +24,12 @@ test.beforeEach((ctx) => {
   ctx.nr.summary = {
     id: 'completion-id'
   }
+
+  ctx.nr.useNameAsCode = true
 })
 
 test('create creates a new instance', (t) => {
-  const err = new LlmError(t.nr)
+  const err = new LlmErrorMessage(t.nr)
   assert.equal(err['http.statusCode'], 400)
   assert.equal(err['error.message'], 'No soup for you')
   assert.equal(err['error.code'], 'SoupRule')
@@ -37,7 +40,7 @@ test('create creates a new instance', (t) => {
 test('create error with embedding_id', (t) => {
   delete t.nr.summary
   t.nr.embedding = { id: 'embedding-id' }
-  const err = new LlmError(t.nr)
+  const err = new LlmErrorMessage(t.nr)
   assert.equal(err['http.statusCode'], 400)
   assert.equal(err['error.message'], 'No soup for you')
   assert.equal(err['error.code'], 'SoupRule')
@@ -46,7 +49,7 @@ test('create error with embedding_id', (t) => {
 })
 
 test('empty error', () => {
-  const err = new LlmError()
+  const err = new LlmErrorMessage()
   assert.ok(!err['http.statusCode'])
   assert.ok(!err['error.message'])
   assert.ok(!err['error.code'])

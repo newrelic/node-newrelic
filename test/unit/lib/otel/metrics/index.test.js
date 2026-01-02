@@ -20,7 +20,7 @@ test('configures global provider after agent start', async (t) => {
       license_key: 'license-123456',
       host: 'example.com',
       port: 443,
-      opentelemetry_bridge: {
+      opentelemetry: {
         metrics: {
           enabled: true,
           exportInterval: 1_000,

@@ -1588,6 +1588,29 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       end()
     }
   })
+
+  await t.test('should handle async handler no callback', async (t) => {
+    const { agent, awsLambda, stubContext } = t.nr
+    const stubEvent = { fake: 'event' }
+    let transaction
+    const wrappedHandler = awsLambda.patchLambdaHandler(async (event, context) => {
+      assert.equal(context.done.name, 'wrappedCallback')
+      assert.equal(context.succeed.name, 'wrappedSucceed')
+      assert.equal(context.fail.name, 'wrappedCallback')
+      assert.deepEqual(context, stubContext)
+      assert.deepEqual(event, stubEvent)
+      transaction = agent.tracer.getTransaction()
+      assert.ok(transaction)
+      assert.equal(transaction.type, 'bg')
+      assert.equal(transaction.getFullName(), expectedBgTransactionName)
+      assert.ok(transaction.isActive())
+      return 'hello'
+    })
+
+    const value = await wrappedHandler(stubEvent, stubContext)
+    assert.equal(value, 'hello')
+    assert.equal(transaction.isActive(), false)
+  })
 })
 
 test('APM Mode transaction name should include event type', async (t) => {

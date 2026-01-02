@@ -99,7 +99,7 @@ test('agent control writes to file uri destinations', (t, end) => {
   function check() {
     const data = fs.readFileSync(agent.healthReporter.destFile)
     // Since the agent wasn't started, it's in a "healthy" state.
-    assert.equal(data.toString().startsWith('healthy: true'), true, 'should have a healthy report')
+    assert.equal(data.toString().includes('healthy: true'), true, 'should have a healthy report')
     end()
   }
 })
@@ -393,7 +393,7 @@ test('when starting', async (t) => {
 
     function check() {
       const report = fs.readFileSync(agent.healthReporter.destFile).toString()
-      assert.equal(report.startsWith('healthy: false'), true, 'should have a unhealthy report')
+      assert.equal(report.includes('healthy: false'), true, 'should have a unhealthy report')
       assert.equal(report.includes("status: 'Agent is disabled via configuration."), true)
       assert.equal(report.includes('last_error: NR-APM-008'), true)
       end()
@@ -1020,16 +1020,16 @@ test('when sampling_target changes', async (t) => {
 
   await t.test('should adjust the current sampling target', (t) => {
     const { agent } = t.nr
-    assert.notEqual(agent.transactionSampler.samplingTarget, 5)
+    assert.notEqual(agent.samplers.root.samplingTarget, 5)
     agent.config.onConnect({ sampling_target: 5 })
-    assert.equal(agent.transactionSampler.samplingTarget, 5)
+    assert.equal(agent.samplers.root.samplingTarget, 5)
   })
 
   await t.test('should adjust the sampling period', (t) => {
     const { agent } = t.nr
-    assert.notEqual(agent.transactionSampler.samplingPeriod, 100)
+    assert.notEqual(agent.samplers.root.samplingPeriod, 100)
     agent.config.onConnect({ sampling_target_period_in_seconds: 0.1 })
-    assert.equal(agent.transactionSampler.samplingPeriod, 100)
+    assert.equal(agent.samplers.root.samplingPeriod, 100)
   })
 })
 

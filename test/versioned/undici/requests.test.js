@@ -188,19 +188,37 @@ test('concurrent requests', async (t) => {
       body: Buffer.from('{"key":"value"}')
     })
     const [{ statusCode }, { statusCode: statusCode2 }] = await Promise.all([req1, req2])
+    const { statusCode: statusCode3 } = await undici.request(REQUEST_URL, {
+      path: '/delay/100',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application.json'
+      },
+      body: Buffer.from('{"key":"value"}')
+    })
     assert.equal(statusCode, 200)
     assert.equal(statusCode2, 200)
+    assert.equal(statusCode3, 200)
     const postName = `External/${HOST}/post`
     const putName = `External/${HOST}/put`
+    const delayName = `External/${HOST}/delay/100`
     const postSegment = metrics.findSegment(tx.trace, tx.trace.root, postName)
-    assert.equal(postSegment.parentId, tx.trace.root.id)
     const putSegment = metrics.findSegment(tx.trace, tx.trace.root, putName)
-    // parent of put is the post segment because it is still the active one
-    // not ideal, but our instrumentation does not play nice with diagnostic_channel
+    const delaySegment = metrics.findSegment(tx.trace, tx.trace.root, delayName)
+    // check the segments were ended in instrumentation
+    assert.equal(postSegment.timer.state, 3)
+    assert.equal(putSegment.timer.state, 3)
+    assert.equal(delaySegment.timer.state, 3)
+
+    assert.equal(postSegment.parentId, tx.trace.root.id)
+    // parents of /put and /delay are the prior undici calls
+    // our instrumentation does not play nice with diagnostic_channel
     // we're setting the active segment in the `undici:request:create` and restoring
     // the parent segment in the request end
     assert.equal(putSegment.parentId, postSegment.id)
-    assertSegments(tx.trace, tx.trace.root, [postSegment, putSegment], {
+    assert.equal(delaySegment.parentId, putSegment.id)
+
+    assertSegments(tx.trace, tx.trace.root, [postSegment, putSegment, delaySegment], {
       exact: false
     })
     tx.end()
@@ -222,6 +240,7 @@ test('concurrent requests in diff transaction', async (t) => {
     const postName = `External/${HOST}/post`
     const postSegment = metrics.findSegment(tx.trace, tx.trace.root, postName)
     assert.equal(postSegment.parentId, tx.trace.root.id)
+    assert.equal(postSegment.timer.state, 3)
     tx.end()
   })
 
@@ -238,6 +257,7 @@ test('concurrent requests in diff transaction', async (t) => {
     const putName = `External/${HOST}/put`
     const putSegment = metrics.findSegment(tx.trace, tx.trace.root, putName)
     assert.equal(putSegment.parentId, tx.trace.root.id)
+    assert.equal(putSegment.timer.state, 3)
     tx.end()
   })
 

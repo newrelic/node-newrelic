@@ -13,6 +13,7 @@ const hashes = require('#agentlib/util/hashes.js')
 const HOST = 'https://www.example.com'
 const UndiciSubscriber = require('#agentlib/subscribers/undici/index.js')
 const diagnosticsChannel = require('diagnostics_channel')
+const { undiciParent, undiciSegment } = require('#agentlib/symbols.js')
 
 test('undici instrumentation', async function (t) {
   t.beforeEach(function(ctx) {
@@ -94,7 +95,7 @@ test('undici instrumentation', async function (t) {
       }
       channels.create.publish({ request })
       const context = agent.tracer.getContext()
-      assert.ok(context.extras.undiciParent)
+      assert.ok(request[undiciParent])
       assert.ok(context.transaction)
       assert.equal(request.addHeader.callCount, 2)
       assert.deepEqual(request.addHeader.args[0], ['x-newrelic-synthetics', 'synthHeader'])
@@ -148,18 +149,17 @@ test('undici instrumentation', async function (t) {
           origin: 'https://unittesting.com',
           path: '/foo?a=b&c=d'
         }
-        let context = agent.tracer.getContext()
         const parent = agent.tracer.createSegment({
           name: 'parent',
           parent: tx.trace.root,
           transaction: tx
         })
-        context.extras = { undiciParent: parent }
+        request[undiciParent] = parent
         channels.create.publish({ request })
-        context = agent.tracer.getContext()
-        assert.ok(context.extras.undiciParent)
+        const context = agent.tracer.getContext()
+        assert.ok(request[undiciParent])
         assert.ok(context.transaction)
-        assert.ok(context.extras.undiciSegment)
+        assert.ok(request[undiciSegment])
         const segment = agent.tracer.getSegment()
         assert.equal(segment.name, 'External/unittesting.com/foo')
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
@@ -279,7 +279,7 @@ test('undici instrumentation', async function (t) {
     function (t, end) {
       const { agent, channels } = t.nr
       helper.runInTransaction(agent, function (tx) {
-        channels.headers.publish({})
+        channels.headers.publish({ request: {} })
         const segment = agent.tracer.getSegment()
         const attrs = segment.getAttributes()
         assert.deepEqual(Object.keys(attrs), [])
@@ -293,13 +293,12 @@ test('undici instrumentation', async function (t) {
     const { agent, channels } = t.nr
     helper.runInTransaction(agent, function (tx) {
       const segment = agent.tracer.createSegment({ name: 'active', parent: tx.trace.root, transaction: tx })
-      const context = agent.tracer.getContext()
-      context.extras = { undiciSegment: segment }
+      const request = { [undiciSegment]: segment }
       const response = {
         statusCode: 200,
         statusText: 'OK'
       }
-      channels.headers.publish({ response })
+      channels.headers.publish({ response, request })
       const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
       assert.equal(attrs['http.statusCode'], 200)
       assert.equal(attrs['http.statusText'], 'OK')
@@ -313,10 +312,9 @@ test('undici instrumentation', async function (t) {
     agent.config.cross_application_tracer.enabled = true
     agent.config.trusted_account_ids = [111]
     helper.runInTransaction(agent, function (tx) {
-      const context = agent.tracer.getContext()
       const segment = agent.tracer.createSegment({ name: 'active', parent: tx.trace.root, transaction: tx })
       segment.addAttribute('url', 'https://www.unittesting.com/path')
-      context.extras = { undiciSegment: segment }
+      const request = { [undiciSegment]: segment }
       const response = {
         headers: {
           'x-newrelic-app-data': hashes.obfuscateNameUsingKey(
@@ -327,7 +325,7 @@ test('undici instrumentation', async function (t) {
         statusCode: 200,
         statusText: 'OK'
       }
-      channels.headers.publish({ response })
+      channels.headers.publish({ response, request })
       assert.equal(segment.name, 'ExternalTransaction/www.unittesting.com/111#456/abc')
       tx.end()
       end()
@@ -338,10 +336,9 @@ test('undici instrumentation', async function (t) {
     helper.runInTransaction(agent, function (tx) {
       const parentSegment = agent.tracer.createSegment({ name: 'parent', parent: tx.trace.root, transaction: tx })
       const segment = agent.tracer.createSegment({ name: 'active', parent: tx.trace.root, transaction: tx })
-      const context = agent.tracer.getContext()
-      context.extras = { undiciSegment: segment, undiciParent: parentSegment }
+      const request = { [undiciParent]: parentSegment, [undiciSegment]: segment }
       agent.tracer.setSegment({ segment, transaction: tx })
-      channels.send.publish({})
+      channels.send.publish({ request })
       assert.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
       assert.equal(parentSegment.id, agent.tracer.getSegment().id, 'parentSegment should now the active')
       tx.end()
@@ -357,11 +354,10 @@ test('undici instrumentation', async function (t) {
         sandbox.stub(tx.agent.errors, 'add')
         const parentSegment = agent.tracer.createSegment({ name: 'parent', parent: tx.trace.root, transaction: tx })
         const segment = agent.tracer.createSegment({ name: 'active', parent: tx.trace.root, transaction: tx })
-        const context = agent.tracer.getContext()
-        context.extras = { undiciSegment: segment, undiciParent: parentSegment }
+        const request = { [undiciSegment]: segment, [undiciParent]: parentSegment }
         agent.tracer.setSegment({ segment, transaction: tx })
         const error = new Error('request failed')
-        channels.error.publish({ error })
+        channels.error.publish({ error, request })
         assert.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
         assert.equal(
           parentSegment.id,

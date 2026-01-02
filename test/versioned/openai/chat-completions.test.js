@@ -34,11 +34,11 @@ test('chat.completions.create', async (t) => {
     ctx.nr.server = server
     ctx.nr.agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: true
+        enabled: true,
+        streaming: {
+          enabled: true
+        }
       },
-      streaming: {
-        enabled: true
-      }
     })
     const OpenAI = require('openai')
     ctx.nr.client = new OpenAI({
@@ -398,7 +398,7 @@ test('chat.completions.create', async (t) => {
     })
 
     test('should not create llm events when ai_monitoring.streaming.enabled is false', (t, end) => {
-      const { client, agent } = t.nr
+      const { client, agent, host, port } = t.nr
       agent.config.ai_monitoring.streaming.enabled = false
       helper.runInTransaction(agent, async (tx) => {
         const content = 'Streamed response'
@@ -421,11 +421,16 @@ test('chat.completions.create', async (t) => {
         assert.equal(res, expectedRes.streamData)
 
         const events = agent.customEventAggregator.events.toArray()
-        assert.equal(events.length, 0, 'should not llm events when streaming is disabled')
-        const metrics = agent.metrics.getOrCreateMetric(TRACKING_METRIC)
-        assert.equal(metrics.callCount > 0, true)
-        const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-        assert.equal(attributes.llm, true)
+        assert.equal(events.length, 0, 'should not create llm events when streaming is disabled')
+
+        // Should still create the OPENAI.COMPLETION segment since ai_monitoring is enabled
+        assertSegments(
+          tx.trace,
+          tx.trace.root,
+          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+          { exact: false }
+        )
+
         const streamingDisabled = agent.metrics.getOrCreateMetric(
           'Supportability/Nodejs/ML/Streaming/Disabled'
         )
@@ -476,6 +481,25 @@ test('chat.completions.create', async (t) => {
 
     const events = agent.customEventAggregator.events.toArray()
     assert.equal(events.length, 0, 'should not create llm events')
+  })
+
+  await t.test('should not create segment or llm events when ai_monitoring.enabled is false', (t, end) => {
+    const { client, agent } = t.nr
+    agent.config.ai_monitoring.enabled = false
+    helper.runInTransaction(agent, async (tx) => {
+      await client.chat.completions.create({
+        messages: [{ role: 'user', content: 'You are a mathematician.' }]
+      })
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 0, 'should not create llm events when ai_monitoring is disabled')
+
+      const children = tx.trace.segments.root.children
+      assert.equal(children.length, 0, 'should not create OpenAI completion segment')
+
+      tx.end()
+      end()
+    })
   })
 
   await t.test('auth errors should be tracked', async (t) => {

@@ -7,8 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const fs = require('node:fs')
-const path = require('node:path')
+const helper = require('../../lib/agent_helper')
 
 const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
@@ -23,9 +22,7 @@ const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../
 function getPathToRegexpVersion() {
   let pathToRegexVersion
   try {
-    ;({ version: pathToRegexVersion } = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '/node_modules/path-to-regexp/package.json'))
-    ))
+    pathToRegexVersion = helper.readPackageVersion(__dirname, 'path-to-regexp')
   } catch {
     pathToRegexVersion = '6.0.0'
   }
@@ -34,12 +31,11 @@ function getPathToRegexpVersion() {
 
 module.exports = (pkg) => {
   require('../../lib/metrics_helper')
-  const helper = require('../../lib/agent_helper')
   const semver = require('semver')
   const { run } = require('./utils')
 
   test(`${pkg} instrumentation`, async (t) => {
-    const { version: pkgVersion } = require(`${pkg}/package.json`)
+    const pkgVersion = helper.readPackageVersion(__dirname, pkg)
     const paramMiddlewareName = 'Nodejs/Middleware/Koa/middleware//:first'
     const pathToRegexVersion = getPathToRegexpVersion()
 
@@ -69,7 +65,9 @@ module.exports = (pkg) => {
 
       const Koa = require('koa')
       ctx.nr.app = new Koa()
-      const Router = require(pkg)
+      const routerPkg = require(pkg)
+      // newer versions of @koa/router use a default export
+      const Router = routerPkg.Router || routerPkg
       ctx.nr.router = new Router()
       ctx.nr.Router = Router
     }
@@ -396,15 +394,34 @@ module.exports = (pkg) => {
             ctx.body = ' second'
           })
 
-          const segmentTree = semver.gte(pathToRegexVersion, '8.0.0')
-            ? ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
-            : [
-                'Nodejs/Middleware/Koa/secondMiddleware//:first',
-                [
-                  'Nodejs/Middleware/Koa/secondMiddleware//:second',
-                  ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
-                ]
+          let segmentTree
+          /**
+           * Since this file is being used to test both `koa-router`(deprecated)
+           * and `@koa/router`. The behavior of resolving middleware changes.
+           * In `@koa/router` 14.x there was a bug, this check works around all tested versions
+           * of both `koa-router` and `@koa/router`
+           * We will remove testing `koa-router` in an upcoming major release.
+           * See: https://github.com/newrelic/node-newrelic/issues/3549
+           */
+          if (pkg === '@koa/router' && semver.gte(pkgVersion, '15.0.0')) {
+            segmentTree = [
+              'Nodejs/Middleware/Koa/secondMiddleware//:first',
+              [
+                'Nodejs/Middleware/Koa/secondMiddleware//:second',
+                ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
               ]
+            ]
+          } else {
+            segmentTree = semver.gte(pathToRegexVersion, '8.0.0')
+              ? ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
+              : [
+                  'Nodejs/Middleware/Koa/secondMiddleware//:first',
+                  [
+                    'Nodejs/Middleware/Koa/secondMiddleware//:second',
+                    ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
+                  ]
+                ]
+          }
           app.use(router.routes())
           agent.on('transactionFinished', (tx) => {
             assertSegments(tx.trace, tx.trace.root, [
@@ -483,7 +500,9 @@ module.exports = (pkg) => {
 
       await t.test('should name transaction after last route for identical matches', (t, end) => {
         const { agent, router, app } = t.nr
-        const Router = require(pkg)
+        // newer versions of @koa/router use a default export
+        const routerPkg = require(pkg)
+        const Router = routerPkg.default || routerPkg
         const router2 = new Router()
         router.get('/:first', function firstMiddleware(ctx, next) {
           ctx.body = 'first'
@@ -523,7 +542,9 @@ module.exports = (pkg) => {
 
       await t.test('should name tx after last matched route even if body not set', (t, end) => {
         const { agent, router, app } = t.nr
-        const Router = require(pkg)
+        const routerPkg = require(pkg)
+        // newer versions of @koa/router use a default export
+        const Router = routerPkg.default || routerPkg
         const router2 = new Router()
         router.get('/first', function firstMiddleware(ctx, next) {
           ctx.body = 'first'

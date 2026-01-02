@@ -7,10 +7,10 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
+const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const sinon = require('sinon')
-const { afterEach, getAiResponseServer } = require('./common')
-const createAiResponseServer = getAiResponseServer()
+const { afterEach } = require('./common')
+const createAiResponseServer = getAiResponseServer(__dirname)
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}

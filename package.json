@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "13.6.5",
+  "version": "13.8.1",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -233,7 +233,6 @@
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.556.0",
     "@aws-sdk/s3-request-presigner": "^3.556.0",
-    "@koa/router": "^12.0.1",
     "@matteo.collina/tspl": "^0.1.1",
     "@newrelic/eslint-config": "^0.6.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
@@ -260,9 +259,6 @@
     "got": "^11.8.5",
     "husky": "^6.0.0",
     "jsdoc": "^4.0.0",
-    "koa": "^2.15.3",
-    "koa-route": "^4.0.1",
-    "koa-router": "^12.0.1",
     "lint-staged": "^11.0.0",
     "lockfile-lint": "^4.9.6",
     "nock": "11.8.0",

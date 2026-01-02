@@ -1,3 +1,96 @@
+### v13.8.1 (2025-12-15)
+
+#### Bug fixes
+
+* Updated AWS Lambda instrumentation to skip wrapping handler callback if not present ([#3602](https://github.com/newrelic/node-newrelic/pull/3602)) ([d56e27d](https://github.com/newrelic/node-newrelic/commit/d56e27d5764b4c0a7d513fffa3310148d7cebea6))
+
+#### Documentation
+
+* Updated compatibility report ([#3596](https://github.com/newrelic/node-newrelic/pull/3596)) ([ed24527](https://github.com/newrelic/node-newrelic/commit/ed24527cfd2e836de67a769cbeaa63683b207506))
+
+### v13.8.0 (2025-12-11)
+
+#### Features
+
+* Added support for `@langchain/aws` ([#3563](https://github.com/newrelic/node-newrelic/pull/3563)) ([56c4a78](https://github.com/newrelic/node-newrelic/commit/56c4a782c7e05d94dc78ec0bd5eed19bfcc8a835))
+* Additional support for partial granularity traces (Not available for production use)
+    * Added partial granularity tracking metrics ([#3566](https://github.com/newrelic/node-newrelic/pull/3566)) ([061f0fc](https://github.com/newrelic/node-newrelic/commit/061f0fca7e61b24fe08cb55538df4c4326c7dd69))
+    * updated `AlwaysOn` sampler to set priority to 3 for full trace and 2 for partial trace ([#3577](https://github.com/newrelic/node-newrelic/pull/3577)) ([e7bcff4](https://github.com/newrelic/node-newrelic/commit/e7bcff4364b5ea8a8af7a7ee58ff05e9e2edb977))
+    * Updated the span generation process ([#3585](https://github.com/newrelic/node-newrelic/pull/3585)) ([74777d5](https://github.com/newrelic/node-newrelic/commit/74777d5f7bfc182f5e36480a9bce1b67db13ce45))
+
+#### Code refactoring
+
+* Converted AWS Bedrock's `LlmError` to use `LlmErrorMessage` ([#3567](https://github.com/newrelic/node-newrelic/pull/3567)) ([8b2bb42](https://github.com/newrelic/node-newrelic/commit/8b2bb428eb3830b7cee4fa30e77a9562628fdd01))
+* Updated `@google/genai` instrumentation to subscribe to events emitted ([#3467](https://github.com/newrelic/node-newrelic/pull/3467)) ([e8d9ba1](https://github.com/newrelic/node-newrelic/commit/e8d9ba188b4399604c6410b2fca406f8d7f338b5))
+* Updated `bunyan` instrumentation to subscribe to events emitted ([#3589](https://github.com/newrelic/node-newrelic/pull/3589)) ([f1e5f12](https://github.com/newrelic/node-newrelic/commit/f1e5f129594a4c3acd8075604bae52013555cf52))
+
+#### Documentation
+
+* Updated compatibility report ([#3592](https://github.com/newrelic/node-newrelic/pull/3592)) ([7455533](https://github.com/newrelic/node-newrelic/commit/7455533e64d88233adf5aa0246261417049c2122))
+
+#### Miscellaneous chores
+
+* Refactor span link serialization ([#3574](https://github.com/newrelic/node-newrelic/pull/3574)) ([103044d](https://github.com/newrelic/node-newrelic/commit/103044d25a968649bdb0e39df054757163cd986f))
+
+#### Tests
+
+* Moved mock aws bedrock server creation to `test/lib/aws-server-stubs/index.js` ([#3593](https://github.com/newrelic/node-newrelic/pull/3593)) ([270df81](https://github.com/newrelic/node-newrelic/commit/270df8109a2adbcb3ff405030e2be7104bee6511))
+
+### v13.7.0 (2025-12-08)
+
+#### Features
+
+* Updated `koa` instrumentation to properly wrap `Router` when using `@koa/router@15.0.0`+ ([#3550](https://github.com/newrelic/node-newrelic/pull/3550)) ([f1e08ad](https://github.com/newrelic/node-newrelic/commit/f1e08ad9fe200138ab9ed32e423517f64e41af49))
+* Added ability to configure a ratio based sampler ([#3501](https://github.com/newrelic/node-newrelic/pull/3501)) ([f300bd5](https://github.com/newrelic/node-newrelic/commit/f300bd5eacf9d6509b56484e7ad36d5c0725b497))
+    * To assign a ratio based sampler, set `config.distributed_tracing.sampler.root`, `config.distributed_tracing.sampler.remote_parent_sampled`, or `config.distributed_tracing.sampler.remote_parent_not_sampled` to `{ trace_id_ratio_based: { ratio: <float between 0 and 1> }}`
+    * To assign via environment variables set `NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_<TYPE>='trace_id_ratio_based'` and `NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_<TYPE>_RATIO=<float between 0 and 1>` where `<TYPE>` is one of `ROOT`, `REMOTE_PARENT_SAMPLED`, or `REMOTE_PARENT_NOT_SAMPLED`
+* Updated configuration to allow `adaptive.sampling_target` to be set for `config.distributed_tracing.sampler.root`, `config.distributed_tracing.sampler.remote_parent_sampled`, and `config.distributed_tracing.sampler.remote_parent_not_sampled` ([#3532](https://github.com/newrelic/node-newrelic/pull/3532)) ([44f51dd](https://github.com/newrelic/node-newrelic/commit/44f51dd5583e74aef1e2d0ee9483d51d5ff786c3))
+* Added support for OTEL span links ([#3528](https://github.com/newrelic/node-newrelic/pull/3528)) ([e840690](https://github.com/newrelic/node-newrelic/commit/e8406903dd0c92cd003fac69770785489e1bba85))
+* Replaced `default` with `adaptive` as the default for samplers ([#3543](https://github.com/newrelic/node-newrelic/pull/3543)) ([3f03162](https://github.com/newrelic/node-newrelic/commit/3f0316285fdde6d3c38ce819aa41221a71bd4fcb))
+* Preliminary support for partial granularity traces (Not available for production use)
+    * Added `essential` type for partial granularity traces ([#3547](https://github.com/newrelic/node-newrelic/pull/3547)) ([3d85fb5](https://github.com/newrelic/node-newrelic/commit/3d85fb5fa16d411892eb4a23067e66669461ada0))
+    * Added `reduced` type for partial granularity traces. ([#3540](https://github.com/newrelic/node-newrelic/pull/3540)) ([cfa8f41](https://github.com/newrelic/node-newrelic/commit/cfa8f41618595cc5ffb3e3b5574673721c64580c))
+    * Added partial granularity samplers and assign transactions with `isPartialTrace` when partial granularity sampling decisions have been made ([#3544](https://github.com/newrelic/node-newrelic/pull/3544)) ([1535a82](https://github.com/newrelic/node-newrelic/commit/1535a82331ce40d7c96e0c6746ec70bcdbd6e4f6))
+    * Refactored samplers into classes and store them on `agent.sampler.*` ([#3527](https://github.com/newrelic/node-newrelic/pull/3527)) ([ad63441](https://github.com/newrelic/node-newrelic/commit/ad634411a0d91240c0c16c7a372b00b36651589f))
+    * Updated `Samplers` class to normalize logger messages, short circuit when applicable and remove optional chaining checks ([#3546](https://github.com/newrelic/node-newrelic/pull/3546)) ([4f7684c](https://github.com/newrelic/node-newrelic/commit/4f7684cb4c64a89545704c70c110d2fd13815197))
+    * Updated samplers to assign priority between 0-1 when DT is disabled or both full and partial granularity are disabled ([#3559](https://github.com/newrelic/node-newrelic/pull/3559)) ([7a1c37e](https://github.com/newrelic/node-newrelic/commit/7a1c37e3e04fef0538a8af15fa690915bce65262))
+    * Updated transaction to store partial granularity indicator as `.partialType` ([#3561](https://github.com/newrelic/node-newrelic/pull/3561)) ([a7f20d8](https://github.com/newrelic/node-newrelic/commit/a7f20d8e83b44556434bae90bd3924c54af9f587))
+    * Updated when partial granularity rules are applied ([#3553](https://github.com/newrelic/node-newrelic/pull/3553)) ([a4bdf4f](https://github.com/newrelic/node-newrelic/commit/a4bdf4fbbbdac102519020c5ca4d3dc92eeff844))
+    * Added `toString` and `get [Symbol.toStringTag]()` to default Sampler class ([#3562](https://github.com/newrelic/node-newrelic/pull/3562)) ([771168d](https://github.com/newrelic/node-newrelic/commit/771168dcd927240b6efc703f238046e9a7f7766b))
+
+#### Bug fixes
+
+* Fixed normalization of OTEL hrtime ([#3564](https://github.com/newrelic/node-newrelic/pull/3564)) ([707fe7d](https://github.com/newrelic/node-newrelic/commit/707fe7d6395f0e15b5e6c6195f93df1c27540423))
+
+#### Documentation
+
+* Updated compatibility report ([#3551](https://github.com/newrelic/node-newrelic/pull/3551)) ([02268a4](https://github.com/newrelic/node-newrelic/commit/02268a4e3fe7b2f2f5c2fd035bcb337fd7b2bfc2))
+* Added internal doc for attributes ([#3539](https://github.com/newrelic/node-newrelic/pull/3539)) ([68543b6](https://github.com/newrelic/node-newrelic/commit/68543b606fc53e59e9a6fcb08173e423bc6437a9))
+
+#### Miscellaneous chores
+
+* Improved logging around `preconnect` payload
+    * Added more logging around assigning hostname during `preconnect` ([#3568](https://github.com/newrelic/node-newrelic/pull/3568)) ([3ee4d38](https://github.com/newrelic/node-newrelic/commit/3ee4d383cd7d9e7bf16e9da5e7f130fc2a103ca4))
+    * Improved GCP utilization logging ([#3552](https://github.com/newrelic/node-newrelic/pull/3552)) ([e6c4141](https://github.com/newrelic/node-newrelic/commit/e6c4141b55860b5f1fe5cd14049abb9eca9b3859))
+* Utilization resolution is now done concurrently ([#3556](https://github.com/newrelic/node-newrelic/pull/3556)) ([8386360](https://github.com/newrelic/node-newrelic/commit/8386360fe7fb4b7278e001dac8c8293581654069))
+* Collected OTEL instrumentation scope metadata on all OTEL spans. ([#3554](https://github.com/newrelic/node-newrelic/pull/3554)) ([75703c4](https://github.com/newrelic/node-newrelic/commit/75703c41a8db1d204a1500b8b43dff0d04a5b286))
+* Improved OTEL hrtime processing ([#3557](https://github.com/newrelic/node-newrelic/pull/3557)) ([8f187b1](https://github.com/newrelic/node-newrelic/commit/8f187b11eac96f78d9743cadb2302001ed94412a))
+* Renamed config `opentelemetry_bridge` to `opentelemetry` ([#3565](https://github.com/newrelic/node-newrelic/pull/3565)) ([c9d156f](https://github.com/newrelic/node-newrelic/commit/c9d156fe302ffb99b262ffd3e256d953301f08f2))
+
+### v13.6.6 (2025-11-19)
+
+#### Bug fixes
+
+* Updated `app.use` or `router.use` Express instrumentation to properly wrap all middleware defined ([#3520](https://github.com/newrelic/node-newrelic/pull/3520)) ([d3b20d0](https://github.com/newrelic/node-newrelic/commit/d3b20d09a9c3d21bff081771d8c11caff9c6a6e5))
+
+#### Documentation
+
+* Updated compatibility report ([#3522](https://github.com/newrelic/node-newrelic/pull/3522)) ([72ec652](https://github.com/newrelic/node-newrelic/commit/72ec65252700ab5f3831dab35d05b607a0723aa6)) ([#3516](https://github.com/newrelic/node-newrelic/pull/3516)) ([35defb0](https://github.com/newrelic/node-newrelic/commit/35defb009b7d3bbec0ffe084b434e368aa1cbc7c))
+
+#### Tests
+
+* Pinned next.js to skip 11.0.10 and 11.0.11 ([#3521](https://github.com/newrelic/node-newrelic/pull/3521)) ([20977ee](https://github.com/newrelic/node-newrelic/commit/20977eeb8552b7a445f5407d8df272aae49ea873))
+
 ### v13.6.5 (2025-11-17)
 
 #### Bug fixes
@@ -8050,6 +8143,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
