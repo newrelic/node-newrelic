@@ -14,9 +14,10 @@ import { tspl } from '@matteo.collina/tspl'
 import assertions from '../../lib/custom-assertions/index.js'
 const { assertMetrics } = assertions
 import { removeModules } from '../../lib/cache-buster.js'
+import { REDIS_INDICES } from '../../lib/constants.js'
 
-// Indicates unique database in Redis. 0-15 supported.
-const DB_INDEX = 5
+const DB_INDEX = REDIS_INDICES.IOREDIS_ESM.INDEX
+const SELECTED_DB = REDIS_INDICES.IOREDIS_ESM.SELECTED_INDEX
 
 test('ioredis instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -175,7 +176,6 @@ test('ioredis instrumentation', async (t) => {
   await t.test('should follow selected database', async (t) => {
     const { agent, redisClient, redisKey } = t.nr
     const plan = tspl(t, { plan: 7 })
-    const SELECTED_DB = 8
 
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root

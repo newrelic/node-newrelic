@@ -13,9 +13,9 @@ const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 const { checkMetrics } = require('./utils')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
-
-// Indicates unique database in Redis. 0-15 supported.
-const DB_INDEX = 2
+const { REDIS_INDICES: { REDIS } } = require('../../lib/constants')
+const DB_INDEX = REDIS.INDEX
+const SELECTED_DB = REDIS.SELECTED_INDEX
 
 test('Redis instrumentation', async function (t) {
   t.beforeEach(async function (ctx) {
@@ -239,7 +239,6 @@ test('Redis instrumentation', async function (t) {
     const { agent, client } = t.nr
     assert.ok(!agent.getTransaction(), 'no transaction should be in play')
     let transaction = null
-    const SELECTED_DB = 3
     helper.runInTransaction(agent, async function (tx) {
       transaction = tx
       await client.set('select:test:key', 'foo')

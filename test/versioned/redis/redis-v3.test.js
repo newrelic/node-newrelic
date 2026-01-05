@@ -13,9 +13,9 @@ const urltils = require('../../../lib/util/urltils')
 const { tspl } = require('@matteo.collina/tspl')
 const { checkMetrics } = require('./utils')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
-
-// Indicates unique database in Redis. 0-15 supported.
-const DB_INDEX = 2
+const { REDIS_INDICES: { REDIS } } = require('../../lib/constants')
+const DB_INDEX = REDIS.INDEX
+const SELECTED_DB = REDIS.SELECTED_INDEX
 
 test('Redis instrumentation', { timeout: 20000 }, async function (t) {
   t.beforeEach(async function (ctx) {
@@ -313,7 +313,6 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
     const { agent, client } = t.nr
     const plan = tspl(t, { plan: 12 })
     let transaction = null
-    const SELECTED_DB = 3
     helper.runInTransaction(agent, function (tx) {
       transaction = tx
       client.set('select:test:key', 'foo', function (err) {
