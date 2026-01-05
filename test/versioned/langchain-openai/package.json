@@ -17,7 +17,7 @@
       "engines": {
         "node": ">=20"
       },
-      "comment": "because @langchain/core and @langchain/openai need to be same major version, we will only test >=1.0.0 for both of them",
+      "comment": "because @langchain/core and @langchain/openai need to be the same major version, we will only test >=1.0.0 for both of them",
       "dependencies": {
         "@langchain/core": ">=1.0.0",
         "@langchain/community": ">=1.0.0",
