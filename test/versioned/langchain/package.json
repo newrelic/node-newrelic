@@ -3,7 +3,7 @@
   "targets": [
     {
       "name": "@langchain/core",
-      "minSupported": "0.1.17",
+      "minSupported": "0.2.0",
       "minAgentVersion": "11.13.0"
     }
   ],
