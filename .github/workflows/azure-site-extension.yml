@@ -113,7 +113,7 @@ jobs:
         uses: NuGet/login@d22cc5f58ff5b88bf9bd452535b4335137e24544 # v1.1.0
         id: login
         with:
-          user: ${{ env.NUGET_TRUSTED_PUBLISH_POLICY_USER }}
+          user: ${{ vars.NUGET_TRUSTED_PUBLISH_POLICY_USER }}
 
       - name: Publish site extension
         working-directory: cloud-tooling/azure-site-extension
