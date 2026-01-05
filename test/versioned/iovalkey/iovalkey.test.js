@@ -13,9 +13,10 @@ const urltils = require('../../../lib/util/urltils')
 const { tspl } = require('@matteo.collina/tspl')
 const { assertMetrics, assertPackageMetrics } = require('../../lib/custom-assertions')
 const { removeModules } = require('../../lib/cache-buster')
+const { REDIS_INDICES: { IOVALKEY } } = require('../../lib/constants')
 
-// Indicates unique database in Valkey. 0-15 supported.
-const DB_INDEX = 4
+const DB_INDEX = IOVALKEY.INDEX
+const SELECTED_DB = IOVALKEY.SELECTED_INDEX
 
 test('iovalkey instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -177,7 +178,6 @@ test('iovalkey instrumentation', async (t) => {
   await t.test('should follow selected database', async (t) => {
     const { agent, valkeyClient, valkeyKey } = t.nr
     const plan = tspl(t, { plan: 7 })
-    const SELECTED_DB = 9
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
       const children = tx.trace.getChildren(root.id)

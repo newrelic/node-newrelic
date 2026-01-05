@@ -13,9 +13,10 @@ const urltils = require('../../../lib/util/urltils')
 const { tspl } = require('@matteo.collina/tspl')
 const { assertMetrics, assertPackageMetrics } = require('../../lib/custom-assertions')
 const { removeModules } = require('../../lib/cache-buster')
+const { REDIS_INDICES: { IOREDIS } } = require('../../lib/constants')
 
-// Indicates unique database in Redis. 0-15 supported.
-const DB_INDEX = 3
+const DB_INDEX = IOREDIS.INDEX
+const SELECTED_DB = IOREDIS.SELECTED_INDEX
 
 test('ioredis instrumentation', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -177,7 +178,6 @@ test('ioredis instrumentation', async (t) => {
   await t.test('should follow selected database', async (t) => {
     const { agent, redisClient, redisKey } = t.nr
     const plan = tspl(t, { plan: 7 })
-    const SELECTED_DB = 5
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
       const children = tx.trace.getChildren(root.id)
