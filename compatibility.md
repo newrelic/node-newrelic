@@ -25,7 +25,9 @@ supported by the agent.
 | `@grpc/grpc-js` | 1.4.0 | 1.14.3 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.4 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 15.2.0 | 3.2.0 |
-| `@langchain/core` | 0.1.17 | 1.1.8 | 11.13.0 |
+| `@langchain/aws` | 1.0.0 | 1.1.0 | 13.8.0 |
+| `@langchain/core` | 0.2.0 | 1.1.8 | 11.13.0 |
+| `@langchain/openai` | 1.0.0 | 1.2.0 | 11.13.0 |
 | `@modelcontextprotocol/sdk` | 1.13.0 | 1.25.1 | 13.2.0 |
 | `@nestjs/cli` | 9.0.0 | 11.0.14 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
@@ -58,7 +60,7 @@ supported by the agent.
 | `redis` | 3.1.0 | 5.10.0 | 1.31.0 |
 | `restify` | 11.0.0 | 11.1.0 | 2.6.0 |
 | `superagent` | 3.0.0 | 10.2.3 | 4.9.0 |
-| `undici` | 5.0.0 | 7.17.0 | 11.1.0 |
+| `undici` | 5.0.0 | 7.18.0 | 11.1.0 |
 | `when` | 3.7.0 | 3.7.8 | 1.26.2 |
 | `winston` | 3.0.0 | 3.19.0 | 8.11.0 |
 
