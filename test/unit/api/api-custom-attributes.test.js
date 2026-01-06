@@ -8,7 +8,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
-const SpanEvent = require('../../../lib/spans/span-event')
+const Span = require('../../../lib/spans/span')
 
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 
@@ -226,7 +226,7 @@ test('Agent API - custom attributes', async (t) => {
       api.startSegment('foobar', false, function () {
         api.addCustomSpanAttribute('spannnnnny', 1)
         const segment = api.shim.getSegment()
-        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+        const span = Span.fromSegment({ segment, transaction, parentId: 'parent' })
         const attributes = span.customAttributes
 
         assert.equal(attributes.spannnnnny, 1)
@@ -246,7 +246,7 @@ test('Agent API - custom attributes', async (t) => {
           two: 2
         })
         const segment = api.shim.getSegment()
-        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+        const span = Span.fromSegment({ segment, transaction, parentId: 'parent' })
         const attributes = span.customAttributes
 
         assert.equal(attributes.one, 1)

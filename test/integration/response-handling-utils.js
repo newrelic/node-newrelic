@@ -28,7 +28,7 @@ const endpointDataChecks = {
     return !!agent.traces.trace
   },
   span_event_data: function hasSpanEventData(agent) {
-    return agent.spanEventAggregator.length > 0
+    return agent.spanAggregator.length > 0
   },
   custom_event_data: function hasCustomEventData(agent) {
     // TODO... prob don't need to grab events
@@ -122,7 +122,7 @@ function whenAllAggregatorsSend(agent) {
   })
 
   const spanPromise = new Promise((resolve) => {
-    agent.spanEventAggregator.once(
+    agent.spanAggregator.once(
       'finished_data_send-span_event_data',
       function onSpansFinished() {
         resolve()

@@ -261,7 +261,7 @@ test('reconcileEvents skips work if no events', (t) => {
     processor.onStart(span)
 
     const { segment } = span[otelSynthesis]
-    segment.addTimedEvent = () => t.assert.fail('should not be invoked')
+    segment.addSpanEvent = () => t.assert.fail('should not be invoked')
     span.spanContext = () => t.assert.fail('should not be invoked')
     processor.reconcileEvents({ segment, span })
     t.assert.ok('passed')
@@ -285,10 +285,10 @@ test('reconcileEvents adds remapped events to the segment', (t) => {
     })
 
     const { segment } = span[otelSynthesis]
-    const addTimedEvent = segment.addTimedEvent
-    segment.addTimedEvent = (event) => {
-      t.assert.equal(Object.prototype.toString.call(event), '[object TimedEvent]')
-      return addTimedEvent.call(segment, event)
+    const addSpanEvent = segment.addSpanEvent
+    segment.addSpanEvent = (event) => {
+      t.assert.equal(Object.prototype.toString.call(event), '[object SpanEvent]')
+      return addSpanEvent.call(segment, event)
     }
     const spanContext = span.spanContext
     span.spanContext = () => {

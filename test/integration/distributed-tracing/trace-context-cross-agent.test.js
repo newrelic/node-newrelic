@@ -139,7 +139,7 @@ function getEventsToCheck(eventType, agent) {
       toCheck = agent.errors.eventAggregator.getEvents()
       break
     case 'Span':
-      toCheck = agent.spanEventAggregator.getEvents()
+      toCheck = agent.spanAggregator.getEvents()
       break
     default:
       throw new Error('I do no know how to test an ' + eventType)

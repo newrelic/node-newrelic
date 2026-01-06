@@ -9,22 +9,22 @@ const { describe, test } = require('node:test')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const helper = require('../../lib/agent_helper')
 const http = require('http')
-const SpanEvent = require('../../../lib/spans/span-event')
+const Span = require('../../../lib/spans/span')
 const DatastoreParameters = require('../../../lib/shim/specs/params/datastore')
 const { QuerySpec } = require('../../../lib/shim/specs')
 const nock = require('nock')
 
 test('#constructor() should construct an empty span event', () => {
   const attrs = {}
-  const span = new SpanEvent(attrs)
+  const span = new Span(attrs)
 
   assert.ok(span)
-  assert.ok(span instanceof SpanEvent)
+  assert.ok(span instanceof Span)
   assert.equal(span.attributes, attrs)
 
   assert.ok(span.intrinsics)
   assert.equal(span.intrinsics.type, 'Span')
-  assert.equal(span.intrinsics.category, SpanEvent.CATEGORIES.GENERIC)
+  assert.equal(span.intrinsics.category, Span.CATEGORIES.GENERIC)
 
   const emptyProps = [
     'traceId',
@@ -44,7 +44,7 @@ test('#constructor() should construct an empty span event', () => {
 
 describe('createSpan()', () => {
   test('adds empty spanLinks if none present', () => {
-    const span = SpanEvent.createSpan({
+    const span = Span.createSpan({
       segment: {},
       attributes: {},
       customAttributes: {}
@@ -57,7 +57,7 @@ describe('createSpan()', () => {
     const segment = {
       spanLinks: [{ id: 1 }]
     }
-    const span = SpanEvent.createSpan({
+    const span = Span.createSpan({
       segment,
       attributes: {},
       customAttributes: {}
@@ -65,26 +65,26 @@ describe('createSpan()', () => {
     assert.deepStrictEqual(span.spanLinks, [{ id: 1 }])
   })
 
-  test('adds empty timedEvents (otel span events) if none present', () => {
-    const span = SpanEvent.createSpan({
+  test('adds empty spanEvents (otel span events) if none present', () => {
+    const span = Span.createSpan({
       segment: {},
       attributes: {},
       customAttributes: {}
     })
-    assert.equal(Array.isArray(span.timedEvents), true)
-    assert.equal(span.timedEvents.length, 0)
+    assert.equal(Array.isArray(span.spanEvents), true)
+    assert.equal(span.spanEvents.length, 0)
   })
 
-  test('propagates timedEvents (otel span events)', () => {
+  test('propagates spanEvents (otel span events)', () => {
     const segment = {
-      timedEvents: [{ name: 'custom.otel.span-event', attributes: { 'event.type': 'custom' } }]
+      spanEvents: [{ name: 'custom.otel.span-event', attributes: { 'event.type': 'custom' } }]
     }
-    const span = SpanEvent.createSpan({
+    const span = Span.createSpan({
       segment,
       attributes: {},
       customAttributes: {}
     })
-    assert.deepStrictEqual(span.timedEvents, [{ name: 'custom.otel.span-event', attributes: { 'event.type': 'custom' } }])
+    assert.deepStrictEqual(span.spanEvents, [{ name: 'custom.otel.span-event', attributes: { 'event.type': 'custom' } }])
   })
 })
 
@@ -123,15 +123,15 @@ test('fromSegment()', async (t) => {
       const spanContext = segment.getSpanContext()
       spanContext.addCustomAttribute('Span Lee', 'no prize')
 
-      const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent', isEntry: true })
+      const span = Span.fromSegment({ segment, transaction, parentId: 'parent', isEntry: true })
 
       // Should have all the normal properties.
       assert.ok(span)
-      assert.ok(span instanceof SpanEvent)
+      assert.ok(span instanceof Span)
 
       assert.ok(span.intrinsics)
       assert.equal(span.intrinsics.type, 'Span')
-      assert.equal(span.intrinsics.category, SpanEvent.CATEGORIES.GENERIC)
+      assert.equal(span.intrinsics.category, Span.CATEGORIES.GENERIC)
       assert.equal(span.intrinsics['nr.entryPoint'], true)
 
       assert.equal(span.intrinsics.traceId, transaction.traceId)
@@ -191,16 +191,16 @@ test('fromSegment()', async (t) => {
         res.on('end', () => {
           const tx = agent.tracer.getTransaction()
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
-          const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+          const span = Span.fromSegment({ segment, transaction, parentId: 'parent' })
 
           // Should have all the normal properties.
           assert.ok(span)
-          assert.ok(span instanceof SpanEvent)
-          assert.ok(span instanceof SpanEvent.HttpSpanEvent)
+          assert.ok(span instanceof Span)
+          assert.ok(span instanceof Span.HttpSpan)
 
           assert.ok(span.intrinsics)
           assert.equal(span.intrinsics.type, 'Span')
-          assert.equal(span.intrinsics.category, SpanEvent.CATEGORIES.HTTP)
+          assert.equal(span.intrinsics.category, Span.CATEGORIES.HTTP)
 
           assert.equal(span.intrinsics.traceId, transaction.traceId)
           assert.equal(span.intrinsics.guid, segment.id)
@@ -292,16 +292,16 @@ test('fromSegment()', async (t) => {
       dsConn.myDbOp(longQuery, () => {
         transaction.end()
         const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
-        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+        const span = Span.fromSegment({ segment, transaction, parentId: 'parent' })
 
         // Should have all the normal properties.
         assert.ok(span)
-        assert.ok(span instanceof SpanEvent)
-        assert.ok(span instanceof SpanEvent.DatastoreSpanEvent)
+        assert.ok(span instanceof Span)
+        assert.ok(span instanceof Span.DatastoreSpan)
 
         assert.ok(span.intrinsics)
         assert.equal(span.intrinsics.type, 'Span')
-        assert.equal(span.intrinsics.category, SpanEvent.CATEGORIES.DATASTORE)
+        assert.equal(span.intrinsics.category, Span.CATEGORIES.DATASTORE)
 
         assert.equal(span.intrinsics.traceId, transaction.traceId)
         assert.equal(span.intrinsics.guid, segment.id)
@@ -357,7 +357,7 @@ test('fromSegment()', async (t) => {
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
-        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+        const span = Span.fromSegment({ segment, transaction, parentId: 'parent' })
 
         const serializedSpan = span.toJSON()
         const [intrinsics] = serializedSpan
@@ -390,7 +390,7 @@ test('fromSegment()', async (t) => {
         spanContext.addIntrinsicAttribute('intrinsic.1', 1)
         spanContext.addIntrinsicAttribute('intrinsic.2', 2)
 
-        const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+        const span = Span.fromSegment({ segment, transaction, parentId: 'parent' })
 
         const serializedSpan = span.toJSON()
         const [intrinsics] = serializedSpan
@@ -415,10 +415,10 @@ test('fromSegment()', async (t) => {
           const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           assert.ok(segment.name.startsWith('Truncated'))
 
-          const span = SpanEvent.fromSegment({ segment, transaction })
+          const span = Span.fromSegment({ segment, transaction })
           assert.ok(span)
-          assert.ok(span instanceof SpanEvent)
-          assert.ok(span instanceof SpanEvent.HttpSpanEvent)
+          assert.ok(span instanceof Span)
+          assert.ok(span instanceof Span.HttpSpan)
 
           end()
         })
@@ -434,10 +434,10 @@ test('fromSegment()', async (t) => {
 
       assert.ok(segment.name.startsWith('Truncated'))
 
-      const span = SpanEvent.fromSegment({ segment, transaction })
+      const span = Span.fromSegment({ segment, transaction })
       assert.ok(span)
-      assert.ok(span instanceof SpanEvent)
-      assert.ok(span instanceof SpanEvent.DatastoreSpanEvent)
+      assert.ok(span instanceof Span)
+      assert.ok(span instanceof Span.DatastoreSpan)
 
       end()
     })
@@ -447,7 +447,7 @@ test('fromSegment()', async (t) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       const segment = transaction.trace.add('Datastore/operation/Redis/SET')
-      const span = SpanEvent.fromSegment({ segment, transaction })
+      const span = Span.fromSegment({ segment, transaction })
       assert.ok(span)
       end()
     })
@@ -455,13 +455,13 @@ test('fromSegment()', async (t) => {
 })
 
 test('span.id maps to span.intrinsics.guid', (t) => {
-  const span = new SpanEvent({}, {})
+  const span = new Span({}, {})
   span.addIntrinsicAttribute('guid', '123455')
   assert.equal(span.id, span.intrinsics.guid)
 })
 
 test('span.parentId maps to span.intrinsics.parentId', (t) => {
-  const span = new SpanEvent({}, {})
+  const span = new Span({}, {})
   span.addIntrinsicAttribute('parentId', '123455')
   assert.equal(span.parentId, span.intrinsics.parentId)
 })
@@ -475,7 +475,7 @@ const testSpans = [
 ]
 for (const testSpan of testSpans) {
   test(`${testSpan.name} should return ${testSpan.isExit} for 'isExitSpan'`, (t) => {
-    const span = new SpanEvent({}, {})
+    const span = new Span({}, {})
     span.addIntrinsicAttribute('name', testSpan.name)
     assert.equal(span.isExitSpan, testSpan.isExit)
     // should cache result if ran more than once
@@ -484,7 +484,7 @@ for (const testSpan of testSpans) {
   })
 
   test(`${testSpan.name} should return ${testSpan.isLlm} for 'isLlmSpan'`, (t) => {
-    const span = new SpanEvent({}, {})
+    const span = new Span({}, {})
     span.addIntrinsicAttribute('name', testSpan.name)
     assert.equal(span.isLlmSpan, testSpan.isLlm)
     // should cache result if ran more than once
@@ -495,7 +495,7 @@ for (const testSpan of testSpans) {
 
 describe('entityRelationshipAttrs', () => {
   test('should cache the result after first access', () => {
-    const span = new SpanEvent({ 'db.system': 'redis' }, {})
+    const span = new Span({ 'db.system': 'redis' }, {})
 
     assert.deepEqual(span.entityRelationshipAttrs, { 'db.system': 'redis' })
     assert.equal(span.hasEntityRelationshipAttrs, true)
@@ -507,13 +507,13 @@ describe('entityRelationshipAttrs', () => {
   })
 
   test('should return false when no entity relationship attributes are present', () => {
-    const span = new SpanEvent({ attr: 'value' }, {})
+    const span = new Span({ attr: 'value' }, {})
     assert.equal(span.hasEntityRelationshipAttrs, false)
     assert.deepEqual(span.entityRelationshipAttrs, {})
   })
 
   test('should return false when attributes object is empty', () => {
-    const span = new SpanEvent({}, {})
+    const span = new Span({}, {})
     assert.equal(span.hasEntityRelationshipAttrs, false)
     assert.deepEqual(span.entityRelationshipAttrs, {})
   })
@@ -521,7 +521,7 @@ describe('entityRelationshipAttrs', () => {
 
 describe('errorAttrs', () => {
   test('should cache the result after first access', () => {
-    const span = new SpanEvent({ 'error.class': 'TestError' }, {})
+    const span = new Span({ 'error.class': 'TestError' }, {})
 
     assert.deepEqual(span.errorAttrs, { 'error.class': 'TestError' })
     assert.equal(span.hasErrorAttrs, true)
@@ -533,13 +533,13 @@ describe('errorAttrs', () => {
   })
 
   test('should return false when no entity relationship attributes are present', () => {
-    const span = new SpanEvent({ attr: 'value' }, {})
+    const span = new Span({ attr: 'value' }, {})
     assert.equal(span.hasErrorAttrs, false)
     assert.deepEqual(span.errorAttrs, {})
   })
 
   test('should return false when attributes object is empty', () => {
-    const span = new SpanEvent({}, {})
+    const span = new Span({}, {})
     assert.equal(span.hasErrorAttrs, false)
     assert.deepEqual(span.errorAttrs, {})
   })
@@ -547,13 +547,13 @@ describe('errorAttrs', () => {
 
 describe('filteredAttrs', () => {
   test('should return empty object when attributes object is empty', () => {
-    const span = new SpanEvent({}, {})
+    const span = new Span({}, {})
     const filtered = span.filteredAttrs
     assert.deepStrictEqual(filtered, {})
   })
 
   test('should return only entity relationship attributes when present', () => {
-    const span = new SpanEvent({
+    const span = new Span({
       'db.system': 'postgresql',
       attr: 'should-be-excluded'
     }, {})
@@ -572,7 +572,7 @@ describe('filteredAttrs', () => {
   })
 
   test('should include error.* attributes when present', () => {
-    const span = new SpanEvent({
+    const span = new Span({
       'db.system': 'postgresql',
       'error.class': 'TestError',
       'error.message': 'Connection failed',
@@ -588,12 +588,12 @@ describe('filteredAttrs', () => {
 
 describe('hasSameEntityAttrs', () => {
   test('should return true when both spans have identical entity relationship attributes', () => {
-    const span1 = new SpanEvent({
+    const span1 = new Span({
       'db.system': 'postgresql',
       'db.instance': 'my-database',
       'server.address': 'db.example.com'
     }, {})
-    const span2 = new SpanEvent({
+    const span2 = new Span({
       'db.system': 'postgresql',
       'db.instance': 'my-database',
       'server.address': 'db.example.com'
@@ -602,11 +602,11 @@ describe('hasSameEntityAttrs', () => {
   })
 
   test('should return false when entity relationship attribute values differ', () => {
-    const span1 = new SpanEvent({
+    const span1 = new Span({
       'db.system': 'postgresql',
       'server.address': 'db1.example.com'
     }, {})
-    const span2 = new SpanEvent({
+    const span2 = new Span({
       'db.system': 'postgresql',
       'server.address': 'db2.example.com'
     }, {})
@@ -614,20 +614,20 @@ describe('hasSameEntityAttrs', () => {
   })
 
   test('should return false when one span has entity attributes and the other does not', () => {
-    const span1 = new SpanEvent({
+    const span1 = new Span({
       'db.system': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
-    const span2 = new SpanEvent({ attr: 'value' }, {})
+    const span2 = new Span({ attr: 'value' }, {})
     assert.equal(span1.hasSameEntityAttrs(span2), false)
   })
 
   test('should return false when spans have different entity attribute keys', () => {
-    const span1 = new SpanEvent({
+    const span1 = new Span({
       'db.system': 'postgresql',
       'db.instance': 'my-database'
     }, {})
-    const span2 = new SpanEvent({
+    const span2 = new Span({
       'db.system': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
@@ -635,11 +635,11 @@ describe('hasSameEntityAttrs', () => {
   })
 
   test('should ignore error.* attributes when comparing', () => {
-    const span1 = new SpanEvent({
+    const span1 = new Span({
       'db.system': 'postgresql',
       'error.message': 'Error 1'
     }, {})
-    const span2 = new SpanEvent({
+    const span2 = new Span({
       'db.system': 'postgresql',
       'error.message': 'Error 2'
     }, {})
@@ -647,11 +647,11 @@ describe('hasSameEntityAttrs', () => {
   })
 
   test('should ignore custom attributes when comparing', () => {
-    const span1 = new SpanEvent({
+    const span1 = new Span({
       'db.system': 'redis',
       attr: 'value1'
     }, {})
-    const span2 = new SpanEvent({
+    const span2 = new Span({
       'db.system': 'redis',
       attr: 'value2'
     }, {})
@@ -661,15 +661,15 @@ describe('hasSameEntityAttrs', () => {
 
 describe('getEntityGroup', () => {
   test('should return matching entity group when found', () => {
-    const span1 = new SpanEvent({
+    const span1 = new Span({
       'db.system': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
-    const span2 = new SpanEvent({
+    const span2 = new Span({
       'db.system': 'mysql',
       'server.address': 'db2.example.com'
     }, {})
-    const span3 = new SpanEvent({
+    const span3 = new Span({
       'db.system': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
@@ -688,7 +688,7 @@ describe('getEntityGroup', () => {
     assert.deepStrictEqual(result, [span1])
   })
   test('should return null when trace has no compactSpanGroups', () => {
-    const span = new SpanEvent({
+    const span = new Span({
       'db.system': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
@@ -700,15 +700,15 @@ describe('getEntityGroup', () => {
   })
 
   test('should return null when no matching entity group is found', () => {
-    const span1 = new SpanEvent({
+    const span1 = new Span({
       'db.system': 'postgresql',
       'server.address': 'db1.example.com'
     }, {})
-    const span2 = new SpanEvent({
+    const span2 = new Span({
       'db.system': 'mysql',
       'server.address': 'db2.example.com'
     }, {})
-    const span3 = new SpanEvent({
+    const span3 = new Span({
       'db.system': 'redis',
       'server.address': 'cache.example.com'
     }, {})

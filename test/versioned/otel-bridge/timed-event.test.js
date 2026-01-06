@@ -92,13 +92,13 @@ test('should properly attach span event data for one span event', async (t) => {
     const segmentChildren = tx.trace.getChildren(segment.id)
     const foundSegment = segmentChildren.find((c) => c.name === 'External/localhost/post')
     if (foundSegment) {
-      const httpSpanEvent = agent.spanEventAggregator.getEvents().find(
+      const httpSpanEvent = agent.spanAggregator.getEvents().find(
         (s) => s.intrinsics.name === 'External/localhost/post'
       )
 
-      assert.equal(httpSpanEvent.timedEvents.length, 1)
+      assert.equal(httpSpanEvent.spanEvents.length, 1)
 
-      const event = httpSpanEvent.timedEvents[0]
+      const event = httpSpanEvent.spanEvents[0]
       assert.equal(event.agentAttributes.attributes['event.type'].value, 'custom')
       assert.equal(event.agentAttributes.attributes['request.url'].value, `${REQUEST_URL}/post`)
       assert.equal(event.agentAttributes.attributes['custom.attribute'].value, 'test-value')
@@ -141,13 +141,13 @@ test('should properly attach span event data for two span events', async (t) => 
     const segmentChildren = tx.trace.getChildren(segment.id)
     const foundSegment = segmentChildren.find((c) => c.name === 'External/localhost/post')
     if (foundSegment) {
-      const httpSpanEvent = agent.spanEventAggregator.getEvents().find(
+      const httpSpanEvent = agent.spanAggregator.getEvents().find(
         (s) => s.intrinsics.name === 'External/localhost/post'
       )
 
-      assert.equal(httpSpanEvent.timedEvents.length, 2)
+      assert.equal(httpSpanEvent.spanEvents.length, 2)
 
-      const eventOne = httpSpanEvent.timedEvents[0]
+      const eventOne = httpSpanEvent.spanEvents[0]
       assert.equal(eventOne.agentAttributes.attributes['event.type'].value, 'custom')
       assert.equal(eventOne.agentAttributes.attributes['request.url'].value, `${REQUEST_URL}/post`)
       assert.equal(eventOne.agentAttributes.attributes['custom.attribute'].value, 'test-value')
@@ -163,7 +163,7 @@ test('should properly attach span event data for two span events', async (t) => 
         'timestamp should be within expected window'
       )
 
-      const eventTwo = httpSpanEvent.timedEvents[1]
+      const eventTwo = httpSpanEvent.spanEvents[1]
       assert.equal(eventTwo.agentAttributes.attributes['event.type'].value, 'custom-2')
       assert.equal(eventTwo.agentAttributes.attributes['response.status_code'].value, 200)
       assert.equal(eventTwo.agentAttributes.attributes['custom.attribute'].value, 'test-value-2')

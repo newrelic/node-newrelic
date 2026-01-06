@@ -68,7 +68,7 @@ test('span links are propagated to new relic', async (t) => {
     if (foundSegment) {
       produceTx = tx
       produceSegment = foundSegment
-      produceSpan = tx.agent.spanEventAggregator.getEvents().find(
+      produceSpan = tx.agent.spanAggregator.getEvents().find(
         (s) => s.intrinsics.name.includes('Produce/Named/unknown')
       )
       t.assert.ok(produceSpan)

@@ -111,7 +111,7 @@ test('Trace', async (t) => {
     addTwoSegments(transaction)
     transaction.end()
 
-    const events = agent.spanEventAggregator.getEvents()
+    const events = agent.spanAggregator.getEvents()
     const nested = events[0]
     const testSpan = events[1]
     assertSpanEvent({ span: nested, transaction, name: 'span', category: 'generic', parentId: testSpan.intrinsics.guid })
@@ -121,8 +121,8 @@ test('Trace', async (t) => {
   await t.test('should generate span events and finalize when partial trace reduced', (t) => {
     const { agent } = t.nr
     const transaction = setupPartialTrace({ agent, type: 'reduced' })
-    assert.equal(agent.spanEventAggregator.events.length, 3)
-    const [redisSet, testSpan, redisGet] = agent.spanEventAggregator.getEvents()
+    assert.equal(agent.spanAggregator.events.length, 3)
+    const [redisSet, testSpan, redisGet] = agent.spanAggregator.getEvents()
     const attributes = { foo: 'bar', 'server.address': 'unit-test', 'peer.hostname': 'unit-test' }
     assertSpanEvent({ span: testSpan, transaction, name: 'test', category: 'generic', isEntry: true })
     // its parent was dropped, so parentId is `child1` aka testSpan
@@ -136,8 +136,8 @@ test('Trace', async (t) => {
   await t.test('should generate span events and finalize when partial trace essential', (t) => {
     const { agent } = t.nr
     const transaction = setupPartialTrace({ agent, type: 'essential' })
-    assert.equal(agent.spanEventAggregator.events.length, 3)
-    const [redisSet, testSpan, redisGet] = agent.spanEventAggregator.getEvents()
+    assert.equal(agent.spanAggregator.events.length, 3)
+    const [redisSet, testSpan, redisGet] = agent.spanAggregator.getEvents()
     // drops non entity relationship attributes
     const attributes = { 'server.address': 'unit-test', 'peer.hostname': 'unit-test' }
     assertSpanEvent({ span: testSpan, transaction, name: 'test', category: 'generic', isEntry: true })
@@ -152,8 +152,8 @@ test('Trace', async (t) => {
   await t.test('should generate span events and finalize when partial trace compact', (t) => {
     const { agent } = t.nr
     const transaction = setupPartialTrace({ agent, type: 'compact' })
-    assert.equal(agent.spanEventAggregator.events.length, 2)
-    const [redisGet, testSpan] = agent.spanEventAggregator.getEvents()
+    assert.equal(agent.spanAggregator.events.length, 2)
+    const [redisGet, testSpan] = agent.spanAggregator.getEvents()
     // drops non entity relationship attributes
     const attributes = { 'server.address': 'unit-test', 'peer.hostname': 'unit-test' }
     assertSpanEvent({ span: testSpan, transaction, name: 'test', category: 'generic', isEntry: true })
@@ -168,8 +168,8 @@ test('Trace', async (t) => {
     const { agent } = t.nr
     const attributes = { 'server.address': 'unit-test', 'error.class': 'TestError', 'error.message': 'You failed' }
     const transaction = setupPartialTrace({ agent, type: 'compact', attributes, randomizeErrorAttrs: true })
-    assert.equal(agent.spanEventAggregator.events.length, 2)
-    const [redisGet, testSpan] = agent.spanEventAggregator.getEvents()
+    assert.equal(agent.spanAggregator.events.length, 2)
+    const [redisGet, testSpan] = agent.spanAggregator.getEvents()
     // drops non entity relationship attributes
     assertSpanEvent({ span: testSpan, transaction, name: 'test', category: 'generic', isEntry: true })
     // its parent was dropped, so parentId is `child1` aka testSpan
@@ -195,7 +195,7 @@ test('Trace', async (t) => {
     trace.root.end()
     transaction.end()
 
-    const events = agent.spanEventAggregator.getEvents()
+    const events = agent.spanAggregator.getEvents()
     assert.equal(events.length, 0)
   })
 
@@ -214,7 +214,7 @@ test('Trace', async (t) => {
     trace.root.end()
     transaction.end()
 
-    const events = agent.spanEventAggregator.getEvents()
+    const events = agent.spanAggregator.getEvents()
     assert.equal(events.length, 0)
   })
 
@@ -948,7 +948,7 @@ test('infinite tracing', async (t) => {
 
   await t.test('should generate spans if infinite configured, transaction not sampled', (t) => {
     const { agent } = t.nr
-    const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
+    const spy = sinon.spy(agent.spanAggregator, 'addSegment')
 
     const transaction = new Transaction(agent)
     transaction.priority = 0
@@ -967,7 +967,7 @@ test('infinite tracing', async (t) => {
       const { agent } = t.nr
       agent.config.infinite_tracing.trace_observer.host = ''
 
-      const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
+      const spy = sinon.spy(agent.spanAggregator, 'addSegment')
 
       const transaction = new Transaction(agent)
       transaction.priority = 0
@@ -983,7 +983,7 @@ test('infinite tracing', async (t) => {
 
   await t.test('should not reparent nor add spans to aggregator when `finalizeSpanEvents` is called', (t) => {
     const { agent } = t.nr
-    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+    const addSpy = sinon.spy(agent.spanAggregator, 'add')
 
     const transaction = new Transaction(agent)
 
@@ -995,7 +995,7 @@ test('infinite tracing', async (t) => {
 
   await t.test('should not reparent nor add spans to aggregator when transaction is partial trace and when `finalizeSpanEvents` is called', (t) => {
     const { agent } = t.nr
-    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+    const addSpy = sinon.spy(agent.spanAggregator, 'add')
 
     const transaction = new Transaction(agent)
     transaction.partialType = Transaction.PARTIAL_TYPES.REDUCED

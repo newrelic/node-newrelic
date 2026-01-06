@@ -56,7 +56,7 @@ test('should apply transaction name as active span intrinsic on transaction end'
 })
 
 function findSpanByName(agent, name) {
-  const spans = agent.spanEventAggregator.getEvents()
+  const spans = agent.spanAggregator.getEvents()
 
   for (const [, span] of spans.entries()) {
     if (span.intrinsics.name === name) {
