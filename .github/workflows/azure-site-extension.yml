@@ -10,6 +10,10 @@ on:
 env:
   SPEC_FILE_TEMPLATE: 'NewRelic.Azure.WebSites.Extension.NodeAgent.nuspec'
 
+permissions:
+  # id-token must be set to `write` for OIDC publishing.
+  id-token: write
+
 jobs:
   create_extension_bundle:
     runs-on: windows-latest
@@ -23,15 +27,15 @@ jobs:
         arch: [ x64 ]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup dotnet '6.0.x'
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '6.0.x'
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           architecture: ${{ matrix.arch }}
@@ -99,12 +103,19 @@ jobs:
 
       # This step is for us to check what's going to be published
       - name: Archive package for verification
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: azure-site-extension-test-${{ env.PACKAGE_FILENAME }}
           path: cloud-tooling/azure-site-extension/${{ env.PACKAGE_FILENAME }}.nupkg
 
+      # Get a short-lived NuGet API key via OIDC authorization.
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@d22cc5f58ff5b88bf9bd452535b4335137e24544 # v1.1.0
+        id: login
+        with:
+          user: ${{ vars.NUGET_TRUSTED_PUBLISH_POLICY_USER }}
+
       - name: Publish site extension
         working-directory: cloud-tooling/azure-site-extension
         run: |
-          dotnet nuget push "${{ env.PACKAGE_FILENAME }}.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ vars.NUGET_SOURCE }}
+          dotnet nuget push "${{ env.PACKAGE_FILENAME }}.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source ${{ vars.NUGET_SOURCE }}

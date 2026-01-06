@@ -50,11 +50,11 @@ test('should create span on successful tools create', (t, end) => {
   helper.runInTransaction(agent, async (tx) => {
     const result = await tool.call(input)
     assert.ok(result)
-    assertSegments(tx.trace, tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], {
+    assertSegments(tx.trace, tx.trace.root, ['Llm/tool/LangChain/node-agent-test-tool'], {
       exact: false
     })
     tx.end()
-    assertSpanKind({ agent, segments: [{ name: 'Llm/tool/Langchain/node-agent-test-tool', kind: 'internal' }] })
+    assertSpanKind({ agent, segments: [{ name: 'Llm/tool/LangChain/node-agent-test-tool', kind: 'internal' }] })
     end()
   })
 })
@@ -65,7 +65,7 @@ test('should increment tracking metric for each tool event', (t, end) => {
     await tool.call(input)
 
     const metrics = agent.metrics.getOrCreateMetric(
-      `Supportability/Nodejs/ML/Langchain/${pkgVersion}`
+      `Supportability/Nodejs/ML/LangChain/${pkgVersion}`
     )
     assert.equal(metrics.callCount > 0, true)
 

@@ -67,11 +67,11 @@ function runVectorstoreTests(config) {
     helper.runInTransaction(agent, async (tx) => {
       const result = await vs.similaritySearch(searchQuery, 1)
       assert.ok(result)
-      assertSegments(tx.trace, tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
+      assertSegments(tx.trace, tx.trace.root, ['Llm/vectorstore/LangChain/similaritySearch'], {
         exact: false
       })
       tx.end()
-      assertSpanKind({ agent, segments: [{ name: 'Llm/vectorstore/Langchain/similaritySearch', kind: 'internal' }] })
+      assertSpanKind({ agent, segments: [{ name: 'Llm/vectorstore/LangChain/similaritySearch', kind: 'internal' }] })
       end()
     })
   })
@@ -87,7 +87,7 @@ function runVectorstoreTests(config) {
       // version. Find the right one that has a call count
 
       for (const metric in agent.metrics._metrics.unscoped) {
-        if (metric.startsWith('Supportability/Nodejs/ML/Langchain')) {
+        if (metric.startsWith('Supportability/Nodejs/ML/LangChain')) {
           plan.equal(agent.metrics._metrics.unscoped[metric].callCount > 0, true)
         }
       }
@@ -263,8 +263,8 @@ function runVectorstoreTests(config) {
     helper.runInTransaction(agent, async (tx) => {
       await vs.similaritySearch(searchQuery, 1)
 
-      const segment = findSegment(tx.trace, tx.trace.root, 'Llm/vectorstore/Langchain/similaritySearch')
-      assert.equal(segment, undefined, 'should not create Llm/vectorstore/Langchain/similaritySearch segment when ai_monitoring is disabled')
+      const segment = findSegment(tx.trace, tx.trace.root, 'Llm/vectorstore/LangChain/similaritySearch')
+      assert.equal(segment, undefined, 'should not create Llm/vectorstore/LangChain/similaritySearch segment when ai_monitoring is disabled')
 
       tx.end()
       end()

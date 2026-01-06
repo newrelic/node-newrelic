@@ -102,7 +102,7 @@ function runStreamingEnabledTests(config) {
           }
 
           const metrics = agent.metrics.getOrCreateMetric(
-            `Supportability/Nodejs/ML/Langchain/${langchainCoreVersion}`
+            `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
           )
           assert.equal(metrics.callCount > 0, true)
 
@@ -419,9 +419,9 @@ function runStreamingEnabledTests(config) {
           consumeStreamChunk(chunk)
         }
 
-        assertSegments(tx.trace, tx.trace.root, ['Llm/chain/Langchain/stream'], { exact: false })
+        assertSegments(tx.trace, tx.trace.root, ['Llm/chain/LangChain/stream'], { exact: false })
         tx.end()
-        assertSpanKind({ agent, segments: [{ name: 'Llm/chain/Langchain/stream', kind: 'internal' }] })
+        assertSpanKind({ agent, segments: [{ name: 'Llm/chain/LangChain/stream', kind: 'internal' }] })
         end()
       })
     })
@@ -590,7 +590,7 @@ function runStreamingEnabledTests(config) {
           const stream = await chain.stream(input)
 
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
-          assert.equal(segment.name, 'Llm/chain/Langchain/stream', 'should find the Langchain stream segment')
+          assert.equal(segment.name, 'Llm/chain/LangChain/stream', 'should find the Langchain stream segment')
 
           let chunkCount = 0
           for await (const chunk of stream) {
@@ -648,7 +648,7 @@ function runStreamingDisabledTest(config) {
           const events = agent.customEventAggregator.events.toArray()
           assert.equal(events.length, 0, 'should not create llm events when streaming is disabled')
           const metrics = agent.metrics.getOrCreateMetric(
-            `Supportability/Nodejs/ML/Langchain/${langchainCoreVersion}`
+            `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
           )
           assert.equal(metrics.callCount > 0, true)
           const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
@@ -683,8 +683,8 @@ function runStreamingDisabledTest(config) {
             consumeStreamChunk(chunk)
           }
 
-          const segment = findSegment(tx.trace, tx.trace.root, 'Llm/chain/Langchain/stream')
-          assert.equal(segment, undefined, 'should not create Llm/chain/Langchain/stream segment when ai_monitoring is disabled')
+          const segment = findSegment(tx.trace, tx.trace.root, 'Llm/chain/LangChain/stream')
+          assert.equal(segment, undefined, 'should not create Llm/chain/LangChain/stream segment when ai_monitoring is disabled')
 
           tx.end()
           end()
@@ -753,8 +753,8 @@ function runAiMonitoringDisabledTests(config) {
             consumeStreamChunk(chunk)
           }
 
-          const segment = findSegment(tx.trace, tx.trace.root, 'Llm/chain/Langchain/stream')
-          assert.equal(segment, undefined, 'should not create Llm/chain/Langchain/stream segment when ai_monitoring is disabled')
+          const segment = findSegment(tx.trace, tx.trace.root, 'Llm/chain/LangChain/stream')
+          assert.equal(segment, undefined, 'should not create Llm/chain/LangChain/stream segment when ai_monitoring is disabled')
 
           tx.end()
           end()

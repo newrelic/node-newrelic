@@ -2,8 +2,8 @@
   "name": "langchain-openai-tests",
   "targets": [
     {
-      "name": "@langchain/core",
-      "minSupported": "0.1.17",
+      "name": "@langchain/openai",
+      "minSupported": "1.0.0",
       "minAgentVersion": "11.13.0"
     }
   ],
@@ -17,6 +17,7 @@
       "engines": {
         "node": ">=20"
       },
+      "comment": "because @langchain/core and @langchain/openai need to be the same major version, we will only test >=1.0.0 to avoid v0 vs. v1 conflict",
       "dependencies": {
         "@langchain/core": ">=1.0.0",
         "@langchain/community": ">=1.0.0",
