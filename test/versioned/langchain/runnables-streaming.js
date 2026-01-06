@@ -230,7 +230,7 @@ function runStreamingEnabledTests(config) {
           const stream = await chain.stream(input, options)
           let content = ''
           for await (const chunk of stream) {
-            content += chunk
+            content += chunk?.[0]
           }
 
           const events = agent.customEventAggregator.events.toArray()
