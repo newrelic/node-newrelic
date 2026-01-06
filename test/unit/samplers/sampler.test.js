@@ -22,8 +22,14 @@ test('should generate a random priority between 0 and 1 with at most 6 decimal p
   assert.match(`${priority}`, /[01]\.\d{1,6}/)
 })
 
-test('should increment priority by n and truncate to  6 decimal places', () => {
+test('should increment priority by 1 and truncate to  6 decimal places if partial trace', () => {
   const priority = 0.123456789
-  const incremented = Sampler.incrementPriority(priority, 2)
+  const incremented = Sampler.incrementPriority(priority, 'essential')
+  assert.equal(incremented, 1.123456)
+})
+
+test('should increment priority by 2 and truncate to  6 decimal places if full trace', () => {
+  const priority = 0.123456789
+  const incremented = Sampler.incrementPriority(priority)
   assert.equal(incremented, 2.123456)
 })

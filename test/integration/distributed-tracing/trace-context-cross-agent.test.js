@@ -15,112 +15,8 @@ const Tracestate = require('#agentlib/w3c/tracestate.js')
 const helper = require('../../lib/agent_helper')
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
 const recordSupportability = require('../../../lib/agent').prototype.recordSupportability
-
-const getDescendantValue = function (object, descendants) {
-  const arrayDescendants = descendants.split('.')
-  const noop = () => { }
-  while (arrayDescendants.length && (object = object[arrayDescendants.shift()])) {
-    noop()
-  }
-  return object
-}
-
-function hasNestedProperty(object, descendants) {
-  const arrayDescendants = descendants.split('.')
-
-  let currentItem = object
-  for (let i = 0; i < arrayDescendants.length; i++) {
-    const property = arrayDescendants[i]
-
-    if (!currentItem || currentItem[property] == null) {
-      return false
-    }
-
-    currentItem = currentItem[property]
-  }
-
-  return true
-}
-
-const testExact = function (object, fixture) {
-  for (let [descendants, fixtureValue] of Object.entries(fixture)) {
-    if (descendants === 'tracestate.parent_type') {
-      // The fixture data has the original source value, an integer, as the
-      // value to check for. Our Transaction expects a string value. Instead
-      // of mutating the `Tracestate` object after it is created in the test,
-      // we re-define the fixture value in-place.
-      // eslint-disable-next-line sonarjs/updated-loop-counter
-      fixtureValue = 'App'
-    }
-
-    const valueToTest = getDescendantValue(object, descendants)
-    assert.deepEqual(
-      valueToTest,
-      fixtureValue,
-      `Expected ${descendants} to be ${fixtureValue} but got ${valueToTest}`
-    )
-  }
-}
-
-const testExpected = function (object, fixture) {
-  for (const [key] of fixture.entries()) {
-    const fixtureValue = fixture[key]
-
-    const exists = hasNestedProperty(object, fixtureValue)
-    assert.ok(exists, 'is ' + fixtureValue + ' set?')
-  }
-}
-
-const testUnexpected = function (object, fixture) {
-  for (const [key] of fixture.entries()) {
-    const fixtureValue = fixture[key]
-
-    const exists = hasNestedProperty(object, fixtureValue)
-    assert.equal(exists, false, 'is ' + fixtureValue + ' absent?')
-  }
-}
-
-const testNotEqual = function (object, fixture) {
-  for (const [descendants, fixtureValue] of Object.entries(fixture)) {
-    const valueToTest = getDescendantValue(object, descendants)
-    assert.ok(valueToTest !== fixtureValue, 'is ' + descendants + ' not equal?')
-  }
-}
-
-const testVendor = function (object, vendors) {
-  assert.deepStrictEqual(object.tracestate.vendors ?? [], vendors, 'do vendors match?')
-}
-
-// Tests a few of the helper functions we wrote for this test suite.
-test('helper functions', () => {
-  const objectExact = {
-    foo: { bar: 'baz' },
-    one: { two: 'three' }
-  }
-  testExact(objectExact, { 'foo.bar': 'baz', 'one.two': 'three' })
-
-  const objectExpected = {
-    foo: { bar: 'baz' },
-    one: { two: 'three' },
-    science: false,
-    science2: NaN
-  }
-  testExpected(objectExpected, ['foo.bar', 'one.two', 'science', 'science2'])
-
-  const objectUnExpected = {
-    foo: { bar: 'baz' },
-    one: { two: 'three' },
-    science: false,
-    science2: NaN
-  }
-  testUnexpected(objectUnExpected, ['apple', 'orange'])
-
-  const objectNotEqual = {
-    foo: { bar: 'baz' },
-    one: { two: 'three' }
-  }
-  testNotEqual(objectNotEqual, { 'foo.bar': 'bazz', 'one.two': 'threee' })
-})
+const { buildSamplerConfig, forceAdaptiveSamplers } = require('./helpers')
+const { assertEvents, assertMetrics, assertOutboundPayloads, expectedFixtureKeys } = require('./custom-assertions')
 
 test('distributed tracing trace context', async (t) => {
   const testCases = require('../../lib/cross_agent_tests/distributed_tracing/trace_context.json')
@@ -129,143 +25,12 @@ test('distributed tracing trace context', async (t) => {
   }
 })
 
-function getEventsToCheck(eventType, agent) {
-  let toCheck
-  switch (eventType) {
-    case 'Transaction':
-      toCheck = agent.transactionEventAggregator.getEvents()
-      break
-    case 'TransactionError':
-      toCheck = agent.errors.eventAggregator.getEvents()
-      break
-    case 'Span':
-      toCheck = agent.spanEventAggregator.getEvents()
-      break
-    default:
-      throw new Error('I do no know how to test an ' + eventType)
-  }
-  return toCheck
-}
-
-function getExactExpectedUnexpectedFromIntrinsics(testCase, eventType) {
-  const common = testCase.intrinsics.common
-  const specific = testCase.intrinsics[eventType] || {}
-  const exact = Object.assign(specific.exact || {}, common.exact || {})
-  const expected = (specific.expected || []).concat(common.expected || [])
-  const unexpected = (specific.unexpected || []).concat(common.unexpected || [])
-
-  return {
-    exact,
-    expected,
-    unexpected
-  }
-}
-
-function testSingleEvent(event, eventType, fixture) {
-  const { exact, expected, unexpected } = fixture
-  const attributes = event[0]
-
-  assert.ok(attributes, 'Should have attributes')
-  const attributesHasOwnProperty = Object.hasOwnProperty.bind(attributes)
-
-  expected.forEach((key) => {
-    const hasAttribute = attributesHasOwnProperty(key)
-    assert.ok(hasAttribute, `does ${eventType} have ${key}`)
-  })
-
-  unexpected.forEach((key) => {
-    const hasAttribute = attributesHasOwnProperty(key)
-
-    assert.equal(hasAttribute, false, `${eventType} should not have ${key}`)
-  })
-
-  Object.keys(exact).forEach((key) => {
-    const attributeValue = attributes[key]
-    const expectedValue = exact[key]
-
-    assert.equal(attributeValue, expectedValue, `${eventType} should have ${key}=${expectedValue}`)
-  })
-}
-
-const testExpectedFixtureKeys = function (thingWithKeys, expectedKeys) {
-  let actualKeys = thingWithKeys
-  if (!Array.isArray(actualKeys)) {
-    actualKeys = Object.keys(thingWithKeys)
-  }
-  for (const key of actualKeys) {
-    assert.ok(expectedKeys.indexOf(key) !== -1, 'key [' + key + '] should be expected?')
-  }
-}
-
-function runTestCaseOutboundPayloads(testCase, context) {
-  if (!testCase.outbound_payloads) {
-    return
-  }
-  for (const [key] of testCase.outbound_payloads.entries()) {
-    const testToRun = testCase.outbound_payloads[key]
-    for (const [assertType, fields] of Object.entries(testToRun)) {
-      switch (assertType) {
-        case 'exact':
-          testExact(context[key], fields)
-          break
-        case 'expected':
-          testExpected(context[key], fields)
-          break
-        case 'unexpected':
-          testUnexpected(context[key], fields)
-          break
-        case 'notequal':
-          testNotEqual(context[key], fields)
-          break
-        case 'vendors':
-          testVendor(context[key], fields)
-          break
-        default:
-          throw new Error("I don't know how to test a(n) " + assertType)
-      }
-    }
-  }
-}
-
-function runTestCaseMetrics(testCase, agent) {
-  if (!testCase.expected_metrics) {
-    return
-  }
-  const metrics = agent.metrics
-  for (const [key] of testCase.expected_metrics.entries()) {
-    const metricPair = testCase.expected_metrics[key]
-    const metricName = metricPair[0]
-    const callCount = metrics.getOrCreateMetric(metricName).callCount
-    const metricCount = metricPair[1]
-    assert.ok(callCount === metricCount, `${metricName} should have ${metricCount} samples`)
-  }
-}
-
-function runTestCaseTargetEvents(testCase, agent) {
-  if (!testCase.intrinsics) {
-    return
-  }
-  for (const [key] of testCase.intrinsics.target_events.entries()) {
-    const eventType = testCase.intrinsics.target_events[key]
-    const toCheck = getEventsToCheck(eventType, agent)
-    assert.ok(toCheck.length > 0, 'do we have an event ( ' + eventType + ' ) to test?')
-    const fixture = getExactExpectedUnexpectedFromIntrinsics(testCase, eventType)
-
-    for (const [index] of toCheck.entries()) {
-      // Span events are not payload-formatted
-      // straight out of the aggregator.
-      const event = eventType === 'Span' ? toCheck[index].toJSON() : toCheck[index]
-      testSingleEvent(event, eventType, fixture)
-    }
-  }
-}
-
 async function runTestCase(testCase, parentTest) {
   // validates the test case data has what we're looking for.  Good for
   // catching any changes to the test format over time, as well as becoming
   // familiar with what we need to do to implement a test runner
   await parentTest.test('validate test: ' + testCase.test_name, (t, end) => {
-    testExpectedFixtureKeys(testCase, [
+    expectedFixtureKeys(testCase, [
       'account_id',
       'expected_metrics',
       'inbound_headers',
@@ -280,17 +45,24 @@ async function runTestCase(testCase, parentTest) {
       'comment',
       'transaction_events_enabled',
       // Sampling
+      'distributed_tracing_enabled',
+      'full_granularity_enabled',
       'force_adaptive_sampled',
       'remote_parent_sampled',
       'remote_parent_not_sampled',
       'root',
-      'ratio',
+      'full_granularity_ratio',
+      'partial_granularity_enabled',
+      'partial_granularity_root',
+      'partial_granularity_remote_parent_sampled',
+      'partial_granularity_remote_parent_not_sampled',
+      'partial_granularity_ratio',
       'expected_priority_between'
     ])
 
     if (testCase.outbound_payloads) {
       for (const outboundPayload of testCase.outbound_payloads) {
-        testExpectedFixtureKeys(outboundPayload, [
+        expectedFixtureKeys(outboundPayload, [
           'exact',
           'expected',
           'notequal',
@@ -302,7 +74,7 @@ async function runTestCase(testCase, parentTest) {
 
     if (testCase.intrinsics) {
       // top level intrinsics keys
-      testExpectedFixtureKeys(testCase.intrinsics, [
+      expectedFixtureKeys(testCase.intrinsics, [
         'Transaction',
         'Span',
         'common',
@@ -310,11 +82,11 @@ async function runTestCase(testCase, parentTest) {
         'TransactionError'
       ])
 
-      testExpectedFixtureKeys(testCase.intrinsics.common, ['exact', 'unexpected', 'expected'])
+      expectedFixtureKeys(testCase.intrinsics.common, ['exact', 'unexpected', 'expected'])
 
       // test there are no unexpected event types in there
       const expectedEvents = ['Span', 'Transaction', 'TransactionError']
-      testExpectedFixtureKeys(testCase.intrinsics.target_events, expectedEvents)
+      expectedFixtureKeys(testCase.intrinsics.target_events, expectedEvents)
 
       // test the top level keys of each event
       for (const event of testCase.intrinsics.target_events) {
@@ -324,52 +96,14 @@ async function runTestCase(testCase, parentTest) {
         if (!eventTestConfig) {
           continue
         }
-        testExpectedFixtureKeys(eventTestConfig, ['exact', 'unexpected', 'expected'])
+        expectedFixtureKeys(eventTestConfig, ['exact', 'unexpected', 'expected'])
       }
     }
     end()
   })
 
   await parentTest.test('trace context: ' + testCase.test_name, (t, end) => {
-    // Sampling config has to be given on agent initialization
-    const initConfig = {
-      distributed_tracing: {
-        enabled: true,
-        sampler: {
-          root: {},
-          remote_parent_sampled: {},
-          remote_parent_not_sampled: {}
-        }
-      }
-    }
-    initConfig.distributed_tracing.sampler.remote_parent_sampled = testCase.remote_parent_sampled ?? 'adaptive'
-    initConfig.distributed_tracing.sampler.remote_parent_not_sampled = testCase.remote_parent_not_sampled ?? 'adaptive'
-    initConfig.distributed_tracing.sampler.root = testCase.root ?? 'adaptive'
-    if (testCase.ratio) {
-      // The ratio to use for all of the trace ID ratio samplers defined in the test.
-      // For testing purposes we are not defining different ratios for each trace ID ratio sampler instance.
-      if (initConfig.distributed_tracing.sampler.root === 'trace_id_ratio_based') {
-        initConfig.distributed_tracing.sampler.root = {
-          trace_id_ratio_based: {
-            ratio: testCase.ratio
-          }
-        }
-      }
-      if (initConfig.distributed_tracing.sampler.remote_parent_sampled === 'trace_id_ratio_based') {
-        initConfig.distributed_tracing.sampler.remote_parent_sampled = {
-          trace_id_ratio_based: {
-            ratio: testCase.ratio
-          }
-        }
-      }
-      if (initConfig.distributed_tracing.sampler.remote_parent_not_sampled === 'trace_id_ratio_based') {
-        initConfig.distributed_tracing.sampler.remote_parent_not_sampled = {
-          trace_id_ratio_based: {
-            ratio: testCase.ratio
-          }
-        }
-      }
-    }
+    const initConfig = buildSamplerConfig(testCase)
     const agent = helper.instrumentMockedAgent(initConfig)
     agent.recordSupportability = recordSupportability
     agent.config.trusted_account_key = testCase.trusted_account_key
@@ -421,11 +155,11 @@ async function runTestCase(testCase, parentTest) {
           const intrinsics = tracestate.intrinsics
 
           // _parseIntrinsics returns null for absent items, remove them
-          Object.keys(intrinsics).forEach((k) => {
+          for (const k of Object.keys(intrinsics)) {
             if (intrinsics[k] === null) {
               delete intrinsics[k]
             }
-          })
+          }
 
           // get payload for how we represent it internally to how tests want it
           const outboundPayload = {
@@ -449,44 +183,16 @@ async function runTestCase(testCase, parentTest) {
         if (testCase.expected_priority_between) {
           const [minPriority, maxPriority] = testCase.expected_priority_between
           const actualPriority = transaction.priority
+          assert.equal(typeof actualPriority, 'number')
           assert.ok(
             actualPriority >= minPriority && actualPriority <= maxPriority,
             `Expected transaction.priority (${actualPriority}) to be between ${minPriority} and ${maxPriority}`
           )
         }
 
-        // These tests assume setting a transport type even when there are not valid
-        // trace headers. This is slightly inconsistent with the spec. Given DT
-        // (NR format) does not include transport when there is no trace AND the
-        // attribute parent.transportType is only populated when a valid payload received,
-        // we are keeping our implementation consistent for now.
-        const removeTransportTests = [
-          'missing_traceparent',
-          'missing_traceparent_and_tracestate',
-          'w3c_and_newrelic_headers_present_error_parsing_traceparent'
-        ]
-        if (removeTransportTests.indexOf(testCase.test_name) >= 0) {
-          testCase.expected_metrics = testCase.expected_metrics.map((value) => {
-            if (value[0].indexOf('HTTP/all') >= 0) {
-              value[0] = 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all'
-            } else if (value.indexOf('HTTP/allWeb') >= 0) {
-              value[0] = 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb'
-            }
-
-            return value
-          })
-        }
-
-        // Priority is asserted to have 1-less precision than the incoming, which is not an agent
-        // requirement and not something we do. Adjusting so we can have the test in the repository.
-        if (testCase.test_name === 'newrelic_origin_trace_id_correctly_transformed_for_w3c') {
-          const payloadTest = testCase.outbound_payloads[0]
-          payloadTest.exact['newrelic.d.pr'] = 1.1234321
-        }
-
-        runTestCaseOutboundPayloads(testCase, insertedTraceContextTraces)
-        runTestCaseTargetEvents(testCase, agent)
-        runTestCaseMetrics(testCase, agent)
+        assertOutboundPayloads(testCase, insertedTraceContextTraces)
+        assertEvents(testCase, agent)
+        assertMetrics(testCase, agent)
       }
 
       assert.ok(transaction, 'we have a transaction')
@@ -494,22 +200,4 @@ async function runTestCase(testCase, parentTest) {
 
     end()
   })
-}
-
-function forceAdaptiveSamplers(agent, forceAdaptiveSampled) {
-  if (forceAdaptiveSampled === undefined || forceAdaptiveSampled === null) return
-  // "The sampling decision to force on a transaction whenever the adaptive sampler is used"
-  // implies this affects all samplers that are adaptive samplers
-  const samplers = [
-    agent.samplers.root,
-    agent.samplers.remoteParentSampled,
-    agent.samplers.remoteParentNotSampled
-  ]
-  for (const sampler of samplers) {
-    if (sampler?.toString() === 'AdaptiveSampler') {
-      sampler.shouldSample = function stubShouldSample() {
-        return forceAdaptiveSampled
-      }
-    }
-  }
 }

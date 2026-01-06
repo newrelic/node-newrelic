@@ -103,8 +103,9 @@ test('remote_parent_sampled: adaptive', async (t) => {
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, null)
-    assert.equal(tx.priority, null)
+    assert.equal(tx.sampled, true)
+    assert.equal(typeof tx.priority, 'number')
+    assert.ok(tx.priority > 2 && tx.priority < 3)
   }
 })
 
@@ -128,8 +129,9 @@ test('remote_parent_sampled: adaptive, remote_parent_not_sampled: always_on (fla
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, null)
-    assert.equal(tx.priority, null)
+    assert.equal(tx.sampled, true)
+    assert.equal(typeof tx.priority, 'number')
+    assert.ok(tx.priority > 2 && tx.priority < 3)
   }
 })
 
@@ -178,8 +180,9 @@ test('remote_parent_sampled: adaptive, remote_parent_not_sampled: always_off (fl
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, null)
-    assert.equal(tx.priority, null)
+    assert.equal(tx.sampled, true)
+    assert.equal(typeof tx.priority, 'number')
+    assert.ok(tx.priority > 2 && tx.priority < 3)
   }
 })
 
@@ -228,8 +231,9 @@ test('remote_parent_sampled: adaptive, remote_parent_not_sampled: adaptive (flag
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, null)
-    assert.equal(tx.priority, null)
+    assert.equal(tx.sampled, true)
+    assert.equal(typeof tx.priority, 'number')
+    assert.ok(tx.priority > 2 && tx.priority < 3)
   }
 })
 
@@ -253,8 +257,9 @@ test('remote_parent_sampled: adaptive, remote_parent_not_sampled: adaptive (flag
     assert.equal(tx.acceptedDistributedTrace, true)
     assert.equal(tx.traceId, TRACE_ID)
     assert.equal(tx.parentSpanId, SPAN_ID)
-    assert.equal(tx.sampled, null)
-    assert.equal(tx.priority, null)
+    assert.equal(tx.sampled, true)
+    assert.equal(typeof tx.priority, 'number')
+    assert.ok(tx.priority > 2 && tx.priority < 3)
   }
 })
 

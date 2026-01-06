@@ -11,8 +11,8 @@
     "transport_type": "HTTP",
     "remote_parent_sampled": "default",
     "remote_parent_not_sampled": "default",
-    "expected_priority_between": [ 0, 1 ],
     "force_adaptive_sampled": false,
+    "expected_priority_between": [ 0, 1 ],
     "inbound_headers": [
     {
       "traceparent": "00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01",
@@ -104,7 +104,7 @@
     "transport_type": "HTTP",
     "remote_parent_sampled": "default",
     "remote_parent_not_sampled": "default",
-    "expected_priority_between": [ 1, 2 ],
+    "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": true,
     "inbound_headers": [
       {}
@@ -131,7 +131,7 @@
     "transport_type": "HTTP",
     "remote_parent_sampled": "default",
     "remote_parent_not_sampled": "adaptive",
-    "expected_priority_between": [ 1, 2 ],
+    "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": true,
     "inbound_headers": [
       {
@@ -342,11 +342,11 @@
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "root": "trace_id_ratio_based",
-    "ratio": 1.0,
+    "full_granularity_ratio": 1.0,
     "remote_parent_sampled": "default",
     "remote_parent_not_sampled": "default",
 
-    "expected_priority_between": [ 1, 2 ],
+    "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": false,
     "inbound_headers": [
       {}
@@ -374,7 +374,7 @@
     "root": "trace_id_ratio_based",
     "remote_parent_sampled": "default",
     "remote_parent_not_sampled": "adaptive",
-    "expected_priority_between": [ 1, 2 ],
+    "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": true,
     "inbound_headers": [
       {
@@ -403,11 +403,11 @@
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "root": "always_off",
-    "ratio": 1.0,
+    "full_granularity_ratio": 1.0,
     "remote_parent_sampled": "trace_id_ratio_based",
     "remote_parent_not_sampled": "always_off",
 
-    "expected_priority_between": [ 1, 2 ],
+    "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": false,
     "inbound_headers": [
       {
@@ -426,6 +426,39 @@
     }
   },
   {
+    "test_name": "w3c_remote_parent_sampled_uses_ratio_sampler_w3c_trace_id_not_sampled",
+    "comment": "W3C parent header determines parent is sampled and W3C trace id is passed to ratio sampler but makes a sampling decision of false because ratio is 0",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "root": "trace_id_ratio_based",
+    "full_granularity_ratio": 0, 
+    "remote_parent_sampled": "trace_id_ratio_based",
+    "remote_parent_not_sampled": "trace_id_ratio_based",
+
+    "expected_priority_between": [ 0, 1 ],
+    "force_adaptive_sampled": false,
+    "inbound_headers": [
+      {
+        "traceparent": "00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01"
+      }
+    ],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "traceId": "0af7651916cd43dd8448eb211c80319c",
+          "sampled": false 
+        },
+        "expected": [ "guid" ]
+      }
+    }
+  },
+  {
     "test_name": "newrelic_remote_parent_sampled_uses_ratio_sampler_newrelic_trace_id",
     "comment": "New Relic parent header determines parent is sampled and New Relic trace id is passed to ratio sampler",
     "trusted_account_key": "33",
@@ -436,10 +469,10 @@
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "root": "always_off",
-    "ratio": 1.0,
+    "full_granularity_ratio": 1.0,
     "remote_parent_sampled": "trace_id_ratio_based",
     "remote_parent_not_sampled": "always_off",
-    "expected_priority_between": [ 1, 2 ],
+    "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": false,
     "inbound_headers": [
       {
@@ -456,6 +489,428 @@
         "expected": [ "guid" ]
       }
     }
+  },
+  {
+    "test_name": "newrelic_remote_parent_sampled_uses_ratio_sampler_newrelic_trace_id_not_sampled",
+    "comment": "New Relic parent header determines parent is sampled and New Relic trace id is passed to ratio sampler but makes a sampling decision of false because ratio is 0",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "root": "trace_id_ratio_based",
+    "full_granularity_ratio": 0, 
+    "remote_parent_sampled": "trace_id_ratio_based",
+    "remote_parent_not_sampled": "trace_id_ratio_based",
+    "expected_priority_between": [ 0, 1 ],
+    "force_adaptive_sampled": false,
+    "inbound_headers": [
+      {
+        "newrelic": "{\"v\":[0,1],\"d\":{\"ty\":\"App\",\"ac\":\"33\",\"ap\":\"2827902\",\"id\":\"7d3efb1b173fecfa\",\"tr\":\"0af7651916cd43dd8448eb211c80319c\",\"pr\":0.2,\"sa\":true,\"ti\":1518469636035,\"tx\":\"0af7651916cd43dd\"}}"
+      }
+    ],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "traceId": "0af7651916cd43dd8448eb211c80319c",
+          "sampled": false 
+        },
+        "expected": [ "guid" ]
+      }
+    }
+  },
+  {
+    "test_name": "no_headers_root_uses_partial_ratio_sampler",
+    "comment": "Traces originating from current service are always sampled at partial granularity (ratio=1.0)",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "root": "trace_id_ratio_based",
+    "full_granularity_ratio": 0.0,
+    "remote_parent_sampled": "default",
+    "remote_parent_not_sampled": "default",
+    "partial_granularity_enabled": true,
+    "partial_granularity_root": "trace_id_ratio_based",
+    "partial_granularity_ratio": 1.0,
+    "partial_granularity_remote_parent_sampled": "default",
+    "partial_granularity_remote_parent_not_sampled": "default",
+    "force_adaptive_sampled": false,
+    "inbound_headers": [
+      {}
+    ],
+
+    "expected_priority_between": [ 1, 2 ],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "sampled": true
+        },
+        "expected": [ "guid", "traceId" ]
+      }
+    }
+  },
+  {
+    "test_name": "newrelic_remote_parent_sampled_uses_partial_ratio_sampler",
+    "comment": "New Relic parent header determines parent is sampled and New Relic trace id is passed to partial ratio sampler",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "root": "always_off",
+    "remote_parent_sampled": "always_off",
+    "remote_parent_not_sampled": "always_off",
+    "partial_granularity_enabled": true,
+    "partial_granularity_root": "default",
+    "partial_granularity_remote_parent_sampled": "trace_id_ratio_based",
+    "partial_granularity_ratio": 1.0,
+    "partial_granularity_remote_parent_not_sampled": "default",
+    "force_adaptive_sampled": false,
+
+    "expected_priority_between": [ 1, 2 ],
+    "inbound_headers": [
+      {
+        "newrelic": "{\"v\":[0,1],\"d\":{\"ty\":\"App\",\"ac\":\"33\",\"ap\":\"2827902\",\"id\":\"7d3efb1b173fecfa\",\"tr\":\"0af7651916cd43dd8448eb211c80319c\",\"pr\":0.2,\"sa\":true,\"ti\":1518469636035,\"tx\":\"0af7651916cd43dd\"}}"
+      }
+    ],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "traceId": "0af7651916cd43dd8448eb211c80319c",
+          "sampled": true
+        },
+        "expected": [ "guid" ]
+      }
+    }
+  },
+  {
+    "test_name": "newrelic_remote_parent_sampled_uses_partial_ratio_sampler_full_ratio_not_sampled",
+    "comment": "New Relic parent header determines parent is sampled and New Relic trace id is passed first to full ratio and then  partial ratio sampler",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "root": "trace_id_ratio_based",
+    "remote_parent_sampled": "trace_id_ratio_based",
+    "remote_parent_not_sampled": "trace_id_ratio_based",
+    "full_granularity_ratio": 0,
+    "partial_granularity_enabled": true,
+    "partial_granularity_root": "trace_id_ratio_based",
+    "partial_granularity_remote_parent_sampled": "trace_id_ratio_based",
+    "partial_granularity_ratio": 1,
+    "partial_granularity_remote_parent_not_sampled": "trace_id_ratio_based",
+    "force_adaptive_sampled": false,
+
+    "expected_priority_between": [ 1, 2 ],
+    "inbound_headers": [
+      {
+        "newrelic": "{\"v\":[0,1],\"d\":{\"ty\":\"App\",\"ac\":\"33\",\"ap\":\"2827902\",\"id\":\"7d3efb1b173fecfa\",\"tr\":\"0af7651916cd43dd8448eb211c80319c\",\"pr\":0.2,\"sa\":true,\"ti\":1518469636035,\"tx\":\"0af7651916cd43dd\"}}"
+      }
+    ],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "traceId": "0af7651916cd43dd8448eb211c80319c",
+          "sampled": true 
+        },
+        "expected": [ "guid" ]
+      }
+    }
+  },
+  {
+    "test_name": "newrelic_remote_parent_sampled_uses_partial_ratio_sampler_not_smapled",
+    "comment": "New Relic parent header determines parent is sampled and New Relic trace id is passed to partial ratio sampler and returns false because ratio is 0",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "root": "trace_id_ratio_based",
+    "remote_parent_sampled": "trace_id_ratio_based",
+    "remote_parent_not_sampled": "trace_id_ratio_based",
+    "full_granularity_ratio": 0,
+    "partial_granularity_enabled": true,
+    "partial_granularity_root": "trace_id_ratio_based",
+    "partial_granularity_remote_parent_sampled": "trace_id_ratio_based",
+    "partial_granularity_ratio": 0,
+    "partial_granularity_remote_parent_not_sampled": "trace_id_ratio_based",
+    "force_adaptive_sampled": false,
+
+    "expected_priority_between": [ 0, 1 ],
+    "inbound_headers": [
+      {
+        "newrelic": "{\"v\":[0,1],\"d\":{\"ty\":\"App\",\"ac\":\"33\",\"ap\":\"2827902\",\"id\":\"7d3efb1b173fecfa\",\"tr\":\"0af7651916cd43dd8448eb211c80319c\",\"pr\":0.2,\"sa\":true,\"ti\":1518469636035,\"tx\":\"0af7651916cd43dd\"}}"
+      }
+    ],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "traceId": "0af7651916cd43dd8448eb211c80319c",
+          "sampled": false 
+        },
+        "expected": [ "guid" ]
+      }
+    }
+  },
+  {
+    "test_name": "no_headers_full_traces_disabled_uses_partial_adaptive_sampler",
+    "comment": "Root traces are always sampled at partial granularity with the global adaptive sampler",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "full_granularity_enabled": false,
+    "partial_granularity_enabled": true,
+    "partial_granularity_root": "adaptive",
+    "force_adaptive_sampled": true,
+    "partial_granularity_remote_parent_sampled": "always_off",
+    "partial_granularity_remote_parent_not_sampled": "always_off",
+    "inbound_headers": [
+      {}
+    ],
+
+    "expected_priority_between": [ 1, 2 ],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "sampled": true
+        },
+        "expected": [ "guid", "traceId" ]
+      }
+    }
+  },
+  {
+    "test_name": "w3c_remote_parent_not_sampled_uses_partial_ratio_sampler",
+    "comment": "Traceparent header determines parent is not sampled. Full granularity tries to run the adaptive sampler, chooses sampled=false, and W3C trace id is passed to partial ratio sampler",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "root": "always_off",
+    "remote_parent_sampled": "always_off",
+    "remote_parent_not_sampled": "default",
+    "force_adaptive_sampled": false,
+    "partial_granularity_enabled": true,
+    "partial_granularity_root": "always_off",
+    "partial_granularity_remote_parent_sampled": "always_off",
+    "partial_granularity_remote_parent_not_sampled": "trace_id_ratio_based",
+    "partial_granularity_ratio": 1.0,
+    "inbound_headers": [
+      {
+        "traceparent": "00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-00"
+      }
+    ],
+
+    "expected_priority_between": [ 1, 2 ],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "traceId": "0af7651916cd43dd8448eb211c80319c",
+          "sampled": true
+        },
+        "expected": [ "guid" ]
+      }
+    }
+  },
+  {
+    "test_name": "w3c_remote_parent_sampled_uses_partial_always_on",
+    "comment": "W3C parent header determines parent is sampled and passes to partial granularity always on sampler",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "full_granularity_enabled": false,
+    "partial_granularity_enabled": true,
+    "partial_granularity_remote_parent_sampled": "always_on",
+
+    "force_adaptive_sampled": false,
+    "inbound_headers": [
+      {
+        "traceparent": "00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01"
+      }
+    ],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "traceId": "0af7651916cd43dd8448eb211c80319c",
+          "sampled": true,
+          "priority": 2.0
+        },
+        "expected": [ "guid" ]
+      }
+    }
+  },
+  {
+    "test_name": "no_headers_root_uses_partial_always_on",
+    "comment": "Traces originating from current service are always sampled at partial granularity (with priority 2.0)",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "root": "always_off",
+    "partial_granularity_enabled": true,
+    "partial_granularity_root": "always_on",
+    "inbound_headers": [
+      {}
+    ],
+    "intrinsics": {
+      "target_events": [
+        "Transaction"
+      ],
+      "common": {
+        "exact": {
+          "priority": 2.0,
+          "sampled": true
+        },
+        "expected": [
+          "guid",
+          "traceId"
+        ]
+      }
+    }
+  },
+  {
+    "test_name": "payload_missing_priority_incremented_to_full_granularity_priority",
+    "comment": "Remote parent was sampled and tracestate has a sampled=true flag but no priority, so a random priority between 2 and 3 should be generated without use of the sampler",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "remote_parent_sampled": "adaptive",
+    "force_adaptive_sampled": false,
+    "inbound_headers": [
+      {
+        "traceparent": "00-f6e9c09812b22fba2f1999b318ddfc8b-7d3efb1b173fecfa-01",
+        "tracestate": "33@nr=0-2-33-2827902-7d3efb1b173fecfa--1--1518469636035"
+      }
+    ],
+    "expected_priority_between": [2,3],
+    "intrinsics": {
+      "target_events": ["Transaction"],
+      "common":{
+        "exact": {
+          "traceId": "f6e9c09812b22fba2f1999b318ddfc8b",
+          "sampled": true
+        },
+        "expected": ["guid", "priority"]
+      }
+    }
+  },
+  {
+    "test_name": "payload_missing_priority_incremented_to_partial_granularity_priority",
+    "comment": "Remote parent was sampled and tracestate has a sampled=true flag but no priority, so a random priority between 1 and 2 should be generated without use of the sampler",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "full_granularity_enabled": false,
+    "partial_granularity_enabled": true,
+    "partial_granularity_remote_parent_sampled": "adaptive",
+    "force_adaptive_sampled": false,
+    "inbound_headers": [
+      {
+        "traceparent": "00-f6e9c09812b22fba2f1999b318ddfc8b-7d3efb1b173fecfa-01",
+        "tracestate": "33@nr=0-2-33-2827902-7d3efb1b173fecfa--1--1518469636035"
+      }
+    ],
+    "expected_priority_between": [1, 2],
+    "intrinsics": {
+      "target_events": ["Transaction"],
+      "common":{
+        "exact": {
+          "traceId": "f6e9c09812b22fba2f1999b318ddfc8b",
+          "sampled": true
+        },
+        "expected": ["guid", "priority"]
+      }
+    }
+  },
+
+  {
+    "test_name": "no_headers_root_full_and_partial_disabled",
+    "comment": "Traces are assigned a random priority <1 when full and partial tracing are both disabled. The expected_priority_between min is arbitrarily small (so that it does not include 0)",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "transport_type": "HTTP",
+    "full_granularity_enabled": false,
+    "root": "always_on",
+    "partial_granularity_enabled": false,
+    "partial_granularity_root": "always_on",
+    "force_adaptive_sampled": true,
+    "inbound_headers": [
+      {}
+    ],
+    "expected_priority_between": [0.000000001, 1],
+    "intrinsics": {
+      "target_events": [ "Transaction" ],
+      "common": {
+        "exact": {
+          "sampled": false
+        },
+        "expected": [ "guid", "traceId" ]
+      }
+    }
+  },
+  {
+    "test_name": "no_headers_distributed_tracing_disabled",
+    "comment": "Traces are assigned a random priority <1 when distributed tracing is disabled. The expected_priority_between min is arbitrarily small (so that it does not include 0)",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "span_events_enabled": true,
+    "transaction_events_enabled": true,
+    "distributed_tracing_enabled": false,
+    "transport_type": "HTTP",
+    "root": "always_on",
+    "force_adaptive_sampled": true,
+    "inbound_headers": [
+      {}
+    ],
+    "expected_priority_between": [0.000000001, 1]
   },
   {
     "test_name": "accept_payload",
