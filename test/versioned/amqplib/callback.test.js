@@ -62,7 +62,7 @@ test('amqplib callback instrumentation', async function (t) {
 
   await t.test('should log tracking metrics', function(t) {
     const { agent } = t.nr
-    assertPackageMetrics({ agent, pkg: 'amqplib', version })
+    assertPackageMetrics({ agent, pkg: 'amqplib', version, subscriberType: true })
   })
 
   await t.test('connect in a transaction', function (t, end) {

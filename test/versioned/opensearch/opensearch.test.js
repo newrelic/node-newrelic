@@ -351,7 +351,12 @@ test('opensearch instrumentation', async (t) => {
       }
       expected['Datastore/instance/OpenSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
-      assertPackageMetrics({ agent, pkg: '@opensearch-project/opensearch', version: pkgVersion })
+      assertPackageMetrics({
+        agent,
+        pkg: '@opensearch-project/opensearch',
+        version: pkgVersion,
+        subscriberType: true
+      })
     })
   })
 

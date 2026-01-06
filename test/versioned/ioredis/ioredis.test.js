@@ -63,7 +63,7 @@ test('ioredis instrumentation', async (t) => {
       expected['Datastore/instance/Redis/' + HOST_ID] = 2
 
       assertMetrics(tx.metrics, expected, false, false, { assert: plan })
-      assertPackageMetrics({ agent, pkg: 'ioredis', version: pkgVersion })
+      assertPackageMetrics({ agent, pkg: 'ioredis', version: pkgVersion, subscriberType: true })
     })
 
     helper.runInTransaction(agent, async (transaction) => {
