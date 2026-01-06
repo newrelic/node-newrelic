@@ -304,7 +304,7 @@ This product includes source derived from [@apm-js-collab/tracing-hooks](https:/
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.14.0](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.14.0)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.14.0/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.14.3](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.14.3)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.14.3/LICENSE):
 
 ```
                                  Apache License
@@ -722,7 +722,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v2.4.4](https://github.com/newrelic/csec-node-agent/tree/v2.4.4)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v2.4.4/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.0](https://github.com/newrelic/csec-node-agent/tree/v3.0.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.0/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -2960,7 +2960,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.919.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.919.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.919.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.958.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.958.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.958.0/LICENSE):
 
 ```
                                 Apache License
@@ -3169,7 +3169,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.919.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.919.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.919.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.958.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.958.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.958.0/LICENSE):
 
 ```
                                 Apache License
@@ -4567,7 +4567,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1692.0](https://github.com/aws/aws-sdk-js/tree/v2.1692.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1692.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1693.0](https://github.com/aws/aws-sdk-js/tree/v2.1693.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1693.0/LICENSE.txt):
 
 ```
 
@@ -5000,7 +5000,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.38.0](https://github.com/eslint/eslint/tree/v9.38.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.38.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.39.2](https://github.com/eslint/eslint/tree/v9.39.2)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.39.2/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -5027,7 +5027,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v5.1.0](https://github.com/expressjs/express/tree/v5.1.0)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v5.1.0/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v5.2.1](https://github.com/expressjs/express/tree/v5.2.1)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v5.2.1/LICENSE):
 
 ```
 (The MIT License)

@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Dec 02 2025 18:08:37 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Tue Jan 06 2026 16:21:17 GMT+0530 (India Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -55,15 +55,15 @@
       "licenseUrl": "https://github.com/apm-js-collab/tracing-hooks/blob/v0.3.1/LICENSE",
       "licenseTextSource": "file"
     },
-    "@grpc/grpc-js@1.14.0": {
+    "@grpc/grpc-js@1.14.3": {
       "name": "@grpc/grpc-js",
-      "version": "1.14.0",
+      "version": "1.14.3",
       "range": "^1.13.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.14.0",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.14.3",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.14.0/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.14.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -79,15 +79,15 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/security-agent@2.4.4": {
+    "@newrelic/security-agent@3.0.0": {
       "name": "@newrelic/security-agent",
-      "version": "2.4.4",
-      "range": "^2.4.2",
+      "version": "3.0.0",
+      "range": "^3.0.0",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v2.4.4",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v3.0.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v2.4.4/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v3.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -333,28 +333,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.919.0": {
+    "@aws-sdk/client-s3@3.958.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.919.0",
+      "version": "3.958.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.919.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.958.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.919.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.958.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.919.0": {
+    "@aws-sdk/s3-request-presigner@3.958.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.919.0",
+      "version": "3.958.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.919.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.958.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.919.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.958.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -483,15 +483,15 @@
       "licenseTextSource": "file",
       "publisher": "Caolan McMahon"
     },
-    "aws-sdk@2.1692.0": {
+    "aws-sdk@2.1693.0": {
       "name": "aws-sdk",
-      "version": "2.1692.0",
+      "version": "2.1693.0",
       "range": "^2.1604.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1692.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1693.0",
       "licenseFile": "node_modules/aws-sdk/LICENSE.txt",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1692.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1693.0/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Amazon Web Services",
       "url": "https://aws.amazon.com/"
@@ -601,28 +601,28 @@
       "email": "gajus@gajus.com",
       "url": "http://gajus.com"
     },
-    "eslint@9.38.0": {
+    "eslint@9.39.2": {
       "name": "eslint",
-      "version": "9.38.0",
+      "version": "9.39.2",
       "range": "^9.17.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v9.38.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v9.39.2",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v9.38.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v9.39.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
     },
-    "express@5.1.0": {
+    "express@5.2.1": {
       "name": "express",
-      "version": "5.1.0",
+      "version": "5.2.1",
       "range": "*",
       "licenses": "MIT",
       "repoUrl": "https://github.com/expressjs/express",
-      "versionedRepoUrl": "https://github.com/expressjs/express/tree/v5.1.0",
+      "versionedRepoUrl": "https://github.com/expressjs/express/tree/v5.2.1",
       "licenseFile": "node_modules/express/LICENSE",
-      "licenseUrl": "https://github.com/expressjs/express/blob/v5.1.0/LICENSE",
+      "licenseUrl": "https://github.com/expressjs/express/blob/v5.2.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"

@@ -31,7 +31,7 @@ test('ignoring a Hapi route', async (t) => {
 
     const metrics = agent.metrics._metrics.unscoped
     // loading k2 adds instrumentation metrics for packages it instruments
-    const expectedMetrics = helper.isSecurityAgentEnabled(agent) ? 15 : 6
+    const expectedMetrics = helper.isSecurityAgentEnabled(agent) ? 17 : 6
     plan.equal(
       Object.keys(metrics).length,
       expectedMetrics,
