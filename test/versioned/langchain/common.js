@@ -143,10 +143,12 @@ function assertLangChainChatCompletionMessages(
       expectedChatMsg.sequence = 0
       expectedChatMsg.content = input
       expectedChatMsg.is_response = false
+      expectedChatMsg.role = 'user'
     } else if (msg[1].sequence === 1) {
       expectedChatMsg.sequence = 1
       expectedChatMsg.content = output
       expectedChatMsg.is_response = true
+      expectedChatMsg.role = 'assistant'
     }
 
     assert.equal(msg[0].type, 'LlmChatCompletionMessage')
