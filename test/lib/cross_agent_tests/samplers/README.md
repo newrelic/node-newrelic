@@ -33,14 +33,14 @@ This test describes expected sampling rates during **one (the first), slow (60-s
 
 ### Test setup
 
-Every test case in this suite must be able to simulate a single slow harvest and the following types of transactions. Example headers are provided to help clarify the situation (they do not need to be used in your tests).
+Every test case in this suite must be able to simulate a single slow harvest and the following types of transactions. Example headers are provided to help clarify the situation (you can use but you must generate random trace ids within the traceparent, otherwise ratio sampling will not work as expected).
 
 | Transaction type | Description | Example headers creating this scenario |
 | --- | --- | --- |
 | `root` | This is a root trace originating from this service | none |
-| `parent_sampled_no_matching_acct_id` | The remote parent was sampled, and there was not a matching trusted account id in the headers. | trusted_account_key: 33, <br/> {<br/> traceparent: 00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01 <br/>}|
+| `parent_sampled_no_matching_acct_id` | The remote parent was sampled, and there was not a matching trusted account id in the headers. | trusted_account_key: 33, <br/> {<br/> traceparent: 00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01,<br/> tracestate: 44@nr=0-0-44-2827902-0af7651916cd43dd--1--1518469636035 <br/> } |
 | `parent_sampled_matching_acct_id_sampled_true` | The remote parent was sampled, there was a matching trusted acct id in the headers, and the tracestate sampled flag was set to true. | trusted_account_key: 33,<br/> { <br/> traceparent: 00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01,<br/> tracestate: 33@nr=0-0-33-2827902-0af7651916cd43dd--1--1518469636035 <br/> } |
-| `parent_not_sampled_no_matching_acct_id` | The remote parent was not sampled, and there was not a matching trusted acct id in the headers. |trusted_account_key: 33,<br/> {<br/> traceparent: 00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-00,<br/> tracestate: 44@nr=0-0-33-2827902-0af7651916cd43dd--1-1.2-1518469636035 <br/>}|
+| `parent_not_sampled_no_matching_acct_id` | The remote parent was not sampled, and there was not a matching trusted acct id in the headers. |trusted_account_key: 33,<br/> {<br/> traceparent: 00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-00,<br/> tracestate: 44@nr=0-0-44-2827902-0af7651916cd43dd--1-1.2-1518469636035 <br/>}|
 | `parent_not_sampled_matching_acct_id_sampled_true` | The remote parent not sampled, there was a matching trusted acct id in the headers, and the tracestate sampled flag was set to true.| trusted_account_key: 33,<br/> {<br/> traceparent: 00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-00,<br/> tracestate: 33@nr=0-0-33-2827902-0af7651916cd43dd--1--1518469636035 <br/>} |
 
 ### Full Test Parameters
@@ -58,13 +58,13 @@ Every test case in this suite must be able to simulate a single slow harvest and
 |`expected_sampled`| The total number of transactions that should have been sampled. |
 |`expected_sampled_full`| The total number of transactions that should have been sampled at full granularity. |
 |`expected_sampled_partial`| The total number of transactions that should have been sampled at partial granularity. |
-|`expected_adaptive_sampler_decisions`| The number of new sampling decisions that the adaptive sampler had to compute. TODO: how to specify for multiple samplers. |
+|`expected_adaptive_sampler_decisions`| The number of new sampling decisions that the adaptive sampler had to compute. **Note**: This is an optional assertion, and would require mocking, spying or instrumentating the AdaptiveSampler to indicate it's being used to compute a sampling decision.|
 |`variance`|The acceptable variance in the expected values for this test, expressed as a decimal.  Eg: if `variance = 0.1` and `expected_sampled = 100`, the test passes if `90 <= actual total sampled <= 110`. This is provided for tests that include a trace id ratio based sampler (see Nondeterministic Sampler Behavior below).|
 
 ### Explanation of traffic types
 
 The list of cases above might seem odd. The cases are intentionally specific to hone in on important details of how our samplers should work. 
-We need to verify the behavior for root, remote_parent_sampled, and remote_parent_not_sampled transactions for all of our samplers. 
+We need to verify the behavior for `root`, `remote_parent_sampled`, and `remote_parent_not_sampled` transactions for all of our samplers. 
 
 We also need to verify additional `remote_parent` behavior for our adaptive sampler. For brevity, the explanation below is in WC3-speak (though proprietary newrelic headers also apply). 
 - After `remote_parent_sampled` or `remote_parent_not_sampled` has been determined from the traceparent header,

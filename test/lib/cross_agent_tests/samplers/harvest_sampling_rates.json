@@ -1,4 +1,4 @@
-[
+[  
   {
     "test_name": "default_configuration_root_samples_global_sampling_target",
     "comment": "When only root transactions are flowing, adaptive_sampling_target-many of them should be sampled",
@@ -56,20 +56,18 @@
         "remote_parent_sampled": {
           "trace_id_ratio_based": {
             "ratio": 0.3
-          },
-          "remote_parent_not_sampled": {
-            "always_on": {}
           }
-        }
+        },
+        "remote_parent_not_sampled": "always_on" 
       }
     },
-    "parent_sampled_matching_acct_id_sampled_true": 50,
-    "parent_sampled_no_matching_acct_id": 50,
+    "parent_sampled_matching_acct_id_sampled_true": 5000,
+    "parent_sampled_no_matching_acct_id": 5000,
     "parent_not_sampled_matching_acct_id_sampled_true": 60,
-    "parent_not_sampled_without_no_matching_acct_key": 40,
+    "parent_not_sampled_no_matching_acct_id": 40,
 
-    "expected_total_sampled": 130,
-    "expected_sampled_full": 130,
+    "expected_sampled": 3100,
+    "expected_sampled_full": 3100,
     "expected_sampled_partial": 0,
     "variance": 0.05
   },
@@ -83,33 +81,24 @@
               "ratio": 0.5
           }
         },
-        "remote_parent_sampled": {
-          "always_off": {}
-        },
-        "remote_parent_not_sampled": {
-          "always_off": {}
-        },
+        "remote_parent_sampled": "always_off", 
+        "remote_parent_not_sampled": "always_off",
         "partial_granularity": {
           "enabled": true,
           "root": {
             "trace_id_ratio_based": {
-              "ratio": 0.2
+              "ratio": 0.3
             }
           },
-          "remote_parent_sampled": {
-            "always_off": {}
-          },
-          "remote_parent_not_sampled": {
-            "always_off": {}
-          }
+          "remote_parent_sampled": "always_off", 
+          "remote_parent_not_sampled": "always_off" 
         }
       }
     },
-    "root": 100,
-
-    "expected_sampled": 70,
-    "expected_sampled_full": 50,
-    "expected_sampled_partial": 20,
+    "root": 10000,
+    "expected_sampled": 8000,
+    "expected_sampled_full": 5000,
+    "expected_sampled_partial": 3000,
     "variance": 0.05
   },
   {
@@ -119,16 +108,16 @@
         "root": {
           "adaptive": {
             "sampling_target": 10
-          },
-          "remote_parent_sampled": {
-            "adaptive": {
-              "sampling_target": 10
-            }
-          },
-          "remote_parent_not_sampled": {
-            "adaptive": {
-              "sampling_target": 10
-            }
+          }
+        },
+        "remote_parent_sampled": {
+          "adaptive": {
+            "sampling_target": 10
+          }
+        },
+        "remote_parent_not_sampled": {
+          "adaptive": {
+            "sampling_target": 10
           }
         },
         "partial_granularity": {
@@ -136,16 +125,16 @@
           "root": {
             "adaptive": {
               "sampling_target": 15
-            },
-            "remote_parent_sampled": {
-              "adaptive": {
-                "sampling_target": 15
-              }
-            },
-            "remote_parent_not_sampled": {
-              "adaptive": {
-                "sampling_target": 15
-              }
+            }
+          },
+          "remote_parent_sampled": {
+            "adaptive": {
+              "sampling_target": 15
+            }
+          },
+          "remote_parent_not_sampled": {
+            "adaptive": {
+              "sampling_target": 15
             }
           }
         }
@@ -161,7 +150,7 @@
   },
   {
     "test_name": "giant_example_from_spec",
-    "comment": "Multiple sampler types are configured. 75 root + 50 remote_parent_sampled + 50_remote_parent_not_sampled transactions are sampled.",
+    "comment": "Multiple sampler types are configured. 15000 root + 500 remote_parent_sampled + 500 remote_parent_not_sampled transactions are sampled.",
     "config": {
       "sampler": {
         "root": {
@@ -169,12 +158,8 @@
             "ratio": 0.1
           }
         },
-        "remote_parent_sampled": {
-          "always_off": {}
-        },
-        "remote_parent_not_sampled": {
-          "always_on": {}
-        },
+        "remote_parent_sampled": "always_off", 
+        "remote_parent_not_sampled": "always_on", 
         "partial_granularity": {
           "enabled": true,
           "type": "essential",
@@ -188,24 +173,22 @@
               "ratio": 1.0
             }
           },
-          "remote_parent_not_sampled": {
-            "always_off": {}
-          }
+          "remote_parent_not_sampled": "always_off" 
         }
       }
     },
-    "root": 150,
-    "parent_sampled_matching_acct_id_sampled_true": 50,
-    "parent_not_sampled_matching_acct_id_sampled_true": 50,
+    "root": 15000,
+    "parent_sampled_matching_acct_id_sampled_true": 500,
+    "parent_not_sampled_matching_acct_id_sampled_true": 500,
 
-    "expected_sampled": 175,
-    "expected_sampled_full": 65,
-    "expected_sampled_partial": 110,
+    "expected_sampled": 8500,
+    "expected_sampled_full": 2000,
+    "expected_sampled_partial": 6500,
     "variance": 0.05
   },
   {
     "test_name": "adaptive_and_ratio_samplers_are_layered",
-    "comment": "30 roots are sampled by the adaptive sampler at full granularity, followed by 0.5 * (70 remaining) = 35 roots sampled at partial granularity.",
+    "comment": "30 roots are sampled by the adaptive sampler at full granularity, followed by 0.5 * (10000 remaining) = 5000 roots sampled at partial granularity.",
     "config": {
       "sampler": {
         "root": {
@@ -223,11 +206,11 @@
         }
       }
     },
-    "root": 100,
+    "root": 10030,
 
-    "expected_sampled": 65,
+    "expected_sampled": 5030,
     "expected_sampled_full": 30,
-    "expected_sampled_partial": 35,
+    "expected_sampled_partial": 5000,
     "variance": 0.05
   }
 ]
