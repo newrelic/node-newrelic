@@ -104,7 +104,7 @@ function runStreamingEnabledTests(config) {
           const metrics = agent.metrics.getOrCreateMetric(
             `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
           )
-          assert.equal(metrics.callCount > 0, true)
+          assert.equal(metrics.callCount, 3)
 
           tx.end()
           end()
@@ -651,7 +651,7 @@ function runStreamingDisabledTest(config) {
           const metrics = agent.metrics.getOrCreateMetric(
             `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
           )
-          assert.equal(metrics.callCount > 0, true)
+          assert.equal(metrics.callCount, 1)
           const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
           assert.equal(attributes.llm, true)
           const streamingDisabled = agent.metrics.getOrCreateMetric(
