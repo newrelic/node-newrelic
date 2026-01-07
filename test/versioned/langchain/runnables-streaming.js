@@ -232,6 +232,7 @@ function runStreamingEnabledTests(config) {
           for await (const chunk of stream) {
             content += chunk?.[0]
           }
+          assert(content.length > 0, 'there should be content in the response')
 
           const events = agent.customEventAggregator.events.toArray()
 
