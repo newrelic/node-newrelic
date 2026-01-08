@@ -3,10 +3,12 @@
 #### Features
 
 * Added `entity_guid` to Agent Control health file ([#3594](https://github.com/newrelic/node-newrelic/pull/3594)) ([f42a501](https://github.com/newrelic/node-newrelic/commit/f42a501defce8eb246d28d6218db4947aca5bedd))
-* Added `compact` type for partial granularity traces. ([#3608](https://github.com/newrelic/node-newrelic/pull/3608)) ([73b0381](https://github.com/newrelic/node-newrelic/commit/73b038107f2e1fb94e7e7586dcf1d392031eb272))
 * Added instrumentation support for `iovalkey` ([#3612](https://github.com/newrelic/node-newrelic/pull/3612)) ([55f5d6e](https://github.com/newrelic/node-newrelic/commit/55f5d6e8f1c1278845c2ed2a06c4d1d600015bb0))
 * Added support for OTel span events ([#3600](https://github.com/newrelic/node-newrelic/pull/3600)) ([5b7c340](https://github.com/newrelic/node-newrelic/commit/5b7c34013aafd42d9f3e2b11eb31b86f1f4ea461))
-* Added core tracing supportability metrics ([#3610](https://github.com/newrelic/node-newrelic/pull/3610)) ([c465f4c](https://github.com/newrelic/node-newrelic/commit/c465f4c540599b0ded7eac1f27e12443b69d7a81))
+* Additional support for partial granularity traces (Not available for production use)
+  * Added `compact` type for partial granularity traces. ([#3608](https://github.com/newrelic/node-newrelic/pull/3608)) ([73b0381](https://github.com/newrelic/node-newrelic/commit/73b038107f2e1fb94e7e7586dcf1d392031eb272))
+  * Added core tracing supportability metrics ([#3610](https://github.com/newrelic/node-newrelic/pull/3610)) ([c465f4c](https://github.com/newrelic/node-newrelic/commit/c465f4c540599b0ded7eac1f27e12443b69d7a81))
+  * Updated metric names for full and partial traces to consolidate like values ([#3620](https://github.com/newrelic/node-newrelic/pull/3620)) ([b201338](https://github.com/newrelic/node-newrelic/commit/b20133825440876260998eda58eb94b04b864bb2))
 
 #### Bug fixes
 
@@ -18,7 +20,6 @@
 
 * Removed unused `distributed_tracing.in_process_spans.enabled` logic. Partial granularity tracing replaces it ([#3611](https://github.com/newrelic/node-newrelic/pull/3611)) ([1d5584e](https://github.com/newrelic/node-newrelic/commit/1d5584eacd98b484435e56af455070ed866d246d))
 * Updated `@langchain/core` instrumentation to subscribe to events emitted ([#3493](https://github.com/newrelic/node-newrelic/pull/3493)) ([d1e90e4](https://github.com/newrelic/node-newrelic/commit/d1e90e4d66ac03a07b572a94f58066f2c20e7f25))
-* Updated metric names for full and partial traces to consolidate like values ([#3620](https://github.com/newrelic/node-newrelic/pull/3620)) ([b201338](https://github.com/newrelic/node-newrelic/commit/b20133825440876260998eda58eb94b04b864bb2))
 
 #### Documentation
 
@@ -8185,6 +8186,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
