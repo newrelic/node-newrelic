@@ -13,11 +13,11 @@ supported by the agent.
 | --- | --- | --- | --- |
 | `@apollo/gateway` | 2.3.0 | 2.12.2 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 5.2.0 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.962.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.962.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.962.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.962.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.962.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.965.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.965.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.965.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.965.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.965.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.10.0 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.2.0 | 11.9.0 |
@@ -25,14 +25,14 @@ supported by the agent.
 | `@grpc/grpc-js` | 1.4.0 | 1.14.3 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.4 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 15.2.0 | 3.2.0 |
-| `@langchain/aws` | 1.0.0 | 1.1.0 | 13.8.0 |
-| `@langchain/core` | 0.2.0 | 1.1.8 | 11.13.0 |
-| `@langchain/openai` | 1.0.0 | 1.2.0 | 11.13.0 |
-| `@modelcontextprotocol/sdk` | 1.13.0 | 1.25.1 | 13.2.0 |
+| `@langchain/aws` | 1.0.0 | 1.1.1 | 13.8.0 |
+| `@langchain/core` | 0.2.0 | 1.1.11 | 11.13.0 |
+| `@langchain/openai` | 1.0.0 | 1.2.1 | 11.13.0 |
+| `@modelcontextprotocol/sdk` | 1.13.0 | 1.25.2 | 13.2.0 |
 | `@nestjs/cli` | 9.0.0 | 11.0.14 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 7.2.0 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 4.10.2 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 4.10.3 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.9 | 2.0.0 |
 | `aws-sdk` | 2.2.48 | 2.1693.0 | 6.2.0 |
 | `bluebird` | 2.0.0 | 3.7.2 | 1.27.0 |
@@ -42,7 +42,7 @@ supported by the agent.
 | `express` | 4.15.0 | 5.2.1 | 2.6.0 |
 | `fastify` | 3.0.0 | 5.6.2 | 8.5.0 |
 | `generic-pool` | 3.0.0 | 3.9.0 | 0.9.0 |
-| `ioredis` | 4.0.0 | 5.9.0 | 1.26.2 |
+| `ioredis` | 4.0.0 | 5.9.1 | 1.26.2 |
 | `iovalkey` | 0.1.0 | 0.3.3 | 13.9.0 |
 | `kafkajs` | 2.0.0 | 2.2.4 | 11.19.0 |
 | `koa` | 2.0.0 | 3.1.1 | 3.2.0 |
@@ -60,8 +60,8 @@ supported by the agent.
 | `q` | 1.3.0 | 1.5.1 | 1.26.2 |
 | `redis` | 3.1.0 | 5.10.0 | 1.31.0 |
 | `restify` | 11.0.0 | 11.1.0 | 2.6.0 |
-| `superagent` | 3.0.0 | 10.2.3 | 4.9.0 |
-| `undici` | 5.0.0 | 7.18.0 | 11.1.0 |
+| `superagent` | 3.0.0 | 10.3.0 | 4.9.0 |
+| `undici` | 5.0.0 | 7.18.2 | 11.1.0 |
 | `when` | 3.7.0 | 3.7.8 | 1.26.2 |
 | `winston` | 3.0.0 | 3.19.0 | 8.11.0 |
 
