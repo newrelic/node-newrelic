@@ -1,3 +1,46 @@
+### v13.9.0 (2026-01-08)
+
+#### Features
+
+* Added `entity_guid` to Agent Control health file ([#3594](https://github.com/newrelic/node-newrelic/pull/3594)) ([f42a501](https://github.com/newrelic/node-newrelic/commit/f42a501defce8eb246d28d6218db4947aca5bedd))
+* Added instrumentation support for `iovalkey` ([#3612](https://github.com/newrelic/node-newrelic/pull/3612)) ([55f5d6e](https://github.com/newrelic/node-newrelic/commit/55f5d6e8f1c1278845c2ed2a06c4d1d600015bb0))
+* Added support for OTel span events ([#3600](https://github.com/newrelic/node-newrelic/pull/3600)) ([5b7c340](https://github.com/newrelic/node-newrelic/commit/5b7c34013aafd42d9f3e2b11eb31b86f1f4ea461))
+* Additional support for partial granularity traces (Not available for production use)
+  * Added `compact` type for partial granularity traces. ([#3608](https://github.com/newrelic/node-newrelic/pull/3608)) ([73b0381](https://github.com/newrelic/node-newrelic/commit/73b038107f2e1fb94e7e7586dcf1d392031eb272))
+  * Added core tracing supportability metrics ([#3610](https://github.com/newrelic/node-newrelic/pull/3610)) ([c465f4c](https://github.com/newrelic/node-newrelic/commit/c465f4c540599b0ded7eac1f27e12443b69d7a81))
+  * Updated metric names for full and partial traces to consolidate like values ([#3620](https://github.com/newrelic/node-newrelic/pull/3620)) ([b201338](https://github.com/newrelic/node-newrelic/commit/b20133825440876260998eda58eb94b04b864bb2))
+
+#### Bug fixes
+
+* Account for links added during transaction ([#3606](https://github.com/newrelic/node-newrelic/pull/3606)) ([488b678](https://github.com/newrelic/node-newrelic/commit/488b678278811af7eb6b941eed84e0dafdb86fd5))
+* Updated samplers to properly assign sampling decisions based on appropriate context ([#3641](https://github.com/newrelic/node-newrelic/pull/3641)) ([4bbdddf](https://github.com/newrelic/node-newrelic/commit/4bbdddf7ae845cf349f27cca895a32a748a8327a))
+* Updated `undici` instrumentation to track the active and parent segment as symbols on request to properly end active request ([#3619](https://github.com/newrelic/node-newrelic/pull/3619)) ([9baebe5](https://github.com/newrelic/node-newrelic/commit/9baebe5c6bccba3c69bda5f3f3195d24dce0065b))
+
+#### Code refactoring
+
+* Removed unused `distributed_tracing.in_process_spans.enabled` logic. Partial granularity tracing replaces it ([#3611](https://github.com/newrelic/node-newrelic/pull/3611)) ([1d5584e](https://github.com/newrelic/node-newrelic/commit/1d5584eacd98b484435e56af455070ed866d246d))
+* Updated `@langchain/core` instrumentation to subscribe to events emitted ([#3493](https://github.com/newrelic/node-newrelic/pull/3493)) ([d1e90e4](https://github.com/newrelic/node-newrelic/commit/d1e90e4d66ac03a07b572a94f58066f2c20e7f25))
+
+#### Documentation
+
+* Updated compatibility report ([#3635](https://github.com/newrelic/node-newrelic/pull/3635)) ([74ac737](https://github.com/newrelic/node-newrelic/commit/74ac737f90c9a84ddce1c0994a9ecf9665883a86))
+
+#### Miscellaneous chores
+
+* Changed `Langchain` to `LangChain`, expand version range ([#3629](https://github.com/newrelic/node-newrelic/pull/3629)) ([d77239e](https://github.com/newrelic/node-newrelic/commit/d77239edbff79bb4e73c58a814f7a7d272325e77))
+* Copy OTEL status metadata to segment ([#3613](https://github.com/newrelic/node-newrelic/pull/3613)) ([4057e80](https://github.com/newrelic/node-newrelic/commit/4057e804b74170ba58a0faf0bdeb934eafc4195d))
+* **deps:** Updated `@newrelic/security-agent` to `v3.0.0` ([#3637](https://github.com/newrelic/node-newrelic/pull/3637)) ([a84fa74](https://github.com/newrelic/node-newrelic/commit/a84fa742bbacb607a813de2a99d81113027178bc))
+* Don't create OpenAI segments if `ai_monitoring` is disabled ([#3625](https://github.com/newrelic/node-newrelic/pull/3625)) ([b4f0010](https://github.com/newrelic/node-newrelic/commit/b4f001033684937cbe886ca166d8c71a662b783d))
+* Limit number of span links on segments ([#3621](https://github.com/newrelic/node-newrelic/pull/3621)) ([c923c30](https://github.com/newrelic/node-newrelic/commit/c923c30a094af5f5e197f2e63f5dca652480f76d))
+* Updated Azure publishing with OIDC steps ([#3633](https://github.com/newrelic/node-newrelic/pull/3633)) ([14c41c0](https://github.com/newrelic/node-newrelic/commit/14c41c042847e823360965d815ebff7125973197))
+
+#### Tests
+
+* Centralized indices for `redis` versioned tests ([#3636](https://github.com/newrelic/node-newrelic/pull/3636)) ([34f6562](https://github.com/newrelic/node-newrelic/commit/34f6562f42c8a8fb02236cdff07832d8c0fb9562))
+* Changed `LangChain` tool test to `>=0.2.0` ([#3631](https://github.com/newrelic/node-newrelic/pull/3631)) ([3a4980f](https://github.com/newrelic/node-newrelic/commit/3a4980faf924a9a334d38e0a3ed73c6d4ad79b8b))
+* Fix `LangChain` test targets ([#3634](https://github.com/newrelic/node-newrelic/pull/3634)) ([6504eb8](https://github.com/newrelic/node-newrelic/commit/6504eb869dc11d9c94bc3bf862a0b6bd308ee01c))
+* Refactored `LangChain` versioned tests ([#3624](https://github.com/newrelic/node-newrelic/pull/3624)) ([12ae601](https://github.com/newrelic/node-newrelic/commit/12ae601befa72d16a9d1b9ca041b1fd825281c28))
+
 ### v13.8.1 (2025-12-15)
 
 #### Bug fixes
@@ -8143,6 +8186,8 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
+
 
 
 
