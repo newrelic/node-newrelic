@@ -104,7 +104,7 @@ function runStreamingEnabledTests(config) {
           const metrics = agent.metrics.getOrCreateMetric(
             `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
           )
-          assert.equal(metrics.callCount > 0, true)
+          assert.equal(metrics.callCount, 3)
 
           tx.end()
           end()
@@ -230,8 +230,9 @@ function runStreamingEnabledTests(config) {
           const stream = await chain.stream(input, options)
           let content = ''
           for await (const chunk of stream) {
-            content += chunk
+            content += chunk?.[0]
           }
+          assert(content.length > 0, 'there should be content in the response')
 
           const events = agent.customEventAggregator.events.toArray()
 
@@ -650,7 +651,7 @@ function runStreamingDisabledTest(config) {
           const metrics = agent.metrics.getOrCreateMetric(
             `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
           )
-          assert.equal(metrics.callCount > 0, true)
+          assert.equal(metrics.callCount, 1)
           const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
           assert.equal(attributes.llm, true)
           const streamingDisabled = agent.metrics.getOrCreateMetric(
