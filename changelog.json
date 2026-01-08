@@ -2,6 +2,24 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.9.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated samplers to properly assign sampling decisions based on appropriate context",
+          "Updated undici instrumentation to track the active and parent segment as symbols on request to properly end active request",
+          "Account for links added during transaction"
+        ],
+        "features": [
+          "Added instrumentation support for iovalkey",
+          "Added `compact` type for partial granularity traces.",
+          "Core Tracing supportability metrics",
+          "Add `entity_guid` to Agent Control health file",
+          "Added support for OTel span events"
+        ]
+      }
+    },
+    {
       "version": "13.8.1",
       "changes": {
         "security": [],
