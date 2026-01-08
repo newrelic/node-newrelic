@@ -12,10 +12,9 @@
         ],
         "features": [
           "Added instrumentation support for `iovalkey`",
-          "Added `compact` type for partial granularity traces.",
-          "Added core tracing supportability metrics",
           "Added `entity_guid` to Agent Control health file",
-          "Added support for OTel span events"
+          "Added support for OTel span events",
+          "Additional support for partial granularity traces (Not available for production use"
         ]
       }
     },
