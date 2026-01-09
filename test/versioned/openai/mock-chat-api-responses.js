@@ -299,3 +299,48 @@ responses.set('bad stream', {
   },
   streamData: 'do random'
 })
+
+responses.set('What is 2 + 2?', {
+  headers: {
+    'Content-Type': 'application/json',
+    'openai-model': 'gpt-4',
+    'openai-organization': 'new-relic-nkmd8b',
+    'openai-processing-ms': '1469',
+    'openai-version': '2020-10-01',
+    'x-ratelimit-limit-requests': '200',
+    'x-ratelimit-limit-tokens': '40000',
+    'x-ratelimit-remaining-requests': '199',
+    'x-ratelimit-remaining-tokens': '39940',
+    'x-ratelimit-reset-requests': '7m12s',
+    'x-ratelimit-reset-tokens': '90ms',
+    'x-request-id': '49dbbffbd3c3f4612aa48def69059calc'
+  },
+  code: 200,
+  body: {
+    choices: [
+      {
+        finish_reason: 'tool_calls',
+        index: 0,
+        message: {
+          role: 'assistant',
+          content: null,
+          tool_calls: [
+            {
+              id: 'call_calc123',
+              type: 'function',
+              function: {
+                name: 'calculator',
+                arguments: '{"a":2,"b":2,"operation":"add"}'
+              }
+            }
+          ]
+        }
+      }
+    ],
+    created: 1696888863,
+    id: 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9calc',
+    model: 'gpt-4',
+    object: 'chat.completion',
+    usage: { completion_tokens: 15, prompt_tokens: 50, total_tokens: 65 }
+  }
+})
