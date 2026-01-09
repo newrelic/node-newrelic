@@ -298,7 +298,9 @@ test('SpanAggregator', async (t) => {
 
       spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
       spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
-      tx.end()
+
+      assert.equal(tx.partialTrace.spans[0].spanLinks[0].intrinsics.id, tx.partialTrace.spans[0].id)
+
       end()
     })
   })
