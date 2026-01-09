@@ -39,7 +39,6 @@ test('app should be at top of stack when mounted', async function (t) {
 
   const express = require('express')
   const { version } = require('express/package.json')
-  assertPackageMetrics({ agent, pkg: 'express', version })
   const main = express()
   const app = express()
   const app2 = express()
@@ -67,6 +66,7 @@ test('app should be at top of stack when mounted', async function (t) {
   // store finished transactions
   const finishedTransactions = {}
   agent.on('transactionFinished', function (tx) {
+    assertPackageMetrics({ agent, pkg: 'express', version, subscriberType: true })
     finishedTransactions[tx.id] = tx
   })
 

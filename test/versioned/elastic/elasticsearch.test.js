@@ -407,7 +407,7 @@ test('Elasticsearch instrumentation', async (t) => {
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
       const pkgName = '@elastic/elasticsearch'
-      assertPackageMetrics({ agent, pkg: pkgName, version: pkgVersion })
+      assertPackageMetrics({ agent, pkg: pkgName, version: pkgVersion, subscriberType: true })
     })
   })
 

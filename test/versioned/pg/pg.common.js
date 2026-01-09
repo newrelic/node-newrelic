@@ -237,7 +237,7 @@ module.exports = function runTests(name, clientFactory) {
     await t.test('should log tracking metrics', function(t) {
       const { agent } = t.nr
       const version = helper.readPackageVersion(__dirname, 'pg')
-      assertPackageMetrics({ agent, pkg: 'pg', version })
+      assertPackageMetrics({ agent, pkg: 'pg', version, subscriberType: true })
     })
 
     await t.test('simple query with prepared statement', (t, end) => {

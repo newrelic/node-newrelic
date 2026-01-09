@@ -14,12 +14,14 @@ const { initNestApp, deleteNestApp } = require('./setup')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 test('Nest.js', async (t) => {
-  const port = 8972 // chosen by rand(), guaranteed to be random
-  const baseUrl = `http://localhost:${port}`
   await initNestApp()
   const agent = helper.instrumentMockedAgent()
   const { bootstrap } = require('./test-app/dist/main.js')
-  const app = await bootstrap(port)
+  const app = await bootstrap(0)
+  const address = app.httpServer.address()
+  const baseUrl = address.family === 'IPv6'
+    ? `http://[${address.address}]:${address.port}`
+    : `http://${address.address}:${address.port}`
 
   t.after(async () => {
     app.close()
@@ -28,7 +30,7 @@ test('Nest.js', async (t) => {
     await deleteNestApp()
   })
 
-  await t.test('should log tracking metrics', function() {
+  await t.test('should log tracking metrics', async function() {
     // eslint-disable-next-line sonarjs/no-internal-api-use
     const { version } = require('./test-app/node_modules/@nestjs/core/package.json')
     assertPackageMetrics({ agent, pkg: '@nestjs/core', version })
