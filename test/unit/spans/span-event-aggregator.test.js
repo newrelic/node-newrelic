@@ -267,6 +267,42 @@ test('SpanAggregator', async (t) => {
     })
   })
 
+  await t.test('span link', (t, end) => {
+    const { agent, spanEventAggregator } = t.nr
+    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
+    helper.runInTransaction(agent, (tx) => {
+      tx.priority = 42
+      tx.sampled = true
+      tx.partialType = 'reduced'
+      tx.createPartialTrace()
+
+      const rootSegment = agent.tracer.getSegment()
+
+      const child1Segment = agent.tracer.createSegment({
+        id: 'child1',
+        name: 'child1-segment',
+        parent: rootSegment,
+        transaction: tx
+      })
+      child1Segment.spanLinks.push(new SpanLink({
+        link: {
+          attributes: {},
+          context: { spanId: 'parent1', traceId: 'trace1' }
+        },
+        spanContext: {
+          spanId: 'span1',
+          traceId: 'trace1'
+        },
+        timestamp
+      }))
+
+      spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
+      tx.end()
+      end()
+    })
+  })
+
   await t.test('should use default value for periodMs', (t) => {
     const { spanEventAggregator } = t.nr
     const fakeConfig = {
