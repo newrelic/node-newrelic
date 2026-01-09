@@ -63,7 +63,12 @@ test('iovalkey instrumentation', async (t) => {
       expected['Datastore/instance/Valkey/' + HOST_ID] = 2
 
       assertMetrics(tx.metrics, expected, false, false, { assert: plan })
-      assertPackageMetrics({ agent, pkg: 'iovalkey', version: pkgVersion })
+      assertPackageMetrics({
+        agent,
+        pkg: 'iovalkey',
+        version: pkgVersion,
+        subscriberType: true
+      })
     })
 
     helper.runInTransaction(agent, async (transaction) => {

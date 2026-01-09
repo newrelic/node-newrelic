@@ -23,7 +23,10 @@ async function initNestApp() {
     await deleteNestApp()
   }
   // skip install of deps because we will install them later to force peer dep failures on nest 10.x
-  await exec('npx nest new --package-manager npm --skip-git --skip-install test-app')
+  await exec(
+    'npx nest new --package-manager npm --skip-git --skip-install test-app',
+    { cwd: __dirname }
+  )
   // on versions of nest 10.x peer dep issues exist, ignore them and force install
   await exec('npm install --prefix test-app --force', { cwd: __dirname })
   // We patch the default Nest app with some of our own functions.

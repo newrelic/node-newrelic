@@ -51,9 +51,17 @@ test('should not fail if request not in a transaction', async (t) => {
   assert.equal(statusCode, 200)
 })
 
-test('should create tracking metrics', (t) => {
-  const { agent, pkgVersion } = t.nr
-  assertPackageMetrics({ agent, pkg: 'undici', version: pkgVersion })
+test('should create tracking metrics', (t, end) => {
+  t.plan(5)
+  const { agent, pkgVersion, undici, REQUEST_URL } = t.nr
+  helper.runInTransaction(agent, async () => {
+    await undici.request(REQUEST_URL)
+    assertPackageMetrics(
+      { agent, pkg: 'undici', version: pkgVersion, subscriberType: true },
+      { assert: t.assert }
+    )
+    end()
+  })
 })
 
 test('should properly name segments', async (t) => {

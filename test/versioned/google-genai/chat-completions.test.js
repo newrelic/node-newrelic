@@ -53,9 +53,21 @@ test.afterEach((ctx) => {
   removeModules('@google/genai')
 })
 
-test('should log tracking metrics', function(t) {
-  const { agent } = t.nr
-  assertPackageMetrics({ agent, pkg: '@google/genai', version: pkgVersion })
+test('should log tracking metrics', function(t, end) {
+  t.plan(5)
+  const { agent, client } = t.nr
+  helper.runInTransaction(agent, async () => {
+    const model = 'gemini-2.0-flash'
+    await client.models.generateContent({
+      model,
+      contents: 'You are a mathematician.'
+    })
+    assertPackageMetrics(
+      { agent, pkg: '@google/genai', version: pkgVersion, subscriberType: true },
+      { assert: t.assert }
+    )
+    end()
+  })
 })
 
 test('should create span on successful models generateContent', (t, end) => {

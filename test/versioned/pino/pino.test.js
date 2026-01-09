@@ -89,7 +89,7 @@ test('logging enabled', (t) => {
   logger.info(message)
   metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
   assert.equal(metric.callCount, 1, `should create ${LOGGING.LIBS.PINO} metric`)
-  assertPackageMetrics({ agent, pkg: 'pino', version: pinoVersion })
+  assertPackageMetrics({ agent, pkg: 'pino', version: pinoVersion, subscriberType: true })
 })
 
 test('local_decorating', (t, end) => {

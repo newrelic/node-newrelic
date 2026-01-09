@@ -22,3 +22,6 @@ nr-security-home
 # benchmark results
 benchmark_results
 bin/.env
+
+# Local developer resources:
+local/
