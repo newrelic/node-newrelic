@@ -164,7 +164,7 @@ test('should create LlmAgent event for CompiledStateGraph.stream', async (t) => 
   })
 })
 
-test('should have LlmChatCompletion events from OpenAI instrumentation', async(t) => {
+test('should have LlmChatCompletion events from LangChain and OpenAI instrumentation', async(t) => {
   const { agent, langgraphAgent } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
@@ -182,9 +182,23 @@ test('should have LlmChatCompletion events from OpenAI instrumentation', async(t
 
     // Check for LlmChatCompletion events
     const events = agent.customEventAggregator.events.toArray()
-    const chatEvents = events.filter((e) => e[0].type.includes('LlmChatCompletion'))
-    // TODO: there are 15 chat events? that seems excessive
-    assert.ok(chatEvents.length > 0)
+    const allChatEvents = events.filter((e) => e[0].type.includes('LlmChatCompletion'))
+    const langchainChatEvents = allChatEvents.filter((e) => e[1].vendor === 'langchain')
+    const openaiChatEvents = allChatEvents.filter((e) => e[1].vendor === 'openai')
+
+    // we won't assert specifics, just make sure they still exist
+    assert.equal(openaiChatEvents.length, 3, 'should be 2 messages and 1 summary from OpenAI')
+
+    // There are currently 12 langchain events because chat events are created
+    // for each call of `RunnableSequence` invoke (called 3 times) and stream
+    // (called once)
+    assert.equal(langchainChatEvents.length, 12)
+
+    // Make sure content was properly assigned
+    const messageEvents = langchainChatEvents.filter((e) => e[0].type === 'LlmChatCompletionMessage')
+    messageEvents.forEach((e) => {
+      assert.ok(e[1]?.content?.length > 0, 'message content should exist')
+    })
 
     tx.end()
   })
@@ -209,13 +223,17 @@ test('should have LlmTool events from LangChain instrumentation', async (t) => {
     // Check for LlmTool event
     const events = agent.customEventAggregator.events.toArray()
     const toolEvents = events.filter((e) => e[0].type === 'LlmTool')
-    assert.ok(toolEvents.length > 0, 'should have tool events')
+    assert.equal(toolEvents.length, 1, 'should have exactly 1 tool event')
 
     const [[{ type }, toolEvent]] = toolEvents
     assert.equal(type, 'LlmTool')
     assert.equal(toolEvent.name, 'calculator', 'tool name should be calculator')
     assert.equal(toolEvent.vendor, 'langchain', 'vendor should be langchain')
     assert.equal(toolEvent.output, '4', 'tool output should be 4')
+
+    // Should have 2 LlmChatCompletionMessages with role='tool'
+    const chatEvents = events.filter((e) => e[0].type === 'LlmChatCompletionMessage' && e[1].role === 'tool')
+    assert.equal(chatEvents.length, 2, 'should have one tool message for openai and another for langchain')
 
     tx.end()
   })
