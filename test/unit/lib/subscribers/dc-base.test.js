@@ -12,6 +12,8 @@ const loggerMock = require('../../mocks/logger')
 const helper = require('#testlib/agent_helper.js')
 const Subscriber = require('#agentlib/subscribers/dc-base.js')
 
+const PROCESS_MAJOR = process.version.slice(1).split('.', 1)
+
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
   const logger = loggerMock()
@@ -31,11 +33,11 @@ test.afterEach((ctx) => {
 })
 
 test('records supportability metric on first usage', (t) => {
-  t.plan(3)
+  t.plan(5)
   const { agent, subscriber } = t.nr
 
   let invocations = 0
-  const metricName = 'Supportability/Features/Instrumentation/SubscriberUsed/test-package/unknown'
+  const metricNameBase = 'Supportability/Features/Instrumentation/SubscriberUsed/test-package'
   const chan = dc.channel('test.channel')
   subscriber.channels = [
     { channel: 'test.channel', hook: handler }
@@ -46,7 +48,11 @@ test('records supportability metric on first usage', (t) => {
 
   function handler () {
     invocations += 1
-    t.assert.equal(agent.metrics._metrics.unscoped[metricName].callCount, 1)
+    t.assert.equal(agent.metrics._metrics.unscoped[metricNameBase].callCount, 1)
+    t.assert.equal(
+      agent.metrics._metrics.unscoped[`${metricNameBase}/${PROCESS_MAJOR}`].callCount,
+      1
+    )
 
     if (invocations === 1) {
       chan.publish({ bar: 'bar' })

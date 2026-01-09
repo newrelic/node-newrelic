@@ -182,11 +182,11 @@ test('should subscribe/unsubscribe to specific events on channel', (t) => {
   assert.equal(subscriber.subscriptions, null)
 })
 
-test('handler should record supportability metric on first invocation', async (t) => {
-  const plan = tspl(t, { plan: 3 })
+test('handler should record supportability metrics on first invocation', async (t) => {
+  const plan = tspl(t, { plan: 5 })
   const { agent, subscriber } = t.nr
   const name = 'test-segment'
-  const metricName = 'Supportability/Features/Instrumentation/SubscriberUsed/test-package/1.0.0'
+  const metricNameBase = 'Supportability/Features/Instrumentation/SubscriberUsed/test-package'
   subscriber.enable()
 
   const handler = subscriber.handler
@@ -200,10 +200,12 @@ test('handler should record supportability metric on first invocation', async (t
     const event = { name, moduleVersion: '1.0.0' }
     subscriber.channel.start.runStores(event, () => {
       const metrics = agent.metrics._metrics.unscoped
-      plan.equal(metrics[metricName].callCount, 1)
+      plan.equal(metrics[metricNameBase].callCount, 1)
+      plan.equal(metrics[`${metricNameBase}/1`].callCount, 1)
 
       subscriber.channel.start.runStores(event, () => {
-        plan.equal(metrics[metricName].callCount, 1)
+        plan.equal(metrics[metricNameBase].callCount, 1)
+        plan.equal(metrics[`${metricNameBase}/1`].callCount, 1)
         plan.equal(invocations, 2)
       })
     })
