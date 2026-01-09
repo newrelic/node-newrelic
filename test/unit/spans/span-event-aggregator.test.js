@@ -284,6 +284,14 @@ test('SpanAggregator', async (t) => {
         parent: rootSegment,
         transaction: tx
       })
+
+      const child2Segment = agent.tracer.createSegment({
+        id: 'child2',
+        name: 'child2-segment',
+        parent: child1Segment,
+        transaction: tx
+      })
+
       child1Segment.spanLinks.push(new SpanLink({
         link: {
           attributes: {},
@@ -296,10 +304,25 @@ test('SpanAggregator', async (t) => {
         timestamp
       }))
 
+      child2Segment.spanLinks.push(new SpanLink({
+        link: {
+          attributes: {},
+          context: { spanId: 'parent2', traceId: 'trace1' }
+        },
+        spanContext: {
+          spanId: 'span2',
+          traceId: 'trace2'
+        },
+        timestamp
+      }))
+
       spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
       spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
+      spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx, parentId: child1Segment.id, isEntry: false })
 
+      assert.equal(tx.partialTrace.droppedSpans.size, 2)
       assert.equal(tx.partialTrace.spans[0].spanLinks[0].intrinsics.id, tx.partialTrace.spans[0].id)
+      assert.equal(tx.partialTrace.spans[0].spanLinks[1].intrinsics.id, tx.partialTrace.spans[0].id)
 
       end()
     })
