@@ -36,9 +36,9 @@ test('ignoring an Express route', async function (t) {
 
     const metrics = agent.metrics._metrics.unscoped
     // loading k2 adds instrumentation metrics for things it loads
-    let expectedMetrics = isExpress5 ? 9 : 7
+    let expectedMetrics = isExpress5 ? 10 : 8
     if (helper.isSecurityAgentEnabled(agent) === true) {
-      expectedMetrics = isExpress5 ? 20 : 18
+      expectedMetrics = isExpress5 ? 21 : 19
     }
     plan.equal(
       Object.keys(metrics).length,
