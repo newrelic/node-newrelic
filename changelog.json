@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.9.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `getHostnameSafe` to invalidate the cache is trying to assign the host based on the gcp cloud run id",
+          "Updated logic to properly assign content and role in LangChain chat completion messages"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "13.9.0",
       "changes": {
         "security": [],

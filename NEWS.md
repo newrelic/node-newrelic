@@ -1,3 +1,14 @@
+### v13.9.1 (2026-01-12)
+
+#### Bug fixes
+
+* Updated `getHostnameSafe` to invalidate the cache is trying to assign the host based on the gcp cloud run id ([#3650](https://github.com/newrelic/node-newrelic/pull/3650)) ([d395c76](https://github.com/newrelic/node-newrelic/commit/d395c76d5612a7e562efa1a807c35e805a38ab14))
+* Updated logic to properly assign content and role in LangChain chat completion messages ([#3638](https://github.com/newrelic/node-newrelic/pull/3638)) ([407bcb6](https://github.com/newrelic/node-newrelic/commit/407bcb66b7e3be1b6f1d28bcf6e3b022a7022c96))
+
+#### Documentation
+
+* Updated compatibility report ([#3643](https://github.com/newrelic/node-newrelic/pull/3643)) ([8929ab3](https://github.com/newrelic/node-newrelic/commit/8929ab3ae6cc28edbef4bee41a2084154361d6e0))
+
 ### v13.9.0 (2026-01-08)
 
 #### Features
