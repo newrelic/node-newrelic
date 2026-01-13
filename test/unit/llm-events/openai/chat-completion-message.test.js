@@ -82,6 +82,7 @@ test('openai.chat.completions.create', async (t) => {
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
         const summaryId = 'chat-summary-id'
+        const inputTimestamp = Date.now()
         const chatMessageEvent = new LlmChatCompletionMessage({
           transaction: tx,
           agent,
@@ -90,9 +91,11 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: req.messages[0],
-          index: 0
+          index: 0,
+          inputTimestamp
         })
         const expected = getExpectedResult(tx, { id: 'res-id-0' }, 'message', summaryId)
+        expected.timestamp = inputTimestamp
         assert.deepEqual(chatMessageEvent, expected)
         end()
       })
@@ -344,6 +347,7 @@ test('openai.responses.create', async (t) => {
         const summaryId = 'chat-summary-id'
         const content = req.input
         const role = 'user'
+        const inputTimestamp = Date.now()
         const chatMessageEvent = new LlmChatCompletionMessage({
           transaction: tx,
           agent,
@@ -352,10 +356,12 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 0
+          index: 0,
+          inputTimestamp
         })
         const expected = getExpectedResult(tx, { id: 'resp_id-0' }, 'message', summaryId)
         expected.token_count = 0
+        expected.timestamp = inputTimestamp
         assert.deepEqual(chatMessageEvent, expected)
         end()
       })
