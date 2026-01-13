@@ -51,11 +51,13 @@ test.beforeEach((ctx) => {
 })
 
 test('creates entity', async (t) => {
+  const timestamp = Date.now()
   const msg = new LangChainCompletionMessage({
     ...t.nr,
     sequence: 1,
     content: 'hello world',
-    isResponse: true
+    isResponse: true,
+    inputTimestamp: timestamp
   })
   assert.equal(msg.id, 'run-1-1')
   assert.equal(msg.appName, 'test-app')
@@ -71,6 +73,7 @@ test('creates entity', async (t) => {
   assert.equal(msg.role, 'assistant', 'should assume assistant role based on isResponse=true')
   assert.equal(msg.content, 'hello world')
   assert.match(msg.completion_id, /[a-z0-9-]{36}/)
+  assert.notEqual(msg.timestamp, timestamp, 'should not have a timestamp defined')
 })
 
 test('assigns role if given', async(t) => {
@@ -83,13 +86,17 @@ test('assigns role if given', async(t) => {
   assert.equal(msg.role, 'system')
 })
 
-test('assigns role to user if isResponse is falsey', async(t) => {
+test('assigns role and timestamp correctly if isResponse is false', async(t) => {
+  const timestamp = Date.now()
   const msg = new LangChainCompletionMessage({
     ...t.nr,
-    sequence: 1,
-    content: 'hello world'
+    sequence: 0,
+    content: 'hello world',
+    isResponse: false,
+    inputTimestamp: timestamp
   })
-  assert.equal(msg.role, 'user')
+  assert.equal(msg.role, 'user', 'role should be user')
+  assert.equal(msg.timestamp, timestamp, 'timestamp should be set')
 })
 
 test('assigns id correctly', async (t) => {
