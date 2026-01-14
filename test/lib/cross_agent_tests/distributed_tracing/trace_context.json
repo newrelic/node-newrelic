@@ -9,8 +9,8 @@
     "span_events_enabled": true,
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
-    "remote_parent_sampled": "default",
-    "remote_parent_not_sampled": "default",
+    "remote_parent_sampled": "adaptive",
+    "remote_parent_not_sampled": "adaptive",
     "force_adaptive_sampled": false,
     "expected_priority_between": [ 0, 1 ],
     "inbound_headers": [
@@ -40,8 +40,8 @@
     "span_events_enabled": true,
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
-    "remote_parent_sampled": "default",
-    "remote_parent_not_sampled": "default",
+    "remote_parent_sampled": "adaptive",
+    "remote_parent_not_sampled": "adaptive",
     "force_adaptive_sampled": false,
     "inbound_headers": [
       {
@@ -72,8 +72,8 @@
     "span_events_enabled": true,
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
-    "remote_parent_sampled": "default",
-    "remote_parent_not_sampled": "default",
+    "remote_parent_sampled": "adaptive",
+    "remote_parent_not_sampled": "adaptive",
     "force_adaptive_sampled": false,
     "inbound_headers": [
       {
@@ -102,8 +102,8 @@
     "span_events_enabled": true,
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
-    "remote_parent_sampled": "default",
-    "remote_parent_not_sampled": "default",
+    "remote_parent_sampled": "adaptive",
+    "remote_parent_not_sampled": "adaptive",
     "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": true,
     "inbound_headers": [
@@ -129,7 +129,7 @@
     "span_events_enabled": true,
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
-    "remote_parent_sampled": "default",
+    "remote_parent_sampled": "adaptive",
     "remote_parent_not_sampled": "adaptive",
     "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": true,
@@ -159,7 +159,7 @@
     "span_events_enabled": true,
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
-    "remote_parent_sampled": "default",
+    "remote_parent_sampled": "adaptive",
     "remote_parent_not_sampled": "always_off",
     "force_adaptive_sampled": true,
     "inbound_headers": [
@@ -190,7 +190,7 @@
     "span_events_enabled": true,
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
-    "remote_parent_sampled": "default",
+    "remote_parent_sampled": "adaptive",
     "remote_parent_not_sampled": "always_off",
     "force_adaptive_sampled": true,
     "inbound_headers": [
@@ -220,7 +220,7 @@
     "span_events_enabled": true,
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
-    "remote_parent_sampled": "default",
+    "remote_parent_sampled": "adaptive",
     "remote_parent_not_sampled": "always_on",
     "force_adaptive_sampled": true,
     "inbound_headers": [
@@ -281,8 +281,8 @@
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "root": "always_off",
-    "remote_parent_sampled": "default",
-    "remote_parent_not_sampled": "default",
+    "remote_parent_sampled": "adaptive",
+    "remote_parent_not_sampled": "adaptive",
     "force_adaptive_sampled": true,
     "inbound_headers": [
       {}
@@ -309,8 +309,8 @@
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "root": "always_on",
-    "remote_parent_sampled": "default",
-    "remote_parent_not_sampled": "default",
+    "remote_parent_sampled": "adaptive",
+    "remote_parent_not_sampled": "adaptive",
     "force_adaptive_sampled": true,
     "inbound_headers": [
       {}
@@ -343,8 +343,8 @@
     "transport_type": "HTTP",
     "root": "trace_id_ratio_based",
     "full_granularity_ratio": 1.0,
-    "remote_parent_sampled": "default",
-    "remote_parent_not_sampled": "default",
+    "remote_parent_sampled": "adaptive",
+    "remote_parent_not_sampled": "adaptive",
 
     "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": false,
@@ -372,7 +372,7 @@
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "root": "trace_id_ratio_based",
-    "remote_parent_sampled": "default",
+    "remote_parent_sampled": "adaptive",
     "remote_parent_not_sampled": "adaptive",
     "expected_priority_between": [ 2, 3 ],
     "force_adaptive_sampled": true,
@@ -534,13 +534,13 @@
     "transport_type": "HTTP",
     "root": "trace_id_ratio_based",
     "full_granularity_ratio": 0.0,
-    "remote_parent_sampled": "default",
-    "remote_parent_not_sampled": "default",
+    "remote_parent_sampled": "adaptive",
+    "remote_parent_not_sampled": "adaptive",
     "partial_granularity_enabled": true,
     "partial_granularity_root": "trace_id_ratio_based",
     "partial_granularity_ratio": 1.0,
-    "partial_granularity_remote_parent_sampled": "default",
-    "partial_granularity_remote_parent_not_sampled": "default",
+    "partial_granularity_remote_parent_sampled": "adaptive",
+    "partial_granularity_remote_parent_not_sampled": "adaptive",
     "force_adaptive_sampled": false,
     "inbound_headers": [
       {}
@@ -571,10 +571,10 @@
     "remote_parent_sampled": "always_off",
     "remote_parent_not_sampled": "always_off",
     "partial_granularity_enabled": true,
-    "partial_granularity_root": "default",
+    "partial_granularity_root": "adaptive",
     "partial_granularity_remote_parent_sampled": "trace_id_ratio_based",
     "partial_granularity_ratio": 1.0,
-    "partial_granularity_remote_parent_not_sampled": "default",
+    "partial_granularity_remote_parent_not_sampled": "adaptive",
     "force_adaptive_sampled": false,
 
     "expected_priority_between": [ 1, 2 ],
@@ -713,7 +713,7 @@
     "transport_type": "HTTP",
     "root": "always_off",
     "remote_parent_sampled": "always_off",
-    "remote_parent_not_sampled": "default",
+    "remote_parent_not_sampled": "adaptive",
     "force_adaptive_sampled": false,
     "partial_granularity_enabled": true,
     "partial_granularity_root": "always_off",

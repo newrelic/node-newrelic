@@ -6,16 +6,9 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const helper = require('#testlib/agent_helper.js')
-const hashes = require('#agentlib/util/hashes.js')
 const TraceIdRatioBasedSampler = require('#agentlib/samplers/ratio-based-sampler.js')
 const { tspl } = require('@matteo.collina/tspl')
-
-/**
- * Simulates generating a random 32-character hexadecimal trace ID.
- */
-function generateRandomTraceId() {
-  return hashes.makeId(32)
-}
+const { generateRandomTraceId } = helper
 
 test('should set toString and Object.prototype.toString correctly', (t) => {
   const sampler = new TraceIdRatioBasedSampler({ ratio: 0.5 })
