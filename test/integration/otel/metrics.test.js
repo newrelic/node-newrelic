@@ -119,11 +119,9 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   assert.equal(found.length, 1)
   let metric = found[0]
   assert.equal(metric.name, 'test-counter')
-  assert.equal(metric.sum.dataPoints.length, 2)
+  assert.equal(metric.sum.dataPoints.length, 1)
   assert.equal(metric.sum.dataPoints[0].attributes[0].key, 'ready')
   assert.deepEqual(metric.sum.dataPoints[0].attributes[0].value, { stringValue: 'no' })
-  assert.equal(metric.sum.dataPoints[1].attributes[0].key, 'ready')
-  assert.deepEqual(metric.sum.dataPoints[1].attributes[0].value, { stringValue: 'yes' })
 
   await once(server, 'requestComplete')
   payload = requestSchema.decode(
@@ -134,9 +132,11 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   assert.deepEqual(resource.attributes[0].value, { stringValue: 'guid-123456' })
   metric = payload.resourceMetrics[0].scopeMetrics[0].metrics[0]
   assert.equal(metric.name, 'test-counter')
-  assert.equal(metric.sum.dataPoints.length, 1)
-  assert.equal(metric.sum.dataPoints[0].attributes[0].key, 'otel')
+  assert.equal(metric.sum.dataPoints.length, 2)
+  assert.equal(metric.sum.dataPoints[0].attributes[0].key, 'ready')
   assert.deepEqual(metric.sum.dataPoints[0].attributes[0].value, { stringValue: 'yes' })
+  assert.equal(metric.sum.dataPoints[1].attributes[0].key, 'otel')
+  assert.deepEqual(metric.sum.dataPoints[1].attributes[0].value, { stringValue: 'yes' })
 
   const supportMetrics = agent.metrics._metrics.unscoped
   const expectedMetricNames = [
