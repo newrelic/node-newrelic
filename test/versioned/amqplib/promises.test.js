@@ -457,6 +457,7 @@ test('amqplib promise instrumentation', async function (t) {
     process.nextTick(() => {
       amqpUtils.verifyConsumeTransaction(tx, amqpUtils.DIRECT_EXCHANGE, queue, 'consume-tx-key')
       assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
+      assert.ok(tx.baseSegment.getDurationInMillis() >= PROMISE_WAIT, 'base segment should account for async work')
     })
   })
 
