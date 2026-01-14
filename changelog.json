@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.9.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated message consumer subscribers to properly time the consumption actions"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "13.9.1",
       "changes": {
         "security": [],

@@ -1,3 +1,22 @@
+### v13.9.2 (2026-01-14)
+
+#### Bug fixes
+
+* Updated message consumer subscribers to properly time the consumption actions ([#3660](https://github.com/newrelic/node-newrelic/pull/3660)) ([ef1b611](https://github.com/newrelic/node-newrelic/commit/ef1b611a7c3b45f5fc8d483661859c1595bbe4ab))
+
+#### Documentation
+
+* Updated compatibility report ([#3654](https://github.com/newrelic/node-newrelic/pull/3654)) ([ca16dae](https://github.com/newrelic/node-newrelic/commit/ca16daefe4da1c17253e165c68d198d607c72d0b))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Update OTEL metrics test ([#3661](https://github.com/newrelic/node-newrelic/pull/3661)) ([ae84b62](https://github.com/newrelic/node-newrelic/commit/ae84b62a3c7ef753d4ace8836f38405b4cbbfd88))
+
+#### Tests
+
+* Added cross agent tests for sampler configuration and sampling rate scenarios ([#3648](https://github.com/newrelic/node-newrelic/pull/3648)) ([fa0e2d1](https://github.com/newrelic/node-newrelic/commit/fa0e2d1bd78051c7f716ebc65bd7f3842698103e))
+
 ### v13.9.1 (2026-01-12)
 
 #### Bug fixes
