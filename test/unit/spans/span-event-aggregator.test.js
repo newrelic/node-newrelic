@@ -267,7 +267,7 @@ test('SpanAggregator', async (t) => {
     })
   })
 
-  await t.test('span link', (t, end) => {
+  await t.test('span link moved to nearest parent when using reduced tracing', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
     const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
     helper.runInTransaction(agent, (tx) => {
@@ -294,7 +294,7 @@ test('SpanAggregator', async (t) => {
 
       child1Segment.spanLinks.push(new SpanLink({
         link: {
-          attributes: {},
+          attributes: { test: 'test1' },
           context: { spanId: 'parent1', traceId: 'trace1' }
         },
         spanContext: {
@@ -306,7 +306,7 @@ test('SpanAggregator', async (t) => {
 
       child2Segment.spanLinks.push(new SpanLink({
         link: {
-          attributes: {},
+          attributes: { test: 'test2' },
           context: { spanId: 'parent2', traceId: 'trace1' }
         },
         spanContext: {
@@ -317,12 +317,28 @@ test('SpanAggregator', async (t) => {
       }))
 
       spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      // root span has no span links
+      assert.equal(rootSegment.spanLinks.length, 0)
+
       spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
       spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx, parentId: child1Segment.id, isEntry: false })
 
+      // two children spans with span links dropped
       assert.equal(tx.partialTrace.droppedSpans.size, 2)
-      assert.equal(tx.partialTrace.spans[0].spanLinks[0].intrinsics.id, tx.partialTrace.spans[0].id)
-      assert.equal(tx.partialTrace.spans[0].spanLinks[1].intrinsics.id, tx.partialTrace.spans[0].id)
+
+      // only one span was kept
+      assert.equal(tx.partialTrace.spans.length, 1)
+
+      const keptSpan = tx.partialTrace.spans[0]
+
+      // kept span has two span links moved to it
+      assert.equal(keptSpan.spanLinks.length, 2)
+
+      // nearest parent span has both span links with their intrinsics id matching the span id they are linked to now
+      assert.equal(keptSpan.spanLinks[0].intrinsics.id, keptSpan.id)
+      assert.equal(keptSpan.spanLinks[0].userAttributes.attributes.test.value, 'test1')
+      assert.equal(keptSpan.spanLinks[1].intrinsics.id, keptSpan.id)
+      assert.equal(keptSpan.spanLinks[1].userAttributes.attributes.test.value, 'test2')
 
       end()
     })
