@@ -71,7 +71,7 @@ test.afterEach((ctx) => {
   ctx.nr.server.close()
 })
 
-test('sends metrics', { timeout: 5555_000 }, async (t) => {
+test('sends metrics', { timeout: 5_000 }, async (t) => {
   // This test verifies that the metrics exporter ships expected metrics
   // data, with the correct `entity.guid` attached, to the backend system.
   // Due to the way bootstrapping of the metrics API client works, there will
