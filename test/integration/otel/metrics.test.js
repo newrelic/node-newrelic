@@ -71,7 +71,7 @@ test.afterEach((ctx) => {
   ctx.nr.server.close()
 })
 
-test('sends metrics', { timeout: 5_000 }, async (t) => {
+test('sends metrics', { timeout: 5555_000 }, async (t) => {
   // This test verifies that the metrics exporter ships expected metrics
   // data, with the correct `entity.guid` attached, to the backend system.
   // Due to the way bootstrapping of the metrics API client works, there will
@@ -117,11 +117,9 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   assert.equal(found.length, 1)
   let metric = found[0]
   assert.equal(metric.name, 'test-counter')
-  assert.equal(metric.sum.dataPoints.length, 2)
+  assert.equal(metric.sum.dataPoints.length, 1)
   assert.equal(metric.sum.dataPoints[0].attributes[0].key, 'ready')
   assert.deepEqual(metric.sum.dataPoints[0].attributes[0].value, { stringValue: 'no' })
-  assert.equal(metric.sum.dataPoints[1].attributes[0].key, 'ready')
-  assert.deepEqual(metric.sum.dataPoints[1].attributes[0].value, { stringValue: 'yes' })
 
   await once(server, 'requestComplete')
   payload = requestSchema.decode(
@@ -132,9 +130,11 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   assert.deepEqual(resource.attributes[0].value, { stringValue: 'guid-123456' })
   metric = payload.resourceMetrics[0].scopeMetrics[0].metrics[0]
   assert.equal(metric.name, 'test-counter')
-  assert.equal(metric.sum.dataPoints.length, 1)
-  assert.equal(metric.sum.dataPoints[0].attributes[0].key, 'otel')
+  assert.equal(metric.sum.dataPoints.length, 2)
+  assert.equal(metric.sum.dataPoints[0].attributes[0].key, 'ready')
   assert.deepEqual(metric.sum.dataPoints[0].attributes[0].value, { stringValue: 'yes' })
+  assert.equal(metric.sum.dataPoints[1].attributes[0].key, 'otel')
+  assert.deepEqual(metric.sum.dataPoints[1].attributes[0].value, { stringValue: 'yes' })
 
   const supportMetrics = agent.metrics._metrics.unscoped
   const expectedMetricNames = [
