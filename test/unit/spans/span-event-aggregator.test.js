@@ -316,6 +316,10 @@ test('SpanAggregator', async (t) => {
         timestamp
       }))
 
+      // span link id is initially set to the span id in the context they are created on
+      assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
+      assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span2')
+
       spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
       // root span has no span links
       assert.equal(rootSegment.spanLinks.length, 0)
@@ -404,6 +408,10 @@ test('SpanAggregator', async (t) => {
         },
         timestamp
       }))
+
+      // span link id is initially set to the span id in the context they are created on
+      assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
+      assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span2')
 
       spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
       // root span has 1 span link of it's own
