@@ -504,7 +504,7 @@ test('chat.completions.create', async (t) => {
 
   await t.test('auth errors should be tracked', async (t) => {
     const { client, agent } = t.nr
-    const plan = tspl(t, { plan: 13 })
+    const plan = tspl(t, { plan: 14 })
     await helper.runInTransaction(agent, async (tx) => {
       try {
         await client.chat.completions.create({
@@ -536,6 +536,7 @@ test('chat.completions.create', async (t) => {
       const summary = agent.customEventAggregator.events.toArray().find((e) => e[0].type === 'LlmChatCompletionSummary')
       plan.ok(summary)
       plan.equal(summary[1].error, true)
+      plan.equal(summary[1].request_id, '4f8f61a7d0401e42a6760ea2ca2049f6')
 
       tx.end()
     })
