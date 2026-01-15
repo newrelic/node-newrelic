@@ -72,7 +72,7 @@ test('undici instrumentation', async function (t) {
       segment.start()
       agent.tracer.setSegment({ segment, transaction: tx })
       channels.create.publish({ request: { origin: HOST, path: '/foo' } })
-      assert.ok(loggerMock.trace.callCount, 1)
+      assert.equal(loggerMock.trace.callCount, 1)
       assert.deepEqual(loggerMock.trace.args[0], [
         'Not capturing data for outbound request (%s) because parent segment opaque (%s)',
         '/foo',

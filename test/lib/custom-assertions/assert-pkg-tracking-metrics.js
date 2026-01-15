@@ -50,5 +50,21 @@ module.exports = function assertPackageMetrics(
     metrics.push([{ name: `${prefix}${suffix}` }])
   }
 
-  assertMetrics(agent.metrics, metrics, false, false, { assert })
+  try {
+    assertMetrics(agent.metrics, metrics, false, false, { assert })
+  } catch {
+    const expected = metrics.flat().map((m) => m.name)
+    const foundMetrics = Object.keys(agent.metrics._metrics.unscoped).filter(
+      (k) => k.toLowerCase().startsWith('supportability')
+    )
+    const msg = '\nExpected supportability metrics:\n' +
+      JSON.stringify(expected, null, 2) +
+      '\nBut only present supportability metrics:\n' +
+      JSON.stringify(foundMetrics, null, 2)
+    if (typeof assert.fail === 'function') {
+      assert.fail(msg)
+    } else {
+      throw Error(msg)
+    }
+  }
 }

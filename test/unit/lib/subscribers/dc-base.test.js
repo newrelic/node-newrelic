@@ -12,7 +12,7 @@ const loggerMock = require('../../mocks/logger')
 const helper = require('#testlib/agent_helper.js')
 const Subscriber = require('#agentlib/subscribers/dc-base.js')
 
-const PROCESS_MAJOR = process.version.slice(1).split('.', 1)
+const PROCESS_MAJOR = require('../../../../package.json').version.split('.')[0]
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()

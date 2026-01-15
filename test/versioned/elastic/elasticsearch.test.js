@@ -406,8 +406,17 @@ test('Elasticsearch instrumentation', async (t) => {
       }
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 5
       checkMetrics(unscoped, expected)
-      const pkgName = '@elastic/elasticsearch'
-      assertPackageMetrics({ agent, pkg: pkgName, version: pkgVersion, subscriberType: true })
+
+      let version = pkgVersion
+      let pkgName
+      const major = Number(pkgVersion.split('.', 1))
+      if (major >= 8) {
+        pkgName = '@elastic/transport'
+        version = helper.readPackageVersion(__dirname, pkgName)
+      } else {
+        pkgName = '@elastic/elasticsearch'
+      }
+      assertPackageMetrics({ agent, pkg: pkgName, version, subscriberType: true })
     })
   })
 
