@@ -22,7 +22,6 @@
           }
         ]
       },
-
       {
         "name": "Cohere",
         "features": [
@@ -36,7 +35,6 @@
           }
         ]
       },
-
       {
         "name": "Meta Llama3",
         "features": [
@@ -50,7 +48,6 @@
           }
         ]
       },
-
       {
         "name": "Amazon Titan",
         "features": [
@@ -66,11 +63,10 @@
       }
     ]
   },
-
   {
     "kind": "abstraction",
-    "title": "Langchain",
-    "featuresPreamble": "The following general features of Langchain are supported:",
+    "title": "LangChain",
+    "featuresPreamble": "The following general features of LangChain are supported:",
     "providersPreamble": "Models/providers are generally supported transitively by our instrumentation of the provider's module.",
     "features": [
       {
@@ -98,8 +94,8 @@
       },
       {
         "name": "Amazon Bedrock",
-        "supported": false,
-        "transitively": false
+        "supported": true,
+        "transitively": true
       },
       {
         "name": "OpenAI",
@@ -108,7 +104,6 @@
       }
     ]
   },
-
   {
     "kind": "sdk",
     "title": "OpenAI",
@@ -141,10 +136,9 @@
       }
     ]
   },
-
   {
     "kind": "sdk",
-    "title": "Google GenAI",
+    "title": "Google Gen AI",
     "featuresPreamble": "Through the `@google/genai` module, we support:",
     "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
     "features": [
@@ -178,6 +172,25 @@
       },
       {
         "title": "Embeddings",
+        "supported": true
+      }
+    ]
+  },
+  {
+    "kind": "sdk",
+    "title": "Model Context Protocol SDK",
+    "featuresPreamble": "Through the `@modelcontextprotocol/sdk` module, we support:",
+    "features": [
+      {
+        "title": "Tool Calls",
+        "supported": true
+      },
+      {
+        "title": "Prompt Retrieval",
+        "supported": true
+      },
+      {
+        "title": "Resource Reading",
         "supported": true
       }
     ]
