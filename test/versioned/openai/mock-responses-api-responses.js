@@ -9,7 +9,9 @@ const responses = new Map()
 module.exports = responses
 
 responses.set('Invalid API key.', {
-  headers: {},
+  headers: {
+    'x-request-id': 'req_f3b1353d6a35554bcc6d6e0cbf07ad4b'
+  },
   code: 401,
   body: {
     error: {
@@ -18,7 +20,6 @@ responses.set('Invalid API key.', {
       type: 'invalid_request_error',
       param: 'null',
       code: 'invalid_api_key',
-      requestID: 'req_f3b1353d6a35554bcc6d6e0cbf07ad4b'
     }
   }
 })
