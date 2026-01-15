@@ -149,13 +149,13 @@ test('embedding invalid payload errors should be tracked', (t, end) => {
     match(tx.exceptions[0], {
       error: {
         status: 403,
-        code: null,
+        code: 'insufficient_quota',
         param: null
       },
       customAttributes: {
         'http.statusCode': 403,
-        'error.message': /You are not allowed to generate embeddings from this model/,
-        'error.code': null,
+        'error.message': /You exceeded your current quota, please check your plan and billing details/,
+        'error.code': 'insufficient_quota',
         'error.param': null,
         completion_id: undefined,
         embedding_id: /\w{32}/
