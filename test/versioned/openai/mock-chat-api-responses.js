@@ -186,10 +186,10 @@ responses.set('Embedding not allowed.', {
   code: 403,
   body: {
     error: {
-      message: 'You are not allowed to generate embeddings from this model',
-      type: 'invalid_request_error',
+      message: 'You exceeded your current quota, please check your plan and billing details',
+      type: 'insufficient_quota',
       param: null,
-      code: null
+      code: 'insufficient_quota'
     }
   }
 })
