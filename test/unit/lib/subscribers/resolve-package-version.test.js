@@ -7,6 +7,8 @@
 
 const test = require('node:test')
 const dc = require('node:diagnostics_channel')
+const path = require('node:path')
+const { spawnSync } = require('node:child_process')
 const resolvePackageVersion = require('#agentlib/subscribers/resolve-package-version.js')
 
 const nrPkg = require('../../../../package.json')
@@ -86,6 +88,19 @@ test('stops looking after reaching app root', (t) => {
       ]
     ])
   }
+})
+
+test('returns unknown if app root does not have manifest', (t) => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      './app_root.js'
+    ],
+    {
+      cwd: path.join(__dirname, 'fixtures')
+    }
+  )
+  t.assert.equal(result.stdout.toString(), 'unknown\n')
 })
 
 test('returns version', (t) => {
