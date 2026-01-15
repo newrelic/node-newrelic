@@ -82,7 +82,6 @@ test('openai.chat.completions.create', async (t) => {
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
         const summaryId = 'chat-summary-id'
-        const inputTimestamp = Date.now()
         const chatMessageEvent = new LlmChatCompletionMessage({
           transaction: tx,
           agent,
@@ -91,11 +90,10 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: req.messages[0],
-          index: 0,
-          inputTimestamp
+          index: 0
         })
         const expected = getExpectedResult(tx, { id: 'res-id-0' }, 'message', summaryId)
-        expected.timestamp = inputTimestamp
+        expected.timestamp = segment.timer.start
         assert.deepEqual(chatMessageEvent, expected)
         end()
       })
