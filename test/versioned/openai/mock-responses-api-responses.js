@@ -10,6 +10,7 @@ module.exports = responses
 
 responses.set('Invalid API key.', {
   headers: {
+    'content-type': 'application/json',
     'x-request-id': 'req_f3b1353d6a35554bcc6d6e0cbf07ad4b'
   },
   code: 401,
@@ -25,6 +26,10 @@ responses.set('Invalid API key.', {
 })
 
 responses.set('Model does not exist.', {
+  headers: {
+    'content-type': 'application/json',
+    'x-request-id': 'req_f3b1353d6a35554bcc6d6e0cbf07ad4b'
+  },
   code: 400,
   body: {
     error: {
@@ -73,7 +78,7 @@ responses.set('You are a mathematician.', {
 responses.set('Invalid role.', {
   headers: {
     'content-type': 'application/json',
-    'x-request-id': 'req_dfcfcd9f6a176a36c7e386577161b792',
+    'x-request-id': 'req_f3b1353d6a35554bcc6d6e0cbf07ad4b',
     'openai-organization': 'new-relic-nkmd8b',
     'openai-processing-ms': '4',
     'openai-version': '2020-10-01'
@@ -92,6 +97,8 @@ responses.set('Invalid role.', {
 
 responses.set('Invalid input.', {
   headers: {
+    'content-type': 'application/json',
+    'x-request-id': 'req_f3b1353d6a35554bcc6d6e0cbf07ad4b'
   },
   code: 400,
   body: {
