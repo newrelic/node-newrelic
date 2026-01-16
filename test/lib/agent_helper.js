@@ -9,6 +9,7 @@ const Agent = require('../../lib/agent')
 const API = require('../../api')
 const zlib = require('zlib')
 const copy = require('../../lib/util/copy')
+const hashes = require('#agentlib/util/hashes.js')
 const { defaultAttributeConfig } = require('./fixtures')
 const { EventEmitter } = require('events')
 const Transaction = require('../../lib/transaction')
@@ -644,4 +645,11 @@ helper.readPackageVersion = function readPackageVersion(dirname, pkg) {
  */
 helper.randomString = function randomString(prefix = '') {
   return `${prefix}${crypto.randomBytes(8).toString('hex')}`
+}
+
+/**
+ * Simulates generating a random 32-character hexadecimal trace ID.
+ */
+helper.generateRandomTraceId = function generateRandomTraceId() {
+  return hashes.makeId(32)
 }

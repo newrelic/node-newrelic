@@ -480,6 +480,8 @@ test('amqplib callback instrumentation', async function (t) {
     agent.on('transactionFinished', function (tx) {
       amqpUtils.verifyConsumeTransaction(tx, exchange, queue, 'consume-tx-key')
       assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
+
+      assert.ok(tx.baseSegment.getDurationInMillis() >= PROMISE_WAIT, 'base segment should account for async work')
       end()
     })
 

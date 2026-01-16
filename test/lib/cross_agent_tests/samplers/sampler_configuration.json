@@ -1,0 +1,208 @@
+[
+  {
+    "test_name": "default_configuration",
+    "comment": "The default configuration uses the global adaptive sampler at full granularity.",
+    "config": {},
+    "expected_samplers": {
+      "full_root": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true
+      },
+      "full_remote_parent_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true
+      },
+      "full_remote_parent_not_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true
+      }
+    }
+  },
+
+  {
+    "test_name": "sampling_target_specified_uses_new_sampler_instance",
+    "comment": "When a valid sampling_target is specified, the global sampler instance is not used.",
+    "config": {
+      "sampler": {
+        "adaptive_sampling_target": 10,
+        "root": {
+          "adaptive": {
+            "sampling_target" : 35
+          }
+        },
+        "remote_parent_sampled": {
+          "adaptive": {
+            "sampling_target" : 10
+          }
+        },
+        "remote_parent_not_sampled" : "adaptive",
+        "partial_granularity": {
+          "enabled": true,
+          "root" : {
+            "banana" : {}
+          }
+        }
+      }
+    },
+    "expected_samplers": {
+      "full_root": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": false,
+        "target": 35
+      },
+      "full_remote_parent_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": false,
+        "target": 10
+      },
+      "full_remote_parent_not_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true,
+        "target": 10
+      },
+      "partial_root": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true,
+        "target": 10
+      },
+      "partial_remote_parent_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true,
+        "target": 10
+      },
+      "partial_remote_parent_not_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true,
+        "target": 10
+      }
+    }
+  },
+  {
+    "test_name": "no_ratio_falls_back_to_global_sampler",
+    "comment": "When a trace_id_ratio_based sampler is configured without a valid ratio, we should fall back to the global adaptive sampler.",
+    "config" : {
+      "sampler": {
+        "root" : {
+          "trace_id_ratio_based": {}
+        },
+        "remote_parent_sampled": {
+          "trace_id_ratio_based": {
+            "ratio": ""
+          }
+        },
+        "remote_parent_not_sampled": {
+          "trace_id_ratio_based": {
+            "ratio": 0.33
+          }
+        }
+      }
+    },
+    "expected_samplers": {
+      "full_root": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true
+      },
+      "full_remote_parent_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true
+      },
+      "full_remote_parent_not_sampled": {
+        "type": "trace_id_ratio_based",
+        "ratio": 0.33
+      }
+    }
+  },
+  {
+    "test_name": "layering_ratio_samplers_adjusts_partial_ratio",
+    "comment": "The ratio of partial gran samplers should be added to the ratio of simultaneously configured full gran samplers.",
+    "config": {
+      "sampler" : {
+        "root": {
+          "trace_id_ratio_based": {
+            "ratio" : 0.4
+          }
+        },
+        "partial_granularity": {
+          "enabled": true,
+          "root": {
+            "trace_id_ratio_based" : {
+              "ratio" : 0.25
+            }
+          },
+          "remote_parent_sampled": {
+            "trace_id_ratio_based": {
+              "ratio": 0.1
+            }
+          }
+        }
+      }
+    },
+    "expected_samplers": {
+      "full_root": {
+        "type": "trace_id_ratio_based",
+        "ratio": 0.4
+      },
+      "full_remote_parent_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true
+      },
+      "full_remote_parent_not_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true
+      },
+      "partial_root": {
+        "type": "trace_id_ratio_based",
+        "ratio": 0.65
+      },
+      "partial_remote_parent_sampled": {
+        "type": "trace_id_ratio_based",
+        "ratio": 0.1
+      },
+      "partial_remote_parent_not_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true
+      }
+    }
+  },
+  {
+    "test_name": "layering_ratios_has_no_effect_if_full_disabled",
+    "comment": "Ratios are not additive if full granularity is disabled.",
+    "config": {
+      "sampler": {
+        "full_granularity": {
+          "enabled": false
+        },
+        "root": {
+          "trace_id_ratio_based": {
+            "ratio": 0.5
+          }
+        },
+        "partial_granularity": {
+          "enabled": true,
+          "root": {
+            "trace_id_ratio_based": {
+              "ratio": 0.2
+            }
+          },
+          "remote_parent_sampled": "always_on" 
+        }
+      }
+    },
+
+    "expected_full_granularity_enabled": false,
+    "expected_partial_granularity_enabled": true,
+    "expected_samplers": {
+      "partial_root": {
+        "type": "trace_id_ratio_based",
+        "ratio": 0.2
+      },
+      "partial_remote_parent_sampled": {
+        "type": "always_on"
+      },
+      "partial_remote_parent_not_sampled": {
+        "type": "adaptive",
+        "is_global_adaptive_sampler": true
+      }
+    }
+  }
+]

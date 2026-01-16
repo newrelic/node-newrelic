@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "13.8.1",
+  "version": "13.9.2",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -198,6 +198,7 @@
   "imports": {
     "#agentlib/*.js": "./lib/*.js",
     "#testlib/*.js": "./test/lib/*.js",
+    "#testlib/*.json": "./test/lib/*.json",
     "#test/assert": "./test/lib/custom-assertions/index.js"
   },
   "dependencies": {

@@ -2,6 +2,44 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.9.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated message consumer subscribers to properly time the consumption actions"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.9.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `getHostnameSafe` to invalidate the cache is trying to assign the host based on the gcp cloud run id",
+          "Updated logic to properly assign content and role in LangChain chat completion messages"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "13.9.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated samplers to properly assign sampling decisions based on appropriate context",
+          "Updated `undici` instrumentation to track the active and parent segment as symbols on request to properly end active request",
+          "Account for links added during transaction"
+        ],
+        "features": [
+          "Added instrumentation support for `iovalkey`",
+          "Added `entity_guid` to Agent Control health file",
+          "Added support for OTel span events",
+          "Additional support for partial granularity traces (Not available for production use"
+        ]
+      }
+    },
+    {
       "version": "13.8.1",
       "changes": {
         "security": [],

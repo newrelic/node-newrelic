@@ -1,0 +1,216 @@
+[  
+  {
+    "test_name": "default_configuration_root_samples_global_sampling_target",
+    "comment": "When only root transactions are flowing, adaptive_sampling_target-many of them should be sampled",
+    "config": {
+      "sampler": {
+        "adaptive_sampling_target": 10
+      }
+    },
+    "root": 50,
+
+    "expected_sampled": 10,
+    "expected_sampled_full": 10,
+    "expected_sampled_partial": 0,
+    "expected_adaptive_sampler_decisions": 50
+  },
+  {
+    "test_name": "multiple_transaction_types_count_towards_global_sampling_target",
+    "comment": "Transactions with remote parents still count towards the global target if they lack trusted acct ids.",
+    "config": {
+      "sampler": {
+        "adaptive_sampling_target": 10
+      }
+    },
+    "root": 50,
+    "parent_sampled_no_matching_acct_id": 50,
+    "parent_not_sampled_no_matching_acct_id": 50,
+
+    "expected_sampled": 10,
+    "expected_sampled_full": 10,
+    "expected_sampled_partial": 0,
+    "expected_adaptive_sampler_decisions": 150
+  },
+  {
+    "test_name": "txns_with_remote_parents_and_matching_acct_ids_do_not_count_towards_global_sampling_target",
+    "comment": "Transactions with remote parents that have matching acct key ids do not run the adaptive sampler or count towards the sampling target. They reuse the sampling decision from the tracestate.",
+    "config": {
+      "sampler": {
+        "adaptive_sampling_target": 25
+      }
+    },
+    "root": 50,
+    "parent_sampled_matching_acct_id_sampled_true": 50,
+    "parent_not_sampled_matching_acct_id_sampled_true": 50,
+
+    "expected_sampled": 125,
+    "expected_sampled_full": 125,
+    "expected_sampled_partial": 0,
+    "expected_adaptive_sampler_decisions": 50
+  },
+  {
+    "test_name": "inbound_decisions_do_not_influence_non_adaptive_samplers",
+    "comment": "All samplers other than adaptive type ignore the inbound sampling decision (only sampled/not sampled flag matters)",
+    "config": {
+      "sampler": {
+        "remote_parent_sampled": {
+          "trace_id_ratio_based": {
+            "ratio": 0.3
+          }
+        },
+        "remote_parent_not_sampled": "always_on" 
+      }
+    },
+    "parent_sampled_matching_acct_id_sampled_true": 5000,
+    "parent_sampled_no_matching_acct_id": 5000,
+    "parent_not_sampled_matching_acct_id_sampled_true": 60,
+    "parent_not_sampled_no_matching_acct_id": 40,
+
+    "expected_sampled": 3100,
+    "expected_sampled_full": 3100,
+    "expected_sampled_partial": 0,
+    "variance": 0.05
+  },
+  {
+    "test_name": "trace_ratios_should_be_additive_when_layered",
+    "comment": "The partial granularity sampling ratio should be added to the full granularity ratio when samplers are used simultaneously.",
+    "config": {
+      "sampler": {
+        "root": {
+          "trace_id_ratio_based": {
+              "ratio": 0.5
+          }
+        },
+        "remote_parent_sampled": "always_off", 
+        "remote_parent_not_sampled": "always_off",
+        "partial_granularity": {
+          "enabled": true,
+          "root": {
+            "trace_id_ratio_based": {
+              "ratio": 0.3
+            }
+          },
+          "remote_parent_sampled": "always_off", 
+          "remote_parent_not_sampled": "always_off" 
+        }
+      }
+    },
+    "root": 10000,
+    "expected_sampled": 8000,
+    "expected_sampled_full": 5000,
+    "expected_sampled_partial": 3000,
+    "variance": 0.05
+  },
+  {
+    "test_name": "should_create_multiple_instances_of_adaptive_sampler",
+    "config": {
+      "sampler": {
+        "root": {
+          "adaptive": {
+            "sampling_target": 10
+          }
+        },
+        "remote_parent_sampled": {
+          "adaptive": {
+            "sampling_target": 10
+          }
+        },
+        "remote_parent_not_sampled": {
+          "adaptive": {
+            "sampling_target": 10
+          }
+        },
+        "partial_granularity": {
+          "enabled": true,
+          "root": {
+            "adaptive": {
+              "sampling_target": 15
+            }
+          },
+          "remote_parent_sampled": {
+            "adaptive": {
+              "sampling_target": 15
+            }
+          },
+          "remote_parent_not_sampled": {
+            "adaptive": {
+              "sampling_target": 15
+            }
+          }
+        }
+      }
+    },
+    "root": 100,
+    "parent_sampled_no_matching_acct_id": 100,
+    "parent_not_sampled_no_matching_acct_id": 100,
+
+    "expected_sampled": 75,
+    "expected_sampled_full": 30,
+    "expected_sampled_partial": 45
+  },
+  {
+    "test_name": "giant_example_from_spec",
+    "comment": "Multiple sampler types are configured. 15000 root + 500 remote_parent_sampled + 500 remote_parent_not_sampled transactions are sampled.",
+    "config": {
+      "sampler": {
+        "root": {
+          "trace_id_ratio_based": {
+            "ratio": 0.1
+          }
+        },
+        "remote_parent_sampled": "always_off", 
+        "remote_parent_not_sampled": "always_on", 
+        "partial_granularity": {
+          "enabled": true,
+          "type": "essential",
+          "root": {
+            "trace_id_ratio_based": {
+              "ratio": 0.4
+            }
+          },
+          "remote_parent_sampled": {
+            "trace_id_ratio_based": {
+              "ratio": 1.0
+            }
+          },
+          "remote_parent_not_sampled": "always_off" 
+        }
+      }
+    },
+    "root": 15000,
+    "parent_sampled_matching_acct_id_sampled_true": 500,
+    "parent_not_sampled_matching_acct_id_sampled_true": 500,
+
+    "expected_sampled": 8500,
+    "expected_sampled_full": 2000,
+    "expected_sampled_partial": 6500,
+    "variance": 0.05
+  },
+  {
+    "test_name": "adaptive_and_ratio_samplers_are_layered",
+    "comment": "30 roots are sampled by the adaptive sampler at full granularity, followed by 0.5 * (10000 remaining) = 5000 roots sampled at partial granularity.",
+    "config": {
+      "sampler": {
+        "root": {
+          "adaptive": {
+            "sampling_target": 30
+          }
+        },
+        "partial_granularity": {
+          "enabled": true,
+          "root": {
+            "trace_id_ratio_based": {
+              "ratio": 0.5
+            }
+          }
+        }
+      }
+    },
+    "root": 10030,
+
+    "expected_sampled": 5030,
+    "expected_sampled_full": 30,
+    "expected_sampled_partial": 5000,
+    "variance": 0.05
+  }
+]

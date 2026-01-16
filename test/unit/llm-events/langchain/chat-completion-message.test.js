@@ -54,7 +54,8 @@ test('creates entity', async (t) => {
   const msg = new LangChainCompletionMessage({
     ...t.nr,
     sequence: 1,
-    content: 'hello world'
+    content: 'hello world',
+    isResponse: true
   })
   assert.equal(msg.id, 'run-1-1')
   assert.equal(msg.appName, 'test-app')
@@ -67,8 +68,28 @@ test('creates entity', async (t) => {
   assert.equal(msg.vendor, 'langchain')
   assert.equal(msg.virtual_llm, true)
   assert.equal(msg.sequence, 1)
+  assert.equal(msg.role, 'assistant', 'should assume assistant role based on isResponse=true')
   assert.equal(msg.content, 'hello world')
   assert.match(msg.completion_id, /[a-z0-9-]{36}/)
+})
+
+test('assigns role if given', async(t) => {
+  const msg = new LangChainCompletionMessage({
+    ...t.nr,
+    sequence: 1,
+    content: 'hello world',
+    role: 'system'
+  })
+  assert.equal(msg.role, 'system')
+})
+
+test('assigns role to user if isResponse is falsey', async(t) => {
+  const msg = new LangChainCompletionMessage({
+    ...t.nr,
+    sequence: 1,
+    content: 'hello world'
+  })
+  assert.equal(msg.role, 'user')
 })
 
 test('assigns id correctly', async (t) => {

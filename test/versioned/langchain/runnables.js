@@ -84,7 +84,7 @@ function runRunnablesTests(config) {
       const metrics = agent.metrics.getOrCreateMetric(
         `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
       )
-      assert.equal(metrics.callCount > 0, true)
+      assert.equal(metrics.callCount, 3)
 
       tx.end()
       end()

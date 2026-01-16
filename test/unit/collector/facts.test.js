@@ -862,6 +862,19 @@ test('host facts', async (t) => {
     })
   })
 
+  await t.test('should be GCP id when K_SERVICE is set and `agent.config.getDisplayHost()` was previously called', (t, end) => {
+    const { agent, facts } = t.nr
+    agent.config.getDisplayHost()
+
+    agent.config.utilization = { gcp_use_instance_as_host: true }
+    process.env.K_SERVICE = 'mock-service'
+
+    facts(agent, (result) => {
+      assert.equal(result.host, 'mock-gcp-instance-id', 'Hostname should be set to GCP instance ID')
+      end()
+    })
+  })
+
   await t.test('should not be GCP id when K_SERVICE is not present', (t, end) => {
     const { agent, facts } = t.nr
 

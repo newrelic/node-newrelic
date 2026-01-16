@@ -241,6 +241,7 @@ test('responses.create', async (t) => {
       const summary = agent.customEventAggregator.events.toArray().find((e) => e[0].type === 'LlmChatCompletionSummary')
       assert.ok(summary)
       assert.equal(summary[1].error, true)
+      assert.equal(summary[1].request_id, 'req_f3b1353d6a35554bcc6d6e0cbf07ad4b')
 
       tx.end()
       end()
