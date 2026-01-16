@@ -1,6 +1,11 @@
 {
   "name": "mongodb-tests",
-  "targets": [{"name":"mongodb","minAgentVersion":"1.32.0"}],
+  "targets": [
+    {
+      "name": "mongodb",
+      "minAgentVersion": "1.32.0"
+    }
+  ],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -10,7 +15,26 @@
         "node": ">=20"
       },
       "dependencies": {
-        "mongodb": ">=4.1.4"
+        "mongodb": ">=4.1.4 <7.0.0"
+      },
+      "files": [
+        "bulk.test.js",
+        "collection-find.test.js",
+        "collection-index.test.js",
+        "collection-misc.test.js",
+        "collection-update.test.js",
+        "cursor.test.js",
+        "db.test.js"
+      ]
+    },
+    {
+      "comment": "mongodb 7.x with bson pinned to 7.0.0 to avoid breaking changes in 7.1.0",
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "mongodb": ">=7.0.0",
+        "bson": "7.0.0"
       },
       "files": [
         "bulk.test.js",
