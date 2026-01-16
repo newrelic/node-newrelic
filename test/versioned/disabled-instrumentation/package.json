@@ -11,7 +11,8 @@
       "dependencies": {
         "express": "latest",
         "ioredis": "latest",
-        "mongodb": "latest"
+        "mongodb": "latest",
+        "bson": "7.0.0"
       },
       "files": [
         "disabled-express.test.js",
