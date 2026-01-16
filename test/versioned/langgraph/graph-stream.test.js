@@ -60,7 +60,7 @@ test.beforeEach(async (ctx) => {
 
   // Create LLM using mock server
   const mockLLM = new ChatOpenAI({
-    modelName: 'gpt-3.5-turbo',
+    modelName: 'gpt-4',
     temperature: 0,
     apiKey: 'fake-key',
     maxRetries: 0,
@@ -94,11 +94,23 @@ test.afterEach((ctx) => {
   removeModules(['@langchain/langgraph', '@langchain/core', '@langchain/openai'])
 })
 
-test('should log tracking metrics', function(t) {
-  const { agent } = t.nr
+test('should log tracking metrics', function(t, end) {
+  const { agent, langgraphAgent } = t.nr
   const { version } = require('@langchain/langgraph/package.json')
   const { assertPackageMetrics } = require('../../lib/custom-assertions')
-  assertPackageMetrics({ agent, pkg: '@langchain/langgraph', version })
+
+  helper.runInTransaction(agent, async () => {
+    await langgraphAgent.stream(
+      { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+    )
+    assertPackageMetrics({
+      agent,
+      pkg: '@langchain/langgraph',
+      version,
+      subscriberType: true
+    }, { assert: t.assert })
+    end()
+  })
 })
 
 test('should create span on successful CompiledStateGraph.stream', async (t) => {
