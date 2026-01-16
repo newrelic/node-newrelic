@@ -36,9 +36,19 @@ function runVectorstoreTests(config) {
     errorAssertion
   } = config
 
-  test('should log tracking metrics', function(t) {
-    const { agent, langchainCoreVersion } = t.nr
-    assertPackageMetrics({ agent, pkg: '@langchain/core', version: langchainCoreVersion })
+  test('should log tracking metrics', function(t, end) {
+    t.plan(5)
+    const { agent, langchainCoreVersion, vs } = t.nr
+    helper.runInTransaction(agent, async () => {
+      await vs.similaritySearch(searchQuery, 1)
+      assertPackageMetrics({
+        agent,
+        pkg: '@langchain/core',
+        version: langchainCoreVersion,
+        subscriberType: true
+      }, { assert: t.assert })
+      end()
+    })
   })
 
   test('should create vectorstore events for every similarity search call', (t, end) => {
