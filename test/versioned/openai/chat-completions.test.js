@@ -155,6 +155,54 @@ test('chat.completions.create', async (t) => {
     })
   })
 
+  await t.test('should have not create LlmChatCompletionMessage for an outgoing tool call', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async(tx) => {
+      const model = 'gpt-4'
+      const content = 'What is 2 + 2?'
+      await client.chat.completions.create({
+        max_tokens: 100,
+        temperature: 0.5,
+        model,
+        messages: [
+          { role: 'user', content },
+        ]
+      })
+
+      const chatCmplId = 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9calc'
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 2, 'should create only 1 chat completion messages and 1 summary event')
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      assert.equal(chatMsgs.length, 1, 'should only have the request message')
+
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
+
+      const requestMsg = chatMsgs[0]
+      if (requestMsg[1].sequence === 0) {
+        const expectedMsg = {
+          appName: 'New Relic for Node.js tests',
+          completion_id: /[a-f0-9]{36}/,
+          content,
+          id: `${chatCmplId}-0`,
+          ingest_source: 'Node',
+          is_response: false,
+          request_id: '49dbbffbd3c3f4612aa48def69059calc',
+          'response.model': model,
+          role: 'user',
+          sequence: 0,
+          span_id: segment.id,
+          trace_id: tx.traceId,
+          vendor: 'openai',
+        }
+        match(requestMsg[1], expectedMsg, { assert })
+      }
+
+      tx.end()
+      end()
+    })
+  })
+
   if (semver.gte(pkgVersion, '4.12.2')) {
     await t.test('should create span on successful chat completion stream create', (t, end) => {
       const { client, agent, host, port } = t.nr
