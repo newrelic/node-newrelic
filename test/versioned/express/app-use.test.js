@@ -37,15 +37,22 @@ test('app should be at top of stack when mounted', { skip: isExpress5() }, async
 test('app should be at top of stack when mounted', async function (t) {
   const agent = helper.instrumentMockedAgent()
 
+  let version
   const express = require('express')
-  const { version } = require('express/package.json')
-  assertPackageMetrics({ agent, pkg: 'express', version })
   const main = express()
   const app = express()
   const app2 = express()
   const router = new express.Router()
   const router2 = new express.Router()
   const server = http.createServer(main)
+
+  if (isExpress5() === true) {
+    const pkg = require('router/package.json')
+    version = pkg.version
+  } else {
+    const pkg = require('express/package.json')
+    version = pkg.version
+  }
 
   t.after(function () {
     helper.unloadAgent(agent)
@@ -67,6 +74,12 @@ test('app should be at top of stack when mounted', async function (t) {
   // store finished transactions
   const finishedTransactions = {}
   agent.on('transactionFinished', function (tx) {
+    assertPackageMetrics({
+      agent,
+      pkg: isExpress5() === true ? 'router' : 'express',
+      version,
+      subscriberType: true
+    })
     finishedTransactions[tx.id] = tx
   })
 

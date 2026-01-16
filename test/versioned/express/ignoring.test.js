@@ -8,45 +8,41 @@
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
-const tsplan = require('@matteo.collina/tspl')
+const promiseResolvers = require('../../lib/promise-resolvers')
 const { setup, teardown } = require('./utils')
 
-test.beforeEach(async (ctx) => {
-  await setup(ctx)
-})
-
-test.afterEach(teardown)
-
 test('ignoring an Express route', async function (t) {
-  const { agent, app, port, isExpress5 } = t.nr
-  const plan = tsplan(t, { plan: 8 })
+  t.plan(8)
 
+  await setup(t)
+  t.after(() => { teardown(t) })
+
+  const { agent, app, port } = t.nr
+  const { promise, resolve } = promiseResolvers()
   const api = new API(agent)
 
   agent.on('transactionFinished', function (transaction) {
-    plan.equal(
+    t.assert.equal(
       transaction.name,
       'WebTransaction/Expressjs/GET//polling/:id',
       'transaction has expected name even on error'
     )
 
-    plan.ok(transaction.ignore, 'transaction is ignored')
+    t.assert.ok(transaction.ignore, 'transaction is ignored')
 
-    plan.ok(!agent.traces.trace, 'should have no transaction trace')
+    t.assert.ok(!agent.traces.trace, 'should have no transaction trace')
 
-    const metrics = agent.metrics._metrics.unscoped
-    // loading k2 adds instrumentation metrics for things it loads
-    let expectedMetrics = isExpress5 ? 8 : 6
-    if (helper.isSecurityAgentEnabled(agent) === true) {
-      expectedMetrics = isExpress5 ? 19 : 17
-    }
-    plan.equal(
-      Object.keys(metrics).length,
-      expectedMetrics,
+    const metrics = Object.keys(agent.metrics._metrics.unscoped).filter(
+      (k) => k.startsWith('Supportability/') === false
+    )
+    t.assert.equal(
+      metrics.length,
+      0,
       'only supportability metrics added to agent collection'
     )
+
     const errors = agent.errors.traceAggregator.errors
-    plan.equal(errors.length, 0, 'no errors noticed')
+    t.assert.equal(errors.length, 0, 'no errors noticed')
   })
 
   app.get('/polling/:id', function (req, res) {
@@ -57,9 +53,14 @@ test('ignoring an Express route', async function (t) {
 
   const url = 'http://localhost:' + port + '/polling/31337'
   helper.makeGetRequest(url, function (error, res, body) {
-    plan.ifError(error)
-    plan.equal(res.statusCode, 400, 'got expected error')
-    plan.deepEqual(body, { status: 'pollpollpoll' }, 'got expected response')
+    t.assert.ifError(error)
+    t.assert.equal(res.statusCode, 400, 'got expected error')
+    t.assert.deepEqual(body, { status: 'pollpollpoll' }, 'got expected response')
+
+    // The request finished callback is invoked after the transactionFinished
+    // callback. So we must trigger the end of the test here.
+    resolve()
   })
-  await plan.completed
+
+  await promise
 })

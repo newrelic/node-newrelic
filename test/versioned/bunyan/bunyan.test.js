@@ -51,9 +51,10 @@ test('logging enabled/disabled', async (t) => {
 
   await t.test('should log tracking metrics', function(t) {
     setup(t.nr, { application_logging: { enabled: true } })
-    const { agent } = t.nr
+    const { agent, bunyan } = t.nr
     const { version } = require('bunyan/package.json')
-    assertPackageMetrics({ agent, pkg: 'bunyan', version })
+    bunyan.createLogger({ name: 'test-logger' })
+    assertPackageMetrics({ agent, pkg: 'bunyan', version, subscriberType: true })
   })
 
   await t.test('logging enabled', (t) => {

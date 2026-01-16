@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const path = require('node:path')
 
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
@@ -27,7 +28,7 @@ test.beforeEach(async (ctx) => {
   const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js')
   ctx.nr.transport = new StdioClientTransport({
     command: 'node',
-    args: ['stdio-server.js']
+    args: [path.join(__dirname, 'stdio-server.js')]
   })
   ctx.nr.client = new Client(
     {
@@ -45,10 +46,21 @@ test.afterEach(async (ctx) => {
   removeModules(['@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/client/stdio.js'])
 })
 
-test('should log tracking metrics', function(t) {
-  const { agent } = t.nr
+test('should log tracking metrics', function(t, end) {
+  t.plan(5)
+  const { agent, client } = t.nr
   const pkgVersion = helper.readPackageVersion(__dirname, '@modelcontextprotocol/sdk')
-  assertPackageMetrics({ agent, pkg: '@modelcontextprotocol/sdk', version: pkgVersion })
+  helper.runInTransaction(agent, async () => {
+    await client.callTool({
+      name: 'echo',
+      arguments: { message: 'example message' }
+    })
+    assertPackageMetrics(
+      { agent, pkg: '@modelcontextprotocol/sdk', version: pkgVersion, subscriberType: true },
+      { assert: t.assert }
+    )
+    end()
+  })
 })
 
 test('should create span for callTool', async (t) => {

@@ -61,6 +61,14 @@
         "errors.test.js",
         "new-state-tracking.test.js"
       ]
+    },
+
+    {
+      "engines": { "node": ">=20" },
+      "dependencies": {
+        "fastify": ">=5.0.0"
+      },
+      "files": [ "usage-metric.test.js" ]
     }
   ]
 }

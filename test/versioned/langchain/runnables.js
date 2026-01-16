@@ -41,9 +41,19 @@ function runRunnablesTests(config) {
     arrayParserOutput
   } = config
 
-  test('should log tracking metrics', function(t) {
-    const { agent, langchainCoreVersion } = t.nr
-    assertPackageMetrics({ agent, pkg: '@langchain/core', version: langchainCoreVersion })
+  test('should log tracking metrics', function(t, end) {
+    t.plan(5)
+    const { agent, langchainCoreVersion, model, prompt } = t.nr
+    helper.runInTransaction(agent, async () => {
+      await prompt.pipe(model).invoke(inputData)
+      assertPackageMetrics({
+        agent,
+        pkg: '@langchain/core',
+        version: langchainCoreVersion,
+        subscriberType: true
+      }, { assert: t.assert })
+      end()
+    })
   })
 
   test('should create langchain events for every invoke call', (t, end) => {

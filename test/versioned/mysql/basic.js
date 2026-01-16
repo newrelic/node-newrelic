@@ -55,7 +55,7 @@ module.exports = function ({ lib, factory, poolFactory, constants, version }) {
 
     await t.test('should log tracking metrics', function(t) {
       const { agent } = t.nr
-      assertPackageMetrics({ agent, pkg: lib, version })
+      assertPackageMetrics({ agent, pkg: lib, version, subscriberType: true })
     })
 
     await t.test('basic transaction', function testTransaction(t, end) {

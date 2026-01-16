@@ -57,7 +57,12 @@ test.afterEach(async (ctx) => {
 test('should log package tracking metrics', (t) => {
   const { agent } = t.nr
   const version = helper.readPackageVersion(__dirname, '@modelcontextprotocol/sdk')
-  assertPackageMetrics({ agent, pkg: '@modelcontextprotocol/sdk', version })
+  assertPackageMetrics({
+    agent,
+    pkg: '@modelcontextprotocol/sdk',
+    version,
+    subscriberType: true
+  })
 })
 
 test('should create span for callTool', (t, end) => {
