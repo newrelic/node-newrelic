@@ -436,6 +436,19 @@ helper.makeGetRequest = (url, options, callback) => {
  */
 helper.makeGetRequestAsync = util.promisify(helper.makeGetRequest)
 
+helper.asyncHttpCall = function (url, options) {
+  return new Promise((resolve, reject) => {
+    helper.makeRequest(url, options || {}, callback)
+
+    function callback (error, incomingMessage, body) {
+      if (error) {
+        return reject(error)
+      }
+      resolve({ response: incomingMessage, body })
+    }
+  })
+}
+
 helper.makeRequest = (url, options, callback) => {
   if (!options || typeof options === 'function') {
     callback = options
