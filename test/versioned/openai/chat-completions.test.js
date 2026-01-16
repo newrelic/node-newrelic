@@ -155,7 +155,7 @@ test('chat.completions.create', async (t) => {
     })
   })
 
-  await t.test('should have correct content for an outgoing tool call', (t, end) => {
+  await t.test('should have not create LlmChatCompletionMessage for an outgoing tool call', (t, end) => {
     const { client, agent } = t.nr
     helper.runInTransaction(agent, async(tx) => {
       const model = 'gpt-4'
@@ -172,48 +172,31 @@ test('chat.completions.create', async (t) => {
       const chatCmplId = 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9calc'
 
       const events = agent.customEventAggregator.events.toArray()
-      assert.equal(events.length, 3, 'should create 2 chat completion messages and 1 summary event')
+      assert.equal(events.length, 2, 'should create only 1 chat completion messages and 1 summary event')
       const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      assert.equal(chatMsgs.length, 1, 'should only have the request message')
 
       const [segment] = tx.trace.getChildren(tx.trace.root.id)
 
-      chatMsgs.forEach((msg) => {
-        if (msg[1].sequence === 0) {
-          const requestMsg = {
-            appName: 'New Relic for Node.js tests',
-            completion_id: /[a-f0-9]{36}/,
-            content,
-            id: `${chatCmplId}-0`,
-            ingest_source: 'Node',
-            is_response: false,
-            request_id: '49dbbffbd3c3f4612aa48def69059calc',
-            'response.model': model,
-            role: 'user',
-            sequence: 0,
-            span_id: segment.id,
-            trace_id: tx.traceId,
-            vendor: 'openai',
-          }
-          match(msg[1], requestMsg, { assert })
-        } else if (msg[1].sequence === 1) {
-          const responseMsg = {
-            appName: 'New Relic for Node.js tests',
-            completion_id: /[a-f0-9]{36}/,
-            content: 'Tool call: calculator({"a":2,"b":2,"operation":"add"})',
-            id: `${chatCmplId}-1`,
-            ingest_source: 'Node',
-            is_response: true,
-            request_id: '49dbbffbd3c3f4612aa48def69059calc',
-            'response.model': model,
-            role: 'assistant',
-            sequence: 1,
-            span_id: segment.id,
-            trace_id: tx.traceId,
-            vendor: 'openai',
-          }
-          match(msg[1], responseMsg, { assert })
+      const requestMsg = chatMsgs[0]
+      if (requestMsg[1].sequence === 0) {
+        const expectedMsg = {
+          appName: 'New Relic for Node.js tests',
+          completion_id: /[a-f0-9]{36}/,
+          content,
+          id: `${chatCmplId}-0`,
+          ingest_source: 'Node',
+          is_response: false,
+          request_id: '49dbbffbd3c3f4612aa48def69059calc',
+          'response.model': model,
+          role: 'user',
+          sequence: 0,
+          span_id: segment.id,
+          trace_id: tx.traceId,
+          vendor: 'openai',
         }
-      })
+        match(requestMsg[1], expectedMsg, { assert })
+      }
 
       tx.end()
       end()
