@@ -345,7 +345,6 @@ test('openai.responses.create', async (t) => {
         const summaryId = 'chat-summary-id'
         const content = req.input
         const role = 'user'
-        const inputTimestamp = Date.now()
         const chatMessageEvent = new LlmChatCompletionMessage({
           transaction: tx,
           agent,
@@ -354,12 +353,11 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 0,
-          inputTimestamp
+          index: 0
         })
         const expected = getExpectedResult(tx, { id: 'resp_id-0' }, 'message', summaryId)
         expected.token_count = 0
-        expected.timestamp = inputTimestamp
+        expected.timestamp = segment.timer.start
         assert.deepEqual(chatMessageEvent, expected)
         end()
       })
