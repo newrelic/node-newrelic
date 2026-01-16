@@ -93,6 +93,7 @@ test('openai.chat.completions.create', async (t) => {
           index: 0
         })
         const expected = getExpectedResult(tx, { id: 'res-id-0' }, 'message', summaryId)
+        expected.timestamp = segment.timer.start
         assert.deepEqual(chatMessageEvent, expected)
         end()
       })
@@ -356,6 +357,7 @@ test('openai.responses.create', async (t) => {
         })
         const expected = getExpectedResult(tx, { id: 'resp_id-0' }, 'message', summaryId)
         expected.token_count = 0
+        expected.timestamp = segment.timer.start
         assert.deepEqual(chatMessageEvent, expected)
         end()
       })
