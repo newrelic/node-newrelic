@@ -13,11 +13,11 @@ supported by the agent.
 | --- | --- | --- | --- |
 | `@apollo/gateway` | 2.3.0 | 2.12.2 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 5.2.0 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.970.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.970.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.970.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.970.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.970.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.971.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.971.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.971.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.971.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.971.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.11.0 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.2.0 | 11.9.0 |
@@ -52,7 +52,7 @@ supported by the agent.
 | `mongodb` | 4.1.4 | 7.0.0 | 1.32.0 |
 | `mysql` | 2.16.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.16.1 | 1.32.0 |
-| `next` | 13.4.19 | 16.1.2 | 12.0.0 |
+| `next` | 13.4.19 | 16.1.3 | 12.0.0 |
 | `openai` | 4.0.0 | 6.16.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.17.1 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.5.2 | 9.0.0 |
