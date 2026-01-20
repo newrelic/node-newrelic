@@ -6,7 +6,7 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Updated openai instrumentation to properly parse headers when a call fails"
+          "Updated OpenAI instrumentation to properly parse headers when a call fails"
         ],
         "features": [
           "Add `timestamp` to OpenAI input `LlmChatCompletionMessage`s",

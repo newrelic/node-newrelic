@@ -7,7 +7,7 @@
 
 #### Bug fixes
 
-* Updated openai instrumentation to properly parse headers when a call fails ([#3665](https://github.com/newrelic/node-newrelic/pull/3665)) ([641b7a8](https://github.com/newrelic/node-newrelic/commit/641b7a8c8015855d82574e8173cb6e9fd082b4a0))
+* Updated OpenAI instrumentation to properly parse headers when a call fails ([#3665](https://github.com/newrelic/node-newrelic/pull/3665)) ([641b7a8](https://github.com/newrelic/node-newrelic/commit/641b7a8c8015855d82574e8173cb6e9fd082b4a0))
 
 #### Documentation
 
@@ -22,7 +22,7 @@
 
 #### Tests
 
-* Updated mock response to avoid retries on openai langchain vectorstore calls ([#3664](https://github.com/newrelic/node-newrelic/pull/3664)) ([bc1faf3](https://github.com/newrelic/node-newrelic/commit/bc1faf30654d920e31ad4ddc205560e56b6c796c))
+* Updated mock response to avoid retries on OpenAI LangChain vectorstore calls ([#3664](https://github.com/newrelic/node-newrelic/pull/3664)) ([bc1faf3](https://github.com/newrelic/node-newrelic/commit/bc1faf30654d920e31ad4ddc205560e56b6c796c))
 
 ### v13.9.2 (2026-01-14)
 
