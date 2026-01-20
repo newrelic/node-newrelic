@@ -43,6 +43,7 @@ test('should create a LlmChatCompletionMessage event', (t, end) => {
         index: 0
       })
       const expected = getExpectedResult(tx, chatMessageEvent, 'message', summaryId)
+      expected.timestamp = segment.timer.start
       assert.deepEqual(chatMessageEvent, expected)
       end()
     })
