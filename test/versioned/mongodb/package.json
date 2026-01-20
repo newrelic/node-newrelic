@@ -1,5 +1,6 @@
 {
   "name": "mongodb-tests",
+  "comment": "Only tests promise based instrumentation. Callback based instrumentation is tested for v4 of mongodb in `test/version/mongodb-esm` folder",
   "targets": [
     {
       "name": "mongodb",
@@ -10,31 +11,11 @@
   "private": true,
   "tests": [
     {
-      "comment": "Only tests promise based instrumentation. Callback based instrumentation is tested for v4 of mongodb in `test/version/mongodb-esm` folder",
       "engines": {
         "node": ">=20"
       },
       "dependencies": {
-        "mongodb": ">=4.1.4 <7.0.0"
-      },
-      "files": [
-        "bulk.test.js",
-        "collection-find.test.js",
-        "collection-index.test.js",
-        "collection-misc.test.js",
-        "collection-update.test.js",
-        "cursor.test.js",
-        "db.test.js"
-      ]
-    },
-    {
-      "comment": "mongodb 7.x with bson pinned to 7.0.0 to avoid breaking changes in 7.1.0",
-      "engines": {
-        "node": ">=20"
-      },
-      "dependencies": {
-        "mongodb": ">=7.0.0",
-        "bson": "7.0.0"
+        "mongodb": ">=4.1.4"
       },
       "files": [
         "bulk.test.js",
