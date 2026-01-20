@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.10.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated openai instrumentation to properly parse headers when a call fails"
+        ],
+        "features": [
+          "Add `timestamp` to OpenAI input `LlmChatCompletionMessage`s",
+          "Added reduced tracing mode for span links"
+        ]
+      }
+    },
+    {
       "version": "13.9.2",
       "changes": {
         "security": [],

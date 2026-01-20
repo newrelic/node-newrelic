@@ -1,3 +1,35 @@
+### v13.10.0 (2026-01-20)
+
+#### Features
+
+* Add `timestamp` to OpenAI input `LlmChatCompletionMessage`s ([#3657](https://github.com/newrelic/node-newrelic/pull/3657)) ([099e20e](https://github.com/newrelic/node-newrelic/commit/099e20eaa380615b7e8aae7eaa12e2754a931041))
+* Added reduced tracing mode for span links ([#3649](https://github.com/newrelic/node-newrelic/pull/3649)) ([2414331](https://github.com/newrelic/node-newrelic/commit/24143313e2d894a5e11e42116f33ef4be18f2fb4))
+    * Co-authored-by: James Sumners <jsumners@newrelic.com>
+
+#### Bug fixes
+
+* Updated openai instrumentation to properly parse headers when a call fails ([#3665](https://github.com/newrelic/node-newrelic/pull/3665)) ([641b7a8](https://github.com/newrelic/node-newrelic/commit/641b7a8c8015855d82574e8173cb6e9fd082b4a0))
+
+#### Documentation
+
+* Updated compatibility report ([#3669](https://github.com/newrelic/node-newrelic/pull/3669)) ([ec922ae](https://github.com/newrelic/node-newrelic/commit/ec922ae6b0cecfa4ecbce86a789c308d6876ecd7))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#3668](https://github.com/newrelic/node-newrelic/pull/3668)) ([85c601f](https://github.com/newrelic/node-newrelic/commit/85c601fe2eaaacd82c0abac81eba96ce6718f2f1))
+* Updated compatibility report ([#3663](https://github.com/newrelic/node-newrelic/pull/3663)) ([82b3ac8](https://github.com/newrelic/node-newrelic/commit/82b3ac8cf6f69d0609b7fbaaf8be2a35f6552485))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Lazy load OTEL dependencies ([#3667](https://github.com/newrelic/node-newrelic/pull/3667)) ([0b0c764](https://github.com/newrelic/node-newrelic/commit/0b0c7647f3f0bc3093b9ffbf7596c1654ba6113d))
+* Record subscriber usage metric ([#3626](https://github.com/newrelic/node-newrelic/pull/3626)) ([5796574](https://github.com/newrelic/node-newrelic/commit/57965740acd053e6c99a88d861a876bcf2601c07))
+* Update `ai-support.json` ([#3666](https://github.com/newrelic/node-newrelic/pull/3666)) ([562b403](https://github.com/newrelic/node-newrelic/commit/562b403a3414430cdd0afab261d3d119d3d9b4db))
+* Updated OpenAI instrumentation to skip creating a `LlmChatCompletionMessage` for an outgoing tool call response ([#3655](https://github.com/newrelic/node-newrelic/pull/3655)) ([572c3a1](https://github.com/newrelic/node-newrelic/commit/572c3a1741ebd13d77d857c262b050aeb0c801fc))
+
+#### Tests
+
+* Pin mongodb dependency, bson ([#3671](https://github.com/newrelic/node-newrelic/pull/3671)) ([948ba3c](https://github.com/newrelic/node-newrelic/commit/948ba3c2d9b6d50adce9d5a92b4b4d6357f08818))
+* Updated mock response to avoid retries on openai langchain vectorstore calls ([#3664](https://github.com/newrelic/node-newrelic/pull/3664)) ([bc1faf3](https://github.com/newrelic/node-newrelic/commit/bc1faf30654d920e31ad4ddc205560e56b6c796c))
+
 ### v13.9.2 (2026-01-14)
 
 #### Bug fixes
