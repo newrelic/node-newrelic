@@ -12,7 +12,7 @@
         "express": "latest",
         "ioredis": "latest",
         "mongodb": "latest",
-        "bson": "7.0.0"
+        "bson": "latest"
       },
       "files": [
         "disabled-express.test.js",
