@@ -13,7 +13,7 @@ const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 const SpanLink = require('#agentlib/spans/span-link.js')
 const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
-const SpanEvent = require('../../../lib/spans/span-event')
+const SpanEvent = require('#agentlib/spans/span-event.js')
 
 const RUN_ID = 1337
 const DEFAULT_LIMIT = 2000
