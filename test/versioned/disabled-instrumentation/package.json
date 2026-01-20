@@ -12,7 +12,6 @@
         "express": "latest",
         "ioredis": "latest",
         "mongodb": "latest",
-        "bson": "latest"
       },
       "files": [
         "disabled-express.test.js",
