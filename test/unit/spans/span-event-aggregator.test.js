@@ -504,7 +504,7 @@ test('SpanAggregator', async (t) => {
       // kept span retains the same span link id as the span id since it wasn't dropped
       assert.equal(keptSpanWithLinks.spanLinks[0].intrinsics.id, 'span1')
 
-      // user attributes are not kept on essential partial traces
+      // user and agent attributes are not kept on essential partial traces
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].userAttributes.attributes).length, 0)
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].agentAttributes.attributes).length, 0)
 
@@ -594,7 +594,7 @@ test('SpanAggregator', async (t) => {
       // nearest parent span has dropped span links with their intrinsics id matching the span id they are linked to now
       assert.equal(keptSpanWithLinks.spanLinks[1].intrinsics.id, keptSpanWithLinks.id)
 
-      // user attributes are not kept on essential partial traces
+      // user and agent attributes are not kept on essential partial traces
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].userAttributes.attributes).length, 0)
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].userAttributes.attributes).length, 0)
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].agentAttributes.attributes).length, 0)
