@@ -4,7 +4,6 @@
 
 * Add `timestamp` to OpenAI input `LlmChatCompletionMessage`s ([#3657](https://github.com/newrelic/node-newrelic/pull/3657)) ([099e20e](https://github.com/newrelic/node-newrelic/commit/099e20eaa380615b7e8aae7eaa12e2754a931041))
 * Added reduced tracing mode for span links ([#3649](https://github.com/newrelic/node-newrelic/pull/3649)) ([2414331](https://github.com/newrelic/node-newrelic/commit/24143313e2d894a5e11e42116f33ef4be18f2fb4))
-    * Co-authored-by: James Sumners <jsumners@newrelic.com>
 
 #### Bug fixes
 
@@ -12,11 +11,7 @@
 
 #### Documentation
 
-* Updated compatibility report ([#3669](https://github.com/newrelic/node-newrelic/pull/3669)) ([ec922ae](https://github.com/newrelic/node-newrelic/commit/ec922ae6b0cecfa4ecbce86a789c308d6876ecd7))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
-* Updated compatibility report ([#3668](https://github.com/newrelic/node-newrelic/pull/3668)) ([85c601f](https://github.com/newrelic/node-newrelic/commit/85c601fe2eaaacd82c0abac81eba96ce6718f2f1))
-* Updated compatibility report ([#3663](https://github.com/newrelic/node-newrelic/pull/3663)) ([82b3ac8](https://github.com/newrelic/node-newrelic/commit/82b3ac8cf6f69d0609b7fbaaf8be2a35f6552485))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#3669](https://github.com/newrelic/node-newrelic/pull/3669)) ([ec922ae](https://github.com/newrelic/node-newrelic/commit/ec922ae6b0cecfa4ecbce86a789c308d6876ecd7)) ([#3668](https://github.com/newrelic/node-newrelic/pull/3668)) ([85c601f](https://github.com/newrelic/node-newrelic/commit/85c601fe2eaaacd82c0abac81eba96ce6718f2f1)) ([#3663](https://github.com/newrelic/node-newrelic/pull/3663)) ([82b3ac8](https://github.com/newrelic/node-newrelic/commit/82b3ac8cf6f69d0609b7fbaaf8be2a35f6552485))
 
 #### Miscellaneous chores
 
@@ -27,7 +22,6 @@
 
 #### Tests
 
-* Pin mongodb dependency, bson ([#3671](https://github.com/newrelic/node-newrelic/pull/3671)) ([948ba3c](https://github.com/newrelic/node-newrelic/commit/948ba3c2d9b6d50adce9d5a92b4b4d6357f08818))
 * Updated mock response to avoid retries on openai langchain vectorstore calls ([#3664](https://github.com/newrelic/node-newrelic/pull/3664)) ([bc1faf3](https://github.com/newrelic/node-newrelic/commit/bc1faf30654d920e31ad4ddc205560e56b6c796c))
 
 ### v13.9.2 (2026-01-14)
@@ -8247,6 +8241,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
