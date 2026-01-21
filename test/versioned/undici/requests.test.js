@@ -32,10 +32,12 @@ test.beforeEach((ctx) => {
   }
 })
 
-test.afterEach((ctx) => {
+test.afterEach(afterEach)
+
+function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.server.close()
-})
+}
 
 test('should not fail if request not in a transaction', async (t) => {
   const { undici, REQUEST_URL } = t.nr
@@ -52,8 +54,16 @@ test('should not fail if request not in a transaction', async (t) => {
 })
 
 test('should create tracking metrics', (t, end) => {
-  t.plan(5)
   const { agent, pkgVersion, undici, REQUEST_URL } = t.nr
+  if (helper.isSecurityAgentEnabled(agent) === true) {
+    t.skip('security agent ships with undici that will take resolution priority')
+    // https://github.com/nodejs/node/issues/61462
+    afterEach(t)
+    end()
+    return
+  }
+
+  t.plan(5)
   helper.runInTransaction(agent, async () => {
     await undici.request(REQUEST_URL)
     assertPackageMetrics(
