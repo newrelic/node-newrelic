@@ -87,7 +87,6 @@
         },
         "remote_parent_sampled": {
           "trace_id_ratio_based": {
-            "ratio": ""
           }
         },
         "remote_parent_not_sampled": {
