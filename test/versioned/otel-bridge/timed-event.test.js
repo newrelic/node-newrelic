@@ -184,19 +184,19 @@ test('should properly attach span event data for two span events', async (t) => 
 })
 
 test('should drop all span events if partial granularity is enabled with reduced type', async (t) => {
-  const { agent, REQUEST_URL, requestHook, registerInstrumentations, UndiciInstrumentation } = t.nr
+  const { agent, REQUEST_URL, requestHook, responseHook, registerInstrumentations, UndiciInstrumentation } = t.nr
   agent.config.distributed_tracing.sampler.partial_granularity.enabled = true
   agent.config.distributed_tracing.sampler.partial_granularity.type = 'reduced'
 
   registerInstrumentations([
     new UndiciInstrumentation({
-      requestHook
+      requestHook,
+      responseHook
     })
   ])
 
   await helper.runInTransaction(agent, async (tx) => {
     // Force tx to be partial
-    tx.priority = 42
     tx.partialTrace = true
     tx.partialType = PARTIAL_TYPES.REDUCED
     tx.createPartialTrace()
@@ -214,25 +214,26 @@ test('should drop all span events if partial granularity is enabled with reduced
     const segmentChildren = tx.trace.getChildren(segment.id)
     const foundSegment = segmentChildren.find((c) => c.name === 'External/localhost/post')
     assert.ok(foundSegment, 'should still create segment')
+    assert.equal(foundSegment.timedEvents.length, 2, 'segment should have 2 timed events')
     const spanEvents = agent.spanEventAggregator.getEvents()
     assert.equal(spanEvents.length, 0, 'should not have span events')
   })
 })
 
 test('should drop all span events if partial granularity is enabled with compact type', async (t) => {
-  const { agent, REQUEST_URL, requestHook, registerInstrumentations, UndiciInstrumentation } = t.nr
+  const { agent, REQUEST_URL, requestHook, responseHook, registerInstrumentations, UndiciInstrumentation } = t.nr
   agent.config.distributed_tracing.sampler.partial_granularity.enabled = true
   agent.config.distributed_tracing.sampler.partial_granularity.type = 'compact'
 
   registerInstrumentations([
     new UndiciInstrumentation({
-      requestHook
+      requestHook,
+      responseHook
     })
   ])
 
   await helper.runInTransaction(agent, async (tx) => {
     // Force tx to be partial
-    tx.priority = 42
     tx.partialTrace = true
     tx.partialType = PARTIAL_TYPES.COMPACT
     tx.createPartialTrace()
@@ -250,25 +251,26 @@ test('should drop all span events if partial granularity is enabled with compact
     const segmentChildren = tx.trace.getChildren(segment.id)
     const foundSegment = segmentChildren.find((c) => c.name === 'External/localhost/post')
     assert.ok(foundSegment, 'should still create segment')
+    assert.equal(foundSegment.timedEvents.length, 2, 'segment should have 2 timed events')
     const spanEvents = agent.spanEventAggregator.getEvents()
     assert.equal(spanEvents.length, 0, 'should not have span events')
   })
 })
 
 test('should drop all span events if partial granularity is enabled with essential type', async (t) => {
-  const { agent, REQUEST_URL, requestHook, registerInstrumentations, UndiciInstrumentation } = t.nr
+  const { agent, REQUEST_URL, requestHook, responseHook, registerInstrumentations, UndiciInstrumentation } = t.nr
   agent.config.distributed_tracing.sampler.partial_granularity.enabled = true
   agent.config.distributed_tracing.sampler.partial_granularity.type = 'essential'
 
   registerInstrumentations([
     new UndiciInstrumentation({
-      requestHook
+      requestHook,
+      responseHook
     })
   ])
 
   await helper.runInTransaction(agent, async (tx) => {
     // Force tx to be partial
-    tx.priority = 42
     tx.partialTrace = true
     tx.partialType = PARTIAL_TYPES.ESSENTIAL
     tx.createPartialTrace()
@@ -286,6 +288,7 @@ test('should drop all span events if partial granularity is enabled with essenti
     const segmentChildren = tx.trace.getChildren(segment.id)
     const foundSegment = segmentChildren.find((c) => c.name === 'External/localhost/post')
     assert.ok(foundSegment, 'should still create segment')
+    assert.equal(foundSegment.timedEvents.length, 2, 'segment should have 2 timed events')
     const spanEvents = agent.spanEventAggregator.getEvents()
     assert.equal(spanEvents.length, 0, 'should not have span events')
   })
