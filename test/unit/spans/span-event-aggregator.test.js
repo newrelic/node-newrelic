@@ -682,12 +682,15 @@ test('SpanAggregator', async (t) => {
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
       tx.sampled = true
-      tx.partialType = 'compact'
+      tx.partialType = PARTIAL_TYPES.COMPACT
       tx.createPartialTrace()
+
+      const removeNonIntrAttrSpy = sinon.spy(tx.partialTrace, 'removeNonIntrinsicsAttrs')
+      const reparentSpanLinkSpy = sinon.spy(tx.partialTrace, 'reparentSpanLinks')
 
       const rootSegment = agent.tracer.getSegment()
 
-      // this span will be kept since it's the first exit span for the same entity (message broker)
+      // first exit span to a message broker
       const child1Segment = agent.tracer.createSegment({
         id: 'child1',
         name: 'MessageBroker/api.example.com/users',
@@ -695,19 +698,27 @@ test('SpanAggregator', async (t) => {
         transaction: tx
       })
 
-      // this span will be compressed with above span since it's the second exit span for the same entity (message broker)
+      // entry span to another service
       const child2Segment = agent.tracer.createSegment({
-        id: 'child1',
+        id: 'child2',
+        name: 'child2-segment',
+        parent: child1Segment,
+        transaction: tx
+      })
+
+      // second exit span to the same message broker
+      const child3Segment = agent.tracer.createSegment({
+        id: 'child3',
         name: 'MessageBroker/api.example.com/users',
         parent: rootSegment,
         transaction: tx
       })
 
-      // this span will be dropped since it's not an exit span
-      const child3Segment = agent.tracer.createSegment({
-        id: 'child2',
-        name: 'child2-segment',
-        parent: child1Segment,
+      // entry span to another service
+      const child4Segment = agent.tracer.createSegment({
+        id: 'child4',
+        name: 'child4-segment',
+        parent: child3Segment,
         transaction: tx
       })
 
@@ -723,7 +734,7 @@ test('SpanAggregator', async (t) => {
         timestamp
       }))
 
-      child2Segment.spanLinks.push(new SpanLink({
+      child3Segment.spanLinks.push(new SpanLink({
         link: {
           attributes: { test: 'test2' },
           context: { spanId: 'parent1', traceId: 'trace1' }
@@ -735,58 +746,39 @@ test('SpanAggregator', async (t) => {
         timestamp
       }))
 
-      child3Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test3' },
-          context: { spanId: 'parent2', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span2',
-          traceId: 'trace2'
-        },
-        timestamp
-      }))
-
       // span link id is initially set to the span id in the context they are created on
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
-      assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span1')
-      assert.equal(child3Segment.spanLinks[0].intrinsics.id, 'span2')
+      assert.equal(child3Segment.spanLinks[0].intrinsics.id, 'span1')
 
       spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
-      // root span has no span links
-      assert.equal(rootSegment.spanLinks.length, 0)
+      tx.baseSegment = rootSegment
 
       // simulate that the segment has entity relationship attrs to keep the span
       const hasEntityStub = sinon.stub(SpanEvent.prototype, 'hasEntityRelationshipAttrs').get(() => true)
 
       spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
-      spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
+      spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx, parentId: child1Segment.id, isEntry: true })
+      spanEventAggregator.addSegment({ segment: child3Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
+      spanEventAggregator.addSegment({ segment: child4Segment, transaction: tx, parentId: child3Segment.id, isEntry: true })
       hasEntityStub.restore()
-      spanEventAggregator.addSegment({ segment: child3Segment, transaction: tx, parentId: child1Segment.id, isEntry: false })
 
-      // two spans were kept
-      assert.equal(tx.partialTrace.spans.length, 2)
+      tx.partialTrace.finalize()
 
-      const keptSpanWithLinks = tx.partialTrace.spans[1]
+      assert.equal(removeNonIntrAttrSpy.callCount, 1)
+      assert.equal(reparentSpanLinkSpy.callCount, 1)
 
-      // second span has three span links - it's own and two moved to it from the second same entity span
-      // and drop non exit span
-      assert.equal(keptSpanWithLinks.spanLinks.length, 3)
+      const events = tx.agent.spanEventAggregator.getEvents()
+      const compressedExitSpan = events.find((span) => span.intrinsics.name === 'MessageBroker/api.example.com/users')
 
-      // kept span retains the same span link id as the span id
-      assert.equal(keptSpanWithLinks.spanLinks[0].intrinsics.id, 'span1')
-      // nearest parent span has dropped span links with their intrinsics id matching the span id they are linked to now
-      assert.equal(keptSpanWithLinks.spanLinks[1].intrinsics.id, keptSpanWithLinks.id)
-      assert.equal(keptSpanWithLinks.spanLinks[2].intrinsics.id, keptSpanWithLinks.id)
+      // only one compressed exit span for the same entity with two span links now
+      assert.equal(compressedExitSpan.spanLinks.length, 2)
+
+      assert.equal(compressedExitSpan.spanLinks[1].intrinsics.id, compressedExitSpan.id)
 
       // non instrincs attrs are removed on compact partial traces
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].userAttributes.attributes).length, 0)
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].userAttributes.attributes).length, 0)
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[2].userAttributes.attributes).length, 0)
+      assert.equal(Object.keys(compressedExitSpan.spanLinks[1].userAttributes.attributes).length, 0)
+      assert.equal(Object.keys(compressedExitSpan.spanLinks[1].agentAttributes.attributes).length, 0)
 
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].agentAttributes.attributes).length, 0)
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].agentAttributes.attributes).length, 0)
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[2].agentAttributes.attributes).length, 0)
       end()
     })
   })
