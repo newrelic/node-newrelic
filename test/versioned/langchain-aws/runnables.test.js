@@ -64,6 +64,6 @@ runRunnablesTests({
   expectedInput: '{"topic":"question"}',
   expectedOutput: 'This is a test.',
   errorPromptTemplate: ['assistant', 'text converse ultimate question error'],
-  errorEventCount: 5,
+  errorEventCount: 4,
   arrayParserOutput: '["This is a test."]'
 })

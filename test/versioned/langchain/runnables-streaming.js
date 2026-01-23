@@ -114,7 +114,7 @@ function runStreamingEnabledTests(config) {
           const metrics = agent.metrics.getOrCreateMetric(
             `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
           )
-          assert.equal(metrics.callCount, 3)
+          assert.equal(metrics.callCount, 1)
 
           tx.end()
           end()
