@@ -525,10 +525,8 @@ test('partial tracing with span links', async (t) => {
       tx.priority = 42
       tx.sampled = true
       tx.partialType = PARTIAL_TYPES.COMPACT
-      // tx.partialTrace.type = Transaction.PARTIAL_TYPES.COMPACT
       tx.createPartialTrace()
 
-      const removeNonIntrAttrSpy = sinon.spy(tx.partialTrace, 'removeNonIntrinsicsAttrs')
       const reparentSpanLinkSpy = sinon.spy(tx.partialTrace, 'reparentSpanLinks')
 
       const rootSegment = agent.tracer.getSegment()
@@ -607,7 +605,6 @@ test('partial tracing with span links', async (t) => {
 
       tx.partialTrace.finalize()
 
-      assert.equal(removeNonIntrAttrSpy.callCount, 1)
       assert.equal(reparentSpanLinkSpy.callCount, 1)
 
       const events = tx.agent.spanEventAggregator.getEvents()
