@@ -1,0 +1,336 @@
+[
+  {
+    "test_name": "partial_granularity_reduced",
+    "comment": [ "Use transaction from tracer_info.json, with partial granularity set to 'reduced'",
+      "We should drop the in-process span and keep the rest.",
+      "The External span External/B2 under the in-process span should be re-parented to the root span."],
+    "tracer_info":"tracer_info_standard.json",
+    "partial_granularity_type": "reduced",
+    "expected_spans": [
+      {
+        "root": {
+          "parent": null,
+          "intrinsics": {
+            "exact": {
+              "nr.pg": true
+            }
+          }
+        }
+      },
+      {
+        "External/B1": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceB",
+              "non_essential_attr": "somevalue",
+              "error.class": "errorclass1",
+              "error.message": "errormessage1",
+              "error.expected": true
+            }
+          },
+          "user_attrs": {
+            "exact": {
+              "my_user_attr": "my_value"
+            }
+          }
+        }
+      },
+      {
+        "External/B2": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceB",
+              "error.class": "errorclass2",
+              "error.message": "errormessage2",
+              "error.expected": false
+            }
+          }
+        }
+      },
+      {
+        "External/C": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceC",
+              "cloud.account.id": "12345",
+              "cloud.platform": "AWS",
+              "cloud.region": "US-EAST-1",
+              "cloud.resource_id": "67890",
+              "db.instance": "MYDB",
+              "db.system": "Postgres",
+              "http.url": "http://url1/",
+              "messaging.destination.name": "dest",
+              "messaging.system": "MQS",
+              "peer.hostname": "peer",
+              "server.address": "server",
+              "server.port": 80,
+              "span.kind": "SPAN"
+            }
+          }
+        }
+      },
+      {
+        "Llm/SOMETHING/function": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "myllm"
+            }
+          }
+        }
+      },
+      {
+        "External/D": {
+          "parent": "Llm/SOMETHING/function",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceD"
+            }
+          }
+        }
+      }
+    ],
+    "unexpected_spans": ["inprocess"]
+  },
+  {
+    "test_name": "partial_granularity_essential",
+    "comment": [ "Use transaction from tracer_info.json, with partial granularity set to 'essential'",
+      "We should drop the in-process span and keep the rest.",
+      "The External span External/B2 under the in-process span should be re-parented to the root span.",
+      "The non-essential attribute on External/B1 should be dropped"],
+    "tracer_info":"tracer_info_standard.json",
+    "partial_granularity_type": "essential",
+    "expected_spans": [
+      {
+        "root": {
+          "parent": null,
+          "intrinsics": {
+            "exact": {
+              "nr.pg": true
+            }
+          }
+        }
+      },
+      {
+        "External/B1": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceB",
+              "error.class": "errorclass1",
+              "error.message": "errormessage1",
+              "error.expected": true
+            },
+            "unexpected": ["non_essential_attr"]
+          },
+          "user_attrs": {
+            "unexpected": ["my_user_attr"]
+          }
+        }
+      },
+      {
+        "External/B2": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceB",
+              "error.class": "errorclass2",
+              "error.message": "errormessage2",
+              "error.expected": false
+            }
+          }
+        }
+      },
+      {
+        "External/C": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceC",
+              "cloud.account.id": "12345",
+              "cloud.platform": "AWS",
+              "cloud.region": "US-EAST-1",
+              "cloud.resource_id": "67890",
+              "db.instance": "MYDB",
+              "db.system": "Postgres",
+              "http.url": "http://url1/",
+              "messaging.destination.name": "dest",
+              "messaging.system": "MQS",
+              "peer.hostname": "peer",
+              "server.address": "server",
+              "server.port": 80,
+              "span.kind": "SPAN"
+            }
+          }
+        }
+      },
+      {
+        "Llm/SOMETHING/function": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "myllm"
+            }
+          }
+        }
+      },
+      {
+        "External/D": {
+          "parent": "Llm/SOMETHING/function",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceD"
+            }
+          }
+        }
+      }
+    ],
+    "unexpected_spans": ["inprocess"]
+  },
+  {
+    "test_name": "partial_granularity_compact",
+    "comment": [ "Use transaction from tracer_info.json, with partial granularity set to 'compact'",
+      "We should drop the in-process span and keep the rest.",
+      "The External span External/B2 under the in-process span should be merged into External/B1.",
+      "Their durations should be merged and the merged span should have 2 new attributes: nr.ids and nr.durations.",
+      "The non-essential attribute on ExternalB1 should be dropped"],
+    "tracer_info":"tracer_info_standard.json",
+    "partial_granularity_type": "compact",
+    "expected_spans": [
+      {
+        "root": {
+          "parent": null,
+          "intrinsics": {
+            "exact": {
+              "nr.pg": true
+            }
+          }
+        }
+      },
+      {
+        "External/B1": {
+          "parent": "root",
+          "intrinsics": {
+            "exact": {
+              "timestamp": 1766435410010,
+              "duration": 0.1,
+              "nr.durations": 0.16
+            },
+            "expected": ["nr.ids"]
+          },
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceB"
+            },
+            "expected": [
+              "error.class",
+              "error.message",
+              "error.expected"
+            ],
+            "unexpected": [
+              "non_essential_attr"
+            ]
+          },
+          "user_attrs": {
+            "unexpected": ["my_user_attr"]
+          }
+        }
+      },
+      {
+        "External/C": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceC",
+              "cloud.account.id": "12345",
+              "cloud.platform": "AWS",
+              "cloud.region": "US-EAST-1",
+              "cloud.resource_id": "67890",
+              "db.instance": "MYDB",
+              "db.system": "Postgres",
+              "http.url": "http://url1/",
+              "messaging.destination.name": "dest",
+              "messaging.system": "MQS",
+              "peer.hostname": "peer",
+              "server.address": "server",
+              "server.port": 80,
+              "span.kind": "SPAN"
+            }
+          }
+        }
+      },
+      {
+        "Llm/SOMETHING/function": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "myllm"
+            }
+          }
+        }
+      },
+      {
+        "External/D": {
+          "parent": "root",
+          "agent_attrs": {
+            "exact": {
+              "http.url": "serviceD"
+            }
+          }
+        }
+      }
+    ],
+    "unexpected_spans": ["inprocess", "External/B2"]
+  },
+  {
+    "test_name": "partial_granularity_compact_too_many_nrids",
+    "comment": [ "Use transaction from tracer_info.json, with partial granularity set to 'compact'",
+      "We should group all the child spans together which should be too many to add all to nr.ids",
+      "This should produce a metric called Supportability/Java/PartialGranularity/NrIds/Dropped with the right value"
+    ],
+    "tracer_info":"tracer_info_compact_too_many.json",
+    "partial_granularity_type": "compact",
+    "expected_metrics": [
+      ["Supportability/Java/PartialGranularity/NrIds/Dropped", 6]
+    ],
+    "expected_spans": [
+      {
+        "root": {
+          "parent": null,
+          "intrinsics": {
+            "exact": {
+              "nr.pg": true
+            }
+          }
+        }
+      },
+      {
+        "External/1": {
+          "parent": "root",
+          "intrinsics": {
+            "exact": {
+              "nr.durations": 0.7
+            },
+            "expected": ["nr.ids"]
+          },
+          "agent_attrs": {
+            "exact": {
+              "http.url": "service"
+            }
+          }
+        }
+      }
+    ],
+    "unexpected_spans": ["External/2", "External/3", "External/4", "External/5", "External/6", "External/7", "External/8", "External/9", "External/10",
+      "External/11", "External/12", "External/13", "External/14", "External/15", "External/16", "External/17", "External/18", "External/19", "External/20",
+      "External/21", "External/22", "External/23", "External/24", "External/25", "External/26", "External/27", "External/28", "External/29", "External/30",
+      "External/31", "External/32", "External/33", "External/34", "External/35", "External/36", "External/37", "External/38", "External/39", "External/40",
+      "External/41", "External/42", "External/43", "External/44", "External/45", "External/46", "External/47", "External/48", "External/49", "External/50",
+      "External/51", "External/52", "External/53", "External/54", "External/55", "External/56", "External/57", "External/58", "External/59", "External/60",
+      "External/61", "External/62", "External/63", "External/64", "External/65", "External/66", "External/67", "External/68", "External/69", "External/70"
+    ]
+  }
+]

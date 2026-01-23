@@ -1,0 +1,87 @@
+{
+  "data_name": "partial_granularity_standard_test",
+  "comments": ["A standard test that can be used with all types of partial granularity",
+    "All options will have to: drop and re-parent span(s)",
+    "Compact will have at least 2 spans to group",
+    "Reduced and Compact will have an attribute to drop"
+  ],
+  "root_tracer": {
+    "name": "root",
+    "timestamp": 1766435410000,
+    "duration_millis": 1500,
+    "children": [
+      {
+        "name": "External/B1",
+        "timestamp": 1766435410010,
+        "duration_millis": 100,
+        "agent_attrs": {
+          "http.url": "serviceB",
+          "non_essential_attr": "somevalue",
+          "error.class": "errorclass1",
+          "error.message": "errormessage1",
+          "error.expected": true
+        },
+        "user_attrs": {
+          "my_user_attr": "my_value"
+        }
+      },
+      {
+        "name": "inprocess",
+        "timestamp": 1766435410020,
+        "duration_millis": 200,
+        "children": [
+          {
+            "name": "External/B2",
+            "timestamp": 1766435410070,
+            "duration_millis": 100,
+            "agent_attrs": {
+              "http.url": "serviceB",
+              "error.class": "errorclass2",
+              "error.message": "errormessage2",
+              "error.expected": false
+            }
+          }
+        ]
+      },
+      {
+        "name": "External/C",
+        "timestamp": 1766435410500,
+        "duration_millis": 200,
+        "agent_attrs": {
+          "http.url": "serviceC",
+          "cloud.account.id": "12345",
+          "cloud.platform": "AWS",
+          "cloud.region": "US-EAST-1",
+          "cloud.resource_id": "67890",
+          "db.instance": "MYDB",
+          "db.system": "Postgres",
+          "http.url": "http://url1/",
+          "messaging.destination.name": "dest",
+          "messaging.system": "MQS",
+          "peer.hostname": "peer",
+          "server.address": "server",
+          "server.port": 80,
+          "span.kind": "SPAN"
+        }
+      },
+      {
+        "name": "Llm/SOMETHING/function",
+        "timestamp": 1766435411000,
+        "duration_millis": 200,
+        "agent_attrs": {
+          "http.url": "myllm"
+        },
+        "children": [
+          {
+            "name": "External/D",
+            "timestamp": 1766435411100,
+            "duration_millis": 250,
+            "agent_attrs": {
+              "http.url": "serviceD"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
