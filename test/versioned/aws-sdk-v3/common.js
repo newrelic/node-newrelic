@@ -136,6 +136,9 @@ function assertChatCompletionMessage({
   expectedChatMsg.id = id
   expectedChatMsg.content = expectedContent
   expectedChatMsg.is_response = isResponse
+  if (isResponse === false) {
+    expectedChatMsg.timestamp = /\d{13}/
+  }
 
   assert.equal(messageBase.type, 'LlmChatCompletionMessage')
   match(messageData, expectedChatMsg)

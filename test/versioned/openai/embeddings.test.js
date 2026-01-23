@@ -11,6 +11,7 @@ const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const createOpenAIMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
+const { findSegment } = require('../../lib/metrics_helper')
 
 const {
   AI: { OPENAI }
@@ -201,8 +202,7 @@ test('should not create segment or llm events when ai_monitoring.enabled is fals
     const events = agent.customEventAggregator.events.toArray()
     assert.equal(events.length, 0, 'should not create llm events when ai_monitoring is disabled')
 
-    const children = tx.trace.segments.root.children
-    assert.equal(children.length, 0, 'should not create OpenAI completion segment')
+    assert.ok(!findSegment(tx.trace, tx.trace.root, OPENAI.EMBEDDING))
 
     tx.end()
     end()

@@ -633,7 +633,7 @@
     }
   },
   {
-    "test_name": "newrelic_remote_parent_sampled_uses_partial_ratio_sampler_not_smapled",
+    "test_name": "newrelic_remote_parent_sampled_uses_partial_ratio_sampler_not_sampled",
     "comment": "New Relic parent header determines parent is sampled and New Relic trace id is passed to partial ratio sampler and returns false because ratio is 0",
     "trusted_account_key": "33",
     "account_id": "33",

@@ -1,0 +1,25 @@
+{
+  "data_name": "partial_granularity_compact_too_many_nrids",
+  "comments": ["A simple trace with X children that are all to be kept and grouped under the compact option",
+    "The agent test should generate the correct num_children spans that will be merged",
+    "The name_prefix should be appended with a simple counter 1 to X",
+    "There should be enough child spans that are grouped to max out the nr.ids list and have IDs that could not be added.",
+    "duration_gap should be used to calculate the start timestamp for each span, adding that many milliseconds to the end of the previous span to create gaps",
+    "Note: overlapping timespans are tested in the normal tests"
+  ],
+  "root_tracer": {
+    "name": "root",
+    "timestamp": 1766435410000,
+    "duration_millis": 5000,
+    "children_formula": {
+      "num_children": 70,
+      "duration_millis": 10,
+      "duration_gap_millis": 1,
+      "name_prefix": "External/",
+      "agent_attrs": {
+        "http.url": "service"
+      }
+    }
+  }
+}
+

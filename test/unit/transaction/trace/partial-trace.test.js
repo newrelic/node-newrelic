@@ -171,12 +171,38 @@ describe('applyCompaction', () => {
     const span5 = { id: 5, intrinsics: { timestamp: now + 10000, duration: 10 } } // duration is 18
     partialTrace.compactSpanGroups[1] = [span1, span5, span3, span4, span2]
     partialTrace.applyCompaction(span1)
-    assert.equal(transaction.metrics.unscoped['Supportability/Nodejs/PartialGranularity/NrIds/Dropped'].callCount, 4)
+    assert.ok(!transaction.metrics.unscoped['Supportability/Nodejs/PartialGranularity/NrIds/Dropped'])
     assert.equal(span1.addIntrinsicAttribute.callCount, 3)
     assert.deepEqual(span1.addIntrinsicAttribute.args, [
       ['parentId', 100],
       ['nr.ids', [3, 2, 4, 5]],
       ['nr.durations', 18]
+    ])
+  })
+
+  test('should increment NrIds/Dropped when dropped spans exceeds 63 spans', (t) => {
+    const { partialTrace, transaction } = t.nr
+    transaction.baseSegment = { id: 100 }
+    const now = Date.now()
+    const span1 = { id: 0, intrinsics: { timestamp: now, duration: 5 }, addIntrinsicAttribute: sinon.spy() }
+    partialTrace.compactSpanGroups[0] = []
+    const nrIds = []
+    for (let i = 1; i <= 100; i++) {
+      partialTrace.compactSpanGroups[0].push({ id: i, intrinsics: { timestamp: now * i, duration: 2 } })
+      if (i > 1 && i < 65) {
+        nrIds.push(i)
+      }
+    }
+    partialTrace.applyCompaction(span1)
+    // We created 100 spans, 1 was retained, 99 were dropped
+    // 63 were added to nr.ids as that is the max it can hold
+    // 36 were dropped thus the metric callCount
+    assert.equal(transaction.metrics.unscoped['Supportability/Nodejs/PartialGranularity/NrIds/Dropped'].callCount, 36)
+    assert.equal(span1.addIntrinsicAttribute.callCount, 3)
+    assert.deepEqual(span1.addIntrinsicAttribute.args, [
+      ['parentId', 100],
+      ['nr.ids', nrIds],
+      ['nr.durations', 200]
     ])
   })
 

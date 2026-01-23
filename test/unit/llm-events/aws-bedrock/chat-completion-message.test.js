@@ -54,7 +54,10 @@ test.beforeEach((ctx) => {
     traceId: 'trace-1'
   }
   ctx.nr.segment = {
-    id: 'segment-1'
+    id: 'segment-1',
+    timer: {
+      start: 1769119395346
+    }
   }
   ctx.nr.role = 'assistant'
 
@@ -201,4 +204,17 @@ test('should not set token_count if outputTokenCount is set but not inputTokenCo
 test('should set token_count to 0 if inputTokenCount and outputTokenCount are on response', async (t) => {
   const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.token_count, 0)
+})
+
+test('should set timestamp if request/input msg', async (t) => {
+  t.nr.role = 'user'
+  t.nr.isResponse = false
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.timestamp, t.nr.segment.timer.start)
+})
+
+test('should not set timestamp if response msg', async (t) => {
+  t.nr.isResponse = true
+  const event = new LlmChatCompletionMessage(t.nr)
+  assert.equal(event.timestamp, undefined)
 })

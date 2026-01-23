@@ -36,7 +36,7 @@ function runRunnablesTests(config) {
     expectedInput,
     expectedOutput,
     errorPromptTemplate,
-    errorEventCount = 6,
+    errorEventCount = 5,
     errorAssertion,
     arrayParserOutput
   } = config
@@ -94,7 +94,7 @@ function runRunnablesTests(config) {
       const metrics = agent.metrics.getOrCreateMetric(
         `Supportability/Nodejs/ML/LangChain/${langchainCoreVersion}`
       )
-      assert.equal(metrics.callCount, 3)
+      assert.equal(metrics.callCount, 1)
 
       tx.end()
       end()
@@ -455,7 +455,7 @@ function runRunnablesTests(config) {
         const [, chainEvent] = event
         return chainEvent.vendor === 'langchain'
       })
-      assert.equal(langchainEvents.length, 3, 'should create 3 langchain events')
+      assert.equal(langchainEvents.length, 2, 'should create 2 langchain events')
       const summary = langchainEvents.find((e) => e[0].type === 'LlmChatCompletionSummary')?.[1]
       assert.equal(summary.error, true)
 
