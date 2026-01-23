@@ -419,8 +419,8 @@ test('partial tracing with span links', async (t) => {
       assert.equal(keptSpanWithLinks.spanLinks[0].intrinsics.id, 'span1')
 
       // user and agent attributes are not kept on essential partial traces
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].userAttributes.attributes).length, 0)
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].agentAttributes.attributes).length, 0)
+      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].userAttributes).length, 0)
+      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].agentAttributes).length, 0)
 
       end()
     })
@@ -509,10 +509,10 @@ test('partial tracing with span links', async (t) => {
       assert.equal(keptSpanWithLinks.spanLinks[1].intrinsics.id, keptSpanWithLinks.id)
 
       // user and agent attributes are not kept on essential partial traces
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].userAttributes.attributes).length, 0)
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].userAttributes.attributes).length, 0)
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].agentAttributes.attributes).length, 0)
-      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].agentAttributes.attributes).length, 0)
+      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].userAttributes).length, 0)
+      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].userAttributes).length, 0)
+      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].agentAttributes).length, 0)
+      assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].agentAttributes).length, 0)
 
       end()
     })
@@ -616,8 +616,8 @@ test('partial tracing with span links', async (t) => {
       assert.equal(compressedExitSpan.spanLinks[1].intrinsics.id, compressedExitSpan.id)
 
       // non instrincs attrs are removed on compact partial traces
-      assert.equal(Object.keys(compressedExitSpan.spanLinks[1].userAttributes.attributes).length, 0)
-      assert.equal(Object.keys(compressedExitSpan.spanLinks[1].agentAttributes.attributes).length, 0)
+      assert.equal(Object.keys(compressedExitSpan.spanLinks[1].userAttributes).length, 0)
+      assert.equal(Object.keys(compressedExitSpan.spanLinks[1].agentAttributes).length, 0)
 
       end()
     })
