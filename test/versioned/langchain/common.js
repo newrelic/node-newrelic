@@ -144,6 +144,7 @@ function assertLangChainChatCompletionMessages(
       expectedChatMsg.content = input
       expectedChatMsg.is_response = false
       expectedChatMsg.role = 'user'
+      expectedChatMsg.timestamp = /\d{13}/
     } else if (msg[1].sequence === 1) {
       expectedChatMsg.sequence = 1
       expectedChatMsg.content = output
