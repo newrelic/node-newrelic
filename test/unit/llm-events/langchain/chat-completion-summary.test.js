@@ -39,6 +39,7 @@ test.beforeEach((ctx) => {
 
   ctx.nr.segment = {
     id: 'segment-1',
+    timer: { start: 1769450379777 },
     getDurationInMillis() {
       return 42
     }
@@ -48,7 +49,7 @@ test.beforeEach((ctx) => {
   ctx.nr.metadata = { foo: 'foo' }
 })
 
-test('creates entity', async (t) => {
+test('summary has expected properties', async (t) => {
   const msg = new LangChainCompletionSummary(t.nr)
   assert.match(msg.id, /[a-z0-9-]{36}/)
   assert.equal(msg.appName, 'test-app')
@@ -63,4 +64,5 @@ test('creates entity', async (t) => {
   assert.equal(msg.tags, '')
   assert.equal(msg.duration, 42)
   assert.equal(msg['response.number_of_messages'], 0)
+  assert.equal(msg.timestamp, t.nr.segment.timer.start)
 })
