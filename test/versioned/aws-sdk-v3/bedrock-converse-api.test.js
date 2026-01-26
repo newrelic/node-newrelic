@@ -117,8 +117,11 @@ test('properly create the LlmChatCompletionMessage(s) and LlmChatCompletionSumma
       chatMsgs,
       resContent: 'This is a test.'
     })
-
     assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage: true })
+
+    const requestMsg = chatMsgs.filter((msg) => msg[1].is_response === false)[0]
+    assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
+    assert.equal(chatSummary[0].timestamp, chatSummary[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
     tx.end()
   })

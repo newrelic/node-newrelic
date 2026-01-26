@@ -43,6 +43,7 @@ test.beforeEach((ctx) => {
     id: 'tx-1'
   }
   ctx.nr.segment = {
+    timer: { start: 1769450379777 },
     getDurationInMillis() {
       return 100
     }
@@ -94,6 +95,7 @@ test('creates a basic summary', async (t) => {
   assert.equal(event['request.temperature'], 0.5)
   assert.equal(event['response.choices.finish_reason'], 'done')
   assert.equal(event['response.number_of_messages'], 2)
+  assert.equal(event.timestamp, t.nr.segment.timer.start)
 })
 
 test('creates an claude summary', async (t) => {
