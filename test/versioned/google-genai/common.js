@@ -37,11 +37,13 @@ function assertChatCompletionMessages(
       expectedChatMsg.id = /[a-f0-9]{36}/
       expectedChatMsg.content = reqContent
       expectedChatMsg.token_count = 0
+      expectedChatMsg.timestamp = /\d{13}/
     } else if (msg[1].sequence === 1) {
       expectedChatMsg.sequence = 1
       expectedChatMsg.id = /[a-f0-9]{36}/
       expectedChatMsg.content = 'What does 1 plus 1 equal?'
       expectedChatMsg.token_count = 0
+      expectedChatMsg.timestamp = /\d{13}/
     } else {
       expectedChatMsg.sequence = 2
       expectedChatMsg.role = 'model'

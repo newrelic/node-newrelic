@@ -271,7 +271,7 @@ test('reconcileEvents skips work if no events', (t) => {
 })
 
 test('reconcileEvents adds remapped events to the segment', (t) => {
-  t.plan(2)
+  t.plan(3)
   const { agent, processor, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
@@ -296,7 +296,32 @@ test('reconcileEvents adds remapped events to the segment', (t) => {
       return spanContext.call(span)
     }
     processor.reconcileEvents({ segment, span })
+    t.assert.ok(!agent.metrics._metrics.unscoped['Supportability/Nodejs/SpanEvent/Events/Dropped'])
 
+    tx.end()
+  })
+})
+
+test('reconcileEvents logs `Supportability/Nodejs/SpanEvent/Links/Dropped` when events exceed 100', (t) => {
+  t.plan(2)
+  const { agent, processor, tracer } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    const span = createHttpClientSpan({ tracer })
+    processor.onStart(span)
+
+    for (let i = 0; i < 105; i++) {
+      span.events.push({
+        name: `test-event-${i}`,
+        attributes: { test: 'attr' },
+        time: [1, 0]
+      })
+    }
+
+    const { segment } = span[otelSynthesis]
+    processor.reconcileEvents({ segment, span })
+    t.assert.equal(agent.metrics._metrics.unscoped['Supportability/Nodejs/SpanEvent/Events/Dropped'].callCount, 5)
+    t.assert.equal(segment.timedEvents.length, 100)
     tx.end()
   })
 })
@@ -320,7 +345,7 @@ test('reconcileLinks skips work if no links', (t) => {
 })
 
 test('reconcileLinks adds remapped links to the segment', (t) => {
-  t.plan(2)
+  t.plan(3)
   const { agent, processor, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
@@ -347,7 +372,34 @@ test('reconcileLinks adds remapped links to the segment', (t) => {
       return spanContext.call(span)
     }
     processor.reconcileLinks({ segment, otelSpan: span })
+    t.assert.ok(!agent.metrics._metrics.unscoped['Supportability/Nodejs/SpanEvent/Links/Dropped'])
 
+    tx.end()
+  })
+})
+
+test('reconcileLinks logs `Supportability/Nodejs/SpanEvent/Links/Dropped` when links exceed 100', (t) => {
+  t.plan(2)
+  const { agent, processor, tracer } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    const span = createHttpClientSpan({ tracer })
+    processor.onStart(span)
+
+    for (let i = 0; i < 105; i++) {
+      span.links.push({
+        attributes: { test: `attr-${i}` },
+        context: {
+          spanId: 'linked-span',
+          traceId: 'linked-trace'
+        }
+      })
+    }
+
+    const { segment } = span[otelSynthesis]
+    processor.reconcileLinks({ segment, otelSpan: span })
+    t.assert.equal(agent.metrics._metrics.unscoped['Supportability/Nodejs/SpanEvent/Links/Dropped'].callCount, 5)
+    t.assert.equal(segment.spanLinks.length, 100)
     tx.end()
   })
 })
