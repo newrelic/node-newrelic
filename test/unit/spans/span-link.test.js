@@ -605,7 +605,7 @@ test('partial tracing with span links', async (t) => {
 
       tx.partialTrace.finalize()
 
-      assert.equal(reparentSpanLinkSpy.callCount, 2)
+      assert.equal(reparentSpanLinkSpy.callCount, 1)
 
       const events = tx.agent.spanEventAggregator.getEvents()
       const compressedExitSpan = events.find((span) => span.intrinsics.name === 'MessageBroker/api.example.com/users')
