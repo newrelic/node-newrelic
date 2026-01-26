@@ -705,7 +705,8 @@ test('addSpanLink', async (t) => {
   await test('adds link to the internal array', (t) => {
     const { segment } = t.nr
     assert.equal(segment.spanLinks.length, 0)
-    segment.addSpanLink({ fake: 'link' })
+    const added = segment.addSpanLink({ fake: 'link' })
+    assert.equal(added, true)
     assert.equal(segment.spanLinks.length, 1)
     assert.deepStrictEqual(segment.spanLinks[0], { fake: 'link' })
   })
@@ -718,7 +719,8 @@ test('addSpanLink', async (t) => {
     }
     assert.equal(segment.spanLinks.length, 100)
 
-    segment.addSpanLink({ to: 'drop' })
+    const added = segment.addSpanLink({ to: 'drop' })
+    assert.equal(added, false)
     assert.equal(segment.spanLinks.length, 100)
     for (const link of segment.spanLinks) {
       assert.deepStrictEqual(link, { fake: 'link' })
@@ -770,7 +772,8 @@ test('addTimedEvent', async (t) => {
   await test('adds event to the internal array', (t) => {
     const { segment } = t.nr
     assert.equal(segment.timedEvents.length, 0)
-    segment.addTimedEvent({ fake: 'event' })
+    const added = segment.addTimedEvent({ fake: 'event' })
+    assert.equal(added, true)
     assert.equal(segment.timedEvents.length, 1)
     assert.deepStrictEqual(segment.timedEvents[0], { fake: 'event' })
   })
@@ -783,7 +786,8 @@ test('addTimedEvent', async (t) => {
     }
     assert.equal(segment.timedEvents.length, 100)
 
-    segment.addTimedEvent({ to: 'drop' })
+    const added = segment.addTimedEvent({ to: 'drop' })
+    assert.equal(added, false)
     assert.equal(segment.timedEvents.length, 100)
     for (const event of segment.timedEvents) {
       assert.deepStrictEqual(event, { fake: 'event' })
