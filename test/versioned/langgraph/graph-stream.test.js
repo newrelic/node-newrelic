@@ -71,7 +71,7 @@ test.beforeEach(async (ctx) => {
 
   // Create a simple LangGraph agent.
   // Ignore the deprecation warning; LangGraph just wants
-  // us to require from "langgraph" directly, but
+  // us to require from "langchain" directly, but
   // the function works the same.
   ctx.nr.langgraphAgent = createReactAgent({
     llm: mockLLM,
@@ -86,6 +86,9 @@ test.beforeEach(async (ctx) => {
     tools: [calculatorTool],
     name: 'LangGraphReactAgent'
   })
+
+  const { version } = require('@langchain/langgraph/package.json')
+  ctx.nr.langgraphVersion = version
 })
 
 test.afterEach((ctx) => {
@@ -95,8 +98,7 @@ test.afterEach((ctx) => {
 })
 
 test('should log tracking metrics', function(t, end) {
-  const { agent, langgraphAgent } = t.nr
-  const { version } = require('@langchain/langgraph/package.json')
+  const { agent, langgraphAgent, langgraphVersion } = t.nr
   const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
   helper.runInTransaction(agent, async () => {
@@ -106,7 +108,7 @@ test('should log tracking metrics', function(t, end) {
     assertPackageMetrics({
       agent,
       pkg: '@langchain/langgraph',
-      version,
+      version: langgraphVersion,
       subscriberType: true
     }, { assert: t.assert })
     end()
@@ -141,16 +143,11 @@ test('should create LlmAgent event for CompiledStateGraph.stream', async (t) => 
   const { agent, langgraphAgent } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
-    try {
-      const stream = await langgraphAgent.stream(
-        { messages: [{ role: 'user', content: 'You are a scientist.' }] }
-      )
-
-      for await (const chunk of stream) {
-        consumeChunk(chunk)
-      }
-    } catch (err) {
-      assert.fail(err)
+    const stream = await langgraphAgent.stream(
+      { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+    )
+    for await (const chunk of stream) {
+      consumeChunk(chunk)
     }
 
     // Check for LlmAgent event
@@ -168,9 +165,34 @@ test('should create LlmAgent event for CompiledStateGraph.stream', async (t) => 
       span_id: segment.id,
       trace_id: tx.traceId,
       ingest_source: 'Node',
-      vendor: 'langgraph',
-      // TODO: llm.<user_defined_metadata>?
+      vendor: 'langgraph'
     })
+
+    tx.end()
+  })
+})
+
+test('should record LLM custom events with attributes', async(t) => {
+  const { agent, langgraphAgent } = t.nr
+  const api = helper.getAgentApi()
+
+  await helper.runInTransaction(agent, async (tx) => {
+    await api.withLlmCustomAttributes({ 'llm.foo': 'bar' }, async () => {
+      const stream = await langgraphAgent.stream(
+        { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+      )
+      for await (const chunk of stream) {
+        consumeChunk(chunk)
+      }
+    })
+
+    const events = agent.customEventAggregator.events.toArray()
+    const agentEvents = events.filter((e) => e[0].type === 'LlmAgent')
+    assert.ok(agentEvents.length > 0)
+
+    const [[{ type }, agentEvent]] = agentEvents
+    assert.equal(type, 'LlmAgent')
+    assert.equal(agentEvent?.['llm.foo'], 'bar')
 
     tx.end()
   })
@@ -180,16 +202,11 @@ test('should have LlmChatCompletion events from LangChain and OpenAI instrumenta
   const { agent, langgraphAgent } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
-    try {
-      const stream = await langgraphAgent.stream(
-        { messages: [{ role: 'user', content: 'You are a scientist.' }] }
-      )
-
-      for await (const chunk of stream) {
-        consumeChunk(chunk)
-      }
-    } catch (err) {
-      assert.fail(err)
+    const stream = await langgraphAgent.stream(
+      { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+    )
+    for await (const chunk of stream) {
+      consumeChunk(chunk)
     }
 
     // Check for LlmChatCompletion events
@@ -220,16 +237,11 @@ test('should have LlmTool events from LangChain instrumentation', async (t) => {
   const { agent, langgraphAgentWithTools } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
-    try {
-      const stream = await langgraphAgentWithTools.stream(
-        { messages: [{ role: 'user', content: 'What is 2 + 2?' }] }
-      )
-
-      for await (const chunk of stream) {
-        consumeChunk(chunk)
-      }
-    } catch (err) {
-      assert.fail(err)
+    const stream = await langgraphAgentWithTools.stream(
+      { messages: [{ role: 'user', content: 'What is 2 + 2?' }] }
+    )
+    for await (const chunk of stream) {
+      consumeChunk(chunk)
     }
 
     // Check for LlmTool event
@@ -255,16 +267,11 @@ test('should add llm attribute to transaction', async (t) => {
   const { agent, langgraphAgent } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
-    try {
-      const stream = await langgraphAgent.stream(
-        { messages: [{ role: 'user', content: 'You are a scientist.' }] }
-      )
-
-      for await (const chunk of stream) {
-        consumeChunk(chunk)
-      }
-    } catch (err) {
-      assert.fail(err)
+    const stream = await langgraphAgent.stream(
+      { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+    )
+    for await (const chunk of stream) {
+      consumeChunk(chunk)
     }
 
     const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
@@ -278,16 +285,11 @@ test('should add subcomponent attribute to span', async (t) => {
   const { agent, langgraphAgent } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
-    try {
-      const stream = await langgraphAgent.stream(
-        { messages: [{ role: 'user', content: 'You are a scientist.' }] }
-      )
-
-      for await (const chunk of stream) {
-        consumeChunk(chunk)
-      }
-    } catch (err) {
-      assert.fail(err)
+    const stream = await langgraphAgent.stream(
+      { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+    )
+    for await (const chunk of stream) {
+      consumeChunk(chunk)
     }
 
     const [segment] = tx.trace.getChildren(tx.trace.root.id)
@@ -306,7 +308,6 @@ test('should create LlmError event when stream fails', async (t) => {
       const stream = await langgraphAgent.stream(
         { messages: [{ role: 'bad-role', content: 'Invalid role.' }] }
       )
-
       for await (const chunk of stream) {
         consumeChunk(chunk)
       }
@@ -335,19 +336,11 @@ test('should create LlmError event when stream fails', async (t) => {
 
 test('should not create llm events when not in a transaction', async (t) => {
   const { agent, langgraphAgent } = t.nr
-
-  // Disable ai_monitoring
-  agent.config.ai_monitoring.enabled = false
-
-  try {
-    const stream = await langgraphAgent.stream(
-      { messages: [{ role: 'user', content: 'You are a scientist.' }] }
-    )
-    for await (const chunk of stream) {
-      consumeChunk(chunk)
-    }
-  } catch (err) {
-    assert.fail(err)
+  const stream = await langgraphAgent.stream(
+    { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+  )
+  for await (const chunk of stream) {
+    consumeChunk(chunk)
   }
 
   // Should not create LlmAgent events
@@ -388,8 +381,8 @@ test('should not create segment or events when ai_monitoring.enabled is false', 
   })
 })
 
-test('should not create segment or events when ai_monitoring.streaming.enabled is false', async (t) => {
-  const { agent, langgraphAgent } = t.nr
+test('should not create events when ai_monitoring.streaming.enabled is false', async (t) => {
+  const { agent, langgraphAgent, langgraphVersion } = t.nr
 
   // Disable streaming instrumentation specifically
   agent.config.ai_monitoring.streaming.enabled = false
@@ -406,15 +399,27 @@ test('should not create segment or events when ai_monitoring.streaming.enabled i
       assert.fail(err)
     }
 
-    // Should not create LangGraph segment
+    // Should still create LangGraph segment
     const segments = tx.trace.getChildren(tx.trace.root.id)
     const langgraphSegments = segments.filter((s) => s.name.includes('Llm/agent/LangGraph'))
-    assert.equal(langgraphSegments.length, 0, 'should not create LangGraph segments')
+    assert.equal(langgraphSegments.length, 1, 'should still create LangGraph segments')
 
     // Should not create LlmAgent events
     const events = agent.customEventAggregator.events.toArray()
     const agentEvents = events.filter((e) => e[0].type === 'LlmAgent')
     assert.equal(agentEvents.length, 0, 'should not create LlmAgent events')
+
+    // Check metrics
+    const metrics = agent.metrics.getOrCreateMetric(
+      `Supportability/Nodejs/ML/LangGraph/${langgraphVersion}`
+    )
+    assert.equal(metrics.callCount, 1)
+    const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+    assert.equal(attributes.llm, true, 'should still add llm attribute')
+    const streamingDisabled = agent.metrics.getOrCreateMetric(
+      'Supportability/Nodejs/ML/Streaming/Disabled'
+    )
+    assert.equal(streamingDisabled.callCount, 2, 'should increment streaming disabled metric')
 
     tx.end()
   })
