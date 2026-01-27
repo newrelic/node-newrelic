@@ -114,7 +114,8 @@ function assertChatCompletionSummary(
       'response.usage.total_tokens': totalTokens,
       span_id: segment.id,
       trace_id: tx.traceId,
-      vendor: 'openai'
+      vendor: 'openai',
+      timestamp: /\d{13}/
     }
 
     // For some reason the responses API streaming does not return rate limit headers
@@ -137,6 +138,7 @@ function assertChatCompletionSummary(
       span_id: segment.id,
       trace_id: tx.traceId,
       vendor: 'openai',
+      timestamp: /\d{13}/
     }
   }
 

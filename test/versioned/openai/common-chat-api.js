@@ -91,7 +91,8 @@ function assertChatCompletionSummary(
     'response.headers.ratelimitRemainingRequests': '199',
     'response.number_of_messages': 3,
     'response.choices.finish_reason': 'stop',
-    error
+    error,
+    timestamp: /\d{13}/
   }
 
   if (!(error || noUsageTokens)) {

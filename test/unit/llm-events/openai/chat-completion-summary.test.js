@@ -37,6 +37,7 @@ test('chat.completions.create should properly create a LlmChatCompletionSummary 
         response: ChatCompletions.chatRes
       })
       const expected = ChatCompletions.getExpectedResult(tx, chatSummaryEvent, 'summary')
+      expected.timestamp = segment.timer.start
       assert.deepEqual(chatSummaryEvent, expected)
       end()
     })
@@ -58,6 +59,7 @@ test('responses.create should properly create a LlmChatCompletionSummary event',
         response: Responses.chatRes
       })
       const expected = Responses.getExpectedResult(tx, chatSummaryEvent, 'summary')
+      expected.timestamp = segment.timer.start
       assert.deepEqual(chatSummaryEvent, expected)
       end()
     })
@@ -66,17 +68,22 @@ test('responses.create should properly create a LlmChatCompletionSummary event',
 
 test('should set error to true', (ctx, end) => {
   const { agent } = ctx.nr
-  helper.runInTransaction(agent, () => {
-    const chatSummaryEvent = new LlmChatCompletionSummary({
-      agent,
-      transaction: null,
-      segment: null,
-      request: {},
-      response: {},
-      withError: true
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        transaction: tx,
+        segment,
+        request: {},
+        response: {},
+        withError: true
+      })
+      assert.equal(true, chatSummaryEvent.error)
+      end()
     })
-    assert.equal(true, chatSummaryEvent.error)
-    end()
   })
 })
 
@@ -84,23 +91,27 @@ test('should set `llm.` attributes from custom attributes', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
   const conversationId = 'convo-id'
-  helper.runInTransaction(agent, () => {
-    api.addCustomAttribute('llm.conversation_id', conversationId)
-    api.addCustomAttribute('llm.foo', 'bar')
-    api.addCustomAttribute('llm.bar', 'baz')
-    api.addCustomAttribute('rando-key', 'rando-value')
-    const chatSummaryEvent = new LlmChatCompletionSummary({
-      agent,
-      segment: null,
-      transaction: null,
-      request: {},
-      response: {}
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      api.addCustomAttribute('llm.conversation_id', conversationId)
+      api.addCustomAttribute('llm.foo', 'bar')
+      api.addCustomAttribute('llm.bar', 'baz')
+      api.addCustomAttribute('rando-key', 'rando-value')
+      segment.end()
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment,
+        transaction: tx,
+        request: {},
+        response: {}
+      })
+      assert.equal(chatSummaryEvent['llm.conversation_id'], conversationId)
+      assert.equal(chatSummaryEvent['llm.foo'], 'bar')
+      assert.equal(chatSummaryEvent['llm.bar'], 'baz')
+      assert.ok(!chatSummaryEvent['rando-key'])
+      end()
     })
-    assert.equal(chatSummaryEvent['llm.conversation_id'], conversationId)
-    assert.equal(chatSummaryEvent['llm.foo'], 'bar')
-    assert.equal(chatSummaryEvent['llm.bar'], 'baz')
-    assert.ok(!chatSummaryEvent['rando-key'])
-    end()
   })
 })
 

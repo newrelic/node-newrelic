@@ -142,9 +142,12 @@ test('responses.create', async (t) => {
         resContent: '1 plus 2 is 3.',
         reqContent: content
       })
+      const requestMsg = chatMsgs.filter((msg) => msg[1].is_response === false)[0]
+      assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
       assertChatCompletionSummary({ tx, model, chatSummary })
+      assert.equal(chatSummary[0].timestamp, chatSummary[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
       tx.end()
       end()
