@@ -77,7 +77,8 @@ function assertChatCompletionSummary(
     'response.choices.finish_reason': error ? undefined : 'STOP',
     'request.max_tokens': 100,
     'request.temperature': 0.5,
-    error
+    error,
+    timestamp: /\d{13}/
   }
 
   if (!error) {
