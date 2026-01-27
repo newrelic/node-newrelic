@@ -69,6 +69,20 @@ test('should create span on successful tools create', (t, end) => {
   })
 })
 
+test('should not append previous tool name to span on successful tools create', (t, end) => {
+  const { agent, tool, input } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    const [result, result2] = await Promise.all([tool.call(input), tool.call(input)])
+    assert.ok(result)
+    assert.ok(result2)
+    assertSegments(tx.trace, tx.trace.root, ['Llm/tool/LangChain/node-agent-test-tool', 'Llm/tool/LangChain/node-agent-test-tool'], {
+      exact: true
+    })
+    tx.end()
+    end()
+  })
+})
+
 test('should increment tracking metric for each tool event', (t, end) => {
   const { tool, agent, input } = t.nr
   helper.runInTransaction(agent, async (tx) => {
