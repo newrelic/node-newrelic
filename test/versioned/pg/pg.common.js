@@ -11,8 +11,7 @@ const tspl = require('@matteo.collina/tspl')
 
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
-const findSegment = require('../../lib/metrics_helper').findSegment
-const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
+const { findSegment, getMetricHostName } = require('../../lib/metrics_helper')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
 function runCommand(client, cmd) {
@@ -275,25 +274,21 @@ module.exports = function runTests(name, clientFactory) {
               assert.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
-              try {
-                verify(assert, transaction)
-                end()
-              } catch (err) {
-                end(err)
-              }
+              verify(assert, transaction)
+              end()
             })
           })
         })
       })
     })
 
-    await t.test('Promise style query', (t, end) => {
+    await t.test('Promise style query', async (t) => {
       const { agent, pg } = t.nr
       const client = new pg.Client(CON_OBJ)
 
       t.after(() => client.end())
 
-      helper.runInTransaction(agent, async function transactionInScope(tx) {
+      await helper.runInTransaction(agent, async function transactionInScope(tx) {
         const transaction = agent.getTransaction()
         assert.ok(transaction, 'transaction should be visible')
         assert.equal(tx, transaction, 'We got the same transaction')
@@ -303,30 +298,19 @@ module.exports = function runTests(name, clientFactory) {
         let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES($1, $2);'
 
-        try {
-          await client.connect()
-        } catch (err) {
-          assert.ifError(err)
-        }
+        await client.connect()
+        const results = await client.query(insQuery, [pkVal, colVal])
 
-        try {
-          const results = await client.query(insQuery, [pkVal, colVal])
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        assert.ok(results, 'everything should be peachy after setting')
 
-          assert.ok(agent.getTransaction(), 'transaction should still be visible')
-          assert.ok(results, 'everything should be peachy after setting')
+        const selQuery = `select * from ${TABLE_PREPARED} where ${PK} = ${pkVal}`
+        const selectResults = await client.query(selQuery)
 
-          const selQuery = `select * from ${TABLE_PREPARED} where ${PK} = ${pkVal}`
-          const selectResults = await client.query(selQuery)
-
-          assert.ok(agent.getTransaction(), 'transaction should still still be visible')
-          assert.equal(selectResults.rows[0][COL], colVal, 'Postgres client should still work')
-          transaction.end()
-          verify(assert, transaction)
-          end()
-        } catch (err) {
-          assert.ifError(err)
-          end()
-        }
+        assert.ok(agent.getTransaction(), 'transaction should still still be visible')
+        assert.equal(selectResults.rows[0][COL], colVal, 'Postgres client should still work')
+        transaction.end()
+        verify(assert, transaction)
       })
     })
 
@@ -355,6 +339,15 @@ module.exports = function runTests(name, clientFactory) {
           })
 
           pgQuery.on('end', () => {
+            const connectSegment = findSegment(tx.trace, tx.trace.root, 'connect')
+            // asserting segment is touched to at least assert instrumentation touched it before transaction ends
+            assert.equal(connectSegment.timer.touched, true)
+            const selectSegment = findSegment(tx.trace, tx.trace.root, 'Datastore/statement/Postgres/unknown/select')
+            // asserting segment is touched to at least assert instrumentation touched it before transaction ends
+            // since we know the duration, we're asserting it's within a range as well
+            assert.equal(selectSegment.timer.touched, true)
+            const duration = selectSegment.getDurationInMillis()
+            assert.ok(duration > 2000 && duration < 2100)
             const finalTx = agent.getTransaction()
             assert.ok(finalTx, 'transaction should still be visible')
 
@@ -372,79 +365,94 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    await t.test('Promise style query timings', (t, end) => {
+    await t.test('Promise style query timings', async (t) => {
       const { agent, pg } = t.nr
       const client = new pg.Client(CON_OBJ)
 
       t.after(() => client.end())
 
-      helper.runInTransaction(agent, async function transactionInScope(tx) {
+      await helper.runInTransaction(agent, async function transactionInScope(tx) {
         const transaction = agent.getTransaction()
         assert.ok(transaction, 'transaction should be visible')
         assert.equal(tx, transaction, 'We got the same transaction')
 
-        try {
-          await client.connect()
-        } catch (err) {
-          assert.ifError(err)
-        }
+        await client.connect()
+        const connectSegment = findSegment(tx.trace, tx.trace.root, 'connect')
+        // asserting segment is touched to at least assert instrumentation touched it before transaction ends
+        assert.equal(connectSegment.timer.touched, true)
+        const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
 
-        try {
-          const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
+        const selectResults = await client.query(selQuery)
+        const selectSegment = findSegment(tx.trace, tx.trace.root, 'Datastore/statement/Postgres/unknown/select')
+        // asserting segment is touched to at least assert instrumentation touched it before transaction ends
+        // since we know the duration, we're asserting it's within a range as well
+        assert.equal(selectSegment.timer.touched, true)
+        const duration = selectSegment.getDurationInMillis()
+        assert.ok(duration > 2000 && duration < 2100)
 
-          const selectResults = await client.query(selQuery)
+        const finalTx = agent.getTransaction()
+        assert.ok(finalTx, 'transaction should still be visible')
+        assert.ok(selectResults, 'Postgres client should still work')
+        transaction.end()
 
-          const finalTx = agent.getTransaction()
-          assert.ok(finalTx, 'transaction should still be visible')
-          assert.ok(selectResults, 'Postgres client should still work')
-          transaction.end()
-
-          const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
-          assert.ok(
-            metrics.total > 2.0,
-            'Promise style query pg_sleep of 2 seconds should result in > 2 sec timing'
-          )
-
-          end()
-        } catch (err) {
-          assert.ifError(err)
-          end()
-        }
+        const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
+        assert.ok(
+          metrics.total > 2.0,
+          'Promise style query pg_sleep of 2 seconds should result in > 2 sec timing'
+        )
       })
     })
 
-    await t.test('Callback style query timings', (t, end) => {
+    await t.test('Callback style query timings', async (t) => {
       const { agent, pg } = t.nr
       const client = new pg.Client(CON_OBJ)
 
       t.after(() => client.end())
 
-      helper.runInTransaction(agent, async function transactionInScope(tx) {
+      await helper.runInTransaction(agent, async function transactionInScope(tx) {
         const transaction = agent.getTransaction()
         assert.ok(transaction, 'transaction should be visible')
         assert.equal(tx, transaction, 'We got the same transaction')
 
-        client.connect(function (error) {
-          assert.ifError(error)
+        await new Promise((resolve) => {
+          client.connect(function (error) {
+            assert.ifError(error)
+            resolve()
+          })
+        })
 
+        const connectSegment = findSegment(tx.trace, tx.trace.root, 'connect')
+        // asserting segment is touched to at least assert instrumentation touched it before transaction ends
+        assert.equal(connectSegment.timer.touched, true)
+
+        // wrapping in promise, otherwise any logic within callback
+        // is counting in instrumented, we do not want to end tx in callback
+        // as it will produce a truncated segment
+        const result = await new Promise((resolve) => {
           const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
 
           client.query(selQuery, function (error, ok) {
             assert.ifError(error)
-            const finalTx = agent.getTransaction()
-            assert.ok(finalTx, 'transaction should still be visible')
-            assert.ok(ok, 'everything should be peachy after setting')
-
-            transaction.end()
-            const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
-            assert.ok(
-              metrics.total > 2.0,
-              'Callback style query pg_sleep of 2 seconds should result in > 2 sec timing'
-            )
-
-            end()
+            resolve(ok)
           })
         })
+
+        const selectSegment = findSegment(tx.trace, tx.trace.root, 'Datastore/statement/Postgres/unknown/select')
+        // asserting segment is touched to at least assert instrumentation touched it before transaction ends
+        // since we know the duration, we're asserting it's within a range as well
+        assert.equal(selectSegment.timer.touched, true)
+        const duration = selectSegment.getDurationInMillis()
+        assert.ok(duration > 2000 && duration < 2100)
+        const finalTx = agent.getTransaction()
+        assert.ok(finalTx, 'transaction should still be visible')
+        assert.ok(result, 'everything should be peachy after setting')
+
+        transaction.end()
+        const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
+        assert.ok(
+          metrics.total > 2.0,
+          'Callback style query pg_sleep of 2 seconds should result in > 2 sec timing'
+        )
       })
     })
 
