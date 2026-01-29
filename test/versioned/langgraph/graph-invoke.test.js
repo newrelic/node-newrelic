@@ -9,13 +9,16 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertSegments, match } = require('../../lib/custom-assertions')
 const createOpenAIMockServer = require('../openai/mock-server')
 const helper = require('../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
-    enabled: true
+    enabled: true,
+    streaming: {
+      enabled: true
+    }
   }
 }
 
@@ -80,18 +83,44 @@ test('should create span on successful CompiledStateGraph.invoke', async (t) => 
   const { agent, langgraphAgent } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
-    let content
-    try {
-      const result = await langgraphAgent.invoke(
-        { messages: [{ role: 'user', content: 'You are a scientist.' }] }
-      )
-      content = result?.messages?.[1]?.content ?? ''
-    } catch (err) {
-      assert.fail(err)
-    }
+    const result = await langgraphAgent.invoke(
+      { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+    )
+    const content = result?.messages?.[1]?.content
     assert.equal(content, '212 degrees Fahrenheit is equal to 100 degrees Celsius.', 'should output correct content')
-    assertSegments(tx.trace, tx.trace.root, ['Llm/agent/LangGraph/invoke/LangGraphReactAgent'], {
+    assertSegments(tx.trace, tx.trace.root, ['Llm/agent/LangGraph/stream/LangGraphReactAgent'], {
       exact: false
+    })
+
+    tx.end()
+  })
+})
+
+test('should create LlmAgent event for CompiledStateGraph.invoke', async (t) => {
+  const { agent, langgraphAgent } = t.nr
+
+  await helper.runInTransaction(agent, async (tx) => {
+    const result = await langgraphAgent.invoke(
+      { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+    )
+    const content = result?.messages?.[1]?.content
+    assert.ok(content)
+    // Check for LlmAgent event
+    const events = agent.customEventAggregator.events.toArray()
+    const agentEvents = events.filter((e) => e[0].type === 'LlmAgent')
+    assert.ok(agentEvents.length > 0)
+
+    const [[{ type }, agentEvent]] = agentEvents
+    assert.equal(type, 'LlmAgent')
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
+
+    match(agentEvent, {
+      id: /[a-f0-9]{36}/,
+      name: 'LangGraphReactAgent',
+      span_id: segment.id,
+      trace_id: tx.traceId,
+      ingest_source: 'Node',
+      vendor: 'langgraph'
     })
 
     tx.end()

@@ -300,7 +300,7 @@ test('should add subcomponent attribute to span', async (t) => {
   })
 })
 
-test('should create LlmError event when stream fails', async (t) => {
+test('should create LlmError event when given bad input', async (t) => {
   const { agent, langgraphAgent } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
