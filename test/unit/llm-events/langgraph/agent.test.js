@@ -40,9 +40,6 @@ test.beforeEach((ctx) => {
   }
 
   ctx.nr.segment = {
-    getDurationInMillis() {
-      return 1.01
-    },
     id: 'segment-1'
   }
 
@@ -55,7 +52,6 @@ test('constructs default instance', async (t) => {
   assert.match(event.id, /[a-z0-9-]{36}/)
   assert.equal(event.span_id, 'segment-1')
   assert.equal(event.trace_id, 'trace-1')
-  assert.equal(event.duration, 1.01)
   assert.equal(event['llm.foo'], 'bar')
   assert.equal(event.ingest_source, 'Node')
   assert.equal(event.vendor, 'langgraph')

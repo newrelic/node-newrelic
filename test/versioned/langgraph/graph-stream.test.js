@@ -337,6 +337,7 @@ test('should create LlmError event when given bad input', async (t) => {
     plan.equal(lgException.customAttributes['error.message'], lgException.error['message'], 'error messages should match')
 
     tx.end()
+    await plan.completed
   })
 })
 
@@ -378,6 +379,7 @@ test('should create LlmError event when stream fails in the middle', async (t) =
     plan.equal(lgException.customAttributes['error.message'], lgException.error['message'], 'error messages should match')
 
     tx.end()
+    await plan.completed
   })
 })
 
