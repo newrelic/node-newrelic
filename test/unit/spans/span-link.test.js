@@ -19,6 +19,51 @@ const SpanEvent = require('#agentlib/spans/span-event.js')
 const RUN_ID = 1337
 const DEFAULT_LIMIT = 2000
 const DEFAULT_PERIOD = 60000
+const TIMESTAMP = 1765285200000 // 2025-12-09T09:00:00.000-04:00
+
+function setupPartialTransaction(tx, partialType) {
+  tx.priority = 42
+  tx.sampled = true
+  tx.partialType = partialType
+  tx.createPartialTrace()
+}
+
+function createSpanLink(segment, spanId, traceId, linkSpanId, linkTraceId, testAttr) {
+  const link = new SpanLink({
+    link: {
+      attributes: { test: testAttr },
+      context: { spanId: linkSpanId, traceId: linkTraceId }
+    },
+    spanContext: {
+      spanId,
+      traceId
+    },
+    timestamp: TIMESTAMP
+  })
+  segment.spanLinks.push(link)
+  return link
+}
+
+function addRootSegment(spanEventAggregator, tx, rootSegment) {
+  spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+}
+
+function addChildSegment(spanEventAggregator, tx, segment, parentId, isEntry = false) {
+  spanEventAggregator.addSegment({ segment, transaction: tx, parentId, isEntry })
+}
+
+function stubEntityRelationship(hasEntity) {
+  return sinon.stub(SpanEvent.prototype, 'hasEntityRelationshipAttrs').get(() => hasEntity)
+}
+
+function createSegment(agent, id, name, parent, tx) {
+  return agent.tracer.createSegment({
+    id,
+    name,
+    parent,
+    transaction: tx
+  })
+}
 
 test('requires link data', (t) => {
   t.plan(2)
@@ -112,63 +157,26 @@ test('partial tracing with span links', async (t) => {
 
   await t.test('span link moved to nearest parent when using reduced tracing', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
     helper.runInTransaction(agent, (tx) => {
-      tx.priority = 42
-      tx.sampled = true
-      tx.partialType = PARTIAL_TYPES.REDUCED
-      tx.createPartialTrace()
+      setupPartialTransaction(tx, PARTIAL_TYPES.REDUCED)
 
       const rootSegment = agent.tracer.getSegment()
+      const child1Segment = createSegment(agent, 'child1', 'child1-segment', rootSegment, tx)
+      const child2Segment = createSegment(agent, 'child2', 'child2-segment', child1Segment, tx)
 
-      const child1Segment = agent.tracer.createSegment({
-        id: 'child1',
-        name: 'child1-segment',
-        parent: rootSegment,
-        transaction: tx
-      })
-
-      const child2Segment = agent.tracer.createSegment({
-        id: 'child2',
-        name: 'child2-segment',
-        parent: child1Segment,
-        transaction: tx
-      })
-
-      child1Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test1' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
-
-      child2Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test2' },
-          context: { spanId: 'parent2', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span2',
-          traceId: 'trace2'
-        },
-        timestamp
-      }))
+      createSpanLink(child1Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test1')
+      createSpanLink(child2Segment, 'span2', 'trace2', 'parent2', 'trace1', 'test2')
 
       // span link id is initially set to the span id in the context they are created on
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span2')
 
-      spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      addRootSegment(spanEventAggregator, tx, rootSegment)
       // root span has no span links
       assert.equal(rootSegment.spanLinks.length, 0)
 
-      spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
-      spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx, parentId: child1Segment.id, isEntry: false })
+      addChildSegment(spanEventAggregator, tx, child1Segment, rootSegment.id)
+      addChildSegment(spanEventAggregator, tx, child2Segment, child1Segment.id)
 
       // two children spans with span links dropped
       assert.equal(tx.partialTrace.droppedSpans.size, 2)
@@ -186,82 +194,33 @@ test('partial tracing with span links', async (t) => {
       assert.equal(keptSpan.spanLinks[0].userAttributes.attributes.test.value, 'test1')
       assert.equal(keptSpan.spanLinks[1].intrinsics.id, keptSpan.id)
       assert.equal(keptSpan.spanLinks[1].userAttributes.attributes.test.value, 'test2')
-
       end()
     })
   })
 
   await t.test('span link moved to nearest parent when using reduced tracing and combined with parent span links', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
     helper.runInTransaction(agent, (tx) => {
-      tx.priority = 42
-      tx.sampled = true
-      tx.partialType = PARTIAL_TYPES.REDUCED
-      tx.createPartialTrace()
+      setupPartialTransaction(tx, PARTIAL_TYPES.REDUCED)
 
       const rootSegment = agent.tracer.getSegment()
+      const child1Segment = createSegment(agent, 'child1', 'child1-segment', rootSegment, tx)
+      const child2Segment = createSegment(agent, 'child2', 'child2-segment', child1Segment, tx)
 
-      rootSegment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'rootTest' },
-          context: { spanId: rootSegment.id, traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: rootSegment.id,
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
-
-      const child1Segment = agent.tracer.createSegment({
-        id: 'child1',
-        name: 'child1-segment',
-        parent: rootSegment,
-        transaction: tx
-      })
-
-      const child2Segment = agent.tracer.createSegment({
-        id: 'child2',
-        name: 'child2-segment',
-        parent: child1Segment,
-        transaction: tx
-      })
-
-      child1Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test1' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
-
-      child2Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test2' },
-          context: { spanId: 'parent2', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span2',
-          traceId: 'trace2'
-        },
-        timestamp
-      }))
+      createSpanLink(rootSegment, rootSegment.id, 'trace1', rootSegment.id, 'trace1', 'rootTest')
+      createSpanLink(child1Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test1')
+      createSpanLink(child2Segment, 'span2', 'trace2', 'parent2', 'trace1', 'test2')
 
       // span link id is initially set to the span id in the context they are created on
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span2')
 
-      spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      addRootSegment(spanEventAggregator, tx, rootSegment)
       // root span has 1 span link of it's own
       assert.equal(rootSegment.spanLinks.length, 1)
 
-      spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
-      spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx, parentId: child1Segment.id, isEntry: false })
+      addChildSegment(spanEventAggregator, tx, child1Segment, rootSegment.id)
+      addChildSegment(spanEventAggregator, tx, child2Segment, child1Segment.id)
 
       // two children spans with span links dropped
       assert.equal(tx.partialTrace.droppedSpans.size, 2)
@@ -283,19 +242,14 @@ test('partial tracing with span links', async (t) => {
       assert.equal(keptSpan.spanLinks[1].userAttributes.attributes.test.value, 'test1')
       assert.equal(keptSpan.spanLinks[2].intrinsics.id, keptSpan.id)
       assert.equal(keptSpan.spanLinks[2].userAttributes.attributes.test.value, 'test2')
-
       end()
     })
   })
 
   await t.test('do not move span link from dropped span if the nearest parent span\'s span link is full - any partial tracing mode', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
     helper.runInTransaction(agent, (tx) => {
-      tx.priority = 42
-      tx.sampled = true
-      tx.partialType = PARTIAL_TYPES.REDUCED
-      tx.createPartialTrace()
+      setupPartialTransaction(tx, PARTIAL_TYPES.REDUCED)
 
       const rootSegment = agent.tracer.getSegment()
 
@@ -303,42 +257,16 @@ test('partial tracing with span links', async (t) => {
         rootSegment.addSpanLink({ fake: 'link' })
       }
 
-      const child1Segment = agent.tracer.createSegment({
-        id: 'child1',
-        name: 'child1-segment',
-        parent: rootSegment,
-        transaction: tx
-      })
+      const child1Segment = createSegment(agent, 'child1', 'child1-segment', rootSegment, tx)
 
-      child1Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test1' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
+      createSpanLink(child1Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test1')
+      createSpanLink(child1Segment, 'span2', 'trace1', 'parent1', 'trace1', 'test2')
 
-      child1Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test2' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span2',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
-
-      spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      addRootSegment(spanEventAggregator, tx, rootSegment)
       // root span has 99 span links of it's own
       assert.equal(rootSegment.spanLinks.length, 99)
 
-      spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
+      addChildSegment(spanEventAggregator, tx, child1Segment, rootSegment.id)
 
       // one child span dropped
       assert.equal(tx.partialTrace.droppedSpans.size, 1)
@@ -354,54 +282,36 @@ test('partial tracing with span links', async (t) => {
       // since there was only 1 span link spot remaining on the parent span, only the 1st span
       // link from the dropped span was moved over
       assert.equal(keptSpan.spanLinks[99].intrinsics.id, keptSpan.id)
+      // second span link dropped because of limit
+      assert.equal(agent.metrics._metrics.unscoped['Supportability/Nodejs/SpanEvent/Links/Dropped'].callCount, 1)
       assert.equal(keptSpan.spanLinks[99].userAttributes.attributes.test.value, 'test1')
-
       end()
     })
   })
 
   await t.test('span link non intrinsics attrs removed when using essential tracing', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
     helper.runInTransaction(agent, (tx) => {
-      tx.priority = 42
-      tx.sampled = true
-      tx.partialType = PARTIAL_TYPES.ESSENTIAL
-      tx.createPartialTrace()
+      setupPartialTransaction(tx, PARTIAL_TYPES.ESSENTIAL)
 
       const rootSegment = agent.tracer.getSegment()
 
       // this span will be kept since it's an exit span (message broker)
-      const child1Segment = agent.tracer.createSegment({
-        id: 'child1',
-        name: 'MessageBroker/api.example.com/users',
-        parent: rootSegment,
-        transaction: tx
-      })
+      const child1Segment = createSegment(agent, 'child1', 'MessageBroker/api.example.com/users', rootSegment, tx)
 
-      child1Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test1' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
+      createSpanLink(child1Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test1')
 
       // span link id is initially set to the span id in the context they are created on
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
 
-      spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      addRootSegment(spanEventAggregator, tx, rootSegment)
       // root span has no span links
       assert.equal(rootSegment.spanLinks.length, 0)
 
       // simulate that the segment has entity relationship attrs to keep the span
-      const hasEntityStub = sinon.stub(SpanEvent.prototype, 'hasEntityRelationshipAttrs').get(() => true)
+      const hasEntityStub = stubEntityRelationship(true)
 
-      spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
+      addChildSegment(spanEventAggregator, tx, child1Segment, rootSegment.id)
       hasEntityStub.restore()
 
       // no dropped spans
@@ -421,76 +331,40 @@ test('partial tracing with span links', async (t) => {
       // user and agent attributes are not kept on essential partial traces
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].userAttributes).length, 0)
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].agentAttributes).length, 0)
-
       end()
     })
   })
 
   await t.test('span link moved to nearest parent and non intrinsics attrs removed when using essential tracing', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
     helper.runInTransaction(agent, (tx) => {
-      tx.priority = 42
-      tx.sampled = true
-      tx.partialType = PARTIAL_TYPES.ESSENTIAL
-      tx.createPartialTrace()
+      setupPartialTransaction(tx, PARTIAL_TYPES.ESSENTIAL)
 
       const rootSegment = agent.tracer.getSegment()
 
       // this span will be kept since it's an exit span (message broker)
-      const child1Segment = agent.tracer.createSegment({
-        id: 'child1',
-        name: 'MessageBroker/api.example.com/users',
-        parent: rootSegment,
-        transaction: tx
-      })
+      const child1Segment = createSegment(agent, 'child1', 'MessageBroker/api.example.com/users', rootSegment, tx)
 
       // this span will be dropped since it's not an exit span
-      const child2Segment = agent.tracer.createSegment({
-        id: 'child2',
-        name: 'child2-segment',
-        parent: child1Segment,
-        transaction: tx
-      })
+      const child2Segment = createSegment(agent, 'child2', 'child2-segment', child1Segment, tx)
 
-      child1Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test1' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
-
-      child2Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test2' },
-          context: { spanId: 'parent2', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span2',
-          traceId: 'trace2'
-        },
-        timestamp
-      }))
+      createSpanLink(child1Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test1')
+      createSpanLink(child2Segment, 'span2', 'trace2', 'parent2', 'trace1', 'test2')
 
       // span link id is initially set to the span id in the context they are created on
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span2')
 
-      spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      addRootSegment(spanEventAggregator, tx, rootSegment)
       // root span has no span links
       assert.equal(rootSegment.spanLinks.length, 0)
 
       // simulate that the segment has entity relationship attrs to keep the span
-      const hasEntityStub = sinon.stub(SpanEvent.prototype, 'hasEntityRelationshipAttrs').get(() => true)
+      const hasEntityStub = stubEntityRelationship(true)
 
-      spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
+      addChildSegment(spanEventAggregator, tx, child1Segment, rootSegment.id)
       hasEntityStub.restore()
-      spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx, parentId: child1Segment.id, isEntry: false })
+      addChildSegment(spanEventAggregator, tx, child2Segment, child1Segment.id)
 
       // one span with span links dropped
       assert.equal(tx.partialTrace.droppedSpans.size, 1)
@@ -513,94 +387,47 @@ test('partial tracing with span links', async (t) => {
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].userAttributes).length, 0)
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[0].agentAttributes).length, 0)
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].agentAttributes).length, 0)
-
       end()
     })
   })
 
   await t.test('span links compressed to one kept span if there are multiple spans for the same entity when using compact tracing', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
     helper.runInTransaction(agent, (tx) => {
-      tx.priority = 42
-      tx.sampled = true
-      tx.partialType = PARTIAL_TYPES.COMPACT
-      tx.createPartialTrace()
+      setupPartialTransaction(tx, PARTIAL_TYPES.COMPACT)
 
       const reparentSpanLinkSpy = sinon.spy(tx.partialTrace, 'reparentSpanLinks')
-
       const rootSegment = agent.tracer.getSegment()
 
       // first exit span to a message broker
-      const child1Segment = agent.tracer.createSegment({
-        id: 'child1',
-        name: 'MessageBroker/api.example.com/users',
-        parent: rootSegment,
-        transaction: tx
-      })
+      const child1Segment = createSegment(agent, 'child1', 'MessageBroker/api.example.com/users', rootSegment, tx)
 
       // entry span to another service
-      const child2Segment = agent.tracer.createSegment({
-        id: 'child2',
-        name: 'child2-segment',
-        parent: child1Segment,
-        transaction: tx
-      })
+      const child2Segment = createSegment(agent, 'child2', 'child2-segment', child1Segment, tx)
 
       // second exit span to the same message broker
-      const child3Segment = agent.tracer.createSegment({
-        id: 'child3',
-        name: 'MessageBroker/api.example.com/users',
-        parent: rootSegment,
-        transaction: tx
-      })
+      const child3Segment = createSegment(agent, 'child3', 'MessageBroker/api.example.com/users', rootSegment, tx)
 
       // entry span to another service
-      const child4Segment = agent.tracer.createSegment({
-        id: 'child4',
-        name: 'child4-segment',
-        parent: child3Segment,
-        transaction: tx
-      })
+      const child4Segment = createSegment(agent, 'child4', 'child4-segment', child3Segment, tx)
 
-      child1Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test1' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
-
-      child3Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test2' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
+      createSpanLink(child1Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test1')
+      createSpanLink(child3Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test2')
 
       // span link id is initially set to the span id in the context they are created on
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child3Segment.spanLinks[0].intrinsics.id, 'span1')
 
-      spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      addRootSegment(spanEventAggregator, tx, rootSegment)
       tx.baseSegment = rootSegment
 
       // simulate that the segment has entity relationship attrs to keep the span
-      const hasEntityStub = sinon.stub(SpanEvent.prototype, 'hasEntityRelationshipAttrs').get(() => true)
+      const hasEntityStub = stubEntityRelationship(true)
 
-      spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
-      spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx, parentId: child1Segment.id, isEntry: true })
-      spanEventAggregator.addSegment({ segment: child3Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
-      spanEventAggregator.addSegment({ segment: child4Segment, transaction: tx, parentId: child3Segment.id, isEntry: true })
+      addChildSegment(spanEventAggregator, tx, child1Segment, rootSegment.id)
+      addChildSegment(spanEventAggregator, tx, child2Segment, child1Segment.id, true)
+      addChildSegment(spanEventAggregator, tx, child3Segment, rootSegment.id)
+      addChildSegment(spanEventAggregator, tx, child4Segment, child3Segment.id, true)
       hasEntityStub.restore()
 
       tx.partialTrace.finalize()
@@ -612,79 +439,42 @@ test('partial tracing with span links', async (t) => {
 
       // only one compressed exit span for the same entity with two span links now
       assert.equal(compressedExitSpan.spanLinks.length, 2)
-
       assert.equal(compressedExitSpan.spanLinks[1].intrinsics.id, compressedExitSpan.id)
 
       // non instrincs attrs are removed on compact partial traces
       assert.equal(Object.keys(compressedExitSpan.spanLinks[1].userAttributes).length, 0)
       assert.equal(Object.keys(compressedExitSpan.spanLinks[1].agentAttributes).length, 0)
-
       end()
     })
   })
 
   await t.test('move span links in compact for non exit spans with entity relationship attributes', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
     helper.runInTransaction(agent, (tx) => {
-      tx.priority = 42
-      tx.sampled = true
-      tx.partialType = PARTIAL_TYPES.COMPACT
-      tx.createPartialTrace()
+      setupPartialTransaction(tx, PARTIAL_TYPES.COMPACT)
 
       const rootSegment = agent.tracer.getSegment()
 
       // exit span to message broker
-      const child1Segment = agent.tracer.createSegment({
-        id: 'child1',
-        name: 'MessageBroker/api.example.com/users',
-        parent: rootSegment,
-        transaction: tx
-      })
+      const child1Segment = createSegment(agent, 'child1', 'MessageBroker/api.example.com/users', rootSegment, tx)
 
       // entry span to another service
-      const child2Segment = agent.tracer.createSegment({
-        id: 'child2',
-        name: 'child2-segment',
-        parent: rootSegment,
-        transaction: tx
-      })
+      const child2Segment = createSegment(agent, 'child2', 'child2-segment', rootSegment, tx)
 
-      child1Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test1' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
-
-      child2Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test2' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
+      createSpanLink(child1Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test1')
+      createSpanLink(child2Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test2')
 
       // span link id is initially set to the span id in the context they are created on
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span1')
 
-      spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      addRootSegment(spanEventAggregator, tx, rootSegment)
 
       // simulate that the segment has entity relationship attrs to keep the span
-      const hasEntityStub = sinon.stub(SpanEvent.prototype, 'hasEntityRelationshipAttrs').get(() => true)
+      const hasEntityStub = stubEntityRelationship(true)
 
-      spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
-      spanEventAggregator.addSegment({ segment: child2Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
+      addChildSegment(spanEventAggregator, tx, child1Segment, rootSegment.id)
+      addChildSegment(spanEventAggregator, tx, child2Segment, rootSegment.id)
       hasEntityStub.restore()
 
       // one span with span links dropped move to nearest parent
@@ -696,52 +486,32 @@ test('partial tracing with span links', async (t) => {
       // non instrincs attrs are removed on compact partial traces
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].userAttributes).length, 0)
       assert.equal(Object.keys(keptSpanWithLinks.spanLinks[1].agentAttributes).length, 0)
-
       end()
     })
   })
 
   await t.test('move span links in compact for non exit spans with no entity relationship attributes', (t, end) => {
     const { agent, spanEventAggregator } = t.nr
-    const timestamp = 1765285200000 // 2025-12-09T09:00:00.000-04:00
     helper.runInTransaction(agent, (tx) => {
-      tx.priority = 42
-      tx.sampled = true
-      tx.partialType = PARTIAL_TYPES.COMPACT
-      tx.createPartialTrace()
+      setupPartialTransaction(tx, PARTIAL_TYPES.COMPACT)
 
       const rootSegment = agent.tracer.getSegment()
 
       // exit span to message broker
-      const child1Segment = agent.tracer.createSegment({
-        id: 'child1',
-        name: 'MessageBroker/api.example.com/users',
-        parent: rootSegment,
-        transaction: tx
-      })
+      const child1Segment = createSegment(agent, 'child1', 'MessageBroker/api.example.com/users', rootSegment, tx)
 
-      child1Segment.spanLinks.push(new SpanLink({
-        link: {
-          attributes: { test: 'test1' },
-          context: { spanId: 'parent1', traceId: 'trace1' }
-        },
-        spanContext: {
-          spanId: 'span1',
-          traceId: 'trace1'
-        },
-        timestamp
-      }))
+      createSpanLink(child1Segment, 'span1', 'trace1', 'parent1', 'trace1', 'test1')
 
       // span link id is initially set to the span id in the context they are created on
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(rootSegment.spanLinks.length, 0)
 
-      spanEventAggregator.addSegment({ segment: rootSegment, transaction: tx, parent: '1', isEntry: true })
+      addRootSegment(spanEventAggregator, tx, rootSegment)
 
       // simulate that the segment has no entity relationship attrs to drop the span
-      const hasEntityStub = sinon.stub(SpanEvent.prototype, 'hasEntityRelationshipAttrs').get(() => false)
+      const hasEntityStub = stubEntityRelationship(false)
 
-      spanEventAggregator.addSegment({ segment: child1Segment, transaction: tx, parentId: rootSegment.id, isEntry: false })
+      addChildSegment(spanEventAggregator, tx, child1Segment, rootSegment.id)
       hasEntityStub.restore()
 
       // only one kept span
@@ -756,7 +526,6 @@ test('partial tracing with span links', async (t) => {
       // non instrincs attrs are removed on compact partial traces
       assert.equal(Object.keys(keptSpan.spanLinks[0].userAttributes).length, 0)
       assert.equal(Object.keys(keptSpan.spanLinks[0].agentAttributes).length, 0)
-
       end()
     })
   })
