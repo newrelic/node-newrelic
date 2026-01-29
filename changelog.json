@@ -2,6 +2,24 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.11.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Added defensive code in `lib/subscribers/middleware-wrapper.js` to prevent crash when attempting to associate an error on an incoming http request",
+          "Updated `pg` instrumentation to properly capture the TraceSegment duration for promise based queries",
+          "Updated `Supportability/Nodejs/PartialGranularity/NrIds/Dropped` metric to only keep track of spans that got dropped when `nr.ids` execeeded 63 spans."
+        ],
+        "features": [
+          "Add timestamp to OpenAI `LlmChatCompletionSummary`s",
+          "Add `timestamp` to LangChain input `LlmChatCompletionMessage`s",
+          "Add `timestamp` to Google Gen AI `LlmChatCompletionMessage`s",
+          "Add `timestamp` to AWS Bedrock llm chat msgs",
+          "Added essential tracing mode for span links"
+        ]
+      }
+    },
+    {
       "version": "13.10.0",
       "changes": {
         "security": [],
