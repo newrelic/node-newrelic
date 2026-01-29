@@ -11,10 +11,10 @@
           "Updated `Supportability/Nodejs/PartialGranularity/NrIds/Dropped` metric to only keep track of spans that got dropped when `nr.ids` execeeded 63 spans."
         ],
         "features": [
-          "Add timestamp to OpenAI `LlmChatCompletionSummary`s",
-          "Add `timestamp` to LangChain input `LlmChatCompletionMessage`s",
-          "Add `timestamp` to Google Gen AI `LlmChatCompletionMessage`s",
-          "Add `timestamp` to AWS Bedrock llm chat msgs",
+          "Added timestamp to OpenAI `LlmChatCompletionSummary`",
+          "Added `timestamp` to LangChain input `LlmChatCompletionMessage`",
+          "Added `timestamp` to Google Gen AI `LlmChatCompletionMessage`",
+          "Added `timestamp` to AWS Bedrock `LlmChatCompletionMessage`",
           "Added essential tracing mode for span links"
         ]
       }
@@ -27,7 +27,7 @@
           "Updated OpenAI instrumentation to properly parse headers when a call fails"
         ],
         "features": [
-          "Add `timestamp` to OpenAI input `LlmChatCompletionMessage`s",
+          "Add `timestamp` to OpenAI input `LlmChatCompletionMessage`",
           "Added reduced tracing mode for span links"
         ]
       }
