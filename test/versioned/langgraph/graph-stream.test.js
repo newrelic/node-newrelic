@@ -8,6 +8,8 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
+const { tspl } = require('@matteo.collina/tspl')
+
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, match } = require('../../lib/custom-assertions')
 const createOpenAIMockServer = require('../openai/mock-server')
@@ -70,9 +72,9 @@ test.beforeEach(async (ctx) => {
   })
 
   // Create a simple LangGraph agent.
-  // Ignore the deprecation warning; LangGraph just wants
-  // us to require from "langchain" directly, but
-  // the function works the same.
+  // Ignore the deprecation warning; LangGraph just
+  // wants us to require from "langchain" directly,
+  // but the function is still valid.
   ctx.nr.langgraphAgent = createReactAgent({
     llm: mockLLM,
     // must define tools even if empty
@@ -302,6 +304,7 @@ test('should add subcomponent attribute to span', async (t) => {
 
 test('should create LlmError event when given bad input', async (t) => {
   const { agent, langgraphAgent } = t.nr
+  const plan = tspl(t, { plan: 8 })
 
   await helper.runInTransaction(agent, async (tx) => {
     try {
@@ -312,23 +315,67 @@ test('should create LlmError event when given bad input', async (t) => {
         consumeChunk(chunk)
       }
     } catch (error) {
-      assert.ok(error, 'should catch an error')
+      plan.ok(error, 'should catch an error')
     }
 
     // Check for LlmAgent event with error flag
     const events = agent.customEventAggregator.events.toArray()
     const agentEvent = events.find((e) => e[0].type === 'LlmAgent')?.[1]
-    assert.ok(agentEvent, 'should have LlmAgent event')
-    assert.equal(agentEvent.error, true)
+    plan.ok(agentEvent, 'should have LlmAgent event')
+    plan.equal(agentEvent.error, true, 'should set LlmAgent event `error` to true')
 
     // Check for LlmError in transaction exceptions.
     // 2 will be created, first one for LangChain RunnableSequence.stream
     // failure, second one for LangGraph agent failure
     const exceptions = tx.exceptions
-    assert.equal(exceptions.length, 2)
-    const str = Object.prototype.toString.call(exceptions[1].customAttributes)
-    assert.equal(str, '[object LlmErrorMessage]')
-    assert.equal(exceptions[1].customAttributes.agent_id, agentEvent.id)
+    plan.equal(exceptions.length, 2)
+    const lgException = exceptions[1]
+    const str = Object.prototype.toString.call(lgException.customAttributes)
+    plan.equal(str, '[object LlmErrorMessage]', 'should be a LlmErrorMessage')
+    plan.equal(lgException.customAttributes.agent_id, agentEvent.id, 'ai agent_id should match')
+    plan.equal(lgException.customAttributes['error.code'], lgException.error['lc_error_code'], 'error codes should match')
+    plan.equal(lgException.customAttributes['error.message'], lgException.error['message'], 'error messages should match')
+
+    tx.end()
+  })
+})
+
+test('should create LlmError event when stream fails in the middle', async (t) => {
+  const { agent, langgraphAgent } = t.nr
+  const plan = tspl(t, { plan: 8 })
+
+  await helper.runInTransaction(agent, async (tx) => {
+    try {
+      // Starts off with a valid request...
+      const stream = await langgraphAgent.stream(
+        { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+      )
+      for await (const chunk of stream) {
+        consumeChunk(chunk)
+        // then abruptly abort the stream
+        stream.cancel('abort')
+      }
+    } catch (error) {
+      plan.ok(error, 'should catch an error')
+    }
+
+    // Check for LlmAgent event with error flag
+    const events = agent.customEventAggregator.events.toArray()
+    const agentEvent = events.find((e) => e[0].type === 'LlmAgent')?.[1]
+    plan.ok(agentEvent, 'should have LlmAgent event')
+    plan.equal(agentEvent.error, true, 'should set LlmAgent event `error` to true')
+
+    // Check for LlmError in transaction exceptions.
+    // 2 will be created, first one for LangChain RunnableSequence.stream
+    // failure, second one for LangGraph agent failure
+    const exceptions = tx.exceptions
+    plan.equal(exceptions.length, 2)
+    const lgException = exceptions[1]
+    const str = Object.prototype.toString.call(lgException.customAttributes)
+    plan.equal(str, '[object LlmErrorMessage]', 'should be a LlmErrorMessage')
+    plan.equal(lgException.customAttributes.agent_id, agentEvent.id, 'ai agent_id should match')
+    plan.equal(lgException.customAttributes['error.code'], lgException.error['code'], 'error codes should match')
+    plan.equal(lgException.customAttributes['error.message'], lgException.error['message'], 'error messages should match')
 
     tx.end()
   })
