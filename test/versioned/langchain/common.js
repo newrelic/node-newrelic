@@ -96,7 +96,8 @@ function assertLangChainChatCompletionSummary(
     tags: 'tag1,tag2',
     virtual_llm: true,
     'response.number_of_messages': 1,
-    duration: segment.getDurationInMillis()
+    duration: segment.getDurationInMillis(),
+    timestamp: segment.timer.start
   }
 
   if (withCallback) {

@@ -73,8 +73,13 @@ function runRunnablesTests(config) {
         const [, chainEvent] = event
         return chainEvent.vendor === 'langchain'
       })
-
       assert.equal(langchainEvents.length, 3, 'should create 3 langchain events')
+
+      const requestMsg = langchainEvents.filter((msg) => msg[1].is_response === false)[0]
+      assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
+
+      const chatSummary = langchainEvents.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      assert.equal(chatSummary[0].timestamp, chatSummary[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
       tx.end()
       end()
