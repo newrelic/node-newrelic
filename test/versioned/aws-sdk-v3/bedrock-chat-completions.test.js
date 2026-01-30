@@ -163,8 +163,11 @@ test.afterEach(afterEach)
         expectedId: modelId.includes('ai21') || modelId.includes('cohere') ? '1234' : null,
         chatMsgs
       })
-
       assertChatCompletionSummary({ tx, modelId, chatSummary })
+
+      const requestMsg = chatMsgs.filter((msg) => msg[1].is_response === false)[0]
+      assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
+      assert.equal(chatSummary[0].timestamp, chatSummary[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
       tx.end()
     })
