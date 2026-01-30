@@ -68,7 +68,7 @@ function setupPartialTrace({ agent, partialType, tx, addRootSpanLink = false, ad
     createSpanLink({ segment: rootSegment, spanId: rootSegment.id, traceId: 'trace1', linkSpanId: rootSegment.id, linkTraceId: 'trace1', testAttr: 'rootTest' })
   }
 
-  // setup child 2 segment with span link
+  // setup child 1 segment with span link
   const child1Name = addExitSpan ? 'MessageBroker/api.example.com/users' : 'child1-segment'
   const child1Segment = createSegment(agent, 'child1', child1Name, rootSegment, tx)
   createSpanLink({ segment: child1Segment, spanId: 'span1', traceId: 'trace1', linkSpanId: 'parent1', linkTraceId: 'trace1', testAttr: 'test1' })
@@ -77,7 +77,7 @@ function setupPartialTrace({ agent, partialType, tx, addRootSpanLink = false, ad
     return { rootSegment, child1Segment }
   }
 
-  // setup child 2 sgement with span links if needed
+  // setup child 2 segment with span links if needed
   const child2Segment = createSegment(agent, 'child2', 'child2-segment', child1Segment, tx)
   createSpanLink({ segment: child2Segment, spanId: 'span2', traceId: 'trace2', linkSpanId: 'parent2', linkTraceId: 'trace1', testAttr: 'test2' })
 
