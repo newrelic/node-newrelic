@@ -227,8 +227,12 @@ test('should have LlmChatCompletion events from LangChain and OpenAI instrumenta
 
     // Make sure content was properly assigned
     const messageEvents = langchainChatEvents.filter((e) => e[0].type === 'LlmChatCompletionMessage')
-    messageEvents.forEach((e) => {
-      assert.ok(e[1]?.content?.length > 0, 'message content should exist')
+    messageEvents.forEach((msg) => {
+      if (msg[1]?.is_response === true && msg[1]?.role === 'assistant') {
+        assert.equal(msg[1]?.content, '212 degrees Fahrenheit is equal to 100 degrees Celsius.')
+      } else if (msg[1]?.is_response === false && msg[1]?.role === 'user') {
+        assert.equal(msg[1]?.content, 'You are a scientist.')
+      }
     })
 
     tx.end()
