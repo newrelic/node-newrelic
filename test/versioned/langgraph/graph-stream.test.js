@@ -265,6 +265,12 @@ test('should have LlmTool events from LangChain instrumentation', async (t) => {
     const chatEvents = events.filter((e) => e[0].type === 'LlmChatCompletionMessage' && e[1].role === 'tool')
     assert.equal(chatEvents.length, 2, 'should have one tool message for openai and another for langchain')
 
+    const langchainEvents = events.filter((e) => e[0].type === 'LlmChatCompletionMessage' && e[1].vendor === 'langchain')
+    assert.equal(langchainEvents.length, 9, 'should be 9 langchain events')
+    langchainEvents.forEach((msg) => {
+      assert.ok(msg?.[1]?.content?.length > 0, 'should have non-empty content')
+    })
+
     tx.end()
   })
 })
