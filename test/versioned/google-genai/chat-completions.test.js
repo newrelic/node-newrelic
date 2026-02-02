@@ -141,7 +141,7 @@ test('should create chat completion message and summary for every message sent',
       resContent: '1 plus 2 is 3.',
       reqContent: content
     })
-    const requestMsg = chatMsgs.filter((msg) => msg[1].is_response === false)[0]
+    const requestMsg = chatMsgs.filter((msg) => msg[1].is_response !== true)[0]
     assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
     const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
@@ -307,7 +307,7 @@ test('handles error in stream', (t, end) => {
       }
     } catch {
       const events = agent.customEventAggregator.events.toArray()
-      assert.equal(events.length, 4)
+      assert.equal(events.length, 4, 'there should be 4 custom events, 3 user msgs and 1 summary')
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
       assertChatCompletionSummary({ tx, model, chatSummary, error: true })
       assert.equal(tx.exceptions.length, 1)

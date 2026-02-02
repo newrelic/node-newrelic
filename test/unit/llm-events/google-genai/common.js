@@ -21,7 +21,10 @@ const res = {
     promptTokenCount: 10,
     candidatesTokenCount: 20,
     totalTokenCount: 30
-  }
+  },
+  // IRL, this is a getter that equates
+  // to candidates[0].content.parts.text
+  text: "I don't know!"
 }
 
 const req = {
@@ -41,13 +44,11 @@ function getExpectedResult(tx, event, type, completionId) {
   const spanId = child.id
   let expected = {
     id: event.id,
-    appName: 'New Relic for Node.js tests',
     trace_id: tx.traceId,
     span_id: spanId,
-    'request.model': 'gemini-2.0-flash',
-    'response.model': 'gemini-2.0-flash',
     vendor: 'gemini',
-    ingest_source: 'Node'
+    ingest_source: 'Node',
+    'response.model': 'gemini-2.0-flash',
   }
   const resKeys = {
     duration: child.getDurationInMillis()
@@ -57,10 +58,10 @@ function getExpectedResult(tx, event, type, completionId) {
     case 'embedding':
       expected = {
         ...expected,
-        ...resKeys
+        ...resKeys,
+        'request.model': 'gemini-2.0-flash',
       }
       expected.input = 'This is my test input'
-      expected.error = false
       break
     case 'summary':
       expected = {
@@ -73,7 +74,7 @@ function getExpectedResult(tx, event, type, completionId) {
         'response.usage.prompt_tokens': 10,
         'response.usage.completion_tokens': 20,
         'response.usage.total_tokens': 30,
-        error: false
+        'request.model': 'gemini-2.0-flash',
       }
       break
     case 'message':
@@ -82,7 +83,6 @@ function getExpectedResult(tx, event, type, completionId) {
         content: 'Why is the sky blue?',
         sequence: 0,
         completion_id: completionId,
-        is_response: false,
         role: 'user',
         token_count: 0
       }

@@ -65,15 +65,22 @@ test('should properly create a LlmEmbedding event', (t, end) => {
 ].forEach(({ type, value, expected }) => {
   test(`should properly serialize input when it is a ${type}`, (t, end) => {
     const { agent } = t.nr
-    const embeddingEvent = new LlmEmbedding({
-      agent,
-      segment: null,
-      transaction: null,
-      request: { input: value },
-      response: {}
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = agent.tracer.getSegment()
+        segment.end()
+        const embeddingEvent = new LlmEmbedding({
+          agent,
+          segment,
+          transaction: tx,
+          request: { input: value },
+          response: {}
+        })
+        assert.equal(embeddingEvent.input, expected)
+        end()
+      })
     })
-    assert.equal(embeddingEvent.input, expected)
-    end()
   })
 })
 
@@ -88,6 +95,7 @@ test('should set error to true', (t, end) => {
   helper.runInTransaction(agent, () => {
     api.startSegment('fakeSegment', false, () => {
       const segment = agent.tracer.getSegment()
+      segment.end()
       const embeddingEvent = new LlmEmbedding({
         agent,
         segment,

@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionMessage = require('#agentlib/llm-events/google-genai/chat-completion-message.js')
+const LlmChatCompletionMessage = require('#agentlib/llm-events-new/google-genai/chat-message.js')
 const helper = require('#testlib/agent_helper.js')
 const { req, res, getExpectedResult } = require('./common')
 
@@ -39,8 +39,9 @@ test('should create a LlmChatCompletionMessage event', (t, end) => {
         request: req,
         response: res,
         completionId: summaryId,
-        message: req.contents,
-        index: 0
+        content: req.contents,
+        role: 'user',
+        sequence: 0
       })
       const expected = getExpectedResult(tx, chatMessageEvent, 'message', summaryId)
       expected.timestamp = segment.timer.start
@@ -64,13 +65,14 @@ test('should create a LlmChatCompletionMessage from response choices', (t, end) 
         request: req,
         response: res,
         completionId: summaryId,
-        message: res.candidates[0].content,
-        index: 2
+        content: res.text,
+        sequence: 2,
+        isResponse: true
       })
       const expected = getExpectedResult(tx, chatMessageEvent, 'message', summaryId)
       expected.sequence = 2
       expected.content = res.candidates[0].content.parts[0].text
-      expected.role = res.candidates[0].content.role
+      expected.role = 'assistant'
       expected.is_response = true
       assert.deepEqual(chatMessageEvent, expected)
       end()
@@ -82,17 +84,20 @@ test('should set conversation_id from custom attributes', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()
   const conversationId = 'convo-id'
-  helper.runInTransaction(agent, () => {
-    api.addCustomAttribute('llm.conversation_id', conversationId)
-    const chatMessageEvent = new LlmChatCompletionMessage({
-      transaction: {},
-      agent,
-      segment: {},
-      request: {},
-      response: {}
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      api.addCustomAttribute('llm.conversation_id', conversationId)
+      const chatMessageEvent = new LlmChatCompletionMessage({
+        transaction: tx,
+        agent,
+        segment,
+        request: {},
+        response: {}
+      })
+      assert.equal(chatMessageEvent['llm.conversation_id'], conversationId)
+      end()
     })
-    assert.equal(chatMessageEvent['llm.conversation_id'], conversationId)
-    end()
   })
 })
 
@@ -102,17 +107,20 @@ test('content will not be recorded if record_content is not enabled', (t, end) =
   const conversationId = 'convo-id'
   agent.config.ai_monitoring.record_content.enabled = false
 
-  helper.runInTransaction(agent, () => {
-    api.addCustomAttribute('llm.conversation_id', conversationId)
-    const chatMessageEvent = new LlmChatCompletionMessage({
-      agent,
-      segment: {},
-      transaction: {},
-      request: {},
-      response: {}
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      api.addCustomAttribute('llm.conversation_id', conversationId)
+      const chatMessageEvent = new LlmChatCompletionMessage({
+        agent,
+        segment,
+        transaction: tx,
+        request: {},
+        response: {}
+      })
+      assert.equal(chatMessageEvent.content, undefined)
+      end()
     })
-    assert.equal(chatMessageEvent.content, undefined)
-    end()
   })
 })
 
@@ -131,8 +139,9 @@ test('should capture token_count even when `ai_monitoring.record_content.enabled
         request: req,
         response: res,
         completionId: summaryId,
-        message: req.contents,
-        index: 0
+        content: req.contents,
+        role: 'user',
+        sequence: 0
       })
       assert.deepEqual(chatMessageEvent.token_count, 0)
       end()
@@ -165,7 +174,7 @@ test('should use token_count from tokenCountCallback for prompt message', (t, en
         response: res,
         completionId: summaryId,
         message: req.contents,
-        index: 0
+        sequence: 0
       })
       assert.equal(chatMessageEvent.token_count, expectedCount)
       end()
@@ -200,7 +209,7 @@ test('should use token_count from tokenCountCallback for completion messages', (
         response: res,
         completionId: summaryId,
         message: res.candidates[0].content,
-        index: 2
+        sequence: 2
       })
       assert.equal(chatMessageEvent.token_count, expectedCount)
       end()
@@ -224,7 +233,7 @@ test('should not set token_count if it is not set in usage, or if no callback is
         response: res,
         completionId: summaryId,
         message: res.candidates[0].content,
-        index: 2
+        sequence: 2
       })
       assert.equal(chatMessageEvent.token_count, undefined)
       end()
@@ -252,7 +261,7 @@ test('should not set token_count if not set in usage or if a callback registered
         response: res,
         completionId: summaryId,
         message: res.candidates[0].content,
-        index: 2
+        sequence: 2
       })
       assert.equal(chatMessageEvent.token_count, undefined)
       end()
@@ -279,7 +288,7 @@ test('should not set token_count if callback registered returns is less than 0',
         response: res,
         completionId: summaryId,
         message: res.candidates[0].content,
-        index: 2
+        sequence: 2
       })
       assert.equal(chatMessageEvent.token_count, undefined)
       end()
@@ -306,7 +315,7 @@ test('should not set token_count if callback registered returns null', (t, end) 
         response: res,
         completionId: summaryId,
         message: res.candidates[0].content,
-        index: 2
+        sequence: 2
       })
       assert.equal(chatMessageEvent.token_count, undefined)
       end()
@@ -331,7 +340,7 @@ test('should not set token_count if response does not include usage keys we need
         response: res,
         completionId: summaryId,
         message: res.candidates[0].content,
-        index: 2
+        sequence: 2
       })
       assert.equal(chatMessageEvent.token_count, undefined)
       end()
@@ -360,7 +369,7 @@ test('should not set token_count if response prompt and completion content is un
         response: res,
         completionId: summaryId,
         message: res.candidates[0].content,
-        index: 2
+        sequence: 2
       })
       assert.equal(chatMessageEvent.token_count, undefined)
       end()
