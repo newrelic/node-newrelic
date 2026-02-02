@@ -147,7 +147,7 @@ test('chat.completions.create', async (t) => {
         resContent: '1 plus 2 is 3.',
         reqContent: content
       })
-      const requestMsg = chatMsgs.filter((msg) => msg[1].is_response === false)[0]
+      const requestMsg = chatMsgs.filter((msg) => msg[1].is_response !== true)[0]
       assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
@@ -185,12 +185,10 @@ test('chat.completions.create', async (t) => {
       const requestMsg = chatMsgs[0]
       if (requestMsg[1].sequence === 0) {
         const expectedMsg = {
-          appName: 'New Relic for Node.js tests',
           completion_id: /[a-f0-9]{36}/,
           content,
           id: `${chatCmplId}-0`,
           ingest_source: 'Node',
-          is_response: false,
           request_id: '49dbbffbd3c3f4612aa48def69059calc',
           'response.model': model,
           role: 'user',

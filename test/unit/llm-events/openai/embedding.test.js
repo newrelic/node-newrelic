@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmEmbedding = require('../../../../lib/llm-events/openai/embedding')
+const LlmEmbedding = require('../../../../lib/llm-events-new/openai/embedding')
 const helper = require('../../../lib/agent_helper')
 const { res, getExpectedResult } = require('./common-chat-api')
 
@@ -93,7 +93,7 @@ test('should set error to true', (t, end) => {
         segment,
         request: req,
         response: res,
-        withError: true
+        error: true
       })
       assert.equal(true, embeddingEvent.error)
       end()

@@ -107,7 +107,6 @@ test('should create an embedding message', (t, end) => {
     const [segment] = tx.trace.getChildren(tx.trace.root.id)
     const expectedEmbedding = {
       id: /[a-f0-9]{36}/,
-      appName: 'New Relic for Node.js tests',
       request_id: 'c70828b2293314366a76a2b1dcb20688',
       trace_id: tx.traceId,
       span_id: segment.id,
@@ -124,8 +123,7 @@ test('should create an embedding message', (t, end) => {
       'response.headers.ratelimitRemainingTokens': '149994',
       'response.headers.ratelimitRemainingRequests': '197',
       'response.usage.total_tokens': 6,
-      input: 'This is an embedding test.',
-      error: false
+      input: 'This is an embedding test.'
     }
 
     assert.equal(embedding[0].type, 'LlmEmbedding')

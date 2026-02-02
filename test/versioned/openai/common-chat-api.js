@@ -18,7 +18,6 @@ function assertChatCompletionMessages(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
-    appName: 'New Relic for Node.js tests',
     request_id: '49dbbffbd3c3f4612aa48def69059aad',
     trace_id: tx.traceId,
     span_id: segment.id,
@@ -26,7 +25,6 @@ function assertChatCompletionMessages(
     vendor: 'openai',
     ingest_source: 'Node',
     role: 'user',
-    is_response: false,
     completion_id: /[a-f0-9]{36}/
   }
 
@@ -67,13 +65,12 @@ function assertChatCompletionMessages(
 }
 
 function assertChatCompletionSummary(
-  { tx, model, chatSummary, error = false, promptTokens = 53, completionTokens = 11, totalTokens = 64, noUsageTokens = false },
+  { tx, model, chatSummary, error, promptTokens = 53, completionTokens = 11, totalTokens = 64, noUsageTokens = false },
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {
     id: /[a-f0-9]{36}/,
-    appName: 'New Relic for Node.js tests',
     request_id: '49dbbffbd3c3f4612aa48def69059aad',
     trace_id: tx.traceId,
     span_id: segment.id,
@@ -91,9 +88,9 @@ function assertChatCompletionSummary(
     'response.headers.ratelimitRemainingRequests': '199',
     'response.number_of_messages': 3,
     'response.choices.finish_reason': 'stop',
-    error,
     timestamp: /\d{13}/
   }
+  if (error) expectedChatSummary.error = true
 
   if (!(error || noUsageTokens)) {
     expectedChatSummary['response.usage.prompt_tokens'] = promptTokens
