@@ -70,7 +70,7 @@
     "providersPreamble": "Models/providers are generally supported transitively by our instrumentation of the provider's module.",
     "features": [
       {
-        "title": "Agents",
+        "title": "Agents via LangGraph",
         "supported": true
       },
       {
