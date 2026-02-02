@@ -685,10 +685,10 @@ function runStreamingDisabledTest(config) {
     )
 
     await t.test(
-      'should not create segment when `ai_monitoring.streaming.enabled` is false',
+      'should still create segment when `ai_monitoring.streaming.enabled` is false',
       (t, end) => {
         const { agent, prompt, outputParser, model } = t.nr
-        agent.config.ai_monitoring.enabled = false
+        agent.config.ai_monitoring.streaming.enabled = false
 
         helper.runInTransaction(agent, async (tx) => {
           const input = inputData
@@ -700,7 +700,7 @@ function runStreamingDisabledTest(config) {
           }
 
           const segment = findSegment(tx.trace, tx.trace.root, 'Llm/chain/LangChain/stream')
-          assert.equal(segment, undefined, 'should not create Llm/chain/LangChain/stream segment when ai_monitoring is disabled')
+          assert.ok(segment, 'should still create Llm/chain/LangChain/stream segment when ai_monitoring.streaming is disabled')
 
           tx.end()
           end()
