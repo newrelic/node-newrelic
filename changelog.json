@@ -9,7 +9,7 @@
           "Updated langchain tool instrumentation to properly redefine the segment name on every call"
         ],
         "features": [
-          "Add instrumentation support for `@langchain/langgraph`",
+          "Added instrumentation support for `@langchain/langgraph`",
           "Added compact mode for span links",
           "Added `timestamp` to AWS Bedrock `LlmChatCompletionSummary`",
           "Added `timestamp` to LangChain `LlmChatCompletionSummary`",
