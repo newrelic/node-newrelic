@@ -11,7 +11,7 @@
         "features": [
           "Add instrumentation support for `@langchain/langgraph`",
           "Added compact mode for span links",
-          "Added `timestamp` to AWS Bedrock `LlmChatCompletionSummary`s",
+          "Added `timestamp` to AWS Bedrock `LlmChatCompletionSummary`",
           "Added `timestamp` to LangChain `LlmChatCompletionSummary`",
           "Added `timestamp` to Google Gen AI `LlmChatCompletionSummary`"
         ]
