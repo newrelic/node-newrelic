@@ -2,6 +2,22 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.12.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated langchain tool instrumentation to properly redefine the segment name on every call"
+        ],
+        "features": [
+          "Added instrumentation support for `@langchain/langgraph`",
+          "Added compact mode for span links",
+          "Added `timestamp` to AWS Bedrock `LlmChatCompletionSummary`",
+          "Added `timestamp` to LangChain `LlmChatCompletionSummary`",
+          "Added `timestamp` to Google Gen AI `LlmChatCompletionSummary`"
+        ]
+      }
+    },
+    {
       "version": "13.11.0",
       "changes": {
         "security": [],

@@ -1,3 +1,22 @@
+### v13.12.0 (2026-02-02)
+
+#### Features
+
+* Added instrumentation support for `@langchain/langgraph` ([#3645](https://github.com/newrelic/node-newrelic/pull/3645)) ([f339675](https://github.com/newrelic/node-newrelic/commit/f3396754fb182a3f0af09488a8abb1981b6f3e3f))
+* Added `timestamp` to `LlmChatCompletionSummary` messages
+    * Added `timestamp` to AWS Bedrock `LlmChatCompletionSummary` ([#3702](https://github.com/newrelic/node-newrelic/pull/3702)) ([430d1dd](https://github.com/newrelic/node-newrelic/commit/430d1dd5ef847203045486a054142df3a02c7c1c))
+    * Added `timestamp` to Google Gen AI `LlmChatCompletionSummary` ([#3690](https://github.com/newrelic/node-newrelic/pull/3690)) ([7748e26](https://github.com/newrelic/node-newrelic/commit/7748e26aceb7b050b13dc686c852513026f043ac))
+    * Added `timestamp` to LangChain `LlmChatCompletionSummary` ([#3701](https://github.com/newrelic/node-newrelic/pull/3701)) ([7472118](https://github.com/newrelic/node-newrelic/commit/747211814396e4bf52dc63d249c0ec045b35457a))
+* Added compact mode for span links ([#3681](https://github.com/newrelic/node-newrelic/pull/3681)) ([6ff6961](https://github.com/newrelic/node-newrelic/commit/6ff6961e6b46feb14638da97a95d0891a0d88645))
+
+#### Bug fixes
+
+* Updated langchain tool instrumentation to properly redefine the segment name on every call ([#3691](https://github.com/newrelic/node-newrelic/pull/3691)) ([4df6068](https://github.com/newrelic/node-newrelic/commit/4df6068d23b5da276486bd3d3f0c3af4b748c4a8))
+
+#### Documentation
+
+* Updated compatibility report ([#3699](https://github.com/newrelic/node-newrelic/pull/3699)) ([40b6b81](https://github.com/newrelic/node-newrelic/commit/40b6b813e7b6490c2e866a33cb1a7492b35d2a36))
+
 ### v13.11.0 (2026-01-29)
 
 #### Features
