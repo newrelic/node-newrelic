@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionMessage = require('../../../../lib/llm-events-new/openai/chat-message')
+const LlmChatCompletionMessage = require('../../../../lib/llm-events/openai/chat-message')
 const helper = require('../../../lib/agent_helper')
 
 test('both APIs', async (t) => {

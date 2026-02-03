@@ -119,7 +119,7 @@ test('properly create the LlmChatCompletionMessage(s) and LlmChatCompletionSumma
     })
     assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage: true })
 
-    const requestMsg = chatMsgs.filter((msg) => msg[1].is_response === false)[0]
+    const requestMsg = chatMsgs.filter((msg) => msg[1].is_response !== true)[0]
     assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
     assert.equal(chatSummary[0].timestamp, chatSummary[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
@@ -256,7 +256,7 @@ test('should properly create errors on create completion', async (t) => {
         'http.statusCode': 400,
         'error.message': expectedMsg,
         'error.code': expectedType,
-        completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+        completion_id: /[a-f0-9]{36}/
       },
       agentAttributes: {
         spanId: /\w+/

@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionSummary = require('#agentlib/llm-events-new/google-genai/chat-summary.js')
+const LlmChatCompletionSummary = require('#agentlib/llm-events/google-genai/chat-summary.js')
 const helper = require('#testlib/agent_helper.js')
 const { req, res, getExpectedResult } = require('./common')
 

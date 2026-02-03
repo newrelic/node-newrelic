@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmTool = require('../../../../lib/llm-events-new/langchain/tool')
+const LlmTool = require('../../../../lib/llm-events/langchain/tool')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}

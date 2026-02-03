@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { LlmVectorSearch, LlmVectorSearchResult } = require('../../../../lib/llm-events-new/langchain')
+const { LlmVectorSearch, LlmVectorSearchResult } = require('../../../../lib/llm-events/langchain')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}

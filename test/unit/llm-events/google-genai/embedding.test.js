@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmEmbedding = require('#agentlib/llm-events-new/google-genai/embedding.js')
+const LlmEmbedding = require('#agentlib/llm-events/google-genai/embedding.js')
 const helper = require('#testlib/agent_helper.js')
 const { res, getExpectedResult } = require('./common')
 

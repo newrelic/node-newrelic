@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionSummary = require('#agentlib/llm-events-new/langchain/chat-summary.js')
+const LlmChatCompletionSummary = require('#agentlib/llm-events/langchain/chat-summary.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}

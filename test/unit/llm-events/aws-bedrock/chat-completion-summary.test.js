@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const {
   DESTINATIONS: { TRANS_SCOPE }
 } = require('../../../../lib/config/attribute-filter')
-const LlmChatCompletionSummary = require('../../../../lib/llm-events/aws-bedrock/chat-completion-summary')
+const LlmChatCompletionSummary = require('../../../../lib/llm-events/aws-bedrock/chat-summary')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}

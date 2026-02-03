@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmAgent = require('#agentlib/llm-events-new/langgraph/agent.js')
+const LlmAgent = require('#agentlib/llm-events/langgraph/agent.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}

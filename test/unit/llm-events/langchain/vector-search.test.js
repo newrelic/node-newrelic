@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmVectorSearch = require('#agentlib/llm-events-new/langchain/vector-search.js')
+const LlmVectorSearch = require('#agentlib/llm-events/langchain/vector-search.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}

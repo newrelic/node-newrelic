@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const {
   DESTINATIONS: { TRANS_SCOPE }
 } = require('../../../../lib/config/attribute-filter')
-const LlmEmbedding = require('../../../../lib/llm-events/aws-bedrock/embedding')
+const LlmEmbedding = require('#agentlib/llm-events/aws-bedrock/embedding.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -45,19 +45,10 @@ test.beforeEach((ctx) => {
     }
   }
 
-  ctx.nr.bedrockCommand = {
-  }
+  ctx.nr.requestInput = 'who are you'
+  ctx.nr.requestId = 'request-1'
+  ctx.nr.totalTokenCount = 70
 
-  ctx.nr.input = 'who are you'
-
-  ctx.nr.bedrockResponse = {
-    headers: {
-      'x-amzn-requestid': 'request-1'
-    },
-    get inputTokenCount() {
-      return 70
-    }
-  }
   ctx.nr.transaction = {
     traceId: 'id'
   }
@@ -82,17 +73,13 @@ test('should not capture input when `ai_monitoring.record_content.enabled` is fa
   assert.equal(event.input, undefined, 'input should be empty')
 })
 
-test('capture total token usage attribute when inputTokenCount is set', async (t) => {
+test('capture total token usage attribute when totalTokenCount is set', async (t) => {
   const event = new LlmEmbedding(t.nr)
   assert.equal(event['response.usage.total_tokens'], 70)
 })
 
-test('does not capture total token usage when inputTokenCount is not set', async (t) => {
-  Object.defineProperty(t.nr.bedrockResponse, 'inputTokenCount', {
-    get() {
-      return undefined
-    }
-  })
+test('does not capture total token usage when totalTokenCount is not set', async (t) => {
+  t.nr.totalTokenCount = undefined
   const event = new LlmEmbedding(t.nr)
   assert.equal(event['response.usage.total_tokens'], undefined)
 })
@@ -105,15 +92,4 @@ test('should use token callback to set total token usage attribute', async (t) =
   const event = new LlmEmbedding(t.nr)
 
   assert.equal(event['response.usage.total_tokens'], 65)
-})
-
-test('should not call token callback if there is no content', async (t) => {
-  function cb(model, content) {
-    return 65
-  }
-  t.nr.agent.llm.tokenCountCallback = cb
-  t.nr.input = undefined
-  const event = new LlmEmbedding(t.nr)
-
-  assert.equal(event['response.usage.total_tokens'], undefined)
 })
