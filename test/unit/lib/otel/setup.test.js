@@ -91,6 +91,7 @@ test('should log message if logs is not enabled', async (t) => {
 test('should log message if metrics is not enabled', async (t) => {
   const { agent, loggerMock } = t.nr
   agent.config.opentelemetry.enabled = true
+  agent.config.opentelemetry.metrics.enabled = false
   agent.config.opentelemetry.traces.enabled = true
   setupOtel(agent, loggerMock)
 
