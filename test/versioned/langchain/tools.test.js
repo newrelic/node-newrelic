@@ -273,3 +273,21 @@ test('should properly merge tags from instance and params', (t, end) => {
     end()
   })
 })
+
+test('should add subcomponent attribute to segment', (t, end) => {
+  const { agent, tool, input } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    await tool.call(input)
+
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
+    const attributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+    assert.ok(attributes.subcomponent, 'subcomponent attribute should exist')
+
+    const attr = JSON.parse(attributes.subcomponent)
+    assert.equal(attr.type, 'APM-AI_TOOL', 'subcomponent type should be APM-AI_TOOL')
+    assert.equal(attr.name, tool.name, 'subcomponent name should match tool name')
+
+    tx.end()
+    end()
+  })
+})
