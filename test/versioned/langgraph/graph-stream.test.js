@@ -239,7 +239,7 @@ test('should have LlmChatCompletion events from LangChain and OpenAI instrumenta
   })
 })
 
-test('should have LlmTool events from LangChain instrumentation', async (t) => {
+test('should have LlmTool event from LangChain instrumentation', async (t) => {
   const { agent, langgraphAgentWithTools } = t.nr
 
   await helper.runInTransaction(agent, async (tx) => {
@@ -260,6 +260,8 @@ test('should have LlmTool events from LangChain instrumentation', async (t) => {
     assert.equal(toolEvent.name, 'calculator', 'tool name should be calculator')
     assert.equal(toolEvent.vendor, 'langchain', 'vendor should be langchain')
     assert.equal(toolEvent.output, '4', 'tool output should be 4')
+    assert.equal(toolEvent.run_id, 'call_calc123')
+    assert.equal(toolEvent.agent_name, 'LangGraphReactAgent')
 
     // Should have 2 LlmChatCompletionMessages with role='tool'
     const chatEvents = events.filter((e) => e[0].type === 'LlmChatCompletionMessage' && e[1].role === 'tool')

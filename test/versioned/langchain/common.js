@@ -36,7 +36,6 @@ function assertLangChainVectorSearch(
     'request.query': expectedQuery,
     ingest_source: 'Node',
     vendor: 'langchain',
-    virtual_llm: true,
     'response.number_of_documents': responseDocumentSize,
     duration: segment.getDurationInMillis()
   }
@@ -60,7 +59,6 @@ function assertLangChainVectorSearchResult(
     ingest_source: 'Node',
     vendor: 'langchain',
     'metadata.id': '2',
-    virtual_llm: true
   }
 
   vectorSearchResult.forEach((search) => {
@@ -88,7 +86,6 @@ function assertLangChainChatCompletionSummary(
     appName: 'New Relic for Node.js tests',
     span_id: segment.id,
     trace_id: tx.traceId,
-    request_id: undefined,
     ingest_source: 'Node',
     vendor: 'langchain',
     'metadata.key': 'value',
@@ -129,8 +126,7 @@ function assertLangChainChatCompletionMessages(
     ingest_source: 'Node',
     vendor: 'langchain',
     completion_id: chatSummary.id,
-    virtual_llm: true,
-    request_id: undefined
+    virtual_llm: true
   }
 
   if (withCallback) {
@@ -143,7 +139,6 @@ function assertLangChainChatCompletionMessages(
     if (msg[1].sequence === 0) {
       expectedChatMsg.sequence = 0
       expectedChatMsg.content = input
-      expectedChatMsg.is_response = false
       expectedChatMsg.role = 'user'
       expectedChatMsg.timestamp = /\d{13}/
     } else if (msg[1].sequence === 1) {

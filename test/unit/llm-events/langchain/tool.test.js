@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LangChainTool = require('../../../../lib/llm-events/langchain/tool')
+const LlmTool = require('../../../../lib/llm-events-new/langchain/tool')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -43,32 +43,30 @@ test.beforeEach((ctx) => {
   }
 
   ctx.nr.segment = {
-    getDurationInMillis() {
-      return 1.01
-    },
     id: 'segment-1'
   }
 
   ctx.nr.runId = 'run-1'
   ctx.nr.metadata = { foo: 'foo' }
-  ctx.nr.name = 'test-tool'
+  ctx.nr.toolName = 'test-tool'
+  ctx.nr.aiAgentName = 'test-agent'
   ctx.nr.description = 'test tool description'
   ctx.nr.input = 'input'
   ctx.nr.output = 'output'
 })
 
 test('constructs default instance', async (t) => {
-  const event = new LangChainTool(t.nr)
+  const event = new LlmTool(t.nr)
   assert.equal(event.input, 'input')
   assert.equal(event.output, 'output')
   assert.equal(event.name, 'test-tool')
+  assert.equal(event.agent_name, 'test-agent')
   assert.equal(event.description, 'test tool description')
   assert.equal(event.run_id, 'run-1')
   assert.match(event.id, /[a-z0-9-]{36}/)
   assert.equal(event.appName, 'test-app')
   assert.equal(event.span_id, 'segment-1')
   assert.equal(event.trace_id, 'trace-1')
-  assert.equal(event.duration, 1.01)
   assert.equal(event['metadata.foo'], 'foo')
   assert.equal(event.ingest_source, 'Node')
   assert.equal(event.vendor, 'langchain')
@@ -76,7 +74,7 @@ test('constructs default instance', async (t) => {
 
 test('respects record_content setting', async (t) => {
   t.nr.agent.config.ai_monitoring.record_content.enabled = false
-  const event = new LangChainTool(t.nr)
+  const event = new LlmTool(t.nr)
   assert.equal(event.input, undefined)
   assert.equal(event.output, undefined)
 })

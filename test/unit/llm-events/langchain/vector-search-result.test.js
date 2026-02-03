@@ -7,8 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LangChainVectorSearchResult = require('../../../../lib/llm-events/langchain/vector-search-result')
-const LangChainVectorSearch = require('../../../../lib/llm-events/langchain/vector-search')
+const { LlmVectorSearch, LlmVectorSearchResult } = require('../../../../lib/llm-events-new/langchain')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -54,28 +53,26 @@ test.beforeEach((ctx) => {
 })
 
 test('create entity', async (t) => {
-  const search = new LangChainVectorSearch({
+  const search = new LlmVectorSearch({
     ...t.nr,
     query: 'hello world',
     k: 1
   })
 
-  const searchResult = new LangChainVectorSearchResult({
+  const searchResult = new LlmVectorSearchResult({
     ...t.nr,
     sequence: 1,
     pageContent: 'hello world',
-    search_id: search.id
+    searchId: search.id
   })
   assert.match(searchResult.id, /[a-z0-9-]{36}/)
   assert.equal(searchResult.appName, 'test-app')
   assert.equal(searchResult['llm.conversation_id'], 'test-conversation')
   assert.equal(searchResult.span_id, 'segment-1')
-  assert.equal(searchResult.request_id, 'run-1')
   assert.equal(searchResult.trace_id, 'trace-1')
   assert.equal(searchResult['metadata.foo'], 'foo')
   assert.equal(searchResult.ingest_source, 'Node')
   assert.equal(searchResult.vendor, 'langchain')
-  assert.equal(searchResult.virtual_llm, true)
   assert.equal(searchResult.sequence, 1)
   assert.equal(searchResult.page_content, 'hello world')
   assert.equal(searchResult.search_id, search.id)
@@ -83,7 +80,7 @@ test('create entity', async (t) => {
 
 test('respects record_content setting', async (t) => {
   t.nr.agent.config.ai_monitoring.record_content.enabled = false
-  const search = new LangChainVectorSearchResult({
+  const search = new LlmVectorSearchResult({
     ...t.nr,
     sequence: 1,
     pageContent: 'hello world'

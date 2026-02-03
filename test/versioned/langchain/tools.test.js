@@ -123,7 +123,6 @@ test('should create LlmTool event for every tool.call', (t, end) => {
       output: tool.fakeData[input],
       name: tool.name,
       description: tool.description,
-      duration: segment.getDurationInMillis(),
       run_id: undefined
     })
     tx.end()

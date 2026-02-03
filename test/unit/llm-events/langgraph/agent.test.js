@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LangGraphAgentEvent = require('../../../../lib/llm-events/langgraph/agent')
+const LlmAgent = require('#agentlib/llm-events-new/langgraph/agent.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -43,11 +43,11 @@ test.beforeEach((ctx) => {
     id: 'segment-1'
   }
 
-  ctx.nr.name = 'test-agent'
+  ctx.nr.aiAgentName = 'test-agent'
 })
 
 test('constructs default instance', async (t) => {
-  const event = new LangGraphAgentEvent(t.nr)
+  const event = new LlmAgent(t.nr)
   assert.equal(event.name, 'test-agent')
   assert.match(event.id, /[a-z0-9-]{36}/)
   assert.equal(event.span_id, 'segment-1')
@@ -55,17 +55,16 @@ test('constructs default instance', async (t) => {
   assert.equal(event['llm.foo'], 'bar')
   assert.equal(event.ingest_source, 'Node')
   assert.equal(event.vendor, 'langgraph')
-  assert.equal(event.error, false)
 })
 
 test('constructs instance with error', async (t) => {
   t.nr.error = true
-  const event = new LangGraphAgentEvent(t.nr)
+  const event = new LlmAgent(t.nr)
   assert.equal(event.error, true)
 })
 
 test('uses default name when not provided', async (t) => {
-  delete t.nr.name
-  const event = new LangGraphAgentEvent(t.nr)
+  delete t.nr.aiAgentName
+  const event = new LlmAgent(t.nr)
   assert.equal(event.name, 'agent')
 })
