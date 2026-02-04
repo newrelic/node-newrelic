@@ -7,9 +7,9 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const Config = require('../../../lib/config')
-const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
+const SpanAggregator = require('../../../lib/spans/span-aggregator')
 const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
-const createSpanEventAggregator = require('../../../lib/spans/create-span-event-aggregator')
+const createSpanAggregator = require('../../../lib/spans/create-span-aggregator')
 const BatchSpanStreamer = require('../../../lib/spans/batch-span-streamer')
 const SpanStreamer = require('../../../lib/spans/span-streamer')
 const sinon = require('sinon')
@@ -30,7 +30,7 @@ const agent = {
 test('should return standard when trace observer not configured', async () => {
   const config = Config.initialize({})
 
-  const aggregator = createSpanEventAggregator(config, agent)
+  const aggregator = createSpanAggregator(config, agent)
   assertStandardSpanAggregator(aggregator)
 })
 
@@ -44,7 +44,7 @@ test('should return standard when in serverless mode, trace observer valid', asy
     }
   })
 
-  const aggregator = createSpanEventAggregator(config, agent)
+  const aggregator = createSpanAggregator(config, agent)
   assertStandardSpanAggregator(aggregator)
 })
 
@@ -57,7 +57,7 @@ test('should return streaming when trace observer configured', async () => {
     }
   })
 
-  const aggregator = createSpanEventAggregator(config, agent)
+  const aggregator = createSpanAggregator(config, agent)
   const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
 
   assert.ok(isStreamingAggregator)
@@ -74,7 +74,7 @@ test('should create batching streamer when batching is enabled', async () => {
     }
   })
 
-  const aggregator = createSpanEventAggregator(config, agent)
+  const aggregator = createSpanAggregator(config, agent)
   const isBatchStreamer = aggregator.stream instanceof BatchSpanStreamer
   assert.ok(isBatchStreamer)
   assert.ok(metricsStub.getOrCreateMetric.args[0].length === 1, 'should have only 1 metric set')
@@ -96,7 +96,7 @@ test('should create span streamer when batching is disabled', async () => {
     }
   })
 
-  const aggregator = createSpanEventAggregator(config, agent)
+  const aggregator = createSpanAggregator(config, agent)
   const isSpanStreamer = aggregator.stream instanceof SpanStreamer
   assert.ok(isSpanStreamer)
   assert.ok(metricsStub.getOrCreateMetric.args[0].length === 1, 'should have only 1 metric set')
@@ -117,7 +117,7 @@ test('should trim host and port options when they are strings', async () => {
     }
   })
 
-  createSpanEventAggregator(config, agent)
+  createSpanAggregator(config, agent)
   assert.deepEqual(config.infinite_tracing.trace_observer, {
     host: VALID_HOST,
     port: '300',
@@ -141,7 +141,7 @@ test('should revert to standard aggregator when it fails to create streaming agg
     trace: sinon.stub()
   }
 
-  const createSpanAggrStubbed = proxyquire('../../../lib/spans/create-span-event-aggregator', {
+  const createSpanAggrStubbed = proxyquire('../../../lib/spans/create-span-aggregator', {
     './streaming-span-event-aggregator': stub,
     '../logger': loggerStub
   })
@@ -165,9 +165,9 @@ test('should revert to standard aggregator when it fails to create streaming agg
 })
 
 function assertStandardSpanAggregator(aggregator) {
-  const isSpanEventAggregator = aggregator instanceof SpanEventAggregator
+  const isSpanAggregator = aggregator instanceof SpanAggregator
   const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
 
-  assert.ok(isSpanEventAggregator)
+  assert.ok(isSpanAggregator)
   assert.ok(!isStreamingAggregator)
 }

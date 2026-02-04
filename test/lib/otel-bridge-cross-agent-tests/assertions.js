@@ -59,7 +59,7 @@ function agentOutput(agent, output) {
     assert.ok(foundTx, `could not find ${name}`)
   })
 
-  const spans = agent.spanEventAggregator.getEvents()
+  const spans = agent.spanAggregator.getEvents()
   output.spans.forEach((span, i) => {
     const spanFromAgent = spans.find((s) => s.intrinsics.name === span.name)
     assert.ok(spanFromAgent)

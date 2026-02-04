@@ -7,9 +7,9 @@
 
 const benchmark = require('#testlib/benchmark.js')
 const helper = require('#testlib/agent_helper.js')
-const SpanEvent = require('#agentlib/spans/span-event.js')
+const Span = require('#agentlib/spans/span.js')
 
-const suite = benchmark.createBenchmark({ name: 'SpanEvent' })
+const suite = benchmark.createBenchmark({ name: 'Span' })
 let segment = null
 let transaction = null
 
@@ -20,7 +20,7 @@ suite.add({
     ;({ segment, transaction } = makeSegment(agent))
     segment.name = 'some random segment'
   },
-  fn: () => SpanEvent.fromSegment({ segment, transaction })
+  fn: () => Span.fromSegment({ segment, transaction })
 })
 
 suite.add({
@@ -30,7 +30,7 @@ suite.add({
     ;({ segment, transaction } = makeSegment(agent))
     segment.name = 'External/www.foobar.com/'
   },
-  fn: () => SpanEvent.fromSegment({ segment, transaction })
+  fn: () => Span.fromSegment({ segment, transaction })
 })
 
 suite.add({
@@ -40,7 +40,7 @@ suite.add({
     ;({ segment, transaction } = makeSegment(agent))
     segment.name = 'Datastore/statement/SELECT'
   },
-  fn: () => SpanEvent.fromSegment({ segment, transaction })
+  fn: () => Span.fromSegment({ segment, transaction })
 })
 
 suite.run()

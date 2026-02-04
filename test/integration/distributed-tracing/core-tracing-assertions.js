@@ -63,7 +63,7 @@ function assertSpanTree({ spans, expectedSpans = [] }) {
  * @param {object} params to function
  * @param {Array} params.spans spans created during transaction
  * @param {string} params.name name of span to find
- * @returns {SpanEvent|null} returns span if it exists
+ * @returns {Span|null} returns span if it exists
  */
 function findSpan({ spans, name }) {
   return spans.find((span) => span.intrinsics.name === name)
@@ -75,7 +75,7 @@ function findSpan({ spans, name }) {
  * @param {object} params to function
  * @param {Array} params.spans spans created during transaction
  * @param {string|null} params.parent name of parent span
- * @param {SpanEvent} params.span span to check its parent
+ * @param {Span} params.span span to check its parent
  */
 function assertParentId({ parent, spans, span }) {
   if (parent) {
@@ -90,7 +90,7 @@ function assertParentId({ parent, spans, span }) {
  *  Asserts that an attribute is equal, exists or does not exist
  *
  * @param {object} params to function
- * @param {SpanEvent} params.span span to check its attributes
+ * @param {Span} params.span span to check its attributes
  * @param {object} params.attrs fixture to check the relevant attributes
  * @param {string} params.type type of attributes to check against
  */

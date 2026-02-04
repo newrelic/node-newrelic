@@ -21,7 +21,7 @@
  * @param {object} params.assert assertion library
  */
 module.exports = function assertSpanKind({ agent, segments, assert = require('node:assert') }) {
-  const spans = agent.spanEventAggregator.getEvents()
+  const spans = agent.spanAggregator.getEvents()
   if (segments) {
     segments.forEach((segment) => {
       const span = spans.find((s) => s.intrinsics.name === segment.name)

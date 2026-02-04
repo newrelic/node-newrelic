@@ -734,7 +734,7 @@ test('addSpanLink', async (t) => {
   })
 })
 
-test('addTimedEvent', async (t) => {
+test('addSpanEvent', async (t) => {
   t.beforeEach((ctx) => {
     const agent = helper.loadMockedAgent({
       distributed_tracing: {
@@ -771,31 +771,31 @@ test('addTimedEvent', async (t) => {
 
   await test('adds event to the internal array', (t) => {
     const { segment } = t.nr
-    assert.equal(segment.timedEvents.length, 0)
-    const added = segment.addTimedEvent({ fake: 'event' })
+    assert.equal(segment.spanEvents.length, 0)
+    const added = segment.addSpanEvent({ fake: 'event' })
     assert.equal(added, true)
-    assert.equal(segment.timedEvents.length, 1)
-    assert.deepStrictEqual(segment.timedEvents[0], { fake: 'event' })
+    assert.equal(segment.spanEvents.length, 1)
+    assert.deepStrictEqual(segment.spanEvents[0], { fake: 'event' })
   })
 
   await test('logs message if array is full', (t) => {
     const { segment } = t.nr
-    assert.equal(segment.timedEvents.length, 0)
+    assert.equal(segment.spanEvents.length, 0)
     for (let i = 0; i < 100; i += 1) {
-      segment.addTimedEvent({ fake: 'event' })
+      segment.addSpanEvent({ fake: 'event' })
     }
-    assert.equal(segment.timedEvents.length, 100)
+    assert.equal(segment.spanEvents.length, 100)
 
-    const added = segment.addTimedEvent({ to: 'drop' })
+    const added = segment.addSpanEvent({ to: 'drop' })
     assert.equal(added, false)
-    assert.equal(segment.timedEvents.length, 100)
-    for (const event of segment.timedEvents) {
+    assert.equal(segment.spanEvents.length, 100)
+    for (const event of segment.spanEvents) {
       assert.deepStrictEqual(event, { fake: 'event' })
     }
     match(t.nr.logs.trace, [
       [
-        { timedEvent: { to: 'drop' } },
-        'Timed event limit reached. Not adding new event.'
+        { spanEvent: { to: 'drop' } },
+        'Span event limit reached. Not adding new event.'
       ]
     ])
   })

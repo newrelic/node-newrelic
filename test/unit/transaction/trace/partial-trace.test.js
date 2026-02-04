@@ -62,7 +62,7 @@ describe('addSpan', () => {
 describe('finalize', () => {
   test('should call maybeReparentSpan and add spans to aggregator in reduced type', (t) => {
     const { agent, partialTrace } = t.nr
-    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+    const addSpy = sinon.spy(agent.spanAggregator, 'add')
     const maybeReparentSpanSpy = sinon.spy(partialTrace, 'maybeReparentSpan')
     const applyCompactionSpy = sinon.spy(partialTrace, 'applyCompaction')
 
@@ -81,7 +81,7 @@ describe('finalize', () => {
   test('should call applyCompaction and add spans to aggregator in compact type', (t) => {
     const { agent, partialTrace, transaction } = t.nr
     transaction.baseSegment = { id: 100 }
-    const addSpy = sinon.spy(agent.spanEventAggregator, 'add')
+    const addSpy = sinon.spy(agent.spanAggregator, 'add')
     const maybeReparentSpanSpy = sinon.spy(partialTrace, 'maybeReparentSpan')
     const applyCompactionSpy = sinon.spy(partialTrace, 'applyCompaction')
 

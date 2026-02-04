@@ -110,7 +110,7 @@ test('distributed tracing', async function (t) {
               toCheck = agent.errors.eventAggregator.getEvents()
               break
             case 'Span':
-              toCheck = agent.spanEventAggregator.getEvents()
+              toCheck = agent.spanAggregator.getEvents()
               break
           }
           const exact = Object.assign(specific.exact || {}, common.exact || {})
