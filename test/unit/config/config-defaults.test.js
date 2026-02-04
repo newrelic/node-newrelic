@@ -349,9 +349,9 @@ test('with default properties', async (t) => {
   await t.test('opentelemetry', () => {
     const otel = configuration.opentelemetry
     assert.equal(otel.enabled, false)
-    assert.equal(otel.traces.enabled, false)
-    assert.equal(otel.logs.enabled, false)
-    assert.equal(otel.metrics.enabled, false)
+    assert.equal(otel.traces.enabled, true)
+    assert.equal(otel.logs.enabled, true)
+    assert.equal(otel.metrics.enabled, true)
     assert.equal(otel.metrics.export_interval, 60_000)
     assert.equal(otel.metrics.export_timeout, 10_000)
   })
