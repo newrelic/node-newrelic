@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const {
   DESTINATIONS: { TRANS_SCOPE }
 } = require('../../../../lib/config/attribute-filter')
-const LlmEmbedding = require('#agentlib/llm-events/aws-bedrock/embedding.js')
+const LlmEmbedding = require('../../../../lib/llm-events/aws-bedrock/embedding')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -45,10 +45,18 @@ test.beforeEach((ctx) => {
     }
   }
 
-  ctx.nr.requestInput = 'who are you'
-  ctx.nr.requestId = 'request-1'
-  ctx.nr.totalTokenCount = 70
+  ctx.nr.bedrockCommand = {
+    modelId: 'some-model'
+  }
 
+  ctx.nr.requestInput = 'who are you'
+
+  ctx.nr.bedrockResponse = {
+    requestId: 'request-1',
+    get totalTokenCount() {
+      return 70
+    }
+  }
   ctx.nr.transaction = {
     traceId: 'id'
   }
@@ -61,9 +69,16 @@ test.beforeEach((ctx) => {
 
 test('creates a basic embedding', async (t) => {
   const event = new LlmEmbedding(t.nr)
-  assert.equal(event.input, 'who are you')
   assert.equal(event.duration, 1.008)
-  assert.equal(event.token_count, undefined)
+  assert.match(event.id, /\w{32}/)
+  assert.equal(event.ingest_source, 'Node')
+  assert.equal(event.input, 'who are you')
+  assert.equal(event['llm.conversation_id'], 'conversation-1')
+  assert.equal(event.request_id, 'request-1')
+  assert.equal(event['request.model'], 'some-model')
+  assert.equal(event['response.model'], 'some-model')
+  assert.equal(event.trace_id, 'id')
+  assert.equal(event.vendor, 'bedrock')
 })
 
 test('should not capture input when `ai_monitoring.record_content.enabled` is false', async (t) => {
@@ -79,7 +94,11 @@ test('capture total token usage attribute when totalTokenCount is set', async (t
 })
 
 test('does not capture total token usage when totalTokenCount is not set', async (t) => {
-  t.nr.totalTokenCount = undefined
+  Object.defineProperty(t.nr.bedrockResponse, 'totalTokenCount', {
+    get() {
+      return undefined
+    }
+  })
   const event = new LlmEmbedding(t.nr)
   assert.equal(event['response.usage.total_tokens'], undefined)
 })

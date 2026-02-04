@@ -147,7 +147,7 @@ function assertChatCompletionMessage({
 function assertChatCompletionSummary({ tx, modelId, chatSummary, error, numMsgs = 2, promptTokens = 14, completionTokens = 9, totalTokens = 23 }) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     appName: 'New Relic for Node.js tests',
     request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'llm.conversation_id': 'convo-id',

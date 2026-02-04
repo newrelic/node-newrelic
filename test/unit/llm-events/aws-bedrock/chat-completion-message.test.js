@@ -7,10 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const {
-  DESTINATIONS: { TRANS_SCOPE }
-} = require('../../../../lib/config/attribute-filter')
-const LlmChatCompletionMessage = require('../../../../lib/llm-events/aws-bedrock/chat-message')
+const { DESTINATIONS: { TRANS_SCOPE } } = require('#agentlib/config/attribute-filter.js')
+const { LlmChatCompletionMessage } = require('#agentlib/llm-events/aws-bedrock/index.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -102,7 +100,7 @@ test('create creates a non-response instance', async (t) => {
   assert.equal(event.sequence, 0)
   assert.equal(event.content, 'a prompt')
   assert.equal(event.role, 'user')
-  assert.match(event.id, /[\w-]{36}/)
+  assert.match(event.id, /[\w-]{32}/)
   assert.equal(event.token_count, 0)
 })
 
@@ -117,7 +115,7 @@ test('create creates a titan response instance', async (t) => {
   assert.equal(event.sequence, 0)
   assert.equal(event.content, 'a response')
   assert.equal(event.role, 'assistant')
-  assert.match(event.id, /[\w-]{36}/)
+  assert.match(event.id, /[\w-]{32}/)
 })
 
 test('create creates a cohere response instance', async (t) => {

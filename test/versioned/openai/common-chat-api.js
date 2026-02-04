@@ -25,7 +25,7 @@ function assertChatCompletionMessages(
     vendor: 'openai',
     ingest_source: 'Node',
     role: 'user',
-    completion_id: /[a-f0-9]{36}/
+    completion_id: /[a-f0-9]{32}/
   }
 
   chatMsgs.forEach((msg) => {
@@ -70,7 +70,7 @@ function assertChatCompletionSummary(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     request_id: '49dbbffbd3c3f4612aa48def69059aad',
     trace_id: tx.traceId,
     span_id: segment.id,

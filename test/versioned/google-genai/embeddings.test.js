@@ -109,7 +109,7 @@ test('should create an embedding message', (t, end) => {
     const [segment] = tx.trace.getChildren(tx.trace.root.id)
     const expectedEmbedding = {
       duration: segment.getDurationInMillis(),
-      id: /[a-f0-9]{36}/,
+      id: /[a-f0-9]{32}/,
       ingest_source: 'Node',
       input: 'This is an embedding test.',
       'request.model': 'text-embedding-004',

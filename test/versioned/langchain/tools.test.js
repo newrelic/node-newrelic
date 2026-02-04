@@ -110,8 +110,7 @@ test('should create LlmTool event for every tool.call', (t, end) => {
     assert.equal(type, 'LlmTool')
     const [segment] = tx.trace.getChildren(tx.trace.root.id)
     match(toolEvent, {
-      id: /[a-f0-9]{36}/,
-      appName: 'New Relic for Node.js tests',
+      id: /[a-f0-9]{32}/,
       span_id: segment.id,
       trace_id: tx.traceId,
       ingest_source: 'Node',

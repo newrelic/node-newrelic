@@ -185,7 +185,7 @@ test('chat.completions.create', async (t) => {
       const requestMsg = chatMsgs[0]
       if (requestMsg[1].sequence === 0) {
         const expectedMsg = {
-          completion_id: /[a-f0-9]{36}/,
+          completion_id: /[a-f0-9]{32}/,
           content,
           id: `${chatCmplId}-0`,
           ingest_source: 'Node',

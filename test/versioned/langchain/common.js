@@ -28,7 +28,7 @@ function assertLangChainVectorSearch(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedSearch = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     appName: 'New Relic for Node.js tests',
     span_id: segment.id,
     trace_id: tx.traceId,
@@ -51,7 +51,7 @@ function assertLangChainVectorSearchResult(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseSearchResult = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     search_id: vectorSearchId,
     appName: 'New Relic for Node.js tests',
     span_id: segment.id,
@@ -82,7 +82,7 @@ function assertLangChainChatCompletionSummary(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedSummary = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     appName: 'New Relic for Node.js tests',
     span_id: segment.id,
     trace_id: tx.traceId,
@@ -98,8 +98,8 @@ function assertLangChainChatCompletionSummary(
   }
 
   if (withCallback) {
-    expectedSummary.request_id = /[a-f0-9-]{36}/
-    expectedSummary.id = /[a-f0-9-]{36}/
+    expectedSummary.request_id = /[a-f0-9-]{32}/
+    expectedSummary.id = /[a-f0-9-]{32}/
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
@@ -119,7 +119,7 @@ function assertLangChainChatCompletionMessages(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     appName: 'New Relic for Node.js tests',
     span_id: segment.id,
     trace_id: tx.traceId,
@@ -130,8 +130,8 @@ function assertLangChainChatCompletionMessages(
   }
 
   if (withCallback) {
-    baseMsg.request_id = /[a-f0-9-]{36}/
-    baseMsg.id = /[a-f0-9-]{36}/
+    baseMsg.request_id = /[a-f0-9-]{32}/
+    baseMsg.id = /[a-f0-9-]{32}/
   }
 
   chatMsgs.forEach((msg) => {

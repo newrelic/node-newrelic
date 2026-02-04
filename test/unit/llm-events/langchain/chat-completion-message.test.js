@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionMessage = require('#agentlib/llm-events/langchain/chat-message.js')
+const { LlmChatCompletionMessage } = require('#agentlib/llm-events/langchain/index.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -101,7 +101,7 @@ test('assigns role and timestamp correctly if isResponse is false', async(t) => 
 
 test('assigns id correctly', async (t) => {
   let msg = new LlmChatCompletionMessage({ ...t.nr, runId: '', sequence: 1 })
-  assert.match(msg.id, /[a-z0-9-]{36}/)
+  assert.match(msg.id, /[a-z0-9-]{32}/)
 
   msg = new LlmChatCompletionMessage({ ...t.nr, runId: '123456', sequence: 42 })
   assert.equal(msg.id, '123456-42')

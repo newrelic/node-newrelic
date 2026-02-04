@@ -256,7 +256,7 @@ test('should properly create errors on create completion', async (t) => {
         'http.statusCode': 400,
         'error.message': expectedMsg,
         'error.code': expectedType,
-        completion_id: /[a-f0-9]{36}/
+        completion_id: /[a-f0-9]{32}/
       },
       agentAttributes: {
         spanId: /\w+/

@@ -25,7 +25,7 @@ function assertChatCompletionMessages(
     vendor: 'openai',
     ingest_source: 'Node',
     role: 'user',
-    completion_id: /[a-f0-9]{36}/
+    completion_id: /[a-f0-9]{32}/
   }
 
   if (!singleInput) {
@@ -89,7 +89,7 @@ function assertChatCompletionSummary(
   if (!error) {
     expectedChatSummary = {
       duration: segment.getDurationInMillis(),
-      id: /[a-f0-9]{36}/,
+      id: /[a-f0-9]{32}/,
       ingest_source: 'Node',
       request_id: 'req_dfcfcd9f6a176a36c7e386577161b792',
       'request.model': model,
@@ -122,7 +122,7 @@ function assertChatCompletionSummary(
     }
   } else {
     expectedChatSummary = {
-      id: /[a-f0-9]{36}/,
+      id: /[a-f0-9]{32}/,
       duration: segment.getDurationInMillis(),
       error: true,
       ingest_source: 'Node',

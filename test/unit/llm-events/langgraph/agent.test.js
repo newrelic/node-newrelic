@@ -49,7 +49,7 @@ test.beforeEach((ctx) => {
 test('constructs default instance', async (t) => {
   const event = new LlmAgent(t.nr)
   assert.equal(event.name, 'test-agent')
-  assert.match(event.id, /[a-z0-9-]{36}/)
+  assert.match(event.id, /[a-z0-9-]{32}/)
   assert.equal(event.span_id, 'segment-1')
   assert.equal(event.trace_id, 'trace-1')
   assert.equal(event['llm.foo'], 'bar')

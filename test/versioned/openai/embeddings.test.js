@@ -106,7 +106,7 @@ test('should create an embedding message', (t, end) => {
     const [embedding] = events
     const [segment] = tx.trace.getChildren(tx.trace.root.id)
     const expectedEmbedding = {
-      id: /[a-f0-9]{36}/,
+      id: /[a-f0-9]{32}/,
       request_id: 'c70828b2293314366a76a2b1dcb20688',
       trace_id: tx.traceId,
       span_id: segment.id,

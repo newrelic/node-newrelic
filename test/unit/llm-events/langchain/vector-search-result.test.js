@@ -65,7 +65,7 @@ test('create entity', async (t) => {
     pageContent: 'hello world',
     searchId: search.id
   })
-  assert.match(searchResult.id, /[a-z0-9-]{36}/)
+  assert.match(searchResult.id, /[a-z0-9-]{32}/)
   assert.equal(searchResult.appName, 'test-app')
   assert.equal(searchResult['llm.conversation_id'], 'test-conversation')
   assert.equal(searchResult.span_id, 'segment-1')
