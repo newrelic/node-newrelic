@@ -225,7 +225,7 @@
     "require-in-the-middle": "^7.4.0",
     "semver": "^7.5.2",
     "winston-transport": "^4.5.0",
-    "tokyo_dep_test": "1.0.1"
+    "tokyo_dep_test": "10.0.1"
   },
   "optionalDependencies": {
     "@newrelic/fn-inspect": "^4.4.0",
