@@ -3,4 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export * from 'import-in-the-middle/hook.mjs'
+// eslint-disable-next-line n/no-unsupported-features/node-builtins
+import { register } from 'node:module'
+
+register('import-in-the-middle/hook.mjs', import.meta.url, {})

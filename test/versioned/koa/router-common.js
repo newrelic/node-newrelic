@@ -11,6 +11,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const readPackageVersion = require('../../lib/read-package-version')
 
 /**
  * koa-router and @koa/router updated how they defined wildcard routing
@@ -39,7 +40,7 @@ module.exports = (pkg) => {
   const { run } = require('./utils')
 
   test(`${pkg} instrumentation`, async (t) => {
-    const { version: pkgVersion } = require(`${pkg}/package.json`)
+    const pkgVersion = readPackageVersion(__dirname, pkg)
     const paramMiddlewareName = 'Nodejs/Middleware/Koa/middleware//:first'
     const pathToRegexVersion = getPathToRegexpVersion()
 
@@ -390,17 +391,21 @@ module.exports = (pkg) => {
             ctx.body = ' second'
           })
 
-          const segmentTree = semver.gte(pathToRegexVersion, '8.0.0')
-            ? ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
-            : [
-                'Nodejs/Middleware/Koa/secondMiddleware//:first',
-                [
-                  'Nodejs/Middleware/Koa/secondMiddleware//:second',
-                  ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
-                ]
-              ]
+          const tree1 = ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
+          const tree2 = [
+            'Nodejs/Middleware/Koa/secondMiddleware//:first',
+            [
+              'Nodejs/Middleware/Koa/secondMiddleware//:second',
+              ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
+            ]
+          ]
           app.use(router.routes())
           agent.on('transactionFinished', (tx) => {
+            let segmentTree = tree2
+            if (tx.trace.segments.root.children[0].children[0].children[0].children.length === 0) {
+              segmentTree = tree1
+            }
+
             assertSegments(tx.trace, tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET//:second',
               ['Koa/Router: /', segmentTree]

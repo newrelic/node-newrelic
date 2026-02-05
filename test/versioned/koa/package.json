@@ -53,7 +53,8 @@
           "samples": 5
         },
         "@koa/router": {
-          "versions": ">=11.0.2",
+          "comment": "15.0.0 uses Array.prototype.toReversed which is only available in Node >=20",
+          "versions": ">=11.0.2 <15.0.0",
           "samples": 5
         }
       },

@@ -7,11 +7,13 @@
 
 const test = require('node:test')
 const http = require('node:http')
+const semver = require('semver')
 const tspl = require('@matteo.collina/tspl')
 
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
 const assertClmAttrs = require('../../lib/custom-assertions/assert-clm-attrs')
+const readPackageVersion = require('../../lib/read-package-version')
 
 async function setupApp({ ctx, useKoaRouter, useAtKoaRouter, isCLMEnabled }) {
   const agent = helper.instrumentMockedAgent({ code_level_metrics: { enabled: isCLMEnabled } })
@@ -198,6 +200,14 @@ test('using koa-router', async (t) => {
 })
 
 test('using @koa/router', async (t) => {
+  let pkgVersion
+  try {
+    pkgVersion = readPackageVersion(__dirname, '@koa/router')
+  } catch {
+    t.skip('@koa/router not present, skipping')
+    return
+  }
+
   t.beforeEach((ctx) => {
     ctx.nr = {}
   })
@@ -210,7 +220,8 @@ test('using @koa/router', async (t) => {
 
   for (const isCLMEnabled of [true, false]) {
     await t.test(`should ${isCLMEnabled ? 'add' : 'not add'} CLM attributes`, async (t) => {
-      const plan = tspl(t, { plan: 13 })
+      const testPlan = semver.lt(pkgVersion, '15.0.0') ? 13 : 9
+      const plan = tspl(t, { plan: testPlan })
 
       await setupApp({ ctx: t.nr, isCLMEnabled, useAtKoaRouter: true })
       const { agent, app, router, server } = t.nr
@@ -235,25 +246,32 @@ test('using @koa/router', async (t) => {
         const [appLevel] = transaction.trace.getChildren(dispatch.id)
         const [secondMw] = transaction.trace.getChildren(appLevel.id)
 
+        const segments = [
+          {
+            segment: appLevel,
+            name: 'appLevelMiddleware',
+            filepath: 'code-level-metrics.test.js'
+          },
+          {
+            segment: secondMw,
+            name: 'secondMiddleware',
+            filepath: 'code-level-metrics.test.js'
+          }
+        ]
+        // In 15.0.0+ the `dispatch` method is bound and we can no longer obtain
+        // function information
+        // See: https://github.com/koajs/router/blob/b65d6aee875cc0065082d4a95cc54856cc57c37e/src/router.ts#L411
+        if (semver.lt(pkgVersion, '15.0.0')) {
+          segments.unshift({
+            segment: dispatch,
+            name: 'dispatch',
+            filepath: '@koa/router/lib/router.js'
+          })
+        }
+
         assertClmAttrs(
           {
-            segments: [
-              {
-                segment: dispatch,
-                name: 'dispatch',
-                filepath: '@koa/router/lib/router.js'
-              },
-              {
-                segment: appLevel,
-                name: 'appLevelMiddleware',
-                filepath: 'code-level-metrics.test.js'
-              },
-              {
-                segment: secondMw,
-                name: 'secondMiddleware',
-                filepath: 'code-level-metrics.test.js'
-              }
-            ],
+            segments,
             enabled: isCLMEnabled
           },
           { assert: plan }

@@ -5,14 +5,6 @@
 
 'use strict'
 async function upsertUsers(prisma) {
-  prisma.$use(async function prismaMiddleware(params, next) {
-    if (params.action === 'update') {
-      params.args.data.updatedBy = 'Jessica Lopatta <jlopatta@newrelic.com>'
-    }
-
-    return next(params)
-  })
-
   const users = await prisma.user.findMany()
 
   const upserts = []

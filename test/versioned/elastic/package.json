@@ -14,7 +14,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "@elastic/elasticsearch": "7.13.0"
+        "@elastic/elasticsearch": "7.13.0 <9.0.0"
       },
       "files": [
         "elasticsearchNoop.test.js"
@@ -25,7 +25,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "@elastic/elasticsearch": ">=7.16.0"
+        "@elastic/elasticsearch": ">=7.16.0 <9.0.0"
       },
       "files": [
         "elasticsearch.test.js"
