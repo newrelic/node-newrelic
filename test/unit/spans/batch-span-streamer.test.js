@@ -7,7 +7,7 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const sinon = require('sinon')
-const SpanStreamerEvent = require('../../../lib/spans/streaming-span-event.js')
+const SpanStreamerEvent = require('../../../lib/spans/streaming-span.js')
 const METRIC_NAMES = require('../../../lib/metrics/names')
 const { createFakeConnection, createMetricAggregator } = require('./span-streamer-helpers')
 const BatchSpanStreamer = require('../../../lib/spans/batch-span-streamer')

@@ -9,7 +9,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const sinon = require('sinon')
 
-const StreamingSpanAggregator = require('#agentlib/spans/streaming-span-event-aggregator.js')
+const StreamingSpanAggregator = require('#agentlib/spans/streaming-span-aggregator.js')
 const agent = {
   collector: {},
   metrics: {},
