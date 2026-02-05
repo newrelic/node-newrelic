@@ -8,6 +8,7 @@ const express = require('express')
 const { McpServer, ResourceTemplate } = require('@modelcontextprotocol/sdk/server/mcp.js')
 const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/server/streamableHttp.js')
 const { z } = require('zod')
+const { randomUUID } = require('node:crypto')
 
 class McpTestServer {
   constructor() {
@@ -22,7 +23,7 @@ class McpTestServer {
     })
 
     this.transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined,
+      sessionIdGenerator: () => randomUUID(),
       enableDnsRebindingProtection: true,
     })
 
