@@ -39,7 +39,7 @@ const client = getClient(grpc, proto, port)
 test.afterEach(() => {
   agent.errors.traceAggregator.clear()
   agent.samplers.root._reset()
-  agent.spanEventAggregator.clear()
+  agent.spanAggregator.clear()
   agent.metrics.clear()
 })
 

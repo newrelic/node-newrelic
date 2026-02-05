@@ -261,7 +261,7 @@ test('#harvesters.start should start all aggregators', (t) => {
     agent.traces,
     agent.errors.traceAggregator,
     agent.errors.eventAggregator,
-    agent.spanEventAggregator,
+    agent.spanAggregator,
     agent.transactionEventAggregator,
     agent.customEventAggregator,
     agent.logs
@@ -285,7 +285,7 @@ test('#harvesters.stop should stop all aggregators', (t) => {
     agent.traces,
     agent.errors.traceAggregator,
     agent.errors.eventAggregator,
-    agent.spanEventAggregator,
+    agent.spanAggregator,
     agent.transactionEventAggregator,
     agent.customEventAggregator,
     agent.logs
@@ -819,7 +819,7 @@ test('when connected', async (t) => {
       query: 'select * from foo',
       trace: 'Stack\nFrames'
     })
-    agent.spanEventAggregator.add(segment)
+    agent.spanAggregator.add(segment)
     agent.transactionEventAggregator.add(tx)
     agent.customEventAggregator.add({ key: 'value' })
     agent.traces.add(tx)
@@ -865,7 +865,7 @@ test('when connected', async (t) => {
         query: 'select * from foo',
         trace: 'Stack\nFrames'
       })
-      agent.spanEventAggregator.add(segment)
+      agent.spanAggregator.add(segment)
       agent.transactionEventAggregator.add(tx)
       agent.customEventAggregator.add({ key: 'value' })
       agent.traces.add(tx)

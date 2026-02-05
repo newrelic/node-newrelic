@@ -7,7 +7,7 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('#testlib/agent_helper.js')
-const SpanEvent = require('#agentlib/spans/span-event.js')
+const Span = require('#agentlib/spans/span.js')
 const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 const MODES = [PARTIAL_TYPES.REDUCED, PARTIAL_TYPES.ESSENTIAL, PARTIAL_TYPES.COMPACT]
 
@@ -41,7 +41,7 @@ for (const mode of MODES) {
         transaction.partialType = mode
         transaction.createPartialTrace()
         const segment = transaction.trace.add('entrySpan')
-        let span = SpanEvent.fromSegment({ segment, transaction, isEntry: true })
+        let span = Span.fromSegment({ segment, transaction, isEntry: true })
         span = span.applyPartialTraceRules({ isEntry: true, partialTrace: transaction.partialTrace })
         assert.ok(span)
         const [intrinsics] = span.toJSON()
@@ -58,7 +58,7 @@ for (const mode of MODES) {
         transaction.partialType = mode
         transaction.createPartialTrace()
         const segment = transaction.trace.add('Llm/foobar')
-        let span = SpanEvent.fromSegment({ segment, transaction })
+        let span = Span.fromSegment({ segment, transaction })
         span = span.applyPartialTraceRules({ partialTrace: transaction.partialTrace })
         assert.ok(span)
         end()
@@ -82,7 +82,7 @@ for (const mode of MODES) {
         spanContext.addCustomAttribute('custom', 'test')
         spanContext.hasError = true
         spanContext.errorDetails = { message: 'You failed', type: 'TestError', expected: true }
-        let span = SpanEvent.fromSegment({ segment, transaction })
+        let span = Span.fromSegment({ segment, transaction })
         span = span.applyPartialTraceRules({ partialTrace: transaction.partialTrace })
         assert.ok(span)
         const [intrinsics, customAttrs, agentAttrs] = span.toJSON()
@@ -118,7 +118,7 @@ for (const mode of MODES) {
         transaction.createPartialTrace()
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('foo', 'bar')
-        let span = SpanEvent.fromSegment({ segment, transaction })
+        let span = Span.fromSegment({ segment, transaction })
         span = span.applyPartialTraceRules({ partialTrace: transaction.partialTrace })
         assert.ok(!span)
         end()
@@ -132,7 +132,7 @@ for (const mode of MODES) {
         transaction.createPartialTrace()
         const segment = transaction.trace.add('test-segment')
         segment.addAttribute('foo', 'bar')
-        let span = SpanEvent.fromSegment({ segment, transaction })
+        let span = Span.fromSegment({ segment, transaction })
         span = span.applyPartialTraceRules({ partialTrace: transaction.partialTrace })
         assert.ok(!span)
         end()
@@ -155,13 +155,13 @@ for (const mode of MODES) {
         segment3.addAttribute('port_path_or_id', 6379)
         assert.deepEqual(transaction.partialTrace.compactSpanGroups, {})
         // kept as first exit span
-        let span = SpanEvent.fromSegment({ segment, transaction })
+        let span = Span.fromSegment({ segment, transaction })
         span = span.applyPartialTraceRules({ partialTrace: transaction.partialTrace })
         // dropped as same entity relationship attrs as first span
-        let span2 = SpanEvent.fromSegment({ segment: segment2, transaction })
+        let span2 = Span.fromSegment({ segment: segment2, transaction })
         span2 = span2.applyPartialTraceRules({ partialTrace: transaction.partialTrace })
         // kept as first exit span with diff entity relationship attrs
-        let span3 = SpanEvent.fromSegment({ segment: segment3, transaction })
+        let span3 = Span.fromSegment({ segment: segment3, transaction })
         span3 = span3.applyPartialTraceRules({ partialTrace: transaction.partialTrace })
         assert.ok(span)
         assert.ok(!span2)

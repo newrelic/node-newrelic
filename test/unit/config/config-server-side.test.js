@@ -433,17 +433,17 @@ test('when receiving server-side configuration', async (t) => {
     })
 
     await t.test('should set `span_event_harvest_config` from server', () => {
-      const spanEventHarvestConfig = {
+      const spanHarvestConfig = {
         report_period_ms: 1000,
         harvest_limit: 10000
       }
       config.onConnect({
         agent_config: {
-          span_event_harvest_config: spanEventHarvestConfig
+          span_event_harvest_config: spanHarvestConfig
         }
       })
 
-      assert.deepEqual(config.span_event_harvest_config, spanEventHarvestConfig)
+      assert.deepEqual(config.span_event_harvest_config, spanHarvestConfig)
     })
 
     const ignoreServerConfigFlags = [true, false]

@@ -36,16 +36,16 @@ test('core', async (t) => {
 
     plan.equal(errorEvents.length, numErrors, 'Every error was reported')
 
-    const spanEvents = agent.spanEventAggregator.getEvents()
+    const spans = agent.spanAggregator.getEvents()
 
-    spanEvents.forEach((s) => {
+    spans.forEach((s) => {
       const attrs = s.attributes
       match(attrs['error.message'], /test\d/, { assert: plan })
 
       match(attrs['error.class'], 'Error', { assert: plan })
     })
 
-    plan.equal(spanEvents.length, numErrors, 'Every span was reported')
+    plan.equal(spans.length, numErrors, 'Every span was reported')
   })
 
   helper.runInTransaction(agent, (tx) => {
@@ -84,11 +84,11 @@ test('should not add error attributes to spans when errors disabled', (t, end) =
   let spanId = null
 
   agent.on('transactionFinished', () => {
-    const spanEvent = agent.spanEventAggregator.getEvents()[0]
+    const span = agent.spanAggregator.getEvents()[0]
 
-    assert.equal(spanEvent.intrinsics.guid, spanId)
+    assert.equal(span.intrinsics.guid, spanId)
 
-    const hasAttribute = Object.hasOwnProperty.bind(spanEvent.attributes)
+    const hasAttribute = Object.hasOwnProperty.bind(span.attributes)
     assert.equal(hasAttribute('error.message'), false)
 
     end()
@@ -115,10 +115,10 @@ test("Span error attributes aren't added with LASP/HSM", (t, end) => {
   let spanId
 
   agent.on('transactionFinished', () => {
-    const spanEvent = agent.spanEventAggregator.getEvents()[0]
-    const attrs = spanEvent.attributes
+    const span = agent.spanAggregator.getEvents()[0]
+    const attrs = span.attributes
     assert.ok(
-      spanEvent.intrinsics.guid === spanId && !attrs['error.message'],
+      span.intrinsics.guid === spanId && !attrs['error.message'],
       'There should be no error message on the span'
     )
     end()
@@ -149,9 +149,9 @@ test("Span error attributes aren't added with ignored classes errors", (t, end) 
 
   agent.on('transactionFinished', () => {
     const errorEvents = agent.errors.eventAggregator.getEvents()
-    const spanEvents = agent.spanEventAggregator.getEvents()
-    const ignoredSpanEvent = spanEvents.filter((s) => s.intrinsics.guid === ignoredSpanId)[0]
-    const spanEvent = spanEvents.filter((s) => s.intrinsics.guid === spanId)[0]
+    const spans = agent.spanAggregator.getEvents()
+    const ignoredSpan = spans.filter((s) => s.intrinsics.guid === ignoredSpanId)[0]
+    const span = spans.filter((s) => s.intrinsics.guid === spanId)[0]
 
     assert.ok(
       errorEvents.length === 1 && errorEvents[0][2].spanId === spanId,
@@ -159,12 +159,12 @@ test("Span error attributes aren't added with ignored classes errors", (t, end) 
     )
 
     assert.ok(
-      spanEvent.attributes['error.message'] === 'not ignored',
+      span.attributes['error.message'] === 'not ignored',
       'The non-ignored error should be reported'
     )
 
     assert.equal(
-      ignoredSpanEvent.attributes['error.message'],
+      ignoredSpan.attributes['error.message'],
       undefined,
       'The ignored error should not be reported'
     )
@@ -209,8 +209,8 @@ test("Span error attributes aren't added with ignored status errors", (t, end) =
 
   agent.on('transactionFinished', () => {
     const errorEvents = agent.errors.eventAggregator.getEvents()
-    const spanEvents = agent.spanEventAggregator.getEvents()
-    const ignoredSpanEvent = spanEvents.filter((s) => s.intrinsics.guid === ignoredSpanId)[0]
+    const spans = agent.spanAggregator.getEvents()
+    const ignoredSpan = spans.filter((s) => s.intrinsics.guid === ignoredSpanId)[0]
 
     assert.equal(
       errorEvents.length,
@@ -219,7 +219,7 @@ test("Span error attributes aren't added with ignored status errors", (t, end) =
     )
 
     assert.equal(
-      ignoredSpanEvent.attributes['error.message'],
+      ignoredSpan.attributes['error.message'],
       undefined,
       'The ignored error should not be added to span.'
     )
@@ -269,15 +269,15 @@ test('should propagate expected error attribute to span', (t, end) => {
 
   agent.on('transactionFinished', () => {
     const errorEvents = agent.errors.eventAggregator.getEvents()
-    const spanEvents = agent.spanEventAggregator.getEvents()
-    const expectedSpanEvent = spanEvents.filter((s) => s.intrinsics.guid === expectedSpanId)[0]
-    const spanEvent = spanEvents.filter((s) => s.intrinsics.guid === notExpectedSpanId)[0]
+    const spans = agent.spanAggregator.getEvents()
+    const expectedSpan = spans.filter((s) => s.intrinsics.guid === expectedSpanId)[0]
+    const span = spans.filter((s) => s.intrinsics.guid === notExpectedSpanId)[0]
 
     assert.equal(errorEvents.length, 2)
 
-    assert.equal(expectedSpanEvent.attributes['error.expected'], true)
+    assert.equal(expectedSpan.attributes['error.expected'], true)
 
-    const hasAttribute = Object.hasOwnProperty.bind(spanEvent.attributes)
+    const hasAttribute = Object.hasOwnProperty.bind(span.attributes)
     assert.equal(hasAttribute('error.expected'), false)
 
     end()

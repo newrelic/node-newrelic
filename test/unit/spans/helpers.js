@@ -6,7 +6,7 @@
 'use strict'
 
 const SpanLink = require('#agentlib/spans/span-link.js')
-const SpanEvent = require('#agentlib/spans/span-event.js')
+const Span = require('#agentlib/spans/span.js')
 const sinon = require('sinon')
 const assert = require('node:assert')
 
@@ -35,12 +35,12 @@ function createSpanLink({ segment, spanId, traceId, linkSpanId, linkTraceId, tes
   return link
 }
 
-function addSegment({ spanEventAggregator, tx, segment, parentId = '1', isEntry = false }) {
-  spanEventAggregator.addSegment({ segment, transaction: tx, parentId, isEntry })
+function addSegment({ spanAggregator, tx, segment, parentId = '1', isEntry = false }) {
+  spanAggregator.addSegment({ segment, transaction: tx, parentId, isEntry })
 }
 
 function stubEntityRelationship(hasEntity) {
-  return sinon.stub(SpanEvent.prototype, 'hasEntityRelationshipAttrs').get(() => hasEntity)
+  return sinon.stub(Span.prototype, 'hasEntityRelationshipAttrs').get(() => hasEntity)
 }
 
 function createSegment(agent, id, name, parent, tx) {
@@ -108,17 +108,17 @@ function setupPartialTraceForCompactCompression(agent, tx) {
   return { rootSegment, child1Segment, child2Segment, child3Segment, child4Segment, reparentSpanLinkSpy }
 }
 
-function addSegmentsForCompactCompression({ spanEventAggregator, tx, segments }) {
-  addSegment({ spanEventAggregator, tx, segment: segments.rootSegment, isEntry: true })
+function addSegmentsForCompactCompression({ spanAggregator, tx, segments }) {
+  addSegment({ spanAggregator, tx, segment: segments.rootSegment, isEntry: true })
   tx.baseSegment = segments.rootSegment
 
   // simulate that the segment has entity relationship attrs to keep the span
   const hasEntityStub = stubEntityRelationship(true)
 
-  addSegment({ spanEventAggregator, tx, segment: segments.child1Segment, parentId: segments.rootSegment.id })
-  addSegment({ spanEventAggregator, tx, segment: segments.child2Segment, parentId: segments.child1Segment.id, isEntry: true })
-  addSegment({ spanEventAggregator, tx, segment: segments.child3Segment, parentId: segments.rootSegment.id })
-  addSegment({ spanEventAggregator, tx, segment: segments.child4Segment, parentId: segments.child3Segment.id, isEntry: true })
+  addSegment({ spanAggregator, tx, segment: segments.child1Segment, parentId: segments.rootSegment.id })
+  addSegment({ spanAggregator, tx, segment: segments.child2Segment, parentId: segments.child1Segment.id, isEntry: true })
+  addSegment({ spanAggregator, tx, segment: segments.child3Segment, parentId: segments.rootSegment.id })
+  addSegment({ spanAggregator, tx, segment: segments.child4Segment, parentId: segments.child3Segment.id, isEntry: true })
   hasEntityStub.restore()
 }
 

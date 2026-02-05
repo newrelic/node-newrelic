@@ -166,9 +166,9 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
           const restartEndpoints = setupConnectionEndpoints(RESTARTED_RUN_ID, RESTARTED_SESSION_ID)
 
           agent.on('connecting', () => {
-            plan.equal(agent.spanEventAggregator.started, false)
+            plan.equal(agent.spanAggregator.started, false)
 
-            agent.spanEventAggregator.once('started', () => {
+            agent.spanAggregator.once('started', () => {
               // if new endpoints weren't hit, something else went wrong with test.
               verifyAgentStart({ endpoints: restartEndpoints, plan })
 
@@ -195,7 +195,7 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
         agent.config.no_immediate_harvest = false
 
         let connectedCount = 0
-        agent.spanEventAggregator.stream.connection.on('connected', () => {
+        agent.spanAggregator.stream.connection.on('connected', () => {
           connectedCount++
         })
 

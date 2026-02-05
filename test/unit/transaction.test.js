@@ -58,7 +58,7 @@ test('Transaction unit tests', async (t) => {
     agent.config.distributed_tracing.enabled = true
 
     agent.once('transactionFinished', () => {
-      assert.equal(agent.spanEventAggregator.length, 1, 'should have a span event')
+      assert.equal(agent.spanAggregator.length, 1, 'should have a span event')
     })
     helper.runInTransaction(agent, function (inner) {
       const childSegment = inner.trace.add('child')
@@ -74,7 +74,7 @@ test('Transaction unit tests', async (t) => {
     agent.config.distributed_tracing.enabled = true
 
     agent.once('transactionFinished', () => {
-      assert.equal(agent.spanEventAggregator.length, 0, 'should have no span events')
+      assert.equal(agent.spanAggregator.length, 0, 'should have no span events')
     })
     helper.runInTransaction(agent, function (inner) {
       const childSegment = inner.trace.add('child')

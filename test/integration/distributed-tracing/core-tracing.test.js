@@ -35,7 +35,7 @@ for (const testCase of testCases) {
       transaction.baseSegment = transaction.trace.root
       generateTxData({ agent, transaction, fixture })
       transaction.end()
-      const spans = agent.spanEventAggregator.getEvents()
+      const spans = agent.spanAggregator.getEvents()
       assertSpanTree({ spans, expectedSpans: testCase.expected_spans })
       assertDroppedSpans({ spans, droppedSpans: testCase.unexpected_spans })
       assertMetrics({ agent, expectedMetrics: testCase.expected_metrics })

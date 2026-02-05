@@ -146,7 +146,7 @@ function addBaseSegment({ transaction, name }) {
   return segment
 }
 
-function assertSpanEvent({ span, transaction, name, isEntry, parentId, category, attributes = {} }, { assert = require('node:assert') } = {}) {
+function assertSpan({ span, transaction, name, isEntry, parentId, category, attributes = {} }, { assert = require('node:assert') } = {}) {
   assert.ok(span.intrinsics)
   assert.ok(span.intrinsics.category)
   assert.equal(span.intrinsics.category, category)
@@ -210,7 +210,7 @@ function setupPartialTrace({ agent, type, randomizeErrorAttrs, attributes = { fo
 }
 
 module.exports = {
-  assertSpanEvent,
+  assertSpan,
   addBaseSegment,
   addSegment,
   addTwoSegments,

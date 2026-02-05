@@ -6,7 +6,7 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
-const SpanStreamerEvent = require('../../../lib/spans/streaming-span-event.js')
+const SpanStreamerEvent = require('../../../lib/spans/streaming-span.js')
 const METRIC_NAMES = require('../../../lib/metrics/names')
 const { createFakeConnection, createMetricAggregator } = require('./span-streamer-helpers')
 const SpanStreamer = require('../../../lib/spans/span-streamer')

@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const SpanLink = require('#agentlib/spans/span-link.js')
 const { match } = require('#test/assert')
 const helper = require('../../lib/agent_helper')
-const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
+const SpanAggregator = require('../../../lib/spans/span-aggregator')
 const Metrics = require('../../../lib/metrics')
 const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 const {
@@ -95,7 +95,7 @@ test('builds correct instance', (t) => {
 test('partial tracing with span links', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
-    ctx.nr.spanEventAggregator = new SpanEventAggregator(
+    ctx.nr.spanAggregator = new SpanAggregator(
       {
         runId: RUN_ID,
         limit: DEFAULT_LIMIT,
@@ -119,7 +119,7 @@ test('partial tracing with span links', async (t) => {
   })
 
   await t.test('span link moved to nearest parent when using reduced tracing', (t, end) => {
-    const { agent, spanEventAggregator } = t.nr
+    const { agent, spanAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const { rootSegment, child1Segment, child2Segment } = setupPartialTrace({ agent, partialType: PARTIAL_TYPES.REDUCED, tx })
 
@@ -127,12 +127,12 @@ test('partial tracing with span links', async (t) => {
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span2')
 
-      addSegment({ spanEventAggregator, tx, segment: rootSegment, isEntry: true })
+      addSegment({ spanAggregator, tx, segment: rootSegment, isEntry: true })
       // root span has no span links
       assert.equal(rootSegment.spanLinks.length, 0)
 
-      addSegment({ spanEventAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
-      addSegment({ spanEventAggregator, tx, segment: child2Segment, parentId: child1Segment.id })
+      addSegment({ spanAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
+      addSegment({ spanAggregator, tx, segment: child2Segment, parentId: child1Segment.id })
 
       // two children spans with span links dropped
       assert.equal(tx.partialTrace.droppedSpans.size, 2)
@@ -154,7 +154,7 @@ test('partial tracing with span links', async (t) => {
   })
 
   await t.test('span link moved to nearest parent when using reduced tracing and combined with parent span links', (t, end) => {
-    const { agent, spanEventAggregator } = t.nr
+    const { agent, spanAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const { rootSegment, child1Segment, child2Segment } = setupPartialTrace({ agent, partialType: PARTIAL_TYPES.REDUCED, tx, addRootSpanLink: true })
 
@@ -162,12 +162,12 @@ test('partial tracing with span links', async (t) => {
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span2')
 
-      addSegment({ spanEventAggregator, tx, segment: rootSegment, isEntry: true })
+      addSegment({ spanAggregator, tx, segment: rootSegment, isEntry: true })
       // root span has 1 span link of it's own
       assert.equal(rootSegment.spanLinks.length, 1)
 
-      addSegment({ spanEventAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
-      addSegment({ spanEventAggregator, tx, segment: child2Segment, parentId: child1Segment.id })
+      addSegment({ spanAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
+      addSegment({ spanAggregator, tx, segment: child2Segment, parentId: child1Segment.id })
 
       // two children spans with span links dropped
       assert.equal(tx.partialTrace.droppedSpans.size, 2)
@@ -193,17 +193,17 @@ test('partial tracing with span links', async (t) => {
   })
 
   await t.test('do not move span link from dropped span if the nearest parent span\'s span link is full - any partial tracing mode', (t, end) => {
-    const { agent, spanEventAggregator } = t.nr
+    const { agent, spanAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const { rootSegment, child1Segment } = setupPartialTrace({ agent, partialType: PARTIAL_TYPES.REDUCED, tx, add99SpanLinks: true, numOfChildSegments: 1 })
       // add another span link to child
       createSpanLink({ segment: child1Segment, spanId: 'span2', traceId: 'trace1', linkSpanId: 'parent1', linkTraceId: 'trace1', testAttr: 'test2' })
 
-      addSegment({ spanEventAggregator, tx, segment: rootSegment, isEntry: true })
+      addSegment({ spanAggregator, tx, segment: rootSegment, isEntry: true })
       // root span has 99 span links of it's own
       assert.equal(rootSegment.spanLinks.length, 99)
 
-      addSegment({ spanEventAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
+      addSegment({ spanAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
       // one child span dropped
       assert.equal(tx.partialTrace.droppedSpans.size, 1)
 
@@ -225,20 +225,20 @@ test('partial tracing with span links', async (t) => {
   })
 
   await t.test('span link non intrinsics attrs removed when using essential tracing', (t, end) => {
-    const { agent, spanEventAggregator } = t.nr
+    const { agent, spanAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const { rootSegment, child1Segment } = setupPartialTrace({ agent, partialType: PARTIAL_TYPES.ESSENTIAL, tx, addExitSpan: true, numOfChildSegments: 1 })
 
       // span link id is initially set to the span id in the context they are created on
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
 
-      addSegment({ spanEventAggregator, tx, segment: rootSegment, isEntry: true })
+      addSegment({ spanAggregator, tx, segment: rootSegment, isEntry: true })
       // root span has no span links
       assert.equal(rootSegment.spanLinks.length, 0)
 
       // simulate that the segment has entity relationship attrs to keep the span
       const hasEntityStub = stubEntityRelationship(true)
-      addSegment({ spanEventAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
+      addSegment({ spanAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
       hasEntityStub.restore()
 
       // no dropped spans
@@ -261,7 +261,7 @@ test('partial tracing with span links', async (t) => {
   })
 
   await t.test('span link moved to nearest parent and non intrinsics attrs removed when using essential tracing', (t, end) => {
-    const { agent, spanEventAggregator } = t.nr
+    const { agent, spanAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const { rootSegment, child1Segment, child2Segment } = setupPartialTrace({ agent, partialType: PARTIAL_TYPES.ESSENTIAL, tx, addExitSpan: true })
 
@@ -269,16 +269,16 @@ test('partial tracing with span links', async (t) => {
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span2')
 
-      addSegment({ spanEventAggregator, tx, segment: rootSegment, isEntry: true })
+      addSegment({ spanAggregator, tx, segment: rootSegment, isEntry: true })
       // root span has no span links
       assert.equal(rootSegment.spanLinks.length, 0)
 
       // simulate that the segment has entity relationship attrs to keep the span
       const hasEntityStub = stubEntityRelationship(true)
-      addSegment({ spanEventAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
+      addSegment({ spanAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
       hasEntityStub.restore()
 
-      addSegment({ spanEventAggregator, tx, segment: child2Segment, parentId: child1Segment.id })
+      addSegment({ spanAggregator, tx, segment: child2Segment, parentId: child1Segment.id })
 
       // one span with span links dropped
       assert.equal(tx.partialTrace.droppedSpans.size, 1)
@@ -302,7 +302,7 @@ test('partial tracing with span links', async (t) => {
   })
 
   await t.test('span links compressed to one kept span if there are multiple spans for the same entity when using compact tracing', (t, end) => {
-    const { agent, spanEventAggregator } = t.nr
+    const { agent, spanAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const { rootSegment, child1Segment, child2Segment, child3Segment, child4Segment, reparentSpanLinkSpy } = setupPartialTraceForCompactCompression(agent, tx)
 
@@ -310,12 +310,12 @@ test('partial tracing with span links', async (t) => {
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child3Segment.spanLinks[0].intrinsics.id, 'span1')
 
-      addSegmentsForCompactCompression({ spanEventAggregator, tx, segments: { rootSegment, child1Segment, child2Segment, child3Segment, child4Segment } })
+      addSegmentsForCompactCompression({ spanAggregator, tx, segments: { rootSegment, child1Segment, child2Segment, child3Segment, child4Segment } })
       tx.partialTrace.finalize()
 
       assert.equal(reparentSpanLinkSpy.callCount, 1)
 
-      const events = tx.agent.spanEventAggregator.getEvents()
+      const events = tx.agent.spanAggregator.getEvents()
       const compressedExitSpan = events.find((span) => span.intrinsics.name === 'MessageBroker/api.example.com/users')
 
       // only one compressed exit span for the same entity with two span links now
@@ -329,7 +329,7 @@ test('partial tracing with span links', async (t) => {
   })
 
   await t.test('move span links in compact for non exit spans with entity relationship attributes', (t, end) => {
-    const { agent, spanEventAggregator } = t.nr
+    const { agent, spanAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const { rootSegment, child1Segment } = setupPartialTrace({ agent, partialType: PARTIAL_TYPES.COMPACT, tx, addExitSpan: true, numOfChildSegments: 1 })
 
@@ -341,12 +341,12 @@ test('partial tracing with span links', async (t) => {
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(child2Segment.spanLinks[0].intrinsics.id, 'span1')
 
-      addSegment({ spanEventAggregator, tx, segment: rootSegment, isEntry: true })
+      addSegment({ spanAggregator, tx, segment: rootSegment, isEntry: true })
 
       // simulate that the segment has entity relationship attrs to keep the span
       const hasEntityStub = stubEntityRelationship(true)
-      addSegment({ spanEventAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
-      addSegment({ spanEventAggregator, tx, segment: child2Segment, parentId: rootSegment.id })
+      addSegment({ spanAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
+      addSegment({ spanAggregator, tx, segment: child2Segment, parentId: rootSegment.id })
       hasEntityStub.restore()
 
       // one span with span links dropped move to nearest parent
@@ -362,7 +362,7 @@ test('partial tracing with span links', async (t) => {
   })
 
   await t.test('move span links in compact for non exit spans with no entity relationship attributes', (t, end) => {
-    const { agent, spanEventAggregator } = t.nr
+    const { agent, spanAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const { rootSegment, child1Segment } = setupPartialTrace({ agent, partialType: PARTIAL_TYPES.COMPACT, tx, addExitSpan: true, numOfChildSegments: 1 })
 
@@ -370,11 +370,11 @@ test('partial tracing with span links', async (t) => {
       assert.equal(child1Segment.spanLinks[0].intrinsics.id, 'span1')
       assert.equal(rootSegment.spanLinks.length, 0)
 
-      addSegment({ spanEventAggregator, tx, segment: rootSegment, isEntry: true })
+      addSegment({ spanAggregator, tx, segment: rootSegment, isEntry: true })
 
       // simulate that the segment has no entity relationship attrs to drop the span
       const hasEntityStub = stubEntityRelationship(false)
-      addSegment({ spanEventAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
+      addSegment({ spanAggregator, tx, segment: child1Segment, parentId: rootSegment.id })
       hasEntityStub.restore()
 
       // only one kept span
