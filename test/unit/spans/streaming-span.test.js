@@ -9,7 +9,7 @@ const test = require('node:test')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const helper = require('../../lib/agent_helper')
 const http = require('http')
-const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
+const StreamingSpan = require('../../../lib/spans/streaming-span')
 const {
   QuerySpec,
   params: { DatastoreParameters }
@@ -29,10 +29,10 @@ const nock = require('nock')
 
 test('#constructor() should construct an empty span event', () => {
   const attrs = {}
-  const span = new StreamingSpanEvent(attrs)
+  const span = new StreamingSpan(attrs)
 
   assert.ok(span)
-  assert.ok(span instanceof StreamingSpanEvent)
+  assert.ok(span instanceof StreamingSpan)
   assert.deepEqual(span._agentAttributes, attrs)
 
   assert.ok(span._intrinsicAttributes)
@@ -73,11 +73,11 @@ test('fromSegment()', async (t) => {
       segment.addSpanAttribute('host', 'my-host')
       segment.addSpanAttribute('port', 22)
 
-      const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent', isEntry: true })
+      const span = StreamingSpan.fromSegment({ segment, transaction, parentId: 'parent', isEntry: true })
 
       // Should have all the normal properties.
       assert.ok(span)
-      assert.ok(span instanceof StreamingSpanEvent)
+      assert.ok(span instanceof StreamingSpan)
 
       assert.ok(span._intrinsicAttributes)
       assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
@@ -140,11 +140,11 @@ test('fromSegment()', async (t) => {
         res.on('end', () => {
           const tx = agent.tracer.getTransaction()
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
-          const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+          const span = StreamingSpan.fromSegment({ segment, transaction, parentId: 'parent' })
 
           // Should have all the normal properties.
           assert.ok(span)
-          assert.ok(span instanceof StreamingSpanEvent)
+          assert.ok(span instanceof StreamingSpan)
 
           assert.ok(span._intrinsicAttributes)
           assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
@@ -246,11 +246,11 @@ test('fromSegment()', async (t) => {
       dsConn.myDbOp(longQuery, () => {
         transaction.end()
         const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
-        const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+        const span = StreamingSpan.fromSegment({ segment, transaction, parentId: 'parent' })
 
         // Should have all the normal properties.
         assert.ok(span)
-        assert.ok(span instanceof StreamingSpanEvent)
+        assert.ok(span instanceof StreamingSpan)
 
         assert.ok(span._intrinsicAttributes)
         assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
@@ -337,7 +337,7 @@ test('fromSegment()', async (t) => {
         const spanContext = agent.tracer.getSpanContext()
         spanContext.addCustomAttribute('customKey', 'customValue')
 
-        const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+        const span = StreamingSpan.fromSegment({ segment, transaction, parentId: 'parent' })
 
         const serializedSpan = span.toStreamingFormat()
         const {
@@ -374,7 +374,7 @@ test('fromSegment()', async (t) => {
         spanContext.addIntrinsicAttribute('intrinsic.1', 1)
         spanContext.addIntrinsicAttribute('intrinsic.2', 2)
 
-        const span = StreamingSpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+        const span = StreamingSpan.fromSegment({ segment, transaction, parentId: 'parent' })
 
         const serializedSpan = span.toStreamingFormat()
         const { intrinsics } = serializedSpan
@@ -399,9 +399,9 @@ test('fromSegment()', async (t) => {
           const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           assert.ok(segment.name.startsWith('Truncated'))
 
-          const span = StreamingSpanEvent.fromSegment({ segment, transaction })
+          const span = StreamingSpan.fromSegment({ segment, transaction })
           assert.ok(span)
-          assert.ok(span instanceof StreamingSpanEvent)
+          assert.ok(span instanceof StreamingSpan)
 
           assert.ok(span._intrinsicAttributes)
           assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.HTTP })
@@ -421,9 +421,9 @@ test('fromSegment()', async (t) => {
 
       assert.ok(segment.name.startsWith('Truncated'))
 
-      const span = StreamingSpanEvent.fromSegment({ segment, transaction })
+      const span = StreamingSpan.fromSegment({ segment, transaction })
       assert.ok(span)
-      assert.ok(span instanceof StreamingSpanEvent)
+      assert.ok(span instanceof StreamingSpan)
 
       assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.DATASTORE })
       assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })

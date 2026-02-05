@@ -17,7 +17,7 @@ const protoLoader = require('@grpc/proto-loader')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
-const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
+const StreamingSpan = require('../../../lib/spans/streaming-span-event')
 
 const fakeCert = require('../../lib/fake-cert')
 const helper = require('../../lib/agent_helper')
@@ -173,7 +173,7 @@ test('Should reconnect even when data sent back', async (t) => {
         'connected and received ClientDuplexStreamImpl'
       )
 
-      callStream.write(new StreamingSpanEvent())
+      callStream.write(new StreamingSpan())
     })
 
     connection.on('disconnected', () => {

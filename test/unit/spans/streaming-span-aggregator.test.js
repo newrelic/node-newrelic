@@ -9,7 +9,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const sinon = require('sinon')
 
-const StreamingSpanEventAggregator = require('#agentlib/spans/streaming-span-event-aggregator.js')
+const StreamingSpanAggregator = require('#agentlib/spans/streaming-span-event-aggregator.js')
 const agent = {
   collector: {},
   metrics: {},
@@ -27,7 +27,7 @@ test('Should only attempt to connect on first start() call', () => {
     }
   }
 
-  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts, agent)
+  const streamingSpanAggregator = new StreamingSpanAggregator(opts, agent)
 
   streamingSpanAggregator.start()
   assert.equal(connectCount, 1)
@@ -48,7 +48,7 @@ test('Should only attempt to disconnect on first stop() call', () => {
     }
   }
 
-  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts, agent)
+  const streamingSpanAggregator = new StreamingSpanAggregator(opts, agent)
   streamingSpanAggregator.start()
 
   streamingSpanAggregator.stop()
@@ -70,7 +70,7 @@ test('Should attempt to connect on start() after stop() call', () => {
     }
   }
 
-  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts, agent)
+  const streamingSpanAggregator = new StreamingSpanAggregator(opts, agent)
 
   streamingSpanAggregator.start()
   streamingSpanAggregator.stop()

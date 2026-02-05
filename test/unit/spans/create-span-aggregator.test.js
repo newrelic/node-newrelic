@@ -8,7 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const Config = require('../../../lib/config')
 const SpanAggregator = require('../../../lib/spans/span-aggregator')
-const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
+const StreamingSpanAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
 const createSpanAggregator = require('../../../lib/spans/create-span-aggregator')
 const BatchSpanStreamer = require('../../../lib/spans/batch-span-streamer')
 const SpanStreamer = require('../../../lib/spans/span-streamer')
@@ -58,7 +58,7 @@ test('should return streaming when trace observer configured', async () => {
   })
 
   const aggregator = createSpanAggregator(config, agent)
-  const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
+  const isStreamingAggregator = aggregator instanceof StreamingSpanAggregator
 
   assert.ok(isStreamingAggregator)
 })
@@ -166,7 +166,7 @@ test('should revert to standard aggregator when it fails to create streaming agg
 
 function assertStandardSpanAggregator(aggregator) {
   const isSpanAggregator = aggregator instanceof SpanAggregator
-  const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
+  const isStreamingAggregator = aggregator instanceof StreamingSpanAggregator
 
   assert.ok(isSpanAggregator)
   assert.ok(!isStreamingAggregator)
