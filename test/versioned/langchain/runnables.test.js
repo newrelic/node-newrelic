@@ -38,7 +38,7 @@ test.beforeEach(async (ctx) => {
 
   ctx.nr.prompt = ChatPromptTemplate.fromMessages([['assistant', 'You are a {topic}.']])
   ctx.nr.model = new ChatOpenAI({
-    openAIApiKey: 'fake-key',
+    apiKey: 'fake-key',
     maxRetries: 0,
     configuration: {
       baseURL: `http://${host}:${port}`
