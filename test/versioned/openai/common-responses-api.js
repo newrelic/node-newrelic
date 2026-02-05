@@ -18,7 +18,6 @@ function assertChatCompletionMessages(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
-    appName: 'New Relic for Node.js tests',
     request_id: 'req_dfcfcd9f6a176a36c7e386577161b792',
     trace_id: tx.traceId,
     span_id: segment.id,
@@ -26,8 +25,7 @@ function assertChatCompletionMessages(
     vendor: 'openai',
     ingest_source: 'Node',
     role: 'user',
-    is_response: false,
-    completion_id: /[a-f0-9]{36}/
+    completion_id: /[a-f0-9]{32}/
   }
 
   if (!singleInput) {
@@ -83,22 +81,18 @@ function assertChatCompletionMessages(
 }
 
 function assertChatCompletionSummary(
-  { tx, model, chatSummary, error = false, singleInput = false, streaming, promptTokens = 11, completionTokens = 53, totalTokens = 64 },
+  { tx, model, chatSummary, error, singleInput = false, streaming, promptTokens = 11, completionTokens = 53, totalTokens = 64 },
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   let expectedChatSummary
   if (!error) {
     expectedChatSummary = {
-      appName: 'New Relic for Node.js tests',
       duration: segment.getDurationInMillis(),
-      error,
-      id: /[a-f0-9]{36}/,
+      id: /[a-f0-9]{32}/,
       ingest_source: 'Node',
       request_id: 'req_dfcfcd9f6a176a36c7e386577161b792',
-      'request.max_tokens': undefined,
       'request.model': model,
-      'request.temperature': undefined,
       'response.choices.finish_reason': 'completed',
       'response.headers.llmVersion': '2020-10-01',
       'response.model': 'gpt-4-0613',
@@ -128,10 +122,9 @@ function assertChatCompletionSummary(
     }
   } else {
     expectedChatSummary = {
-      appName: 'New Relic for Node.js tests',
-      id: /[a-f0-9]{36}/,
+      id: /[a-f0-9]{32}/,
       duration: segment.getDurationInMillis(),
-      error,
+      error: true,
       ingest_source: 'Node',
       'request.model': model,
       'response.number_of_messages': 2,

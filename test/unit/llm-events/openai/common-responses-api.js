@@ -63,7 +63,6 @@ function getExpectedResult(tx, event, type, completionId) {
   const spanId = child.id
   let expected = {
     id: event.id,
-    appName: 'New Relic for Node.js tests',
     request_id: 'req-id',
     trace_id: tx.traceId,
     span_id: spanId,
@@ -87,7 +86,6 @@ function getExpectedResult(tx, event, type, completionId) {
     case 'embedding':
       expected = { ...expected, ...resKeys }
       expected.input = 'This is my test input'
-      expected.error = false
       expected['response.usage.total_tokens'] = 30
       break
     case 'summary':
@@ -100,8 +98,7 @@ function getExpectedResult(tx, event, type, completionId) {
         'response.choices.finish_reason': 'completed',
         'response.usage.prompt_tokens': 10,
         'response.usage.completion_tokens': 20,
-        'response.usage.total_tokens': 30,
-        error: false
+        'response.usage.total_tokens': 30
       }
       break
     case 'message':
@@ -110,8 +107,7 @@ function getExpectedResult(tx, event, type, completionId) {
         content: 'What is a woodchuck?',
         role: 'user',
         sequence: 0,
-        completion_id: completionId,
-        is_response: false
+        completion_id: completionId
       }
   }
 
