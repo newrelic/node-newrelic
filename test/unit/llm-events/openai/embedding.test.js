@@ -65,15 +65,22 @@ test('should properly create a LlmEmbedding event', (t, end) => {
 ].forEach(({ type, value, expected }) => {
   test(`should properly serialize input when it is a ${type}`, (t, end) => {
     const { agent } = t.nr
-    const embeddingEvent = new LlmEmbedding({
-      agent,
-      segment: null,
-      transaction: null,
-      request: { input: value },
-      response: {}
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = agent.tracer.getSegment()
+        segment.end()
+        const embeddingEvent = new LlmEmbedding({
+          agent,
+          segment,
+          transaction: tx,
+          request: { input: value },
+          response: {}
+        })
+        assert.equal(embeddingEvent.input, expected)
+        end()
+      })
     })
-    assert.equal(embeddingEvent.input, expected)
-    end()
   })
 })
 
@@ -85,15 +92,17 @@ test('should set error to true', (t, end) => {
   }
 
   const api = helper.getAgentApi()
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
       const segment = agent.tracer.getSegment()
+      segment.end()
       const embeddingEvent = new LlmEmbedding({
         agent,
         segment,
+        transaction: tx,
         request: req,
         response: res,
-        withError: true
+        error: true
       })
       assert.equal(true, embeddingEvent.error)
       end()
@@ -115,11 +124,12 @@ test('respects record_content by not recording content when set to false', (t, e
   const api = helper.getAgentApi()
   api.setLlmTokenCountCallback(cb)
 
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     const segment = agent.tracer.getSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
+      transaction: tx,
       request: req,
       response: res
     })
@@ -142,11 +152,12 @@ test('respects record_content by recording content when true', (t, end) => {
 
   const api = helper.getAgentApi()
   api.setLlmTokenCountCallback(cb)
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     const segment = agent.tracer.getSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
+      transaction: tx,
       request: req,
       response: res
     })
@@ -168,11 +179,12 @@ test('does not calculate tokens when no content exists', (t, end) => {
 
   const api = helper.getAgentApi()
   api.setLlmTokenCountCallback(cb)
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     const segment = agent.tracer.getSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
+      transaction: tx,
       request: req,
       response: res
     })
@@ -189,13 +201,14 @@ test('assigns total_tokens from response', (t, end) => {
     model: 'gpt-3.5-turbo-0613'
   }
 
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     const segment = agent.tracer.getSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
       request: req,
-      response: res
+      response: res,
+      transaction: tx
     })
     assert.equal(embeddingEvent['response.usage.total_tokens'], 30)
     end()
