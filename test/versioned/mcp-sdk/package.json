@@ -24,9 +24,5 @@
         "client-streaming.test.js"
       ]
     }
-  ],
-  "dependencies": {
-    "express": "^5.1.0",
-    "zod": "^3.25.76"
-  }
+  ]
 }
