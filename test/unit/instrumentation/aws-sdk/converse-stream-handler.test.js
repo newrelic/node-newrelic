@@ -7,9 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const {
-  ConverseStreamHandler
-} = require('../../../../lib/llm-events/aws-bedrock')
+const ConverseStreamHandler = require('#agentlib/instrumentation/aws-sdk/v3/converse-stream-handler.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}

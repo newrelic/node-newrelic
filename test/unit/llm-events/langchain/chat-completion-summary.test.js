@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LangChainCompletionSummary = require('../../../../lib/llm-events/langchain/chat-completion-summary')
+const { LlmChatCompletionSummary } = require('#agentlib/llm-events/langchain/index.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -50,8 +50,8 @@ test.beforeEach((ctx) => {
 })
 
 test('summary has expected properties', async (t) => {
-  const msg = new LangChainCompletionSummary(t.nr)
-  assert.match(msg.id, /[a-z0-9-]{36}/)
+  const msg = new LlmChatCompletionSummary(t.nr)
+  assert.match(msg.id, /[a-z0-9-]{32}/)
   assert.equal(msg.appName, 'test-app')
   assert.equal(msg['llm.conversation_id'], 'test-conversation')
   assert.equal(msg.span_id, 'segment-1')

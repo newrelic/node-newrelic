@@ -93,8 +93,7 @@ test.afterEach(afterEach)
       const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
       const [segment] = tx.trace.getChildren(tx.trace.root.id)
       const expectedEmbedding = {
-        id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
-        appName: 'New Relic for Node.js tests',
+        id: /[a-f0-9]{32}/,
         request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
         trace_id: tx.traceId,
         span_id: segment.id,
@@ -104,7 +103,6 @@ test.afterEach(afterEach)
         'request.model': modelId,
         duration: segment.getDurationInMillis(),
         input: prompt,
-        error: false,
         'response.usage.total_tokens': 14
       }
 
@@ -138,8 +136,7 @@ test.afterEach(afterEach)
       const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
       const [segment] = tx.trace.getChildren(tx.trace.root.id)
       const expectedEmbedding = {
-        id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
-        appName: 'New Relic for Node.js tests',
+        id: /[a-f0-9]{32}/,
         request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
         trace_id: tx.traceId,
         span_id: segment.id,
@@ -149,8 +146,7 @@ test.afterEach(afterEach)
         'request.model': modelId,
         duration: segment.getDurationInMillis(),
         input: prompt,
-        error: false,
-        'response.usage.total_tokens': 14
+        'response.usage.total_tokens': 23
       }
 
       assert.equal(embedding[0].type, 'LlmEmbedding')
@@ -186,7 +182,7 @@ test.afterEach(afterEach)
           'http.statusCode': 400,
           'error.message': expectedMsg,
           'error.code': expectedType,
-          embedding_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+          embedding_id: /[a-f0-9]{32}/
         },
         agentAttributes: {
           spanId: /\w+/
@@ -204,8 +200,7 @@ test.afterEach(afterEach)
       const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
       const [segment] = tx.trace.getChildren(tx.trace.root.id)
       const expectedEmbedding = {
-        id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
-        appName: 'New Relic for Node.js tests',
+        id: /[a-f0-9]{32}/,
         request_id: '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
         trace_id: tx.traceId,
         span_id: segment.id,

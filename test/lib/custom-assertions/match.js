@@ -70,7 +70,7 @@ module.exports = function match(actual, expected, { assert = require('node:asser
         // eslint-disable-next-line valid-typeof
         assert.ok(typeof actual[key] === TYPE_MAPPINGS[type.name])
       } else if (expected[key] instanceof RegExp) {
-        assert.ok(expected[key].test(actual[key]))
+        assert.ok(expected[key].test(actual[key]), `expected: ${expected[key]}, got ${actual[key]}`)
       } else if (typeof expected[key] === 'object' && expected[key] !== null) {
         match(actual[key], expected[key], { assert })
       } else {
