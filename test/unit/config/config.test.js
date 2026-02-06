@@ -537,4 +537,23 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.enabled, true)
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.type, 'reduced')
   })
+
+  await t.test('should set cpu profiling options', () => {
+    const config = {
+      profiling: {
+        enabled: true,
+        sample_interval_ms: 200,
+        include: ['cpu'],
+        cpu: {
+          report_interval_ms: 50
+        }
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    assert.equal(configuration.profiling.enabled, true)
+    assert.equal(configuration.profiling.sample_interval_ms, 200)
+    assert.deepEqual(configuration.profiling.include, ['cpu'])
+    assert.equal(configuration.profiling.cpu.report_interval_ms, 50)
+  })
 })

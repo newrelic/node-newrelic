@@ -479,6 +479,23 @@ test('when overriding configuration values via environment variables', async (t)
     end()
   })
 
+  await t.test('should set the profiling options', (t, end) => {
+    const env = {
+      NEW_RELIC_PROFILING_ENABLED: true,
+      NEW_RELIC_PROFILING_INCLUDE: ['heap'],
+      NEW_RELIC_PROFILING_SAMPLE_INTERVAL_MS: 150,
+      NEW_RELIC_PROFILING_HEAP_REPORT_INTERVAL_MS: 200
+    }
+
+    idempotentEnv(env, (tc) => {
+      assert(tc.profiling.enabled, true)
+      assert.deepStrictEqual(tc.profiling.include, ['heap'])
+      assert.equal(tc.profiling.sample_interval_ms, 150)
+      assert.equal(tc.profiling.heap.report_interval_ms, 200)
+      end()
+    })
+  })
+
   await t.test('should pick up the log filepath', (t, end) => {
     idempotentEnv({ NEW_RELIC_LOG: '/highway/to/the/danger/zone' }, (tc) => {
       assert.equal(tc.logging.filepath, '/highway/to/the/danger/zone')
