@@ -22,7 +22,10 @@ async function initNestApp() {
     // out so badly that they can't clean up.
     await deleteNestApp()
   }
-  await exec('npx nest new --package-manager npm --skip-git test-app')
+  // skip install of deps because we will install them later to force peer dep failures on nest 10.x
+  await exec('npx nest new --package-manager npm --skip-git --skip-install test-app')
+  // on versions of nest 10.x peer dep issues exist, ignore them and force install
+  await exec('npm install --prefix test-app --force', { cwd: __dirname })
   // We patch the default Nest app with some of our own functions.
   for (const fname of ['main.ts', 'app.controller.ts']) {
     await fsPromises.copyFile(`${PATCH_DIR}/${fname}`, `${APP_DIR}/src/${fname}`)
