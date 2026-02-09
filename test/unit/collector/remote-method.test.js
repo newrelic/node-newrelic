@@ -46,12 +46,12 @@ test('should default to protocol 17', () => {
 
 test('should default to json content type', () => {
   const method = new RemoteMethod({ name: 'test', agent: BARE_AGENT })
-  assert.equal(method.contentType, 'application/json')
+  assert.equal(method._contentType, 'application/json')
 })
 
 test('should use octet stream for content type for pprof_data method', () => {
-  const method = new RemoteMethod({ name: 'pprof_data', agent: BARE_AGENT })
-  assert.equal(method.contentType, 'application/octet-stream')
+  const method = new RemoteMethod({ name: 'pprof_data', agent: BARE_AGENT, contentType: 'application/octet-stream' })
+  assert.equal(method._contentType, 'application/octet-stream')
 })
 
 test('serialize', async (t) => {
