@@ -22,32 +22,42 @@ const RUN_ID = 1337
 const BARE_AGENT = { config: {}, metrics: { measureBytes() {} } }
 
 test('should require a name for the method to call', () => {
-  assert.throws(() => new RemoteMethod())
+  assert.throws(() => new RemoteMethod({}))
 })
 
 test('should require an agent for the method to call', () => {
-  assert.throws(() => new RemoteMethod('test'))
+  assert.throws(() => new RemoteMethod({ name: 'test' }))
 })
 
 test('should expose a call method as its public API', () => {
-  const method = new RemoteMethod('test', BARE_AGENT)
+  const method = new RemoteMethod({ name: 'test', agent: BARE_AGENT })
   assert.equal(typeof method.invoke, 'function')
 })
 
 test('should expose its name', () => {
-  const method = new RemoteMethod('test', BARE_AGENT)
+  const method = new RemoteMethod({ name: 'test', agent: BARE_AGENT })
   assert.equal(method.name, 'test')
 })
 
 test('should default to protocol 17', () => {
-  const method = new RemoteMethod('test', BARE_AGENT)
+  const method = new RemoteMethod({ name: 'test', agent: BARE_AGENT })
   assert.equal(method._protocolVersion, 17)
+})
+
+test('should default to json content type', () => {
+  const method = new RemoteMethod({ name: 'test', agent: BARE_AGENT })
+  assert.equal(method.contentType, 'application/json')
+})
+
+test('should use octet stream for content type for pprof_data method', () => {
+  const method = new RemoteMethod({ name: 'pprof_data', agent: BARE_AGENT })
+  assert.equal(method.contentType, 'application/octet-stream')
 })
 
 test('serialize', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
-    ctx.nr.method = new RemoteMethod('test', BARE_AGENT)
+    ctx.nr.method = new RemoteMethod({ name: 'test', agent: BARE_AGENT })
   })
 
   await t.test('should JSON-encode the given payload', (t, end) => {
@@ -102,7 +112,7 @@ test('_safeRequest', async (t) => {
     ctx.nr.agent = helper.instrumentMockedAgent()
     ctx.nr.agent.config = { max_payload_size_in_bytes: 100 }
 
-    ctx.nr.method = new RemoteMethod('test', ctx.nr.agent)
+    ctx.nr.method = new RemoteMethod({ name: 'test', agent: ctx.nr.agent, endpoint: {} })
 
     ctx.nr.options = {
       host: 'collector.newrelic.com',
@@ -181,7 +191,7 @@ test('_safeRequest', async (t) => {
 
 test('when calling a method on the collector', async (t) => {
   await t.test('should not throw when dealing with compressed data', (t, end) => {
-    const method = new RemoteMethod('test', BARE_AGENT, { host: 'localhost' })
+    const method = new RemoteMethod({ name: 'test', agent: BARE_AGENT, endpoint: { host: 'localhost' } })
     method._shouldCompress = () => true
     method._safeRequest = (options) => {
       assert.equal(options.body.readUInt8(0), 31)
@@ -192,7 +202,7 @@ test('when calling a method on the collector', async (t) => {
   })
 
   await t.test('should not throw when preparing uncompressed data', (t, end) => {
-    const method = new RemoteMethod('test', BARE_AGENT, { host: 'localhost' })
+    const method = new RemoteMethod({ name: 'test', agent: BARE_AGENT, endpoint: { host: 'localhost' } })
     method._safeRequest = (options) => {
       assert.equal(options.body, '"data"')
       end()
@@ -219,7 +229,7 @@ test('when the connection fails', async (t) => {
 
     const config = { max_payload_size_in_bytes: 100_000 }
     const endpoint = { host: 'localhost', port: 8765 }
-    const method = new RemoteMethod('TEST', { ...BARE_AGENT, config }, endpoint)
+    const method = new RemoteMethod({ name: 'TEST', agent: { ...BARE_AGENT, config }, endpoint })
     method.invoke({ message: 'none' }, {}, (error) => {
       assert.equal(error.code, 'ECONNREFUSED')
       end()
@@ -239,7 +249,7 @@ test('when the connection fails', async (t) => {
 
     const config = { max_payload_size_in_bytes: 100_000 }
     const endpoint = { host: 'failed.domain.cxlrg', port: 80 }
-    const method = new RemoteMethod('TEST', { ...BARE_AGENT, config }, endpoint)
+    const method = new RemoteMethod({ name: 'TEST', agent: { ...BARE_AGENT, config }, endpoint })
     method.invoke([], {}, (error) => {
       assert.equal(error.message, 'no dns')
       end()
@@ -264,9 +274,11 @@ test('when posting to collector', async (t) => {
     ctx.nr.endpoint = { host: collector.host, port: collector.port }
 
     ctx.nr.method = new RemoteMethod(
-      'metric_data',
-      { ...BARE_AGENT, config: ctx.nr.config },
-      ctx.nr.endpoint
+      {
+        name: 'metric_data',
+        agent: { ...BARE_AGENT, config: ctx.nr.config },
+        endpoint: ctx.nr.endpoint
+      }
     )
   })
 
@@ -389,9 +401,11 @@ test('when generating headers for a plain request', async (t) => {
 
     const body = 'test☃'
     ctx.nr.method = new RemoteMethod(
-      body,
-      { ...BARE_AGENT, config: ctx.nr.config },
-      ctx.nr.endpoint
+      {
+        name: body,
+        agent: { ...BARE_AGENT, config: ctx.nr.config },
+        endpoint: ctx.nr.endpoint
+      }
     )
 
     ctx.nr.options = { body, compressed: false }
@@ -453,9 +467,11 @@ test('when generating headers for a compressed request', async (t) => {
 
     const body = 'test☃'
     ctx.nr.method = new RemoteMethod(
-      body,
-      { ...BARE_AGENT, config: ctx.nr.config },
-      ctx.nr.endpoint
+      {
+        name: body,
+        agent: { ...BARE_AGENT, config: ctx.nr.config },
+        endpoint: ctx.nr.endpoint
+      }
     )
 
     ctx.nr.options = { body, compressed: true }
@@ -509,9 +525,11 @@ test('when generating headers request URL', async (t) => {
     ctx.nr.endpoint = { host: collector.host, port: collector.port }
 
     ctx.nr.method = new RemoteMethod(
-      TEST_METHOD,
-      { ...BARE_AGENT, config: ctx.nr.config },
-      ctx.nr.endpoint
+      {
+        name: TEST_METHOD,
+        agent: { ...BARE_AGENT, config: ctx.nr.config },
+        endpoint: ctx.nr.endpoint
+      }
     )
 
     ctx.nr.parsed = new URL(`http://${collector.host}:${collector.port}${ctx.nr.method._path()}`)
@@ -540,7 +558,7 @@ test('when generating headers request URL', async (t) => {
 
   await t.test('should not include the agent run ID when not set', (t) => {
     const { config, endpoint } = t.nr
-    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
+    const method = new RemoteMethod({ name: TEST_METHOD, agent: { config }, endpoint })
     const parsed = new URL(`http://${endpoint.host}:${endpoint.port}${method._path()}`)
     assert.equal(parsed.searchParams.has('run_id'), false)
   })
@@ -548,7 +566,7 @@ test('when generating headers request URL', async (t) => {
   await t.test('should include the agent run ID when set', (t) => {
     const { config, endpoint } = t.nr
     config.run_id = TEST_RUN_ID
-    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
+    const method = new RemoteMethod({ name: TEST_METHOD, agent: { config }, endpoint })
     const parsed = new URL(`http://${endpoint.host}:${endpoint.port}${method._path()}`)
     assert.equal(parsed.searchParams.get('run_id'), TEST_RUN_ID)
   })
@@ -569,7 +587,7 @@ test('when generating the User-Agent string', async (t) => {
     pkg.version = TEST_VERSION
 
     ctx.nr.config = new Config({})
-    ctx.nr.method = new RemoteMethod('test', { config: ctx.nr.config }, {})
+    ctx.nr.method = new RemoteMethod({ name: 'test', agent: { config: ctx.nr.config }, endpoint: {} })
     ctx.nr.userAgent = ctx.nr.method._userAgent()
   })
 
@@ -618,8 +636,8 @@ test('record data usage supportability metrics', async (t) => {
   await t.test('should aggregate bytes of uploaded payloads', async (t) => {
     const { agent, endpoint } = t.nr
 
-    const method1 = new RemoteMethod('preconnect', agent, endpoint)
-    const method2 = new RemoteMethod('connect', agent, endpoint)
+    const method1 = new RemoteMethod({ name: 'preconnect', agent, endpoint })
+    const method2 = new RemoteMethod({ name: 'connect', agent, endpoint })
     const payload = [{ hello: 'world' }]
     const expectedSize = 19
     const totalMetric = [2, expectedSize * 2, 79, expectedSize, expectedSize, 722]
@@ -653,7 +671,7 @@ test('record data usage supportability metrics', async (t) => {
     const payloadSize = byteLength(payload)
     const responseSize = byteLength(response)
     const metric = [1, payloadSize, responseSize, 19, 19, 361]
-    const method = new RemoteMethod('preconnect', agent, endpoint)
+    const method = new RemoteMethod({ name: 'preconnect', agent, endpoint })
 
     // Stub call to NR so we can test response payload metrics:
     method._post = (data, nrHeaders, callback) => {
@@ -679,7 +697,7 @@ test('record data usage supportability metrics', async (t) => {
     const payload = [{ hello: 'world' }]
     const payloadSize = byteLength(payload)
     const metric = [1, payloadSize, 0, 19, 19, 361]
-    const method = new RemoteMethod('preconnect', agent, endpoint)
+    const method = new RemoteMethod({ name: 'preconnect', agent, endpoint })
 
     // Stub call to NR so we can test response payload metrics:
     method._post = (data, nrHeaders, callback) => {
@@ -741,7 +759,7 @@ test('_safeRequest logging', async (t) => {
 
   await t.test('should redact license key in logs', (t) => {
     const { RemoteMethod, options, config } = t.nr
-    const method = new RemoteMethod('test', { config })
+    const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
     method._safeRequest(options)
     assert.deepStrictEqual(
       t.nr.logs.trace,
@@ -765,7 +783,7 @@ test('_safeRequest logging', async (t) => {
     config.logging = { level: 'info' }
     config.audit_log = { enabled: true, endpoints: ['test'] }
 
-    const method = new RemoteMethod('test', { config })
+    const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
     method._safeRequest(options)
     assert.deepStrictEqual(
       t.nr.logs.info,
@@ -787,7 +805,7 @@ test('_safeRequest logging', async (t) => {
     const { RemoteMethod, options, config, logger } = t.nr
     logger.traceEnabled = () => false
 
-    const method = new RemoteMethod('test', { config })
+    const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
     method._safeRequest(options)
     assert.equal(t.nr.logs.info.length, 0)
     assert.equal(t.nr.logs.trace.length, 0)
