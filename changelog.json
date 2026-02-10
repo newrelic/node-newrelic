@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.25.1",
+      "changes": {
+        "security": [
+          "Bumped minimum version of security agent"
+        ],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
       "version": "12.25.0",
       "changes": {
         "security": [],

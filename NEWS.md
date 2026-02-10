@@ -1,3 +1,10 @@
+### v12.25.1 (2026-02-10)
+
+#### Security improvements
+
+* Bumped minimum version of security agent ([#3713](https://github.com/newrelic/node-newrelic/pull/3713)) ([88b2334](https://github.com/newrelic/node-newrelic/commit/88b2334294f5b62a56599c48dc7cacb85a3e0bc2))
+    * Co-authored-by: Bob Evans <revans@newrelic.com>
+
 ### v12.25.0 (2025-07-09)
 
 #### Features
