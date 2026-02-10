@@ -1,7 +1,14 @@
 name: Create Release
 
 # Manual trigger only
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      npm_tag:
+        description: Tag to apply when publishing to npm. You likely want "previous" if you need to change this.
+        type: string
+        default: latest
+        required: true
 
 # Since we are reusing a workflow, we must match the permissions that
 # upstream workflow requires.
@@ -14,3 +21,4 @@ jobs:
     uses: newrelic/node-newrelic/.github/workflows/release-creation.yml@main
     with:
       workflows: ci-workflow.yml,smoke-test-workflow.yml
+      npm_tag: ${{ github.event.inputs.npm_tag }}

@@ -18,6 +18,11 @@ on:
         type: boolean
         required: false
         default: false
+      npm_tag:
+        description: Tag to apply when publishing to npm. You likely want "previous" if you need to change this.
+        type: string
+        default: latest
+        required: false
 
 permissions:
   # This permission is needed so that git tags can be created.
@@ -69,7 +74,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish to Npm
-      run: npm publish
+      run: npm publish --tag ${{ inputs.npm_tag }}
     - name: Get Created Tag
       id: get_tag
       run: echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
