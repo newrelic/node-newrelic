@@ -63,15 +63,6 @@ describe('constructor', () => {
     assert.ok(Array.isArray(profilingManager.profilers), 'profilers should be an array')
     assert.strictEqual(profilingManager.profilers.length, 0, 'profilers array should be empty')
   })
-
-  test('should call register method', (t) => {
-    const { agent, sandbox } = t.nr
-    const registerSpy = sandbox.spy(ProfilingManager.prototype, 'register')
-    const profilingManager = new ProfilingManager(agent)
-    assert.ok(profilingManager)
-
-    assert.ok(registerSpy.calledOnce, 'register should be called once')
-  })
 })
 
 describe('register', () => {

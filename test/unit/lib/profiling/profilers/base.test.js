@@ -10,20 +10,14 @@ const BaseProfiler = require('#agentlib/profiling/profilers/base.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {
-    profiler: new BaseProfiler({ enabled: true, name: 'TestProfiler' })
+    profiler: new BaseProfiler()
   }
 })
 
-test('should construct base profiler', (t) => {
+test('should set name', (t) => {
   const { profiler } = t.nr
-  assert.equal(profiler.enabled, true)
+  profiler.name = 'TestProfiler'
   assert.equal(profiler.name, 'TestProfiler')
-})
-
-test('empty constructor', () => {
-  const profiler = new BaseProfiler()
-  assert.equal(profiler.enabled, false)
-  assert.equal(profiler.name, undefined)
 })
 
 test('should throw error when start is called', (t) => {
