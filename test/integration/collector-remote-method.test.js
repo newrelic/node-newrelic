@@ -60,7 +60,7 @@ test('DataSender (callback style) talking to fake collector', async (t) => {
     res.json({ payload: result })
   })
 
-  const method = new RemoteMethod('preconnect', agent, endpoint)
+  const method = new RemoteMethod({ name: 'preconnect', agent, endpoint })
   method._post('[]', {}, (error, results) => {
     if (error) {
       return reject(error)
@@ -105,7 +105,7 @@ test('should record metrics about data usage', async (t) => {
     host: collector.host,
     port: collector.port
   }
-  const method = new RemoteMethod('preconnect', agent, endpoint)
+  const method = new RemoteMethod({ name: 'preconnect', agent, endpoint })
 
   const byteLength = (data) => Buffer.byteLength(JSON.stringify(data), 'utf8')
   const payload = [{ hello: 'world' }]

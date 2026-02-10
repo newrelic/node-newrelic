@@ -314,6 +314,10 @@ const apiMethods = [
         }
       }
     ]
+  },
+  {
+    key: 'pprof_data',
+    data: Buffer.from('fake pprof data')
   }
 ]
 

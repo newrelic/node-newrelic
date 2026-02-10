@@ -79,5 +79,5 @@ function createRemoteMethod(port, cert) {
   config.certificates = [cert.certificate]
 
   const agent = { config, metrics: { measureBytes() {} } }
-  return new RemoteMethod('fake', agent, endpoint)
+  return new RemoteMethod({ name: 'fake', agent, endpoint })
 }
