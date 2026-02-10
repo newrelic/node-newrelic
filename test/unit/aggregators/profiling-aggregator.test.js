@@ -34,6 +34,7 @@ test.beforeEach((ctx) => {
   sandbox.spy(agent.collector, 'send')
   const profilingAggregator = new ProfilingAggregator({ runId: RUN_ID, periodMs: 100 }, agent)
   const profilingManager = profilingAggregator.profilingManager
+  sandbox.spy(profilingManager, 'register')
   profilingAggregator.profilingManager.profilers = [cpuProfiler, heapProfiler]
   ctx.nr = {
     agent,
@@ -63,8 +64,10 @@ test('should initialize pprofData and profilingManager', (t) => {
 })
 
 test('should send 2 messages per interval', (t) => {
-  const { profilingAggregator, clock, agent } = t.nr
+  const { profilingAggregator, profilingManager, clock, agent } = t.nr
+  assert.equal(profilingManager.register.callCount, 0)
   profilingAggregator.start()
+  assert.equal(profilingManager.register.callCount, 1)
   assert.equal(agent.collector.send.callCount, 0)
   clock.tick(100)
   assert.equal(agent.collector.send.callCount, 2)
