@@ -80,8 +80,23 @@ function assertChatCompletionMessages(
   }
 }
 
+/**
+ * Asserts that the OpenAI LlmChatCompletionSummary has the expected properties.
+ * @param {object} params1 main params object
+ * @param {Transaction} params1.tx associated transaction
+ * @param {string} params1.model LLM id
+ * @param {LlmChatCompletionSummary} params1.chatSummary The `LlmChatCompletionSummary` to check.
+ * @param {boolean} [params1.error] Should `chatSummary.error` equal `true`? Defaults to `false`.
+ * @param {boolean} [params1.singleInput] Does this chatSummary have a single input/request message? Defaults to `false`.
+ * @param {boolean} [params1.streaming] Was this created via a streaming API? Defaults to `false`.
+ * @param {number} [params1.promptTokens] Prompt tokens, defaults to 11.
+ * @param {number} [params1.completionTokens] Completion tokens, defaults to 53.
+ * @param {number} [params1.totalTokens] Total tokens, defaults to 64.
+ * @param {object} [params2] params object to contain assert library
+ * @param {object} [params2.assert] assert library to use
+ */
 function assertChatCompletionSummary(
-  { tx, model, chatSummary, error, singleInput = false, streaming, promptTokens = 11, completionTokens = 53, totalTokens = 64 },
+  { tx, model, chatSummary, error = false, singleInput = false, streaming = false, promptTokens = 11, completionTokens = 53, totalTokens = 64 },
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
