@@ -229,7 +229,8 @@
   "optionalDependencies": {
     "@newrelic/fn-inspect": "^4.4.0",
     "@newrelic/native-metrics": "^12.0.0",
-    "@prisma/prisma-fmt-wasm": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085"
+    "@prisma/prisma-fmt-wasm": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+    "@datadog/pprof": "^5.13.3"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.556.0",
