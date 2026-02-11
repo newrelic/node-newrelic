@@ -483,15 +483,15 @@ test('when overriding configuration values via environment variables', async (t)
     const env = {
       NEW_RELIC_PROFILING_ENABLED: true,
       NEW_RELIC_PROFILING_INCLUDE: ['heap'],
-      NEW_RELIC_PROFILING_SAMPLE_INTERVAL_MS: 150,
-      NEW_RELIC_PROFILING_HEAP_REPORT_INTERVAL_MS: 200
+      NEW_RELIC_PROFILING_SAMPLE_INTERVAL: 150,
+      NEW_RELIC_PROFILING_HEAP_REPORT_INTERVAL: 200
     }
 
     idempotentEnv(env, (tc) => {
       assert(tc.profiling.enabled, true)
       assert.deepStrictEqual(tc.profiling.include, ['heap'])
-      assert.equal(tc.profiling.sample_interval_ms, 150)
-      assert.equal(tc.profiling.heap.report_interval_ms, 200)
+      assert.equal(tc.profiling.sample_interval, 150)
+      assert.equal(tc.profiling.heap.report_interval, 200)
       end()
     })
   })

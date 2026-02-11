@@ -348,10 +348,10 @@ test('with default properties', async (t) => {
 
   await t.test('profiling defaults', () => {
     assert.equal(configuration.profiling.enabled, false)
-    assert.equal(configuration.profiling.sample_interval_ms, 100)
+    assert.equal(configuration.profiling.sample_interval, 100)
     assert.deepEqual(configuration.profiling.include, ['cpu', 'heap'])
-    assert.equal(configuration.profiling.cpu.report_interval_ms, 0)
-    assert.equal(configuration.profiling.heap.report_interval_ms, 0)
+    assert.equal(configuration.profiling.cpu.report_interval, 0)
+    assert.equal(configuration.profiling.heap.report_interval, 0)
   })
 
   await t.test('opentelemetry', () => {
