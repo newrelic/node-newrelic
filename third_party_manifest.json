@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Feb 11 2026 12:47:30 GMT-0600 (Central Standard Time)",
+  "lastUpdated": "Wed Feb 11 2026 16:05:35 GMT-0600 (Central Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -387,7 +387,7 @@
     "@newrelic/eslint-config@0.6.0": {
       "name": "@newrelic/eslint-config",
       "version": "0.6.0",
-      "range": "^0.6.0",
+      "range": "^0.7.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/eslint-config-newrelic",
       "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.6.0",

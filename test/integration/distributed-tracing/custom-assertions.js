@@ -40,7 +40,7 @@ function exact(object, fixture) {
       // value to check for. Our Transaction expects a string value. Instead
       // of mutating the `Tracestate` object after it is created in the test,
       // we re-define the fixture value in-place.
-      // eslint-disable-next-line sonarjs/updated-loop-counter
+
       fixtureValue = 'App'
     }
 

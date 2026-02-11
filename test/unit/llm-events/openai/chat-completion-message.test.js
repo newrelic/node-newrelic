@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionMessage = require('../../../../lib/llm-events/openai/chat-completion-message')
+const { LlmChatCompletionMessage } = require('#agentlib/llm-events/openai/index.js')
 const helper = require('../../../lib/agent_helper')
 
 test('both APIs', async (t) => {
@@ -24,17 +24,19 @@ test('both APIs', async (t) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     const conversationId = 'convo-id'
-    helper.runInTransaction(agent, () => {
-      api.addCustomAttribute('llm.conversation_id', conversationId)
-      const chatMessageEvent = new LlmChatCompletionMessage({
-        transaction: {},
-        agent,
-        segment: {},
-        request: {},
-        response: {}
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        api.addCustomAttribute('llm.conversation_id', conversationId)
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment: api.shim.getActiveSegment(),
+          transaction: tx,
+          request: {},
+          response: {}
+        })
+        assert.equal(chatMessageEvent['llm.conversation_id'], conversationId)
+        end()
       })
-      assert.equal(chatMessageEvent['llm.conversation_id'], conversationId)
-      end()
     })
   })
 
@@ -44,17 +46,19 @@ test('both APIs', async (t) => {
     const conversationId = 'convo-id'
     agent.config.ai_monitoring.record_content.enabled = false
 
-    helper.runInTransaction(agent, () => {
-      api.addCustomAttribute('llm.conversation_id', conversationId)
-      const chatMessageEvent = new LlmChatCompletionMessage({
-        agent,
-        segment: {},
-        transaction: {},
-        request: {},
-        response: {}
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        api.addCustomAttribute('llm.conversation_id', conversationId)
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment: api.shim.getActiveSegment(),
+          transaction: tx,
+          request: {},
+          response: {}
+        })
+        assert.equal(chatMessageEvent.content, undefined)
+        end()
       })
-      assert.equal(chatMessageEvent.content, undefined)
-      end()
     })
   })
 })
@@ -90,7 +94,7 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: req.messages[0],
-          index: 0
+          sequence: 0,
         })
         const expected = getExpectedResult(tx, { id: 'res-id-0' }, 'message', summaryId)
         expected.timestamp = segment.timer.start
@@ -115,7 +119,8 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: chatRes.choices[0].message,
-          index: 2
+          sequence: 2,
+          isResponse: true
         })
         const expected = getExpectedResult(tx, { id: 'res-id-2' }, 'message', summaryId)
         expected.sequence = 2
@@ -154,7 +159,7 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: req.messages[0],
-          index: 0
+          sequence: 0
         })
         assert.equal(chatMessageEvent.token_count, expectedCount)
         end()
@@ -183,7 +188,7 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: chatRes.choices[0].message,
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, expectedCount)
         end()
@@ -207,7 +212,7 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: chatRes.choices[0].message,
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -219,7 +224,7 @@ test('openai.chat.completions.create', async (t) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     function cb() {
-    // empty cb
+      // empty cb
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
@@ -235,7 +240,7 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: chatRes.choices[0].message,
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -263,7 +268,7 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: chatRes.choices[0].message,
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -291,7 +296,7 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: chatRes.choices[0].message,
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -316,7 +321,7 @@ test('openai.chat.completions.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: chatRes.choices[0].message,
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -353,7 +358,7 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 0
+          sequence: 0
         })
         const expected = getExpectedResult(tx, { id: 'resp_id-0' }, 'message', summaryId)
         expected.token_count = 0
@@ -382,8 +387,9 @@ test('openai.responses.create', async (t) => {
           request: req,
           response,
           completionId: summaryId,
-          message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 2
+          message: { content, role },
+          isResponse: true,
+          sequence: 2
         })
         const expected = getExpectedResult(tx, { id: 'resp_id-2' }, 'message', summaryId)
         expected.sequence = 2
@@ -424,7 +430,7 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 0
+          sequence: 0
         })
         assert.equal(chatMessageEvent.token_count, expectedCount)
         end()
@@ -465,7 +471,7 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, expectedCount)
         end()
@@ -491,7 +497,7 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -503,7 +509,7 @@ test('openai.responses.create', async (t) => {
     const { agent } = t.nr
     const api = helper.getAgentApi()
     function cb() {
-    // empty cb
+      // empty cb
     }
     api.setLlmTokenCountCallback(cb)
     helper.runInTransaction(agent, (tx) => {
@@ -521,7 +527,7 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -551,7 +557,7 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -581,7 +587,7 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -607,7 +613,7 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
@@ -640,7 +646,7 @@ test('openai.responses.create', async (t) => {
           response: chatRes,
           completionId: summaryId,
           message: { content, role }, // lib/instrumentation/openai.js sets this object up
-          index: 2
+          sequence: 2
         })
         assert.equal(chatMessageEvent.token_count, undefined)
         end()
