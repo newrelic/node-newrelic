@@ -18,7 +18,6 @@ function assertChatCompletionMessages(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
-    appName: 'New Relic for Node.js tests',
     request_id: '49dbbffbd3c3f4612aa48def69059aad',
     trace_id: tx.traceId,
     span_id: segment.id,
@@ -26,8 +25,7 @@ function assertChatCompletionMessages(
     vendor: 'openai',
     ingest_source: 'Node',
     role: 'user',
-    is_response: false,
-    completion_id: /[a-f0-9]{36}/
+    completion_id: /[a-f0-9]{32}/
   }
 
   chatMsgs.forEach((msg) => {
@@ -66,14 +64,27 @@ function assertChatCompletionMessages(
   })
 }
 
+/**
+ * Asserts that the OpenAI LlmChatCompletionSummary has the expected properties.
+ * @param {object} params1 main params object
+ * @param {Transaction} params1.tx associated transaction
+ * @param {string} params1.model LLM id
+ * @param {LlmChatCompletionSummary} params1.chatSummary The `LlmChatCompletionSummary` to check.
+ * @param {boolean} [params1.error] Should `chatSummary.error` equal `true`? Defaults to `false`.
+ * @param {number} [params1.promptTokens] Prompt tokens, defaults to 11.
+ * @param {number} [params1.completionTokens] Completion tokens, defaults to 53.
+ * @param {number} [params1.totalTokens] Total tokens, defaults to 64.
+ * @param {boolean} [params1.noUsageTokens] Should the `chatSummary` have NOT recorded `response.usage.*tokens`? Defaults to `false`.
+ * @param {object} [params2] params object to contain assert library
+ * @param {object} [params2.assert] assert library to use
+ */
 function assertChatCompletionSummary(
   { tx, model, chatSummary, error = false, promptTokens = 53, completionTokens = 11, totalTokens = 64, noUsageTokens = false },
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {
-    id: /[a-f0-9]{36}/,
-    appName: 'New Relic for Node.js tests',
+    id: /[a-f0-9]{32}/,
     request_id: '49dbbffbd3c3f4612aa48def69059aad',
     trace_id: tx.traceId,
     span_id: segment.id,
@@ -91,9 +102,9 @@ function assertChatCompletionSummary(
     'response.headers.ratelimitRemainingRequests': '199',
     'response.number_of_messages': 3,
     'response.choices.finish_reason': 'stop',
-    error,
     timestamp: /\d{13}/
   }
+  if (error) expectedChatSummary.error = true
 
   if (!(error || noUsageTokens)) {
     expectedChatSummary['response.usage.prompt_tokens'] = promptTokens

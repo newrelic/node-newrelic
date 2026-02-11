@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionSummary = require('../../../../lib/llm-events/openai/chat-completion-summary')
+const { LlmChatCompletionSummary } = require('#agentlib/llm-events/openai/index.js')
 const helper = require('../../../lib/agent_helper')
 const ChatCompletions = require('./common-chat-api')
 const Responses = require('./common-responses-api')
@@ -79,7 +79,7 @@ test('should set error to true', (ctx, end) => {
         segment,
         request: {},
         response: {},
-        withError: true
+        error: true
       })
       assert.equal(true, chatSummaryEvent.error)
       end()
