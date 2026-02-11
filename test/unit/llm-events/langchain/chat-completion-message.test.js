@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LangChainCompletionMessage = require('../../../../lib/llm-events/langchain/chat-completion-message')
+const { LlmChatCompletionSummary } = require('#agentlib/llm-events/langchain/index.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -26,11 +26,6 @@ test.beforeEach((ctx) => {
 
   ctx.nr.agent = {
     config: {
-      ai_monitoring: {
-        record_content: {
-          enabled: true
-        }
-      },
       applications() {
         return ['test-app']
       }
@@ -44,8 +39,9 @@ test.beforeEach((ctx) => {
 
   ctx.nr.segment = {
     id: 'segment-1',
-    timer: {
-      start: 1768511347385
+    timer: { start: 1769450379777 },
+    getDurationInMillis() {
+      return 42
     }
   }
 
@@ -53,14 +49,9 @@ test.beforeEach((ctx) => {
   ctx.nr.metadata = { foo: 'foo' }
 })
 
-test('creates entity', async (t) => {
-  const msg = new LangChainCompletionMessage({
-    ...t.nr,
-    sequence: 1,
-    content: 'hello world',
-    isResponse: true
-  })
-  assert.equal(msg.id, 'run-1-1')
+test('summary has expected properties', async (t) => {
+  const msg = new LlmChatCompletionSummary(t.nr)
+  assert.match(msg.id, /[a-z0-9-]{32}/)
   assert.equal(msg.appName, 'test-app')
   assert.equal(msg['llm.conversation_id'], 'test-conversation')
   assert.equal(msg.span_id, 'segment-1')
@@ -70,48 +61,8 @@ test('creates entity', async (t) => {
   assert.equal(msg.ingest_source, 'Node')
   assert.equal(msg.vendor, 'langchain')
   assert.equal(msg.virtual_llm, true)
-  assert.equal(msg.sequence, 1)
-  assert.equal(msg.role, 'assistant', 'should assume assistant role based on isResponse=true')
-  assert.equal(msg.content, 'hello world')
-  assert.match(msg.completion_id, /[a-z0-9-]{36}/)
-  assert.equal(msg.timestamp, undefined, 'should not have a timestamp defined if isResponse=true')
-})
-
-test('assigns role if given', async(t) => {
-  const msg = new LangChainCompletionMessage({
-    ...t.nr,
-    sequence: 1,
-    content: 'hello world',
-    role: 'system'
-  })
-  assert.equal(msg.role, 'system')
-})
-
-test('assigns role and timestamp correctly if isResponse is false', async(t) => {
-  const msg = new LangChainCompletionMessage({
-    ...t.nr,
-    sequence: 0,
-    content: 'hello world',
-    isResponse: false
-  })
-  assert.equal(msg.role, 'user', 'role should be user')
-  assert.equal(msg.timestamp, t.nr.segment.timer.start, 'should have a timestamp defined if isResponse=false')
-})
-
-test('assigns id correctly', async (t) => {
-  let msg = new LangChainCompletionMessage({ ...t.nr, runId: '', sequence: 1 })
-  assert.match(msg.id, /[a-z0-9-]{36}-1/)
-
-  msg = new LangChainCompletionMessage({ ...t.nr, runId: '123456', sequence: 42 })
-  assert.equal(msg.id, '123456-42')
-})
-
-test('respects record_content setting', async (t) => {
-  t.nr.agent.config.ai_monitoring.record_content.enabled = false
-  const search = new LangChainCompletionMessage({
-    ...t.nr,
-    sequence: 1,
-    content: 'hello world'
-  })
-  assert.equal(search.content, undefined)
+  assert.equal(msg.tags, '')
+  assert.equal(msg.duration, 42)
+  assert.equal(msg['response.number_of_messages'], 0)
+  assert.equal(msg.timestamp, t.nr.segment.timer.start)
 })

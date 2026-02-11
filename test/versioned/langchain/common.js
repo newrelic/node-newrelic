@@ -28,7 +28,7 @@ function assertLangChainVectorSearch(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedSearch = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     appName: 'New Relic for Node.js tests',
     span_id: segment.id,
     trace_id: tx.traceId,
@@ -36,7 +36,6 @@ function assertLangChainVectorSearch(
     'request.query': expectedQuery,
     ingest_source: 'Node',
     vendor: 'langchain',
-    virtual_llm: true,
     'response.number_of_documents': responseDocumentSize,
     duration: segment.getDurationInMillis()
   }
@@ -52,7 +51,7 @@ function assertLangChainVectorSearchResult(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseSearchResult = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     search_id: vectorSearchId,
     appName: 'New Relic for Node.js tests',
     span_id: segment.id,
@@ -60,7 +59,6 @@ function assertLangChainVectorSearchResult(
     ingest_source: 'Node',
     vendor: 'langchain',
     'metadata.id': '2',
-    virtual_llm: true
   }
 
   vectorSearchResult.forEach((search) => {
@@ -84,11 +82,10 @@ function assertLangChainChatCompletionSummary(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedSummary = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     appName: 'New Relic for Node.js tests',
     span_id: segment.id,
     trace_id: tx.traceId,
-    request_id: undefined,
     ingest_source: 'Node',
     vendor: 'langchain',
     'metadata.key': 'value',
@@ -101,8 +98,8 @@ function assertLangChainChatCompletionSummary(
   }
 
   if (withCallback) {
-    expectedSummary.request_id = /[a-f0-9-]{36}/
-    expectedSummary.id = /[a-f0-9-]{36}/
+    expectedSummary.request_id = /[a-f0-9-]{32}/
+    expectedSummary.id = /[a-f0-9-]{32}/
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
@@ -122,20 +119,19 @@ function assertLangChainChatCompletionMessages(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
-    id: /[a-f0-9]{36}/,
+    id: /[a-f0-9]{32}/,
     appName: 'New Relic for Node.js tests',
     span_id: segment.id,
     trace_id: tx.traceId,
     ingest_source: 'Node',
     vendor: 'langchain',
     completion_id: chatSummary.id,
-    virtual_llm: true,
-    request_id: undefined
+    virtual_llm: true
   }
 
   if (withCallback) {
-    baseMsg.request_id = /[a-f0-9-]{36}/
-    baseMsg.id = /[a-f0-9-]{36}/
+    baseMsg.request_id = /[a-f0-9-]{32}/
+    baseMsg.id = /[a-f0-9-]{32}/
   }
 
   chatMsgs.forEach((msg) => {
@@ -143,7 +139,6 @@ function assertLangChainChatCompletionMessages(
     if (msg[1].sequence === 0) {
       expectedChatMsg.sequence = 0
       expectedChatMsg.content = input
-      expectedChatMsg.is_response = false
       expectedChatMsg.role = 'user'
       expectedChatMsg.timestamp = /\d{13}/
     } else if (msg[1].sequence === 1) {
