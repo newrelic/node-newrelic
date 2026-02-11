@@ -17,17 +17,27 @@
       "engines": {
         "node": ">=20"
       },
-      "comment": "because @langchain/core and @langchain/openai need to be the same major version, we will only test >=1.0.0 to avoid v0 vs. v1 conflict",
       "dependencies": {
         "@langchain/core": ">=1.0.0",
-        "@langchain/community": ">=1.0.0",
-        "@langchain/openai": ">=1.0.0",
-        "openai": "4.90.0",
-        "@elastic/elasticsearch": "8.13.1"
+        "@langchain/openai": ">=1.0.0"
       },
       "files": [
         "runnables.test.js",
-        "runnables-streaming.test.js",
+        "runnables-streaming.test.js"
+      ]
+    },
+     {
+      "engines": {
+        "node": ">=20"
+      },
+      "comment": "because @langchain/core and @langchain/community need to be the same minor version because of peer deps, we have to test with latest",
+      "dependencies": {
+        "@langchain/core": "latest",
+        "@langchain/community": "latest",
+        "@langchain/openai": "latest",
+        "@elastic/elasticsearch": "8.13.1"
+      },
+      "files": [
         "vectorstore.test.js"
       ]
     }
