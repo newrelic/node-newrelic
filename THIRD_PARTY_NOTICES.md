@@ -305,7 +305,7 @@ This product includes source derived from [@apm-js-collab/tracing-hooks](https:/
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.14.3](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.14.3)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.14.3/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.13.3](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.13.3)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.13.3/LICENSE):
 
 ```
                                  Apache License
@@ -1187,7 +1187,7 @@ This product includes source derived from [@opentelemetry/api](https://github.co
 
 ### @opentelemetry/core
 
-This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.5.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.5.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.5.0/LICENSE):
+This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE):
 
 ```
                                  Apache License
@@ -1605,7 +1605,7 @@ This product includes source derived from [@opentelemetry/exporter-metrics-otlp-
 
 ### @opentelemetry/resources
 
-This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.5.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.5.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.5.0/LICENSE):
+This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE):
 
 ```
                                  Apache License
@@ -2023,7 +2023,7 @@ This product includes source derived from [@opentelemetry/sdk-logs](https://gith
 
 ### @opentelemetry/sdk-metrics
 
-This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.5.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.5.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.5.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE):
 
 ```
                                  Apache License
@@ -2232,7 +2232,7 @@ This product includes source derived from [@opentelemetry/sdk-metrics](https://g
 
 ### @opentelemetry/sdk-trace-base
 
-This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.5.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.5.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.5.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.0.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.0.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.0.1/LICENSE):
 
 ```
                                  Apache License
@@ -2530,7 +2530,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.15.0](https://github.com/nodejs/import-in-the-middle/tree/v1.15.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.15.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.13.2](https://github.com/nodejs/import-in-the-middle/tree/v1.13.2)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.13.2/LICENSE):
 
 ```
                                  Apache License
@@ -2905,7 +2905,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.3](https://github.com/npm/node-semver/tree/v7.7.3)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.3/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.2](https://github.com/npm/node-semver/tree/v7.7.2)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.2/LICENSE):
 
 ```
 The ISC License
@@ -3408,7 +3408,7 @@ SOFTWARE.
 
 ### @newrelic/eslint-config
 
-This product includes source derived from [@newrelic/eslint-config](https://github.com/newrelic/eslint-config-newrelic) ([v0.7.0](https://github.com/newrelic/eslint-config-newrelic/tree/v0.7.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/eslint-config-newrelic/blob/v0.7.0/LICENSE):
+This product includes source derived from [@newrelic/eslint-config](https://github.com/newrelic/eslint-config-newrelic) ([v0.6.0](https://github.com/newrelic/eslint-config-newrelic/tree/v0.6.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/eslint-config-newrelic/blob/v0.6.0/LICENSE):
 
 ```
                                  Apache License
@@ -4568,7 +4568,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1693.0](https://github.com/aws/aws-sdk-js/tree/v2.1693.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1693.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1692.0](https://github.com/aws/aws-sdk-js/tree/v2.1692.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1692.0/LICENSE.txt):
 
 ```
 
@@ -4969,7 +4969,7 @@ SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.8.0](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.8.0)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.8.0/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v50.6.14](https://github.com/gajus/eslint-plugin-jsdoc/tree/v50.6.14)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v50.6.14/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -5001,7 +5001,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.39.2](https://github.com/eslint/eslint/tree/v9.39.2)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.39.2/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v9.26.0](https://github.com/eslint/eslint/tree/v9.26.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v9.26.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -5028,7 +5028,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v5.2.1](https://github.com/expressjs/express/tree/v5.2.1)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v5.2.1/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v5.1.0](https://github.com/expressjs/express/tree/v5.1.0)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v5.1.0/LICENSE):
 
 ```
 (The MIT License)
@@ -5164,7 +5164,7 @@ SOFTWARE.
 
 ### jsdoc
 
-This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.5](https://github.com/jsdoc/jsdoc/tree/v4.0.5)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.5/LICENSE.md):
+This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.4](https://github.com/jsdoc/jsdoc/tree/v4.0.4)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.4/LICENSE.md):
 
 ```
 # License
@@ -5530,7 +5530,7 @@ SOFTWARE.
 
 ### protobufjs
 
-This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.4](https://github.com/protobufjs/protobuf.js/tree/v7.5.4)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.4/LICENSE):
+This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.3](https://github.com/protobufjs/protobuf.js/tree/v7.5.3)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.3/LICENSE):
 
 ```
 This license applies to all parts of protobuf.js except those files
@@ -5638,19 +5638,19 @@ MIT License
 
 Copyright (c) <year> <copyright holders>
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-associated documentation files (the "Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
+associated documentation files (the "Software"), to deal in the Software without restriction, including 
+without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the 
 following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial
+The above copyright notice and this permission notice shall be included in all copies or substantial 
 portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
-EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT 
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO 
+EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
