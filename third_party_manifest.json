@@ -4,6 +4,18 @@
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
+    "@datadog/pprof@5.13.3": {
+      "name": "@datadog/pprof",
+      "version": "5.13.3",
+      "range": "^5.13.3",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/DataDog/pprof-nodejs",
+      "versionedRepoUrl": "https://github.com/DataDog/pprof-nodejs/tree/v5.13.3",
+      "licenseFile": "node_modules/@datadog/pprof/LICENSE",
+      "licenseUrl": "https://github.com/DataDog/pprof-nodejs/blob/v5.13.3/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Google Inc."
+    },
     "@newrelic/fn-inspect@4.4.0": {
       "name": "@newrelic/fn-inspect",
       "version": "4.4.0",
