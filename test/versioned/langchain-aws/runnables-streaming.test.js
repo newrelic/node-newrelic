@@ -87,7 +87,7 @@ test('streaming enabled', async (t) => {
         match(e, {
           customAttributes: {
             'error.message': /Internal server error during streaming/,
-            completion_id: /[\w-]{36}/
+            completion_id: /[\w-]{32}/
           }
         })
       }

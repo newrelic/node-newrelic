@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LangChainCompletionMessage = require('../../../../lib/llm-events/langchain/chat-completion-message')
+const { LlmChatCompletionMessage } = require('#agentlib/llm-events/langchain/index.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -49,12 +49,13 @@ test.beforeEach((ctx) => {
     }
   }
 
+  ctx.nr.completionId = '4bea415a30e702d45f5dd521c74b6216d209'
   ctx.nr.runId = 'run-1'
   ctx.nr.metadata = { foo: 'foo' }
 })
 
 test('creates entity', async (t) => {
-  const msg = new LangChainCompletionMessage({
+  const msg = new LlmChatCompletionMessage({
     ...t.nr,
     sequence: 1,
     content: 'hello world',
@@ -73,12 +74,12 @@ test('creates entity', async (t) => {
   assert.equal(msg.sequence, 1)
   assert.equal(msg.role, 'assistant', 'should assume assistant role based on isResponse=true')
   assert.equal(msg.content, 'hello world')
-  assert.match(msg.completion_id, /[a-z0-9-]{36}/)
+  assert.equal(msg.completion_id, t.nr.completionId)
   assert.equal(msg.timestamp, undefined, 'should not have a timestamp defined if isResponse=true')
 })
 
 test('assigns role if given', async(t) => {
-  const msg = new LangChainCompletionMessage({
+  const msg = new LlmChatCompletionMessage({
     ...t.nr,
     sequence: 1,
     content: 'hello world',
@@ -88,7 +89,7 @@ test('assigns role if given', async(t) => {
 })
 
 test('assigns role and timestamp correctly if isResponse is false', async(t) => {
-  const msg = new LangChainCompletionMessage({
+  const msg = new LlmChatCompletionMessage({
     ...t.nr,
     sequence: 0,
     content: 'hello world',
@@ -99,16 +100,16 @@ test('assigns role and timestamp correctly if isResponse is false', async(t) => 
 })
 
 test('assigns id correctly', async (t) => {
-  let msg = new LangChainCompletionMessage({ ...t.nr, runId: '', sequence: 1 })
-  assert.match(msg.id, /[a-z0-9-]{36}-1/)
+  let msg = new LlmChatCompletionMessage({ ...t.nr, runId: '', sequence: 1 })
+  assert.match(msg.id, /[a-z0-9-]{32}/)
 
-  msg = new LangChainCompletionMessage({ ...t.nr, runId: '123456', sequence: 42 })
+  msg = new LlmChatCompletionMessage({ ...t.nr, runId: '123456', sequence: 42 })
   assert.equal(msg.id, '123456-42')
 })
 
 test('respects record_content setting', async (t) => {
   t.nr.agent.config.ai_monitoring.record_content.enabled = false
-  const search = new LangChainCompletionMessage({
+  const search = new LlmChatCompletionMessage({
     ...t.nr,
     sequence: 1,
     content: 'hello world'
