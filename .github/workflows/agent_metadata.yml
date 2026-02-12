@@ -1,0 +1,66 @@
+name: Agent Metadata
+
+permissions:
+  contents: read
+
+on:
+  # Allows manual triggering with parameters
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (needs to exactly match the GH tag for the release)'
+        required: true
+        type: string
+      agent-type:
+        description: 'Agent type'
+        required: false
+        default: 'NRNodeAgent'
+        type: string
+      use-cache:
+        description: 'Use cache'
+        required: false
+        default: true
+        type: boolean
+
+#  workflow_run:
+#    workflows: ["Create Release"]
+#    types:
+#      - completed
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch')
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+      agent-type: ${{ steps.get-version.outputs.agent-type }}
+      use-cache: ${{ steps.get-version.outputs.use-cache }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get version and inputs
+        id: get-version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "agent-type=${{ inputs.agent-type }}" >> $GITHUB_OUTPUT
+            echo "use-cache=${{ inputs.use-cache }}" >> $GITHUB_OUTPUT
+          else
+            VERSION=$(node -p "require('./package.json').version")
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "agent-type=NRNodeAgent" >> $GITHUB_OUTPUT
+            echo "use-cache=true" >> $GITHUB_OUTPUT
+          fi
+
+  send-agent-metadata:
+    needs: [get-version]
+    uses: newrelic/newrelic-agent-init-container/.github/workflows/agent-metadata.yml@main
+    with:
+      agent-type: ${{ needs.get-version.outputs.agent-type }}
+      version: ${{ needs.get-version.outputs.version }}
+      use-cache: ${{ needs.get-version.outputs.use-cache }}
+    secrets:
+      FC_SYS_ID_CLIENT_ID: ${{ secrets.FC_SYS_ID_CLIENT_ID }}
+      FC_SYS_ID_PR_KEY: ${{ secrets.FC_SYS_ID_PR_KEY }}
