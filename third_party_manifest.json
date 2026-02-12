@@ -1,9 +1,21 @@
 {
-  "lastUpdated": "Wed Feb 11 2026 09:42:58 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Feb 11 2026 15:50:47 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
+    "@datadog/pprof@5.13.3": {
+      "name": "@datadog/pprof",
+      "version": "5.13.3",
+      "range": "^5.13.3",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/DataDog/pprof-nodejs",
+      "versionedRepoUrl": "https://github.com/DataDog/pprof-nodejs/tree/v5.13.3",
+      "licenseFile": "node_modules/@datadog/pprof/LICENSE",
+      "licenseUrl": "https://github.com/DataDog/pprof-nodejs/blob/v5.13.3/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Google Inc."
+    },
     "@newrelic/fn-inspect@4.4.0": {
       "name": "@newrelic/fn-inspect",
       "version": "4.4.0",
@@ -333,28 +345,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.982.0": {
+    "@aws-sdk/client-s3@3.986.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.982.0",
+      "version": "3.986.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.982.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.986.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.982.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.986.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.982.0": {
+    "@aws-sdk/s3-request-presigner@3.986.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.982.0",
+      "version": "3.986.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.982.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.986.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.982.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.986.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"

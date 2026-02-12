@@ -23,10 +23,11 @@ test.beforeEach((ctx) => {
   const profilingAggregator = new ProfilingAggregator({ runId: RUN_ID, periodMs: 100 }, agent)
   const profilingManager = profilingAggregator.profilingManager
   sandbox.spy(profilingManager, 'register')
-  profilingAggregator.profilingManager.profilers = [cpuProfiler, heapProfiler]
   ctx.nr = {
     agent,
     clock,
+    cpuProfiler,
+    heapProfiler,
     profilingAggregator,
     profilingManager,
     sandbox
@@ -51,41 +52,54 @@ test('should initialize pprofData and profilingManager', (t) => {
   assert.equal(profilingAggregator.pprofData, null)
 })
 
-test('should send 2 messages per interval', (t) => {
-  const { profilingAggregator, profilingManager, clock, agent } = t.nr
-  assert.equal(profilingManager.register.callCount, 0)
+test('should send 2 messages per interval', async (t) => {
+  const { profilingAggregator, clock, agent, cpuProfiler, heapProfiler } = t.nr
+  assert.equal(profilingAggregator.profilingManager.register.callCount, 0)
   profilingAggregator.start()
-  assert.equal(profilingManager.register.callCount, 1)
+  profilingAggregator.profilingManager.profilers = [cpuProfiler, heapProfiler]
+  assert.equal(profilingAggregator.profilingManager.register.callCount, 1)
   assert.equal(agent.collector.send.callCount, 0)
   clock.tick(100)
-  assert.equal(agent.collector.send.callCount, 2)
-  const [cpuCall, heapCall] = agent.collector.send.args
-  assert.equal(cpuCall[0], 'pprof_data')
-  assert.equal(cpuCall[1], 'cpu profile data')
-  assert.equal(heapCall[0], 'pprof_data')
-  assert.equal(heapCall[1], 'heap profile data')
-  assert.equal(profilingAggregator.pprofData, null)
+  // need to run in next tick to ensure the promise chain around `profilingManager.collectData` resolves
+  await new Promise((resolve) => {
+    process.nextTick(() => {
+      assert.equal(agent.collector.send.callCount, 2)
+      const [cpuCall, heapCall] = agent.collector.send.args
+      assert.equal(cpuCall[0], 'pprof_data')
+      assert.equal(cpuCall[1], 'cpu profile data')
+      assert.equal(heapCall[0], 'pprof_data')
+      assert.equal(heapCall[1], 'heap profile data')
+      assert.equal(profilingAggregator.pprofData, null)
+      resolve()
+    })
+  })
 })
 
-test('should not send any data if there are no profilers registered', (t) => {
+test('should not send any data if there are no profilers registered', async (t) => {
   const { profilingAggregator, clock, agent } = t.nr
-  profilingAggregator.profilingManager.profilers = []
   profilingAggregator.start()
+  profilingAggregator.profilingManager.profilers = []
   assert.equal(agent.collector.send.callCount, 0)
   clock.tick(100)
-  assert.equal(agent.collector.send.callCount, 0)
+  await new Promise((resolve) => {
+    process.nextTick(() => {
+      assert.equal(agent.collector.send.callCount, 0)
+      resolve()
+    })
+  })
 })
 
 test('should stop ProfilingManager when aggregator is stopped', (t) => {
-  const { profilingAggregator, profilingManager } = t.nr
+  const { profilingAggregator, cpuProfiler, heapProfiler } = t.nr
   profilingAggregator.start()
+  profilingAggregator.profilingManager.profilers = [cpuProfiler, heapProfiler]
   assert.ok(profilingAggregator.sendTimer)
-  for (const profiler of profilingManager.profilers) {
+  for (const profiler of profilingAggregator.profilingManager.profilers) {
     assert.equal(profiler.stop.callCount, 0)
   }
   profilingAggregator.stop()
   assert.equal(profilingAggregator.sendTimer, null)
-  for (const profiler of profilingManager.profilers) {
+  for (const profiler of profilingAggregator.profilingManager.profilers) {
     assert.equal(profiler.stop.callCount, 1)
   }
 })
