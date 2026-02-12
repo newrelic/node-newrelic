@@ -15,6 +15,7 @@ const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../
 const {
   MCP
 } = require('../../../lib/metrics/names')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
@@ -158,6 +159,30 @@ test('should not instrument if ai_monitoring is disabled', async (t) => {
       }
     }
     assertNoMcpSegment(root)
+
+    tx.end()
+  })
+})
+
+test('should add subcomponent attribute to segment', async (t) => {
+  t.plan(3)
+  const { agent, client } = t.nr
+
+  await helper.runInTransaction(agent, async (tx) => {
+    await client.callTool({
+      name: 'echo',
+      arguments: {
+        message: 'example message'
+      }
+    })
+
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
+    const attributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+    t.assert.ok(attributes.subcomponent, 'subcomponent attribute should exist')
+
+    const attr = JSON.parse(attributes.subcomponent)
+    t.assert.equal(attr.type, 'APM-AI_TOOL', 'subcomponent type should be APM-AI_TOOL')
+    t.assert.equal(attr.name, 'echo', 'subcomponent name should match tool name')
 
     tx.end()
   })
