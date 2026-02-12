@@ -296,7 +296,7 @@ test('#harvesters.stop should stop all aggregators', (t) => {
 })
 
 test('#onConnect should reconfigure all the aggregators', (t, end) => {
-  const EXPECTED_AGG_COUNT = 9
+  const EXPECTED_AGG_COUNT = 10
   const agent = helper.loadMockedAgent(null, false)
   agent.config.application_logging.forwarding.enabled = true
   // Mock out the base reconfigure method:
@@ -314,6 +314,7 @@ test('#onConnect should reconfigure all the aggregators', (t, end) => {
       span_event_data: 1
     }
   }
+
   agent.onConnect(false, () => {
     assert.equal(proto.reconfigure.callCount, EXPECTED_AGG_COUNT)
     end()

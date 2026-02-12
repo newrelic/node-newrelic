@@ -10,8 +10,13 @@ const BaseProfiler = require('#agentlib/profiling/profilers/base.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {
-    profiler: new BaseProfiler()
+    profiler: new BaseProfiler({ logger: 'logger' })
   }
+})
+
+test('should assign logger property', (t) => {
+  const { profiler } = t.nr
+  assert.equal(profiler.logger, 'logger')
 })
 
 test('should set name', (t) => {
@@ -36,7 +41,5 @@ test('should throw error when stop is called', (t) => {
 
 test('should throw error when collect is called', (t) => {
   const { profiler } = t.nr
-  assert.throws(() => {
-    profiler.collect()
-  })
+  assert.rejects(() => profiler.collect())
 })
