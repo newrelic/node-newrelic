@@ -12,7 +12,7 @@ function createProfiler({ sandbox = sinon, name = 'TestProfiler', data = DEFAULT
     name,
     start: sandbox.stub(),
     stop: sandbox.stub(),
-    collect: sandbox.stub().returns(data)
+    collect: sandbox.stub().resolves(data)
   }
 }
 

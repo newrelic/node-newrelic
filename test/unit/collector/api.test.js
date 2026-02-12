@@ -379,11 +379,16 @@ test('api methods', async (t) => {
       const { collector, collectorApi } = t.nr
       collector.addHandler(helper.generateCollectorPath(method.key, RUN_ID), async (req, res) => {
         const body = await req.body()
-        const found = JSON.parse(body)
-
-        let expected = method.data
-        if (method.data.toJSON) {
-          expected = method.data.toJSON()
+        let found, expected
+        // pprof_data will be gzipped binary data
+        // we need to keep the response and call `toString`
+        // on the expected, as for this test we just response with a buffer
+        if (method.key === 'pprof_data') {
+          found = body
+          expected = method.data.toString()
+        } else {
+          found = JSON.parse(body)
+          expected = method.data.toJSON ? method.data.toJSON() : method.data
         }
         assert.deepStrictEqual(found, expected)
 
