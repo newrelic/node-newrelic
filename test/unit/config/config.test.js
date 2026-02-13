@@ -542,6 +542,8 @@ test('distributed tracing samplers', async (t) => {
     const config = {
       profiling: {
         enabled: true,
+        delay: 100,
+        duration: 20000,
         sample_interval: 200,
         include: ['cpu'],
         cpu: {
@@ -552,6 +554,8 @@ test('distributed tracing samplers', async (t) => {
 
     const configuration = Config.initialize(config)
     assert.equal(configuration.profiling.enabled, true)
+    assert.equal(configuration.profiling.delay, 100)
+    assert.equal(configuration.profiling.duration, 20000)
     assert.equal(configuration.profiling.sample_interval, 200)
     assert.deepEqual(configuration.profiling.include, ['cpu'])
     assert.equal(configuration.profiling.cpu.report_interval, 50)
