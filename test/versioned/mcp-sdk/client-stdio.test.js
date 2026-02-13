@@ -187,3 +187,40 @@ test('should add subcomponent attribute to segment', async (t) => {
     tx.end()
   })
 })
+
+test('should not add subcomponent attribute for non-callTool operations', async (t) => {
+  t.plan(1)
+  const { agent, client } = t.nr
+
+  await helper.runInTransaction(agent, async (tx) => {
+    await client.getPrompt({
+      name: 'echo',
+      arguments: {
+        message: 'example message'
+      }
+    })
+
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
+    const attributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+    t.assert.equal(attributes.subcomponent, undefined, 'subcomponent attribute should not exist for getPrompt')
+
+    tx.end()
+  })
+})
+
+test('should not add subcomponent attribute for readResource operations', async (t) => {
+  t.plan(1)
+  const { agent, client } = t.nr
+
+  await helper.runInTransaction(agent, async (tx) => {
+    await client.readResource({
+      uri: 'echo://hello-world'
+    })
+
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
+    const attributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+    t.assert.equal(attributes.subcomponent, undefined, 'subcomponent attribute should not exist for readResource')
+
+    tx.end()
+  })
+})
