@@ -18,36 +18,33 @@ function assertChatCompletionMessages(
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
-    appName: 'New Relic for Node.js tests',
     trace_id: tx.traceId,
     span_id: segment.id,
     'response.model': model,
-    'request.model': model,
     vendor: 'gemini',
     ingest_source: 'Node',
     role: 'user',
-    is_response: false,
-    completion_id: /[a-f0-9]{36}/
+    completion_id: /[a-f0-9]{32}/
   }
 
   chatMsgs.forEach((msg) => {
     const expectedChatMsg = { ...baseMsg }
     if (msg[1].sequence === 0) {
       expectedChatMsg.sequence = 0
-      expectedChatMsg.id = /[a-f0-9]{36}/
+      expectedChatMsg.id = /[a-f0-9]{32}/
       expectedChatMsg.content = reqContent
       expectedChatMsg.token_count = 0
       expectedChatMsg.timestamp = /\d{13}/
     } else if (msg[1].sequence === 1) {
       expectedChatMsg.sequence = 1
-      expectedChatMsg.id = /[a-f0-9]{36}/
+      expectedChatMsg.id = /[a-f0-9]{32}/
       expectedChatMsg.content = 'What does 1 plus 1 equal?'
       expectedChatMsg.token_count = 0
       expectedChatMsg.timestamp = /\d{13}/
     } else {
       expectedChatMsg.sequence = 2
-      expectedChatMsg.role = 'model'
-      expectedChatMsg.id = /[a-f0-9]{36}/
+      expectedChatMsg.role = 'assistant'
+      expectedChatMsg.id = /[a-f0-9]{32}/
       expectedChatMsg.content = resContent
       expectedChatMsg.is_response = true
       expectedChatMsg.token_count = 0
@@ -59,25 +56,21 @@ function assertChatCompletionMessages(
 }
 
 function assertChatCompletionSummary(
-  { tx, model, chatSummary, error = false, promptTokens = 53, completionTokens = 11, totalTokens = 64 },
+  { tx, model, chatSummary, error, promptTokens = 53, completionTokens = 11, totalTokens = 64 },
   { assert = require('node:assert') } = {}
 ) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {
-    id: /[a-f0-9]{36}/,
-    appName: 'New Relic for Node.js tests',
+    id: /[a-f0-9]{32}/,
     trace_id: tx.traceId,
     span_id: segment.id,
-    'response.model': error ? undefined : model,
     vendor: 'gemini',
     ingest_source: 'Node',
     'request.model': model,
     duration: segment.getDurationInMillis(),
     'response.number_of_messages': 3,
-    'response.choices.finish_reason': error ? undefined : 'STOP',
     'request.max_tokens': 100,
     'request.temperature': 0.5,
-    error,
     timestamp: /\d{13}/
   }
 
@@ -85,6 +78,10 @@ function assertChatCompletionSummary(
     expectedChatSummary['response.usage.prompt_tokens'] = promptTokens
     expectedChatSummary['response.usage.completion_tokens'] = completionTokens
     expectedChatSummary['response.usage.total_tokens'] = totalTokens
+    expectedChatSummary['response.model'] = model
+    expectedChatSummary['response.choices.finish_reason'] = 'STOP'
+  } else {
+    expectedChatSummary.error = true
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')

@@ -108,14 +108,11 @@ test('should create an embedding message', (t, end) => {
     const [embedding] = events
     const [segment] = tx.trace.getChildren(tx.trace.root.id)
     const expectedEmbedding = {
-      appName: 'New Relic for Node.js tests',
       duration: segment.getDurationInMillis(),
-      error: false,
-      id: /[a-f0-9]{36}/,
+      id: /[a-f0-9]{32}/,
       ingest_source: 'Node',
       input: 'This is an embedding test.',
       'request.model': 'text-embedding-004',
-      'response.model': undefined,
       span_id: segment.id,
       trace_id: tx.traceId,
       vendor: 'gemini',

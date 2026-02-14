@@ -67,15 +67,22 @@ const serializeTestCases = [
 for (const testCase of serializeTestCases) {
   test(`should properly serialize contents when it is a ${testCase.type}`, (t, end) => {
     const { agent } = t.nr
-    const embeddingEvent = new LlmEmbedding({
-      agent,
-      segment: null,
-      transaction: null,
-      request: { contents: testCase.value },
-      response: {}
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const embeddingEvent = new LlmEmbedding({
+          agent,
+          segment,
+          transaction: tx,
+          request: { contents: testCase.value },
+          response: {}
+        })
+        assert.equal(embeddingEvent.input, testCase.expected)
+        tx.end()
+        end()
+      })
     })
-    assert.equal(embeddingEvent.input, testCase.expected)
-    end()
   })
 }
 
@@ -87,15 +94,16 @@ test('should set error to true', (t, end) => {
   }
 
   const api = helper.getAgentApi()
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const embeddingEvent = new LlmEmbedding({
         agent,
         segment,
+        transaction: tx,
         request: req,
         response: res,
-        withError: true
+        error: true
       })
       assert.equal(true, embeddingEvent.error)
       end()
@@ -112,11 +120,12 @@ test('respects record_content', (t, end) => {
   agent.config.ai_monitoring.record_content.enabled = false
 
   const api = helper.getAgentApi()
-  helper.runInTransaction(agent, () => {
+  helper.runInTransaction(agent, (tx) => {
     const segment = api.shim.getActiveSegment()
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment,
+      transaction: tx,
       request: req,
       response: res
     })

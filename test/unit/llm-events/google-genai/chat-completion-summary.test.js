@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmChatCompletionSummary = require('#agentlib/llm-events/google-genai/chat-completion-summary.js')
+const { LlmChatCompletionSummary } = require('#agentlib/llm-events/google-genai/index.js')
 const helper = require('#testlib/agent_helper.js')
 const { req, res, getExpectedResult } = require('./common')
 
@@ -56,7 +56,7 @@ test('should set error to true', (ctx, end) => {
         segment,
         request: {},
         response: {},
-        withError: true
+        error: true
       })
       assert.equal(true, chatSummaryEvent.error)
       end()
