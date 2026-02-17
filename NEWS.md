@@ -34,13 +34,13 @@ to be kept up-to-date.
 
 #### Miscellaneous chores
 
-* Add subcomponent attribute to LangChain tool traces ([#3706](https://github.com/newrelic/node-newrelic/pull/3706)) ([c5469ea](https://github.com/newrelic/node-newrelic/commit/c5469eaa40a9600f56390f6251bc6c3ea2e30d08))
+* Added subcomponent attribute to LangChain tool traces ([#3706](https://github.com/newrelic/node-newrelic/pull/3706)) ([c5469ea](https://github.com/newrelic/node-newrelic/commit/c5469eaa40a9600f56390f6251bc6c3ea2e30d08))
 * Added subcomponent attribute to mcp-sdk invocations ([#3749](https://github.com/newrelic/node-newrelic/pull/3749)) ([70b7f41](https://github.com/newrelic/node-newrelic/commit/70b7f4115370857836ecd172f2ce041b66376bae))
 * Enabled all OTEL signals by default when OTEL is enabled ([#3712](https://github.com/newrelic/node-newrelic/pull/3712)) ([15b82c2](https://github.com/newrelic/node-newrelic/commit/15b82c298937af4309cf3f9d0e88060b5b1c044c))
-* Fix`@langchain/community` peer dep conflict ([#3741](https://github.com/newrelic/node-newrelic/pull/3741)) ([202d2b3](https://github.com/newrelic/node-newrelic/commit/202d2b35b01182160f3dfa014e0abcff6ca0d6d2))
+* Fixed `@langchain/community` peer dep conflict ([#3741](https://github.com/newrelic/node-newrelic/pull/3741)) ([202d2b3](https://github.com/newrelic/node-newrelic/commit/202d2b35b01182160f3dfa014e0abcff6ca0d6d2))
 * Removed `@langchain/core` peer dep from LangGraph test matrix ([#3737](https://github.com/newrelic/node-newrelic/pull/3737)) ([8ba2616](https://github.com/newrelic/node-newrelic/commit/8ba2616afc21e2f4d1b98c6ccf448e6edbd86114))
 * Renamed OTEL metrics config params to snake_case from camelCas… ([#3711](https://github.com/newrelic/node-newrelic/pull/3711)) ([4f59108](https://github.com/newrelic/node-newrelic/commit/4f591088888ae724136d409ee93438ecd81a5539))
-* Update `ai-support.json` to include LangGraph ([#3705](https://github.com/newrelic/node-newrelic/pull/3705)) ([aa0ba22](https://github.com/newrelic/node-newrelic/commit/aa0ba2296c13aee7090a532f504ccad2d30c6cd4))
+* Updated `ai-support.json` to include LangGraph ([#3705](https://github.com/newrelic/node-newrelic/pull/3705)) ([aa0ba22](https://github.com/newrelic/node-newrelic/commit/aa0ba2296c13aee7090a532f504ccad2d30c6cd4))
 * Updated eslint configuration ([#3740](https://github.com/newrelic/node-newrelic/pull/3740)) ([d306374](https://github.com/newrelic/node-newrelic/commit/d3063748b8ef6f2fa74dd7791d846e9597a8f525))
 
 #### Tests
