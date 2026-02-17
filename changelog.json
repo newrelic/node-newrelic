@@ -2,6 +2,21 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.13.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added `delay` and `duration` to profiling config",
+          "Updated the profiling config properties",
+          "Added ProfilingManager class, used to orchestrate profilers",
+          "Updated `RemoteMethod` to handle sending `pprof_data` through the collector",
+          "Added `ProfilingAggregator` that will be used to collect and send `pprof_data` telemetry",
+          "Added profiling configuration"
+        ]
+      }
+    },
+    {
       "version": "13.12.0",
       "changes": {
         "security": [],
