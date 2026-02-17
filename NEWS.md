@@ -1,3 +1,43 @@
+### v13.13.0 (2026-02-17)
+
+#### Features
+
+* Added `delay` and `duration` to profiling config ([#3754](https://github.com/newrelic/node-newrelic/pull/3754)) ([a7f06e0](https://github.com/newrelic/node-newrelic/commit/a7f06e016ee6e8488fb5364e118cdebaf8a3af0f))
+* Added `ProfilingAggregator` that will be used to collect and send `pprof_data` telemetry ([#3732](https://github.com/newrelic/node-newrelic/pull/3732)) ([738045c](https://github.com/newrelic/node-newrelic/commit/738045c955b1ca82e60c4b3a1a9799e8257c0d51))
+* Added profiling configuration ([#3733](https://github.com/newrelic/node-newrelic/pull/3733)) ([2b4d7d8](https://github.com/newrelic/node-newrelic/commit/2b4d7d898dea12d8d7f89f3024e56bf5e44d5b8b))
+* Added ProfilingManager class, used to orchestrate profilers ([#3738](https://github.com/newrelic/node-newrelic/pull/3738)) ([105da3b](https://github.com/newrelic/node-newrelic/commit/105da3b788f8e47099a47857e9e490103c6163d4))
+* Updated `RemoteMethod` to handle sending `pprof_data` through the collector ([#3734](https://github.com/newrelic/node-newrelic/pull/3734)) ([868e5bd](https://github.com/newrelic/node-newrelic/commit/868e5bdd102211b9569fef40efef77cfdd3719d2))
+* Updated the profiling config properties ([#3742](https://github.com/newrelic/node-newrelic/pull/3742)) ([fa55881](https://github.com/newrelic/node-newrelic/commit/fa55881fafe45499461c89e70ce8c3d03d4cc8af))
+
+#### Code refactoring
+
+* LangChain LLM event refactor ([#3745](https://github.com/newrelic/node-newrelic/pull/3745)) ([b2612ec](https://github.com/newrelic/node-newrelic/commit/b2612ec1a95f68c19290025f4279cd0f06f6c7d1))
+    * Co-authored-by: James Sumners <jsumners@newrelic.com>
+* OpenAI LLM event refactor ([#3726](https://github.com/newrelic/node-newrelic/pull/3726)) ([0ccad21](https://github.com/newrelic/node-newrelic/commit/0ccad2102d8f52da5ea77161534697f98c18c21e))
+
+#### Documentation
+
+* Updated compatibility report ([#3743](https://github.com/newrelic/node-newrelic/pull/3743)) ([4a7cafc](https://github.com/newrelic/node-newrelic/commit/4a7cafc9c72aa3a947f7a27f69ceb50424d30163))
+* Updated compatibility report ([#3739](https://github.com/newrelic/node-newrelic/pull/3739)) ([59ff976](https://github.com/newrelic/node-newrelic/commit/59ff9768e33e029dea469739ed790407665cf135))
+* Updated compatibility report ([#3730](https://github.com/newrelic/node-newrelic/pull/3730)) ([dea410b](https://github.com/newrelic/node-newrelic/commit/dea410bbaab9d940030e0e7eca72b1329effe004))
+* Updated compatibility report ([#3703](https://github.com/newrelic/node-newrelic/pull/3703)) ([532729a](https://github.com/newrelic/node-newrelic/commit/532729a3955454a7bb9ee282630af78379233037))
+
+#### Miscellaneous chores
+
+* Add subcomponent attribute to LangChain tool traces ([#3706](https://github.com/newrelic/node-newrelic/pull/3706)) ([c5469ea](https://github.com/newrelic/node-newrelic/commit/c5469eaa40a9600f56390f6251bc6c3ea2e30d08))
+* Added subcomponent attribute to mcp-sdk invocations ([#3749](https://github.com/newrelic/node-newrelic/pull/3749)) ([70b7f41](https://github.com/newrelic/node-newrelic/commit/70b7f4115370857836ecd172f2ce041b66376bae))
+* Enabled all OTEL signals by default when OTEL is enabled ([#3712](https://github.com/newrelic/node-newrelic/pull/3712)) ([15b82c2](https://github.com/newrelic/node-newrelic/commit/15b82c298937af4309cf3f9d0e88060b5b1c044c))
+* Fix`@langchain/community` peer dep conflict ([#3741](https://github.com/newrelic/node-newrelic/pull/3741)) ([202d2b3](https://github.com/newrelic/node-newrelic/commit/202d2b35b01182160f3dfa014e0abcff6ca0d6d2))
+* Removed `@langchain/core` peer dep from LangGraph test matrix ([#3737](https://github.com/newrelic/node-newrelic/pull/3737)) ([8ba2616](https://github.com/newrelic/node-newrelic/commit/8ba2616afc21e2f4d1b98c6ccf448e6edbd86114))
+* Renamed OTEL metrics config params to snake_case from camelCas… ([#3711](https://github.com/newrelic/node-newrelic/pull/3711)) ([4f59108](https://github.com/newrelic/node-newrelic/commit/4f591088888ae724136d409ee93438ecd81a5539))
+* Update `ai-support.json` to include LangGraph ([#3705](https://github.com/newrelic/node-newrelic/pull/3705)) ([aa0ba22](https://github.com/newrelic/node-newrelic/commit/aa0ba2296c13aee7090a532f504ccad2d30c6cd4))
+* Updated eslint configuration ([#3740](https://github.com/newrelic/node-newrelic/pull/3740)) ([d306374](https://github.com/newrelic/node-newrelic/commit/d3063748b8ef6f2fa74dd7791d846e9597a8f525))
+
+#### Tests
+
+* Skipped mcp streaming tests on `@modelcontextprotocol/sdk` `1.26.0`+ ([#3728](https://github.com/newrelic/node-newrelic/pull/3728)) ([961f13d](https://github.com/newrelic/node-newrelic/commit/961f13dd919640a624f8654911f6bb823e1aca7b))
+* Updated mcp streaming tests to generate sessions to reuse transport for all streaming tests ([#3729](https://github.com/newrelic/node-newrelic/pull/3729)) ([1772fd5](https://github.com/newrelic/node-newrelic/commit/1772fd599236ce22e970442288f302cf06f93798))
+
 ### v13.12.0 (2026-02-02)
 
 #### Features
