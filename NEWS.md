@@ -45,7 +45,6 @@ to be kept up-to-date.
 
 #### Tests
 
-* Skipped mcp streaming tests on `@modelcontextprotocol/sdk` `1.26.0`+ ([#3728](https://github.com/newrelic/node-newrelic/pull/3728)) ([961f13d](https://github.com/newrelic/node-newrelic/commit/961f13dd919640a624f8654911f6bb823e1aca7b))
 * Updated mcp streaming tests to generate sessions to reuse transport for all streaming tests ([#3729](https://github.com/newrelic/node-newrelic/pull/3729)) ([1772fd5](https://github.com/newrelic/node-newrelic/commit/1772fd599236ce22e970442288f302cf06f93798))
 
 ### v13.12.0 (2026-02-02)
