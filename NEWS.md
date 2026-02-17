@@ -1,5 +1,19 @@
 ### v13.13.0 (2026-02-17)
 
+## Feature Release
+
+With this release, we are making available our Node.js Hybrid Agent.
+The Node.js Hybrid Agent provides a future-proof observability solution with
+integrated support for OpenTelemetry Tracing, Metrics, and Logs APIs. Key
+enhancements like Span Links and Events on Spans are now available, ensuring
+seamless interoperability in mixed-mode environments. It is designed to bridge
+the gap for Node.js teams looking to adopt OpenTelemetry standards while
+maintaining backwards compatibility with their existing New Relic dashboards.
+
+A full product announcement, and documentation for this feature, is
+coming soon. Please [subscribe to our news releases](https://newrelic.com/blog)
+to be kept up-to-date.
+
 #### Features
 
 * Added `delay` and `duration` to profiling config ([#3754](https://github.com/newrelic/node-newrelic/pull/3754)) ([a7f06e0](https://github.com/newrelic/node-newrelic/commit/a7f06e016ee6e8488fb5364e118cdebaf8a3af0f))
@@ -12,15 +26,11 @@
 #### Code refactoring
 
 * LangChain LLM event refactor ([#3745](https://github.com/newrelic/node-newrelic/pull/3745)) ([b2612ec](https://github.com/newrelic/node-newrelic/commit/b2612ec1a95f68c19290025f4279cd0f06f6c7d1))
-    * Co-authored-by: James Sumners <jsumners@newrelic.com>
 * OpenAI LLM event refactor ([#3726](https://github.com/newrelic/node-newrelic/pull/3726)) ([0ccad21](https://github.com/newrelic/node-newrelic/commit/0ccad2102d8f52da5ea77161534697f98c18c21e))
 
 #### Documentation
 
-* Updated compatibility report ([#3743](https://github.com/newrelic/node-newrelic/pull/3743)) ([4a7cafc](https://github.com/newrelic/node-newrelic/commit/4a7cafc9c72aa3a947f7a27f69ceb50424d30163))
-* Updated compatibility report ([#3739](https://github.com/newrelic/node-newrelic/pull/3739)) ([59ff976](https://github.com/newrelic/node-newrelic/commit/59ff9768e33e029dea469739ed790407665cf135))
-* Updated compatibility report ([#3730](https://github.com/newrelic/node-newrelic/pull/3730)) ([dea410b](https://github.com/newrelic/node-newrelic/commit/dea410bbaab9d940030e0e7eca72b1329effe004))
-* Updated compatibility report ([#3703](https://github.com/newrelic/node-newrelic/pull/3703)) ([532729a](https://github.com/newrelic/node-newrelic/commit/532729a3955454a7bb9ee282630af78379233037))
+* Updated compatibility report ([#3743](https://github.com/newrelic/node-newrelic/pull/3743)) ([4a7cafc](https://github.com/newrelic/node-newrelic/commit/4a7cafc9c72aa3a947f7a27f69ceb50424d30163)) ([#3739](https://github.com/newrelic/node-newrelic/pull/3739)) ([59ff976](https://github.com/newrelic/node-newrelic/commit/59ff9768e33e029dea469739ed790407665cf135)) ([#3730](https://github.com/newrelic/node-newrelic/pull/3730)) ([dea410b](https://github.com/newrelic/node-newrelic/commit/dea410bbaab9d940030e0e7eca72b1329effe004)) ([#3703](https://github.com/newrelic/node-newrelic/pull/3703)) ([532729a](https://github.com/newrelic/node-newrelic/commit/532729a3955454a7bb9ee282630af78379233037))
 
 #### Miscellaneous chores
 
@@ -8339,6 +8349,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
