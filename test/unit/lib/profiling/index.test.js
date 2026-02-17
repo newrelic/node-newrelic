@@ -9,6 +9,7 @@ const { describe, test } = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 const ProfilingManager = require('#agentlib/profiling/index.js')
+const createProfiler = require('../../mocks/profiler')
 
 test.beforeEach((ctx) => {
   const sandbox = sinon.createSandbox()
@@ -21,19 +22,8 @@ test.beforeEach((ctx) => {
       }
     }
   }
-  const cpuProfiler = {
-    name: 'cpu',
-    start: sandbox.stub(),
-    stop: sandbox.stub(),
-    collect: sandbox.stub()
-  }
-
-  const heapProfiler = {
-    name: 'heap',
-    start: sandbox.stub(),
-    stop: sandbox.stub(),
-    collect: sandbox.stub()
-  }
+  const cpuProfiler = createProfiler({ sandbox, name: 'cpu' })
+  const heapProfiler = createProfiler({ sandbox, name: 'heap' })
   ctx.nr = {
     agent,
     cpuProfiler,
@@ -81,7 +71,8 @@ describe('start', () => {
     const { agent, logger } = t.nr
     const profilingManager = new ProfilingManager(agent, { logger })
 
-    profilingManager.start()
+    const started = profilingManager.start()
+    assert.equal(started, false)
 
     assert.equal(logger.warn.callCount, 1)
     assert.ok(
@@ -95,8 +86,8 @@ describe('start', () => {
     const { agent, cpuProfiler, heapProfiler, logger } = t.nr
     const profilingManager = new ProfilingManager(agent, { logger })
     profilingManager.profilers = [cpuProfiler, heapProfiler]
-    profilingManager.start()
-
+    const started = profilingManager.start()
+    assert.equal(started, true)
     assert.equal(cpuProfiler.start.callCount, 1)
     assert.equal(heapProfiler.start.callCount, 1)
     assert.ok(

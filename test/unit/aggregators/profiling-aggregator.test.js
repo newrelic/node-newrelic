@@ -11,26 +11,14 @@ const sinon = require('sinon')
 const ProfilingAggregator = require('#agentlib/aggregators/profiling-aggregator.js')
 const helper = require('#testlib/agent_helper.js')
 const RUN_ID = 1337
+const createProfiler = require('../mocks/profiler')
 
 test.beforeEach((ctx) => {
   const sandbox = sinon.createSandbox()
   const agent = helper.loadMockedAgent()
-  const cpuProfiler = {
-    name: 'CpuProfiler',
-    stop: sandbox.stub(),
-    collect() {
-      return 'cpu profile data'
-    }
-  }
-
+  const cpuProfiler = createProfiler({ sandbox, name: 'CpuProfiler', data: 'cpu profile data' })
+  const heapProfiler = createProfiler({ sandbox, name: 'HeapProfiler', data: 'heap profile data' })
   const clock = sinon.useFakeTimers()
-  const heapProfiler = {
-    name: 'HeapProfiler',
-    stop: sandbox.stub(),
-    collect() {
-      return 'heap profile data'
-    }
-  }
   sandbox.spy(agent.collector, 'send')
   const profilingAggregator = new ProfilingAggregator({ runId: RUN_ID, periodMs: 100 }, agent)
   const profilingManager = profilingAggregator.profilingManager
