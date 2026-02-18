@@ -22,10 +22,10 @@ on:
         default: true
         type: boolean
 
-#  workflow_run:
-#    workflows: ["Create Release"]
-#    types:
-#      - completed
+  workflow_run:
+    workflows: ["Create Release"]
+    types:
+      - completed
 
 jobs:
   get-version:
