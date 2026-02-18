@@ -80,7 +80,7 @@ function findSpan({ spans, name }) {
 function assertParentId({ parent, spans, span }) {
   if (parent) {
     const parentSpan = findSpan({ spans, name: parent })
-    assert.equal(span.parentId, parentSpan.id, `span ${span.intrinsics.name} should have parent ${parent}, got ${parentSpan.intrinsics.name}`)
+    assert.equal(span.parentId, parentSpan.id, `span ${span.intrinsics.name} should have parent ${parent}(${span.parentId}), got ${parentSpan.intrinsics.name}(${parentSpan.id})`)
   } else {
     assert.equal(span.parentId, parent)
   }
