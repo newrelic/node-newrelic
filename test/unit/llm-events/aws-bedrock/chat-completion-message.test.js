@@ -7,19 +7,14 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const {
-  DESTINATIONS: { TRANS_SCOPE }
-} = require('../../../../lib/config/attribute-filter')
-const LlmChatCompletionMessage = require('../../../../lib/llm-events/aws-bedrock/chat-completion-message')
+const { DESTINATIONS: { TRANS_SCOPE } } = require('#agentlib/config/attribute-filter.js')
+const { LlmChatCompletionMessage } = require('#agentlib/llm-events/aws-bedrock/index.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = {
     llm: {},
     config: {
-      applications() {
-        return ['test-app']
-      },
       ai_monitoring: {
         enabled: true,
         record_content: {
@@ -97,13 +92,12 @@ test('create creates a non-response instance', async (t) => {
   t.nr.agent.llm.tokenCountCallback = () => 3
   t.nr.role = 'user'
   const event = new LlmChatCompletionMessage(t.nr)
-  assert.equal(event.is_response, false)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.completion_id, 'completion-1')
   assert.equal(event.sequence, 0)
   assert.equal(event.content, 'a prompt')
   assert.equal(event.role, 'user')
-  assert.match(event.id, /[\w-]{36}/)
+  assert.match(event.id, /[\w-]{32}/)
   assert.equal(event.token_count, 0)
 })
 
@@ -118,7 +112,7 @@ test('create creates a titan response instance', async (t) => {
   assert.equal(event.sequence, 0)
   assert.equal(event.content, 'a response')
   assert.equal(event.role, 'assistant')
-  assert.match(event.id, /[\w-]{36}-0/)
+  assert.match(event.id, /[\w-]{32}/)
 })
 
 test('create creates a cohere response instance', async (t) => {

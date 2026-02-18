@@ -165,7 +165,7 @@ test.afterEach(afterEach)
       })
       assertChatCompletionSummary({ tx, modelId, chatSummary })
 
-      const requestMsg = chatMsgs.filter((msg) => msg[1].is_response === false)[0]
+      const requestMsg = chatMsgs.filter((msg) => msg[1].is_response !== true)[0]
       assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
       assert.equal(chatSummary[0].timestamp, chatSummary[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
@@ -334,7 +334,7 @@ test.afterEach(afterEach)
 
     const command = new bedrock.InvokeModelCommand(input)
     const expectedMsg =
-      'Malformed input request: 2 schema violations found, please reformat your input and try again.'
+        'Malformed input request: 2 schema violations found, please reformat your input and try again.'
     const expectedType = 'ValidationException'
 
     const api = helper.getAgentApi()
@@ -356,8 +356,7 @@ test.afterEach(afterEach)
         customAttributes: {
           'http.statusCode': 400,
           'error.message': expectedMsg,
-          'error.code': expectedType,
-          completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+          'error.code': expectedType
         },
         agentAttributes: {
           spanId: /\w+/
@@ -459,7 +458,7 @@ test('cohere embedding streaming works', async (t) => {
     const events = agent.customEventAggregator.events.toArray()
     assert.equal(events.length, 1)
     const embedding = events.shift()[1]
-    assert.equal(embedding.error, false)
+    assert.equal(embedding.error, undefined)
     assert.equal(embedding.input, prompt)
 
     tx.end()
@@ -514,7 +513,6 @@ test('anthropic-claude-3: should properly create events for chunked messages', a
       message: chatMsgs[0],
       modelId,
       expectedContent: prompt,
-      isResponse: false,
       expectedRole: 'user'
     })
 
@@ -523,7 +521,6 @@ test('anthropic-claude-3: should properly create events for chunked messages', a
       message: chatMsgs[1],
       modelId,
       expectedContent: promptFollowUp,
-      isResponse: false,
       expectedRole: 'user'
     })
 
@@ -590,7 +587,6 @@ test('region specific anthropic-claude-3: should properly create events for chun
       message: chatMsgs[0],
       modelId,
       expectedContent: prompt,
-      isResponse: false,
       expectedRole: 'user'
     })
 
@@ -599,7 +595,6 @@ test('region specific anthropic-claude-3: should properly create events for chun
       message: chatMsgs[1],
       modelId,
       expectedContent: promptFollowUp,
-      isResponse: false,
       expectedRole: 'user'
     })
 

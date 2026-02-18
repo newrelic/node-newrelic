@@ -10,8 +10,8 @@ const assert = require('node:assert')
 const {
   BedrockCommand,
   BedrockResponse,
-  StreamHandler
-} = require('../../../../lib/llm-events/aws-bedrock')
+} = require('#agentlib/llm-events/aws-bedrock/index.js')
+const StreamHandler = require('#agentlib/instrumentation/aws-sdk/v3/stream-handler.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}

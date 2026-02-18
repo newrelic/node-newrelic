@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { stringifyClaudeChunkedMessage, stringifyConverseChunkedMessage } = require('../../../../lib/llm-events/aws-bedrock/utils')
+const { stringifyClaudeChunkedMessage, stringifyConverseChunkedMessage } = require('#agentlib/llm-events/aws-bedrock/stringify-message.js')
 
 test.describe(stringifyClaudeChunkedMessage.name, {}, () => {
   test('interleaves text chunks with other types', (t) => {

@@ -110,7 +110,6 @@ function assertChatCompletionMessage({
 }) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
-    appName: 'New Relic for Node.js tests',
     request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     trace_id: tx.traceId,
     span_id: segment.id,
@@ -118,8 +117,8 @@ function assertChatCompletionMessage({
     vendor: 'bedrock',
     ingest_source: 'Node',
     role: 'user',
-    is_response: false,
-    completion_id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
+    completion_id: /\w{32}/,
+    'llm.conversation_id': 'convo-id'
   }
 
   if (!error) {
@@ -135,8 +134,8 @@ function assertChatCompletionMessage({
   expectedChatMsg.role = expectedRole
   expectedChatMsg.id = id
   expectedChatMsg.content = expectedContent
-  expectedChatMsg.is_response = isResponse
-  if (isResponse === false) {
+  if (isResponse) expectedChatMsg.is_response = isResponse
+  if (isResponse !== true) {
     expectedChatMsg.timestamp = segment.timer.start
   }
 
@@ -144,11 +143,10 @@ function assertChatCompletionMessage({
   match(messageData, expectedChatMsg)
 }
 
-function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, numMsgs = 2, promptTokens = 14, completionTokens = 9, totalTokens = 23 }) {
+function assertChatCompletionSummary({ tx, modelId, chatSummary, error, numMsgs = 2, promptTokens = 14, completionTokens = 9, totalTokens = 23 }) {
   const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedChatSummary = {
-    id: /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
-    appName: 'New Relic for Node.js tests',
+    id: /[a-f0-9]{32}/,
     request_id: 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'llm.conversation_id': 'convo-id',
     trace_id: tx.traceId,
@@ -159,10 +157,8 @@ function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, 
     'request.model': modelId,
     duration: segment.getDurationInMillis(),
     'response.number_of_messages': error ? 1 : numMsgs,
-    'response.choices.finish_reason': error ? undefined : 'endoftext',
     'request.temperature': 0.5,
     'request.max_tokens': 100,
-    error,
     timestamp: segment.timer.start
   }
 
@@ -170,7 +166,9 @@ function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, 
     expectedChatSummary['response.usage.prompt_tokens'] = promptTokens
     expectedChatSummary['response.usage.completion_tokens'] = completionTokens
     expectedChatSummary['response.usage.total_tokens'] = totalTokens
+    expectedChatSummary['response.choices.finish_reason'] = 'endoftext'
   }
+  if (error) expectedChatSummary.error = true
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
   match(chatSummary[1], expectedChatSummary)
