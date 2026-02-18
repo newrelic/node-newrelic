@@ -12,7 +12,7 @@ const recordBackground = require('./lib/metrics/recorders/other')
 const customRecorder = require('./lib/metrics/recorders/custom')
 const hashes = require('./lib/util/hashes')
 const properties = require('./lib/util/properties')
-const stringify = require('json-stringify-safe')
+const stringify = require('./lib/util/stringify')
 const shimmer = require('./lib/shimmer')
 const isValidType = require('./lib/util/attribute-types')
 const TransactionShim = require('./lib/shim/transaction-shim')
@@ -823,7 +823,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options =
     }
 
     if (!properties.isEmpty(attrs)) {
-      rumHash.atts = hashes.obfuscateNameUsingKey(JSON.stringify(attrs), key)
+      rumHash.atts = hashes.obfuscateNameUsingKey(stringify(attrs), key)
     }
   } else {
     logger.debug(
@@ -833,7 +833,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options =
 
   // if debugging, do pretty format of JSON
   const tabs = config.browser_monitoring.debug ? 2 : 0
-  const json = JSON.stringify(rumHash, null, tabs)
+  const json = stringify(rumHash, null, tabs)
 
   // the complete header to be written to the browser
   const out = _generateRUMHeader(
