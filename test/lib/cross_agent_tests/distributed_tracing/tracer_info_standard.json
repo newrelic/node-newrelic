@@ -65,20 +65,27 @@
         }
       },
       {
-        "name": "Llm/SOMETHING/function",
-        "timestamp": 1766435411000,
+        "name": "inprocess-2",
+        "timestamp": 1766435410020,
         "duration_millis": 200,
-        "agent_attrs": {
-          "http.url": "myllm"
-        },
         "children": [
           {
-            "name": "External/D",
-            "timestamp": 1766435411100,
-            "duration_millis": 250,
+            "name": "Llm/SOMETHING/function",
+            "timestamp": 1766435411000,
+            "duration_millis": 200,
             "agent_attrs": {
-              "http.url": "serviceD"
-            }
+              "http.url": "myllm"
+            },
+            "children": [
+              {
+                "name": "External/D",
+                "timestamp": 1766435411100,
+                "duration_millis": 250,
+                "agent_attrs": {
+                  "http.url": "serviceD"
+                }
+              }
+            ]
           }
         ]
       }

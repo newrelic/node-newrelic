@@ -161,14 +161,15 @@ describe('applyCompaction', () => {
     transaction.baseSegment = { id: 100 }
     const now = Date.now()
     const span1 = {
+      parentId: 99,
       id: 1,
       intrinsics: { timestamp: now, duration: 5 },
       addIntrinsicAttribute: sinon.spy()
     }
-    const span2 = { id: 2, intrinsics: { timestamp: now, duration: 5 } } // duration is 5
-    const span3 = { id: 3, intrinsics: { timestamp: now, duration: 7 } } // duration is 7
-    const span4 = { id: 4, intrinsics: { timestamp: now + 5000, duration: 3 } } // duration is 8
-    const span5 = { id: 5, intrinsics: { timestamp: now + 10000, duration: 10 } } // duration is 18
+    const span2 = { parentId: 1, id: 2, intrinsics: { timestamp: now, duration: 5 } } // duration is 5
+    const span3 = { parentId: 1, id: 3, intrinsics: { timestamp: now, duration: 7 } } // duration is 7
+    const span4 = { parentId: 1, id: 4, intrinsics: { timestamp: now + 5000, duration: 3 } } // duration is 8
+    const span5 = { parentId: 1, id: 5, intrinsics: { timestamp: now + 10000, duration: 10 } } // duration is 18
     partialTrace.compactSpanGroups[1] = [span1, span5, span3, span4, span2]
     partialTrace.applyCompaction(span1)
     assert.ok(!transaction.metrics.unscoped['Supportability/Nodejs/PartialGranularity/NrIds/Dropped'])
@@ -184,7 +185,7 @@ describe('applyCompaction', () => {
     const { partialTrace, transaction } = t.nr
     transaction.baseSegment = { id: 100 }
     const now = Date.now()
-    const span1 = { id: 0, intrinsics: { timestamp: now, duration: 5 }, addIntrinsicAttribute: sinon.spy() }
+    const span1 = { parentId: 99, id: 0, intrinsics: { timestamp: now, duration: 5 }, addIntrinsicAttribute: sinon.spy() }
     partialTrace.compactSpanGroups[0] = []
     const nrIds = []
     for (let i = 1; i <= 100; i++) {
@@ -211,6 +212,7 @@ describe('applyCompaction', () => {
     transaction.baseSegment = { id: 100 }
     const now = Date.now()
     const span1 = {
+      parentId: 99,
       id: 1,
       intrinsics: { timestamp: now, duration: 5 },
       addIntrinsicAttribute: sinon.spy()
