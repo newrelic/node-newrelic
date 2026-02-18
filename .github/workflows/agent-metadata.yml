@@ -64,3 +64,4 @@ jobs:
     secrets:
       FC_SYS_ID_CLIENT_ID: ${{ secrets.FC_SYS_ID_CLIENT_ID }}
       FC_SYS_ID_PR_KEY: ${{ secrets.FC_SYS_ID_PR_KEY }}
+      APM_CONTROL_NR_LICENSE_KEY_STAGING: ${{ secrets.APM_CONTROL_NR_LICENSE_KEY_STAGING }}  # action app is instrumented and supported by APM Control team
