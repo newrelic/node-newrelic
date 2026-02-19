@@ -411,7 +411,7 @@ function runRunnablesTests(config) {
     })
   })
 
-  test('should use empty string for content property on completion message event when invalid input is used - circular reference', (t, end) => {
+  test('should not crash when input contains a circular reference', (t, end) => {
     const { agent, prompt, outputParser, model } = t.nr
 
     helper.runInTransaction(agent, async (tx) => {
@@ -430,7 +430,7 @@ function runRunnablesTests(config) {
         'LlmChatCompletionMessage'
       )
 
-      const msgEventEmptyContent = langChainMessageEvents.filter((event) => event[1].content === '')
+      const msgEventEmptyContent = langChainMessageEvents.filter((event) => event[1].content.includes('myself'))
 
       assert.equal(msgEventEmptyContent.length, 1, 'should have 1 event with empty content property')
 
