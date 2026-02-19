@@ -115,7 +115,7 @@ test('should create LlmAgent event for CompiledStateGraph.invoke', async (t) => 
     const [segment] = tx.trace.getChildren(tx.trace.root.id)
 
     match(agentEvent, {
-      id: /[a-f0-9]{36}/,
+      id: /[a-f0-9]{32}/,
       name: 'LangGraphReactAgent',
       span_id: segment.id,
       trace_id: tx.traceId,
