@@ -157,6 +157,99 @@ test('adds logs from azure functions to agent logs', async (t) => {
   assert.equal(agentLogs[0]['trace.id'], tx.traceId, 'log should include trace id')
 })
 
+test('does not capture logs when application logging is disabled', async (t) => {
+  bootstrapModule({ t })
+  const { agent, initialize, mockApi, shim } = t.nr
+  agent.config.application_logging.enabled = false
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  const handler = async function (_request, context) {
+    context.log('app logging disabled message')
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+
+  const txFinished = once(agent, 'transactionFinished')
+  mockApi.app.get('a-test', { handler })
+  await mockApi.httpRequest('get')
+  await txFinished
+
+  const agentLogs = agent.logs.getEvents()
+  assert.equal(agentLogs.length, 0, 'should have no log entries when application logging is disabled')
+})
+
+test('does not capture logs when log forwarding is disabled', async (t) => {
+  bootstrapModule({ t })
+  const { agent, initialize, mockApi, shim } = t.nr
+  agent.config.application_logging.forwarding.enabled = false
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  const handler = async function (_request, context) {
+    context.log('log forwarding disabled message')
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+
+  const txFinished = once(agent, 'transactionFinished')
+  mockApi.app.get('a-test', { handler })
+  await mockApi.httpRequest('get')
+  await txFinished
+
+  const agentLogs = agent.logs.getEvents()
+  assert.equal(agentLogs.length, 0, 'should have no log entries when log forwarding is disabled')
+})
+
+test('increments logging metrics for each log call when metrics are enabled', async (t) => {
+  bootstrapModule({ t })
+  const { agent, initialize, mockApi, shim } = t.nr
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  const handler = async function (_request, context) {
+    context.error('metrics enabled message')
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+
+  const txFinished = once(agent, 'transactionFinished')
+  mockApi.app.get('a-test', { handler })
+  await mockApi.httpRequest('get')
+  await txFinished
+
+  const unscoped = agent.metrics._metrics.unscoped
+  assert.equal(unscoped['Logging/lines'].callCount, 1, 'Logging/lines should be incremented')
+  assert.equal(unscoped['Logging/lines/ERROR'].callCount, 1, 'Logging/lines/ERROR should be incremented')
+})
+
+test('does not increment logging metrics when metrics are disabled', async (t) => {
+  bootstrapModule({ t })
+  const { agent, initialize, mockApi, shim } = t.nr
+  agent.config.application_logging.metrics.enabled = false
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  const handler = async function (_request, context) {
+    context.error('metrics disabled message')
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+
+  const txFinished = once(agent, 'transactionFinished')
+  mockApi.app.get('a-test', { handler })
+  await mockApi.httpRequest('get')
+  await txFinished
+
+  const unscoped = agent.metrics._metrics.unscoped
+  assert.equal(unscoped['Logging/lines'], undefined, 'Logging/lines should not be incremented')
+  assert.equal(unscoped['Logging/lines/ERROR'], undefined, 'Logging/lines/ERROR should not be incremented')
+})
+
 // https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-node?tabs=javascript%2Cwindows%2Cazure-cli&pivots=nodejs-model-v4#log-levels
 test('captures correct log level for each context log method', async (t) => {
   bootstrapModule({ t })
@@ -191,4 +284,38 @@ test('captures correct log level for each context log method', async (t) => {
   assert.equal(byMessage['error message'], 'error', 'context.error() should produce error level')
   assert.equal(byMessage['debug message'], 'debug', 'context.debug() should produce debug level')
   assert.equal(byMessage['trace message'], 'trace', 'context.trace() should produce trace level')
+
+  const unscoped = agent.metrics._metrics.unscoped
+  assert.equal(unscoped['Logging/lines'].callCount, 6, 'Logging/lines should be incremented once per log call')
+  assert.equal(unscoped['Logging/lines/INFO'].callCount, 2, 'Logging/lines/INFO should count log and info calls')
+  assert.equal(unscoped['Logging/lines/WARN'].callCount, 1, 'Logging/lines/WARN should be incremented for warn calls')
+  assert.equal(unscoped['Logging/lines/ERROR'].callCount, 1, 'Logging/lines/ERROR should be incremented for error calls')
+  assert.equal(unscoped['Logging/lines/DEBUG'].callCount, 1, 'Logging/lines/DEBUG should be incremented for debug calls')
+  assert.equal(unscoped['Logging/lines/TRACE'].callCount, 1, 'Logging/lines/TRACE should be incremented for trace calls')
+})
+
+test('maps azure log levels to NR metric level names', async (t) => {
+  bootstrapModule({ t })
+  const { agent, initialize, mockApi, shim } = t.nr
+  initialize(agent, mockApi, MODULE_NAME, shim)
+
+  const handler = async function (_request, context) {
+    context.info('azure info level message')
+    context.log('azure info level message')
+    context.warn('azure warn level message')
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+
+  const txFinished = once(agent, 'transactionFinished')
+  mockApi.app.get('a-test', { handler })
+  await mockApi.httpRequest('get')
+  await txFinished
+
+  const unscoped = agent.metrics._metrics.unscoped
+  assert.equal(unscoped['Logging/lines/INFO'].callCount, 2, "'information' should map to Logging/lines/INFO")
+  assert.equal(unscoped['Logging/lines/WARN'].callCount, 1, "'warning' should map to Logging/lines/WARN")
+  assert.equal(unscoped['Logging/lines/UNKNOWN'], undefined, 'no levels should fall through to UNKNOWN')
 })
