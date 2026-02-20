@@ -58,8 +58,13 @@ test('Redis instrumentation', async function (t) {
 
   await t.test('should log tracking metrics', function(t) {
     const { agent } = t.nr
-    const { version } = require('@redis/client/package.json')
-    assertPackageMetrics({ agent, pkg: '@redis/client', version, subscriberType: true })
+    try {
+      const { version } = require('@redis/client/package.json')
+      assertPackageMetrics({ agent, pkg: '@redis/client', version, subscriberType: true })
+    } catch {
+      const { version } = require('@node-redis/client/package.json')
+      assertPackageMetrics({ agent, pkg: '@node-redis/client', version, subscriberType: true })
+    }
   })
 
   await t.test('should find Redis calls in the transaction trace', function (t, end) {
