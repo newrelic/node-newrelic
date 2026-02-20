@@ -71,7 +71,7 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
       request.method = method
       function fireLogHook(message, level) {
         for (const cb of logHookCallbacks) {
-          cb({ message, level })
+          cb({ message, level, category: 'Function.test-func' })
         }
       }
       return mockApi.httpHandlers[method](request, {
@@ -155,6 +155,7 @@ test('adds logs from azure functions to agent logs', async (t) => {
   assert.equal(agentLogs[0].message, 'test message', 'log message should match')
   assert.equal(agentLogs[0].level, 'information', 'log level should match')
   assert.equal(agentLogs[0]['trace.id'], tx.traceId, 'log should include trace id')
+  assert.equal(agentLogs[0].attributes.CategoryName, 'Function.test-func', 'log should include CategoryName attribute from context.category')
 })
 
 test('does not capture logs when application logging is disabled', async (t) => {
