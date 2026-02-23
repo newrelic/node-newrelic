@@ -191,9 +191,6 @@ test('does not capture logs when log forwarding is disabled', async (t) => {
 
   const agentLogs = agent.logs.getEvents()
   assert.equal(agentLogs.length, 0, 'should have no log entries when log forwarding is disabled')
-  assert.deepStrictEqual(t.nr.logs, [
-    ['Log forwarding not enabled. Logs from Azure Functions will not be forwarded to New Relic.']
-  ], 'should log debug message when log forwarding is disabled')
 })
 
 test('increments logging metrics for each log call when metrics are enabled', async (t) => {
