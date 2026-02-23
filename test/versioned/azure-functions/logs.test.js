@@ -40,6 +40,13 @@ test.beforeEach((ctx) => {
   ctx.nr.agent = helper.loadMockedAgent()
   ctx.nr.shim = new GenericShim(ctx.nr.agent, 'azure-functions')
 
+  ctx.nr.logs = []
+  ctx.nr.logger = {
+    debug(...args) {
+      ctx.nr.logs.push(args)
+    }
+  }
+
   process.env.WEBSITE_OWNER_NAME = 'b999997b-cb91-49e0-b922-c9188372bdba+testing-rg-EastUS2webspace-Linux'
   process.env.WEBSITE_RESOURCE_GROUP = 'test-group'
   process.env.WEBSITE_SITE_NAME = 'test-site'
@@ -160,9 +167,9 @@ test('adds logs from azure functions to agent logs', async (t) => {
 
 test('does not capture logs when application logging is disabled', async (t) => {
   bootstrapModule({ t })
-  const { agent, initialize, mockApi, shim } = t.nr
+  const { agent, initialize, mockApi, shim, logger } = t.nr
   agent.config.application_logging.enabled = false
-  initialize(agent, mockApi, MODULE_NAME, shim)
+  initialize(agent, mockApi, MODULE_NAME, shim, { logger })
 
   const handler = async function (_request, context) {
     context.log('app logging disabled message')
@@ -179,13 +186,16 @@ test('does not capture logs when application logging is disabled', async (t) => 
 
   const agentLogs = agent.logs.getEvents()
   assert.equal(agentLogs.length, 0, 'should have no log entries when application logging is disabled')
+  assert.deepStrictEqual(t.nr.logs, [
+    ['Application logging not enabled. Not auto capturing logs from Azure Functions.']
+  ], 'should log debug message when application logging is disabled')
 })
 
 test('does not capture logs when log forwarding is disabled', async (t) => {
   bootstrapModule({ t })
-  const { agent, initialize, mockApi, shim } = t.nr
+  const { agent, initialize, mockApi, shim, logger } = t.nr
   agent.config.application_logging.forwarding.enabled = false
-  initialize(agent, mockApi, MODULE_NAME, shim)
+  initialize(agent, mockApi, MODULE_NAME, shim, { logger })
 
   const handler = async function (_request, context) {
     context.log('log forwarding disabled message')
@@ -202,6 +212,9 @@ test('does not capture logs when log forwarding is disabled', async (t) => {
 
   const agentLogs = agent.logs.getEvents()
   assert.equal(agentLogs.length, 0, 'should have no log entries when log forwarding is disabled')
+  assert.deepStrictEqual(t.nr.logs, [
+    ['Log forwarding not enabled. Logs from Azure Functions will not be forwarded to New Relic.']
+  ], 'should log debug message when log forwarding is disabled')
 })
 
 test('increments logging metrics for each log call when metrics are enabled', async (t) => {
