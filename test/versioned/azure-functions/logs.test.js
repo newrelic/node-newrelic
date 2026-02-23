@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 New Relic Corporation. All rights reserved.
+ * Copyright 2026 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -85,7 +85,6 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
     httpHandlers: {},
     httpRequest(method) {
       method = method.toUpperCase()
-      if (method === 'HTTP') method = 'GET'
       if (Object.hasOwn(mockApi.httpHandlers, method) === false) {
         throw Error(`no handler registered for method: ${method}`)
       }
@@ -116,9 +115,6 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
         log(callback) {
           logHookCallbacks.push(callback)
         }
-      },
-      http(name, options) {
-        mockApi.httpHandlers.GET = options.handler
       },
       get(name, options) {
         mockApi.httpHandlers.GET = options.handler ?? options
@@ -154,7 +150,7 @@ test('adds logs from azure functions to agent logs', async (t) => {
   const agentLogs = agent.logs.getEvents()
   assert.equal(agentLogs.length, 1, 'should have one log entry in agent logs')
   assert.equal(agentLogs[0].message, 'test message', 'log message should match')
-  assert.equal(agentLogs[0].level, 'information', 'log level should match')
+  assert.equal(agentLogs[0].level, 'info', 'log level should match')
   assert.ok(agentLogs[0].timestamp, 'log should have a timestamp')
   assert.equal(agentLogs[0]['trace.id'], tx.traceId, 'log should include trace id')
   assert.equal(agentLogs[0].attributes.CategoryName, 'Function.test-func', 'log should include CategoryName attribute from context.category')
@@ -257,9 +253,9 @@ test('captures correct log level for each context log method', async (t) => {
   assert.equal(agentLogs.length, 6, 'should have one log entry per context log call')
 
   const byMessage = Object.fromEntries(agentLogs.map((l) => [l.message, l.level]))
-  assert.equal(byMessage['log message'], 'information', 'context.log() should produce information level')
-  assert.equal(byMessage['info message'], 'information', 'context.info() should produce information level')
-  assert.equal(byMessage['warn message'], 'warning', 'context.warn() should produce warning level')
+  assert.equal(byMessage['log message'], 'info', 'context.log() should produce info level')
+  assert.equal(byMessage['info message'], 'info', 'context.info() should produce info level')
+  assert.equal(byMessage['warn message'], 'warn', 'context.warn() should produce warn level')
   assert.equal(byMessage['error message'], 'error', 'context.error() should produce error level')
   assert.equal(byMessage['debug message'], 'debug', 'context.debug() should produce debug level')
   assert.equal(byMessage['trace message'], 'trace', 'context.trace() should produce trace level')
