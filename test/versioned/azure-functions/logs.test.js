@@ -153,7 +153,7 @@ test('adds logs from azure functions to agent logs', async (t) => {
   assert.equal(agentLogs[0].level, 'info', 'log level should match')
   assert.ok(agentLogs[0].timestamp, 'log should have a timestamp')
   assert.equal(agentLogs[0]['trace.id'], tx.traceId, 'log should include trace id')
-  assert.equal(agentLogs[0].attributes.CategoryName, 'Function.test-func', 'log should include CategoryName attribute from context.category')
+  assert.equal(agentLogs[0].category, 'Function.test-func', 'log should include context.category')
 })
 
 test('does not capture logs when application logging is disabled', async (t) => {
