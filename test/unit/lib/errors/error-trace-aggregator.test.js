@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const ErrorTraceAggregator = require('../../../lib/errors/error-trace-aggregator')
+const ErrorTraceAggregator = require('#agentlib/errors/error-trace-aggregator.js')
 
 const RUN_ID = 1337
 const LIMIT = 5

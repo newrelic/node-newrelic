@@ -8,12 +8,12 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const helper = require('../../lib/agent_helper')
-const { APDEX, ERRORS } = require('../../../lib/metrics/names')
-const { Exception } = require('../../../lib/errors')
-const urltils = require('../../../lib/util/urltils')
-const errorHelper = require('../../../lib/errors/helper')
-const API = require('../../../api')
+const helper = require('#testlib/agent_helper.js')
+const { APDEX, ERRORS } = require('#agentlib/metrics/names.js')
+const { Exception } = require('#agentlib/errors/index.js')
+const urltils = require('#agentlib/util/urltils.js')
+const errorHelper = require('#agentlib/errors/helper.js')
+const API = require('../../../../api')
 
 test('Expected Errors, when expected configuration is present', async (t) => {
   t.beforeEach((ctx) => {

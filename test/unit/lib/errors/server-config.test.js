@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const helper = require('../../lib/agent_helper')
+const helper = require('#testlib/agent_helper.js')
 test('Merging Server Config Values', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
