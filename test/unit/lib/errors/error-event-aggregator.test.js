@@ -8,8 +8,8 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const ErrorEventAggregator = require('../../../lib/errors/error-event-aggregator')
-const Metrics = require('../../../lib/metrics')
+const ErrorEventAggregator = require('#agentlib/errors/error-event-aggregator.js')
+const Metrics = require('#agentlib/metrics/index.js')
 
 const RUN_ID = 1337
 const LIMIT = 5

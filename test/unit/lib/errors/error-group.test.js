@@ -7,8 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const helper = require('../../lib/agent_helper')
-const Transaction = require('../../../lib/transaction')
+const helper = require('#testlib/agent_helper.js')
+const Transaction = require('#agentlib/transaction/index.js')
 
 test('Error Group functionality', async (t) => {
   t.beforeEach((ctx) => {

@@ -8,8 +8,8 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const helper = require('../../lib/agent_helper')
-const NAMES = require('../../../lib/metrics/names')
+const helper = require('#testlib/agent_helper.js')
+const NAMES = require('#agentlib/metrics/names.js')
 
 test('Ignored Errors', async (t) => {
   t.beforeEach((ctx) => {

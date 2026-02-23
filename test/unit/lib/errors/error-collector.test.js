@@ -8,18 +8,18 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const helper = require('../../lib/agent_helper')
-const Exception = require('../../../lib/errors').Exception
-const ErrorCollector = require('../../../lib/errors/error-collector')
-const ErrorTraceAggregator = require('../../../lib/errors/error-trace-aggregator')
-const ErrorEventAggregator = require('../../../lib/errors/error-event-aggregator')
+const helper = require('#testlib/agent_helper.js')
+const Exception = require('#agentlib/errors/index.js').Exception
+const ErrorCollector = require('#agentlib/errors/error-collector.js')
+const ErrorTraceAggregator = require('#agentlib/errors/error-trace-aggregator.js')
+const ErrorEventAggregator = require('#agentlib/errors/error-event-aggregator.js')
 
-const Transaction = require('../../../lib/transaction')
-const Metrics = require('../../../lib/metrics')
+const Transaction = require('#agentlib/transaction/index.js')
+const Metrics = require('#agentlib/metrics/index.js')
 
-const API = require('../../../api')
-const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
-const NAMES = require('../../../lib/metrics/names')
+const API = require('../../../../api')
+const DESTS = require('#agentlib/config/attribute-filter.js').DESTINATIONS
+const NAMES = require('#agentlib/metrics/names.js')
 const http = require('http')
 const Segment = require('#agentlib/transaction/trace/segment.js')
 
