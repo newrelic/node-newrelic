@@ -61,6 +61,21 @@ test.afterEach((ctx) => {
   delete process.env.WEBSITE_SITE_NAME
 })
 
+function makeOkResponse() {
+  const response = new AzureFunctionHttpResponse()
+  response.body = 'ok'
+  response.status = 200
+  return response
+}
+
+async function runHandlerAndWait(agent, mockApi, handler) {
+  const txFinished = once(agent, 'transactionFinished')
+  mockApi.app.get('a-test', { handler })
+  const response = await mockApi.httpRequest('get')
+  const [tx] = await txFinished
+  return { response, tx }
+}
+
 function bootstrapModule({ t, request = basicHttpRequest }) {
   t.nr.initialize = require('../../../lib/instrumentation/@azure/functions.js')
 
@@ -71,7 +86,6 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
     httpRequest(method) {
       method = method.toUpperCase()
       if (method === 'HTTP') method = 'GET'
-      if (method === 'DELETEREQUEST') method = 'DELETE'
       if (Object.hasOwn(mockApi.httpHandlers, method) === false) {
         throw Error(`no handler registered for method: ${method}`)
       }
@@ -108,18 +122,6 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
       },
       get(name, options) {
         mockApi.httpHandlers.GET = options.handler ?? options
-      },
-      put(name, options) {
-        mockApi.httpHandlers.PUT = options.handler
-      },
-      post(name, options) {
-        mockApi.httpHandlers.POST = options.handler
-      },
-      patch(name, options) {
-        mockApi.httpHandlers.PATCH = options.handler
-      },
-      deleteRequest(name, options) {
-        mockApi.httpHandlers.DELETE = options.handler
       }
     }
   }
@@ -142,25 +144,18 @@ test('adds logs from azure functions to agent logs', async (t) => {
 
   const handler = async function (_request, context) {
     context.log('test message')
-    const response = new AzureFunctionHttpResponse()
-    response.body = 'ok'
-    response.status = 200
-    return response
+    return makeOkResponse()
   }
-  const options = { handler }
 
-  const txFinished = once(agent, 'transactionFinished')
-  mockApi.app.get('a-test', options)
-  const response = await mockApi.httpRequest('get')
+  const { response, tx } = await runHandlerAndWait(agent, mockApi, handler)
   assert.equal(response.body, 'ok')
-
-  const [tx] = await txFinished
   assert.ok(tx)
 
   const agentLogs = agent.logs.getEvents()
   assert.equal(agentLogs.length, 1, 'should have one log entry in agent logs')
   assert.equal(agentLogs[0].message, 'test message', 'log message should match')
   assert.equal(agentLogs[0].level, 'information', 'log level should match')
+  assert.ok(agentLogs[0].timestamp, 'log should have a timestamp')
   assert.equal(agentLogs[0]['trace.id'], tx.traceId, 'log should include trace id')
   assert.equal(agentLogs[0].attributes.CategoryName, 'Function.test-func', 'log should include CategoryName attribute from context.category')
 })
@@ -173,16 +168,10 @@ test('does not capture logs when application logging is disabled', async (t) => 
 
   const handler = async function (_request, context) {
     context.log('app logging disabled message')
-    const response = new AzureFunctionHttpResponse()
-    response.body = 'ok'
-    response.status = 200
-    return response
+    return makeOkResponse()
   }
 
-  const txFinished = once(agent, 'transactionFinished')
-  mockApi.app.get('a-test', { handler })
-  await mockApi.httpRequest('get')
-  await txFinished
+  await runHandlerAndWait(agent, mockApi, handler)
 
   const agentLogs = agent.logs.getEvents()
   assert.equal(agentLogs.length, 0, 'should have no log entries when application logging is disabled')
@@ -199,16 +188,10 @@ test('does not capture logs when log forwarding is disabled', async (t) => {
 
   const handler = async function (_request, context) {
     context.log('log forwarding disabled message')
-    const response = new AzureFunctionHttpResponse()
-    response.body = 'ok'
-    response.status = 200
-    return response
+    return makeOkResponse()
   }
 
-  const txFinished = once(agent, 'transactionFinished')
-  mockApi.app.get('a-test', { handler })
-  await mockApi.httpRequest('get')
-  await txFinished
+  await runHandlerAndWait(agent, mockApi, handler)
 
   const agentLogs = agent.logs.getEvents()
   assert.equal(agentLogs.length, 0, 'should have no log entries when log forwarding is disabled')
@@ -224,16 +207,10 @@ test('increments logging metrics for each log call when metrics are enabled', as
 
   const handler = async function (_request, context) {
     context.error('metrics enabled message')
-    const response = new AzureFunctionHttpResponse()
-    response.body = 'ok'
-    response.status = 200
-    return response
+    return makeOkResponse()
   }
 
-  const txFinished = once(agent, 'transactionFinished')
-  mockApi.app.get('a-test', { handler })
-  await mockApi.httpRequest('get')
-  await txFinished
+  await runHandlerAndWait(agent, mockApi, handler)
 
   const unscoped = agent.metrics._metrics.unscoped
   assert.equal(unscoped['Logging/lines'].callCount, 1, 'Logging/lines should be incremented')
@@ -248,16 +225,10 @@ test('does not increment logging metrics when metrics are disabled', async (t) =
 
   const handler = async function (_request, context) {
     context.error('metrics disabled message')
-    const response = new AzureFunctionHttpResponse()
-    response.body = 'ok'
-    response.status = 200
-    return response
+    return makeOkResponse()
   }
 
-  const txFinished = once(agent, 'transactionFinished')
-  mockApi.app.get('a-test', { handler })
-  await mockApi.httpRequest('get')
-  await txFinished
+  await runHandlerAndWait(agent, mockApi, handler)
 
   const unscoped = agent.metrics._metrics.unscoped
   assert.equal(unscoped['Logging/lines'], undefined, 'Logging/lines should not be incremented')
@@ -277,16 +248,10 @@ test('captures correct log level for each context log method', async (t) => {
     context.error('error message')
     context.debug('debug message')
     context.trace('trace message')
-    const response = new AzureFunctionHttpResponse()
-    response.body = 'ok'
-    response.status = 200
-    return response
+    return makeOkResponse()
   }
 
-  const txFinished = once(agent, 'transactionFinished')
-  mockApi.app.get('a-test', { handler })
-  await mockApi.httpRequest('get')
-  await txFinished
+  await runHandlerAndWait(agent, mockApi, handler)
 
   const agentLogs = agent.logs.getEvents()
   assert.equal(agentLogs.length, 6, 'should have one log entry per context log call')
@@ -317,16 +282,10 @@ test('maps azure log levels to NR metric level names', async (t) => {
     context.info('azure info level message')
     context.log('azure info level message')
     context.warn('azure warn level message')
-    const response = new AzureFunctionHttpResponse()
-    response.body = 'ok'
-    response.status = 200
-    return response
+    return makeOkResponse()
   }
 
-  const txFinished = once(agent, 'transactionFinished')
-  mockApi.app.get('a-test', { handler })
-  await mockApi.httpRequest('get')
-  await txFinished
+  await runHandlerAndWait(agent, mockApi, handler)
 
   const unscoped = agent.metrics._metrics.unscoped
   assert.equal(unscoped['Logging/lines/INFO'].callCount, 2, "'information' should map to Logging/lines/INFO")
