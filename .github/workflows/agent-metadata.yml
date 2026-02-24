@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version tag (needs to exactly match the GH tag for the release)'
+        description: 'Version number (needs to match package.json)'
         required: true
         type: string
       agent-type:
