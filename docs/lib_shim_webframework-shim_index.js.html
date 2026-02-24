@@ -1,0 +1,411 @@
+<!DOCTYPE html><html lang="en" style="font-size:16px"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Source: lib/shim/webframework-shim/index.js</title><!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]--><script src="scripts/third-party/hljs.js" defer="defer"></script><script src="scripts/third-party/hljs-line-num.js" defer="defer"></script><script src="scripts/third-party/popper.js" defer="defer"></script><script src="scripts/third-party/tippy.js" defer="defer"></script><script src="scripts/third-party/tocbot.min.js"></script><script>var baseURL="/",locationPathname="";baseURL=(locationPathname=document.location.pathname).substr(0,locationPathname.lastIndexOf("/")+1)</script><link rel="stylesheet" href="styles/clean-jsdoc-theme-without-scrollbar.min.css"><svg aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none"><defs><symbol id="copy-icon" viewbox="0 0 488.3 488.3"><g><path d="M314.25,85.4h-227c-21.3,0-38.6,17.3-38.6,38.6v325.7c0,21.3,17.3,38.6,38.6,38.6h227c21.3,0,38.6-17.3,38.6-38.6V124    C352.75,102.7,335.45,85.4,314.25,85.4z M325.75,449.6c0,6.4-5.2,11.6-11.6,11.6h-227c-6.4,0-11.6-5.2-11.6-11.6V124    c0-6.4,5.2-11.6,11.6-11.6h227c6.4,0,11.6,5.2,11.6,11.6V449.6z"/><path d="M401.05,0h-227c-21.3,0-38.6,17.3-38.6,38.6c0,7.5,6,13.5,13.5,13.5s13.5-6,13.5-13.5c0-6.4,5.2-11.6,11.6-11.6h227    c6.4,0,11.6,5.2,11.6,11.6v325.7c0,6.4-5.2,11.6-11.6,11.6c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5c21.3,0,38.6-17.3,38.6-38.6    V38.6C439.65,17.3,422.35,0,401.05,0z"/></g></symbol><symbol id="search-icon" viewBox="0 0 512 512"><g><g><path d="M225.474,0C101.151,0,0,101.151,0,225.474c0,124.33,101.151,225.474,225.474,225.474    c124.33,0,225.474-101.144,225.474-225.474C450.948,101.151,349.804,0,225.474,0z M225.474,409.323    c-101.373,0-183.848-82.475-183.848-183.848S124.101,41.626,225.474,41.626s183.848,82.475,183.848,183.848    S326.847,409.323,225.474,409.323z"/></g></g><g><g><path d="M505.902,476.472L386.574,357.144c-8.131-8.131-21.299-8.131-29.43,0c-8.131,8.124-8.131,21.306,0,29.43l119.328,119.328    c4.065,4.065,9.387,6.098,14.715,6.098c5.321,0,10.649-2.033,14.715-6.098C514.033,497.778,514.033,484.596,505.902,476.472z"/></g></g></symbol><symbol id="font-size-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11.246 15H4.754l-2 5H.6L7 4h2l6.4 16h-2.154l-2-5zm-.8-2L8 6.885 5.554 13h4.892zM21 12.535V12h2v8h-2v-.535a4 4 0 1 1 0-6.93zM19 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol><symbol id="add-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z"/></symbol><symbol id="minus-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M5 11h14v2H5z"/></symbol><symbol id="dark-theme-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/></symbol><symbol id="light-theme-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></symbol><symbol id="reset-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795z"/></symbol><symbol id="down-icon" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.7803 6.21967C13.0732 6.51256 13.0732 6.98744 12.7803 7.28033L8.53033 11.5303C8.23744 11.8232 7.76256 11.8232 7.46967 11.5303L3.21967 7.28033C2.92678 6.98744 2.92678 6.51256 3.21967 6.21967C3.51256 5.92678 3.98744 5.92678 4.28033 6.21967L8 9.93934L11.7197 6.21967C12.0126 5.92678 12.4874 5.92678 12.7803 6.21967Z"></path></symbol><symbol id="codepen-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.5 13.202L13 15.535v3.596L19.197 15 16.5 13.202zM14.697 12L12 10.202 9.303 12 12 13.798 14.697 12zM20 10.869L18.303 12 20 13.131V10.87zM19.197 9L13 4.869v3.596l3.5 2.333L19.197 9zM7.5 10.798L11 8.465V4.869L4.803 9 7.5 10.798zM4.803 15L11 19.131v-3.596l-3.5-2.333L4.803 15zM4 13.131L5.697 12 4 10.869v2.262zM2 9a1 1 0 0 1 .445-.832l9-6a1 1 0 0 1 1.11 0l9 6A1 1 0 0 1 22 9v6a1 1 0 0 1-.445.832l-9 6a1 1 0 0 1-1.11 0l-9-6A1 1 0 0 1 2 15V9z"/></symbol><symbol id="close-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/></symbol><symbol id="menu-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></symbol></defs></svg></head><body data-theme="dark"><div class="sidebar-container"><div class="sidebar" id="sidebar"><div class="sidebar-items-container"><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-classes"><div>Classes</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="API.html">API</a></div><div class="sidebar-section-children"><a href="ClassWrapSpec.html">ClassWrapSpec</a></div><div class="sidebar-section-children"><a href="DatastoreParameters.html">DatastoreParameters</a></div><div class="sidebar-section-children"><a href="DatastoreShim.html">DatastoreShim</a></div><div class="sidebar-section-children"><a href="InstrumentationDescriptor.html">InstrumentationDescriptor</a></div><div class="sidebar-section-children"><a href="MessageShim.html">MessageShim</a></div><div class="sidebar-section-children"><a href="MessageSpec.html">MessageSpec</a></div><div class="sidebar-section-children"><a href="MessageSubscribeSpec.html">MessageSubscribeSpec</a></div><div class="sidebar-section-children"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></div><div class="sidebar-section-children"><a href="MiddlewareSpec.html">MiddlewareSpec</a></div><div class="sidebar-section-children"><a href="OperationSpec.html">OperationSpec</a></div><div class="sidebar-section-children"><a href="PromiseShim.html">PromiseShim</a></div><div class="sidebar-section-children"><a href="QuerySpec.html">QuerySpec</a></div><div class="sidebar-section-children"><a href="QueueMessageParameters.html">QueueMessageParameters</a></div><div class="sidebar-section-children"><a href="RecorderSpec.html">RecorderSpec</a></div><div class="sidebar-section-children"><a href="RenderSpec.html">RenderSpec</a></div><div class="sidebar-section-children"><a href="SegmentSpec.html">SegmentSpec</a></div><div class="sidebar-section-children"><a href="Shim.html">Shim</a></div><div class="sidebar-section-children"><a href="TransactionHandle.html">TransactionHandle</a></div><div class="sidebar-section-children"><a href="TransactionShim.html">TransactionShim</a></div><div class="sidebar-section-children"><a href="TransactionSpec.html">TransactionSpec</a></div><div class="sidebar-section-children"><a href="WebFrameworkShim.html">WebFrameworkShim</a></div><div class="sidebar-section-children"><a href="WrapSpec.html">WrapSpec</a></div></div><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-tutorials"><div>Tutorials</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="tutorial-instrumentation.html">Instrumentation Examples</a></div></div><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-interfaces"><div>Interfaces</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="ParsedQueryData.html">ParsedQueryData</a></div></div><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-global"><div>Global</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="global.html#CallbackBindFunction">CallbackBindFunction</a></div><div class="sidebar-section-children"><a href="global.html#ClassWrapSpecParams">ClassWrapSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#ConstructorHookFunction">ConstructorHookFunction</a></div><div class="sidebar-section-children"><a href="global.html#DatastoreParametersParams">DatastoreParametersParams</a></div><div class="sidebar-section-children"><a href="global.html#InContextCallback">InContextCallback</a></div><div class="sidebar-section-children"><a href="global.html#InstrumentationDescriptorParams">InstrumentationDescriptorParams</a></div><div class="sidebar-section-children"><a href="global.html#InstrumentationOnError">InstrumentationOnError</a></div><div class="sidebar-section-children"><a href="global.html#InstrumentationOnRequire">InstrumentationOnRequire</a></div><div class="sidebar-section-children"><a href="global.html#MessageBrokerHeadersFn">MessageBrokerHeadersFn</a></div><div class="sidebar-section-children"><a href="global.html#MessageConsumerWrapperFunction">MessageConsumerWrapperFunction</a></div><div class="sidebar-section-children"><a href="global.html#MessageFunction">MessageFunction</a></div><div class="sidebar-section-children"><a href="global.html#MessageHandlerFunction">MessageHandlerFunction</a></div><div class="sidebar-section-children"><a href="global.html#MessageSpecParams">MessageSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#MessageSubscribeSpecParams">MessageSubscribeSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#MiddlewareMounterSpecParams">MiddlewareMounterSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#MiddlewareSpecParams">MiddlewareSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#MiddlewareTypeNames">MiddlewareTypeNames</a></div><div class="sidebar-section-children"><a href="global.html#MiddlewareWrapperFunction">MiddlewareWrapperFunction</a></div><div class="sidebar-section-children"><a href="global.html#OperationSpecParams">OperationSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#QueryFunction">QueryFunction</a></div><div class="sidebar-section-children"><a href="global.html#QueryParserFunction">QueryParserFunction</a></div><div class="sidebar-section-children"><a href="global.html#QuerySpecFunction">QuerySpecFunction</a></div><div class="sidebar-section-children"><a href="global.html#QuerySpecParams">QuerySpecParams</a></div><div class="sidebar-section-children"><a href="global.html#QueueMessageParametersParams">QueueMessageParametersParams</a></div><div class="sidebar-section-children"><a href="global.html#RecorderFunction">RecorderFunction</a></div><div class="sidebar-section-children"><a href="global.html#RecorderSpecParams">RecorderSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#RenderSpecParams">RenderSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#ResponsePredicate">ResponsePredicate</a></div><div class="sidebar-section-children"><a href="global.html#RouteNextFunction">RouteNextFunction</a></div><div class="sidebar-section-children"><a href="global.html#RouteParameterFunction">RouteParameterFunction</a></div><div class="sidebar-section-children"><a href="global.html#RouteParserFunction">RouteParserFunction</a></div><div class="sidebar-section-children"><a href="global.html#RouteRequestFunction">RouteRequestFunction</a></div><div class="sidebar-section-children"><a href="global.html#SegmentFunction">SegmentFunction</a></div><div class="sidebar-section-children"><a href="global.html#SegmentSpecParams">SegmentSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#SpecAfterFunction">SpecAfterFunction</a></div><div class="sidebar-section-children"><a href="global.html#TransactionSpecParams">TransactionSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#WrapFunction">WrapFunction</a></div><div class="sidebar-section-children"><a href="global.html#WrapSpecParams">WrapSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#createShimFromType">createShimFromType</a></div><div class="sidebar-section-children"><a href="global.html#getDatabaseNameFromUseQuery">getDatabaseNameFromUseQuery</a></div><div class="sidebar-section-children"><a href="global.html#startSegmentCallback">startSegmentCallback</a></div></div></div></div></div><div class="navbar-container" id="VuAckcnZhf"><nav class="navbar"><div class="navbar-left-items"></div><div class="navbar-right-items"><div class="navbar-right-item"><button class="icon-button theme-toggle" aria-label="toggle-theme"><svg><use class="theme-svg-use" xlink:href="#light-theme-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button font-size" aria-label="change-font-size"><svg><use xlink:href="#font-size-icon"></use></svg></button></div></div><nav></nav></nav></div><div class="toc-container"><div class="toc-content"><span class="bold">On this page</span><div id="eed4d2a0bfd64539bb9df78095dec881"></div></div></div><div class="body-wrapper"><div class="main-content"><div class="main-wrapper"><section id="source-page" class="source-page"><header><h1 id="title" class="has-anchor">lib_shim_webframework-shim_index.js</h1></header><article><pre class="prettyprint source lang-js"><code>/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+'use strict'
+
+const genericRecorder = require('../../metrics/recorders/generic')
+const logger = require('../../logger.js').child({ component: 'WebFrameworkShim' })
+const metrics = require('../../metrics/names')
+const TransactionShim = require('../transaction-shim')
+const Shim = require('../shim')
+const specs = require('../specs')
+const util = require('util')
+const { assignError, getTransactionInfo, isError, MIDDLEWARE_TYPE_NAMES } = require('./common')
+const wrapMiddlewareMounter = require('./middleware-mounter')
+const { _recordMiddleware } = require('./middleware')
+
+/**
+ * An enumeration of well-known web frameworks so that new instrumentations can
+ * use the same names we already use for first-party instrumentation.
+ *
+ * Each of these values is also exposed directly on the WebFrameworkShim class
+ * as static members.
+ *
+ * @readonly
+ * @memberof WebFrameworkShim
+ * @enum {string}
+ */
+const FRAMEWORK_NAMES = {
+  CONNECT: 'Connect',
+  DIRECTOR: 'Director',
+  EXPRESS: 'Expressjs',
+  FASTIFY: 'Fastify',
+  HAPI: 'Hapi',
+  KOA: 'Koa',
+  NEXT: 'Nextjs',
+  NEST: 'Nestjs',
+  RESTIFY: 'Restify'
+}
+
+/**
+ * Constructs a shim associated with the given agent instance, specialized for
+ * instrumenting web frameworks.
+ *
+ * @class
+ * @augments TransactionShim
+ * @classdesc
+ *  A helper class for wrapping web framework modules.
+ * @param {Agent} agent
+ *  The agent this shim will use.
+ * @param {string} moduleName
+ *  The name of the module being instrumented.
+ * @param {string} resolvedName
+ *  The full path to the loaded module.
+ * @param {string} shimName
+ *  Used to persist shim ids across different shim instances.
+ * @param {string} pkgVersion
+ *  version of module
+ * @see TransactionShim
+ * @see WebFrameworkShim.FRAMEWORK_NAMES
+ */
+function WebFrameworkShim(agent, moduleName, resolvedName, shimName, pkgVersion) {
+  TransactionShim.call(this, agent, moduleName, resolvedName, shimName, pkgVersion)
+  this._logger = logger.child({ module: moduleName })
+  this._routeParser = _defaultRouteParser
+  this._errorPredicate = _defaultErrorPredicate
+  this._responsePredicate = _defaultResponsePredicate
+}
+module.exports = WebFrameworkShim
+util.inherits(WebFrameworkShim, TransactionShim)
+
+// Add constants on the shim for the well-known frameworks.
+for (const [fwName, fw] of Object.entries(FRAMEWORK_NAMES)) {
+  Shim.defineProperty(WebFrameworkShim, fwName, fw)
+  Shim.defineProperty(WebFrameworkShim.prototype, fwName, fw)
+}
+
+WebFrameworkShim.MIDDLEWARE_TYPE_NAMES = MIDDLEWARE_TYPE_NAMES
+for (const [mtName, mType] of Object.entries(MIDDLEWARE_TYPE_NAMES)) {
+  Shim.defineProperty(WebFrameworkShim, mtName, mType)
+  Shim.defineProperty(WebFrameworkShim.prototype, mtName, mType)
+}
+
+WebFrameworkShim.prototype.setRouteParser = setRouteParser
+WebFrameworkShim.prototype.setFramework = setFramework
+WebFrameworkShim.prototype.setTransactionUri = setTransactionUri
+WebFrameworkShim.prototype.wrapMiddlewareMounter = wrapMiddlewareMounter
+WebFrameworkShim.prototype.recordParamware = recordParamware
+WebFrameworkShim.prototype.recordMiddleware = recordMiddleware
+WebFrameworkShim.prototype.recordRender = recordRender
+WebFrameworkShim.prototype.noticeError = noticeError
+WebFrameworkShim.prototype.errorHandled = errorHandled
+WebFrameworkShim.prototype.setErrorPredicate = setErrorPredicate
+WebFrameworkShim.prototype.setResponsePredicate = setResponsePredicate
+WebFrameworkShim.prototype.savePossibleTransactionName = savePossibleTransactionName
+
+/**
+ * Sets the function used to convert the route handed to middleware-adding
+ * methods into a string.
+ *
+ * - `setRouteParser(parser)`
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {RouteParserFunction} parser - The parser function to use.
+ * @returns {undefined}
+ */
+function setRouteParser(parser) {
+  if (!this.isFunction(parser)) {
+    this.logger.debug('Given route parser is not a function.')
+    return
+  }
+  this._routeParser = parser
+}
+
+/**
+ * Sets the name of the web framework in use by the server to the one given.
+ *
+ * - `setFramework(framework)`
+ *
+ * This should be the first thing the instrumentation does.
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {WebFrameworkShim.FRAMEWORK_NAMES|string} framework
+ *  The name of the framework.
+ * @see WebFrameworkShim.FRAMEWORK_NAMES
+ */
+function setFramework(framework) {
+  this._metrics = {
+    PREFIX: framework + '/',
+    FRAMEWORK: framework,
+    MIDDLEWARE: metrics.MIDDLEWARE.PREFIX
+  }
+  this.agent.environment.setFramework(framework)
+
+  this._logger = this._logger.child({ framework })
+  this.logger.trace({ metrics: this._metrics }, 'Framework metric names set')
+}
+
+/**
+ * Sets the URI path to be used for naming the transaction currently in scope.
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {string} uri - The URI path to use for the transaction.
+ */
+function setTransactionUri(uri) {
+  const tx = this.tracer.getTransaction()
+  if (!tx) {
+    return
+  }
+
+  tx.nameState.setName(this._metrics.FRAMEWORK, tx.verb, metrics.ACTION_DELIMITER, uri)
+}
+
+/**
+ * Records calls to methods used for rendering views.
+ *
+ * - `recordRender(nodule, properties [, spec])`
+ * - `recordRender(func [, spec])`
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {object | Function} nodule
+ *  The source for the properties to wrap, or a single function to wrap.
+ * @param {string|Array.&lt;string>} [properties]
+ *  One or more properties to wrap. If omitted, the `nodule` parameter is
+ *  assumed to be the function to wrap.
+ * @param {RenderSpec} [spec]
+ *  The spec for wrapping the render method.
+ * @returns {object | Function} The first parameter to this function, after
+ *  wrapping it or its properties.
+ */
+function recordRender(nodule, properties, spec) {
+  if (this.isObject(properties) &amp;&amp; !this.isArray(properties)) {
+    // recordRender(func, spec)
+    spec = properties
+    properties = null
+  }
+
+  return this.record(nodule, properties, function renderRecorder(shim, fn, name, args) {
+    const viewIdx = shim.normalizeIndex(args.length, spec.view)
+    if (viewIdx === null) {
+      shim.logger.debug('Invalid spec.view (%d vs %d), not recording.', spec.view, args.length)
+      return null
+    }
+
+    spec.recorder = genericRecorder
+    spec.name = metrics.VIEW.PREFIX + args[viewIdx] + metrics.VIEW.RENDER
+    return spec
+  })
+}
+
+/**
+ * Records the provided function as a middleware.
+ *
+ * - `recordMiddleware(nodule, properties [, spec])`
+ * - `recordMiddleware(func [, spec])`
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {object | Function} nodule
+ *  The source for the properties to wrap, or a single function to wrap.
+ * @param {string|Array.&lt;string>} [properties]
+ *  One or more properties to wrap. If omitted, the `nodule` parameter is
+ *  assumed to be the function to wrap.
+ * @param {MiddlewareSpec} [spec]
+ *  The spec for wrapping the middleware.
+ * @returns {object | Function} The first parameter to this function, after
+ *  wrapping it or its properties.
+ * @see WebFrameworkShim#wrapMiddlewareMounter
+ */
+function recordMiddleware(nodule, properties, spec) {
+  if (this.isObject(properties) &amp;&amp; !this.isArray(properties)) {
+    // recordMiddleware(func, spec)
+    spec = properties
+    properties = null
+  }
+
+  const wrapSpec = new specs.WrapSpec({
+    matchArity: spec.matchArity,
+    wrapper: function wrapMiddleware(shim, middleware) {
+      return _recordMiddleware(shim, middleware, spec)
+    }
+  })
+
+  return this.wrap(nodule, properties, wrapSpec)
+}
+
+/**
+ * Records the provided function as a paramware.
+ *
+ * - `recordParamware(nodule, properties [, spec])`
+ * - `recordParamware(func [, spec])`
+ *
+ * Paramware are specialized middleware that execute when certain route
+ * parameters are encountered. For example, the route `/users/:userId` could
+ * trigger a paramware hooked to `userId`.
+ *
+ * For every new request that comes in, this should be called as early in the
+ * processing as possible.
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {object | Function} nodule
+ *  The source for the properties to wrap, or a single function to wrap.
+ * @param {string|Array.&lt;string>} [properties]
+ *  One or more properties to wrap. If omitted, the `nodule` parameter is
+ *  assumed to be the function to wrap.
+ * @param {MiddlewareSpec} [spec]
+ *  The spec for wrapping the middleware.
+ * @returns {object | Function} The first parameter to this function, after
+ *  wrapping it or its properties.
+ */
+function recordParamware(nodule, properties, spec) {
+  if (this.isObject(properties) &amp;&amp; !this.isArray(properties)) {
+    // recordParamware(func, spec)
+    spec = properties
+    properties = null
+  }
+  if (spec &amp;&amp; this.isString(spec.name)) {
+    spec.route = '[param handler :' + spec.name + ']'
+  } else {
+    spec.route = '[param handler]'
+  }
+  spec.type = MIDDLEWARE_TYPE_NAMES.PARAMWARE
+
+  const wrapSpec = new specs.WrapSpec({
+    matchArity: spec.matchArity,
+    wrapper: function wrapParamware(shim, middleware, name) {
+      spec.name = name
+      return _recordMiddleware(shim, middleware, spec)
+    }
+  })
+
+  return this.wrap(nodule, properties, wrapSpec)
+}
+
+/**
+ * Tells the shim that the given request has caused an error.
+ *
+ * The given error will be checked for truthiness and if it passes the error
+ * predicate check before being held onto.
+ *
+ * Use {@link WebFrameworkShim#errorHandled} to unnotice an error if it is later
+ * caught by the user.
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {Request} req - The request which caused the error.
+ * @param {*?}      err - The error which has occurred.
+ * @see WebFrameworkShim#errorHandled
+ * @see WebFrameworkShim#setErrorPredicate
+ */
+function noticeError(req, err) {
+  const txInfo = getTransactionInfo(this, req)
+  if (txInfo &amp;&amp; isError(this, err)) {
+    assignError(txInfo, err)
+  }
+}
+
+/**
+ * Indicates that the given error has been handled for this request.
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {Request} req - The request which caused the error.
+ * @param {*}       err - The error which has been handled.
+ * @see WebFrameworkShim#noticeError
+ * @see WebFrameworkShim#setErrorPredicate
+ */
+function errorHandled(req, err) {
+  const txInfo = getTransactionInfo(this, req)
+  if (txInfo &amp;&amp; txInfo.error === err) {
+    txInfo.errorHandled = true
+  }
+}
+
+/**
+ * Sets a function to call when an error is noticed to determine if it is really
+ * an error.
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {function(object): boolean} pred
+ *  Function which should return true if the object passed to it is considered
+ *  an error.
+ * @see WebFrameworkShim#noticeError
+ * @see WebFrameworkShim#errorHandled
+ */
+function setErrorPredicate(pred) {
+  this._errorPredicate = pred
+}
+
+/**
+ * Marks the current path as a potential responder.
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {Request} req - The request which caused the error.
+ */
+function savePossibleTransactionName(req) {
+  const txInfo = getTransactionInfo(this, req)
+  if (txInfo &amp;&amp; txInfo.transaction) {
+    txInfo.transaction.nameState.markPath()
+  }
+}
+
+/**
+ * Predicate used to determine whether a middleware invocation constitutes a response.
+ *
+ * @typedef {Function} ResponsePredicate
+ * @param {object[]} args - The arguments passed into the middleware.
+ * @param {object} res - The value returned from the middleware (if any).
+ * @returns {boolean} True if the invocation should be considered a response.
+ */
+
+/**
+ * Sets a function to call with the result of a middleware to determine if it has
+ * responded.
+ *
+ * @memberof WebFrameworkShim.prototype
+ * @param {ResponsePredicate} pred
+ *  Function which should return true if the object passed to it is considered
+ *  a response.
+ */
+function setResponsePredicate(pred) {
+  this._responsePredicate = pred
+}
+
+// -------------------------------------------------------------------------- //
+
+/**
+ * Default route parser function if one is not provided.
+ *
+ * @private
+ * @param {WebFrameworkShim} shim
+ *  The shim in use for this instrumentation.
+ * @param {Function} fn
+ *  The function which received this route string/RegExp.
+ * @param {string} fnName
+ *  The name of the function to which this route was given.
+ * @param {string|RegExp} route
+ *  The route that was given to the function.
+ *  @returns {string} route name
+ * @see RouteParserFunction
+ */
+function _defaultRouteParser(shim, fn, fnName, route) {
+  if (route instanceof RegExp) {
+    return '/' + route.source + '/'
+  } else if (typeof route === 'string') {
+    return route
+  }
+
+  return '&lt;unknown>'
+}
+
+/**
+ * Default error predicate just returns true.
+ *
+ * @private
+ * @returns {boolean} True. Always.
+ */
+function _defaultErrorPredicate() {
+  return true
+}
+
+/**
+ * Default response predicate just returns false.
+ *
+ * @private
+ * @returns {boolean} False. Always.
+ */
+function _defaultResponsePredicate() {
+  return false
+}
+</code></pre></article></section></div></div></div><div class="mobile-menu-icon-container"><button class="icon-button" id="mobile-menu" data-isopen="false" aria-label="menu"><svg><use xlink:href="#menu-icon"></use></svg></button></div><div id="mobile-sidebar" class="mobile-sidebar-container"><div class="mobile-sidebar-wrapper"><div class="mobile-nav-links"></div><div class="mobile-sidebar-items-c"><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-classes"><div>Classes</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="API.html">API</a></div><div class="sidebar-section-children"><a href="ClassWrapSpec.html">ClassWrapSpec</a></div><div class="sidebar-section-children"><a href="DatastoreParameters.html">DatastoreParameters</a></div><div class="sidebar-section-children"><a href="DatastoreShim.html">DatastoreShim</a></div><div class="sidebar-section-children"><a href="InstrumentationDescriptor.html">InstrumentationDescriptor</a></div><div class="sidebar-section-children"><a href="MessageShim.html">MessageShim</a></div><div class="sidebar-section-children"><a href="MessageSpec.html">MessageSpec</a></div><div class="sidebar-section-children"><a href="MessageSubscribeSpec.html">MessageSubscribeSpec</a></div><div class="sidebar-section-children"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></div><div class="sidebar-section-children"><a href="MiddlewareSpec.html">MiddlewareSpec</a></div><div class="sidebar-section-children"><a href="OperationSpec.html">OperationSpec</a></div><div class="sidebar-section-children"><a href="PromiseShim.html">PromiseShim</a></div><div class="sidebar-section-children"><a href="QuerySpec.html">QuerySpec</a></div><div class="sidebar-section-children"><a href="QueueMessageParameters.html">QueueMessageParameters</a></div><div class="sidebar-section-children"><a href="RecorderSpec.html">RecorderSpec</a></div><div class="sidebar-section-children"><a href="RenderSpec.html">RenderSpec</a></div><div class="sidebar-section-children"><a href="SegmentSpec.html">SegmentSpec</a></div><div class="sidebar-section-children"><a href="Shim.html">Shim</a></div><div class="sidebar-section-children"><a href="TransactionHandle.html">TransactionHandle</a></div><div class="sidebar-section-children"><a href="TransactionShim.html">TransactionShim</a></div><div class="sidebar-section-children"><a href="TransactionSpec.html">TransactionSpec</a></div><div class="sidebar-section-children"><a href="WebFrameworkShim.html">WebFrameworkShim</a></div><div class="sidebar-section-children"><a href="WrapSpec.html">WrapSpec</a></div></div><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-tutorials"><div>Tutorials</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="tutorial-instrumentation.html">Instrumentation Examples</a></div></div><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-interfaces"><div>Interfaces</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="ParsedQueryData.html">ParsedQueryData</a></div></div><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-global"><div>Global</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="global.html#CallbackBindFunction">CallbackBindFunction</a></div><div class="sidebar-section-children"><a href="global.html#ClassWrapSpecParams">ClassWrapSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#ConstructorHookFunction">ConstructorHookFunction</a></div><div class="sidebar-section-children"><a href="global.html#DatastoreParametersParams">DatastoreParametersParams</a></div><div class="sidebar-section-children"><a href="global.html#InContextCallback">InContextCallback</a></div><div class="sidebar-section-children"><a href="global.html#InstrumentationDescriptorParams">InstrumentationDescriptorParams</a></div><div class="sidebar-section-children"><a href="global.html#InstrumentationOnError">InstrumentationOnError</a></div><div class="sidebar-section-children"><a href="global.html#InstrumentationOnRequire">InstrumentationOnRequire</a></div><div class="sidebar-section-children"><a href="global.html#MessageBrokerHeadersFn">MessageBrokerHeadersFn</a></div><div class="sidebar-section-children"><a href="global.html#MessageConsumerWrapperFunction">MessageConsumerWrapperFunction</a></div><div class="sidebar-section-children"><a href="global.html#MessageFunction">MessageFunction</a></div><div class="sidebar-section-children"><a href="global.html#MessageHandlerFunction">MessageHandlerFunction</a></div><div class="sidebar-section-children"><a href="global.html#MessageSpecParams">MessageSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#MessageSubscribeSpecParams">MessageSubscribeSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#MiddlewareMounterSpecParams">MiddlewareMounterSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#MiddlewareSpecParams">MiddlewareSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#MiddlewareTypeNames">MiddlewareTypeNames</a></div><div class="sidebar-section-children"><a href="global.html#MiddlewareWrapperFunction">MiddlewareWrapperFunction</a></div><div class="sidebar-section-children"><a href="global.html#OperationSpecParams">OperationSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#QueryFunction">QueryFunction</a></div><div class="sidebar-section-children"><a href="global.html#QueryParserFunction">QueryParserFunction</a></div><div class="sidebar-section-children"><a href="global.html#QuerySpecFunction">QuerySpecFunction</a></div><div class="sidebar-section-children"><a href="global.html#QuerySpecParams">QuerySpecParams</a></div><div class="sidebar-section-children"><a href="global.html#QueueMessageParametersParams">QueueMessageParametersParams</a></div><div class="sidebar-section-children"><a href="global.html#RecorderFunction">RecorderFunction</a></div><div class="sidebar-section-children"><a href="global.html#RecorderSpecParams">RecorderSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#RenderSpecParams">RenderSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#ResponsePredicate">ResponsePredicate</a></div><div class="sidebar-section-children"><a href="global.html#RouteNextFunction">RouteNextFunction</a></div><div class="sidebar-section-children"><a href="global.html#RouteParameterFunction">RouteParameterFunction</a></div><div class="sidebar-section-children"><a href="global.html#RouteParserFunction">RouteParserFunction</a></div><div class="sidebar-section-children"><a href="global.html#RouteRequestFunction">RouteRequestFunction</a></div><div class="sidebar-section-children"><a href="global.html#SegmentFunction">SegmentFunction</a></div><div class="sidebar-section-children"><a href="global.html#SegmentSpecParams">SegmentSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#SpecAfterFunction">SpecAfterFunction</a></div><div class="sidebar-section-children"><a href="global.html#TransactionSpecParams">TransactionSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#WrapFunction">WrapFunction</a></div><div class="sidebar-section-children"><a href="global.html#WrapSpecParams">WrapSpecParams</a></div><div class="sidebar-section-children"><a href="global.html#createShimFromType">createShimFromType</a></div><div class="sidebar-section-children"><a href="global.html#getDatabaseNameFromUseQuery">getDatabaseNameFromUseQuery</a></div><div class="sidebar-section-children"><a href="global.html#startSegmentCallback">startSegmentCallback</a></div></div></div><div class="mobile-navbar-actions"><div class="navbar-right-item"><button class="icon-button theme-toggle" aria-label="toggle-theme"><svg><use class="theme-svg-use" xlink:href="#light-theme-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button font-size" aria-label="change-font-size"><svg><use xlink:href="#font-size-icon"></use></svg></button></div></div></div></div><script type="text/javascript" src="scripts/core.min.js"></script><script src="scripts/search.min.js" defer="defer"></script><script src="scripts/third-party/fuse.js" defer="defer"></script><script type="text/javascript">var tocbotInstance=tocbot.init({tocSelector:"#eed4d2a0bfd64539bb9df78095dec881",contentSelector:".main-content",headingSelector:"h1, h2, h3",hasInnerContainers:!0,scrollContainer:".main-content",headingsOffset:130,onClick:bringLinkToView})</script></body></html>
