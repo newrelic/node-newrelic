@@ -3,8 +3,7 @@
 #### Features
 
 * Added ability to delay the start of the Profiler and run for n milliseconds before shutting down. ([#3758](https://github.com/newrelic/node-newrelic/pull/3758)) ([8503d25](https://github.com/newrelic/node-newrelic/commit/8503d252dce31fa5ba0cbb4f146511155de48f88))
-* added functionality to ingest logs from Azure Functions App automatically ([#3772](https://github.com/newrelic/node-newrelic/pull/3772)) ([0c70ba2](https://github.com/newrelic/node-newrelic/commit/0c70ba20d2c03af03605ebc12baadbfd00c8733d))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
+* Added functionality to ingest logs from Azure Functions App automatically ([#3772](https://github.com/newrelic/node-newrelic/pull/3772)) ([0c70ba2](https://github.com/newrelic/node-newrelic/commit/0c70ba20d2c03af03605ebc12baadbfd00c8733d))
 * Added support for error causes ([#3769](https://github.com/newrelic/node-newrelic/pull/3769)) ([7c5aae3](https://github.com/newrelic/node-newrelic/commit/7c5aae3ac8b14e781a0740ffc57c2b2defc4300b))
 
 #### Bug fixes
@@ -8381,6 +8380,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
