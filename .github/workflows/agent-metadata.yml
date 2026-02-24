@@ -59,6 +59,7 @@ jobs:
     uses: newrelic/newrelic-agent-init-container/.github/workflows/agent-metadata.yml@main
     with:
       agent-type: ${{ needs.get-version.outputs.agent-type }}
+      # Our 'version' in package.json does not have a 'v'. This reusable workflow checks out a tag which is prefixed with a 'v', so we'll add it here.
       version: v${{ needs.get-version.outputs.version }}
       use-cache: ${{ needs.get-version.outputs.use-cache == 'true' }}
     secrets:
