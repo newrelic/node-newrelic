@@ -21,19 +21,15 @@
 #### Documentation
 
 * Updated compatibility report ([#3774](https://github.com/newrelic/node-newrelic/pull/3774)) ([5d04bba](https://github.com/newrelic/node-newrelic/commit/5d04bba57ddb23b2aa1861cf46e393adae2c43ca))
-    * Co-authored-by: svetlanabrennan <50715937+svetlanabrennan@users.noreply.github.com>
-* Updated compatibility report ([#3770](https://github.com/newrelic/node-newrelic/pull/3770)) ([539f067](https://github.com/newrelic/node-newrelic/commit/539f0676445dde966e8e9632a79fde74664a1730))
-* Updated compatibility report ([#3756](https://github.com/newrelic/node-newrelic/pull/3756)) ([44de4df](https://github.com/newrelic/node-newrelic/commit/44de4df72dfde56240e8edf722ed580268568cd5))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 
 #### Miscellaneous chores
 
-* Add API key to enable support for GH action ([#3760](https://github.com/newrelic/node-newrelic/pull/3760)) ([a521e80](https://github.com/newrelic/node-newrelic/commit/a521e8065c525312d1170bfa725610d708b011e3))
-* Add call to agent metadata workflow - step 1 ([#3750](https://github.com/newrelic/node-newrelic/pull/3750)) ([90eeaec](https://github.com/newrelic/node-newrelic/commit/90eeaec0e4de28c779ccab7a8f4b03448e8448bd))
+* Added API key to enable support for GH action ([#3760](https://github.com/newrelic/node-newrelic/pull/3760)) ([a521e80](https://github.com/newrelic/node-newrelic/commit/a521e8065c525312d1170bfa725610d708b011e3))
+* Added call to agent metadata workflow - step 1 ([#3750](https://github.com/newrelic/node-newrelic/pull/3750)) ([90eeaec](https://github.com/newrelic/node-newrelic/commit/90eeaec0e4de28c779ccab7a8f4b03448e8448bd))
 * Added span id to all debug/trace level logs in `span.applyPartialTraceRules` ([#3766](https://github.com/newrelic/node-newrelic/pull/3766)) ([8c57230](https://github.com/newrelic/node-newrelic/commit/8c57230f3d580ace1cb5eb1611dc78f85bbe36f1))
-* Rename file and fix cache output ([#3757](https://github.com/newrelic/node-newrelic/pull/3757)) ([1ac00ea](https://github.com/newrelic/node-newrelic/commit/1ac00ea4718fb6e95502961d777e11c8ae71dde9))
+* Renamed file and fix cache output ([#3757](https://github.com/newrelic/node-newrelic/pull/3757)) ([1ac00ea](https://github.com/newrelic/node-newrelic/commit/1ac00ea4718fb6e95502961d777e11c8ae71dde9))
 * Set up metadata action to run with releases ([#3762](https://github.com/newrelic/node-newrelic/pull/3762)) ([66efb13](https://github.com/newrelic/node-newrelic/commit/66efb13b9bde33a28fb4256cb70bf313e10774bc))
-* Update `@langchain/core` version for langchain-openai tests ([#3763](https://github.com/newrelic/node-newrelic/pull/3763)) ([c27213e](https://github.com/newrelic/node-newrelic/commit/c27213e6ca3048463158fcfecb7e1cfcf87d4922))
+* Updated `@langchain/core` version for langchain-openai tests ([#3763](https://github.com/newrelic/node-newrelic/pull/3763)) ([c27213e](https://github.com/newrelic/node-newrelic/commit/c27213e6ca3048463158fcfecb7e1cfcf87d4922))
 
 ### v13.13.0 (2026-02-17)
 
