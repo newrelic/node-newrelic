@@ -6,7 +6,9 @@
 'use strict'
 
 const { promisify } = require('node:util')
+const path = require('node:path')
 const exec = promisify(require('node:child_process').exec)
+const semver = require('semver')
 
 const params = require('../../lib/params')
 
@@ -18,14 +20,23 @@ function getPostgresUrl() {
   const pgDb = params.postgres_db
   return `postgresql://${pgUser}${pgPassword}@${pgHost}:${pgPort}/${pgDb}`
 }
-async function initPrismaApp() {
+
+async function initPrismaApp({ cwd = __dirname } = {}) {
   process.env.DATABASE_URL = getPostgresUrl()
-  const { version } = require('@prisma/client/package.json')
+  const execOpts = { cwd }
+  const manifestPath = require.resolve('@prisma/client/package.json', {
+    paths: [path.join(cwd, 'node_modules')]
+  })
+  const { version } = require(manifestPath)
+  const isV7Plus = semver.gte(version, '7.0.0')
   // install CLI globally with proper version so the client package can be generated and setup accordingly
   // If this was locally installed, it would get stomped on.
-  await exec(`npm install -g prisma@${version}`)
-  await exec('prisma generate')
-  await exec('prisma migrate reset --force')
+  await exec(`npm install -g prisma@${version}`, execOpts)
+  await exec('prisma generate', execOpts)
+  await exec('prisma migrate reset --force', execOpts)
+  if (isV7Plus === true) {
+    await exec('prisma db seed', execOpts)
+  }
   delete process.env.DATABASE_URL
 }
 

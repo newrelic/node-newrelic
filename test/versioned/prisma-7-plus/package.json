@@ -1,0 +1,24 @@
+{
+  "name": "prisma-7-plus-tests",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "@prisma/client": ">=7.0.0",
+        "@prisma/client-runtime-utils": ">=7.0.0",
+        "@prisma/adapter-pg": ">=7.0.0",
+        "prisma": ">=7.0.0"
+      },
+      "files": [
+        "prisma.test.js"
+      ]
+    }
+  ]
+}
