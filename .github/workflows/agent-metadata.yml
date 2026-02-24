@@ -59,7 +59,7 @@ jobs:
     uses: newrelic/newrelic-agent-init-container/.github/workflows/agent-metadata.yml@main
     with:
       agent-type: ${{ needs.get-version.outputs.agent-type }}
-      version: ${{ needs.get-version.outputs.version }}
+      version: v${{ needs.get-version.outputs.version }}
       use-cache: ${{ needs.get-version.outputs.use-cache == 'true' }}
     secrets:
       FC_SYS_ID_CLIENT_ID: ${{ secrets.FC_SYS_ID_CLIENT_ID }}
