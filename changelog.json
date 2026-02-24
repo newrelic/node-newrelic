@@ -2,6 +2,20 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.14.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `@google/genai` subscriber to handle the new `embedContentInternal` method in 1.42.0"
+        ],
+        "features": [
+          "added functionality to ingest logs from Azure Functions App automatically",
+          "Added support for error causes",
+          "Added ability to delay the start of the Profiler and run for n milliseconds before shutting down."
+        ]
+      }
+    },
+    {
       "version": "13.13.0",
       "changes": {
         "security": [],
