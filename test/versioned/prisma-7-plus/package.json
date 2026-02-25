@@ -12,9 +12,9 @@
       },
       "dependencies": {
         "@prisma/client": ">=7.0.0",
-        "@prisma/client-runtime-utils": ">=7.0.0",
-        "@prisma/adapter-pg": ">=7.0.0",
-        "prisma": ">=7.0.0"
+        "@prisma/client-runtime-utils": "latest",
+        "@prisma/adapter-pg": "latest",
+        "prisma": "latest"
       },
       "files": [
         "prisma.test.js"
