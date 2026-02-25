@@ -23,27 +23,22 @@ function getPostgresUrl() {
 
 async function initPrismaApp({ cwd = __dirname } = {}) {
   process.env.DATABASE_URL = getPostgresUrl()
-  const execOpts = { cwd }
   const manifestPath = require.resolve('@prisma/client/package.json', {
     paths: [path.join(cwd, 'node_modules')]
   })
   const { version } = require(manifestPath)
   const isV7Plus = semver.gte(version, '7.0.0')
+  const execOpts = isV7Plus === true ? { cwd } : null
 
-  if (process.version.startsWith('v22') && isV7Plus === false) {
-    await exec(`npm install -g prisma@${version}`)
-    await exec('prisma generate')
-    await exec('prisma migrate reset --force')
-  } else {
-    // install CLI globally with proper version so the client package can be generated and setup accordingly
-    // If this was locally installed, it would get stomped on.
-    await exec(`npm install -g prisma@${version}`, execOpts)
-    await exec('prisma generate', execOpts)
-    await exec('prisma migrate reset --force', execOpts)
-    if (isV7Plus === true) {
-      await exec('prisma db seed', execOpts)
-    }
+  // install CLI globally with proper version so the client package can be generated and setup accordingly
+  // If this was locally installed, it would get stomped on.
+  await exec(`npm install -g prisma@${version}`, execOpts)
+  await exec('prisma generate', execOpts)
+  await exec('prisma migrate reset --force', execOpts)
+  if (isV7Plus === true) {
+    await exec('prisma db seed', execOpts)
   }
+
   delete process.env.DATABASE_URL
 }
 
