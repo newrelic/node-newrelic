@@ -82,6 +82,7 @@ test('serialize', async (t) => {
 
   await t.test('should be able to handle a bigint', (t, end) => {
     const { method } = t.nr
+    method.name = 'log_event_data'
     const obj = { big: 1729n }
     method.serialize(obj, (error, encoded) => {
       assert.equal(error, undefined)
