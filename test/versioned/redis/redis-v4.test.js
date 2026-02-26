@@ -14,6 +14,7 @@ const urltils = require('../../../lib/util/urltils')
 const { checkMetrics } = require('./utils')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
 const { REDIS_INDICES: { REDIS } } = require('../../lib/constants')
+const { redisClientOpts } = require('../../../lib/symbols.js')
 const DB_INDEX = REDIS.INDEX
 const SELECTED_DB = REDIS.SELECTED_INDEX
 
@@ -296,4 +297,77 @@ test('Redis instrumentation', async function (t) {
       )
     }
   })
+
+  await t.test(
+    'should follow selected database independently for two clients with interleaved selects',
+    function (t, end) {
+      const { agent } = t.nr
+      assert.ok(!agent.getTransaction(), 'no transaction should be in play')
+
+      const redis = require('redis')
+      const client1 = t.nr.client
+      const client2 = redis.createClient({
+        socket: { port: params.redis_port, host: params.redis_host }
+      })
+
+      const CLIENT2_SELECTED_DB = 4
+
+      client2
+        .connect()
+        .then(() => client2.select(DB_INDEX))
+        .then(() => {
+          let transaction = null
+          helper.runInTransaction(agent, async function (tx) {
+            transaction = tx
+
+            try {
+              // client1 SET while on DB_INDEX
+              await client1.set('c1:key1', 'value1')
+              assert.ok(agent.getTransaction(), 'should not lose transaction state')
+              assert.equal(client1[redisClientOpts]?.database_name, DB_INDEX, `client1 should still be on ${DB_INDEX}`)
+              assert.equal(client2[redisClientOpts]?.database_name, DB_INDEX, `client2 should still be on ${DB_INDEX}`)
+
+              // client1 SELECT to SELECTED_DB
+              await client1.select(SELECTED_DB)
+              assert.ok(agent.getTransaction(), 'should not lose transaction state')
+              assert.equal(client1[redisClientOpts]?.database_name, SELECTED_DB, 'should set redisClientOpts.database_name correctly on client1')
+              assert.equal(client2[redisClientOpts]?.database_name, DB_INDEX, `client2 should still be on ${DB_INDEX}`)
+
+              // client2 SET - should still be on DB_INDEX despite client1's select
+              await client2.set('c2:key1', 'value2')
+              assert.ok(agent.getTransaction(), 'should not lose transaction state')
+              assert.equal(client2[redisClientOpts]?.database_name, DB_INDEX, `client2 should still be on ${DB_INDEX}`)
+              assert.equal(client1[redisClientOpts]?.database_name, SELECTED_DB, `client1 should still be on ${SELECTED_DB}`)
+
+              // client2 SELECT to CLIENT2_SELECTED_DB
+              await client2.select(CLIENT2_SELECTED_DB)
+              assert.ok(agent.getTransaction(), 'should not lose transaction state')
+              assert.equal(client2[redisClientOpts]?.database_name, CLIENT2_SELECTED_DB, 'should set redisClientOpts.database_name correctly on client2')
+              assert.equal(client1[redisClientOpts]?.database_name, SELECTED_DB, `client2 should still be on ${SELECTED_DB}`)
+
+              // client1 SET - should be on SELECTED_DB after its own select
+              await client1.set('c1:key2', 'value3')
+              assert.ok(agent.getTransaction(), 'should not lose transaction state')
+              assert.equal(client1[redisClientOpts]?.database_name, SELECTED_DB, `client1 should still be on ${SELECTED_DB}`)
+              assert.equal(client2[redisClientOpts]?.database_name, CLIENT2_SELECTED_DB, `client2 should still be on ${CLIENT2_SELECTED_DB}`)
+
+              // client2 SET - should be on CLIENT2_SELECTED_DB after its own select
+              await client2.set('c2:key2', 'value4')
+              assert.ok(agent.getTransaction(), 'should not lose transaction state')
+              assert.equal(client2[redisClientOpts]?.database_name, CLIENT2_SELECTED_DB, `client2 should still be on ${CLIENT2_SELECTED_DB}`)
+              assert.equal(client1[redisClientOpts]?.database_name, SELECTED_DB, `client1 should still be on ${SELECTED_DB}`)
+
+              transaction.end()
+
+              const children = transaction.trace.getChildren(transaction.trace.root.id)
+              assert.equal(children.length, 6, 'should have 6 trace segments')
+            } finally {
+              await client2.flushAll()
+              await client2.disconnect()
+              end()
+            }
+          })
+        })
+    }
+  )
 })
