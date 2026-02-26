@@ -5,11 +5,13 @@
 
 'use strict'
 
-module.exports = seed
-
-const users = require('./users.js')
+const users = require('../../prisma/prisma/users.js')
 const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+const { PrismaPg } = require('@prisma/adapter-pg')
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL
+})
+const prisma = new PrismaClient({ adapter })
 
 async function seed() {
   // Clear out the db first
