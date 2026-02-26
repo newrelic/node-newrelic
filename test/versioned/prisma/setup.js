@@ -28,6 +28,10 @@ async function initPrismaApp({ cwd = __dirname } = {}) {
   })
   const { version } = require(manifestPath)
   const isV7Plus = semver.gte(version, '7.0.0')
+  // We need to specify the current working directory for the v7+ tests
+  // because the tooling needs to target the correct versioned tests directory.
+  // But the <=v6 suite will fail on Node v22 if the current working directory
+  // is provided.
   const execOpts = isV7Plus === true ? { cwd } : null
 
   // install CLI globally with proper version so the client package can be generated and setup accordingly
