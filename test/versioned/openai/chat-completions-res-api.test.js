@@ -453,6 +453,37 @@ test('responses.create', async (t) => {
     })
   })
 
+  test('should set time_to_first_token on llm chat completion summary', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const model = 'gpt-4'
+      const stream = await client.responses.create({
+        model,
+        input: [
+          { role: 'user', content },
+        ],
+        stream: true
+      })
+
+      // no-op consume stream
+      for await (const chunk of stream) {
+        assert.ok(chunk)
+      }
+
+      const events = agent.customEventAggregator.events.toArray()
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
+      const timeToFirstToken = chatSummary?.[1]?.['time_to_first_token']
+      assert.ok(timeToFirstToken, 'time_to_first_token should exist')
+      assert.equal(typeof timeToFirstToken, 'number', 'time_to_first_token should be a number')
+      assert.ok(timeToFirstToken >= 0, 'time_to_first_token should be >= 0')
+
+      tx.end()
+      end()
+    })
+  })
+
   await t.test('handles error in stream', (t, end) => {
     const { client, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {

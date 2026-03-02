@@ -391,6 +391,41 @@ test('chat.completions.create', async (t) => {
       })
     })
 
+    test('should set time_to_first_token on llm chat completion summary', (t, end) => {
+      const { client, agent } = t.nr
+      helper.runInTransaction(agent, async (tx) => {
+        const content = 'Streamed response'
+        const model = 'gpt-4'
+        const stream = await client.chat.completions.create({
+          max_tokens: 100,
+          temperature: 0.5,
+          model,
+          messages: [
+            { role: 'user', content },
+            { role: 'user', content: 'What does 1 plus 1 equal?' }
+          ],
+          stream: true
+        })
+
+        let res = ''
+        for await (const chunk of stream) {
+          res += chunk.choices[0]?.delta?.content
+        }
+        assert.ok(res)
+
+        const events = agent.customEventAggregator.events.toArray()
+        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+        assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
+        const timeToFirstToken = chatSummary?.[1]?.['time_to_first_token']
+        assert.ok(timeToFirstToken, 'time_to_first_token should exist')
+        assert.equal(typeof timeToFirstToken, 'number', 'time_to_first_token should be a number')
+        assert.ok(timeToFirstToken >= 0, 'time_to_first_token should be >= 0')
+
+        tx.end()
+        end()
+      })
+    })
+
     test('handles error in stream', (t, end) => {
       const { client, agent } = t.nr
       helper.runInTransaction(agent, async (tx) => {
