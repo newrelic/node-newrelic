@@ -285,6 +285,40 @@ test('should call the tokenCountCallback in streaming', (t, end) => {
   })
 })
 
+test('should set time_to_first_token on llm chat completion summary', (t, end) => {
+  const { client, agent } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    const content = 'Streamed response'
+    const model = 'gemini-2.0-flash'
+    const stream = await client.models.generateContentStream({
+      config: {
+        maxOutputTokens: 100,
+        temperature: 0.5
+      },
+      model,
+      contents: [content, 'What does 1 plus 1 equal?']
+    })
+
+    let res = ''
+    for await (const chunk of stream) {
+      assert.ok(chunk.text, 'should have text in chunk')
+      res += chunk.text
+    }
+    assert.ok(res)
+
+    const events = agent.customEventAggregator.events.toArray()
+    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+    assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
+    const timeToFirstToken = chatSummary?.[1]?.['time_to_first_token']
+    assert.ok(timeToFirstToken, 'time_to_first_token should exist')
+    assert.equal(typeof timeToFirstToken, 'number', 'time_to_first_token should be a number')
+    assert.ok(timeToFirstToken >= 0, 'time_to_first_token should be >= 0')
+
+    tx.end()
+    end()
+  })
+})
+
 test('handles error in stream', (t, end) => {
   const { client, agent } = t.nr
   helper.runInTransaction(agent, async (tx) => {
