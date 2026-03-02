@@ -7,9 +7,8 @@
 const sinon = require('sinon')
 const DEFAULT_DATA = Buffer.from('test-data')
 
-function createProfiler({ sandbox = sinon, name = 'TestProfiler', data = DEFAULT_DATA } = {}) {
+function createProfiler({ sandbox = sinon, data = DEFAULT_DATA } = {}) {
   return {
-    name,
     start: sandbox.stub(),
     stop: sandbox.stub(),
     collect: sandbox.stub().resolves(data)

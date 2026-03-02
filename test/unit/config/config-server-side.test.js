@@ -5,64 +5,71 @@
 
 'use strict'
 
-const test = require('node:test')
+const { describe, test } = require('node:test')
 const assert = require('node:assert')
 const Config = require('../../../lib/config')
 
-test('when receiving server-side configuration', async (t) => {
+describe('when receiving server-side configuration', () => {
   // Unfortunately, the Config currently relies on initialize to
   // instantiate the logger in the module which is later leveraged
   // by methods on the instantiated Config instance.
   Config.initialize({})
 
-  let config = null
-
-  t.beforeEach(() => {
-    config = new Config()
+  test.beforeEach((ctx) => {
+    const config = new Config()
+    ctx.nr = { config }
   })
 
-  await t.test('should set the agent run ID', () => {
+  test('should set the agent run ID', (t) => {
+    const { config } = t.nr
     config.onConnect({ agent_run_id: 1234 })
     assert.equal(config.run_id, 1234)
   })
 
-  await t.test('should set the account ID', () => {
+  test('should set the account ID', (t) => {
+    const { config } = t.nr
     config.onConnect({ account_id: 76543 })
     assert.equal(config.account_id, 76543)
   })
 
-  await t.test('should set the entity GUID', () => {
+  test('should set the entity GUID', (t) => {
+    const { config } = t.nr
     config.onConnect({ entity_guid: 1729 })
     assert.equal(config.entity_guid, 1729)
   })
 
-  await t.test('should set the application ID', () => {
+  test('should set the application ID', (t) => {
+    const { config } = t.nr
     config.onConnect({ application_id: 76543 })
     assert.equal(config.application_id, 76543)
   })
 
-  await t.test('should always respect collect_traces', () => {
+  test('should always respect collect_traces', (t) => {
+    const { config } = t.nr
     assert.equal(config.collect_traces, true)
 
     config.onConnect({ collect_traces: false })
     assert.equal(config.collect_traces, false)
   })
 
-  await t.test('should disable the transaction tracer when told to', () => {
+  test('should disable the transaction tracer when told to', (t) => {
+    const { config } = t.nr
     assert.equal(config.transaction_tracer.enabled, true)
 
     config.onConnect({ 'transaction_tracer.enabled': false })
     assert.equal(config.transaction_tracer.enabled, false)
   })
 
-  await t.test('should always respect collect_errors', () => {
+  test('should always respect collect_errors', (t) => {
+    const { config } = t.nr
     assert.equal(config.collect_errors, true)
 
     config.onConnect({ collect_errors: false })
     assert.equal(config.collect_errors, false)
   })
 
-  await t.test('should always respect collect_span_events', () => {
+  test('should always respect collect_span_events', (t) => {
+    const { config } = t.nr
     assert.equal(config.collect_span_events, true)
     assert.equal(config.span_events.enabled, true)
 
@@ -70,82 +77,97 @@ test('when receiving server-side configuration', async (t) => {
     assert.equal(config.span_events.enabled, false)
   })
 
-  await t.test('should disable the error tracer when told to', () => {
+  test('should disable the error tracer when told to', (t) => {
+    const { config } = t.nr
     assert.equal(config.error_collector.enabled, true)
 
     config.onConnect({ 'error_collector.enabled': false })
     assert.equal(config.error_collector.enabled, false)
   })
 
-  await t.test('should set apdex_t', () => {
+  test('should set apdex_t', (t) => {
+    t.plan(2)
+    const { config } = t.nr
     assert.equal(config.apdex_t, 0.1)
 
-    config.on('apdex_t', (value) => {
-      assert.equal(value, 0.05)
-      assert.equal(config.apdex_t, 0.05)
+    config.once('apdex_t', (value) => {
+      t.assert.equal(value, 0.05)
+      t.assert.equal(config.apdex_t, 0.05)
     })
 
     config.onConnect({ apdex_t: 0.05 })
   })
 
-  await t.test('should map transaction_tracer.transaction_threshold', () => {
+  test('should map transaction_tracer.transaction_threshold', (t) => {
+    const { config } = t.nr
     assert.equal(config.transaction_tracer.transaction_threshold, 'apdex_f')
 
     config.onConnect({ 'transaction_tracer.transaction_threshold': 0.75 })
     assert.equal(config.transaction_tracer.transaction_threshold, 0.75)
   })
 
-  await t.test('should map URL rules to the URL normalizer', () => {
-    config.on('url_rules', function (rules) {
-      assert.deepEqual(rules, [{ name: 'sample_rule' }])
+  test('should map URL rules to the URL normalizer', (t) => {
+    t.plan(1)
+    const { config } = t.nr
+    config.once('url_rules', function (rules) {
+      t.assert.deepEqual(rules, [{ name: 'sample_rule' }])
     })
 
     config.onConnect({ url_rules: [{ name: 'sample_rule' }] })
   })
 
-  await t.test('should map metric naming rules to the metric name normalizer', () => {
-    config.on('metric_name_rules', function (rules) {
-      assert.deepEqual(rules, [{ name: 'sample_rule' }])
+  test('should map metric naming rules to the metric name normalizer', (t) => {
+    t.plan(1)
+    const { config } = t.nr
+    config.once('metric_name_rules', function (rules) {
+      t.assert.deepEqual(rules, [{ name: 'sample_rule' }])
     })
 
     config.onConnect({ metric_name_rules: [{ name: 'sample_rule' }] })
   })
 
-  await t.test('should map txn naming rules to the txn name normalizer', () => {
-    config.on('transaction_name_rules', function (rules) {
-      assert.deepEqual(rules, [{ name: 'sample_rule' }])
+  test('should map txn naming rules to the txn name normalizer', (t) => {
+    t.plan(1)
+    const { config } = t.nr
+    config.once('transaction_name_rules', function (rules) {
+      t.assert.deepEqual(rules, [{ name: 'sample_rule' }])
     })
 
     config.onConnect({ transaction_name_rules: [{ name: 'sample_rule' }] })
   })
 
-  await t.test('should log the product level', () => {
+  test('should log the product level', (t) => {
+    const { config } = t.nr
     assert.equal(config.product_level, 0)
     config.onConnect({ product_level: 30 })
 
     assert.equal(config.product_level, 30)
   })
 
-  await t.test('should reject high_security', () => {
+  test('should reject high_security', (t) => {
+    const { config } = t.nr
     config.onConnect({ high_security: true })
     assert.equal(config.high_security, false)
   })
 
-  await t.test('should disable ai monitoring', () => {
+  test('should disable ai monitoring', (t) => {
+    const { config } = t.nr
     config.ai_monitoring.enabled = true
     assert.equal(config.ai_monitoring.enabled, true)
     config.onConnect({ collect_ai: false })
     assert.equal(config.ai_monitoring.enabled, false)
   })
 
-  await t.test('should configure cross application tracing', () => {
+  test('should configure cross application tracing', (t) => {
+    const { config } = t.nr
     config.cross_application_tracer.enabled = true
 
     config.onConnect({ 'cross_application_tracer.enabled': false })
     assert.equal(config.cross_application_tracer.enabled, false)
   })
 
-  await t.test('should load named transaction apdexes', () => {
+  test('should load named transaction apdexes', (t) => {
+    const { config } = t.nr
     const apdexes = { 'WebTransaction/Custom/UrlGenerator/en/betting/Football': 7.0 }
     assert.deepEqual(config.web_transactions_apdex, {})
 
@@ -153,60 +175,70 @@ test('when receiving server-side configuration', async (t) => {
     assert.deepEqual(config.web_transactions_apdex, apdexes)
   })
 
-  await t.test('should not configure record_sql', () => {
+  test('should not configure record_sql', (t) => {
+    const { config } = t.nr
     assert.equal(config.transaction_tracer.record_sql, 'obfuscated')
 
     config.onConnect({ 'transaction_tracer.record_sql': 'raw' })
     assert.equal(config.transaction_tracer.record_sql, 'obfuscated')
   })
 
-  await t.test('should not configure explain_threshold', () => {
+  test('should not configure explain_threshold', (t) => {
+    const { config } = t.nr
     assert.equal(config.transaction_tracer.explain_threshold, 500)
     config.onConnect({ 'transaction_tracer.explain_threshold': 100 })
     assert.equal(config.transaction_tracer.explain_threshold, 500)
   })
 
-  await t.test('should not configure slow_sql.enabled', () => {
+  test('should not configure slow_sql.enabled', (t) => {
+    const { config } = t.nr
     assert.equal(config.slow_sql.enabled, false)
 
     config.onConnect({ 'transaction_tracer.enabled': true })
     assert.equal(config.slow_sql.enabled, false)
   })
 
-  await t.test('should not configure slow_sql.max_samples', () => {
+  test('should not configure slow_sql.max_samples', (t) => {
+    const { config } = t.nr
     assert.equal(config.slow_sql.max_samples, 10)
 
     config.onConnect({ 'transaction_tracer.max_samples': 5 })
     assert.equal(config.slow_sql.max_samples, 10)
   })
 
-  await t.test('should not blow up when sampling_rate is received', () => {
+  test('should not blow up when sampling_rate is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ sampling_rate: 0 })
     })
   })
 
-  await t.test('should not blow up when cross_process_id is received', () => {
+  test('should not blow up when cross_process_id is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ cross_process_id: 'junk' })
     })
   })
 
-  await t.test('should not blow up with cross_application_tracer.enabled', () => {
+  test('should not blow up with cross_application_tracer.enabled', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ 'cross_application_tracer.enabled': true })
     })
   })
 
-  await t.test('should not blow up when encoding_key is received', () => {
+  test('should not blow up when encoding_key is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ encoding_key: 'hamsnadwich' })
     })
   })
 
-  await t.test('should not blow up when trusted_account_ids is received', () => {
+  test('should not blow up when trusted_account_ids is received', (t) => {
+    t.plan(2)
+    const { config } = t.nr
     config.once('trusted_account_ids', (value) => {
-      assert.deepEqual(value, [1, 2, 3], 'should get the initial keys')
+      t.assert.deepEqual(value, [1, 2, 3], 'should get the initial keys')
     })
 
     assert.doesNotThrow(() => {
@@ -214,7 +246,7 @@ test('when receiving server-side configuration', async (t) => {
     }, 'should allow it once')
 
     config.once('trusted_account_ids', (value) => {
-      assert.deepEqual(value, [2, 3, 4], 'should get the modified keys')
+      t.assert.deepEqual(value, [2, 3, 4], 'should get the modified keys')
     })
 
     assert.doesNotThrow(() => {
@@ -222,98 +254,114 @@ test('when receiving server-side configuration', async (t) => {
     }, 'should allow modification')
   })
 
-  await t.test('should not blow up when trusted_account_key is received', () => {
+  test('should not blow up when trusted_account_key is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ trusted_account_key: 123 })
     })
   })
 
-  await t.test('should not blow up when high_security is received', () => {
+  test('should not blow up when high_security is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ high_security: true })
     })
   })
 
-  await t.test('should not blow up when ssl is received', () => {
+  test('should not blow up when ssl is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ ssl: true })
     })
   })
 
-  await t.test('should not disable ssl', () => {
+  test('should not disable ssl', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ ssl: false })
     })
     assert.equal(config.ssl, true)
   })
 
-  await t.test('should not blow up when transaction_tracer.record_sql is received', () => {
+  test('should not blow up when transaction_tracer.record_sql is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ 'transaction_tracer.record_sql': true })
     })
   })
 
-  await t.test('should not blow up when slow_sql.enabled is received', () => {
+  test('should not blow up when slow_sql.enabled is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ 'slow_sql.enabled': true })
     })
   })
 
-  await t.test('should not blow up when rum.load_episodes_file is received', () => {
+  test('should not blow up when rum.load_episodes_file is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ 'rum.load_episodes_file': true })
     })
   })
 
-  await t.test('should not blow up when browser_monitoring.loader is received', () => {
+  test('should not blow up when browser_monitoring.loader is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ 'browser_monitoring.loader': 'none' })
     })
   })
 
-  await t.test('should not blow up when beacon is received', () => {
+  test('should not blow up when beacon is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ beacon: 'beacon-0.newrelic.com' })
     })
   })
 
-  await t.test('should not blow up when error beacon is received', () => {
+  test('should not blow up when error beacon is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ error_beacon: null })
     })
   })
 
-  await t.test('should not blow up when js_agent_file is received', () => {
+  test('should not blow up when js_agent_file is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ js_agent_file: 'jxc4afffef.js' })
     })
   })
 
-  await t.test('should not blow up when js_agent_loader_file is received', () => {
+  test('should not blow up when js_agent_loader_file is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ js_agent_loader_file: 'nr-js-bootstrap.js' })
     })
   })
 
-  await t.test('should not blow up when episodes_file is received', () => {
+  test('should not blow up when episodes_file is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ episodes_file: 'js-agent.newrelic.com/nr-100.js' })
     })
   })
 
-  await t.test('should not blow up when episodes_url is received', () => {
+  test('should not blow up when episodes_url is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ episodes_url: 'https://js-agent.newrelic.com/nr-100.js' })
     })
   })
 
-  await t.test('should not blow up when browser_key is received', () => {
+  test('should not blow up when browser_key is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ browser_key: 'beefchunx' })
     })
   })
 
-  await t.test('should not blow up when collect_analytics_events is received', () => {
+  test('should not blow up when collect_analytics_events is received', (t) => {
+    const { config } = t.nr
     config.transaction_events.enabled = true
     assert.doesNotThrow(() => {
       config.onConnect({ collect_analytics_events: false })
@@ -321,7 +369,8 @@ test('when receiving server-side configuration', async (t) => {
     assert.equal(config.transaction_events.enabled, false)
   })
 
-  await t.test('should not blow up when collect_custom_events is received', () => {
+  test('should not blow up when collect_custom_events is received', (t) => {
+    const { config } = t.nr
     config.custom_insights_events.enabled = true
     assert.doesNotThrow(() => {
       config.onConnect({ collect_custom_events: false })
@@ -329,35 +378,40 @@ test('when receiving server-side configuration', async (t) => {
     assert.equal(config.custom_insights_events.enabled, false)
   })
 
-  await t.test('should not blow up when transaction_events.enabled is received', () => {
+  test('should not blow up when transaction_events.enabled is received', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ 'transaction_events.enabled': false })
     })
     assert.equal(config.transaction_events.enabled, false)
   })
 
-  await t.test('should override default max_payload_size_in_bytes', () => {
+  test('should override default max_payload_size_in_bytes', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ max_payload_size_in_bytes: 100 })
     })
     assert.equal(config.max_payload_size_in_bytes, 100)
   })
 
-  await t.test('should not accept serverless_mode', () => {
+  test('should not accept serverless_mode', (t) => {
+    const { config } = t.nr
     assert.doesNotThrow(() => {
       config.onConnect({ 'serverless_mode.enabled': true })
     })
     assert.equal(config.serverless_mode.enabled, false)
   })
 
-  await t.test('when handling embedded agent_config', async (t) => {
-    await t.test('should not blow up when agent_config is passed in', () => {
+  describe('when handling embedded agent_config', () => {
+    test('should not blow up when agent_config is passed in', (t) => {
+      const { config } = t.nr
       assert.doesNotThrow(() => {
         config.onConnect({ agent_config: {} })
       })
     })
 
-    await t.test('should ignore status codes set on the server', () => {
+    test('should ignore status codes set on the server', (t) => {
+      const { config } = t.nr
       config.onConnect({
         agent_config: {
           'error_collector.ignore_status_codes': [401, 409, 415]
@@ -366,7 +420,8 @@ test('when receiving server-side configuration', async (t) => {
       assert.deepEqual(config.error_collector.ignore_status_codes, [404, 401, 409, 415])
     })
 
-    await t.test('should ignore status codes set on the server as strings', () => {
+    test('should ignore status codes set on the server as strings', (t) => {
+      const { config } = t.nr
       config.onConnect({
         agent_config: {
           'error_collector.ignore_status_codes': ['401', '409', '415']
@@ -375,7 +430,8 @@ test('when receiving server-side configuration', async (t) => {
       assert.deepEqual(config.error_collector.ignore_status_codes, [404, 401, 409, 415])
     })
 
-    await t.test('should ignore status codes set on the server when using a range', () => {
+    test('should ignore status codes set on the server when using a range', (t) => {
+      const { config } = t.nr
       config.onConnect({
         agent_config: {
           'error_collector.ignore_status_codes': [401, '420-421', 415, 'abc']
@@ -384,9 +440,10 @@ test('when receiving server-side configuration', async (t) => {
       assert.deepEqual(config.error_collector.ignore_status_codes, [404, 401, 420, 421, 415])
     })
 
-    await t.test(
+    test(
       'should not error out when ignore status codes are neither numbers nor strings',
-      () => {
+      (t) => {
+        const { config } = t.nr
         config.onConnect({
           agent_config: {
             'error_collector.ignore_status_codes': [{ non: 'sense' }]
@@ -396,7 +453,8 @@ test('when receiving server-side configuration', async (t) => {
       }
     )
 
-    await t.test('should not add codes that parse to NaN', () => {
+    test('should not add codes that parse to NaN', (t) => {
+      const { config } = t.nr
       config.onConnect({
         agent_config: {
           'error_collector.ignore_status_codes': ['abc']
@@ -405,7 +463,8 @@ test('when receiving server-side configuration', async (t) => {
       assert.deepEqual(config.error_collector.ignore_status_codes, [404])
     })
 
-    await t.test('should not ignore status codes from server with invalid range', () => {
+    test('should not ignore status codes from server with invalid range', (t) => {
+      const { config } = t.nr
       config.onConnect({
         agent_config: {
           'error_collector.ignore_status_codes': ['421-420']
@@ -414,7 +473,8 @@ test('when receiving server-side configuration', async (t) => {
       assert.deepEqual(config.error_collector.ignore_status_codes, [404])
     })
 
-    await t.test('should not ignore status codes from server if given out of range', () => {
+    test('should not ignore status codes from server if given out of range', (t) => {
+      const { config } = t.nr
       config.onConnect({
         agent_config: {
           'error_collector.ignore_status_codes': ['1-1776']
@@ -423,7 +483,8 @@ test('when receiving server-side configuration', async (t) => {
       assert.deepEqual(config.error_collector.ignore_status_codes, [404])
     })
 
-    await t.test('should ignore negative status codes from server', () => {
+    test('should ignore negative status codes from server', (t) => {
+      const { config } = t.nr
       config.onConnect({
         agent_config: {
           'error_collector.ignore_status_codes': [-7]
@@ -432,7 +493,8 @@ test('when receiving server-side configuration', async (t) => {
       assert.deepEqual(config.error_collector.ignore_status_codes, [404, -7])
     })
 
-    await t.test('should set `span_event_harvest_config` from server', () => {
+    test('should set `span_event_harvest_config` from server', (t) => {
+      const { config } = t.nr
       const spanEventHarvestConfig = {
         report_period_ms: 1000,
         harvest_limit: 10000
@@ -448,11 +510,12 @@ test('when receiving server-side configuration', async (t) => {
 
     const ignoreServerConfigFlags = [true, false]
     for (const ignoreServerConfig of ignoreServerConfigFlags) {
-      await t.test(
+      test(
         `should ${
           ignoreServerConfig ? 'not ' : ''
         }update local configuration with server side config values when ignore_server_configuration is set to ${ignoreServerConfig}`,
-        () => {
+        (t) => {
+          const { config } = t.nr
           assert.equal(config.slow_sql.enabled, false)
           assert.equal(config.transaction_tracer.enabled, true)
           const serverSideConfig = {
@@ -479,8 +542,10 @@ test('when receiving server-side configuration', async (t) => {
     }
   })
 
-  await t.test('when event_harvest_config is set', async (t) => {
-    await t.test('should emit event_harvest_config when harvest interval is changed', () => {
+  describe('when event_harvest_config is set', () => {
+    test('should emit event_harvest_config when harvest interval is changed', (t) => {
+      t.plan(1)
+      const { config } = t.nr
       const expectedHarvestConfig = {
         report_period_ms: 5000,
         harvest_limits: {
@@ -491,13 +556,15 @@ test('when receiving server-side configuration', async (t) => {
       }
 
       config.once('event_harvest_config', function (harvestconfig) {
-        assert.deepEqual(harvestconfig, expectedHarvestConfig)
+        t.assert.deepEqual(harvestconfig, expectedHarvestConfig)
       })
 
       config.onConnect({ event_harvest_config: expectedHarvestConfig })
     })
 
-    await t.test('should emit null when an invalid report period is provided', () => {
+    test('should emit null when an invalid report period is provided', (t) => {
+      t.plan(1)
+      const { config } = t.nr
       const invalidHarvestConfig = {
         report_period_ms: -1,
         harvest_limits: {
@@ -508,13 +575,15 @@ test('when receiving server-side configuration', async (t) => {
       }
 
       config.once('event_harvest_config', function (harvestconfig) {
-        assert.deepEqual(harvestconfig, null, 'emitted value should be null')
+        t.assert.deepEqual(harvestconfig, null, 'emitted value should be null')
       })
 
       config.onConnect({ event_harvest_config: invalidHarvestConfig })
     })
 
-    await t.test('should update event_harvest_config when a sub-value changed', () => {
+    test('should update event_harvest_config when a sub-value changed', (t) => {
+      t.plan(1)
+      const { config } = t.nr
       const originalHarvestConfig = {
         report_period_ms: 60000,
         harvest_limits: {
@@ -536,13 +605,15 @@ test('when receiving server-side configuration', async (t) => {
       }
 
       config.once('event_harvest_config', function (harvestconfig) {
-        assert.deepEqual(harvestconfig, expectedHarvestConfig)
+        t.assert.deepEqual(harvestconfig, expectedHarvestConfig)
       })
 
       config.onConnect({ event_harvest_config: expectedHarvestConfig })
     })
 
-    await t.test('should ignore invalid limits on event_harvest_config', () => {
+    test('should ignore invalid limits on event_harvest_config', (t) => {
+      t.plan(1)
+      const { config } = t.nr
       const originalHarvestConfig = {
         report_period_ms: 60000,
         harvest_limits: {
@@ -571,23 +642,26 @@ test('when receiving server-side configuration', async (t) => {
       }
 
       config.once('event_harvest_config', function (harvestconfig) {
-        assert.deepEqual(harvestconfig, cleanedHarvestLimits, 'should not include invalid limits')
+        t.assert.deepEqual(harvestconfig, cleanedHarvestLimits, 'should not include invalid limits')
       })
 
       config.onConnect({ event_harvest_config: invalidHarvestLimits })
     })
   })
 
-  await t.test('when apdex_t is set', async (t) => {
-    await t.test('should emit `apdex_t` when apdex_t changes', () => {
+  describe('when apdex_t is set', () => {
+    test('should emit `apdex_t` when apdex_t changes', (t) => {
+      t.plan(1)
+      const { config } = t.nr
       config.once('apdex_t', function (apdexT) {
-        assert.equal(apdexT, 0.75)
+        t.assert.equal(apdexT, 0.75)
       })
 
       config.onConnect({ apdex_t: 0.75 })
     })
 
-    await t.test('should update its apdex_t only when it has changed', () => {
+    test('should update its apdex_t only when it has changed', (t) => {
+      const { config } = t.nr
       assert.equal(config.apdex_t, 0.1)
 
       config.once('apdex_t', function () {
@@ -595,6 +669,52 @@ test('when receiving server-side configuration', async (t) => {
       })
 
       config.onConnect({ apdex_t: 0.1 })
+    })
+  })
+
+  describe('when handling profiling.enabled', () => {
+    test('should enable profiling when server passes `profiling.enabled` to true', (t) => {
+      t.plan(2)
+      const { config } = t.nr
+      config.on('profiling.enabled', (value) => {
+        t.assert.equal(value, true)
+      })
+      config.profiling.enabled = false
+      config.onConnect({ 'profiling.enabled': true })
+      t.assert.equal(config.profiling.enabled, true)
+    })
+
+    test('should disable profiling when server passes `profiling.enabled` to false', (t) => {
+      t.plan(2)
+      const { config } = t.nr
+      config.on('profiling.enabled', (value) => {
+        t.assert.equal(value, false)
+      })
+      config.profiling.enabled = true
+      config.onConnect({ 'profiling.enabled': false })
+      t.assert.equal(config.profiling.enabled, false)
+    })
+
+    test('should not disable profiling when server passes `profiling.enabled` to false and feature is already disabled', (t) => {
+      t.plan(1)
+      const { config } = t.nr
+      config.on('profiling.enabled', () => {
+        throw new Error('should not update dynamically')
+      })
+      config.profiling.enabled = false
+      config.onConnect({ 'profiling.enabled': false })
+      t.assert.equal(config.profiling.enabled, false)
+    })
+
+    test('should not enable profiling when server passes `profiling.enabled` to true and feature is already enabled', (t) => {
+      t.plan(1)
+      const { config } = t.nr
+      config.on('profiling.enabled', () => {
+        throw new Error('should not update dynamically')
+      })
+      config.profiling.enabled = true
+      config.onConnect({ 'profiling.enabled': true })
+      t.assert.equal(config.profiling.enabled, true)
     })
   })
 })
