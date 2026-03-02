@@ -17,9 +17,8 @@
       "engines": {
         "node": ">=20"
       },
-      "comment": "@langchain/openai@>=1.2.8 imports @langchain/core/errors which was not exported until @langchain/core@1.1.18",
       "dependencies": {
-        "@langchain/openai": ">=1.0.0"
+        "@langchain/openai": ">=0.2.0"
       },
       "files": [
         "runnables.test.js",
