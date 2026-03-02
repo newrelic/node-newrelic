@@ -15,7 +15,14 @@ const createProfiler = require('../mocks/profiler')
 
 test.beforeEach((ctx) => {
   const sandbox = sinon.createSandbox()
-  const agent = helper.loadMockedAgent()
+  // disabling profiling and setting include list to an empty array
+  // we will inject mocks in each test below
+  const agent = helper.loadMockedAgent({
+    profiling: {
+      enabled: true,
+      include: []
+    }
+  })
   const cpuProfiler = createProfiler({ sandbox, name: 'CpuProfiler', data: 'cpu profile data' })
   const heapProfiler = createProfiler({ sandbox, name: 'HeapProfiler', data: 'heap profile data' })
   const clock = sinon.useFakeTimers()
@@ -55,8 +62,8 @@ test('should initialize pprofData and profilingManager', (t) => {
 test('should send 2 messages per interval', async (t) => {
   const { profilingAggregator, clock, agent, cpuProfiler, heapProfiler } = t.nr
   assert.equal(profilingAggregator.profilingManager.register.callCount, 0)
-  profilingAggregator.start()
   profilingAggregator.profilingManager.profilers = [cpuProfiler, heapProfiler]
+  profilingAggregator.start()
   assert.equal(profilingAggregator.profilingManager.register.callCount, 1)
   assert.equal(agent.collector.send.callCount, 0)
   clock.tick(100)
@@ -77,8 +84,8 @@ test('should send 2 messages per interval', async (t) => {
 
 test('should not send any data if there are no profilers registered', async (t) => {
   const { profilingAggregator, clock, agent } = t.nr
-  profilingAggregator.start()
   profilingAggregator.profilingManager.profilers = []
+  profilingAggregator.start()
   assert.equal(agent.collector.send.callCount, 0)
   clock.tick(100)
   await new Promise((resolve) => {
@@ -91,8 +98,8 @@ test('should not send any data if there are no profilers registered', async (t) 
 
 test('should stop ProfilingManager when aggregator is stopped', (t) => {
   const { profilingAggregator, cpuProfiler, heapProfiler } = t.nr
-  profilingAggregator.start()
   profilingAggregator.profilingManager.profilers = [cpuProfiler, heapProfiler]
+  profilingAggregator.start()
   assert.ok(profilingAggregator.sendTimer)
   for (const profiler of profilingAggregator.profilingManager.profilers) {
     assert.equal(profiler.stop.callCount, 0)
