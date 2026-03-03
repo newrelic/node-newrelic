@@ -33,7 +33,7 @@ supported by the agent.
 | `@nestjs/cli` | 9.0.0 | 11.0.16 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 7.4.2 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 4.12.0 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 4.12.1 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.9 | 2.0.0 |
 | `aws-sdk` | 2.2.48 | 2.1693.0 | 6.2.0 |
 | `bluebird` | 2.0.0 | 3.7.2 | 1.27.0 |
