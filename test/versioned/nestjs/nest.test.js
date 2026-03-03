@@ -75,3 +75,30 @@ test('should catch stack traces in errors', async (t) => {
   assert.equal(errors[0][2], 'erroring out, as requested', 'should get the expected error')
   assert.ok(errors[0][4].stack_trace, 'should have the stack trace')
 })
+
+test('should not add error when no transaction is active', (t) => {
+  const { agent } = t.nr
+  const NestInstrumentation = require('../../../lib/subscribers/nestjs/instrumentation.js')
+  const logMessages = []
+  const mockLogger = {
+    child() { return this },
+    trace: (...args) => {
+      logMessages.push(args)
+    }
+  }
+
+  const subscriber = new NestInstrumentation({ agent, logger: mockLogger })
+  const testError = Error('boom')
+  subscriber.handler({ arguments: [testError] }, {})
+
+  const errors = agent.errors.traceAggregator.errors
+  assert.equal(errors.length, 0, 'should not add error when no transaction is active')
+
+  assert.equal(logMessages.length, 1, 'should log a trace message')
+  assert.equal(logMessages[0][0], testError, 'should log the exception')
+  assert.equal(
+    logMessages[0][1],
+    'Ignoring error handled by Nest.js exception filter: not in a transaction',
+    'should log the correct message'
+  )
+})
