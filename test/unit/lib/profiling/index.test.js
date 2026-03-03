@@ -10,18 +10,18 @@ const assert = require('node:assert')
 const sinon = require('sinon')
 const ProfilingManager = require('#agentlib/profiling/index.js')
 const createProfiler = require('../../mocks/profiler')
+const helper = require('#testlib/agent_helper.js')
 
 test.beforeEach((ctx) => {
   const sandbox = sinon.createSandbox()
   const logger = require('../../mocks/logger')(sandbox)
-  const agent = {
-    config: {
-      profiling: {
-        enabled: true,
-        include: []
-      }
+  const agent = helper.loadMockedAgent({
+    profiling: {
+      enabled: true,
+      include: []
     }
-  }
+  })
+
   const cpuProfiler = createProfiler({ sandbox, name: 'cpu' })
   const heapProfiler = createProfiler({ sandbox, name: 'heap' })
   ctx.nr = {
@@ -34,6 +34,7 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
   ctx.nr.sandbox.restore()
 })
 
@@ -51,6 +52,15 @@ describe('constructor', () => {
     const profilingManager = new ProfilingManager(agent)
 
     assert.strictEqual(profilingManager.profilers.size, 0, 'profilers map should be empty')
+  })
+
+  test('should log supportability metrics when registering profilers', (t) => {
+    const { agent } = t.nr
+    const metrics = agent.metrics._metrics.unscoped
+
+    assert.ok(metrics['Supportability/Nodejs/Profiling/enabled'], 'should have enabled supportability metric')
+    assert.equal(metrics['Supportability/Nodejs/Profiling/enabled'].callCount, 1, 'should increment enabled metric once')
+    assert.ok(!metrics['Supportability/Nodejs/Profiling/disabled'], 'should not have disabled supportability metric')
   })
 })
 
@@ -78,6 +88,11 @@ describe('register', () => {
     assert.strictEqual(profilingManager.profilers.size, 2, 'should only add cpu to the already registered profilers: heap')
     profilingManager.register()
     assert.strictEqual(profilingManager.profilers.size, 2, 'should be a no-op')
+    const metrics = agent.metrics._metrics.unscoped
+    assert.ok(metrics['Supportability/Nodejs/Profiling/Heap'], 'should have heap supportability metric')
+    assert.equal(metrics['Supportability/Nodejs/Profiling/Heap'].callCount, 1, 'should increment heap metric once')
+    assert.ok(metrics['Supportability/Nodejs/Profiling/CPU'], 'should have cpu supportability metric')
+    assert.equal(metrics['Supportability/Nodejs/Profiling/CPU'].callCount, 1, 'should increment cpu metric once')
   })
 })
 
@@ -114,6 +129,7 @@ describe('start', () => {
       logger.debug.calledWith('Starting heap'),
       'should log starting heap profiler'
     )
+    assert.ok(profilingManager.profilers.startedAt, 'should set startedAt time when profilers are started')
   })
 })
 
@@ -142,6 +158,24 @@ describe('stop', () => {
     assert.equal(heapProfiler.stop.callCount, 1)
     assert.ok(logger.debug.calledWith('Stopping cpu'))
     assert.ok(logger.debug.calledWith('Stopping heap'))
+  })
+
+  test('should log supportability metric for profiling duration', (t) => {
+    const { agent, cpuProfiler, heapProfiler, logger, sandbox } = t.nr
+    const profilingManager = new ProfilingManager(agent, { logger })
+    profilingManager.profilers.set('cpu', cpuProfiler)
+    profilingManager.profilers.set('heap', heapProfiler)
+
+    const startedAt = 1000
+    const stoppedAt = 3000
+    profilingManager.profilers.startedAt = startedAt
+    sandbox.stub(Date, 'now').returns(stoppedAt)
+
+    profilingManager.stop()
+
+    const metrics = agent.metrics._metrics.unscoped
+    assert.ok(metrics['Supportability/Nodejs/Profiling/Duration'], 'should have profiling duration supportability metric')
+    assert.equal(metrics['Supportability/Nodejs/Profiling/Duration'].total, (stoppedAt - startedAt) / 1000)
   })
 })
 
