@@ -53,15 +53,6 @@ describe('constructor', () => {
 
     assert.strictEqual(profilingManager.profilers.size, 0, 'profilers map should be empty')
   })
-
-  test('should log supportability metrics when registering profilers', (t) => {
-    const { agent } = t.nr
-    const metrics = agent.metrics._metrics.unscoped
-
-    assert.ok(metrics['Supportability/Nodejs/Profiling/enabled'], 'should have enabled supportability metric')
-    assert.equal(metrics['Supportability/Nodejs/Profiling/enabled'].callCount, 1, 'should increment enabled metric once')
-    assert.ok(!metrics['Supportability/Nodejs/Profiling/disabled'], 'should not have disabled supportability metric')
-  })
 })
 
 describe('register', () => {
@@ -93,6 +84,17 @@ describe('register', () => {
     assert.equal(metrics['Supportability/Nodejs/Profiling/Heap'].callCount, 1, 'should increment heap metric once')
     assert.ok(metrics['Supportability/Nodejs/Profiling/CPU'], 'should have cpu supportability metric')
     assert.equal(metrics['Supportability/Nodejs/Profiling/CPU'].callCount, 1, 'should increment cpu metric once')
+  })
+
+  test('should log supportability metrics when registering profilers', (t) => {
+    const { agent } = t.nr
+    const metrics = agent.metrics._metrics.unscoped
+    const profilingManager = new ProfilingManager(agent)
+    profilingManager.register()
+
+    assert.ok(metrics['Supportability/Nodejs/Profiling/enabled'], 'should have enabled supportability metric')
+    assert.equal(metrics['Supportability/Nodejs/Profiling/enabled'].callCount, 1, 'should increment enabled metric once')
+    assert.ok(!metrics['Supportability/Nodejs/Profiling/disabled'], 'should not have disabled supportability metric')
   })
 })
 
