@@ -18,8 +18,8 @@
         "node": ">=20"
       },
       "dependencies": {
-        "@langchain/langgraph": "^1.0.0",
-        "@langchain/openai": "^1.0.0"
+        "@langchain/langgraph": ">=1.0.0",
+        "@langchain/openai": ">=1.0.0"
       },
       "files": [
         "graph-invoke.test.js",
