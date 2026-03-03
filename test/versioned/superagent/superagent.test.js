@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertPackageMetrics, match } = require('../../lib/custom-assertions')
+const { match } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const testServer = require('./test-server')
 
@@ -33,11 +33,9 @@ test.afterEach(async (ctx) => {
   await ctx.nr.stopServer()
 })
 
-test('should log tracking metrics', function(t) {
-  const { agent } = t.nr
-  const { version } = require('superagent/package.json')
-  assertPackageMetrics({ agent, pkg: 'superagent', version })
-})
+// We no longer instrument `superagent`, but the tests
+// are still here to make sure our new context manager
+// is propagating correctly.
 
 test('should maintain transaction context with callbacks', (t, end) => {
   const { address, agent, request } = t.nr
@@ -49,12 +47,6 @@ test('should maintain transaction context with callbacks', (t, end) => {
       const [mainSegment] = tx.trace.getChildren(tx.trace.root.id)
       assert.ok(mainSegment)
       match(mainSegment.name, EXTERNAL_NAME, 'has segment matching request')
-      const mainChildren = tx.trace.getChildren(mainSegment.id)
-      assert.equal(
-        mainChildren.filter((c) => c.name === 'Callback: testCallback').length,
-        1,
-        'has segment matching callback'
-      )
 
       end()
     })
@@ -78,12 +70,6 @@ test('should maintain transaction context with promises', (t, end) => {
       const [mainSegment] = tx.trace.getChildren(tx.trace.root.id)
       assert.ok(mainSegment)
       match(mainSegment.name, EXTERNAL_NAME, 'has segment matching request')
-      const mainChildren = tx.trace.getChildren(mainSegment.id)
-      assert.equal(
-        mainChildren.filter((c) => c.name === 'Callback: <anonymous>').length,
-        1,
-        'has segment matching callback'
-      )
 
       end()
     })
@@ -96,4 +82,26 @@ test('should not create segment for a promise if not in a transaction', (t, end)
     assert.equal(agent.getTransaction(), undefined, 'should not have a transaction')
     end()
   })
+})
+
+test('should maintain transaction context with promises, async-await', (t, end) => {
+  const { address, agent } = t.nr
+  helper.runInTransaction(agent, async function (tx) {
+    assert.ok(tx)
+
+    const { request } = t.nr
+    await request.get(address)
+
+    const [mainSegment] = tx.trace.getChildren(tx.trace.root.id)
+    assert.ok(mainSegment)
+    match(mainSegment.name, EXTERNAL_NAME, 'has segment matching request')
+
+    end()
+  })
+})
+
+test('should not create segment if not in a transaction, async-await', async (t) => {
+  const { address, agent, request } = t.nr
+  await request.get(address)
+  assert.equal(agent.getTransaction(), undefined, 'should not have a transaction')
 })
