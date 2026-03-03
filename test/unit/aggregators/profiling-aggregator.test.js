@@ -62,7 +62,8 @@ test('should initialize pprofData and profilingManager', (t) => {
 test('should send 2 messages per interval', async (t) => {
   const { profilingAggregator, clock, agent, cpuProfiler, heapProfiler } = t.nr
   assert.equal(profilingAggregator.profilingManager.register.callCount, 0)
-  profilingAggregator.profilingManager.profilers = [cpuProfiler, heapProfiler]
+  profilingAggregator.profilingManager.profilers.set('CpuProfiler', cpuProfiler)
+  profilingAggregator.profilingManager.profilers.set('HeapProfiler', heapProfiler)
   profilingAggregator.start()
   assert.equal(profilingAggregator.profilingManager.register.callCount, 1)
   assert.equal(agent.collector.send.callCount, 0)
@@ -84,7 +85,7 @@ test('should send 2 messages per interval', async (t) => {
 
 test('should not send any data if there are no profilers registered', async (t) => {
   const { profilingAggregator, clock, agent } = t.nr
-  profilingAggregator.profilingManager.profilers = []
+  profilingAggregator.profilingManager.profilers = new Set()
   profilingAggregator.start()
   assert.equal(agent.collector.send.callCount, 0)
   clock.tick(100)
@@ -98,15 +99,16 @@ test('should not send any data if there are no profilers registered', async (t) 
 
 test('should stop ProfilingManager when aggregator is stopped', (t) => {
   const { profilingAggregator, cpuProfiler, heapProfiler } = t.nr
-  profilingAggregator.profilingManager.profilers = [cpuProfiler, heapProfiler]
+  profilingAggregator.profilingManager.profilers.set('CpuProfiler', cpuProfiler)
+  profilingAggregator.profilingManager.profilers.set('HeapProfiler', heapProfiler)
   profilingAggregator.start()
   assert.ok(profilingAggregator.sendTimer)
-  for (const profiler of profilingAggregator.profilingManager.profilers) {
+  for (const [, profiler] of profilingAggregator.profilingManager.profilers) {
     assert.equal(profiler.stop.callCount, 0)
   }
   profilingAggregator.stop()
   assert.equal(profilingAggregator.sendTimer, null)
-  for (const profiler of profilingAggregator.profilingManager.profilers) {
+  for (const [, profiler] of profilingAggregator.profilingManager.profilers) {
     assert.equal(profiler.stop.callCount, 1)
   }
 })
