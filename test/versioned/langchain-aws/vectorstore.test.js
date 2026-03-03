@@ -11,7 +11,6 @@ const { removeModules } = require('../../lib/cache-buster')
 const { runVectorstoreTests } = require('../langchain/vectorstore')
 const { Document } = require('@langchain/core/documents')
 const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
-const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 
 const config = {
@@ -27,18 +26,13 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent(config)
 
+  const { VectorStore } = require('@langchain/core/vectorstores')
+  // must pass in VectorStore to ensure it's the same version as the test
+  // and not whatever is installed in `test/versioned/langchain/`
+  const CustomVectorStore = require('../langchain/custom-vector-store')(VectorStore)
   const { BedrockEmbeddings } = require('@langchain/aws')
   const { BedrockRuntimeClient } = require('@aws-sdk/client-bedrock-runtime')
   ctx.nr.langchainCoreVersion = require('@langchain/core/package.json').version
-
-  const { Client } = require('@elastic/elasticsearch')
-  const clientArgs = {
-    client: new Client({
-      node: `http://${params.elastic_host}:${params.elastic_port}`
-    }),
-    indexName: 'test_langchain_aws_vectorstore'
-  }
-  const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
 
   // Create the BedrockRuntimeClient with our mock endpoint
   const bedrockClient = new BedrockRuntimeClient({
@@ -60,18 +54,16 @@ test.beforeEach(async (ctx) => {
       pageContent: 'embed text amazon token count callback response'
     })
   ]
-  const vectorStore = new ElasticVectorSearch(ctx.nr.embedding, clientArgs)
-  await vectorStore.deleteIfExists()
+  const vectorStore = new CustomVectorStore(ctx.nr.embedding)
   await vectorStore.addDocuments(docs)
   ctx.nr.vs = vectorStore
 })
 
 test.afterEach(async (ctx) => {
-  await ctx.nr?.vs?.deleteIfExists()
   ctx.nr?.server?.destroy()
   helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument
-  removeModules(['@langchain/core', '@langchain/aws', '@aws-sdk', '@elastic', '@langchain/community'])
+  removeModules(['@langchain/core', '@aws-sdk'])
 })
 
 runVectorstoreTests({

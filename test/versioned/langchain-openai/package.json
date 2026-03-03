@@ -3,7 +3,7 @@
   "targets": [
     {
       "name": "@langchain/openai",
-      "minSupported": "1.0.0",
+      "minSupported": "0.2.0",
       "minAgentVersion": "11.13.0"
     }
   ],
@@ -22,21 +22,7 @@
       },
       "files": [
         "runnables.test.js",
-        "runnables-streaming.test.js"
-      ]
-    },
-     {
-      "engines": {
-        "node": ">=20"
-      },
-      "comment": "because @langchain/core and @langchain/community need to be the same minor version because of peer deps, we have to test with latest",
-      "dependencies": {
-        "@langchain/core": "latest",
-        "@langchain/community": "latest",
-        "@langchain/openai": "latest",
-        "@elastic/elasticsearch": "8.13.1"
-      },
-      "files": [
+        "runnables-streaming.test.js",
         "vectorstore.test.js"
       ]
     }

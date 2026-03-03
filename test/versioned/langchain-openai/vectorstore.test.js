@@ -12,7 +12,6 @@ const { removeModules } = require('../../lib/cache-buster')
 const { runVectorstoreTests } = require('../langchain/vectorstore')
 const { Document } = require('@langchain/core/documents')
 const createOpenAIMockServer = require('../openai/mock-server')
-const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 
 const config = {
@@ -27,17 +26,12 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent(config)
 
+  const { VectorStore } = require('@langchain/core/vectorstores')
+  // must pass in VectorStore to ensure it's the same version as the test
+  // and not whatever is installed in `test/versioned/langchain/`
+  const CustomVectorStore = require('../langchain/custom-vector-store')(VectorStore)
   const { OpenAIEmbeddings } = require('@langchain/openai')
   ctx.nr.langchainCoreVersion = require('@langchain/core/package.json').version
-
-  const { Client } = require('@elastic/elasticsearch')
-  const clientArgs = {
-    client: new Client({
-      node: `http://${params.elastic_host}:${params.elastic_port}`
-    }),
-    indexName: 'test_langchain_openai_vectorstore'
-  }
-  const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
 
   ctx.nr.embedding = new OpenAIEmbeddings({
     apiKey: 'fake-key',
@@ -51,18 +45,16 @@ test.beforeEach(async (ctx) => {
       pageContent: 'This is an embedding test.'
     })
   ]
-  const vectorStore = new ElasticVectorSearch(ctx.nr.embedding, clientArgs)
-  await vectorStore.deleteIfExists()
+  const vectorStore = new CustomVectorStore(ctx.nr.embedding)
   await vectorStore.addDocuments(docs)
   ctx.nr.vs = vectorStore
 })
 
 test.afterEach(async (ctx) => {
-  await ctx.nr?.vs?.deleteIfExists()
   ctx.nr?.server?.close()
   helper.unloadAgent(ctx.nr.agent)
   // bust the require-cache so it can re-instrument
-  removeModules(['@langchain/core', 'openai', '@elastic', '@langchain/community'])
+  removeModules(['@langchain/core', 'openai'])
 })
 
 runVectorstoreTests({
