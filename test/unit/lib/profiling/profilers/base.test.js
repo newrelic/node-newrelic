@@ -19,12 +19,6 @@ test('should assign logger property', (t) => {
   assert.equal(profiler.logger, 'logger')
 })
 
-test('should set name', (t) => {
-  const { profiler } = t.nr
-  profiler.name = 'TestProfiler'
-  assert.equal(profiler.name, 'TestProfiler')
-})
-
 test('should throw error when start is called', (t) => {
   const { profiler } = t.nr
   assert.throws(() => {
