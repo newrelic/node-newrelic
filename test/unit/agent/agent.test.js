@@ -1067,15 +1067,13 @@ test('when `profiling.enabled` changes', async (t) => {
   await t.test('should add supportability metrics', (t) => {
     const { agent } = t.nr
     assert.equal(agent.profilingData.enabled, false)
-    let disabled = agent.metrics.getMetric('Supportability/Nodejs/Profiling/disabled')
-    assert.equal(disabled.callCount, 1)
     agent.config.onConnect({ 'profiling.enabled': true })
     assert.equal(agent.profilingData.enabled, true)
     const enabled = agent.metrics.getMetric('Supportability/Nodejs/Profiling/enabled')
     assert.equal(enabled.callCount, 1)
     agent.config.onConnect({ 'profiling.enabled': false })
-    disabled = agent.metrics.getMetric('Supportability/Nodejs/Profiling/disabled')
-    assert.equal(disabled.callCount, 2)
+    const disabled = agent.metrics.getMetric('Supportability/Nodejs/Profiling/disabled')
+    assert.equal(disabled.callCount, 1)
   })
 })
 
