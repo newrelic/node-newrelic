@@ -55,8 +55,7 @@ test.afterEach((ctx) => {
 test('logging disabled', (t, end) => {
   setup(t.nr, { application_logging: { enabled: false } })
   const { agent, winston } = t.nr
-  const { version } = require('winston/package.json')
-  assertPackageMetrics({ agent, pkg: 'winston', version })
+  // Will not create SubscriberUsed metrics if application_logging disabled
 
   const handleMessages = makeStreamTest(() => {
     assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
@@ -89,12 +88,17 @@ test('logging enabled', (t) => {
   setup(t.nr, { application_logging: { enabled: true } })
   const { agent, winston } = t.nr
 
+  // check SubscriberUsed metrics
+  const { version } = require('winston/package.json')
+  assertPackageMetrics({ agent, pkg: 'winston', version, subscriberType: true })
+
   // If we add two loggers, that counts as two instrumentations.
   winston.createLogger({})
   winston.loggers.add('local', {})
 
   const metric = agent.metrics.getMetric(LOGGING.LIBS.WINSTON)
-  assert.equal(metric.callCount, 2, 'should create external module metric')
+  // with subscriber abstraction, we only need to increment this once
+  assert.equal(metric.callCount, 1, 'should create external module metric')
 })
 
 test('local log decorating', async (t) => {
