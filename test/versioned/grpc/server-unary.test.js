@@ -26,6 +26,7 @@ const {
   getClient,
   getServerTransactionName
 } = require('./util.cjs')
+const createServerMethods = require('./grpc-server.cjs')
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
@@ -136,6 +137,17 @@ test('should not add DT headers when `distributed_tracing` is disabled', async (
     doNotWant: 'request.header.traceparent',
     msg: 'should not have traceparent in headers'
   })
+})
+
+test('should not re-instrument already registered handlers', async (t) => {
+  const { proto, server } = t.nr
+  const serverMethods = createServerMethods(server)
+
+  try {
+    server.addService(proto.Greeter.service, serverMethods)
+  } catch (error) {
+    assert.equal(error.message, 'Method handler for /helloworld.Greeter/SayHello already provided.')
+  }
 })
 
 const grpcConfigs = [
