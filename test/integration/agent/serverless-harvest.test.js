@@ -35,6 +35,7 @@ test.beforeEach(async (ctx) => {
   }
 
   ctx.nr.agent = helper.instrumentMockedAgent({
+    slow_sql: { enabled: true },
     account_id: 1, // assign to enabled DT in serverless mode
     serverless_mode: { enabled: true },
     app_name: 'serverless mode tests',
@@ -198,7 +199,7 @@ test('sending traces', async (t) => {
 })
 
 test('serverless_mode harvest should disregard sampling limits', async (t) => {
-  const plan = tspl(t, { plan: 5 })
+  const plan = tspl(t, { plan: 10 })
   const { agent } = t.nr
 
   agent.config.transaction_events.max_samples_stored = 0
@@ -222,6 +223,17 @@ test('serverless_mode harvest should disregard sampling limits', async (t) => {
         plan.ok(payload, 'should have trace payload')
         plan.equal(Array.isArray(payload[1][0]), true, 'should have trace')
         plan.equal(typeof payload[1][0][4] === 'string', true, 'should have encoded trace')
+      }
+    )
+
+    checkCompressedPayload(
+      plan,
+      findPayload(t.nr.writeLogs)[2],
+      'analytic_event_data',
+      function checkData(payload) {
+        plan.ok(payload, 'should have trace payload')
+        plan.equal(Array.isArray(payload[2][0]), true, 'should have transaction')
+        plan.equal(payload[2][0][0].type, 'Transaction', 'should be type Transaction')
       }
     )
   })
@@ -369,7 +381,6 @@ test('sending sql traces', async (t) => {
 
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.transaction_tracer.explain_threshold = 0
-    agent.config.slow_sql.enabled = true
 
     const expectedSql = 'select pg_sleep(1)'
 
@@ -406,6 +417,56 @@ test('sending sql traces', async (t) => {
 
         // won't have anything interesting added this way
         plan.ok(encodedParams)
+      })
+    })
+    agent.harvestSync()
+  })
+
+  await plan.completed
+})
+
+test('sending log events', async (t) => {
+  const plan = tspl(t, { plan: 6 })
+  const { agent } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    agent.logs.add('foo')
+    agent.logs.add('bar')
+    tx.end()
+    agent.once('harvestFinished', () => {
+      const rawPayload = findPayload(t.nr.writeLogs)
+      const encodedData = rawPayload[2]
+
+      checkCompressedPayload(plan, encodedData, 'log_event_data', function checkData(payload) {
+        plan.ok(payload, 'should have a payload')
+        const [logPayload] = payload
+        plan.ok(logPayload.common.attributes, 'should have common attrs')
+        plan.ok(logPayload.logs.length, 2, 'should have 2 logs')
+        plan.deepStrictEqual(logPayload.logs, ['bar', 'foo'])
+      })
+    })
+    agent.harvestSync()
+  })
+
+  await plan.completed
+})
+
+test('sending pprof events should not write any data in serverless mode', async (t) => {
+  const plan = tspl(t, { plan: 4 })
+  const { agent } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    agent.profilingData.pprofData = Buffer.from('test-profiling')
+    tx.end()
+    agent.once('harvestFinished', () => {
+      const rawPayload = findPayload(t.nr.writeLogs)
+      const encodedData = rawPayload[2]
+
+      helper.decodeServerlessPayload(encodedData, (err, decoded) => {
+        plan.ifError(err)
+        plan.ok(decoded)
+        plan.ok(!decoded.data.pprof_data)
+        plan.ok(decoded.data.analytic_event_data)
       })
     })
     agent.harvestSync()
