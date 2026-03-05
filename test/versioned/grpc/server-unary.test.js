@@ -150,6 +150,38 @@ test('should not re-instrument already registered handlers', async (t) => {
   }
 })
 
+test('should handle concurrent requests without double-wrapping onCallEnd', async (t) => {
+  const { agent, client } = t.nr
+  const transactions = []
+  agent.on('transactionFinished', (tx) => {
+    transactions.push(tx)
+  })
+
+  // Make multiple concurrent requests to verify onCallEnd doesn't get wrapped
+  // multiple times.
+  const requests = []
+  for (let i = 0; i < 5; i++) {
+    requests.push(
+      makeUnaryRequest({
+        client,
+        fnName: 'sayHello',
+        payload: { name: `Concurrent-${i}` }
+      })
+    )
+  }
+
+  const responses = await Promise.all(requests)
+  assert.equal(responses.length, 5, 'should have 5 responses')
+  responses.forEach((response, i) => {
+    assert.ok(response, `response ${i} exists`)
+    assert.equal(response.message, `Hello Concurrent-${i}`, `response ${i} message is correct`)
+  })
+  assert.equal(transactions.length, 5, 'should have 5 transactions')
+  transactions.forEach((transaction) => {
+    assertServerTransaction({ transaction, fnName: 'SayHello' })
+  })
+})
+
 const grpcConfigs = [
   { record_errors: true, ignore_status_codes: [], should: true },
   { record_errors: false, ignore_status_codes: [], should: false },
