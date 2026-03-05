@@ -1051,7 +1051,7 @@ test('when `onConnect` is called with profiling enabled', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should add startup profiling metrics', (t) => {
+  await t.test('should add startup profiling metrics', (t, end) => {
     const { agent } = t.nr
 
     agent.onConnect(false, () => {
@@ -1059,6 +1059,7 @@ test('when `onConnect` is called with profiling enabled', async (t) => {
       const profiler = agent.metrics.getMetric(`${PROFILING.PREFIX}profiler/heap`)
       assert.equal(enabled.callCount, 1)
       assert.equal(profiler.callCount, 1)
+      end()
     })
   })
 })
@@ -1073,7 +1074,7 @@ test('when `onConnect` is called with profiling disabled', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should only add profiling flag metric and not type', (t) => {
+  await t.test('should only add profiling flag metric and not type', (t, end) => {
     const { agent } = t.nr
 
     agent.onConnect(false, () => {
@@ -1083,6 +1084,7 @@ test('when `onConnect` is called with profiling disabled', async (t) => {
       assert.equal(disabled.callCount, 1)
       assert.equal(heap, null)
       assert.equal(cpu, null)
+      end()
     })
   })
 })
