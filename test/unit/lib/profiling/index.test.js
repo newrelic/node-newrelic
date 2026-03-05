@@ -10,6 +10,7 @@ const assert = require('node:assert')
 const sinon = require('sinon')
 const ProfilingManager = require('#agentlib/profiling/index.js')
 const createProfiler = require('../../mocks/profiler')
+const { PROFILING } = require('#agentlib/metrics/names.js')
 const helper = require('#testlib/agent_helper.js')
 
 test.beforeEach((ctx) => {
@@ -160,8 +161,8 @@ describe('stop', () => {
     profilingManager.stop()
 
     const metrics = agent.metrics._metrics.unscoped
-    assert.ok(metrics['Supportability/Nodejs/Profiling/Duration'], 'should have profiling duration supportability metric')
-    assert.equal(metrics['Supportability/Nodejs/Profiling/Duration'].total, (stopTime - startTime) / 1000)
+    assert.ok(metrics[`${PROFILING.PREFIX}${PROFILING.DURATION}`], 'should have profiling duration supportability metric')
+    assert.equal(metrics[`${PROFILING.PREFIX}${PROFILING.DURATION}`].total, (stopTime - startTime) / 1000)
   })
 })
 
