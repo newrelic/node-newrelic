@@ -251,8 +251,15 @@ test('when forcing transaction ignore status', async (t) => {
   })
 })
 
-test('#harvesters.start should start all aggregators', (t) => {
-  const agent = helper.loadMockedAgent(null, false)
+test('#harvesters.start should start  and stop all aggregators', (t) => {
+  const agent = helper.loadMockedAgent({
+    profiling: {
+      enabled: true
+    },
+    slow_sql: {
+      enabled: true
+    }
+  }, false)
   t.after(() => {
     helper.unloadAgent(agent)
   })
@@ -265,35 +272,38 @@ test('#harvesters.start should start all aggregators', (t) => {
     agent.spanEventAggregator,
     agent.transactionEventAggregator,
     agent.customEventAggregator,
-    agent.logs
+    agent.logs,
+    agent.metrics,
+    agent.queries,
+    agent.profilingData
   ]
   for (const agg of aggregators) {
     assert.equal(Object.prototype.toString.call(agg.sendTimer), '[object Object]')
   }
+
+  agent.harvester.stop()
+  for (const agg of aggregators) {
+    assert.equal(agg.sendTimer, null)
+  }
 })
 
-test('#harvesters.stop should stop all aggregators', (t) => {
-  // Load agent with default 'stopped' state:
-  const agent = helper.loadMockedAgent(null, false)
+test('#harvesters.start not should start profiling aggregator when serverless_mode is enabled', (t) => {
+  const agent = helper.loadMockedAgent({
+    serverless_mode: {
+      enabled: true
+    },
+    profiling: {
+      enabled: true
+    }
+  }, false)
   t.after(() => {
     helper.unloadAgent(agent)
   })
 
   agent.harvester.start()
+  assert.equal(agent.profilingData.sendTimer, null)
   agent.harvester.stop()
-
-  const aggregators = [
-    agent.traces,
-    agent.errors.traceAggregator,
-    agent.errors.eventAggregator,
-    agent.spanEventAggregator,
-    agent.transactionEventAggregator,
-    agent.customEventAggregator,
-    agent.logs
-  ]
-  for (const agg of aggregators) {
-    assert.equal(agg.sendTimer, null)
-  }
+  assert.equal(agent.profilingData.sendTimer, null)
 })
 
 test('#onConnect should reconfigure all the aggregators', (t, end) => {
@@ -760,6 +770,7 @@ test('when connected', async (t) => {
     agent.config.transaction_tracer.enabled = enableAggregator
     agent.config.collect_errors = enableAggregator
     agent.config.error_collector.capture_events = enableAggregator
+    agent.config.profiling.enabled = enableAggregator
 
     const runId = 1122
     const config = { agent_run_id: runId }
@@ -802,6 +813,9 @@ test('when connected', async (t) => {
     collector.addHandler(helper.generateCollectorPath('error_event_data', runId), (req, res) => {
       res.json({ payload })
     })
+    collector.addHandler(helper.generateCollectorPath('pprof_data', runId), (req, res) => {
+      res.json({ payload })
+    })
   }
 
   await t.test('should force harvest of all aggregators 1 second after connect', (t, end) => {
@@ -828,6 +842,7 @@ test('when connected', async (t) => {
     const err = Error('test error')
     agent.errors.traceAggregator.add(err)
     agent.errors.eventAggregator.add(err)
+    agent.profilingData.pprofData = Buffer.from('data')
 
     agent.start((error) => {
       agent.forceHarvestAll(() => {
@@ -843,6 +858,7 @@ test('when connected', async (t) => {
         assert.equal(collector.isDone('custom_event_data'), true)
         assert.equal(collector.isDone('error_data'), true)
         assert.equal(collector.isDone('error_event_data'), true)
+        assert.equal(collector.isDone('pprof_data'), true)
         end()
       })
     })
@@ -874,6 +890,7 @@ test('when connected', async (t) => {
       const err = Error('test error')
       agent.errors.traceAggregator.add(err)
       agent.errors.eventAggregator.add(err)
+      agent.profilingData.pprofData = Buffer.from('data')
 
       agent.start((error) => {
         agent.forceHarvestAll(() => {
@@ -889,6 +906,7 @@ test('when connected', async (t) => {
           assert.equal(collector.isDone('custom_event_data'), false)
           assert.equal(collector.isDone('error_data'), false)
           assert.equal(collector.isDone('error_event_data'), false)
+          assert.equal(collector.isDone('pprof_data'), false)
           end()
         })
       })
@@ -915,6 +933,7 @@ test('when connected', async (t) => {
         assert.equal(collector.isDone('custom_event_data'), false)
         assert.equal(collector.isDone('error_data'), false)
         assert.equal(collector.isDone('error_event_data'), false)
+        assert.equal(collector.isDone('pprof_data'), false)
         end()
       })
     }
