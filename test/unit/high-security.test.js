@@ -79,7 +79,18 @@ test('conditional application of server side settings', async (t) => {
   await t.test('when high_security === true', async (t) => {
     t.beforeEach((ctx) => {
       ctx.nr = {}
-      ctx.nr.config = new Config({ high_security: true })
+      ctx.nr.config = new Config({
+        high_security: true,
+        ai_monitoring: {
+          enabled: true
+        },
+        application_logging: {
+          enabled: true
+        },
+        profiling: {
+          enabled: true
+        }
+      })
     })
 
     await t.test('should reject disabling ssl', (t) => {
@@ -143,6 +154,16 @@ test('conditional application of server side settings', async (t) => {
     await t.test('should disable application logging forwarding', (t) => {
       const { config } = t.nr
       checkServer(config, 'application_logging.forwarding.enabled', false, true)
+    })
+
+    await t.test('should disable ai monitoring', (t) => {
+      const { config } = t.nr
+      checkServer(config, 'ai_monitoring.enabled', false, true)
+    })
+
+    await t.test('should disable profiling', (t) => {
+      const { config } = t.nr
+      checkServer(config, 'profiling.enabled', false, true)
     })
   })
 
