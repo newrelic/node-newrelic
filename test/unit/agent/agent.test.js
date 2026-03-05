@@ -1075,7 +1075,7 @@ test('when `onConnect` is called with profiling enabled', async (t) => {
 
     agent.onConnect(false, () => {
       const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
-      const profiler = agent.metrics.getMetric(`${PROFILING.PREFIX}profiler/heap`)
+      const profiler = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
       assert.equal(enabled.callCount, 1)
       assert.equal(profiler.callCount, 1)
       end()
@@ -1098,8 +1098,8 @@ test('when `onConnect` is called with profiling disabled', async (t) => {
 
     agent.onConnect(false, () => {
       const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
-      const heap = agent.metrics.getMetric(`${PROFILING.PREFIX}profiler/heap`)
-      const cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}profiler/cpu`)
+      const heap = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
+      const cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.CPU}`)
       assert.equal(disabled.callCount, 1)
       assert.equal(heap, null)
       assert.equal(cpu, null)
