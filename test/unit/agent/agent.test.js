@@ -1054,36 +1054,7 @@ test('when sampling_target changes', async (t) => {
   })
 })
 
-test('when `onConnect` is called with profiling enabled', async (t) => {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-    const config = {
-      profiling: {
-        enabled: true,
-        include: ['heap']
-      }
-    }
-    ctx.nr.agent = helper.loadMockedAgent(config, false)
-  })
-
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
-  })
-
-  await t.test('should add startup profiling metrics', (t, end) => {
-    const { agent } = t.nr
-
-    agent.onConnect(false, () => {
-      const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
-      const profiler = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
-      assert.equal(enabled.callCount, 1)
-      assert.equal(profiler.callCount, 1)
-      end()
-    })
-  })
-})
-
-test('when `onConnect` is called with profiling disabled', async (t) => {
+test('when `onConnect` is called to update profiling metrics', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent(null, false)
@@ -1093,7 +1064,22 @@ test('when `onConnect` is called with profiling disabled', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should only add profiling flag metric and not type', (t, end) => {
+  await t.test('should add startup profiling metrics when profiling is enabled', (t, end) => {
+    const { agent } = t.nr
+
+    agent.config.profiling.enabled = true
+    agent.config.profiling.include = ['heap']
+
+    agent.onConnect(false, () => {
+      const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
+      const profiler = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
+      assert.equal(enabled.callCount, 1)
+      assert.equal(profiler.callCount, 1)
+      end()
+    })
+  })
+
+  await t.test('should only add profiling flag metric and not type when profiling is disabled', (t, end) => {
     const { agent } = t.nr
 
     agent.onConnect(false, () => {
