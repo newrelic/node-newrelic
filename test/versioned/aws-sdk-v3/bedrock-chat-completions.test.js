@@ -273,6 +273,11 @@ test.afterEach(afterEach)
 
       assertChatCompletionSummary({ tx, modelId, chatSummary, numMsgs: events.length - 1 })
 
+      const timeToFirstToken = chatSummary?.[1]?.['time_to_first_token']
+      assert.ok(timeToFirstToken, 'time_to_first_token should exist')
+      assert.equal(typeof timeToFirstToken, 'number', 'time_to_first_token should be a number')
+      assert.ok(timeToFirstToken >= 0, 'time_to_first_token should be >= 0')
+
       tx.end()
     })
   })
