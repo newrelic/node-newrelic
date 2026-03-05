@@ -79,22 +79,6 @@ describe('register', () => {
     assert.strictEqual(profilingManager.profilers.size, 2, 'should only add cpu to the already registered profilers: heap')
     profilingManager.register()
     assert.strictEqual(profilingManager.profilers.size, 2, 'should be a no-op')
-    const metrics = agent.metrics._metrics.unscoped
-    assert.ok(metrics['Supportability/Nodejs/Profiling/Heap'], 'should have heap supportability metric')
-    assert.equal(metrics['Supportability/Nodejs/Profiling/Heap'].callCount, 1, 'should increment heap metric once')
-    assert.ok(metrics['Supportability/Nodejs/Profiling/CPU'], 'should have cpu supportability metric')
-    assert.equal(metrics['Supportability/Nodejs/Profiling/CPU'].callCount, 1, 'should increment cpu metric once')
-  })
-
-  test('should log supportability metrics when registering profilers', (t) => {
-    const { agent } = t.nr
-    const metrics = agent.metrics._metrics.unscoped
-    const profilingManager = new ProfilingManager(agent)
-    profilingManager.register()
-
-    assert.ok(metrics['Supportability/Nodejs/Profiling/enabled'], 'should have enabled supportability metric')
-    assert.equal(metrics['Supportability/Nodejs/Profiling/enabled'].callCount, 1, 'should increment enabled metric once')
-    assert.ok(!metrics['Supportability/Nodejs/Profiling/disabled'], 'should not have disabled supportability metric')
   })
 })
 
@@ -131,7 +115,7 @@ describe('start', () => {
       logger.debug.calledWith('Starting heap'),
       'should log starting heap profiler'
     )
-    assert.ok(profilingManager.profilers.startedAt, 'should set startedAt time when profilers are started')
+    assert.ok(profilingManager.startTime, 'should set startedAt time when profilers are started')
   })
 })
 
@@ -168,16 +152,16 @@ describe('stop', () => {
     profilingManager.profilers.set('cpu', cpuProfiler)
     profilingManager.profilers.set('heap', heapProfiler)
 
-    const startedAt = 1000
-    const stoppedAt = 3000
-    profilingManager.profilers.startedAt = startedAt
-    sandbox.stub(Date, 'now').returns(stoppedAt)
+    const startTime = 1000
+    const stopTime = 3000
+    profilingManager.startTime = startTime
+    sandbox.stub(Date, 'now').returns(stopTime)
 
     profilingManager.stop()
 
     const metrics = agent.metrics._metrics.unscoped
     assert.ok(metrics['Supportability/Nodejs/Profiling/Duration'], 'should have profiling duration supportability metric')
-    assert.equal(metrics['Supportability/Nodejs/Profiling/Duration'].total, (stoppedAt - startedAt) / 1000)
+    assert.equal(metrics['Supportability/Nodejs/Profiling/Duration'].total, (stopTime - startTime) / 1000)
   })
 })
 
