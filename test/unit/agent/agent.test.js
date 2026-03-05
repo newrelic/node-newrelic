@@ -250,8 +250,15 @@ test('when forcing transaction ignore status', async (t) => {
   })
 })
 
-test('#harvesters.start should start all aggregators', (t) => {
-  const agent = helper.loadMockedAgent(null, false)
+test('#harvesters.start should start  and stop all aggregators', (t) => {
+  const agent = helper.loadMockedAgent({
+    profiling: {
+      enabled: true
+    },
+    slow_sql: {
+      enabled: true
+    }
+  }, false)
   t.after(() => {
     helper.unloadAgent(agent)
   })
@@ -264,35 +271,38 @@ test('#harvesters.start should start all aggregators', (t) => {
     agent.spanEventAggregator,
     agent.transactionEventAggregator,
     agent.customEventAggregator,
-    agent.logs
+    agent.logs,
+    agent.metrics,
+    agent.queries,
+    agent.profilingData
   ]
   for (const agg of aggregators) {
     assert.equal(Object.prototype.toString.call(agg.sendTimer), '[object Object]')
   }
+
+  agent.harvester.stop()
+  for (const agg of aggregators) {
+    assert.equal(agg.sendTimer, null)
+  }
 })
 
-test('#harvesters.stop should stop all aggregators', (t) => {
-  // Load agent with default 'stopped' state:
-  const agent = helper.loadMockedAgent(null, false)
+test('#harvesters.start not should start profiling aggregator when serverless_mode is enabled', (t) => {
+  const agent = helper.loadMockedAgent({
+    serverless_mode: {
+      enabled: true
+    },
+    profiling: {
+      enabled: true
+    }
+  }, false)
   t.after(() => {
     helper.unloadAgent(agent)
   })
 
   agent.harvester.start()
+  assert.equal(agent.profilingData.sendTimer, null)
   agent.harvester.stop()
-
-  const aggregators = [
-    agent.traces,
-    agent.errors.traceAggregator,
-    agent.errors.eventAggregator,
-    agent.spanEventAggregator,
-    agent.transactionEventAggregator,
-    agent.customEventAggregator,
-    agent.logs
-  ]
-  for (const agg of aggregators) {
-    assert.equal(agg.sendTimer, null)
-  }
+  assert.equal(agent.profilingData.sendTimer, null)
 })
 
 test('#onConnect should reconfigure all the aggregators', (t, end) => {
