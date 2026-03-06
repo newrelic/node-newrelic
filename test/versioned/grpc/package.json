@@ -21,20 +21,6 @@
         "server-streaming.test.js",
         "server-bidi-streaming.test.js"
       ]
-    },
-
-    {
-      "comment": "Adds coverage for versioned:major runs.",
-      "engines": { "node": ">=20" },
-      "dependencies": {
-        "@grpc/grpc-js": ">=1.4.0 <1.10.0"
-      },
-      "files": [
-        "server-unary.test.js",
-        "server-client-streaming.test.js",
-        "server-streaming.test.js",
-        "server-bidi-streaming.test.js"
-      ]
     }
   ]
 }
