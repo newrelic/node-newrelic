@@ -364,4 +364,33 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
       )
     }
   })
+
+  await t.test('should time segments accordingly', async function (t) {
+    const { agent, client } = t.nr
+    await helper.runInTransaction(agent, async function transactionInScope() {
+      const transaction = agent.getTransaction()
+      assert.ok(transaction, 'transaction should be visible')
+
+      const WAIT = 2000
+      await new Promise((resolve) => {
+        client.wait(1, WAIT, function (error, ok) {
+          assert.ok(!error)
+          assert.ok(agent.getTransaction(), 'transaction should still be visible')
+          assert.equal(ok, 0)
+          resolve()
+        })
+      })
+
+      const trace = transaction.trace
+      const children = trace.getChildren(trace.root.id)
+      assert.equal(children.length, 1, 'there should be only one child of the root')
+
+      const [waitSegment] = children
+      assert.ok(waitSegment, 'trace segment for wait should exist')
+      assert.equal(waitSegment.name, 'Datastore/operation/Redis/wait', 'should register the wait')
+      assert.ok(waitSegment.timer.hrDuration, 'trace segment should have ended')
+      assert.ok(waitSegment.getDurationInMillis() > WAIT)
+      assert.ok(waitSegment.getDurationInMillis() < WAIT + 100)
+    })
+  })
 })
