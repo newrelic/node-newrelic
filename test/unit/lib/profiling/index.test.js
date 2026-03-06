@@ -10,18 +10,19 @@ const assert = require('node:assert')
 const sinon = require('sinon')
 const ProfilingManager = require('#agentlib/profiling/index.js')
 const createProfiler = require('../../mocks/profiler')
+const { PROFILING } = require('#agentlib/metrics/names.js')
+const helper = require('#testlib/agent_helper.js')
 
 test.beforeEach((ctx) => {
   const sandbox = sinon.createSandbox()
   const logger = require('../../mocks/logger')(sandbox)
-  const agent = {
-    config: {
-      profiling: {
-        enabled: true,
-        include: []
-      }
+  const agent = helper.loadMockedAgent({
+    profiling: {
+      enabled: true,
+      include: []
     }
-  }
+  })
+
   const cpuProfiler = createProfiler({ sandbox, name: 'cpu' })
   const heapProfiler = createProfiler({ sandbox, name: 'heap' })
   ctx.nr = {
@@ -34,6 +35,7 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
   ctx.nr.sandbox.restore()
 })
 
@@ -114,6 +116,7 @@ describe('start', () => {
       logger.debug.calledWith('Starting heap'),
       'should log starting heap profiler'
     )
+    assert.ok(profilingManager.startTime, 'should set startedAt time when profilers are started')
   })
 })
 
@@ -142,6 +145,24 @@ describe('stop', () => {
     assert.equal(heapProfiler.stop.callCount, 1)
     assert.ok(logger.debug.calledWith('Stopping cpu'))
     assert.ok(logger.debug.calledWith('Stopping heap'))
+  })
+
+  test('should log supportability metric for profiling duration', (t) => {
+    const { agent, cpuProfiler, heapProfiler, logger, sandbox } = t.nr
+    const profilingManager = new ProfilingManager(agent, { logger })
+    profilingManager.profilers.set('cpu', cpuProfiler)
+    profilingManager.profilers.set('heap', heapProfiler)
+
+    const startTime = 1000
+    const stopTime = 3000
+    profilingManager.startTime = startTime
+    sandbox.stub(Date, 'now').returns(stopTime)
+
+    profilingManager.stop()
+
+    const metrics = agent.metrics._metrics.unscoped
+    assert.ok(metrics[`${PROFILING.PREFIX}${PROFILING.DURATION}`], 'should have profiling duration supportability metric')
+    assert.equal(metrics[`${PROFILING.PREFIX}${PROFILING.DURATION}`].total, (stopTime - startTime) / 1000)
   })
 })
 
