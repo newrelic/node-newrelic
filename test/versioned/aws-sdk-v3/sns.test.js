@@ -166,6 +166,7 @@ test('SNS', async (t) => {
       tx.end()
       plan.ok(res)
     })
+    await plan.completed
   })
 
   await t.test('attaches distributed trace headers when sending messages', async (t) => {
