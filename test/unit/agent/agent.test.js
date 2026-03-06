@@ -23,6 +23,7 @@ const os = require('node:os')
 const path = require('node:path')
 const healthDeliveryLocation = os.tmpdir()
 const HealthReporter = require('#agentlib/health-reporter.js')
+const { PROFILING } = require('#agentlib/metrics/names.js')
 
 test.after(() => {
   const files = fs.readdirSync(healthDeliveryLocation)
@@ -1053,6 +1054,52 @@ test('when sampling_target changes', async (t) => {
   })
 })
 
+test('when `onConnect` is called to update profiling metrics', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent(null, false)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should add startup profiling metrics when profiling is enabled', (t, end) => {
+    const { agent } = t.nr
+
+    agent.config.profiling.enabled = true
+    agent.config.profiling.include = ['heap']
+
+    agent.onConnect(false, () => {
+      const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
+      const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
+      const heap = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
+      const cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.CPU}`)
+      assert.equal(disabled, null)
+      assert.equal(enabled.callCount, 1)
+      assert.equal(heap.callCount, 1)
+      assert.equal(cpu, null)
+      end()
+    })
+  })
+
+  await t.test('should only add profiling flag metric and not type when profiling is disabled', (t, end) => {
+    const { agent } = t.nr
+
+    agent.onConnect(false, () => {
+      const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
+      const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
+      const heap = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
+      const cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.CPU}`)
+      assert.equal(enabled, null)
+      assert.equal(disabled.callCount, 1)
+      assert.equal(heap, null)
+      assert.equal(cpu, null)
+      end()
+    })
+  })
+})
+
 test('when `profiling.enabled` changes', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
@@ -1081,6 +1128,18 @@ test('when `profiling.enabled` changes', async (t) => {
     agent.config.onConnect({ 'profiling.enabled': true })
     assert.equal(agent.profilingData.enabled, true)
     assert.ok(agent.profilingData.sendTimer)
+  })
+
+  await t.test('should add supportability metrics', (t) => {
+    const { agent } = t.nr
+    assert.equal(agent.profilingData.enabled, false)
+    agent.config.onConnect({ 'profiling.enabled': true })
+    assert.equal(agent.profilingData.enabled, true)
+    const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
+    assert.equal(enabled.callCount, 1)
+    agent.config.onConnect({ 'profiling.enabled': false })
+    const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
+    assert.equal(disabled.callCount, 1)
   })
 })
 
