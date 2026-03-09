@@ -7,10 +7,10 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Add `time_to_first_token` for AWS Bedrock",
-          "Add `time_to_first_token` for Google Gen AI",
-          "Add `time_to_first_token` for OpenAI",
-          "Add `time_to_first_token` for `LlmChatCompletionSummary`"
+          "Added `time_to_first_token` for AWS Bedrock",
+          "Added `time_to_first_token` for Google Gen AI",
+          "Added `time_to_first_token` for OpenAI",
+          "Added `time_to_first_token` for `LlmChatCompletionSummary`"
         ]
       }
     },
