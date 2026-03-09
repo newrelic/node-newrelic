@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.15.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added `time_to_first_token` for AWS Bedrock",
+          "Added `time_to_first_token` for Google Gen AI",
+          "Added `time_to_first_token` for OpenAI",
+          "Added `time_to_first_token` for `LlmChatCompletionSummary`"
+        ]
+      }
+    },
+    {
       "version": "13.14.0",
       "changes": {
         "security": [],

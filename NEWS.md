@@ -1,3 +1,35 @@
+### v13.15.0 (2026-03-09)
+
+#### Features
+
+* Added `time_to_first_token` for `LlmChatCompletionSummary` ([#3781](https://github.com/newrelic/node-newrelic/pull/3781)) ([737f374](https://github.com/newrelic/node-newrelic/commit/737f3740d43908be348a7795dd2c85e7a4e88cb8))
+* Added `time_to_first_token` for AWS Bedrock ([#3804](https://github.com/newrelic/node-newrelic/pull/3804)) ([a993b00](https://github.com/newrelic/node-newrelic/commit/a993b00b4fa55fb2e7ba0b7748c4c21d8660b911))
+* Added `time_to_first_token` for Google Gen AI ([#3785](https://github.com/newrelic/node-newrelic/pull/3785)) ([d90ee70](https://github.com/newrelic/node-newrelic/commit/d90ee709538e430395c0fb5863c344fe37009ce5))
+* Added `time_to_first_token` for OpenAI ([#3782](https://github.com/newrelic/node-newrelic/pull/3782)) ([07cfd57](https://github.com/newrelic/node-newrelic/commit/07cfd570d5cc3dd77a5ae23e88587d47af3d195a))
+
+#### Code refactoring
+
+* Migrated `redis` 4+ instrumentation to subscribe to events emitted ([#3773](https://github.com/newrelic/node-newrelic/pull/3773)) ([add6827](https://github.com/newrelic/node-newrelic/commit/add68278d29f5f415134426d33986a59c089d71f))
+
+#### Documentation
+
+* Updated compatibility report ([#3800](https://github.com/newrelic/node-newrelic/pull/3800)) ([5228cdc](https://github.com/newrelic/node-newrelic/commit/5228cdc0508217fa139d8b4f8232391fd063a5fa)) ([#3795](https://github.com/newrelic/node-newrelic/pull/3795)) ([1d6fe52](https://github.com/newrelic/node-newrelic/commit/1d6fe522f0e707729a4a01f5c5e5599670136917)) ([#3791](https://github.com/newrelic/node-newrelic/pull/3791)) ([e79db5b](https://github.com/newrelic/node-newrelic/commit/e79db5bbac1500bfa49f8ac3e9dc64c409396d79)) ([#3777](https://github.com/newrelic/node-newrelic/pull/3777)) ([12fe4c6](https://github.com/newrelic/node-newrelic/commit/12fe4c6f2a7a3f08efd874ba949150c7805a8888))
+
+#### Miscellaneous chores
+
+* Added version comment for agent-metadata.yml ([#3779](https://github.com/newrelic/node-newrelic/pull/3779)) ([1267293](https://github.com/newrelic/node-newrelic/commit/1267293cc36c79106b7cdd84dedf2c18b8a010d9))
+* Refactored nestjs instrumentation to subscriber type ([#3792](https://github.com/newrelic/node-newrelic/pull/3792)) ([f7feb25](https://github.com/newrelic/node-newrelic/commit/f7feb25a5c7349433e7de26a0f6aebb820c034f4))
+* Removed `@langchain/core` peer dep from langchain openai and aws tests ([#3788](https://github.com/newrelic/node-newrelic/pull/3788)) ([e670bb1](https://github.com/newrelic/node-newrelic/commit/e670bb1f47720c61509157cf45cd200234505733))
+* Removed unneccessary `generic-pool` context propagation ([#3786](https://github.com/newrelic/node-newrelic/pull/3786)) ([bdd35fb](https://github.com/newrelic/node-newrelic/commit/bdd35fbf6b57d374de84f716488498a40ece41fd))
+* Removed unnecessary `superagent` context propagation ([#3798](https://github.com/newrelic/node-newrelic/pull/3798)) ([81650e1](https://github.com/newrelic/node-newrelic/commit/81650e18d7da3897f9c82098def2f34c05c78d9e))
+* Updated `@apm-js-collab/tracing-hooks` to `0.4.0` ([#3787](https://github.com/newrelic/node-newrelic/pull/3787)) ([d85fb2b](https://github.com/newrelic/node-newrelic/commit/d85fb2b832bc7202e5acafa19ff59094c6e386ee))
+* Updated version format in agent-metadata.yml ([#3778](https://github.com/newrelic/node-newrelic/pull/3778)) ([61759e9](https://github.com/newrelic/node-newrelic/commit/61759e9c4e9ad2796a6462b967e30bad35b3fbf7))
+
+#### Tests
+
+* Updated langchain vectorstore tests to use a custom vectorstore to simplify the testing process ([#3793](https://github.com/newrelic/node-newrelic/pull/3793)) ([0fd9b54](https://github.com/newrelic/node-newrelic/commit/0fd9b54c0b4782162dae769453169ad4b05d7918))
+* Updated version range for langgraph tests ([#3794](https://github.com/newrelic/node-newrelic/pull/3794)) ([e02ce99](https://github.com/newrelic/node-newrelic/commit/e02ce99083d584d8b61a223c67c4509f3fa9f4ce))
+
 ### v13.14.0 (2026-02-24)
 
 #### Features
@@ -8380,6 +8412,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
 
 
 
