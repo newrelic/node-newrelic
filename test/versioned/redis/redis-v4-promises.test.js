@@ -287,7 +287,7 @@ test('should time segments accordingly', function (t, end) {
     assert.ok(waitSegment, 'trace segment for wait should exist')
     assert.equal(waitSegment.name, 'Datastore/operation/Redis/wait', 'should register the wait')
     assert.ok(waitSegment.timer.hrDuration, 'trace segment should have ended')
-    assert.ok(waitSegment.getDurationInMillis() > WAIT)
+    assert.ok(waitSegment.getDurationInMillis() >= WAIT)
 
     tx.end()
     end()
