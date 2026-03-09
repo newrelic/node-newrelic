@@ -270,3 +270,26 @@ test('should follow selected database', function (t, end) {
     )
   }
 })
+
+test('should time segments accordingly', function (t, end) {
+  const { agent, client } = t.nr
+  helper.runInTransaction(agent, async function (tx) {
+    assert.ok(tx, 'transaction should be visible')
+
+    const WAIT = 2000
+    await client.v4.wait(1, WAIT)
+
+    const trace = tx.trace
+    const children = trace.getChildren(trace.root.id)
+    assert.equal(children.length, 1, 'there should be only one child of the root')
+
+    const [waitSegment] = children
+    assert.ok(waitSegment, 'trace segment for wait should exist')
+    assert.equal(waitSegment.name, 'Datastore/operation/Redis/wait', 'should register the wait')
+    assert.ok(waitSegment.timer.hrDuration, 'trace segment should have ended')
+    assert.ok(waitSegment.getDurationInMillis() >= WAIT)
+
+    tx.end()
+    end()
+  })
+})
