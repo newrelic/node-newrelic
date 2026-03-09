@@ -279,6 +279,19 @@
       "email": "i@izs.me",
       "url": "http://blog.izs.me"
     },
+    "logform@2.7.0": {
+      "name": "logform",
+      "version": "2.7.0",
+      "range": "^2.7.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/winstonjs/logform",
+      "versionedRepoUrl": "https://github.com/winstonjs/logform/tree/v2.7.0",
+      "licenseFile": "node_modules/logform/LICENSE",
+      "licenseUrl": "https://github.com/winstonjs/logform/blob/v2.7.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Charlie Robbins",
+      "email": "charlie.robbins@gmail.com"
+    },
     "module-details-from-path@1.0.4": {
       "name": "module-details-from-path",
       "version": "1.0.4",
