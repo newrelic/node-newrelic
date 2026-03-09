@@ -32,6 +32,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [import-in-the-middle](#import-in-the-middle)
 * [json-bigint](#json-bigint)
 * [json-stringify-safe](#json-stringify-safe)
+* [logform](#logform)
 * [module-details-from-path](#module-details-from-path)
 * [readable-stream](#readable-stream)
 * [require-in-the-middle](#require-in-the-middle)
@@ -2787,6 +2788,35 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ```
 
+### logform
+
+This product includes source derived from [logform](https://github.com/winstonjs/logform) ([v2.7.0](https://github.com/winstonjs/logform/tree/v2.7.0)), distributed under the [MIT License](https://github.com/winstonjs/logform/blob/v2.7.0/LICENSE):
+
+```
+MIT License
+
+Copyright (c) 2017 Charlie Robbins & the Contributors.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
 ### module-details-from-path
 
 This product includes source derived from [module-details-from-path](https://github.com/watson/module-details-from-path) ([v1.0.4](https://github.com/watson/module-details-from-path/tree/v1.0.4)), distributed under the [MIT License](https://github.com/watson/module-details-from-path/blob/v1.0.4/LICENSE):
@@ -2960,7 +2990,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.996.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.996.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.996.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1000.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1000.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1000.0/LICENSE):
 
 ```
                                 Apache License
@@ -3169,7 +3199,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.996.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.996.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.996.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1000.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1000.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1000.0/LICENSE):
 
 ```
                                 Apache License
