@@ -59,12 +59,12 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
   await t.test('should log tracking metrics', function(t) {
     const { agent } = t.nr
     const { version } = require('redis/package.json')
-    assertPackageMetrics({ agent, pkg: 'redis', version })
+    assertPackageMetrics({ agent, pkg: 'redis', version, subscriberType: true })
   })
 
   await t.test('should find Redis calls in the transaction trace', async function (t) {
     const { agent, client } = t.nr
-    const plan = tspl(t, { plan: 19 })
+    const plan = tspl(t, { plan: 18 })
     helper.runInTransaction(agent, function transactionInScope() {
       const transaction = agent.getTransaction()
       plan.ok(transaction, 'transaction should be visible')
@@ -84,6 +84,7 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
           plan.ok(trace.root, 'root element should exist')
           const children = trace.getChildren(trace.root.id)
           plan.equal(children.length, 1, 'there should be only one child of the root')
+
           const [setSegment] = children
           const setAttributes = setSegment.getAttributes()
           plan.ok(setSegment, 'trace segment for set should exist')
@@ -91,16 +92,12 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
           plan.equal(setAttributes.key, '"testkey"', 'should have the set key as a attribute')
           const setChildren = trace.getChildren(setSegment.id)
           plan.equal(setChildren.length, 1, 'set should have an only child')
-          const [getSegment] = trace.getChildren(setChildren[0].id)
-          const getChildren = trace.getChildren(getSegment.id)
+
+          const [getSegment] = trace.getChildren(setChildren[0].parentId)
           const getAttributes = getSegment.getAttributes()
           plan.ok(getSegment, 'trace segment for get should exist')
-
           plan.equal(getSegment.name, 'Datastore/operation/Redis/get', 'should register the get')
-
           plan.equal(getAttributes.key, '"testkey"', 'should have the get key as a attribute')
-
-          plan.ok(getChildren.length >= 1, 'get should have a callback segment')
 
           plan.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
         })
@@ -227,7 +224,7 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
       client.set('saveme', 'foobar', function (error) {
         // Regardless of error, key should still be captured.
         assert.ok(!error)
-        const segment = tx.trace.getParent(agent.tracer.getSegment().parentId)
+        const segment = agent.tracer.getSegment()
         assert.equal(segment.getAttributes().key, '"saveme"', 'should have `key` attribute')
         end()
       })
@@ -242,7 +239,7 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
       client.set('saveme', 'foobar', function (error) {
         // Regardless of error, key should still be captured.
         assert.ok(!error)
-        const segment = tx.trace.getParent(agent.tracer.getSegment().parentId)
+        const segment = agent.tracer.getSegment()
         assert.ok(!segment.getAttributes().key, 'should not have `key` attribute')
         end()
       })
@@ -336,12 +333,8 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
 
     function verify() {
       const [setSegment1] = transaction.trace.getChildren(transaction.trace.root.id)
-      const [selectSegment] = transaction.trace.getChildren(
-        transaction.trace.getChildren(setSegment1.id)[0].id
-      )
-      const [setSegment2] = transaction.trace.getChildren(
-        transaction.trace.getChildren(selectSegment.id)[0].id
-      )
+      const [selectSegment] = transaction.trace.getChildren(setSegment1.id)
+      const [setSegment2] = transaction.trace.getChildren(selectSegment.id)
 
       plan.equal(setSegment1.name, 'Datastore/operation/Redis/set', 'should register the first set')
       plan.equal(
@@ -370,5 +363,33 @@ test('Redis instrumentation', { timeout: 20000 }, async function (t) {
         'should have the selected database id as attribute for the second set'
       )
     }
+  })
+
+  await t.test('should time segments accordingly', async function (t) {
+    const { agent, client } = t.nr
+    await helper.runInTransaction(agent, async function transactionInScope() {
+      const transaction = agent.getTransaction()
+      assert.ok(transaction, 'transaction should be visible')
+
+      const WAIT = 2000
+      await new Promise((resolve) => {
+        client.wait(1, WAIT, function (error, ok) {
+          assert.ok(!error)
+          assert.ok(agent.getTransaction(), 'transaction should still be visible')
+          assert.equal(ok, 0)
+          resolve()
+        })
+      })
+
+      const trace = transaction.trace
+      const children = trace.getChildren(trace.root.id)
+      assert.equal(children.length, 1, 'there should be only one child of the root')
+
+      const [waitSegment] = children
+      assert.ok(waitSegment, 'trace segment for wait should exist')
+      assert.equal(waitSegment.name, 'Datastore/operation/Redis/wait', 'should register the wait')
+      assert.ok(waitSegment.timer.hrDuration, 'trace segment should have ended')
+      assert.ok(waitSegment.getDurationInMillis() >= WAIT)
+    })
   })
 })
