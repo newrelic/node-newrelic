@@ -278,12 +278,16 @@ test('#harvesters.start should start  and stop all aggregators', (t) => {
     agent.profilingData
   ]
   for (const agg of aggregators) {
-    assert.equal(Object.prototype.toString.call(agg.sendTimer), '[object Object]')
+    assert.ok(agg.sendTimer)
+    assert.equal(agg.delayTimeout, null)
+    assert.equal(agg.durationTimeout, null)
   }
 
   agent.harvester.stop()
   for (const agg of aggregators) {
     assert.equal(agg.sendTimer, null)
+    assert.equal(agg.delayTimeout, null)
+    assert.equal(agg.durationTimeout, null)
   }
 })
 
@@ -938,6 +942,66 @@ test('when connected', async (t) => {
       })
     }
   )
+})
+
+test('should set up delay + duration for profilingAggregator', async (t) => {
+  const plan = tspl(t, { plan: 14 })
+  const collector = new Collector()
+  const runId = 1122
+  await collector.listen()
+  const payload = { return_value: [] }
+  let calls = 0
+  collector.addHandler(helper.generateCollectorPath('pprof_data', runId), (req, res) => {
+    calls++
+    res.json({ payload })
+  })
+  const config = {
+    profiling: {
+      enabled: true,
+      duration: 300,
+      sample_interval: 50,
+      delay: 50
+    },
+    ...collector.agentConfig,
+    utilization: {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_azure: false,
+      detect_gcp: false,
+      detect_docker: false
+    }
+  }
+  const agent = helper.loadMockedAgent(config, false)
+
+  t.after(() => {
+    helper.unloadAgent(agent)
+    collector.close()
+  })
+  agent.start((error) => {
+    plan.ok(!error)
+    plan.ok(!agent.profilingData.sendTimer)
+    plan.ok(agent.profilingData.durationTimeout)
+    plan.ok(agent.profilingData.delayTimeout)
+    plan.equal(calls, 0)
+    setTimeout(() => {
+      plan.equal(calls, 0)
+      plan.ok(agent.profilingData.sendTimer)
+      plan.ok(agent.profilingData.durationTimeout)
+      plan.ok(agent.profilingData.delayTimeout)
+    }, 110)
+
+    setTimeout(() => {
+      plan.ok(!agent.profilingData.sendTimer)
+      plan.ok(!agent.profilingData.durationTimeout)
+      plan.ok(!agent.profilingData.delayTimeout)
+      // should call cpu and heap profilers 4 times each
+      // but account for timer drift and slow CI
+      plan.ok(calls >= 6)
+      plan.ok(calls <= 10)
+    }, 401)
+  })
+
+  await plan.completed
 })
 
 test('when handling finished transactions', async (t) => {
