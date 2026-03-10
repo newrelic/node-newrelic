@@ -945,7 +945,7 @@ test('when connected', async (t) => {
 })
 
 test('should set up delay + duration for profilingAggregator', async (t) => {
-  const plan = tspl(t, { plan: 13 })
+  const plan = tspl(t, { plan: 14 })
   const collector = new Collector()
   const runId = 1122
   await collector.listen()
