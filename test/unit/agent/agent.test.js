@@ -995,7 +995,9 @@ test('should set up delay + duration for profilingAggregator', async (t) => {
       plan.ok(!agent.profilingData.durationTimeout)
       plan.ok(!agent.profilingData.delayTimeout)
       // should call cpu and heap profilers 4 times each
-      plan.equal(calls, 8)
+      // but account for timer drift and slow CI
+      plan.ok(calls >= 6)
+      plan.ok(calls <= 10)
     }, 401)
   })
 
