@@ -1118,6 +1118,64 @@ test('when sampling_target changes', async (t) => {
   })
 })
 
+test('when profiling aggregator has duration set to > 0', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.sandbox = sinon.createSandbox()
+    ctx.nr.agent = helper.loadMockedAgent({
+      profiling: {
+        enabled: true,
+        duration: 300,
+        include: ['heap']
+      }
+    }, false)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should disable aggregator after duration ends', (t, end) => {
+    const { agent, sandbox } = t.nr
+    const clock = sandbox.useFakeTimers({ toFake: ['setTimeout'] })
+
+    agent.onConnect(false, () => {
+      clock.tick(301)
+      const profilingAggregator = agent.profilingData
+      assert.equal(profilingAggregator.isEnabled(), false)
+      sandbox.restore()
+      end()
+    })
+  })
+})
+
+test('when profiling aggregator has duration set to default (0)', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent({
+      profiling: {
+        enabled: true,
+        duration: 0,
+        include: ['heap']
+      }
+    }, false)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should leave aggregator enabled', (t, end) => {
+    const { agent } = t.nr
+
+    agent.onConnect(false, () => {
+      const profilingAggregator = agent.profilingData
+      assert.equal(profilingAggregator.isEnabled(agent.config), true)
+      end()
+    })
+  })
+})
+
 test('when `onConnect` is called to update profiling metrics', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
