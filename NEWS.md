@@ -3,7 +3,7 @@
 #### Bug fixes
 
 * Updated `@apm-js-collab/tracing-hooks` to `0.5.0`, to allow instrumentation on windows environments. ([#3819](https://github.com/newrelic/node-newrelic/pull/3819)) ([d8f6d0f](https://github.com/newrelic/node-newrelic/commit/d8f6d0f6ac7f3ff17a667391269c41e6e57dc2fb))
-	* This version of `tracing-hooks` includes the fix for `orchestrion-js` failing because of Windows paths, see [the original issue filed](https://github.com/apm-js-collab/tracing-hooks/issues/19).
+	* This version of `@apm-js-collab/tracing-hooks` includes the windows path fix for `@apm-js-collab/code-transformer`, [see](https://github.com/apm-js-collab/tracing-hooks/issues/19).
 
 #### Code refactoring
 
