@@ -9,7 +9,6 @@ const test = require('node:test')
 const assert = require('node:assert')
 const { EventEmitter } = require('node:events')
 const sinon = require('sinon')
-const helper = require('#testlib/agent_helper.js')
 
 const promiseResolvers = require('../lib/promise-resolvers')
 const Harvester = require('../../lib/harvester')
@@ -21,7 +20,6 @@ class FakeAggregator extends EventEmitter {
     this.method = opts.method
     this.delay = opts.delay ?? 0
     this.duration = opts.duration ?? 0
-    this.agent = opts.agent
   }
 
   start() {}
@@ -32,6 +30,10 @@ class FakeAggregator extends EventEmitter {
   stop() {}
 
   reconfigure() {}
+
+  end() {
+    this.enabled = false
+  }
 }
 
 function createAggregator(sandbox, opts) {
@@ -140,6 +142,7 @@ test('should stop aggregator dynamically when it has a duration property', (t) =
   assert.equal(aggregators[0].stop.callCount, 0, 'should not stop aggregator yet')
   clock.tick(201)
   assert.equal(aggregators[0].stop.callCount, 1, 'should stop aggregator after duration has elapsed')
+  assert.equal(aggregators[0].enabled, false, 'should disable aggregator after duration has elapsed')
 })
 
 test('should delay start and stop aggregator after duration', (t) => {
@@ -158,25 +161,5 @@ test('should delay start and stop aggregator after duration', (t) => {
   assert.equal(aggregators[0].stop.callCount, 0, 'should not stop aggregator yet')
   clock.tick(200)
   assert.equal(aggregators[0].stop.callCount, 1, 'should stop aggregator after duration has elapsed')
-})
-
-test('should turn off profiling after duration ends', (t) => {
-  const { sandbox, logger } = t.nr
-  const agent = helper.loadMockedAgent({
-    profiling: {
-      enabled: true
-    }
-  })
-  const clock = sandbox.useFakeTimers()
-  const delayAggregator = createAggregator(sandbox, { enabled: true, method: 'pprof_data', delay: 0, duration: 200, agent })
-  const harvester = new Harvester({ logger })
-  harvester.add(delayAggregator)
-  harvester.start()
-  const { aggregators } = harvester
-  assert.equal(aggregators[0].start.callCount, 1, 'should start aggregator immediately')
-  assert.equal(aggregators[0].stop.callCount, 0, 'should not stop aggregator yet')
-  clock.tick(201)
-  assert.equal(aggregators[0].stop.callCount, 1, 'should stop aggregator after duration has elapsed')
-  assert.equal(aggregators[0].agent.config.profiling.enabled, false, 'should turn off profiling after duration ends')
-  helper.unloadAgent(agent)
+  assert.equal(aggregators[0].enabled, false, 'should disable aggregator after duration has elapsed')
 })
