@@ -6,7 +6,7 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Updated minimum version of `@apm-js-collab/tracing-hooks` to include fix for `orchestrion-js` failing because of Windows paths"
+          "Updated `@apm-js-collab/tracing-hooks` to `0.5.0`, to allow instrumentation on windows environments."
         ],
         "features": []
       }
