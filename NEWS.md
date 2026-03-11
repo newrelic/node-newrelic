@@ -1,3 +1,22 @@
+### v13.16.0 (2026-03-11)
+
+#### Bug fixes
+
+* Updated `@apm-js-collab/tracing-hooks` to `0.5.0`, to allow instrumentation on windows environments. ([#3819](https://github.com/newrelic/node-newrelic/pull/3819)) ([d8f6d0f](https://github.com/newrelic/node-newrelic/commit/d8f6d0f6ac7f3ff17a667391269c41e6e57dc2fb))
+	* This version of `@apm-js-collab/tracing-hooks` includes the windows path fix for `@apm-js-collab/code-transformer`, [see](https://github.com/apm-js-collab/tracing-hooks/issues/19).
+
+#### Code refactoring
+
+* Updated `redis` v3 instrumentation to subscribe to events emitted ([#3802](https://github.com/newrelic/node-newrelic/pull/3802)) ([4d18302](https://github.com/newrelic/node-newrelic/commit/4d1830237c91d3e60c6b4e898f2c82ff131ebd57))
+
+#### Documentation
+
+* Updated compatibility report ([#3813](https://github.com/newrelic/node-newrelic/pull/3813)) ([27cb0a5](https://github.com/newrelic/node-newrelic/commit/27cb0a5e7a4c6047cce54483bd18d1337023efd3))
+
+#### Tests
+
+* Add `redis-client` and `node-redis-client` segment duration timing tests ([#3810](https://github.com/newrelic/node-newrelic/pull/3810)) ([f07bcfe](https://github.com/newrelic/node-newrelic/commit/f07bcfecf06453c846e12f030fbf7d8c055da139))
+
 ### v13.15.0 (2026-03-09)
 
 #### Features
@@ -8412,6 +8431,8 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * The agent reports transaction trace data.
 
 [mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+
+
 
 
 

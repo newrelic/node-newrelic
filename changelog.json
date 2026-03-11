@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.16.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `@apm-js-collab/tracing-hooks` to `0.5.0`, to allow instrumentation on windows environments."
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "13.15.0",
       "changes": {
         "security": [],
