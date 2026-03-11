@@ -5,7 +5,9 @@
       "version": "13.16.0",
       "changes": {
         "security": [],
-        "bugfixes": [],
+        "bugfixes": [
+          "Updated minimum version of `@apm-js-collab/tracing-hooks` to include fix for `orchestrion-js` failing because of Windows paths"
+        ],
         "features": []
       }
     },
