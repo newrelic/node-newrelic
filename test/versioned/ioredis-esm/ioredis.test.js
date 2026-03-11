@@ -75,9 +75,13 @@ test('ioredis instrumentation', async (t) => {
 
   await t.test('creates expected segments', async (t) => {
     const { agent, redisClient, redisKey } = t.nr
-    const plan = tspl(t, { plan: 5 })
+    const plan = tspl(t, { plan: 7 })
 
-    agent.on('transactionFinished', function (tx) {
+    await helper.runInTransaction(agent, async (tx) => {
+      await redisClient.set(redisKey, 'testvalue')
+      const value = await redisClient.get(redisKey)
+      plan.equal(value, 'testvalue')
+
       const root = tx.trace.root
       const children = tx.trace.getChildren(root.id)
       plan.equal(children.length, 2, 'root has two children')
@@ -85,19 +89,15 @@ test('ioredis instrumentation', async (t) => {
       const [setSegment, getSegment] = children
 
       plan.equal(setSegment.name, 'Datastore/operation/Redis/set')
+      plan.ok(setSegment.timer.hrDuration, 'set segment should have ended')
 
       // ioredis operations return promise, any 'then' callbacks will be sibling segments
       // of the original redis call
       plan.equal(getSegment.name, 'Datastore/operation/Redis/get')
+      plan.ok(getSegment.timer.hrDuration, 'get segment should have ended')
       const getChildren = tx.trace.getChildren(getSegment.id)
       plan.equal(getChildren.length, 0, 'should not contain any segments')
-    })
-
-    helper.runInTransaction(agent, async (transaction) => {
-      await redisClient.set(redisKey, 'testvalue')
-      const value = await redisClient.get(redisKey)
-      plan.equal(value, 'testvalue')
-      transaction.end()
+      tx.end()
     })
     await plan.completed
   })

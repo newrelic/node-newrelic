@@ -81,9 +81,13 @@ test('iovalkey instrumentation', async (t) => {
 
   await t.test('creates expected segments', async (t) => {
     const { agent, valkeyClient, valkeyKey } = t.nr
-    const plan = tspl(t, { plan: 5 })
+    const plan = tspl(t, { plan: 7 })
 
-    agent.on('transactionFinished', function (tx) {
+    await helper.runInTransaction(agent, async (tx) => {
+      await valkeyClient.set(valkeyKey, 'testvalue')
+      const value = await valkeyClient.get(valkeyKey)
+      plan.equal(value, 'testvalue')
+
       const root = tx.trace.root
       const children = tx.trace.getChildren(root.id)
       plan.equal(children.length, 2, 'root has two children')
@@ -91,19 +95,15 @@ test('iovalkey instrumentation', async (t) => {
       const [setSegment, getSegment] = children
 
       plan.equal(setSegment.name, 'Datastore/operation/Valkey/set')
+      plan.ok(setSegment.timer.hrDuration, 'set segment should have ended')
 
       // iovalkey operations return promise, any 'then' callbacks will be sibling segments
       // of the original valkey call
       plan.equal(getSegment.name, 'Datastore/operation/Valkey/get')
+      plan.ok(getSegment.timer.hrDuration, 'get segment should have ended')
       const getChildren = tx.trace.getChildren(getSegment.id)
       plan.equal(getChildren.length, 0, 'should not contain any segments')
-    })
-
-    await helper.runInTransaction(agent, async (transaction) => {
-      await valkeyClient.set(valkeyKey, 'testvalue')
-      const value = await valkeyClient.get(valkeyKey)
-      plan.equal(value, 'testvalue')
-      transaction.end()
+      tx.end()
     })
     await plan.completed
   })
@@ -259,20 +259,20 @@ test('iovalkey instrumentation', async (t) => {
 
   await t.test('pipeline works', async (t) => {
     const { agent, valkeyClient, valkeyKey } = t.nr
-    const plan = tspl(t, { plan: 3 })
-    agent.on('transactionFinished', function (tx) {
-      const root = tx.trace.root
-      const children = tx.trace.getChildren(root.id)
-      const [setSegment, getSegment] = children
-      plan.equal(setSegment.name, 'Datastore/operation/Valkey/set')
-      plan.equal(getSegment.name, 'Datastore/operation/Valkey/get')
-    })
+    const plan = tspl(t, { plan: 5 })
     await helper.runInTransaction(agent, async (tx) => {
       const res = await valkeyClient.pipeline()
         .set(valkeyKey, 'test')
         .get(valkeyKey)
         .exec()
       plan.deepStrictEqual(res, [[null, 'OK'], [null, 'test']])
+      const root = tx.trace.root
+      const children = tx.trace.getChildren(root.id)
+      const [setSegment, getSegment] = children
+      plan.equal(setSegment.name, 'Datastore/operation/Valkey/set')
+      plan.ok(setSegment.timer.hrDuration, 'set segment should have ended')
+      plan.equal(getSegment.name, 'Datastore/operation/Valkey/get')
+      plan.ok(getSegment.timer.hrDuration, 'get segment should have ended')
       tx.end()
     })
 
