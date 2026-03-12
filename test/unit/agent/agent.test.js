@@ -1118,6 +1118,83 @@ test('when sampling_target changes', async (t) => {
   })
 })
 
+test('when profiling aggregator has duration set to > 0', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.sandbox = sinon.createSandbox()
+    ctx.nr.agent = helper.loadMockedAgent({
+      profiling: {
+        enabled: true,
+        duration: 300,
+        include: ['heap']
+      }
+    }, false)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should disable aggregator after duration ends and survive a soft restart', async (t) => {
+    const { agent, sandbox } = t.nr
+    const clock = sandbox.useFakeTimers({ toFake: ['setTimeout'] })
+    t.after(() => {
+      clock.restore()
+    })
+    const profilingAggregator = agent.profilingData
+
+    await new Promise((resolve) => {
+      agent.onConnect(false, () => {
+        clock.tick(10)
+        assert.equal(profilingAggregator.enabled, true)
+        assert.ok(profilingAggregator.durationTimeout)
+        clock.tick(291)
+        // need to check funtion because the `.enabled` property
+        // will not get updated until next `onConnect`
+        assert.equal(profilingAggregator.isEnabled(), false)
+        assert.ok(!profilingAggregator.durationTimeout)
+        resolve()
+      })
+    })
+
+    await new Promise((resolve) => {
+      agent.onConnect(false, () => {
+        clock.tick(10)
+        assert.equal(profilingAggregator.enabled, false)
+        assert.ok(!profilingAggregator.durationTimeout)
+        resolve()
+      })
+    })
+  })
+})
+
+test('when profiling aggregator has duration set to default (0)', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent({
+      profiling: {
+        enabled: true,
+        duration: 0,
+        include: ['heap']
+      }
+    }, false)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should leave aggregator enabled', (t, end) => {
+    const { agent } = t.nr
+
+    agent.onConnect(false, () => {
+      const profilingAggregator = agent.profilingData
+      assert.equal(profilingAggregator.isEnabled(agent.config), true)
+      end()
+    })
+  })
+})
+
 test('when `onConnect` is called to update profiling metrics', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}

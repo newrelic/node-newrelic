@@ -30,6 +30,10 @@ class FakeAggregator extends EventEmitter {
   stop() {}
 
   reconfigure() {}
+
+  end() {
+    this.enabled = false
+  }
 }
 
 function createAggregator(sandbox, opts) {
@@ -138,6 +142,7 @@ test('should stop aggregator dynamically when it has a duration property', (t) =
   assert.equal(aggregators[0].stop.callCount, 0, 'should not stop aggregator yet')
   clock.tick(201)
   assert.equal(aggregators[0].stop.callCount, 1, 'should stop aggregator after duration has elapsed')
+  assert.equal(aggregators[0].enabled, false, 'should disable aggregator after duration has elapsed')
 })
 
 test('should delay start and stop aggregator after duration', (t) => {
@@ -156,4 +161,5 @@ test('should delay start and stop aggregator after duration', (t) => {
   assert.equal(aggregators[0].stop.callCount, 0, 'should not stop aggregator yet')
   clock.tick(200)
   assert.equal(aggregators[0].stop.callCount, 1, 'should stop aggregator after duration has elapsed')
+  assert.equal(aggregators[0].enabled, false, 'should disable aggregator after duration has elapsed')
 })
