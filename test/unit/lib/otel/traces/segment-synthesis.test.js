@@ -155,7 +155,7 @@ test('should create db segment and get operation from db.operation when system i
   })
 })
 
-test('should log table and operation as unknown when the db.system, db.sql.table and db.operation to not exist as span attributes', (t, end) => {
+test('should log table and operation as unknown when the db.system.name, db.sql.table and db.operation to not exist as span attributes', (t, end) => {
   const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
     const span = createDbSpan({ tracer })
