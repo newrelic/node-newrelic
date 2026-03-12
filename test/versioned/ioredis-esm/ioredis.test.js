@@ -89,12 +89,12 @@ test('ioredis instrumentation', async (t) => {
       const [setSegment, getSegment] = children
 
       plan.equal(setSegment.name, 'Datastore/operation/Redis/set')
-      plan.ok(setSegment.timer.hrDuration, 'set segment should have ended')
+      plan.ok(setSegment._isEnded(), 'set segment should have ended')
 
       // ioredis operations return promise, any 'then' callbacks will be sibling segments
       // of the original redis call
       plan.equal(getSegment.name, 'Datastore/operation/Redis/get')
-      plan.ok(getSegment.timer.hrDuration, 'get segment should have ended')
+      plan.ok(getSegment._isEnded(), 'get segment should have ended')
       const getChildren = tx.trace.getChildren(getSegment.id)
       plan.equal(getChildren.length, 0, 'should not contain any segments')
       tx.end()
