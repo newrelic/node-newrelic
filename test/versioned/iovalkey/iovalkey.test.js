@@ -108,6 +108,22 @@ test('iovalkey instrumentation', async (t) => {
     await plan.completed
   })
 
+  await t.test('timing is recorded as expected', async (t) => {
+    const plan = tspl(t, { plan: 2 })
+    const { agent, valkeyClient } = t.nr
+    agent.on('transactionFinished', (tx) => {
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      plan.equal(children.length, 1)
+      plan.equal(children[0].timer.getDurationInMillis() >= 1_000, true)
+    })
+    helper.runInTransaction(agent, async (tx) => {
+      await valkeyClient.wait(1, 1_000)
+      tx.end()
+    })
+
+    await plan.completed
+  })
+
   await t.test('should add instance attributes to all valkey segments', async (t) => {
     const { agent, valkeyClient, valkeyKey, METRIC_HOST_NAME } = t.nr
     agent.config.datastore_tracer.instance_reporting.enabled = true
