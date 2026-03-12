@@ -1135,16 +1135,35 @@ test('when profiling aggregator has duration set to > 0', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should disable aggregator after duration ends', (t, end) => {
+  await t.test('should disable aggregator after duration ends and survive a soft restart', async (t) => {
     const { agent, sandbox } = t.nr
     const clock = sandbox.useFakeTimers({ toFake: ['setTimeout'] })
+    t.after(() => {
+      clock.restore()
+    })
+    const profilingAggregator = agent.profilingData
 
-    agent.onConnect(false, () => {
-      clock.tick(301)
-      const profilingAggregator = agent.profilingData
-      assert.equal(profilingAggregator.isEnabled(), false)
-      sandbox.restore()
-      end()
+    await new Promise((resolve) => {
+      agent.onConnect(false, () => {
+        clock.tick(10)
+        assert.equal(profilingAggregator.enabled, true)
+        assert.ok(profilingAggregator.durationTimeout)
+        clock.tick(291)
+        // need to check funtion because the `.enabled` property
+        // will not get updated until next `onConnect`
+        assert.equal(profilingAggregator.isEnabled(), false)
+        assert.ok(!profilingAggregator.durationTimeout)
+        resolve()
+      })
+    })
+
+    await new Promise((resolve) => {
+      agent.onConnect(false, () => {
+        clock.tick(10)
+        assert.equal(profilingAggregator.enabled, false)
+        assert.ok(!profilingAggregator.durationTimeout)
+        resolve()
+      })
     })
   })
 })
