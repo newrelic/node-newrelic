@@ -363,17 +363,17 @@
         "client"
       ],
       "required_attribute_keys": [
-        "db.system",
+        "db.system.name",
         "server.address",
         "server.port"
       ],
       "attribute_conditions": {
-        "db.system": ["redis", "memcached"]
+        "db.system.name": ["redis", "memcached"]
       }
     },
     "attributes": [
       {
-        "key": "db.system",
+        "key": "db.system.name",
         "target": "segment",
         "name": "product"
       },
@@ -390,7 +390,7 @@
     ],
     "segment": {
       "operation": "db.statement",
-      "type": "db.system",
+      "type": "db.system.name",
       "name": {
         "template": "Datastore/operation/${type}/${operation}"
       } 
@@ -404,22 +404,22 @@
         "client"
       ],
       "required_attribute_keys": [
-        "db.system",
+        "db.system.name",
         "server.address",
         "server.port"
       ],
       "attribute_conditions": {
-        "db.system": ["mongodb"]
+        "db.system.name": ["mongodb"]
       }
     },
     "attributes": [
       {
-        "key": "db.system",
+        "key": "db.system.name",
         "target": "segment",
         "name": "product"
       },
       {
-        "key": "db.name",
+        "key": "db.namespace",
         "target": "segment",
         "name": "database_name"
       },
@@ -437,7 +437,7 @@
     "segment": {
       "operation": "db.operation",
       "collection": "db.mongodb.collection",
-      "type": "db.system",
+      "type": "db.system.name",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
       } 
@@ -451,19 +451,19 @@
         "client"
       ],
       "required_attribute_keys": [
-        "db.system",
+        "db.system.name",
         "server.address",
         "server.port"
       ]
     },
     "attributes": [
       {
-        "key": "db.system",
+        "key": "db.system.name",
         "target": "segment",
         "name": "product"
       },
       {
-        "key": "db.name",
+        "key": "db.namespace",
         "target": "segment",
         "name": "database_name"
       },
@@ -480,7 +480,7 @@
     ],
     "segment": {
       "statement": "db.statement",
-      "type": "db.system",
+      "type": "db.system.name",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
       } 
@@ -494,22 +494,22 @@
         "client"
       ],
       "required_attribute_keys": [
-        "db.system",
+        "db.system.name",
         "net.peer.name",
         "net.peer.port"
       ],
       "attribute_conditions": {
-        "db.system": ["redis", "memcached"]
+        "db.system.name": ["redis", "memcached"]
       }
     },
     "attributes": [
       {
-        "key": "db.system",
+        "key": "db.system.name",
         "target": "segment",
         "name": "product"
       },
       {
-        "key": "db.name",
+        "key": "db.namespace",
         "target": "segment",
         "name": "database_name"
       },
@@ -526,7 +526,7 @@
     ],
     "segment": {
       "operation": "db.statement",
-      "type": "db.system",
+      "type": "db.system.name",
       "name": {
         "template": "Datastore/operation/${type}/${operation}"
       } 
@@ -540,22 +540,22 @@
         "client"
       ],
       "required_attribute_keys": [
-        "db.system",
+        "db.system.name",
         "net.peer.name",
         "net.peer.port"
       ],
       "attribute_conditions": {
-        "db.system": ["mongodb"]
+        "db.system.name": ["mongodb"]
       }
     },
     "attributes": [
       {
-        "key": "db.system",
+        "key": "db.system.name",
         "target": "segment",
         "name": "product"
       },
       {
-        "key": "db.name",
+        "key": "db.namespace",
         "target": "segment",
         "name": "database_name"
       },
@@ -573,7 +573,7 @@
     "segment": {
       "operation": "db.operation",
       "collection": "db.mongodb.collection",
-      "type": "db.system",
+      "type": "db.system.name",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
       } 
@@ -587,20 +587,20 @@
         "client"
       ],
       "required_attribute_keys": [
-        "db.system"
+        "db.system.name"
       ],
       "attribute_conditions": {
-        "db.system": ["dynamodb"]
+        "db.system.name": ["dynamodb"]
       }
     },
     "attributes": [
       {
-        "key": "db.system",
+        "key": "db.system.name",
         "target": "segment",
         "name": "product"
       },
       {
-        "key": "db.name",
+        "key": "db.namespace",
         "target": "segment",
         "name": "database_name"
       },
@@ -622,7 +622,7 @@
     ],
     "segment": {
       "operation": "db.operation",
-      "type": "db.system",
+      "type": "db.system.name",
       "name": {
         "template": "Datastore/operation/${type}/${operation}"
       } 
@@ -636,19 +636,19 @@
         "client"
       ],
       "required_attribute_keys": [
-        "db.system",
+        "db.system.name",
         "net.peer.name",
         "net.peer.port"
       ]
     },
     "attributes": [
       {
-        "key": "db.system",
+        "key": "db.system.name",
         "target": "segment",
         "name": "product"
       },
       {
-        "key": "db.name",
+        "key": "db.namespace",
         "target": "segment",
         "name": "database_name"
       },
@@ -665,7 +665,7 @@
     ],
     "segment": {
       "statement": "db.statement",
-      "type": "db.system",
+      "type": "db.system.name",
       "name": {
         "template": "Datastore/statement/${type}/${collection}/${operation}"
       } 

@@ -120,7 +120,7 @@ test('fromSegment()', async (t) => {
       // Should have no datastore properties.
       assert.ok(!hasOwnAttribute('db.statement'))
       assert.ok(!hasOwnAttribute('db.instance'))
-      assert.ok(!hasOwnAttribute('db.system'))
+      assert.ok(!hasOwnAttribute('db.system.name'))
       assert.ok(!hasOwnAttribute('peer.hostname'))
       assert.ok(!hasOwnAttribute('peer.address'))
 
@@ -193,7 +193,7 @@ test('fromSegment()', async (t) => {
           })
 
           // Should have no datastore properties.
-          ;['db.statement', 'db.instance', 'db.system', 'peer.hostname', 'peer.address'].forEach(
+          ;['db.statement', 'db.instance', 'db.system.name', 'peer.hostname', 'peer.address'].forEach(
             (attr) => {
               assert.ok(!hasOwnAttribute(attr))
             }
@@ -306,7 +306,7 @@ test('fromSegment()', async (t) => {
         assert.deepEqual(agentAttributes['peer.address'], {
           [STRING_TYPE]: 'my-db-host:/path/to/db.sock'
         })
-        assert.deepEqual(agentAttributes['db.system'], { [STRING_TYPE]: 'TestStore' }) // same as intrinsics.component
+        assert.deepEqual(agentAttributes['db.system.name'], { [STRING_TYPE]: 'TestStore' }) // same as intrinsics.component
         assert.deepEqual(agentAttributes['server.address'], { [STRING_TYPE]: 'my-db-host' })
         assert.deepEqual(agentAttributes['server.port'], { [STRING_TYPE]: '/path/to/db.sock' })
 
