@@ -11,21 +11,21 @@ supported by the agent.
 
 | Package name | Minimum supported version | Latest published version | Introduced in* |
 | --- | --- | --- | --- |
-| `@apollo/gateway` | 2.3.0 | 2.13.1 | `@newrelic/apollo-server-plugin@1.0.0` |
+| `@apollo/gateway` | 2.3.0 | 2.13.2 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 5.4.0 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.1006.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.1006.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.1006.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.1006.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.1006.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.1009.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.1009.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.1009.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.1009.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.1009.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.11.2 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.3.4 | 11.9.0 |
-| `@google/genai` | 1.1.0 | 1.44.0 | 12.21.0 |
+| `@google/genai` | 1.1.0 | 1.45.0 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.14.3 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.7 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 15.3.1 | 3.2.0 |
-| `@langchain/aws` | 0.1.3 | 1.3.1 | 13.8.0 |
+| `@langchain/aws` | 0.1.3 | 1.3.2 | 13.8.0 |
 | `@langchain/core` | 0.2.0 | 1.1.32 | 11.13.0 |
 | `@langchain/langgraph` | 1.0.0 | 1.2.2 | 13.12.0 |
 | `@langchain/openai` | 0.2.0 | 1.2.13 | 11.13.0 |
@@ -33,7 +33,7 @@ supported by the agent.
 | `@nestjs/cli` | 9.0.0 | 11.0.16 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.5.1 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 7.5.0 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 4.12.3 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 4.12.5 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.9 | 2.0.0 |
 | `aws-sdk` | 2.2.48 | 2.1693.0 | 6.2.0 |
 | `bluebird` | 2.0.0 | 3.7.2 | 1.27.0 |
@@ -54,7 +54,7 @@ supported by the agent.
 | `mysql` | 2.16.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.19.1 | 1.32.0 |
 | `next` | 13.4.19 | 16.1.6 | 12.0.0 |
-| `openai` | 4.0.0 | 6.27.0 | 11.13.0 |
+| `openai` | 4.0.0 | 6.28.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.20.0 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.7.0 | 9.0.0 |
 | `pino` | 8.0.0 | 10.3.1 | 8.11.0 |
@@ -62,7 +62,7 @@ supported by the agent.
 | `redis` | 3.1.0 | 5.11.0 | 1.31.0 |
 | `restify` | 11.0.0 | 11.1.0 | 2.6.0 |
 | `superagent` | 3.0.0 | 10.3.0 | 4.9.0 |
-| `undici` | 5.0.0 | 7.22.0 | 11.1.0 |
+| `undici` | 5.0.0 | 7.24.1 | 11.1.0 |
 | `when` | 3.7.0 | 3.7.8 | 1.26.2 |
 | `winston` | 3.0.0 | 3.19.0 | 8.11.0 |
 
