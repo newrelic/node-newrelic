@@ -189,7 +189,7 @@
       },
       "dependencies": {
         "@aws-sdk/lib-dynamodb": {
-          "versions": ">3.377.0 <3.967.0 || >= 3.983.0"
+          "versions": ">3.377.0 <3.967.0 || >=3.983.0",
           "samples": 10
         }
       },
