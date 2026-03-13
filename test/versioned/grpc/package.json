@@ -9,7 +9,7 @@
         "node": ">=20"
       },
       "dependencies": {
-        "@grpc/grpc-js": ">=1.4.0"
+        "@grpc/grpc-js": ">=1.10.0"
       },
       "files": [
         "client-unary.test.js",
