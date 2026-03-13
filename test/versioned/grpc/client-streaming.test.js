@@ -55,6 +55,7 @@ test('should track client streaming requests as an external when in a transactio
 
     const names = [{ name: 'Bob' }, { name: 'Jordi' }, { name: 'Corey' }]
     const response = await makeClientStreamingRequest({
+      agent,
       client,
       fnName: 'sayHelloClientStream',
       payload: names
@@ -73,7 +74,7 @@ test('should include distributed trace headers when enabled', (t, end) => {
   const { agent, client, server } = t.nr
   helper.runInTransaction(agent, 'dt-test', async (tx) => {
     const payload = [{ name: 'dt test' }, { name: 'dt test2' }]
-    await makeClientStreamingRequest({ client, fnName: 'sayHelloClientStream', payload })
+    await makeClientStreamingRequest({ agent, client, fnName: 'sayHelloClientStream', payload })
     payload.forEach(({ name }) => {
       const dtMeta = server.metadataMap.get(name)
       match(
@@ -101,7 +102,7 @@ test('should not include distributed trace headers when distributed_tracing.enab
   agent.config.distributed_tracing.enabled = false
   helper.runInTransaction(agent, 'dt-test', async (tx) => {
     const payload = [{ name: 'dt disabled' }]
-    await makeClientStreamingRequest({ client, fnName: 'sayHelloClientStream', payload })
+    await makeClientStreamingRequest({ agent, client, fnName: 'sayHelloClientStream', payload })
     const dtMeta = server.metadataMap.get(payload[0].name)
     assert.equal(dtMeta.has('traceparent'), false, 'should not have traceparent in server metadata')
     assert.equal(dtMeta.has('newrelic'), false, 'should not have newrelic in server metadata')
@@ -158,7 +159,7 @@ for (const config of grpcConfigs) {
 
       try {
         const payload = [{ oh: 'noes' }]
-        await makeClientStreamingRequest({ client, fnName: 'sayErrorClientStream', payload })
+        await makeClientStreamingRequest({ agent, client, fnName: 'sayErrorClientStream', payload })
       } catch (err) {
         assert.ok(err, 'should get an error')
         assert.equal(err.code, expectedStatusCode, 'should get the right status code')
@@ -194,6 +195,7 @@ for (const config of grpcConfigs) {
       try {
         const payload = [{ name: 'error' }]
         await makeClientStreamingRequest({
+          agent,
           client,
           fnName: 'sayErrorClientStream',
           payload,
