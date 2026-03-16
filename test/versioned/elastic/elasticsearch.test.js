@@ -103,6 +103,7 @@ test('Elasticsearch instrumentation', async (t) => {
         `Datastore/statement/ElasticSearch/${index}/index.create`,
         'should record index PUT as create'
       )
+      assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
     })
   })
 
@@ -130,6 +131,7 @@ test('Elasticsearch instrumentation', async (t) => {
             `Datastore/statement/ElasticSearch/${index}/index.create`,
             'should record index PUT as create'
           )
+          assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
           resolve()
         })
       })
@@ -148,6 +150,7 @@ test('Elasticsearch instrumentation', async (t) => {
         'Datastore/statement/ElasticSearch/any/bulk.create',
         'should record bulk operation'
       )
+      assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
     })
   })
 
@@ -172,6 +175,7 @@ test('Elasticsearch instrumentation', async (t) => {
         'Datastore/statement/ElasticSearch/any/bulk.create',
         'should record bulk operation'
       )
+      assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
     })
   })
 
@@ -193,6 +197,7 @@ test('Elasticsearch instrumentation', async (t) => {
         `Datastore/statement/ElasticSearch/${DB_INDEX_2}/search`,
         'querystring search should be recorded as a search'
       )
+      assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
       const attrs = firstChild.getAttributes()
       assert.equal(attrs.product, 'ElasticSearch')
       assert.equal(attrs.host, METRIC_HOST_NAME)
@@ -228,6 +233,7 @@ test('Elasticsearch instrumentation', async (t) => {
         `Datastore/statement/ElasticSearch/${DB_INDEX}/search`,
         'search index is specified, so name shows it'
       )
+      assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
       const attrs = firstChild.getAttributes()
       assert.equal(attrs.product, 'ElasticSearch')
       assert.equal(attrs.host, METRIC_HOST_NAME)
@@ -264,6 +270,7 @@ test('Elasticsearch instrumentation', async (t) => {
         'Datastore/statement/ElasticSearch/any/search',
         'child name on all indices should show search'
       )
+      assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
       const attrs = firstChild.getAttributes()
       assert.equal(attrs.product, 'ElasticSearch')
       assert.equal(attrs.host, METRIC_HOST_NAME)
@@ -312,6 +319,7 @@ test('Elasticsearch instrumentation', async (t) => {
         'Datastore/statement/ElasticSearch/any/msearch.create',
         'child name should show msearch'
       )
+      assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
       const attrs = firstChild.getAttributes()
       assert.equal(attrs.product, 'ElasticSearch')
       assert.equal(attrs.host, METRIC_HOST_NAME)
@@ -352,6 +360,7 @@ test('Elasticsearch instrumentation', async (t) => {
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/msearch.create'
       )
+      assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
       transaction.end()
       assert.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
