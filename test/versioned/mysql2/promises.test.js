@@ -78,7 +78,7 @@ test('mysql2 promises', { timeout: 30000 }, async (t) => {
       assert.equal(tx.name, activeTx.name)
       const querySegment = activeTx?.trace?.segments?.root?.children?.[0]?.segment
       assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
-      assert.ok(querySegment.timer.hrDuration, 'query segment should have ended')
+      assert.ok(querySegment._isEnded(), 'query segment should have ended')
       assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
       tx.end()
     })
@@ -189,7 +189,7 @@ test('mysql2 promises pool', async function (t) {
       assert.equal(staticSegment?.segment?.name, 'MySQL Pool#query') // TODO: this useless 'MySQL Pool#query' segment should be removed in 14.x
       const querySegment = staticSegment?.children?.[1]?.segment
       assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
-      assert.ok(querySegment.timer.hrDuration, 'query segment should have ended')
+      assert.ok(querySegment._isEnded(), 'query segment should have ended')
       assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
       tx.end()
     })
@@ -239,7 +239,7 @@ test('mysql2 promises pool', async function (t) {
       assert.equal(tx.name, activeTx.name)
       const querySegment = activeTx?.trace?.segments?.root?.children?.[1]?.segment
       assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
-      assert.ok(querySegment.timer.hrDuration, 'query segment should have ended')
+      assert.ok(querySegment._isEnded(), 'query segment should have ended')
       assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
       tx.end()
     })
@@ -315,8 +315,6 @@ if (semver.satisfies(pkgVersion, '>=2.3.0')) {
       })
     })
 
-    // does not work until mysql2 bug is fixed
-    // https://github.com/sidorares/node-mysql2/issues/3091
     if (!semver.satisfies(pkgVersion, '>=3.11.1')) {
       await t.test('get star', async function (t) {
         const { agent, poolCluster } = t.nr
@@ -373,7 +371,7 @@ if (semver.satisfies(pkgVersion, '>=2.3.0')) {
           querySegment = staticSegment?.children?.[1]?.segment
         }
         assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
-        assert.ok(querySegment.timer.hrDuration, 'query segment should have ended')
+        assert.ok(querySegment._isEnded(), 'query segment should have ended')
         assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
         tx.end()
       })
