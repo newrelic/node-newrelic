@@ -47,23 +47,41 @@ test.afterEach((ctx) => {
   removeModules(['@grpc/grpc-js'])
 })
 
-test('should track unary server requests', async (t) => {
+test('should track unary server requests', (t, end) => {
+  t.plan(16)
   const { agent, client } = t.nr
-  let transaction
-  agent.on('transactionFinished', (tx) => {
-    transaction = tx
+  agent.on('transactionFinished', (transaction) => {
+    process._rawDebug('!!! tx finished')
+    t.assert.ok(transaction, 'transaction exists')
+    assertServerTransaction(
+      { transaction, fnName: 'SayHello' },
+      { assert: t.assert }
+    )
+    assertServerMetrics(
+      { agentMetrics: agent.metrics._metrics, fnName: 'SayHello' },
+      { assert: t.assert }
+    )
+    end()
   })
 
-  const response = await makeUnaryRequest({
+  makeUnaryRequest({
     client,
     fnName: 'sayHello',
     payload: { name: 'New Relic' }
   })
-  assert.ok(response, 'response exists')
-  assert.equal(response.message, 'Hello New Relic', 'response message is correct')
-  assert.ok(transaction, 'transaction exists')
-  assertServerTransaction({ transaction, fnName: 'SayHello' })
-  assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHello' })
+    .then((response) => {
+      process._rawDebug('!!! then')
+      t.assert.ok(response, 'response exists')
+      t.assert.equal(response.message, 'Hello New Relic', 'response message is correct')
+    })
+    .catch((error) => {
+      // When the test ends the connection is immediately canceled. This
+      // results in the client getting an error. We ignore that error, even
+      // though it's technically happening _after_ the test has completed.
+      if (error?.code !== 1) {
+        t.assert.fail(error)
+      }
+    })
 })
 
 test('should add DT headers when `distributed_tracing` is enabled', async (t) => {
