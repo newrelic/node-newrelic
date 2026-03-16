@@ -545,10 +545,7 @@ test('distributed tracing samplers', async (t) => {
         delay: 100,
         duration: 20000,
         sample_interval: 200,
-        include: ['cpu'],
-        cpu: {
-          report_interval: 50
-        }
+        include: ['cpu']
       }
     }
 
@@ -558,6 +555,5 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.profiling.duration, 20000)
     assert.equal(configuration.profiling.sample_interval, 200)
     assert.deepEqual(configuration.profiling.include, ['cpu'])
-    assert.equal(configuration.profiling.cpu.report_interval, 50)
   })
 })
