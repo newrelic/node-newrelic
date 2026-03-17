@@ -25,11 +25,13 @@ test.beforeEach((ctx) => {
 
   const cpuProfiler = createProfiler({ sandbox, name: 'cpu' })
   const heapProfiler = createProfiler({ sandbox, name: 'heap' })
+  const profilingManager = new ProfilingManager({ agent, samplingInterval: 60_000 }, { logger })
   ctx.nr = {
     agent,
     cpuProfiler,
     heapProfiler,
     logger,
+    profilingManager,
     sandbox
   }
 })
@@ -41,16 +43,14 @@ test.afterEach((ctx) => {
 
 describe('constructor', () => {
   test('should initialize with agent config', (t) => {
-    const { agent } = t.nr
-    const profilingManager = new ProfilingManager(agent)
+    const { profilingManager } = t.nr
 
     assert.ok(profilingManager.config, 'should have config')
     assert.deepStrictEqual(profilingManager.config, t.nr.agent.config.profiling, 'should store agent config')
   })
 
   test('should initialize empty profilers map', (t) => {
-    const { agent } = t.nr
-    const profilingManager = new ProfilingManager(agent)
+    const { profilingManager } = t.nr
 
     assert.strictEqual(profilingManager.profilers.size, 0, 'profilers map should be empty')
   })
@@ -58,17 +58,14 @@ describe('constructor', () => {
 
 describe('register', () => {
   test('should be a no-op by default', (t) => {
-    const { agent } = t.nr
-    const profilingManager = new ProfilingManager(agent)
-
+    const { profilingManager } = t.nr
     profilingManager.register()
 
     assert.strictEqual(profilingManager.profilers.size, 0, 'should not add any profilers')
   })
 
   test('should register the heap and cpu profilers only once', (t) => {
-    const { agent } = t.nr
-    const profilingManager = new ProfilingManager(agent)
+    const { profilingManager } = t.nr
     profilingManager.config.include = ['heap']
 
     profilingManager.register()
@@ -85,8 +82,7 @@ describe('register', () => {
 
 describe('start', () => {
   test('should warn when no profilers are registered', (t) => {
-    const { agent, logger } = t.nr
-    const profilingManager = new ProfilingManager(agent, { logger })
+    const { profilingManager, logger } = t.nr
 
     const started = profilingManager.start()
     assert.equal(started, false)
@@ -100,8 +96,7 @@ describe('start', () => {
   })
 
   test('should start all registered profilers', (t) => {
-    const { agent, cpuProfiler, heapProfiler, logger } = t.nr
-    const profilingManager = new ProfilingManager(agent, { logger })
+    const { cpuProfiler, heapProfiler, profilingManager, logger } = t.nr
     profilingManager.profilers.set('cpu', cpuProfiler)
     profilingManager.profilers.set('heap', heapProfiler)
     const started = profilingManager.start()
@@ -122,8 +117,7 @@ describe('start', () => {
 
 describe('stop', () => {
   test('should warn when no profilers are registered', (t) => {
-    const { agent, logger } = t.nr
-    const profilingManager = new ProfilingManager(agent, { logger })
+    const { logger, profilingManager } = t.nr
     profilingManager.stop()
 
     assert.equal(logger.warn.callCount, 1)
@@ -135,8 +129,7 @@ describe('stop', () => {
   })
 
   test('should stop all registered profilers', (t) => {
-    const { agent, cpuProfiler, heapProfiler, logger } = t.nr
-    const profilingManager = new ProfilingManager(agent, { logger })
+    const { cpuProfiler, heapProfiler, logger, profilingManager } = t.nr
     profilingManager.profilers.set('cpu', cpuProfiler)
     profilingManager.profilers.set('heap', heapProfiler)
     profilingManager.stop()
@@ -148,8 +141,7 @@ describe('stop', () => {
   })
 
   test('should log supportability metric for profiling duration', (t) => {
-    const { agent, cpuProfiler, heapProfiler, logger, sandbox } = t.nr
-    const profilingManager = new ProfilingManager(agent, { logger })
+    const { agent, profilingManager, cpuProfiler, heapProfiler, sandbox } = t.nr
     profilingManager.profilers.set('cpu', cpuProfiler)
     profilingManager.profilers.set('heap', heapProfiler)
 
@@ -168,8 +160,7 @@ describe('stop', () => {
 
 describe('collect', (t) => {
   test('should warn and return empty array when no profilers are registered', async (t) => {
-    const { agent, logger } = t.nr
-    const profilingManager = new ProfilingManager(agent, { logger })
+    const { profilingManager, logger } = t.nr
 
     const results = await profilingManager.collect()
     assert.equal(results.length, 0, 'should return empty array')
@@ -182,8 +173,7 @@ describe('collect', (t) => {
   })
 
   test('should collect data from all registered profilers', async (t) => {
-    const { agent, cpuProfiler, heapProfiler, logger } = t.nr
-    const profilingManager = new ProfilingManager(agent, { logger })
+    const { profilingManager, cpuProfiler, heapProfiler, logger } = t.nr
 
     const expectedCpuData = { type: 'cpu', data: Buffer.from('cpu-profile-data') }
     const expectedHeapData = { type: 'heap', data: Buffer.from('heap-profile-data') }
@@ -203,8 +193,7 @@ describe('collect', (t) => {
   })
 
   test('should handle profilers returning undefined or null', async (t) => {
-    const { agent, cpuProfiler, heapProfiler, logger } = t.nr
-    const profilingManager = new ProfilingManager(agent, { logger })
+    const { profilingManager, cpuProfiler, heapProfiler, logger } = t.nr
 
     const expectedCpuData = undefined
     const expectedHeapData = null
