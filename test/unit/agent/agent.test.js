@@ -23,6 +23,7 @@ const os = require('node:os')
 const path = require('node:path')
 const healthDeliveryLocation = os.tmpdir()
 const HealthReporter = require('#agentlib/health-reporter.js')
+const { PROFILING } = require('#agentlib/metrics/names.js')
 
 test.after(() => {
   const files = fs.readdirSync(healthDeliveryLocation)
@@ -250,8 +251,15 @@ test('when forcing transaction ignore status', async (t) => {
   })
 })
 
-test('#harvesters.start should start all aggregators', (t) => {
-  const agent = helper.loadMockedAgent(null, false)
+test('#harvesters.start should start  and stop all aggregators', (t) => {
+  const agent = helper.loadMockedAgent({
+    profiling: {
+      enabled: true
+    },
+    slow_sql: {
+      enabled: true
+    }
+  }, false)
   t.after(() => {
     helper.unloadAgent(agent)
   })
@@ -264,39 +272,46 @@ test('#harvesters.start should start all aggregators', (t) => {
     agent.spanEventAggregator,
     agent.transactionEventAggregator,
     agent.customEventAggregator,
-    agent.logs
+    agent.logs,
+    agent.metrics,
+    agent.queries,
+    agent.profilingData
   ]
   for (const agg of aggregators) {
-    assert.equal(Object.prototype.toString.call(agg.sendTimer), '[object Object]')
+    assert.ok(agg.sendTimer)
+    assert.equal(agg.delayTimeout, null)
+    assert.equal(agg.durationTimeout, null)
+  }
+
+  agent.harvester.stop()
+  for (const agg of aggregators) {
+    assert.equal(agg.sendTimer, null)
+    assert.equal(agg.delayTimeout, null)
+    assert.equal(agg.durationTimeout, null)
   }
 })
 
-test('#harvesters.stop should stop all aggregators', (t) => {
-  // Load agent with default 'stopped' state:
-  const agent = helper.loadMockedAgent(null, false)
+test('#harvesters.start not should start profiling aggregator when serverless_mode is enabled', (t) => {
+  const agent = helper.loadMockedAgent({
+    serverless_mode: {
+      enabled: true
+    },
+    profiling: {
+      enabled: true
+    }
+  }, false)
   t.after(() => {
     helper.unloadAgent(agent)
   })
 
   agent.harvester.start()
+  assert.equal(agent.profilingData.sendTimer, null)
   agent.harvester.stop()
-
-  const aggregators = [
-    agent.traces,
-    agent.errors.traceAggregator,
-    agent.errors.eventAggregator,
-    agent.spanEventAggregator,
-    agent.transactionEventAggregator,
-    agent.customEventAggregator,
-    agent.logs
-  ]
-  for (const agg of aggregators) {
-    assert.equal(agg.sendTimer, null)
-  }
+  assert.equal(agent.profilingData.sendTimer, null)
 })
 
 test('#onConnect should reconfigure all the aggregators', (t, end) => {
-  const EXPECTED_AGG_COUNT = 9
+  const EXPECTED_AGG_COUNT = 10
   const agent = helper.loadMockedAgent(null, false)
   agent.config.application_logging.forwarding.enabled = true
   // Mock out the base reconfigure method:
@@ -314,6 +329,7 @@ test('#onConnect should reconfigure all the aggregators', (t, end) => {
       span_event_data: 1
     }
   }
+
   agent.onConnect(false, () => {
     assert.equal(proto.reconfigure.callCount, EXPECTED_AGG_COUNT)
     end()
@@ -758,6 +774,7 @@ test('when connected', async (t) => {
     agent.config.transaction_tracer.enabled = enableAggregator
     agent.config.collect_errors = enableAggregator
     agent.config.error_collector.capture_events = enableAggregator
+    agent.config.profiling.enabled = enableAggregator
 
     const runId = 1122
     const config = { agent_run_id: runId }
@@ -800,6 +817,9 @@ test('when connected', async (t) => {
     collector.addHandler(helper.generateCollectorPath('error_event_data', runId), (req, res) => {
       res.json({ payload })
     })
+    collector.addHandler(helper.generateCollectorPath('pprof_data', runId), (req, res) => {
+      res.json({ payload })
+    })
   }
 
   await t.test('should force harvest of all aggregators 1 second after connect', (t, end) => {
@@ -826,6 +846,7 @@ test('when connected', async (t) => {
     const err = Error('test error')
     agent.errors.traceAggregator.add(err)
     agent.errors.eventAggregator.add(err)
+    agent.profilingData.pprofData = Buffer.from('data')
 
     agent.start((error) => {
       agent.forceHarvestAll(() => {
@@ -841,6 +862,7 @@ test('when connected', async (t) => {
         assert.equal(collector.isDone('custom_event_data'), true)
         assert.equal(collector.isDone('error_data'), true)
         assert.equal(collector.isDone('error_event_data'), true)
+        assert.equal(collector.isDone('pprof_data'), true)
         end()
       })
     })
@@ -872,6 +894,7 @@ test('when connected', async (t) => {
       const err = Error('test error')
       agent.errors.traceAggregator.add(err)
       agent.errors.eventAggregator.add(err)
+      agent.profilingData.pprofData = Buffer.from('data')
 
       agent.start((error) => {
         agent.forceHarvestAll(() => {
@@ -887,6 +910,7 @@ test('when connected', async (t) => {
           assert.equal(collector.isDone('custom_event_data'), false)
           assert.equal(collector.isDone('error_data'), false)
           assert.equal(collector.isDone('error_event_data'), false)
+          assert.equal(collector.isDone('pprof_data'), false)
           end()
         })
       })
@@ -913,10 +937,71 @@ test('when connected', async (t) => {
         assert.equal(collector.isDone('custom_event_data'), false)
         assert.equal(collector.isDone('error_data'), false)
         assert.equal(collector.isDone('error_event_data'), false)
+        assert.equal(collector.isDone('pprof_data'), false)
         end()
       })
     }
   )
+})
+
+test('should set up delay + duration for profilingAggregator', async (t) => {
+  const plan = tspl(t, { plan: 14 })
+  const collector = new Collector()
+  const runId = 1122
+  await collector.listen()
+  const payload = { return_value: [] }
+  let calls = 0
+  collector.addHandler(helper.generateCollectorPath('pprof_data', runId), (req, res) => {
+    calls++
+    res.json({ payload })
+  })
+  const config = {
+    profiling: {
+      enabled: true,
+      duration: 300,
+      sample_interval: 50,
+      delay: 50
+    },
+    ...collector.agentConfig,
+    utilization: {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_azure: false,
+      detect_gcp: false,
+      detect_docker: false
+    }
+  }
+  const agent = helper.loadMockedAgent(config, false)
+
+  t.after(() => {
+    helper.unloadAgent(agent)
+    collector.close()
+  })
+  agent.start((error) => {
+    plan.ok(!error)
+    plan.ok(!agent.profilingData.sendTimer)
+    plan.ok(agent.profilingData.durationTimeout)
+    plan.ok(agent.profilingData.delayTimeout)
+    plan.equal(calls, 0)
+    setTimeout(() => {
+      plan.equal(calls, 0)
+      plan.ok(agent.profilingData.sendTimer)
+      plan.ok(agent.profilingData.durationTimeout)
+      plan.ok(agent.profilingData.delayTimeout)
+    }, 110)
+
+    setTimeout(() => {
+      plan.ok(!agent.profilingData.sendTimer)
+      plan.ok(!agent.profilingData.durationTimeout)
+      plan.ok(!agent.profilingData.delayTimeout)
+      // should call cpu and heap profilers 4 times each
+      // but account for timer drift and slow CI
+      plan.ok(calls >= 6)
+      plan.ok(calls <= 10)
+    }, 401)
+  })
+
+  await plan.completed
 })
 
 test('when handling finished transactions', async (t) => {
@@ -1030,6 +1115,172 @@ test('when sampling_target changes', async (t) => {
     assert.notEqual(agent.samplers.root.samplingPeriod, 100)
     agent.config.onConnect({ sampling_target_period_in_seconds: 0.1 })
     assert.equal(agent.samplers.root.samplingPeriod, 100)
+  })
+})
+
+test('when profiling aggregator has duration set to > 0', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.sandbox = sinon.createSandbox()
+    ctx.nr.agent = helper.loadMockedAgent({
+      profiling: {
+        enabled: true,
+        duration: 300,
+        include: ['heap']
+      }
+    }, false)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should disable aggregator after duration ends and survive a soft restart', async (t) => {
+    const { agent, sandbox } = t.nr
+    const clock = sandbox.useFakeTimers({ toFake: ['setTimeout'] })
+    t.after(() => {
+      clock.restore()
+    })
+    const profilingAggregator = agent.profilingData
+
+    await new Promise((resolve) => {
+      agent.onConnect(false, () => {
+        clock.tick(10)
+        assert.equal(profilingAggregator.enabled, true)
+        assert.ok(profilingAggregator.durationTimeout)
+        clock.tick(291)
+        // need to check funtion because the `.enabled` property
+        // will not get updated until next `onConnect`
+        assert.equal(profilingAggregator.isEnabled(), false)
+        assert.ok(!profilingAggregator.durationTimeout)
+        resolve()
+      })
+    })
+
+    await new Promise((resolve) => {
+      agent.onConnect(false, () => {
+        clock.tick(10)
+        assert.equal(profilingAggregator.enabled, false)
+        assert.ok(!profilingAggregator.durationTimeout)
+        resolve()
+      })
+    })
+  })
+})
+
+test('when profiling aggregator has duration set to default (0)', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent({
+      profiling: {
+        enabled: true,
+        duration: 0,
+        include: ['heap']
+      }
+    }, false)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should leave aggregator enabled', (t, end) => {
+    const { agent } = t.nr
+
+    agent.onConnect(false, () => {
+      const profilingAggregator = agent.profilingData
+      assert.equal(profilingAggregator.isEnabled(agent.config), true)
+      end()
+    })
+  })
+})
+
+test('when `onConnect` is called to update profiling metrics', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent(null, false)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should add startup profiling metrics when profiling is enabled', (t, end) => {
+    const { agent } = t.nr
+
+    agent.config.profiling.enabled = true
+    agent.config.profiling.include = ['heap']
+
+    agent.onConnect(false, () => {
+      const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
+      const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
+      const heap = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
+      const cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.CPU}`)
+      assert.equal(disabled, null)
+      assert.equal(enabled.callCount, 1)
+      assert.equal(heap.callCount, 1)
+      assert.equal(cpu, null)
+      end()
+    })
+  })
+
+  await t.test('should only add profiling flag metric and not type when profiling is disabled', (t, end) => {
+    const { agent } = t.nr
+
+    agent.onConnect(false, () => {
+      const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
+      const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
+      const heap = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
+      const cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.CPU}`)
+      assert.equal(enabled, null)
+      assert.equal(disabled.callCount, 1)
+      assert.equal(heap, null)
+      assert.equal(cpu, null)
+      end()
+    })
+  })
+})
+
+test('when `profiling.enabled` changes', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const config = {
+      profiling: {
+        enabled: false
+      }
+    }
+    ctx.nr.agent = helper.loadMockedAgent(config, false)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should handle changes accordingly', (t) => {
+    const { agent } = t.nr
+    assert.equal(agent.profilingData.enabled, false)
+    assert.ok(!agent.profilingData.sendTimer)
+    agent.config.onConnect({ 'profiling.enabled': true })
+    assert.equal(agent.profilingData.enabled, true)
+    assert.ok(agent.profilingData.sendTimer)
+    agent.config.onConnect({ 'profiling.enabled': false })
+    assert.equal(agent.profilingData.enabled, false)
+    assert.ok(!agent.profilingData.sendTimer)
+    agent.config.onConnect({ 'profiling.enabled': true })
+    assert.equal(agent.profilingData.enabled, true)
+    assert.ok(agent.profilingData.sendTimer)
+  })
+
+  await t.test('should add supportability metrics', (t) => {
+    const { agent } = t.nr
+    assert.equal(agent.profilingData.enabled, false)
+    agent.config.onConnect({ 'profiling.enabled': true })
+    assert.equal(agent.profilingData.enabled, true)
+    const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
+    assert.equal(enabled.callCount, 1)
+    agent.config.onConnect({ 'profiling.enabled': false })
+    const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
+    assert.equal(disabled.callCount, 1)
   })
 })
 
