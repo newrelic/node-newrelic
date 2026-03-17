@@ -28,4 +28,6 @@ message ArrayHelloRequest {
 
 message HelloReply {
   string message = 1;
+  string transaction_id = 2;
+  string segment_name = 3;
 }

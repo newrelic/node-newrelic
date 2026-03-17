@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const { once } = require('node:events')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { notHas } = require('../../lib/custom-assertions')
@@ -33,7 +34,11 @@ test.beforeEach(async (ctx) => {
   ctx.nr.agent = helper.instrumentMockedAgent()
   ctx.nr.grpc = require('@grpc/grpc-js')
 
-  const { port, proto, server } = await createServer(ctx.nr.grpc)
+  const { port, proto, server } = await createServer(
+    ctx.nr.grpc,
+    ctx.nr.agent,
+    { assert: ctx.assert }
+  )
   ctx.nr.port = port
   ctx.nr.proto = proto
   ctx.nr.server = server
@@ -47,41 +52,28 @@ test.afterEach((ctx) => {
   removeModules(['@grpc/grpc-js'])
 })
 
-test('should track unary server requests', (t, end) => {
-  t.plan(16)
+test('should track unary server requests', async (t) => {
   const { agent, client } = t.nr
-  agent.on('transactionFinished', (transaction) => {
-    process._rawDebug('!!! tx finished')
-    t.assert.ok(transaction, 'transaction exists')
-    assertServerTransaction(
-      { transaction, fnName: 'SayHello' },
-      { assert: t.assert }
-    )
-    assertServerMetrics(
-      { agentMetrics: agent.metrics._metrics, fnName: 'SayHello' },
-      { assert: t.assert }
-    )
-    end()
-  })
+  const [request, trace] = await Promise.allSettled([
+    makeUnaryRequest({
+      client,
+      fnName: 'sayHello',
+      payload: { name: 'New Relic' }
+    }),
+    once(agent, 'transactionFinished')
+  ])
+  assert.ok(request.value, 'got a response')
+  const response = request.value
+  assert.ok(trace.value, 'transaction exists')
+  const [transaction] = trace.value
 
-  makeUnaryRequest({
-    client,
-    fnName: 'sayHello',
-    payload: { name: 'New Relic' }
-  })
-    .then((response) => {
-      process._rawDebug('!!! then')
-      t.assert.ok(response, 'response exists')
-      t.assert.equal(response.message, 'Hello New Relic', 'response message is correct')
-    })
-    .catch((error) => {
-      // When the test ends the connection is immediately canceled. This
-      // results in the client getting an error. We ignore that error, even
-      // though it's technically happening _after_ the test has completed.
-      if (error?.code !== 1) {
-        t.assert.fail(error)
-      }
-    })
+  assertServerTransaction({ transaction, fnName: 'SayHello' })
+  assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHello' })
+
+  assert.ok(response, 'response exists')
+  assert.equal(response.message, 'Hello New Relic', 'response message is correct')
+  assert.equal(response.transaction_id, transaction.id)
+  assert.equal(response.segment_name, '/helloworld.Greeter/SayHello')
 })
 
 test('should add DT headers when `distributed_tracing` is enabled', async (t) => {
@@ -158,8 +150,8 @@ test('should not add DT headers when `distributed_tracing` is disabled', async (
 })
 
 test('should not re-instrument already registered handlers', async (t) => {
-  const { proto, server } = t.nr
-  const serverMethods = createServerMethods(server)
+  const { agent, proto, server } = t.nr
+  const serverMethods = createServerMethods(server, agent)
 
   try {
     server.addService(proto.Greeter.service, serverMethods)
