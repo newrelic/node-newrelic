@@ -959,7 +959,6 @@ test('should set up delay + duration for profilingAggregator', async (t) => {
     profiling: {
       enabled: true,
       duration: 300,
-      sample_interval: 50,
       delay: 50
     },
     ...collector.agentConfig,
@@ -972,6 +971,10 @@ test('should set up delay + duration for profilingAggregator', async (t) => {
     }
   }
   const agent = helper.loadMockedAgent(config, false)
+  // change period of profiling aggregator as faking timers is a pain for this
+  // and the default is 1 min
+  const profilingAggregator = agent.harvester.aggregators.find((aggregator) => aggregator.constructor.name === 'ProfilingAggregator')
+  profilingAggregator.periodMs = 50
 
   t.after(() => {
     helper.unloadAgent(agent)

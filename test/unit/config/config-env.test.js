@@ -485,7 +485,6 @@ test('when overriding configuration values via environment variables', async (t)
       NEW_RELIC_PROFILING_INCLUDE: ['heap'],
       NEW_RELIC_PROFILING_DELAY: 100,
       NEW_RELIC_PROFILING_DURATION: 20000,
-      NEW_RELIC_PROFILING_SAMPLE_INTERVAL: 150
     }
 
     idempotentEnv(env, (tc) => {
@@ -493,7 +492,6 @@ test('when overriding configuration values via environment variables', async (t)
       assert.deepStrictEqual(tc.profiling.include, ['heap'])
       assert.equal(tc.profiling.delay, 100)
       assert.equal(tc.profiling.duration, 20000)
-      assert.equal(tc.profiling.sample_interval, 150)
       end()
     })
   })
