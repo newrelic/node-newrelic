@@ -7,7 +7,6 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const {
-  afterEach,
   assertChatCompletionMessages,
   assertChatCompletionSummary,
 } = require('./common')
@@ -18,27 +17,24 @@ const { assertPackageMetrics, assertSegments, match } = require('../../lib/custo
 const promiseResolvers = require('../../lib/promise-resolvers')
 const responseConstants = require('../../lib/aws-server-stubs/ai-server/responses/constants')
 const createAiResponseServer = getAiResponseServer(__dirname)
+const semver = require('semver')
 
 // We'll test with only one model because the
 // request and response structure is the same
 // for all models within Converse API.
 const modelId = 'anthropic.claude-instant-v1'
+const { version: bedrockVersion } = require('@aws-sdk/client-bedrock-runtime/package.json')
 
-test.beforeEach(async (ctx) => {
-  ctx.nr = {}
-  ctx.nr.agent = helper.instrumentMockedAgent({
+test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) => {
+  const agent = helper.instrumentMockedAgent({
     ai_monitoring: {
       enabled: true
     }
   })
   const bedrock = require('@aws-sdk/client-bedrock-runtime')
-  ctx.nr.bedrock = bedrock
 
-  const { server, baseUrl, responses, host, port } = await createAiResponseServer()
-  ctx.nr.server = server
-  ctx.nr.baseUrl = baseUrl
-  ctx.nr.responses = responses
-  ctx.nr.expectedExternalPath = (modelId, method = 'converse') => `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
+  const { server, baseUrl, host, port } = await createAiResponseServer()
+  const expectedExternalPath = (modelId, method = 'converse') => `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
 
   const client = new bedrock.BedrockRuntimeClient({
     region: 'us-east-1',
@@ -46,390 +42,386 @@ test.beforeEach(async (ctx) => {
     endpoint: baseUrl,
     maxAttempts: 1
   })
-  ctx.nr.client = client
-})
 
-test.afterEach(afterEach)
-
-test('should log tracking metrics', function(t) {
-  const { agent } = t.nr
-  const { version } = require('@smithy/smithy-client/package.json')
-  assertPackageMetrics({ agent, pkg: '@smithy/smithy-client', version })
-})
-
-test('should properly create completion segment', async (t) => {
-  const { bedrock, client, agent, expectedExternalPath } = t.nr
-  const prompt = 'text converse ultimate question'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-  }
-
-  const command = new bedrock.ConverseCommand(input)
-
-  const expected = { headers: { 'x-amzn-requestid': responseConstants.reqId } }
-  await helper.runInTransaction(agent, async (tx) => {
-    const response = await client.send(command)
-    assert.ok(response?.output?.message?.content?.[0]?.text)
-    assert.equal(response?.$metadata?.requestId, expected?.headers['x-amzn-requestid'])
-    assertSegments(
-      tx.trace,
-      tx.trace.root,
-      ['Llm/completion/Bedrock/ConverseCommand', [expectedExternalPath(modelId)]],
-      { exact: false }
-    )
-    tx.end()
+  test.after(() => {
+    server.destroy()
+    helper.unloadAgent(agent)
   })
-})
 
-test('properly create the LlmChatCompletionMessage(s) and LlmChatCompletionSummary events', async (t) => {
-  const { bedrock, client, agent } = t.nr
-  const prompt = 'text converse ultimate question'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-    inferenceConfig: {
-      maxTokens: 100,
-      temperature: 0.5
-    },
-  }
-  const command = new bedrock.ConverseCommand(input)
+  test.afterEach(() => {
+    agent.customEventAggregator.clear()
+    agent.llm.tokenCountCallback = null
+  })
 
-  const api = helper.getAgentApi()
-  await helper.runInTransaction(agent, async (tx) => {
-    api.addCustomAttribute('llm.conversation_id', 'convo-id')
-    await client.send(command)
-    const events = agent.customEventAggregator.events.toArray()
-    assert.equal(events.length, 3)
-    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+  await t.test('should log tracking metrics', function(t) {
+    const { version } = require('@smithy/smithy-client/package.json')
+    assertPackageMetrics({ agent, pkg: '@smithy/smithy-client', version })
+  })
 
-    assertChatCompletionMessages({
+  await t.test('should properly create completion segment', async (t) => {
+    const prompt = 'text converse ultimate question'
+    const input = {
       modelId,
-      prompt,
-      tokenUsage: true,
-      tx,
-      expectedId: null,
-      chatMsgs,
-      resContent: 'This is a test.'
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+    }
+
+    const command = new bedrock.ConverseCommand(input)
+
+    const expected = { headers: { 'x-amzn-requestid': responseConstants.reqId } }
+    await helper.runInTransaction(agent, async (tx) => {
+      const response = await client.send(command)
+      assert.ok(response?.output?.message?.content?.[0]?.text)
+      assert.equal(response?.$metadata?.requestId, expected?.headers['x-amzn-requestid'])
+      assertSegments(
+        tx.trace,
+        tx.trace.root,
+        ['Llm/completion/Bedrock/ConverseCommand', [expectedExternalPath(modelId)]],
+        { exact: false }
+      )
+      tx.end()
     })
-    assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage: true })
-
-    const requestMsg = chatMsgs.filter((msg) => msg[1].is_response !== true)[0]
-    assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
-    assert.equal(chatSummary[0].timestamp, chatSummary[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
-
-    tx.end()
   })
-})
 
-test('supports custom attributes on LlmChatCompletionMessage(s) and LlmChatCompletionSummary events', async (t) => {
-  const { bedrock, client, agent } = t.nr
-  const { promise, resolve } = promiseResolvers()
-  const prompt = 'text converse ultimate question'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-  }
-  const command = new bedrock.ConverseCommand(input)
+  await t.test('properly create the LlmChatCompletionMessage(s) and LlmChatCompletionSummary events', async (t) => {
+    const prompt = 'text converse ultimate question'
+    const input = {
+      modelId,
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+      inferenceConfig: {
+        maxTokens: 100,
+        temperature: 0.5
+      },
+    }
+    const command = new bedrock.ConverseCommand(input)
 
-  const api = helper.getAgentApi()
-  helper.runInTransaction(agent, (tx) => {
-    api.addCustomAttribute('llm.conversation_id', 'convo-id')
-    api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
+    const api = helper.getAgentApi()
+    await helper.runInTransaction(agent, async (tx) => {
+      api.addCustomAttribute('llm.conversation_id', 'convo-id')
       await client.send(command)
       const events = agent.customEventAggregator.events.toArray()
-
+      assert.equal(events.length, 3)
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-      const [, message] = chatSummary
-      assert.equal(message['llm.contextAttribute'], 'someValue')
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+
+      assertChatCompletionMessages({
+        modelId,
+        prompt,
+        tokenUsage: true,
+        tx,
+        expectedId: null,
+        chatMsgs,
+        resContent: 'This is a test.'
+      })
+      assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage: true })
+
+      const requestMsg = chatMsgs.filter((msg) => msg[1].is_response !== true)[0]
+      assert.equal(requestMsg[0].timestamp, requestMsg[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
+      assert.equal(chatSummary[0].timestamp, chatSummary[1].timestamp, 'time added to event aggregator should equal `timestamp` property')
 
       tx.end()
-      resolve()
     })
   })
-  await promise
-})
 
-test('should record feedback message accordingly', async (t) => {
-  const { bedrock, client, agent } = t.nr
-  const prompt = 'text converse ultimate question'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-  }
-  const command = new bedrock.ConverseCommand(input)
-
-  const api = helper.getAgentApi()
-  await helper.runInTransaction(agent, async (tx) => {
-    await client.send(command)
-    const { traceId } = api.getTraceMetadata()
-    api.recordLlmFeedbackEvent({
-      traceId,
-      category: 'test-event',
-      rating: '5 star',
-      message: 'You are a mathematician.',
-      metadata: { foo: 'foo' }
-    })
-    const recordedEvents = agent.customEventAggregator.getEvents()
-    const [[, feedback]] = recordedEvents.filter(([{ type }]) => type === 'LlmFeedbackMessage')
-
-    match(feedback, {
-      id: /\w{32}/,
-      trace_id: traceId,
-      category: 'test-event',
-      rating: '5 star',
-      message: 'You are a mathematician.',
-      ingest_source: 'Node',
-      foo: 'foo'
-    })
-
-    tx.end()
-  })
-})
-
-test('should increment tracking metric for each chat completion event', async (t) => {
-  const { bedrock, client, agent } = t.nr
-  const prompt = 'text converse ultimate question'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-  }
-  const command = new bedrock.ConverseCommand(input)
-  await helper.runInTransaction(agent, async (tx) => {
-    await client.send(command)
-    const metrics = getPrefixedMetric({
-      agent,
-      metricPrefix: 'Supportability/Nodejs/ML/Bedrock'
-    })
-    assert.equal(metrics.callCount > 0, true)
-    tx.end()
-  })
-})
-
-test('should properly create errors on create completion', async (t) => {
-  const { bedrock, client, agent, expectedExternalPath } = t.nr
-  const prompt = 'text converse ultimate question error'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-    inferenceConfig: {
-      maxTokens: 100,
-      temperature: 0.5
-    },
-  }
-
-  const command = new bedrock.ConverseCommand(input)
-  const expectedMsg =
-        'Malformed input request: 2 schema violations found, please reformat your input and try again.'
-  const expectedType = 'ValidationException'
-
-  const api = helper.getAgentApi()
-  await helper.runInTransaction(agent, async (tx) => {
-    api.addCustomAttribute('llm.conversation_id', 'convo-id')
-    try {
-      await client.send(command)
-    } catch (err) {
-      assert.equal(err.message, expectedMsg)
-      assert.equal(err.name, expectedType)
-    }
-
-    assert.equal(tx.exceptions.length, 1)
-    match(tx.exceptions[0], {
-      error: {
-        name: expectedType,
-        message: expectedMsg
-      },
-      customAttributes: {
-        'http.statusCode': 400,
-        'error.message': expectedMsg,
-        'error.code': expectedType,
-        completion_id: /[a-f0-9]{32}/
-      },
-      agentAttributes: {
-        spanId: /\w+/
-      }
-    })
-
-    assertSegments(
-      tx.trace,
-      tx.trace.root,
-      ['Llm/completion/Bedrock/ConverseCommand', [expectedExternalPath(modelId)]],
-      { exact: false }
-    )
-
-    const events = agent.customEventAggregator.events.toArray()
-    assert.equal(events.length, 2)
-    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-
-    assertChatCompletionMessages({
+  await t.test('supports custom attributes on LlmChatCompletionMessage(s) and LlmChatCompletionSummary events', async (t) => {
+    const { promise, resolve } = promiseResolvers()
+    const prompt = 'text converse ultimate question'
+    const input = {
       modelId,
-      prompt,
-      tx,
-      chatMsgs,
-      error: true
-    })
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+    }
+    const command = new bedrock.ConverseCommand(input)
 
-    assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
-    tx.end()
-  })
-})
-
-test('should add llm attribute to transaction', async (t) => {
-  const { bedrock, client, agent } = t.nr
-  const prompt = 'text converse ultimate question'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-  }
-  const command = new bedrock.ConverseCommand(input)
-
-  await helper.runInTransaction(agent, async (tx) => {
-    await client.send(command)
-    const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-    assert.equal(attributes.llm, true)
-
-    tx.end()
-  })
-})
-
-test('should decorate messages with custom attrs', async (t) => {
-  const { bedrock, client, agent } = t.nr
-  const prompt = 'text converse ultimate question'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-  }
-  const command = new bedrock.ConverseCommand(input)
-
-  await helper.runInTransaction(agent, async (tx) => {
     const api = helper.getAgentApi()
-    api.addCustomAttribute('llm.foo', 'bar')
+    helper.runInTransaction(agent, (tx) => {
+      api.addCustomAttribute('llm.conversation_id', 'convo-id')
+      api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
+        await client.send(command)
+        const events = agent.customEventAggregator.events.toArray()
 
-    await client.send(command)
+        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+        const [, message] = chatSummary
+        assert.equal(message['llm.contextAttribute'], 'someValue')
 
-    const events = tx.agent.customEventAggregator.events.toArray()
-    const summary = events
-      .filter((e) => e[0].type === 'LlmChatCompletionSummary')
-      .map((e) => e[1])
-      .pop()
-    const completion = events
-      .filter((e) => e[0].type === 'LlmChatCompletionMessage')
-      .map((e) => e[1])
-      .pop()
-
-    assert.equal(summary['llm.foo'], 'bar')
-    assert.equal(completion['llm.foo'], 'bar')
-
-    tx.end()
+        tx.end()
+        resolve()
+      })
+    })
+    await promise
   })
-})
 
-test('should instrument text stream', async (t) => {
-  const { bedrock, client, agent } = t.nr
-  const prompt = 'text converse ultimate question streamed'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-    inferenceConfig: {
-      maxTokens: 100,
-      temperature: 0.5
-    },
-  }
-  const command = new bedrock.ConverseStreamCommand(input)
-
-  const api = helper.getAgentApi()
-  await helper.runInTransaction(agent, async (tx) => {
-    api.addCustomAttribute('llm.conversation_id', 'convo-id')
-    const response = await client.send(command)
-    assert.ok(response)
-    for await (const event of response.stream) {
-      // no-op iteration over the stream in order to exercise the instrumentation
-      consumeStreamChunk(event)
-    }
-
-    const events = agent.customEventAggregator.events.toArray()
-    const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-    assert.equal(events.length > 2, true)
-
-    assertChatCompletionMessages({
+  await t.test('should record feedback message accordingly', async (t) => {
+    const prompt = 'text converse ultimate question'
+    const input = {
       modelId,
-      prompt,
-      expectedId: null,
-      resContent: 'This is a test.',
-      tokenUsage: true,
-      tx,
-      chatMsgs
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+    }
+    const command = new bedrock.ConverseCommand(input)
+
+    const api = helper.getAgentApi()
+    await helper.runInTransaction(agent, async (tx) => {
+      await client.send(command)
+      const { traceId } = api.getTraceMetadata()
+      api.recordLlmFeedbackEvent({
+        traceId,
+        category: 'test-event',
+        rating: '5 star',
+        message: 'You are a mathematician.',
+        metadata: { foo: 'foo' }
+      })
+      const recordedEvents = agent.customEventAggregator.getEvents()
+      const [[, feedback]] = recordedEvents.filter(([{ type }]) => type === 'LlmFeedbackMessage')
+
+      match(feedback, {
+        id: /\w{32}/,
+        trace_id: traceId,
+        category: 'test-event',
+        rating: '5 star',
+        message: 'You are a mathematician.',
+        ingest_source: 'Node',
+        foo: 'foo'
+      })
+
+      tx.end()
     })
-
-    assertChatCompletionSummary({ tx, modelId, tokenUsage: true, chatSummary, numMsgs: events.length - 1 })
-    const timeToFirstToken = chatSummary?.[1]?.['time_to_first_token']
-    assert.ok(timeToFirstToken, 'time_to_first_token should exist')
-    assert.equal(typeof timeToFirstToken, 'number', 'time_to_first_token should be a number')
-    assert.ok(timeToFirstToken >= 0, 'time_to_first_token should be >= 0')
-
-    tx.end()
   })
-})
 
-test('should not instrument stream when disabled', async (t) => {
-  const { bedrock, client, agent } = t.nr
-  agent.config.ai_monitoring.streaming.enabled = false
-  const prompt = 'text converse ultimate question streamed'
-  const input = {
-    modelId,
-    messages: [
-      { role: 'user', content: [{ text: prompt }] }
-    ],
-  }
-  const command = new bedrock.ConverseStreamCommand(input)
+  await t.test('should increment tracking metric for each chat completion event', async (t) => {
+    const prompt = 'text converse ultimate question'
+    const input = {
+      modelId,
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+    }
+    const command = new bedrock.ConverseCommand(input)
+    await helper.runInTransaction(agent, async (tx) => {
+      await client.send(command)
+      const metrics = getPrefixedMetric({
+        agent,
+        metricPrefix: 'Supportability/Nodejs/ML/Bedrock'
+      })
+      assert.equal(metrics.callCount > 0, true)
+      tx.end()
+    })
+  })
 
-  await helper.runInTransaction(agent, async (tx) => {
-    const response = await client.send(command)
-    for await (const event of response?.stream) {
-      // no-op iteration over the stream in order to exercise the instrumentation
-      consumeStreamChunk(event)
+  await t.test('should properly create errors on create completion', async (t) => {
+    const prompt = 'text converse ultimate question error'
+    const input = {
+      modelId,
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+      inferenceConfig: {
+        maxTokens: 100,
+        temperature: 0.5
+      },
     }
 
-    const events = agent.customEventAggregator.events.toArray()
-    assert.equal(events.length, 0, 'should not create Llm events when streaming is disabled')
-    const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-    assert.equal(attributes.llm, true, 'should assign llm attribute to transaction trace')
-    const metrics = getPrefixedMetric({
-      agent,
-      metricPrefix: 'Supportability/Nodejs/ML/Bedrock'
-    })
-    assert.equal(metrics.callCount > 0, true, 'should set framework metric')
-    const supportabilityMetrics = agent.metrics.getOrCreateMetric(
-      'Supportability/Nodejs/ML/Streaming/Disabled'
-    )
-    assert.equal(
-      supportabilityMetrics.callCount > 0,
-      true,
-      'should increment streaming disabled metric'
-    )
+    const command = new bedrock.ConverseCommand(input)
+    const expectedMsg =
+          'Malformed input request: 2 schema violations found, please reformat your input and try again.'
+    const expectedType = 'ValidationException'
 
-    tx.end()
+    const api = helper.getAgentApi()
+    await helper.runInTransaction(agent, async (tx) => {
+      api.addCustomAttribute('llm.conversation_id', 'convo-id')
+      try {
+        await client.send(command)
+      } catch (err) {
+        assert.equal(err.message, expectedMsg)
+        assert.equal(err.name, expectedType)
+      }
+
+      assert.equal(tx.exceptions.length, 1)
+      match(tx.exceptions[0], {
+        error: {
+          name: expectedType,
+          message: expectedMsg
+        },
+        customAttributes: {
+          'http.statusCode': 400,
+          'error.message': expectedMsg,
+          'error.code': expectedType,
+          completion_id: /[a-f0-9]{32}/
+        },
+        agentAttributes: {
+          spanId: /\w+/
+        }
+      })
+
+      assertSegments(
+        tx.trace,
+        tx.trace.root,
+        ['Llm/completion/Bedrock/ConverseCommand', [expectedExternalPath(modelId)]],
+        { exact: false }
+      )
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 2)
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+
+      assertChatCompletionMessages({
+        modelId,
+        prompt,
+        tx,
+        chatMsgs,
+        error: true
+      })
+
+      assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
+      tx.end()
+    })
+  })
+
+  await t.test('should add llm attribute to transaction', async (t) => {
+    const prompt = 'text converse ultimate question'
+    const input = {
+      modelId,
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+    }
+    const command = new bedrock.ConverseCommand(input)
+
+    await helper.runInTransaction(agent, async (tx) => {
+      await client.send(command)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+      assert.equal(attributes.llm, true)
+
+      tx.end()
+    })
+  })
+
+  await t.test('should decorate messages with custom attrs', async (t) => {
+    const prompt = 'text converse ultimate question'
+    const input = {
+      modelId,
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+    }
+    const command = new bedrock.ConverseCommand(input)
+
+    await helper.runInTransaction(agent, async (tx) => {
+      const api = helper.getAgentApi()
+      api.addCustomAttribute('llm.foo', 'bar')
+
+      await client.send(command)
+
+      const events = tx.agent.customEventAggregator.events.toArray()
+      const summary = events
+        .filter((e) => e[0].type === 'LlmChatCompletionSummary')
+        .map((e) => e[1])
+        .pop()
+      const completion = events
+        .filter((e) => e[0].type === 'LlmChatCompletionMessage')
+        .map((e) => e[1])
+        .pop()
+
+      assert.equal(summary['llm.foo'], 'bar')
+      assert.equal(completion['llm.foo'], 'bar')
+
+      tx.end()
+    })
+  })
+
+  await t.test('should instrument text stream', async (t) => {
+    const prompt = 'text converse ultimate question streamed'
+    const input = {
+      modelId,
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+      inferenceConfig: {
+        maxTokens: 100,
+        temperature: 0.5
+      },
+    }
+    const command = new bedrock.ConverseStreamCommand(input)
+
+    const api = helper.getAgentApi()
+    await helper.runInTransaction(agent, async (tx) => {
+      api.addCustomAttribute('llm.conversation_id', 'convo-id')
+      const response = await client.send(command)
+      assert.ok(response)
+      for await (const event of response.stream) {
+        // no-op iteration over the stream in order to exercise the instrumentation
+        consumeStreamChunk(event)
+      }
+
+      const events = agent.customEventAggregator.events.toArray()
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      assert.equal(events.length > 2, true)
+
+      assertChatCompletionMessages({
+        modelId,
+        prompt,
+        expectedId: null,
+        resContent: 'This is a test.',
+        tokenUsage: true,
+        tx,
+        chatMsgs
+      })
+
+      assertChatCompletionSummary({ tx, modelId, tokenUsage: true, chatSummary, numMsgs: events.length - 1 })
+      const timeToFirstToken = chatSummary?.[1]?.['time_to_first_token']
+      assert.ok(timeToFirstToken, 'time_to_first_token should exist')
+      assert.equal(typeof timeToFirstToken, 'number', 'time_to_first_token should be a number')
+      assert.ok(timeToFirstToken >= 0, 'time_to_first_token should be >= 0')
+
+      tx.end()
+    })
+  })
+
+  await t.test('should not instrument stream when disabled', async (t) => {
+    agent.config.ai_monitoring.streaming.enabled = false
+    const prompt = 'text converse ultimate question streamed'
+    const input = {
+      modelId,
+      messages: [
+        { role: 'user', content: [{ text: prompt }] }
+      ],
+    }
+    const command = new bedrock.ConverseStreamCommand(input)
+
+    await helper.runInTransaction(agent, async (tx) => {
+      const response = await client.send(command)
+      for await (const event of response?.stream) {
+        // no-op iteration over the stream in order to exercise the instrumentation
+        consumeStreamChunk(event)
+      }
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 0, 'should not create Llm events when streaming is disabled')
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+      assert.equal(attributes.llm, true, 'should assign llm attribute to transaction trace')
+      const metrics = getPrefixedMetric({
+        agent,
+        metricPrefix: 'Supportability/Nodejs/ML/Bedrock'
+      })
+      assert.equal(metrics.callCount > 0, true, 'should set framework metric')
+      const supportabilityMetrics = agent.metrics.getOrCreateMetric(
+        'Supportability/Nodejs/ML/Streaming/Disabled'
+      )
+      assert.equal(
+        supportabilityMetrics.callCount > 0,
+        true,
+        'should increment streaming disabled metric'
+      )
+
+      tx.end()
+    })
   })
 })
 
