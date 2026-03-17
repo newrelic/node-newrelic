@@ -14,40 +14,31 @@ const { tspl } = require('@matteo.collina/tspl')
 const { match } = require('../../lib/custom-assertions')
 
 test('SNS', async (t) => {
-  t.beforeEach(async (ctx) => {
-    ctx.nr = {}
-    const server = createResponseServer()
+  const server = createResponseServer()
 
-    await new Promise((resolve) => {
-      server.listen(0, resolve)
-    })
-
-    ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent()
-    const Shim = require('../../../lib/shim/message-shim')
-    ctx.nr.setLibrarySpy = sinon.spy(Shim.prototype, 'setLibrary')
-    const lib = require('@aws-sdk/client-sns')
-    const SNSClient = lib.SNSClient
-    ctx.nr.lib = lib
-    ctx.nr.sns = new SNSClient({
-      credentials: FAKE_CREDENTIALS,
-      endpoint: `http://localhost:${server.address().port}`,
-      region: 'us-east-1'
-    })
+  await new Promise((resolve) => {
+    server.listen(0, resolve)
   })
 
-  t.afterEach((ctx) => {
-    common.afterEach(ctx)
-    ctx.nr.setLibrarySpy.restore()
+  const agent = helper.instrumentMockedAgent()
+  const Shim = require('../../../lib/shim/message-shim')
+  const setLibrarySpy = sinon.spy(Shim.prototype, 'setLibrary')
+  const lib = require('@aws-sdk/client-sns')
+  const SNSClient = lib.SNSClient
+  const sns = new SNSClient({
+    credentials: FAKE_CREDENTIALS,
+    endpoint: `http://localhost:${server.address().port}`,
+    region: 'us-east-1'
+  })
+
+  t.after(() => {
+    server.destroy()
+    helper.unloadAgent(agent)
+    setLibrarySpy.restore()
   })
 
   await t.test('publish with callback', (t, end) => {
-    const {
-      agent,
-      sns,
-      setLibrarySpy,
-      lib: { PublishCommand }
-    } = t.nr
+    const { PublishCommand } = lib
     helper.runInTransaction(agent, (tx) => {
       const params = { Message: 'Hello!' }
 
@@ -64,12 +55,7 @@ test('SNS', async (t) => {
   })
 
   await t.test('publish with default destination(PhoneNumber)', (t, end) => {
-    const {
-      agent,
-      sns,
-      setLibrarySpy,
-      lib: { PublishCommand }
-    } = t.nr
+    const { PublishCommand } = lib
     helper.runInTransaction(agent, async (tx) => {
       const params = { Message: 'Hello!' }
 
@@ -85,12 +71,7 @@ test('SNS', async (t) => {
   })
 
   await t.test('publish with TopicArn as destination', (t, end) => {
-    const {
-      agent,
-      sns,
-      setLibrarySpy,
-      lib: { PublishCommand }
-    } = t.nr
+    const { PublishCommand } = lib
     helper.runInTransaction(agent, async (tx) => {
       const TopicArn = 'TopicArn'
       const params = { TopicArn, Message: 'Hello!' }
@@ -106,12 +87,7 @@ test('SNS', async (t) => {
   })
 
   await t.test('publish with TargetArn as destination', (t, end) => {
-    const {
-      agent,
-      sns,
-      setLibrarySpy,
-      lib: { PublishCommand }
-    } = t.nr
+    const { PublishCommand } = lib
     helper.runInTransaction(agent, async (tx) => {
       const TargetArn = 'TargetArn'
       const params = { TargetArn, Message: 'Hello!' }
@@ -129,12 +105,7 @@ test('SNS', async (t) => {
   await t.test(
     'publish with TopicArn as destination when both Topic and Target Arn are defined',
     (t, end) => {
-      const {
-        agent,
-        sns,
-        setLibrarySpy,
-        lib: { PublishCommand }
-      } = t.nr
+      const { PublishCommand } = lib
       helper.runInTransaction(agent, async (tx) => {
         const TargetArn = 'TargetArn'
         const TopicArn = 'TopicArn'
@@ -153,11 +124,7 @@ test('SNS', async (t) => {
   await t.test(
     'should record external segment and not a SNS segment for a command that is not PublishCommand',
     (t, end) => {
-      const {
-        agent,
-        sns,
-        lib: { ListTopicsCommand }
-      } = t.nr
+      const { ListTopicsCommand } = lib
       helper.runInTransaction(agent, async (tx) => {
         const TargetArn = 'TargetArn'
         const TopicArn = 'TopicArn'
@@ -178,12 +145,8 @@ test('SNS', async (t) => {
   )
 
   await t.test('should mark requests to be dt-disabled', async (t) => {
-    const {
-      agent,
-      sns,
-      lib: { ListTopicsCommand }
-    } = t.nr
     const plan = tspl(t, { plan: 2 })
+    const { ListTopicsCommand } = lib
 
     await helper.runInTransaction(agent, async (tx) => {
       const params = { Message: 'Hiya' }
