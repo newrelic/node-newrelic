@@ -92,6 +92,8 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
 
   _agent = new Agent(config)
   _agent.__created = new Error('Only one agent at a time! This one was created at:')
+  // created to ensure you are working with the appropriate agent instance in a given test
+  _agent.sessionId = crypto.randomUUID()
   _agent.__mocks = {
     supportability: new Map()
   }

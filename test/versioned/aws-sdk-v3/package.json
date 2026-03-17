@@ -207,17 +207,7 @@
       "files": [
         "bedrock-chat-completions.test.js",
         "bedrock-embeddings.test.js",
-        "bedrock-negative-tests.test.js"
-      ]
-    },
-      {
-      "engines": {
-        "node": ">=20"
-      },
-      "dependencies": {
-        "@aws-sdk/client-bedrock-runtime": ">=3.587.0"
-      },
-      "files": [
+        "bedrock-negative-tests.test.js",
         "bedrock-converse-api.test.js"
       ]
     }
