@@ -69,6 +69,21 @@ test('mysql2 promises', { timeout: 30000 }, async (t) => {
     checkQueries(agent)
   })
 
+  await t.test('query should time segment correctly', async (t) => {
+    const { agent, client } = t.nr
+    await helper.runInTransaction(agent, async (tx) => {
+      const WAIT = 1
+      await client.query(`SELECT SLEEP (${WAIT})`)
+      const activeTx = agent.getTransaction()
+      assert.equal(tx.name, activeTx.name)
+      const querySegment = activeTx?.trace?.segments?.root?.children?.[0]?.segment
+      assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
+      assert.ok(querySegment._isEnded(), 'query segment should have ended')
+      assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
+      tx.end()
+    })
+  })
+
   await t.test('database name should change with use statement', async (t) => {
     const { agent, client } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
@@ -163,6 +178,23 @@ test('mysql2 promises pool', async function (t) {
     })
   })
 
+  await t.test('pool.query should time segment correctly', async function (t) {
+    const { agent, pool } = t.nr
+    await helper.runInTransaction(agent, async (tx) => {
+      const WAIT = 1
+      await pool.query(`SELECT SLEEP (${WAIT})`)
+      const activeTx = agent.getTransaction()
+      assert.equal(tx.name, activeTx.name)
+      const staticSegment = activeTx?.trace?.segments?.root?.children?.[0]
+      assert.equal(staticSegment?.segment?.name, 'MySQL Pool#query') // TODO: this useless 'MySQL Pool#query' segment should be removed in 14.x
+      const querySegment = staticSegment?.children?.[1]?.segment
+      assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
+      assert.ok(querySegment._isEnded(), 'query segment should have ended')
+      assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
+      tx.end()
+    })
+  })
+
   await t.test('pool.getConnection -> connection.query', async function (t) {
     const { agent, pool } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
@@ -189,6 +221,26 @@ test('mysql2 promises pool', async function (t) {
       await connection.query('SELECT ? + ? AS solution', [1, 1])
       const activeTx = agent.getTransaction()
       assert.equal(tx.name, activeTx.name)
+      tx.end()
+    })
+  })
+
+  await t.test('pool.getConnection -> connection.query should time segment correctly', async function (t) {
+    const { agent, pool } = t.nr
+    await helper.runInTransaction(agent, async (tx) => {
+      const WAIT = 1
+      const connection = await pool.getConnection()
+      t.after(function () {
+        connection.release()
+      })
+
+      await connection.query(`SELECT SLEEP (${WAIT})`)
+      const activeTx = agent.getTransaction()
+      assert.equal(tx.name, activeTx.name)
+      const querySegment = activeTx?.trace?.segments?.root?.children?.[1]?.segment
+      assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
+      assert.ok(querySegment._isEnded(), 'query segment should have ended')
+      assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
       tx.end()
     })
   })
@@ -263,9 +315,7 @@ if (semver.satisfies(pkgVersion, '>=2.3.0')) {
       })
     })
 
-    // does not work until mysql2 bug is fixed
-    // https://github.com/sidorares/node-mysql2/issues/3091
-    if (!semver.satisfies(pkgVersion, '>=3.11.1 <3.13.0')) {
+    if (!semver.satisfies(pkgVersion, '>=3.11.1')) {
       await t.test('get star', async function (t) {
         const { agent, poolCluster } = t.nr
         const connection = await poolCluster.of('*').getConnection()
@@ -301,6 +351,28 @@ if (semver.satisfies(pkgVersion, '>=2.3.0')) {
         await masterPool.query('SELECT ? + ? AS solution', [1, 1])
         const activeTx = agent.getTransaction()
         assert.equal(tx.name, activeTx.name)
+        tx.end()
+      })
+    })
+
+    await t.test('poolCluster query should time segment correctly', async function(t) {
+      const { agent, poolCluster } = t.nr
+      const masterPool = poolCluster.of('MASTER', 'RANDOM')
+      await helper.runInTransaction(agent, async (tx) => {
+        const WAIT = 1
+        await masterPool.query('SELECT SLEEP(?)', [WAIT])
+        const activeTx = agent.getTransaction()
+        assert.equal(tx.name, activeTx.name)
+        let querySegment
+        if (semver.satisfies(pkgVersion, '>=2.0.0 <3.0.0')) {
+          querySegment = activeTx?.trace?.segments?.root?.children?.[1]?.segment
+        } else {
+          const staticSegment = activeTx?.trace?.segments?.root?.children?.[0]
+          querySegment = staticSegment?.children?.[1]?.segment
+        }
+        assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
+        assert.ok(querySegment._isEnded(), 'query segment should have ended')
+        assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
         tx.end()
       })
     })
