@@ -220,7 +220,6 @@
     "import-in-the-middle": "^1.13.0",
     "json-bigint": "^1.0.0",
     "json-stringify-safe": "^5.0.0",
-    "logform": "^2.7.0",
     "module-details-from-path": "^1.0.3",
     "readable-stream": "^3.6.1",
     "require-in-the-middle": "^7.4.0",
