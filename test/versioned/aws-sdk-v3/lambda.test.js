@@ -9,7 +9,6 @@ const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const assert = require('node:assert')
 const {
-  afterEach,
   checkExternals,
   checkAWSAttributes,
   EXTERN_PATTERN,
@@ -78,30 +77,30 @@ function checkNonLinkableSegments({ operations, tx, end }) {
   end()
 }
 
+// Note: Not running this in a beforEach/afterEach because of a refactor
+// @smithy/node-http-handler. They are importing `node:http` and it was
+// always picking up the instrumented http code from the first test run
 test('LambdaClient', async (t) => {
-  t.beforeEach(async (ctx) => {
-    ctx.nr = {}
-    const server = createEmptyResponseServer()
-    await new Promise((resolve) => {
-      server.listen(0, resolve)
-    })
-    ctx.nr.server = server
-    ctx.nr.agent = helper.instrumentMockedAgent()
-    const { LambdaClient, ...lib } = require('@aws-sdk/client-lambda')
-    ctx.nr.AddLayerVersionPermissionCommand = lib.AddLayerVersionPermissionCommand
-    ctx.nr.InvokeCommand = lib.InvokeCommand
-    const endpoint = `http://localhost:${server.address().port}`
-    ctx.nr.service = new LambdaClient({
-      credentials: FAKE_CREDENTIALS,
-      endpoint,
-      region: 'us-east-1'
-    })
+  const server = createEmptyResponseServer()
+  await new Promise((resolve) => {
+    server.listen(0, resolve)
+  })
+  const agent = helper.instrumentMockedAgent()
+  const { LambdaClient, ...lib } = require('@aws-sdk/client-lambda')
+  const { AddLayerVersionPermissionCommand, InvokeCommand } = lib
+  const endpoint = `http://localhost:${server.address().port}`
+  const service = new LambdaClient({
+    credentials: FAKE_CREDENTIALS,
+    endpoint,
+    region: 'us-east-1'
   })
 
-  t.afterEach(afterEach)
+  t.after(() => {
+    server.destroy()
+    helper.unloadAgent(agent)
+  })
 
   await t.test('AddLayerVersionPermissionCommand', (t, end) => {
-    const { service, agent, AddLayerVersionPermissionCommand } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new AddLayerVersionPermissionCommand({
         Action: 'lambda:GetLayerVersion' /* required */,
@@ -124,7 +123,6 @@ test('LambdaClient', async (t) => {
   })
 
   await t.test('InvokeCommand', (t, end) => {
-    const { service, agent, InvokeCommand } = t.nr
     agent.config.cloud.aws.account_id = 123456789123
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new InvokeCommand({
@@ -142,7 +140,6 @@ test('LambdaClient', async (t) => {
   })
 
   await t.test('InvokeCommand without account ID defined', (t, end) => {
-    const { service, agent, InvokeCommand } = t.nr
     agent.config.cloud.aws.account_id = null
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new InvokeCommand({
