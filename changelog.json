@@ -7,8 +7,7 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Removed ability to specify `profiling.sample_interval`",
-          "Added continuous profiling to agent"
+          "Added support for Continuous Profiling"
         ]
       }
     },
