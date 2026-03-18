@@ -1198,93 +1198,66 @@ test('when profiling aggregator has duration set to default (0)', async (t) => {
   })
 })
 
-test('when `onConnect` is called to update profiling metrics', async (t) => {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-    ctx.nr.agent = helper.loadMockedAgent(null, false)
+/**
+ * there is more to apply server-side configuration but it is unrelated to agent
+ *  the flow is this:
+ *  - collector returns a 409 which tells the collector to restart
+ *  - stops harvester
+ *  - shutdowns collector
+ *  - connects to collector api
+ *  - starts flow: preconnect, connect
+ *  - connect calls `agent.reconfigure`
+ *  - `agent.reconfigure` calls `config.onConnect` which wires up any changes from server(collector)
+ *  - calls `agent.onConnect`
+ *  - `agent.onConnect` calls `harvester.reconfigure` and creates profiling supportability metrics
+ *
+ *  with all that being said we only have to call the important bits on agent/config manually to simulate the flow
+ *  - `harvester.stop`
+ *  - `config.onConnect` with the profiling.enabled change
+ *  - `agent.onConnect`
+ */
+test('should start/stop profiling aggregator and log appropriate supportability metrics', async (t) => {
+  const agent = helper.loadMockedAgent(null, false)
+
+  t.after(() => {
+    helper.unloadAgent(agent)
   })
 
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
+  assert.ok(!agent.profilingData.sendTimer)
+  agent.harvester.stop()
+  // this is what would happen in server side config
+  agent.config.onConnect({ 'profiling.enabled': true })
+  // not doing `onConnect` as this value isn't wired up for SSC
+  agent.config.profiling.include = ['heap']
+
+  await new Promise((resolve) => {
+    agent.onConnect(false, resolve)
   })
-
-  await t.test('should add startup profiling metrics when profiling is enabled', (t, end) => {
-    const { agent } = t.nr
-
-    agent.config.profiling.enabled = true
-    agent.config.profiling.include = ['heap']
-
-    agent.onConnect(false, () => {
-      const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
-      const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
-      const heap = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
-      const cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.CPU}`)
-      assert.equal(disabled, null)
-      assert.equal(enabled.callCount, 1)
-      assert.equal(heap.callCount, 1)
-      assert.equal(cpu, null)
-      end()
-    })
+  let disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
+  let enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
+  let heap = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
+  let cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.CPU}`)
+  assert.equal(disabled, null)
+  assert.equal(enabled.callCount, 1)
+  assert.equal(heap.callCount, 1)
+  assert.equal(cpu, null)
+  assert.ok(agent.profilingData.sendTimer)
+  agent.harvester.stop()
+  agent.config.onConnect({ 'profiling.enabled': false })
+  // clear out metrics so we can re-assert
+  agent.metrics.clear()
+  await new Promise((resolve) => {
+    agent.onConnect(false, resolve)
   })
-
-  await t.test('should only add profiling flag metric and not type when profiling is disabled', (t, end) => {
-    const { agent } = t.nr
-
-    agent.onConnect(false, () => {
-      const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
-      const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
-      const heap = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
-      const cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.CPU}`)
-      assert.equal(enabled, null)
-      assert.equal(disabled.callCount, 1)
-      assert.equal(heap, null)
-      assert.equal(cpu, null)
-      end()
-    })
-  })
-})
-
-test('when `profiling.enabled` changes', async (t) => {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-    const config = {
-      profiling: {
-        enabled: false
-      }
-    }
-    ctx.nr.agent = helper.loadMockedAgent(config, false)
-  })
-
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
-  })
-
-  await t.test('should handle changes accordingly', (t) => {
-    const { agent } = t.nr
-    assert.equal(agent.profilingData.enabled, false)
-    assert.ok(!agent.profilingData.sendTimer)
-    agent.config.onConnect({ 'profiling.enabled': true })
-    assert.equal(agent.profilingData.enabled, true)
-    assert.ok(agent.profilingData.sendTimer)
-    agent.config.onConnect({ 'profiling.enabled': false })
-    assert.equal(agent.profilingData.enabled, false)
-    assert.ok(!agent.profilingData.sendTimer)
-    agent.config.onConnect({ 'profiling.enabled': true })
-    assert.equal(agent.profilingData.enabled, true)
-    assert.ok(agent.profilingData.sendTimer)
-  })
-
-  await t.test('should add supportability metrics', (t) => {
-    const { agent } = t.nr
-    assert.equal(agent.profilingData.enabled, false)
-    agent.config.onConnect({ 'profiling.enabled': true })
-    assert.equal(agent.profilingData.enabled, true)
-    const enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
-    assert.equal(enabled.callCount, 1)
-    agent.config.onConnect({ 'profiling.enabled': false })
-    const disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
-    assert.equal(disabled.callCount, 1)
-  })
+  disabled = agent.metrics.getMetric(`${PROFILING.PREFIX}disabled`)
+  enabled = agent.metrics.getMetric(`${PROFILING.PREFIX}enabled`)
+  heap = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.HEAP}`)
+  cpu = agent.metrics.getMetric(`${PROFILING.PREFIX}${PROFILING.CPU}`)
+  assert.equal(disabled.callCount, 1)
+  assert.equal(enabled, null)
+  assert.equal(heap, null)
+  assert.equal(cpu, null)
+  assert.ok(!agent.profilingData.sendTimer)
 })
 
 test('when event_harvest_config update on connect with a valid config', async (t) => {
