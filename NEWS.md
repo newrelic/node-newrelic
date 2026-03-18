@@ -1,3 +1,32 @@
+### v13.17.0 (2026-03-18)
+
+#### Features
+
+* Added continuous profiling to agent ([#3834](https://github.com/newrelic/node-newrelic/pull/3834)) ([6d8d5b5](https://github.com/newrelic/node-newrelic/commit/6d8d5b5df2f459ffca39cc14ef0cdabcf7f22cea))
+* Removed ability to specify `profiling.sample_interval` ([#3844](https://github.com/newrelic/node-newrelic/pull/3844)) ([780f84a](https://github.com/newrelic/node-newrelic/commit/780f84ab57187731ad2e3d7e4c424e508ebbf27f))
+
+#### Code refactoring
+
+* Refactor `winston` instrumentation to subscribe to events emitted ([#3808](https://github.com/newrelic/node-newrelic/pull/3808)) ([4af2f48](https://github.com/newrelic/node-newrelic/commit/4af2f48d99b0842085044deb36d14af9e96ac8ed))
+* Updated agent to properly handle `profiling.enabled` via server side config ([#3847](https://github.com/newrelic/node-newrelic/pull/3847)) ([e57223c](https://github.com/newrelic/node-newrelic/commit/e57223c7c66ab7fe1f464725efe0474e23326159))
+
+#### Documentation
+
+* Updated compatibility report ([#3824](https://github.com/newrelic/node-newrelic/pull/3824)) ([0cfb356](https://github.com/newrelic/node-newrelic/commit/0cfb356c487fbe47c4ac11095704846d948168fb))
+
+#### Miscellaneous chores
+
+* Removed `profiling.cpu.report_interval` and `profiling.heap.report_interval` ([#3828](https://github.com/newrelic/node-newrelic/pull/3828)) ([3f2bd9d](https://github.com/newrelic/node-newrelic/commit/3f2bd9dfca766eaf9f1a25fec996e2412ea54c38))
+
+#### Tests
+
+* Add segment duration tests for `ioredis`/`iovalkey` ([#3825](https://github.com/newrelic/node-newrelic/pull/3825)) ([9738bc8](https://github.com/newrelic/node-newrelic/commit/9738bc88b59c219d896d80e0f8ccb93866cd7f0b))
+* Add segment duration timing tests for `mysql2` ([#3820](https://github.com/newrelic/node-newrelic/pull/3820)) ([bb424ff](https://github.com/newrelic/node-newrelic/commit/bb424ffa59fe55912f1ad711d84b57518dbd778f))
+* Changed structure of bedrock tests to avoid getting instrumented core libraries from first test ([#3838](https://github.com/newrelic/node-newrelic/pull/3838)) ([886a36c](https://github.com/newrelic/node-newrelic/commit/886a36c1607e1a7c0ddc0688f7b8ee62f9a8bf10))
+* Changed structure of lambda and sns tests to avoid getting instrumented core libraries from first test ([#3836](https://github.com/newrelic/node-newrelic/pull/3836)) ([414044d](https://github.com/newrelic/node-newrelic/commit/414044d184be885843a3267097c87954daf408bd))
+* Updated `@aws-sdk/lib-dynamodb` version range ([#3829](https://github.com/newrelic/node-newrelic/pull/3829)) ([d28c938](https://github.com/newrelic/node-newrelic/commit/d28c938fbe823155fedeb5e5f85bd6a98e04ceed))
+    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
+
 ### v13.16.0 (2026-03-11)
 
 #### Bug fixes

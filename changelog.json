@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.17.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Removed ability to specify `profiling.sample_interval`",
+          "Added continuous profiling to agent"
+        ]
+      }
+    },
+    {
       "version": "13.16.0",
       "changes": {
         "security": [],
