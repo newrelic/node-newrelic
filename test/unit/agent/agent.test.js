@@ -1201,10 +1201,10 @@ test('when profiling aggregator has duration set to default (0)', async (t) => {
 /**
  * there is more to apply server-side configuration but it is unrelated to agent
  *  the flow is this:
- *  - collector returns a 409 which tells the collector to restart
+ *  - collector returns a 409 which tells the agent to restart
  *  - stops harvester
- *  - shutdowns collector
- *  - connects to collector api
+ *  - shutdown the client(CollectorApi)
+ *  - connects to collector
  *  - starts flow: preconnect, connect
  *  - connect calls `agent.reconfigure`
  *  - `agent.reconfigure` calls `config.onConnect` which wires up any changes from server(collector)
