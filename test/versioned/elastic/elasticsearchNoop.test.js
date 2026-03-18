@@ -47,6 +47,7 @@ test('Elasticsearch instrumentation', async (t) => {
           `External/localhost:9200/${DB_INDEX}`,
           'should record index creation as an external transaction'
         )
+        assert.ok(firstChild.timer.getDurationInMillis() > 0, 'segment should have a duration')
         await client.indices.delete({ index: DB_INDEX })
       })
     }
