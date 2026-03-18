@@ -84,6 +84,16 @@ module.exports = {
 }
 ```
 
+#### Function Query
+
+| Query type                          | Use when                                                                           |
+| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| `expressionName`                  | Function expression assigned to a variable/property (`x.y = function name() {}`) |
+| `functionName`                    | Standalone function declaration (`function foo() {}`)                            |
+| `className` + `methodName`      | Class method (`class Foo { bar() {} }`)                                          |
+| `methodName` alone                | Any method with that name across all classes                                       |
+| `moduleName` + `expressionName` | Disambiguate by the object it's assigned to                                        |
+
 ### Creating the Subscribers
 
 Now that you have the config specified for the function that you are instrumenting, you'll then need to create a subscriber for it. All subscribers should at least inherit from the base [`Subscriber`](./base.js) with the exception of subscribers that do not rely on `orchestrion` to create their tracing channels (they inherit from the `node:diagnostics_channel` `Subscriber` in [`dc-base.js`](./dc-base.js)).
