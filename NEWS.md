@@ -1,3 +1,34 @@
+### v13.17.0 (2026-03-19)
+
+#### Features
+
+* Added support for Continuous Profiling ([#3834](https://github.com/newrelic/node-newrelic/pull/3834)) ([6d8d5b5](https://github.com/newrelic/node-newrelic/commit/6d8d5b5df2f459ffca39cc14ef0cdabcf7f22cea))
+  * Added server-side configuration for `profiling.enabled` ([#3790](https://github.com/newrelic/node-newrelic/pull/3790)) ([0d44e5b](https://github.com/newrelic/node-newrelic/commit/0d44e5b3b24b60d8b920f7d6a762f208fa4139ca)) ([#3847](https://github.com/newrelic/node-newrelic/pull/3847)) ([e57223c](https://github.com/newrelic/node-newrelic/commit/e57223c7c66ab7fe1f464725efe0474e23326159))
+  * Added delay + duration to `ProfilingAggregator` ([#3815](https://github.com/newrelic/node-newrelic/pull/3815)) ([8000665](https://github.com/newrelic/node-newrelic/commit/8000665b1714275f8e019a2f7c911d62ee8dd127))
+  * Added supportability metrics for profiling ([#3801](https://github.com/newrelic/node-newrelic/pull/3801)) ([19bbb7e](https://github.com/newrelic/node-newrelic/commit/19bbb7ef426e835a13ec38fc543637bdae57a5fc))
+  * Prevented ProfilingAggregator from running in serverless mode ([#3806](https://github.com/newrelic/node-newrelic/pull/3806)) ([e4db0f4](https://github.com/newrelic/node-newrelic/commit/e4db0f469fde9ae6aa4984cb312ee1de269e5c7b))
+  * Disabled `profiling.enabled` when high security mode is enabled ([#3803](https://github.com/newrelic/node-newrelic/pull/3803)) ([9d4eebb](https://github.com/newrelic/node-newrelic/commit/9d4eebb11df00fc5729ad178063712734449741a))
+  * Added Heap profiler ([#3751](https://github.com/newrelic/node-newrelic/pull/3751)) ([8262f6b](https://github.com/newrelic/node-newrelic/commit/8262f6bb5d7bf0a1c996455d6829883a7ff3b696))
+  * Added Cpu Profiler ([#3747](https://github.com/newrelic/node-newrelic/pull/3747)) ([2c2097f](https://github.com/newrelic/node-newrelic/commit/2c2097fdfd4ec924bf24901eecb8ad62a9e4c4f5))
+
+**Note**: Continuous Profiling UI is coming soon! While the Node.js agent now supports Continuous Profiling data collection, the visualization experience will debut in Limited Preview starting next week. If you would like to get early access to the profiling dashboards and UI features, please reach out to your Account Executive (AE) about how to opt-in to the preview.
+
+#### Code refactoring
+
+* Refactor `winston` instrumentation to subscribe to events emitted ([#3808](https://github.com/newrelic/node-newrelic/pull/3808)) ([4af2f48](https://github.com/newrelic/node-newrelic/commit/4af2f48d99b0842085044deb36d14af9e96ac8ed))
+
+#### Documentation
+
+* Updated compatibility report ([#3824](https://github.com/newrelic/node-newrelic/pull/3824)) ([0cfb356](https://github.com/newrelic/node-newrelic/commit/0cfb356c487fbe47c4ac11095704846d948168fb))
+
+#### Tests
+
+* Added segment duration tests for `ioredis`/`iovalkey` ([#3825](https://github.com/newrelic/node-newrelic/pull/3825)) ([9738bc8](https://github.com/newrelic/node-newrelic/commit/9738bc88b59c219d896d80e0f8ccb93866cd7f0b))
+* Added segment duration timing tests for `mysql2` ([#3820](https://github.com/newrelic/node-newrelic/pull/3820)) ([bb424ff](https://github.com/newrelic/node-newrelic/commit/bb424ffa59fe55912f1ad711d84b57518dbd778f))
+* Changed structure of bedrock tests to avoid getting instrumented core libraries from first test ([#3838](https://github.com/newrelic/node-newrelic/pull/3838)) ([886a36c](https://github.com/newrelic/node-newrelic/commit/886a36c1607e1a7c0ddc0688f7b8ee62f9a8bf10))
+* Changed structure of lambda and sns tests to avoid getting instrumented core libraries from first test ([#3836](https://github.com/newrelic/node-newrelic/pull/3836)) ([414044d](https://github.com/newrelic/node-newrelic/commit/414044d184be885843a3267097c87954daf408bd))
+* Updated `@aws-sdk/lib-dynamodb` version range ([#3829](https://github.com/newrelic/node-newrelic/pull/3829)) ([d28c938](https://github.com/newrelic/node-newrelic/commit/d28c938fbe823155fedeb5e5f85bd6a98e04ceed))
+
 ### v13.16.0 (2026-03-11)
 
 #### Bug fixes
