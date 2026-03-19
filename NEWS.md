@@ -11,6 +11,8 @@
   * Added Heap profiler ([#3751](https://github.com/newrelic/node-newrelic/pull/3751)) ([8262f6b](https://github.com/newrelic/node-newrelic/commit/8262f6bb5d7bf0a1c996455d6829883a7ff3b696))
   * Added Cpu Profiler ([#3747](https://github.com/newrelic/node-newrelic/pull/3747)) ([2c2097f](https://github.com/newrelic/node-newrelic/commit/2c2097fdfd4ec924bf24901eecb8ad62a9e4c4f5))
 
+**Note**: Continuous Profiling UI is coming soon! While the Node.js agent now supports Continuous Profiling data collection, the visualization experience will debut in Limited Preview starting next week. If you would like to get early access to the profiling dashboards and UI features, please reach out to your Account Executive (AE) about how to opt-in to the preview.
+
 #### Code refactoring
 
 * Refactor `winston` instrumentation to subscribe to events emitted ([#3808](https://github.com/newrelic/node-newrelic/pull/3808)) ([4af2f48](https://github.com/newrelic/node-newrelic/commit/4af2f48d99b0842085044deb36d14af9e96ac8ed))
