@@ -60,6 +60,7 @@ test('should track unary client requests as an external when in a transaction', 
     })
 
     const response = await makeUnaryRequest({
+      agent,
       client,
       fnName: 'sayHello',
       payload: { name: 'New Relic' }
@@ -74,7 +75,7 @@ test('should include distributed trace headers when enabled', (t, end) => {
   const { agent, client, server } = t.nr
   helper.runInTransaction(agent, 'dt-test', async (tx) => {
     const payload = { name: 'dt test' }
-    await makeUnaryRequest({ client, fnName: 'sayHello', payload })
+    await makeUnaryRequest({ agent, client, fnName: 'sayHello', payload })
     const dtMeta = server.metadataMap.get(payload.name)
     match(
       dtMeta.get('traceparent')[0],
@@ -100,7 +101,7 @@ test('should not include distributed trace headers when distributed_tracing.enab
   agent.config.distributed_tracing.enabled = false
   helper.runInTransaction(agent, 'dt-test', async (tx) => {
     const payload = { name: 'dt disabled' }
-    await makeUnaryRequest({ client, payload, fnName: 'sayHello' })
+    await makeUnaryRequest({ agent, client, payload, fnName: 'sayHello' })
     const dtMeta = server.metadataMap.get(payload.name)
     assert.equal(dtMeta.has('traceparent'), false, 'should not have traceparent in server metadata')
     assert.equal(dtMeta.has('newrelic'), false, 'should not have newrelic in server metadata')
@@ -153,7 +154,7 @@ for (const config of grpcConfigs) {
 
       try {
         const payload = { oh: 'noes' }
-        await makeUnaryRequest({ client, fnName: 'sayError', payload })
+        await makeUnaryRequest({ agent, client, fnName: 'sayError', payload })
       } catch (err) {
         assert.ok(err, 'should get an error')
         assert.equal(err.code, expectedStatusCode, 'should get the right status code')

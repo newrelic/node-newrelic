@@ -32,7 +32,7 @@ test.beforeEach(async (ctx) => {
   ctx.nr.agent = helper.instrumentMockedAgent()
   ctx.nr.grpc = require('@grpc/grpc-js')
 
-  const { port, proto, server } = await createServer(ctx.nr.grpc)
+  const { port, proto, server } = await createServer(ctx.nr.grpc, ctx.nr.agent)
   ctx.nr.port = port
   ctx.nr.proto = proto
   ctx.nr.server = server
@@ -85,9 +85,6 @@ test('should add DT headers when `distributed_tracing` is enabled', async (t) =>
     await makeClientStreamingRequest({ client, fnName: 'sayHelloClientStream', payload })
     tx.end()
   })
-
-  // TODO: gotta instrument and test event listeners on client streaming
-  // payload.forEach(({ name }) => {})
 
   assertDistributedTracing({ clientTransaction, serverTransaction })
 })

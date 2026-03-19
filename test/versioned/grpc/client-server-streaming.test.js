@@ -55,6 +55,7 @@ test('should track server streaming requests as an external when in a transactio
 
     const names = ['Bob', 'Jordi', 'Corey']
     const responses = await makeServerStreamingRequest({
+      agent,
       client,
       fnName: 'sayHelloServerStream',
       payload: { name: names }
@@ -70,7 +71,7 @@ test('should include distributed trace headers when enabled', (t, end) => {
   const { agent, client, server } = t.nr
   helper.runInTransaction(agent, 'dt-test', async (tx) => {
     const payload = { name: ['dt test', 'dt test 2'] }
-    await makeServerStreamingRequest({ client, fnName: 'sayHelloServerStream', payload })
+    await makeServerStreamingRequest({ agent, client, fnName: 'sayHelloServerStream', payload })
     payload.name.forEach((name) => {
       const dtMeta = server.metadataMap.get(name)
       match(
@@ -98,7 +99,7 @@ test('should not include distributed trace headers when distributed_tracing.enab
   agent.config.distributed_tracing.enabled = false
   helper.runInTransaction(agent, 'dt-test', async (tx) => {
     const payload = { name: ['dt not in transaction'] }
-    await makeServerStreamingRequest({ client, fnName: 'sayHelloServerStream', payload })
+    await makeServerStreamingRequest({ agent, client, fnName: 'sayHelloServerStream', payload })
     const dtMeta = server.metadataMap.get(payload.name[0])
     assert.equal(dtMeta.has('traceparent'), false, 'should not have traceparent in server metadata')
     assert.equal(dtMeta.has('newrelic'), false, 'should not have newrelic in server metadata')
@@ -155,7 +156,7 @@ for (const config of grpcConfigs) {
 
       try {
         const payload = { name: ['noes'] }
-        await makeServerStreamingRequest({ client, fnName: 'sayErrorServerStream', payload })
+        await makeServerStreamingRequest({ agent, client, fnName: 'sayErrorServerStream', payload })
       } catch (err) {
         assert.ok(err, 'should get an error')
         assert.equal(err.code, expectedStatusCode, 'should get the right status code')

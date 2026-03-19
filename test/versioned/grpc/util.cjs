@@ -33,6 +33,17 @@ function buildExpectedMetrics(port) {
   return metrics.map((metric) => { return { name: metric } })
 }
 
+function assertContext({ agent, name, assert = require('node:assert') }) {
+  // convert first letter to upper case to match function name
+  name = name.replace(/\w+/g, (word) => word[0].toUpperCase() + word.slice(1))
+  const ctx = agent.tracer.getContext()
+  assert.ok(ctx.transaction)
+  assert.ok(ctx.segment)
+  assert.equal(ctx.transaction.isActive(), true)
+  assert.ok(ctx.segment.name.startsWith('External/'))
+  assert.ok(ctx.segment.name.endsWith(`helloworld.Greeter/${name}`))
+}
+
 /**
  * Iterates over all metrics created during a transaction and asserts no gRPC metrics were created
  *
@@ -76,14 +87,15 @@ function loadProtobufApi(grpc) {
  * from `./grpc-server`
  *
  * @param {object} grpc grpc module
+ * @param {Agent} [agent] if specified will assert the context in handlers
  * @returns {object} { server, proto } grpc server and protobuf api
  */
-util.createServer = async function createServer(grpc) {
+util.createServer = async function createServer(grpc, agent) {
   const server = new grpc.Server()
   const credentials = grpc.ServerCredentials.createInsecure()
   // quick and dirty map to store metadata for a given gRPC call
   server.metadataMap = new Map()
-  const serverMethods = serverImpl(server)
+  const serverMethods = serverImpl(server, agent)
   const proto = loadProtobufApi(grpc)
   server.addService(proto.Greeter.service, serverMethods)
   const port = await new Promise((resolve, reject) => {
@@ -95,6 +107,7 @@ util.createServer = async function createServer(grpc) {
       }
     })
   })
+  // TODO: no longer need in 1.10.0+, we test on 1.4.0+ atm
   server.start()
   return { server, proto, port }
 }
@@ -116,7 +129,7 @@ util.getClient = function getClient(grpc, proto, port) {
  * Gets the formatted substring for a given gRPC method
  *
  * @param {string} fnName name of gRPC call
- * @returns {string}
+ * @returns {string} RPC name
  */
 util.getRPCName = function getRPCName(fnName) {
   return `/helloworld.Greeter/${fnName}`
@@ -126,9 +139,9 @@ util.getRPCName = function getRPCName(fnName) {
  * Gets the formatted substring name for a given gRPC server call
  *
  * @param {string} fnName name of gRPC call
- * @returns {string}
+ * @returns {string} transaction string
  */
-util.getServerTransactionName = function getRPCName(fnName) {
+util.getServerTransactionName = function getServerTransactionName(fnName) {
   return SERVER_TX_PREFIX + util.getRPCName(fnName)
 }
 
@@ -252,12 +265,16 @@ util.assertDistributedTracing = function assertDistributedTracing(
  * @param {object} params params object
  * @param {object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
+ * @param {Agent} [params.agent] agent instance that if present will assert context
  * @param {*} params.payload payload to gRPC method
- * @returns {Promise}
+ * @returns {Promise} promise
  */
-util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload }) {
+util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload, agent }) {
   return new Promise((resolve, reject) => {
     client[fnName](payload, (err, response) => {
+      if (agent) {
+        assertContext({ agent, name: fnName })
+      }
       if (err) {
         reject(err)
         return
@@ -275,9 +292,11 @@ util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload }) {
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
  * @param {boolean} [params.endStream] defaults to true
- * @returns {Promise}
+ * @param {Agent} [params.agent] agent instance that if present will assert context
+ * @returns {Promise} promise
  */
 util.makeClientStreamingRequest = function makeClientStreamingRequest({
+  agent,
   client,
   fnName,
   payload,
@@ -285,6 +304,9 @@ util.makeClientStreamingRequest = function makeClientStreamingRequest({
 }) {
   return new Promise((resolve, reject) => {
     const call = client[fnName]((err, response) => {
+      if (agent) {
+        assertContext({ agent, name: fnName })
+      }
       if (err) {
         reject(err)
         return
@@ -308,19 +330,29 @@ util.makeClientStreamingRequest = function makeClientStreamingRequest({
  * @param {object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
- * @returns {Promise}
+ * @param {Agent} [params.agent] agent instance that if present will assert context
+ * @returns {Promise} promise
  */
-util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, fnName, payload }) {
+util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, fnName, payload, agent }) {
   return new Promise((resolve, reject) => {
     const serverData = []
     const call = client[fnName](payload)
     call.on('data', (response) => {
+      if (agent) {
+        assertContext({ agent, name: fnName })
+      }
       serverData.push(response.message)
     })
     call.on('end', () => {
+      if (agent) {
+        assertContext({ agent, name: fnName })
+      }
       resolve(serverData)
     })
     call.on('error', (err) => {
+      if (agent) {
+        assertContext({ agent, name: fnName })
+      }
       reject(err)
     })
   })
@@ -333,20 +365,30 @@ util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, 
  * @param {object} params.client gRPC client
  * @param {string} params.fnName gRPC method name
  * @param {*} params.payload payload to gRPC method
- * @returns {Promise}
+ * @param {Agent} [params.agent] agent instance that if present will assert context
+ * @returns {Promise} promise
  */
-util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnName, payload }) {
+util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ agent, client, fnName, payload }) {
   return new Promise((resolve, reject) => {
     const serverData = []
     const call = client[fnName]()
     payload.forEach((data) => call.write(data))
     call.on('data', function (response) {
+      if (agent) {
+        assertContext({ agent, name: fnName })
+      }
       serverData.push(response.message)
     })
     call.on('end', () => {
+      if (agent) {
+        assertContext({ agent, name: fnName })
+      }
       resolve(serverData)
     })
     call.on('error', (err) => {
+      if (agent) {
+        assertContext({ agent, name: fnName })
+      }
       reject(err)
     })
     call.end()

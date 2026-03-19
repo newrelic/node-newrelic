@@ -38,6 +38,7 @@ const client = getClient(grpc, proto, port)
 
 test.afterEach(() => {
   agent.errors.traceAggregator.clear()
+
   agent.samplers.root._reset()
   agent.spanEventAggregator.clear()
   agent.metrics.clear()
@@ -67,6 +68,7 @@ test('should track unary client requests as an external when in a transaction', 
     tx.name = 'clientTransaction'
 
     const response = await makeUnaryRequest({
+      agent,
       client,
       fnName: 'sayHello',
       payload: { name: 'New Relic' }
@@ -80,7 +82,7 @@ test('should track unary client requests as an external when in a transaction', 
 test('should include distributed trace headers when enabled', (t, end) => {
   helper.runInTransaction(agent, 'dt-test', async (tx) => {
     const payload = { name: 'dt test' }
-    await makeUnaryRequest({ client, fnName: 'sayHello', payload })
+    await makeUnaryRequest({ agent, client, fnName: 'sayHello', payload })
     const dtMeta = server.metadataMap.get(payload.name)
     match(
       dtMeta.get('traceparent')[0],
@@ -165,7 +167,7 @@ for (const config of grpcConfigs) {
 
       try {
         const payload = { oh: 'noes' }
-        await makeUnaryRequest({ client, fnName: 'sayError', payload })
+        await makeUnaryRequest({ agent, client, fnName: 'sayError', payload })
       } catch (err) {
         assert.ok(err, 'should get an error')
         assert.equal(err.code, expectedStatusCode, 'should get the right status code')

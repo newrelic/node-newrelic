@@ -56,6 +56,7 @@ test('should track bidirectional streaming requests as an external when in a tra
 
     const names = [{ name: 'Huey' }, { name: 'Dewey' }, { name: 'Louie' }]
     const responses = await makeBidiStreamingRequest({
+      agent,
       client,
       fnName: 'sayHelloBidiStream',
       payload: names
@@ -73,6 +74,7 @@ test('should include distributed trace headers when enabled', (t, end) => {
   helper.runInTransaction(agent, 'dt-test', async (tx) => {
     const payload = [{ name: 'dt test' }]
     await makeBidiStreamingRequest({
+      agent,
       client,
       fnName: 'sayHelloBidiStream',
       payload
@@ -171,7 +173,7 @@ for (const config of grpcConfigs) {
 
       try {
         const payload = [{ name: 'server-error' }]
-        await makeBidiStreamingRequest({ client, fnName: 'sayErrorBidiStream', payload })
+        await makeBidiStreamingRequest({ agent, client, fnName: 'sayErrorBidiStream', payload })
       } catch (err) {
         assert.ok(err, 'should get an error')
         assert.equal(err.code, expectedStatusCode, 'should get the right status code')
