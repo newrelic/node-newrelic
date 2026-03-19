@@ -42,14 +42,6 @@ else
 fi
 
 
-# Determine context manager for sanity sake
-if [[ $NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER == 1 ]];
-then
-  CTX_MGR="Legacy"
-else
-  CTX_MGR="AsyncLocalStorage"
-fi
-
 set -f
 directories=()
 if [[ "$1" != '' ]];
@@ -107,7 +99,6 @@ export AGENT_PATH=`pwd`
 
 # Runner will default to CPU count if not specified.
 echo "JOBS = ${JOBS}"
-echo "CONTEXT MANAGER = ${CTX_MGR}"
 echo "C8 = ${C8}"
 echo "EXTERNAL_MODE = ${EXTERNAL_MODE}"
 
