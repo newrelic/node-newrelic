@@ -48,7 +48,6 @@ test('touch()', { timeout: 5000 }, function (t, end) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-      transaction.end()
       assertSegments(
         transaction.trace,
         transaction.trace.root,
@@ -56,6 +55,7 @@ test('touch()', { timeout: 5000 }, function (t, end) {
         { exact: false },
         { assert }
       )
+      transaction.end()
       assertSpanKind({
         agent,
         segments: [
@@ -95,7 +95,6 @@ test('get()', { timeout: 5000 }, function (t, end) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-      transaction.end()
       assertSegments(
         transaction.trace,
         transaction.trace.root,
@@ -104,6 +103,7 @@ test('get()', { timeout: 5000 }, function (t, end) {
         { assert }
       )
 
+      transaction.end()
       assertMetrics(
         transaction.metrics,
         [
@@ -136,7 +136,6 @@ test('gets()', { timeout: 5000 }, function (t, end) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-      transaction.end()
       assertSegments(
         transaction.trace,
         transaction.trace.root,
@@ -145,6 +144,7 @@ test('gets()', { timeout: 5000 }, function (t, end) {
         { assert }
       )
 
+      transaction.end()
       assertMetrics(
         transaction.metrics,
         [
@@ -177,7 +177,6 @@ test('getMulti()', { timeout: 5000 }, function (t, end) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-      transaction.end()
       assertSegments(
         transaction.trace,
         transaction.trace.root,
@@ -186,6 +185,7 @@ test('getMulti()', { timeout: 5000 }, function (t, end) {
         { assert }
       )
 
+      transaction.end()
       assertMetrics(
         transaction.metrics,
         [
@@ -218,7 +218,6 @@ test('set()', { timeout: 5000 }, function (t, end) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-      transaction.end()
       assertSegments(
         transaction.trace,
         transaction.trace.root,
@@ -227,6 +226,7 @@ test('set()', { timeout: 5000 }, function (t, end) {
         { assert }
       )
 
+      transaction.end()
       assertMetrics(
         transaction.metrics,
         [
@@ -262,7 +262,6 @@ test('replace()', { timeout: 5000 }, function (t, end) {
         assert.ok(!err, 'should not throw an error')
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-        transaction.end()
         assertSegments(
           transaction.trace,
           transaction.trace.root,
@@ -271,6 +270,7 @@ test('replace()', { timeout: 5000 }, function (t, end) {
           { assert }
         )
 
+        transaction.end()
         assertMetrics(
           transaction.metrics,
           [
@@ -304,7 +304,6 @@ test('add()', { timeout: 5000 }, function (t, end) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-      transaction.end()
       assertSegments(
         transaction.trace,
         transaction.trace.root,
@@ -313,6 +312,7 @@ test('add()', { timeout: 5000 }, function (t, end) {
         { assert }
       )
 
+      transaction.end()
       assertMetrics(
         transaction.metrics,
         [
@@ -351,7 +351,6 @@ test('cas()', { timeout: 5000 }, function (t, end) {
           assert.ok(!err, 'should not throw an error')
           assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-          transaction.end()
           assertSegments(
             transaction.trace,
             transaction.trace.root,
@@ -360,6 +359,7 @@ test('cas()', { timeout: 5000 }, function (t, end) {
             { assert }
           )
 
+          transaction.end()
           assertMetrics(
             transaction.metrics,
             [
@@ -395,7 +395,7 @@ test('append()', { timeout: 5000 }, function (t, end) {
       memcached.append('foo', 'bar', function (err) {
         assert.ok(!err)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
-        transaction.end()
+
         assertSegments(
           transaction.trace,
           transaction.trace.root,
@@ -403,7 +403,7 @@ test('append()', { timeout: 5000 }, function (t, end) {
           { exact: false },
           { assert }
         )
-
+        transaction.end()
         assertMetrics(
           transaction.metrics,
           [
@@ -438,7 +438,7 @@ test('prepend()', { timeout: 5000 }, function (t, end) {
       memcached.prepend('foo', 'bar', function (err) {
         assert.ok(!err)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
-        transaction.end()
+
         assertSegments(
           transaction.trace,
           transaction.trace.root,
@@ -447,6 +447,7 @@ test('prepend()', { timeout: 5000 }, function (t, end) {
           { assert }
         )
 
+        transaction.end()
         assertMetrics(
           transaction.metrics,
           [
@@ -481,7 +482,7 @@ test('del()', { timeout: 5000 }, function (t, end) {
       memcached.del('foo', function (err) {
         assert.ok(!err)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
-        transaction.end()
+
         assertSegments(
           transaction.trace,
           transaction.trace.root,
@@ -490,6 +491,7 @@ test('del()', { timeout: 5000 }, function (t, end) {
           { assert }
         )
 
+        transaction.end()
         assertMetrics(
           transaction.metrics,
           [
@@ -523,7 +525,6 @@ test('incr()', { timeout: 5000 }, function (t, end) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-      transaction.end()
       assertSegments(
         transaction.trace,
         transaction.trace.root,
@@ -532,6 +533,7 @@ test('incr()', { timeout: 5000 }, function (t, end) {
         { assert }
       )
 
+      transaction.end()
       assertMetrics(
         transaction.metrics,
         [
@@ -564,7 +566,6 @@ test('decr()', { timeout: 5000 }, function (t, end) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-      transaction.end()
       assertSegments(
         transaction.trace,
         transaction.trace.root,
@@ -573,6 +574,7 @@ test('decr()', { timeout: 5000 }, function (t, end) {
         { assert }
       )
 
+      transaction.end()
       assertMetrics(
         transaction.metrics,
         [
@@ -606,7 +608,6 @@ test('version()', { timeout: 5000 }, function (t, end) {
       assert.ok(ok, 'got a version')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
 
-      transaction.end()
       assertSegments(
         transaction.trace,
         transaction.trace.root,
@@ -615,6 +616,7 @@ test('version()', { timeout: 5000 }, function (t, end) {
         { assert }
       )
 
+      transaction.end()
       assertMetrics(
         transaction.metrics,
         [
@@ -647,9 +649,9 @@ test('captures attributes - get()', { timeout: 5000 }, function (t, end) {
     memcached.get('foo', function (err) {
       assert.ok(!err, 'should not throw an error')
 
-      transaction.end()
       const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(segment.getAttributes().key, '"foo"', 'should have the get key as a parameter')
+      transaction.end()
       end()
     })
   })
@@ -669,9 +671,9 @@ test('captures attributes - get() when disabled', { timeout: 5000 }, function (t
     memcached.get('foo', function (err) {
       assert.ok(!err)
 
-      transaction.end()
       const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.ok(!segment.getAttributes().key, 'should not have any attributes')
+      transaction.end()
       end()
     })
   })
@@ -691,13 +693,13 @@ test('captures attributes - getMulti()', { timeout: 5000 }, function (t, end) {
     memcached.getMulti(['foo', 'bar'], function (err) {
       assert.ok(!err, 'should not throw an error')
 
-      transaction.end()
       const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(
         segment.getAttributes().key,
         '["foo","bar"]',
         'should have the multiple keys fetched as a parameter'
       )
+      transaction.end()
       end()
     })
   })
@@ -717,9 +719,10 @@ test('captures attributes - set()', { timeout: 5000 }, function (t, end) {
     memcached.set('foo', 'bar', 10, function (err) {
       assert.ok(!err, 'should not throw an error')
 
-      transaction.end()
       const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(segment.getAttributes().key, '"foo"', 'should have the set key as a parameter')
+
+      transaction.end()
       end()
     })
   })
@@ -740,7 +743,6 @@ test('captures datastore instance attributes - get()', { timeout: 5000 }, functi
     memcached.get('foo', function (err) {
       assert.ok(!err, 'should not throw an error')
 
-      transaction.end()
       const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
       const attributes = segment.getAttributes()
       assert.equal(
@@ -754,6 +756,7 @@ test('captures datastore instance attributes - get()', { timeout: 5000 }, functi
         'should collect port instance attributes'
       )
 
+      transaction.end()
       const expectedMetrics = [[{ name: `Datastore/instance/Memcache/${HOST_ID}` }]]
       assertMetrics(transaction.metrics, expectedMetrics, false, false, { assert })
       end()
@@ -776,7 +779,6 @@ test('captures datastore instance attributes - set()', { timeout: 5000 }, functi
     memcached.set('foo', 'bar', 10, function (err) {
       assert.ok(!err, 'should not throw an error')
 
-      transaction.end()
       const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
       const attributes = segment.getAttributes()
       assert.equal(
@@ -790,8 +792,10 @@ test('captures datastore instance attributes - set()', { timeout: 5000 }, functi
         'should collect port instance attributes'
       )
 
+      transaction.end()
       const expectedMetrics = [[{ name: `Datastore/instance/Memcache/${HOST_ID}` }]]
       assertMetrics(transaction.metrics, expectedMetrics, false, false, { assert })
+
       end()
     })
   })
@@ -813,7 +817,6 @@ test('does not capture datastore instance attributes when disabled - get()', { t
     memcached.get('foo', function (err) {
       assert.ok(!err, 'should not throw an error')
 
-      transaction.end()
       const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
       const attributes = segment.getAttributes()
       assert.equal(attributes.host, undefined, 'should not have host instance parameter')
@@ -828,6 +831,7 @@ test('does not capture datastore instance attributes when disabled - get()', { t
         !getMetrics(agent).unscoped[datastoreInstanceMetric],
         'should not have datastore instance metric'
       )
+      transaction.end()
       end()
     })
   })
@@ -849,7 +853,6 @@ test('does not capture datastore instance attributes when disabled - set()', { t
     memcached.set('foo', 'bar', 10, function (err) {
       assert.ok(!err, 'should not throw an error')
 
-      transaction.end()
       const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
       const attributes = segment.getAttributes()
       assert.equal(attributes.host, undefined, 'should not have host instance parameter')
@@ -864,6 +867,7 @@ test('does not capture datastore instance attributes when disabled - set()', { t
         !getMetrics(agent).unscoped[datastoreInstanceMetric],
         'should not have datastore instance metric'
       )
+      transaction.end()
       end()
     })
   })
@@ -899,10 +903,11 @@ test('captures datastore instance attributes with multiple hosts - separate gets
 
       memcached.get('bar', function (err) {
         assert.ok(!err)
+        const fooNode = transaction.trace.segments.root?.children?.[0]
+        checkParams(fooNode?.segment, 'server1', '1111')
+        const barSegment = fooNode?.children?.[1]?.segment
+        checkParams(barSegment, 'server2', '2222')
         transaction.end()
-        const segments = transaction.trace.getChildren(transaction.trace.root.id)
-        checkParams(segments[0], 'server1', '1111')
-        checkParams(segments[1], 'server2', '2222')
         end()
       })
     })
@@ -943,13 +948,21 @@ test('captures datastore instance attributes with multiple hosts - multi-get', {
         checkParams(secondGet, 'server1', '1111')
         checkParams(firstGet, 'server2', '2222')
       }
+      transaction.end()
       end()
     })
   })
 })
 
+/**
+ * Checks the database segment attributes and if the segment is valid and has ended.
+ * @param {TraceSegment} segment `TraceSegment` to check
+ * @param {string} host hostname to check
+ * @param {string} port port number to check
+ */
 function checkParams(segment, host, port) {
   assert.ok(segment, 'segment should exist')
+  assert.ok(segment._isEnded(), 'segment should have ended')
   const attributes = segment.getAttributes()
   assert.equal(attributes.host, host, 'should have correct host (' + host + ')')
   assert.equal(attributes.port_path_or_id, port, 'should have correct port (' + port + ')')
