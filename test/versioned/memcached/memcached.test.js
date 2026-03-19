@@ -47,6 +47,7 @@ test('touch()', { timeout: 5000 }, function (t, end) {
     memcached.touch('foo', 1, function (err) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
+      assertSegmentState(agent, 'Datastore/operation/Memcache/touch')
 
       assertSegments(
         transaction.trace,
@@ -94,6 +95,7 @@ test('get()', { timeout: 5000 }, function (t, end) {
     memcached.get('foo', function (err) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
+      assertSegmentState(agent, 'Datastore/operation/Memcache/get')
 
       assertSegments(
         transaction.trace,
@@ -135,6 +137,7 @@ test('gets()', { timeout: 5000 }, function (t, end) {
     memcached.gets('foo', function (err) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
+      assertSegmentState(agent, 'Datastore/operation/Memcache/gets')
 
       assertSegments(
         transaction.trace,
@@ -176,6 +179,7 @@ test('getMulti()', { timeout: 5000 }, function (t, end) {
     memcached.getMulti(['foo', 'bar'], function (err) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
+      assertSegmentState(agent, 'Datastore/operation/Memcache/get')
 
       assertSegments(
         transaction.trace,
@@ -217,6 +221,7 @@ test('set()', { timeout: 5000 }, function (t, end) {
     memcached.set('foo', 'bar', 10, function (err) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
+      assertSegmentState(agent, 'Datastore/operation/Memcache/set')
 
       assertSegments(
         transaction.trace,
@@ -261,6 +266,7 @@ test('replace()', { timeout: 5000 }, function (t, end) {
       memcached.replace('foo', 'new', 10, function (err) {
         assert.ok(!err, 'should not throw an error')
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        assertSegmentState(agent, 'Datastore/operation/Memcache/replace')
 
         assertSegments(
           transaction.trace,
@@ -303,6 +309,7 @@ test('add()', { timeout: 5000 }, function (t, end) {
     memcached.add('foo', 'bar', 10, function (err) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
+      assertSegmentState(agent, 'Datastore/operation/Memcache/add')
 
       assertSegments(
         transaction.trace,
@@ -350,6 +357,7 @@ test('cas()', { timeout: 5000 }, function (t, end) {
         memcached.cas('foo', 'bar', data.cas, 10, function (err) {
           assert.ok(!err, 'should not throw an error')
           assert.ok(agent.getTransaction(), 'transaction should still be visible')
+          assertSegmentState(agent, 'Datastore/operation/Memcache/cas')
 
           assertSegments(
             transaction.trace,
@@ -395,6 +403,7 @@ test('append()', { timeout: 5000 }, function (t, end) {
       memcached.append('foo', 'bar', function (err) {
         assert.ok(!err)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        assertSegmentState(agent, 'Datastore/operation/Memcache/append')
 
         assertSegments(
           transaction.trace,
@@ -438,6 +447,7 @@ test('prepend()', { timeout: 5000 }, function (t, end) {
       memcached.prepend('foo', 'bar', function (err) {
         assert.ok(!err)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        assertSegmentState(agent, 'Datastore/operation/Memcache/prepend')
 
         assertSegments(
           transaction.trace,
@@ -482,6 +492,7 @@ test('del()', { timeout: 5000 }, function (t, end) {
       memcached.del('foo', function (err) {
         assert.ok(!err)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        assertSegmentState(agent, 'Datastore/operation/Memcache/delete')
 
         assertSegments(
           transaction.trace,
@@ -524,6 +535,7 @@ test('incr()', { timeout: 5000 }, function (t, end) {
     memcached.incr('foo', 10, function (err) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
+      assertSegmentState(agent, 'Datastore/operation/Memcache/incr')
 
       assertSegments(
         transaction.trace,
@@ -565,6 +577,7 @@ test('decr()', { timeout: 5000 }, function (t, end) {
     memcached.decr('foo', 10, function (err) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
+      assertSegmentState(agent, 'Datastore/operation/Memcache/decr')
 
       assertSegments(
         transaction.trace,
@@ -607,6 +620,7 @@ test('version()', { timeout: 5000 }, function (t, end) {
       assert.ok(!err, 'should not throw an error')
       assert.ok(ok, 'got a version')
       assert.ok(agent.getTransaction(), 'transaction should still be visible')
+      assertSegmentState(agent, 'Datastore/operation/Memcache/version')
 
       assertSegments(
         transaction.trace,
@@ -955,14 +969,26 @@ test('captures datastore instance attributes with multiple hosts - multi-get', {
 })
 
 /**
- * Checks the database segment attributes and if the segment is valid and has ended.
+ * Asserts that the current segment has the expected name, has ended,
+ * and has a reasonable duration.
+ * @param {Agent} agent agent instance
+ * @param {string} expectedName expected segment name
+ */
+function assertSegmentState(agent, expectedName) {
+  const currentSegment = agent.tracer.getSegment()
+  assert.equal(currentSegment.name, expectedName)
+  assert.ok(currentSegment._isEnded(), 'segment should have ended')
+  assert.ok(currentSegment.timer?.hrDuration?.[1] >= 10000, 'segment should have reasonable duration')
+}
+
+/**
+ * Checks the database segment attributes, host and port.
  * @param {TraceSegment} segment `TraceSegment` to check
  * @param {string} host hostname to check
  * @param {string} port port number to check
  */
 function checkParams(segment, host, port) {
   assert.ok(segment, 'segment should exist')
-  assert.ok(segment._isEnded(), 'segment should have ended')
   const attributes = segment.getAttributes()
   assert.equal(attributes.host, host, 'should have correct host (' + host + ')')
   assert.equal(attributes.port_path_or_id, port, 'should have correct port (' + port + ')')
