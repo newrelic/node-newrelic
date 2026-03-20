@@ -61,7 +61,7 @@ test('should track bidirectional streaming requests as an external when in a tra
       payload: names
     })
     names.forEach(({ name }, i) => {
-      assert.equal(responses[i], `Hello ${name}`, 'response stream message should be correct')
+      assert.equal(responses[i].message, `Hello ${name}`, 'response stream message should be correct')
     })
 
     tx.end()
@@ -129,7 +129,7 @@ test('should not track external bidi streaming client requests outside of a tran
     payload
   })
   payload.forEach(({ name }, i) => {
-    plan.equal(responses[i], `Hello ${name}`, 'response stream message should be correct')
+    plan.equal(responses[i].message, `Hello ${name}`, 'response stream message should be correct')
   })
   assertMetricsNotExisting({ agent, port }, { assert: plan })
 

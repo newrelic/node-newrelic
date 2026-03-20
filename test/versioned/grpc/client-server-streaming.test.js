@@ -60,7 +60,7 @@ test('should track server streaming requests as an external when in a transactio
       payload: { name: names }
     })
     names.forEach((name, i) => {
-      assert.equal(responses[i], `Hello ${name}`, 'response stream message should be correct')
+      assert.equal(responses[i].message, `Hello ${name}`, 'response stream message should be correct')
     })
     tx.end()
   })
@@ -116,7 +116,7 @@ test('should not track server streaming requests outside of a transaction', asyn
     payload
   })
   assert.ok(responses.length, 1)
-  assert.equal(responses[0], 'Hello New Relic', 'response message is correct')
+  assert.equal(responses[0].message, 'Hello New Relic', 'response message is correct')
   assertMetricsNotExisting({ agent, port })
 })
 
