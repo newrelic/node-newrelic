@@ -33,7 +33,7 @@ const {
 // be unregistered before a test ends, or they will interfere with other tests.
 const agent = helper.instrumentMockedAgent()
 const grpc = await import('@grpc/grpc-js')
-const { port, proto, server } = await createServer(grpc)
+const { port, proto, server } = await createServer(grpc, agent)
 const client = getClient(grpc, proto, port)
 
 test.afterEach(() => {

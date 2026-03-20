@@ -76,14 +76,15 @@ function loadProtobufApi(grpc) {
  * from `./grpc-server`
  *
  * @param {object} grpc grpc module
+ * @param {object} agent agent instance
  * @returns {object} { server, proto } grpc server and protobuf api
  */
-util.createServer = async function createServer(grpc) {
+util.createServer = async function createServer(grpc, agent) {
   const server = new grpc.Server()
   const credentials = grpc.ServerCredentials.createInsecure()
   // quick and dirty map to store metadata for a given gRPC call
   server.metadataMap = new Map()
-  const serverMethods = serverImpl(server)
+  const serverMethods = serverImpl(server, agent)
   const proto = loadProtobufApi(grpc)
   server.addService(proto.Greeter.service, serverMethods)
   const port = await new Promise((resolve, reject) => {
@@ -315,7 +316,7 @@ util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, 
     const serverData = []
     const call = client[fnName](payload)
     call.on('data', (response) => {
-      serverData.push(response.message)
+      serverData.push(response)
     })
     call.on('end', () => {
       resolve(serverData)
@@ -341,7 +342,7 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
     const call = client[fnName]()
     payload.forEach((data) => call.write(data))
     call.on('data', function (response) {
-      serverData.push(response.message)
+      serverData.push(response)
     })
     call.on('end', () => {
       resolve(serverData)

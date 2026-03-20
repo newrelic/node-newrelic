@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const { once } = require('node:events')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { notHas } = require('../../lib/custom-assertions')
@@ -26,13 +27,14 @@ const {
   getClient,
   getServerTransactionName
 } = require('./util.cjs')
+const createServerMethods = require('./grpc-server.cjs')
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent()
   ctx.nr.grpc = require('@grpc/grpc-js')
 
-  const { port, proto, server } = await createServer(ctx.nr.grpc)
+  const { port, proto, server } = await createServer(ctx.nr.grpc, ctx.nr.agent)
   ctx.nr.port = port
   ctx.nr.proto = proto
   ctx.nr.server = server
@@ -48,21 +50,26 @@ test.afterEach((ctx) => {
 
 test('should track unary server requests', async (t) => {
   const { agent, client } = t.nr
-  let transaction
-  agent.on('transactionFinished', (tx) => {
-    transaction = tx
-  })
+  const [request, trace] = await Promise.allSettled([
+    makeUnaryRequest({
+      client,
+      fnName: 'sayHello',
+      payload: { name: 'New Relic' }
+    }),
+    once(agent, 'transactionFinished')
+  ])
+  assert.ok(request.value, 'got a response')
+  const response = request.value
+  assert.ok(trace.value, 'transaction exists')
+  const [transaction] = trace.value
 
-  const response = await makeUnaryRequest({
-    client,
-    fnName: 'sayHello',
-    payload: { name: 'New Relic' }
-  })
-  assert.ok(response, 'response exists')
-  assert.equal(response.message, 'Hello New Relic', 'response message is correct')
-  assert.ok(transaction, 'transaction exists')
   assertServerTransaction({ transaction, fnName: 'SayHello' })
   assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHello' })
+
+  assert.ok(response, 'response exists')
+  assert.equal(response.message, 'Hello New Relic', 'response message is correct')
+  assert.equal(response.transaction_id, transaction.id)
+  assert.equal(response.segment_name, '/helloworld.Greeter/SayHello')
 })
 
 test('should add DT headers when `distributed_tracing` is enabled', async (t) => {
@@ -135,6 +142,49 @@ test('should not add DT headers when `distributed_tracing` is disabled', async (
     found: attributes,
     doNotWant: 'request.header.traceparent',
     msg: 'should not have traceparent in headers'
+  })
+})
+
+test('should not re-instrument already registered handlers', async (t) => {
+  const { agent, proto, server } = t.nr
+  const serverMethods = createServerMethods(server, agent)
+
+  try {
+    server.addService(proto.Greeter.service, serverMethods)
+  } catch (error) {
+    assert.equal(error.message, 'Method handler for /helloworld.Greeter/SayHello already provided.')
+  }
+})
+
+test('should handle concurrent requests without double-wrapping onCallEnd', async (t) => {
+  const { agent, client } = t.nr
+  const transactions = []
+  agent.on('transactionFinished', (tx) => {
+    transactions.push(tx)
+  })
+
+  // Make multiple concurrent requests to verify onCallEnd doesn't get wrapped
+  // multiple times.
+  const requests = []
+  for (let i = 0; i < 5; i++) {
+    requests.push(
+      makeUnaryRequest({
+        client,
+        fnName: 'sayHello',
+        payload: { name: `Concurrent-${i}` }
+      })
+    )
+  }
+
+  const responses = await Promise.all(requests)
+  assert.equal(responses.length, 5, 'should have 5 responses')
+  responses.forEach((response, i) => {
+    assert.ok(response, `response ${i} exists`)
+    assert.equal(response.message, `Hello Concurrent-${i}`, `response ${i} message is correct`)
+  })
+  assert.equal(transactions.length, 5, 'should have 5 transactions')
+  transactions.forEach((transaction) => {
+    assertServerTransaction({ transaction, fnName: 'SayHello' })
   })
 })
 
