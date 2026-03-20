@@ -59,6 +59,7 @@ function sayHelloClientStream(call, cb) {
 }
 
 function sayHelloServerStream(call) {
+  const ctx = AGENT.tracer.getContext()
   const {
     metadata,
     request: { name }
@@ -66,7 +67,11 @@ function sayHelloServerStream(call) {
   name.forEach((n) => {
     // add the metadata from client that the server receives so we can assert DT functionality
     SERVER.metadataMap.set(n, metadata.internalRepr)
-    call.write({ message: `Hello ${n}` })
+    call.write({
+      message: `Hello ${n}`,
+      transaction_id: ctx.transaction?.id,
+      segment_name: ctx.segment?.name
+    })
   })
   call.end()
 }

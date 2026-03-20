@@ -316,7 +316,7 @@ util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, 
     const serverData = []
     const call = client[fnName](payload)
     call.on('data', (response) => {
-      serverData.push(response.message)
+      serverData.push(response)
     })
     call.on('end', () => {
       resolve(serverData)
@@ -342,7 +342,7 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
     const call = client[fnName]()
     payload.forEach((data) => call.write(data))
     call.on('data', function (response) {
-      serverData.push(response.message)
+      serverData.push(response)
     })
     call.on('end', () => {
       resolve(serverData)

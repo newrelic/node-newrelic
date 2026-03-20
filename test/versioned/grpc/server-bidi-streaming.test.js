@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const { once } = require('node:events')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { notHas } = require('../../lib/custom-assertions')
@@ -48,19 +49,25 @@ test.afterEach((ctx) => {
 
 test('should track bidirectional requests', async (t) => {
   const { agent, client } = t.nr
-  let transaction
-  agent.on('transactionFinished', (tx) => {
-    transaction = tx
-  })
-
   const names = [{ name: 'Huey' }, { name: 'Dewey' }, { name: 'Louie' }]
-  const responses = await makeBidiStreamingRequest({
-    client,
-    fnName: 'sayHelloBidiStream',
-    payload: names
-  })
+  const [request, trace] = await Promise.allSettled([
+    makeBidiStreamingRequest({
+      client,
+      fnName: 'sayHelloBidiStream',
+      payload: names
+    }),
+    once(agent, 'transactionFinished')
+  ])
+  assert.ok(request.value, 'got a response')
+  const responses = request.value
+  assert.ok(trace.value, 'transaction exists')
+  const [transaction] = trace.value
+
   names.forEach(({ name }, i) => {
-    assert.equal(responses[i], `Hello ${name}`, 'response stream message should be correct')
+    const response = responses[i]
+    assert.equal(response.message, `Hello ${name}`, 'response stream message should be correct')
+    assert.ok(Object.hasOwn(response, 'transaction_id'))
+    assert.ok(Object.hasOwn(response, 'segment_name'))
   })
 
   assert.ok(transaction, 'transaction exists')
