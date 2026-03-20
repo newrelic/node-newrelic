@@ -172,7 +172,7 @@ test('fromSegment()', async (t) => {
       // Should have no datastore properties.
       assert.ok(!hasOwnAttribute('db.statement'))
       assert.ok(!hasOwnAttribute('db.instance'))
-      assert.ok(!hasOwnAttribute('db.system'))
+      assert.ok(!hasOwnAttribute('db.system.name'))
       assert.ok(!hasOwnAttribute('peer.hostname'))
       assert.ok(!hasOwnAttribute('peer.address'))
       end()
@@ -240,7 +240,7 @@ test('fromSegment()', async (t) => {
           const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
           assert.ok(!hasOwnAttribute('db.statement'))
           assert.ok(!hasOwnAttribute('db.instance'))
-          assert.ok(!hasOwnAttribute('db.system'))
+          assert.ok(!hasOwnAttribute('db.system.name'))
           assert.ok(!hasOwnAttribute('peer.hostname'))
           assert.ok(!hasOwnAttribute('peer.address'))
 
@@ -333,7 +333,7 @@ test('fromSegment()', async (t) => {
         assert.equal(attributes['db.collection'], 'my-collection')
         assert.equal(attributes['peer.hostname'], 'my-db-host')
         assert.equal(attributes['peer.address'], 'my-db-host:/path/to/db.sock')
-        assert.equal(attributes['db.system'], 'TestStore') // same as intrinsics.component
+        assert.equal(attributes['db.system.name'], 'TestStore') // same as intrinsics.component
         assert.equal(attributes['server.address'], 'my-db-host')
         assert.equal(attributes['server.port'], '/path/to/db.sock')
 
@@ -495,15 +495,15 @@ for (const testSpan of testSpans) {
 
 describe('entityRelationshipAttrs', () => {
   test('should cache the result after first access', () => {
-    const span = new SpanEvent({ 'db.system': 'redis' }, {})
+    const span = new SpanEvent({ 'db.system.name': 'redis' }, {})
 
-    assert.deepEqual(span.entityRelationshipAttrs, { 'db.system': 'redis' })
+    assert.deepEqual(span.entityRelationshipAttrs, { 'db.system.name': 'redis' })
     assert.equal(span.hasEntityRelationshipAttrs, true)
     // modified attributes should not affect cached result
-    delete span.attributes['db.system']
+    delete span.attributes['db.system.name']
 
     assert.equal(span.hasEntityRelationshipAttrs, true)
-    assert.deepEqual(span.entityRelationshipAttrs, { 'db.system': 'redis' })
+    assert.deepEqual(span.entityRelationshipAttrs, { 'db.system.name': 'redis' })
   })
 
   test('should return false when no entity relationship attributes are present', () => {
@@ -554,32 +554,32 @@ describe('filteredAttrs', () => {
 
   test('should return only entity relationship attributes when present', () => {
     const span = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       attr: 'should-be-excluded'
     }, {})
     const filtered = span.filteredAttrs
-    assert.equal(filtered['db.system'], 'postgresql')
+    assert.equal(filtered['db.system.name'], 'postgresql')
     assert.equal(filtered['attr'], undefined)
 
     // modified attributes should not affect cached result
-    span.attributes['db.system'] = 'mysql'
+    span.attributes['db.system.name'] = 'mysql'
     span.attributes['new.attr'] = 'new-value'
 
     // Second access should return cached result
     const filtered2 = span.filteredAttrs
-    assert.equal(filtered2['db.system'], 'postgresql')
+    assert.equal(filtered2['db.system.name'], 'postgresql')
     assert.equal(filtered2['new.attr'], undefined)
   })
 
   test('should include error.* attributes when present', () => {
     const span = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'error.class': 'TestError',
       'error.message': 'Connection failed',
       attr: 'excluded'
     }, {})
     const filtered = span.filteredAttrs
-    assert.equal(filtered['db.system'], 'postgresql')
+    assert.equal(filtered['db.system.name'], 'postgresql')
     assert.equal(filtered['error.message'], 'Connection failed')
     assert.equal(filtered['error.class'], 'TestError')
     assert.equal(filtered['attr'], undefined)
@@ -589,12 +589,12 @@ describe('filteredAttrs', () => {
 describe('hasSameEntityAttrs', () => {
   test('should return true when both spans have identical entity relationship attributes', () => {
     const span1 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'db.instance': 'my-database',
       'server.address': 'db.example.com'
     }, {})
     const span2 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'db.instance': 'my-database',
       'server.address': 'db.example.com'
     }, {})
@@ -603,11 +603,11 @@ describe('hasSameEntityAttrs', () => {
 
   test('should return false when entity relationship attribute values differ', () => {
     const span1 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'server.address': 'db1.example.com'
     }, {})
     const span2 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'server.address': 'db2.example.com'
     }, {})
     assert.equal(span1.hasSameEntityAttrs(span2), false)
@@ -615,7 +615,7 @@ describe('hasSameEntityAttrs', () => {
 
   test('should return false when one span has entity attributes and the other does not', () => {
     const span1 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
     const span2 = new SpanEvent({ attr: 'value' }, {})
@@ -624,11 +624,11 @@ describe('hasSameEntityAttrs', () => {
 
   test('should return false when spans have different entity attribute keys', () => {
     const span1 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'db.instance': 'my-database'
     }, {})
     const span2 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
     assert.equal(span1.hasSameEntityAttrs(span2), false)
@@ -636,11 +636,11 @@ describe('hasSameEntityAttrs', () => {
 
   test('should ignore error.* attributes when comparing', () => {
     const span1 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'error.message': 'Error 1'
     }, {})
     const span2 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'error.message': 'Error 2'
     }, {})
     assert.equal(span1.hasSameEntityAttrs(span2), true)
@@ -648,11 +648,11 @@ describe('hasSameEntityAttrs', () => {
 
   test('should ignore custom attributes when comparing', () => {
     const span1 = new SpanEvent({
-      'db.system': 'redis',
+      'db.system.name': 'redis',
       attr: 'value1'
     }, {})
     const span2 = new SpanEvent({
-      'db.system': 'redis',
+      'db.system.name': 'redis',
       attr: 'value2'
     }, {})
     assert.equal(span1.hasSameEntityAttrs(span2), true)
@@ -662,15 +662,15 @@ describe('hasSameEntityAttrs', () => {
 describe('getEntityGroup', () => {
   test('should return matching entity group when found', () => {
     const span1 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
     const span2 = new SpanEvent({
-      'db.system': 'mysql',
+      'db.system.name': 'mysql',
       'server.address': 'db2.example.com'
     }, {})
     const span3 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
 
@@ -689,7 +689,7 @@ describe('getEntityGroup', () => {
   })
   test('should return null when trace has no compactSpanGroups', () => {
     const span = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'server.address': 'db.example.com'
     }, {})
     const trace = {
@@ -701,15 +701,15 @@ describe('getEntityGroup', () => {
 
   test('should return null when no matching entity group is found', () => {
     const span1 = new SpanEvent({
-      'db.system': 'postgresql',
+      'db.system.name': 'postgresql',
       'server.address': 'db1.example.com'
     }, {})
     const span2 = new SpanEvent({
-      'db.system': 'mysql',
+      'db.system.name': 'mysql',
       'server.address': 'db2.example.com'
     }, {})
     const span3 = new SpanEvent({
-      'db.system': 'redis',
+      'db.system.name': 'redis',
       'server.address': 'cache.example.com'
     }, {})
 
