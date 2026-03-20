@@ -44,6 +44,7 @@ function sayHello({ metadata, request: { name } }, cb) {
 }
 
 function sayHelloClientStream(call, cb) {
+  const ctx = AGENT.tracer.getContext()
   const { metadata } = call
   const names = []
   call.on('data', function (clientStream) {
@@ -53,7 +54,9 @@ function sayHelloClientStream(call, cb) {
   })
   call.on('end', function () {
     cb(null, {
-      message: `Hello ${names.join(', ')}`
+      message: `Hello ${names.join(', ')}`,
+      transaction_id: ctx.transaction?.id,
+      segment_name: ctx.segment?.name
     })
   })
 }
@@ -77,12 +80,17 @@ function sayHelloServerStream(call) {
 }
 
 function sayHelloBidiStream(call) {
+  const ctx = AGENT.tracer.getContext()
   const { metadata } = call
   call.on('data', (clientStream) => {
     const { name } = clientStream
     // add the metadata from client that the server receives so we can assert DT functionality
     SERVER.metadataMap.set(name, metadata.internalRepr)
-    call.write({ message: `Hello ${name}` })
+    call.write({
+      message: `Hello ${name}`,
+      transaction_id: ctx.transaction?.id,
+      segment_name: ctx.segment?.name
+    })
   })
   call.on('end', () => {
     call.end()

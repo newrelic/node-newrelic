@@ -66,8 +66,8 @@ test('should track bidirectional requests', async (t) => {
   names.forEach(({ name }, i) => {
     const response = responses[i]
     assert.equal(response.message, `Hello ${name}`, 'response stream message should be correct')
-    assert.ok(Object.hasOwn(response, 'transaction_id'))
-    assert.ok(Object.hasOwn(response, 'segment_name'))
+    assert.equal(response.transaction_id, transaction.id)
+    assert.equal(response.segment_name, '/helloworld.Greeter/SayHelloBidiStream')
   })
 
   assert.ok(transaction, 'transaction exists')

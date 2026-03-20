@@ -68,8 +68,8 @@ test('should track client streaming requests', async (t) => {
     `Hello ${names.map(({ name }) => name).join(', ')}`,
     'response message is correct'
   )
-  assert.ok(Object.hasOwn(response, 'transaction_id'))
-  assert.ok(Object.hasOwn(response, 'segment_name'))
+  assert.equal(response.transaction_id, transaction.id)
+  assert.equal(response.segment_name, '/helloworld.Greeter/SayHelloClientStream')
   assertServerTransaction({ transaction, fnName: 'SayHelloClientStream' })
   assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHelloClientStream' })
 })
