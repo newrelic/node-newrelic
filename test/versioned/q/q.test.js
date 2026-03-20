@@ -31,13 +31,14 @@ test.afterEach((ctx) => {
   removeModules(['q'])
 })
 
-test('should load tracking metrics', (t) => {
-  const { agent } = t.nr
+test('should load tracking metrics', async (t) => {
+  const { agent, q } = t.nr
   const { version } = require('q/package.json')
-  assertPackageMetrics({ agent, pkg: 'q', version })
+  await q()
+  assertPackageMetrics({ agent, pkg: 'q', version, subscriberType: true })
 })
 
-test('q.invoke', (t, end) => {
+test('q.invoke', async (t) => {
   const { agent, q } = t.nr
   const firstTest = q.defer()
   const secondTest = q.defer()
@@ -56,10 +57,10 @@ test('q.invoke', (t, end) => {
     })
   })
 
-  q.all([firstTest, secondTest]).then(() => end())
+  await q.all([firstTest.promise, secondTest.promise])
 })
 
-test('q.then', (t, end) => {
+test('q.then', async (t) => {
   const { agent, q } = t.nr
   const firstTest = q.defer()
   const secondTest = q.defer()
@@ -78,7 +79,7 @@ test('q.then', (t, end) => {
     })
   })
 
-  q.all([firstTest, secondTest]).then(() => end())
+  await q.all([firstTest.promise, secondTest.promise])
 })
 
 test('q.then rejections', async (t) => {
