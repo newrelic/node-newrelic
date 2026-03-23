@@ -14,10 +14,33 @@ const {
 
 let SERVER
 let AGENT
+let ADD_CONTEXT
 
-module.exports = function createServerMethods(server, agent) {
+/**
+ * Returns a joined list of names from stream data
+ * as well as a unique set of tx id and segment names(should only be one)
+ *
+ * @param {Array} data collection of { name, ctx }
+ * @returns {object} { name, txId, segName }
+ */
+function extractStreamData(data) {
+  const result = data.reduce((accum, curr) => {
+    accum.names.push(curr.name)
+    accum.txIds.add(curr.ctx?.transaction?.id)
+    accum.segmentNames.add(curr?.ctx?.segment?.name)
+    return accum
+  }, { names: [], txIds: new Set(), segmentNames: new Set() })
+  return {
+    name: result.names.join(', '),
+    txId: [...result.txIds].join(', '),
+    segName: [...result.segmentNames].join(', ')
+  }
+}
+
+module.exports = function createServerMethods(server, agent, addContextToResponse) {
   SERVER = server
   AGENT = agent
+  ADD_CONTEXT = addContextToResponse
 
   return {
     sayHello,
@@ -36,28 +59,29 @@ function sayHello({ metadata, request: { name } }, cb) {
   // add the metadata from client that the server receives so we can assert DT functionality
   SERVER.metadataMap.set(name, metadata.internalRepr)
   const message = `Hello ${name}`
-  cb(null, {
-    message,
-    transaction_id: ctx.transaction?.id,
-    segment_name: ctx.segment?.name
-  })
+  const response = { message }
+  ADD_CONTEXT({ agent: AGENT, response, key: 'cb', ctx })
+  cb(null, response)
 }
 
 function sayHelloClientStream(call, cb) {
   const ctx = AGENT.tracer.getContext()
   const { metadata } = call
-  const names = []
+  const data = []
   call.on('data', function (clientStream) {
     const { name } = clientStream
     SERVER.metadataMap.set(name, metadata.internalRepr)
-    names.push(name)
+    const ctx = AGENT.tracer.getContext()
+    data.push({ name, ctx })
   })
   call.on('end', function () {
-    cb(null, {
-      message: `Hello ${names.join(', ')}`,
-      transaction_id: ctx.transaction?.id,
-      segment_name: ctx.segment?.name
-    })
+    const endCtx = AGENT.tracer.getContext()
+    const { name, txId, segName } = extractStreamData(data)
+    const response = { message: `Hello ${name}` }
+    ADD_CONTEXT({ agent: AGENT, response, key: 'cb', ctx })
+    ADD_CONTEXT({ agent: AGENT, response, key: 'stream_end', ctx: endCtx })
+    ADD_CONTEXT({ agent: AGENT, response, key: 'stream_data', ctx: { transaction: { id: txId }, segment: { name: segName } } })
+    cb(null, response)
   })
 }
 
@@ -70,11 +94,9 @@ function sayHelloServerStream(call) {
   name.forEach((n) => {
     // add the metadata from client that the server receives so we can assert DT functionality
     SERVER.metadataMap.set(n, metadata.internalRepr)
-    call.write({
-      message: `Hello ${n}`,
-      transaction_id: ctx.transaction?.id,
-      segment_name: ctx.segment?.name
-    })
+    const response = { message: `Hello ${n}` }
+    ADD_CONTEXT({ agent: AGENT, response, key: 'cb', ctx })
+    call.write(response)
   })
   call.end()
 }
@@ -83,16 +105,20 @@ function sayHelloBidiStream(call) {
   const ctx = AGENT.tracer.getContext()
   const { metadata } = call
   call.on('data', (clientStream) => {
+    const dataCtx = AGENT.tracer.getContext()
     const { name } = clientStream
     // add the metadata from client that the server receives so we can assert DT functionality
     SERVER.metadataMap.set(name, metadata.internalRepr)
-    call.write({
-      message: `Hello ${name}`,
-      transaction_id: ctx.transaction?.id,
-      segment_name: ctx.segment?.name
-    })
+    const response = { message: `Hello ${name}` }
+    ADD_CONTEXT({ agent: AGENT, response, key: 'cb', ctx })
+    ADD_CONTEXT({ agent: AGENT, response, key: 'stream_data', ctx: dataCtx })
+    call.write(response)
   })
   call.on('end', () => {
+    const endCtx = AGENT.tracer.getContext()
+    const response = { message: 'end' }
+    ADD_CONTEXT({ agent: AGENT, response, key: 'stream_end', ctx: endCtx })
+    call.write(response)
     call.end()
   })
 }

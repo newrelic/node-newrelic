@@ -18,6 +18,7 @@ const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 
 const { ERR_CODE, ERR_SERVER_MSG, HALT_CODE, HALT_GRPC_SERVER_MSG } = require('./constants.cjs')
 const {
+  assertContext,
   assertError,
   assertDistributedTracing,
   assertServerMetrics,
@@ -54,7 +55,8 @@ test('should track client streaming requests', async (t) => {
     makeClientStreamingRequest({
       client,
       fnName: 'sayHelloClientStream',
-      payload: names
+      payload: names,
+      agent
     }),
     once(agent, 'transactionFinished')
   ])
@@ -68,8 +70,9 @@ test('should track client streaming requests', async (t) => {
     `Hello ${names.map(({ name }) => name).join(', ')}`,
     'response message is correct'
   )
-  assert.equal(response.transaction_id, transaction.id)
-  assert.equal(response.segment_name, '/helloworld.Greeter/SayHelloClientStream')
+  assertContext({ response, key: 'cb', txId: transaction.id, segmentName: '/helloworld.Greeter/SayHelloClientStream' })
+  assertContext({ response, key: 'stream_data', txId: transaction.id, segmentName: '/helloworld.Greeter/SayHelloClientStream' })
+  assertContext({ response, key: 'stream_end', txId: transaction.id, segmentName: '/helloworld.Greeter/SayHelloClientStream' })
   assertServerTransaction({ transaction, fnName: 'SayHelloClientStream' })
   assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHelloClientStream' })
 })

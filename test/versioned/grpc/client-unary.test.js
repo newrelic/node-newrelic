@@ -15,6 +15,7 @@ const { version } = require('@grpc/grpc-js/package.json')
 
 const { ERR_CODE, ERR_MSG } = require('./constants.cjs')
 const {
+  assertContext,
   assertError,
   assertExternalSegment,
   assertMetricsNotExisting,
@@ -62,10 +63,12 @@ test('should track unary client requests as an external when in a transaction', 
     const response = await makeUnaryRequest({
       client,
       fnName: 'sayHello',
-      payload: { name: 'New Relic' }
+      payload: { name: 'New Relic' },
+      agent
     })
     assert.ok(response, 'response exists')
     assert.equal(response.message, 'Hello New Relic', 'response message is correct')
+    assertContext({ response, key: 'client_cb', txId: tx.id, segmentName: 'helloworld.Greeter/SayHello', clientRequest: true })
     tx.end()
   })
 })

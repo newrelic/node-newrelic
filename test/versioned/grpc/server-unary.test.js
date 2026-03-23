@@ -18,6 +18,7 @@ const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 
 const { ERR_CODE, ERR_SERVER_MSG } = require('./constants.cjs')
 const {
+  assertContext,
   assertError,
   assertDistributedTracing,
   assertServerMetrics,
@@ -68,8 +69,7 @@ test('should track unary server requests', async (t) => {
 
   assert.ok(response, 'response exists')
   assert.equal(response.message, 'Hello New Relic', 'response message is correct')
-  assert.equal(response.transaction_id, transaction.id)
-  assert.equal(response.segment_name, '/helloworld.Greeter/SayHello')
+  assertContext({ response, key: 'cb', txId: transaction.id, segmentName: '/helloworld.Greeter/SayHello' })
 })
 
 test('should add DT headers when `distributed_tracing` is enabled', async (t) => {

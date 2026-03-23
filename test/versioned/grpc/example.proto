@@ -26,8 +26,14 @@ message ArrayHelloRequest {
   repeated string name = 1;
 }
 
+message Context {
+  string transaction_id = 1;
+  string segment_name = 2;
+}
+
 message HelloReply {
   string message = 1;
-  string transaction_id = 2;
-  string segment_name = 3;
+  Context cb = 3;
+  Context stream_data = 4;
+  Context stream_end = 5;
 }

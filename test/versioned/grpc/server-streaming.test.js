@@ -18,6 +18,7 @@ const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 
 const { ERR_CODE, ERR_SERVER_MSG } = require('./constants.cjs')
 const {
+  assertContext,
   assertError,
   assertDistributedTracing,
   assertServerMetrics,
@@ -66,8 +67,7 @@ test('should track server-streaming requests', async (t) => {
   names.forEach((name, i) => {
     const response = responses[i]
     assert.equal(response.message, `Hello ${name}`, 'response stream message should be correct')
-    assert.equal(response.transaction_id, transaction.id)
-    assert.equal(response.segment_name, '/helloworld.Greeter/SayHelloServerStream')
+    assertContext({ response, key: 'cb', txId: transaction.id, segmentName: '/helloworld.Greeter/SayHelloServerStream' })
   })
   assert.ok(transaction, 'transaction exists')
   assertServerTransaction({ transaction, fnName: 'SayHelloServerStream' })

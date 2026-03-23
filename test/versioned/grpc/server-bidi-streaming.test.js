@@ -18,6 +18,7 @@ const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 
 const { ERR_CODE, ERR_SERVER_MSG } = require('./constants.cjs')
 const {
+  assertContext,
   assertError,
   assertDistributedTracing,
   assertServerMetrics,
@@ -66,9 +67,13 @@ test('should track bidirectional requests', async (t) => {
   names.forEach(({ name }, i) => {
     const response = responses[i]
     assert.equal(response.message, `Hello ${name}`, 'response stream message should be correct')
-    assert.equal(response.transaction_id, transaction.id)
-    assert.equal(response.segment_name, '/helloworld.Greeter/SayHelloBidiStream')
+    assertContext({ response, key: 'cb', txId: transaction.id, segmentName: '/helloworld.Greeter/SayHelloBidiStream' })
+    assertContext({ response, key: 'stream_data', txId: transaction.id, segmentName: '/helloworld.Greeter/SayHelloBidiStream' })
   })
+
+  const endResponse = responses.at(-1)
+  assert.equal(endResponse.message, 'end')
+  assertContext({ response: endResponse, key: 'stream_end', txId: transaction.id, segmentName: '/helloworld.Greeter/SayHelloBidiStream' })
 
   assert.ok(transaction, 'transaction exists')
   assertServerTransaction({ transaction, fnName: 'SayHelloBidiStream' })

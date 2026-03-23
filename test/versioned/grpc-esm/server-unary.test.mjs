@@ -19,6 +19,7 @@ const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 
 import util from '../grpc/util.cjs'
 const {
+  assertContext,
   assertDistributedTracing,
   assertError,
   assertServerMetrics,
@@ -71,6 +72,7 @@ test('should track unary server requests', async (t) => {
   })
   assert.ok(response, 'response exists')
   assert.equal(response.message, 'Hello New Relic', 'response message is correct')
+  assertContext({ response, key: 'cb', txId: transaction.id, segmentName: '/helloworld.Greeter/SayHello' })
   assert.ok(transaction, 'transaction exists')
   assertServerTransaction({ transaction, fnName: 'SayHello' })
   assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHello' })

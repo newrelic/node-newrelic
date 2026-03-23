@@ -15,6 +15,7 @@ const helper = require('../../lib/agent_helper')
 
 const { ERR_CODE, ERR_MSG } = require('./constants.cjs')
 const {
+  assertContext,
   assertError,
   assertExternalSegment,
   assertMetricsNotExisting,
@@ -58,11 +59,18 @@ test('should track bidirectional streaming requests as an external when in a tra
     const responses = await makeBidiStreamingRequest({
       client,
       fnName: 'sayHelloBidiStream',
-      payload: names
+      payload: names,
+      agent
     })
+
     names.forEach(({ name }, i) => {
+      const response = responses[i]
       assert.equal(responses[i].message, `Hello ${name}`, 'response stream message should be correct')
+      assertContext({ response, key: 'client_stream_data', txId: tx.id, segmentName: 'helloworld.Greeter/SayHelloBidiStream', clientRequest: true })
     })
+
+    const lastResponse = responses.at(-1)
+    assertContext({ response: lastResponse, key: 'client_stream_end', txId: tx.id, segmentName: 'helloworld.Greeter/SayHelloBidiStream', clientRequest: true })
 
     tx.end()
   })
