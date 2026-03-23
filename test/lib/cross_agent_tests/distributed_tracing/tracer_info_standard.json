@@ -16,7 +16,7 @@
         "duration_millis": 100,
         "agent_attrs": {
           "http.url": "serviceB",
-          "non_essential_attr": "somevalue",
+          "subcomponent": "somevalue",
           "error.class": "errorclass1",
           "error.message": "errormessage1",
           "error.expected": true
@@ -60,8 +60,7 @@
           "messaging.system": "MQS",
           "peer.hostname": "peer",
           "server.address": "server",
-          "server.port": 80,
-          "span.kind": "SPAN"
+          "server.port": 80
         }
       },
       {
@@ -73,9 +72,7 @@
             "name": "Llm/SOMETHING/function",
             "timestamp": 1766435411000,
             "duration_millis": 200,
-            "agent_attrs": {
-              "http.url": "myllm"
-            },
+            "agent_attrs": {},
             "children": [
               {
                 "name": "External/D",

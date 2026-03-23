@@ -1,7 +1,7 @@
 [
   {
     "test_name": "partial_granularity_reduced",
-    "comment": [ "Use transaction from tracer_info.json, with partial granularity set to 'reduced'",
+    "comment": [ "Use transaction from tracer_info_standard.json, with partial granularity set to 'reduced'",
       "We should drop the in-process span and keep the rest.",
       "The External span External/B2 under the in-process span should be re-parented to the root span."],
     "tracer_info":"tracer_info_standard.json",
@@ -23,7 +23,7 @@
           "agent_attrs": {
             "exact": {
               "http.url": "serviceB",
-              "non_essential_attr": "somevalue",
+              "subcomponent": "somevalue",
               "error.class": "errorclass1",
               "error.message": "errormessage1",
               "error.expected": true
@@ -66,20 +66,14 @@
               "messaging.system": "MQS",
               "peer.hostname": "peer",
               "server.address": "server",
-              "server.port": 80,
-              "span.kind": "SPAN"
+              "server.port": 80
             }
           }
         }
       },
       {
         "Llm/SOMETHING/function": {
-          "parent": "root",
-          "agent_attrs": {
-            "exact": {
-              "http.url": "myllm"
-            }
-          }
+          "parent": "root"
         }
       },
       {
@@ -97,7 +91,7 @@
   },
   {
     "test_name": "partial_granularity_essential",
-    "comment": [ "Use transaction from tracer_info.json, with partial granularity set to 'essential'",
+    "comment": [ "Use transaction from tracer_info_standard.json, with partial granularity set to 'essential'",
       "We should drop the in-process span and keep the rest.",
       "The External span External/B2 under the in-process span should be re-parented to the root span.",
       "The non-essential attribute on External/B1 should be dropped"],
@@ -124,7 +118,7 @@
               "error.message": "errormessage1",
               "error.expected": true
             },
-            "unexpected": ["non_essential_attr"]
+            "unexpected": ["subcomponent"]
           },
           "user_attrs": {
             "unexpected": ["my_user_attr"]
@@ -161,20 +155,14 @@
               "messaging.system": "MQS",
               "peer.hostname": "peer",
               "server.address": "server",
-              "server.port": 80,
-              "span.kind": "SPAN"
+              "server.port": 80
             }
           }
         }
       },
       {
         "Llm/SOMETHING/function": {
-          "parent": "root",
-          "agent_attrs": {
-            "exact": {
-              "http.url": "myllm"
-            }
-          }
+          "parent": "root"
         }
       },
       {
@@ -192,7 +180,7 @@
   },
   {
     "test_name": "partial_granularity_compact",
-    "comment": [ "Use transaction from tracer_info.json, with partial granularity set to 'compact'",
+    "comment": [ "Use transaction from tracer_info_standard.json, with partial granularity set to 'compact'",
       "We should drop the in-process span and keep the rest.",
       "The External span External/B2 under the in-process span should be merged into External/B1.",
       "Their durations should be merged and the merged span should have 2 new attributes: nr.ids and nr.durations.",
@@ -231,7 +219,7 @@
               "error.expected"
             ],
             "unexpected": [
-              "non_essential_attr"
+              "subcomponent"
             ]
           },
           "user_attrs": {
@@ -256,20 +244,14 @@
               "messaging.system": "MQS",
               "peer.hostname": "peer",
               "server.address": "server",
-              "server.port": 80,
-              "span.kind": "SPAN"
+              "server.port": 80
             }
           }
         }
       },
       {
         "Llm/SOMETHING/function": {
-          "parent": "root",
-          "agent_attrs": {
-            "exact": {
-              "http.url": "myllm"
-            }
-          }
+          "parent": "root"
         }
       },
       {
@@ -287,7 +269,7 @@
   },
   {
     "test_name": "partial_granularity_compact_too_many_nrids",
-    "comment": [ "Use transaction from tracer_info.json, with partial granularity set to 'compact'",
+    "comment": [ "Use transaction from tracer_info_compact_too_many.json, with partial granularity set to 'compact'",
       "We should group all the child spans together which should be too many to add all to nr.ids",
       "This should produce a metric called Supportability/Java/PartialGranularity/NrIds/Dropped with the right value"
     ],
