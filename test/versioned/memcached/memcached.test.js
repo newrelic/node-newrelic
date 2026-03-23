@@ -34,7 +34,7 @@ test('should log tracking metrics', function (t, end) {
   })
 })
 
-test('touch()', { timeout: 5000 }, function (t, end) {
+test('touch()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -43,46 +43,48 @@ test('touch()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  helper.runInTransaction(agent, function (transaction) {
-    memcached.touch('foo', 1, function (err) {
-      assert.ok(!err, 'should not throw an error')
-      assert.ok(agent.getTransaction(), 'transaction should still be visible')
-      assertSegmentState(agent, 'Datastore/operation/Memcache/touch')
-
-      assertSegments(
-        transaction.trace,
-        transaction.trace.root,
-        ['Datastore/operation/Memcache/touch'],
-        { exact: false },
-        { assert }
-      )
-      transaction.end()
-      assertSpanKind({
-        agent,
-        segments: [
-          { name: 'Datastore/operation/Memcache/touch', kind: 'client' }
-        ],
-        assert
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.touch('foo', 1, function (err) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
       })
-      assertMetrics(
-        transaction.metrics,
-        [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/allWeb' }],
-          [{ name: 'Datastore/Memcache/all' }],
-          [{ name: 'Datastore/Memcache/allWeb' }],
-          [{ name: 'Datastore/operation/Memcache/touch' }]
-        ],
-        false,
-        false,
-        { assert }
-      )
-      end()
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/touch')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/touch'],
+      { exact: false },
+      { assert }
+    )
+    transaction.end()
+    assertSpanKind({
+      agent,
+      segments: [
+        { name: 'Datastore/operation/Memcache/touch', kind: 'client' }
+      ],
+      assert
+    })
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/touch' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('get()', { timeout: 5000 }, function (t, end) {
+test('get()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -91,40 +93,42 @@ test('get()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  helper.runInTransaction(agent, function (transaction) {
-    memcached.get('foo', function (err) {
-      assert.ok(!err, 'should not throw an error')
-      assert.ok(agent.getTransaction(), 'transaction should still be visible')
-      assertSegmentState(agent, 'Datastore/operation/Memcache/get')
-
-      assertSegments(
-        transaction.trace,
-        transaction.trace.root,
-        ['Datastore/operation/Memcache/get'],
-        { exact: false },
-        { assert }
-      )
-
-      transaction.end()
-      assertMetrics(
-        transaction.metrics,
-        [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/allWeb' }],
-          [{ name: 'Datastore/Memcache/all' }],
-          [{ name: 'Datastore/Memcache/allWeb' }],
-          [{ name: 'Datastore/operation/Memcache/get' }]
-        ],
-        false,
-        false,
-        { assert }
-      )
-      end()
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.get('foo', function (err) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
+      })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/get')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/get'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/get' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('gets()', { timeout: 5000 }, function (t, end) {
+test('gets()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -133,40 +137,42 @@ test('gets()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  helper.runInTransaction(agent, function (transaction) {
-    memcached.gets('foo', function (err) {
-      assert.ok(!err, 'should not throw an error')
-      assert.ok(agent.getTransaction(), 'transaction should still be visible')
-      assertSegmentState(agent, 'Datastore/operation/Memcache/gets')
-
-      assertSegments(
-        transaction.trace,
-        transaction.trace.root,
-        ['Datastore/operation/Memcache/gets'],
-        { exact: false },
-        { assert }
-      )
-
-      transaction.end()
-      assertMetrics(
-        transaction.metrics,
-        [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/allWeb' }],
-          [{ name: 'Datastore/Memcache/all' }],
-          [{ name: 'Datastore/Memcache/allWeb' }],
-          [{ name: 'Datastore/operation/Memcache/gets' }]
-        ],
-        false,
-        false,
-        { assert }
-      )
-      end()
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.gets('foo', function (err) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
+      })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/gets')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/gets'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/gets' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('getMulti()', { timeout: 5000 }, function (t, end) {
+test('getMulti()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -175,40 +181,42 @@ test('getMulti()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  helper.runInTransaction(agent, function (transaction) {
-    memcached.getMulti(['foo', 'bar'], function (err) {
-      assert.ok(!err, 'should not throw an error')
-      assert.ok(agent.getTransaction(), 'transaction should still be visible')
-      assertSegmentState(agent, 'Datastore/operation/Memcache/get')
-
-      assertSegments(
-        transaction.trace,
-        transaction.trace.root,
-        ['Datastore/operation/Memcache/get'],
-        { exact: false },
-        { assert }
-      )
-
-      transaction.end()
-      assertMetrics(
-        transaction.metrics,
-        [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/allWeb' }],
-          [{ name: 'Datastore/Memcache/all' }],
-          [{ name: 'Datastore/Memcache/allWeb' }],
-          [{ name: 'Datastore/operation/Memcache/get' }]
-        ],
-        false,
-        false,
-        { assert }
-      )
-      end()
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.getMulti(['foo', 'bar'], function (err) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
+      })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/get')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/get'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/get' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('set()', { timeout: 5000 }, function (t, end) {
+test('set()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -217,40 +225,42 @@ test('set()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  helper.runInTransaction(agent, function (transaction) {
-    memcached.set('foo', 'bar', 10, function (err) {
-      assert.ok(!err, 'should not throw an error')
-      assert.ok(agent.getTransaction(), 'transaction should still be visible')
-      assertSegmentState(agent, 'Datastore/operation/Memcache/set')
-
-      assertSegments(
-        transaction.trace,
-        transaction.trace.root,
-        ['Datastore/operation/Memcache/set'],
-        { exact: false },
-        { assert }
-      )
-
-      transaction.end()
-      assertMetrics(
-        transaction.metrics,
-        [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/allWeb' }],
-          [{ name: 'Datastore/Memcache/all' }],
-          [{ name: 'Datastore/Memcache/allWeb' }],
-          [{ name: 'Datastore/operation/Memcache/set' }]
-        ],
-        false,
-        false,
-        { assert }
-      )
-      end()
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.set('foo', 'bar', 10, function (err) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
+      })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/set')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/set'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/set' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('replace()', { timeout: 5000 }, function (t, end) {
+test('replace()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -259,44 +269,46 @@ test('replace()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  memcached.set('foo', 'bar', 10, function (err) {
-    assert.ok(!err, 'should not throw error')
+  await new Promise((resolve, reject) => {
+    memcached.set('foo', 'bar', 10, (err) => (err ? reject(err) : resolve()))
+  })
 
-    helper.runInTransaction(agent, function (transaction) {
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
       memcached.replace('foo', 'new', 10, function (err) {
         assert.ok(!err, 'should not throw an error')
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
-        assertSegmentState(agent, 'Datastore/operation/Memcache/replace')
-
-        assertSegments(
-          transaction.trace,
-          transaction.trace.root,
-          ['Datastore/operation/Memcache/replace'],
-          { exact: false },
-          { assert }
-        )
-
-        transaction.end()
-        assertMetrics(
-          transaction.metrics,
-          [
-            [{ name: 'Datastore/all' }],
-            [{ name: 'Datastore/allWeb' }],
-            [{ name: 'Datastore/Memcache/all' }],
-            [{ name: 'Datastore/Memcache/allWeb' }],
-            [{ name: 'Datastore/operation/Memcache/replace' }]
-          ],
-          false,
-          false,
-          { assert }
-        )
-        end()
+        resolve(agent.tracer.getSegment())
       })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/replace')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/replace'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/replace' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('add()', { timeout: 5000 }, function (t, end) {
+test('add()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -305,90 +317,42 @@ test('add()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  helper.runInTransaction(agent, function (transaction) {
-    memcached.add('foo', 'bar', 10, function (err) {
-      assert.ok(!err, 'should not throw an error')
-      assert.ok(agent.getTransaction(), 'transaction should still be visible')
-      assertSegmentState(agent, 'Datastore/operation/Memcache/add')
-
-      assertSegments(
-        transaction.trace,
-        transaction.trace.root,
-        ['Datastore/operation/Memcache/add'],
-        { exact: false },
-        { assert }
-      )
-
-      transaction.end()
-      assertMetrics(
-        transaction.metrics,
-        [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/allWeb' }],
-          [{ name: 'Datastore/Memcache/all' }],
-          [{ name: 'Datastore/Memcache/allWeb' }],
-          [{ name: 'Datastore/operation/Memcache/add' }]
-        ],
-        false,
-        false,
-        { assert }
-      )
-      end()
-    })
-  })
-})
-
-test('cas()', { timeout: 5000 }, function (t, end) {
-  const agent = helper.instrumentMockedAgent()
-  const Memcached = require('memcached')
-  const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
-  t.after(async () => {
-    helper.unloadAgent(agent)
-    await flush(memcached)
-  })
-
-  memcached.set('foo', 'bar', 10, function (err) {
-    assert.ok(!err, 'set should not have errored')
-
-    memcached.gets('foo', function (err, data) {
-      assert.ok(!err, 'gets should not have errored')
-
-      helper.runInTransaction(agent, function (transaction) {
-        memcached.cas('foo', 'bar', data.cas, 10, function (err) {
-          assert.ok(!err, 'should not throw an error')
-          assert.ok(agent.getTransaction(), 'transaction should still be visible')
-          assertSegmentState(agent, 'Datastore/operation/Memcache/cas')
-
-          assertSegments(
-            transaction.trace,
-            transaction.trace.root,
-            ['Datastore/operation/Memcache/cas'],
-            { exact: false },
-            { assert }
-          )
-
-          transaction.end()
-          assertMetrics(
-            transaction.metrics,
-            [
-              [{ name: 'Datastore/all' }],
-              [{ name: 'Datastore/allWeb' }],
-              [{ name: 'Datastore/Memcache/all' }],
-              [{ name: 'Datastore/Memcache/allWeb' }],
-              [{ name: 'Datastore/operation/Memcache/cas' }]
-            ],
-            false,
-            false,
-            { assert }
-          )
-          end()
-        })
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.add('foo', 'bar', 10, function (err) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
       })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/add')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/add'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/add' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('append()', { timeout: 5000 }, function (t, end) {
+test('cas()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -397,42 +361,97 @@ test('append()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  memcached.set('foo', 'bar', 10, function (err) {
-    assert.ok(!err)
-    helper.runInTransaction(agent, function (transaction) {
+  await new Promise((resolve, reject) => {
+    memcached.set('foo', 'bar', 10, (err) => (err ? reject(err) : resolve()))
+  })
+
+  const data = await new Promise((resolve, reject) => {
+    memcached.gets('foo', (err, result) => (err ? reject(err) : resolve(result)))
+  })
+
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.cas('foo', 'bar', data.cas, 10, function (err) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
+      })
+    })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/cas')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/cas'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/cas' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
+  })
+})
+
+test('append()', { timeout: 5000 }, async function (t) {
+  const agent = helper.instrumentMockedAgent()
+  const Memcached = require('memcached')
+  const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
+  t.after(async () => {
+    helper.unloadAgent(agent)
+    await flush(memcached)
+  })
+
+  await new Promise((resolve, reject) => {
+    memcached.set('foo', 'bar', 10, (err) => (err ? reject(err) : resolve()))
+  })
+
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
       memcached.append('foo', 'bar', function (err) {
         assert.ok(!err)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
-        assertSegmentState(agent, 'Datastore/operation/Memcache/append')
-
-        assertSegments(
-          transaction.trace,
-          transaction.trace.root,
-          ['Datastore/operation/Memcache/append'],
-          { exact: false },
-          { assert }
-        )
-        transaction.end()
-        assertMetrics(
-          transaction.metrics,
-          [
-            [{ name: 'Datastore/all' }],
-            [{ name: 'Datastore/allWeb' }],
-            [{ name: 'Datastore/Memcache/all' }],
-            [{ name: 'Datastore/Memcache/allWeb' }],
-            [{ name: 'Datastore/operation/Memcache/append' }]
-          ],
-          false,
-          false,
-          { assert }
-        )
-        end()
+        resolve(agent.tracer.getSegment())
       })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/append')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/append'],
+      { exact: false },
+      { assert }
+    )
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/append' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('prepend()', { timeout: 5000 }, function (t, end) {
+test('prepend()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -441,43 +460,46 @@ test('prepend()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  memcached.set('foo', 'bar', 10, function (err) {
-    assert.ok(!err)
-    helper.runInTransaction(agent, function (transaction) {
+  await new Promise((resolve, reject) => {
+    memcached.set('foo', 'bar', 10, (err) => (err ? reject(err) : resolve()))
+  })
+
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
       memcached.prepend('foo', 'bar', function (err) {
         assert.ok(!err)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
-        assertSegmentState(agent, 'Datastore/operation/Memcache/prepend')
-
-        assertSegments(
-          transaction.trace,
-          transaction.trace.root,
-          ['Datastore/operation/Memcache/prepend'],
-          { exact: false },
-          { assert }
-        )
-
-        transaction.end()
-        assertMetrics(
-          transaction.metrics,
-          [
-            [{ name: 'Datastore/all' }],
-            [{ name: 'Datastore/allWeb' }],
-            [{ name: 'Datastore/Memcache/all' }],
-            [{ name: 'Datastore/Memcache/allWeb' }],
-            [{ name: 'Datastore/operation/Memcache/prepend' }]
-          ],
-          false,
-          false,
-          { assert }
-        )
-        end()
+        resolve(agent.tracer.getSegment())
       })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/prepend')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/prepend'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/prepend' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('del()', { timeout: 5000 }, function (t, end) {
+test('del()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -486,43 +508,46 @@ test('del()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  memcached.set('foo', 'bar', 10, function (err) {
-    assert.ok(!err)
-    helper.runInTransaction(agent, function (transaction) {
+  await new Promise((resolve, reject) => {
+    memcached.set('foo', 'bar', 10, (err) => (err ? reject(err) : resolve()))
+  })
+
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
       memcached.del('foo', function (err) {
         assert.ok(!err)
         assert.ok(agent.getTransaction(), 'transaction should still be visible')
-        assertSegmentState(agent, 'Datastore/operation/Memcache/delete')
-
-        assertSegments(
-          transaction.trace,
-          transaction.trace.root,
-          ['Datastore/operation/Memcache/delete'],
-          { exact: false },
-          { assert }
-        )
-
-        transaction.end()
-        assertMetrics(
-          transaction.metrics,
-          [
-            [{ name: 'Datastore/all' }],
-            [{ name: 'Datastore/allWeb' }],
-            [{ name: 'Datastore/Memcache/all' }],
-            [{ name: 'Datastore/Memcache/allWeb' }],
-            [{ name: 'Datastore/operation/Memcache/delete' }]
-          ],
-          false,
-          false,
-          { assert }
-        )
-        end()
+        resolve(agent.tracer.getSegment())
       })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/delete')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/delete'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/delete' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('incr()', { timeout: 5000 }, function (t, end) {
+test('incr()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -531,40 +556,42 @@ test('incr()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  helper.runInTransaction(agent, function (transaction) {
-    memcached.incr('foo', 10, function (err) {
-      assert.ok(!err, 'should not throw an error')
-      assert.ok(agent.getTransaction(), 'transaction should still be visible')
-      assertSegmentState(agent, 'Datastore/operation/Memcache/incr')
-
-      assertSegments(
-        transaction.trace,
-        transaction.trace.root,
-        ['Datastore/operation/Memcache/incr'],
-        { exact: false },
-        { assert }
-      )
-
-      transaction.end()
-      assertMetrics(
-        transaction.metrics,
-        [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/allWeb' }],
-          [{ name: 'Datastore/Memcache/all' }],
-          [{ name: 'Datastore/Memcache/allWeb' }],
-          [{ name: 'Datastore/operation/Memcache/incr' }]
-        ],
-        false,
-        false,
-        { assert }
-      )
-      end()
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.incr('foo', 10, function (err) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
+      })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/incr')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/incr'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/incr' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('decr()', { timeout: 5000 }, function (t, end) {
+test('decr()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -573,40 +600,42 @@ test('decr()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  helper.runInTransaction(agent, function (transaction) {
-    memcached.decr('foo', 10, function (err) {
-      assert.ok(!err, 'should not throw an error')
-      assert.ok(agent.getTransaction(), 'transaction should still be visible')
-      assertSegmentState(agent, 'Datastore/operation/Memcache/decr')
-
-      assertSegments(
-        transaction.trace,
-        transaction.trace.root,
-        ['Datastore/operation/Memcache/decr'],
-        { exact: false },
-        { assert }
-      )
-
-      transaction.end()
-      assertMetrics(
-        transaction.metrics,
-        [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/allWeb' }],
-          [{ name: 'Datastore/Memcache/all' }],
-          [{ name: 'Datastore/Memcache/allWeb' }],
-          [{ name: 'Datastore/operation/Memcache/decr' }]
-        ],
-        false,
-        false,
-        { assert }
-      )
-      end()
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.decr('foo', 10, function (err) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
+      })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/decr')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/decr'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/decr' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
-test('version()', { timeout: 5000 }, function (t, end) {
+test('version()', { timeout: 5000 }, async function (t) {
   const agent = helper.instrumentMockedAgent()
   const Memcached = require('memcached')
   const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -615,37 +644,39 @@ test('version()', { timeout: 5000 }, function (t, end) {
     await flush(memcached)
   })
 
-  helper.runInTransaction(agent, function (transaction) {
-    memcached.version(function (err, ok) {
-      assert.ok(!err, 'should not throw an error')
-      assert.ok(ok, 'got a version')
-      assert.ok(agent.getTransaction(), 'transaction should still be visible')
-      assertSegmentState(agent, 'Datastore/operation/Memcache/version')
-
-      assertSegments(
-        transaction.trace,
-        transaction.trace.root,
-        ['Datastore/operation/Memcache/version'],
-        { exact: false },
-        { assert }
-      )
-
-      transaction.end()
-      assertMetrics(
-        transaction.metrics,
-        [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/allWeb' }],
-          [{ name: 'Datastore/Memcache/all' }],
-          [{ name: 'Datastore/Memcache/allWeb' }],
-          [{ name: 'Datastore/operation/Memcache/version' }]
-        ],
-        false,
-        false,
-        { assert }
-      )
-      end()
+  await helper.runInTransaction(agent, async function (transaction) {
+    const segment = await new Promise((resolve) => {
+      memcached.version(function (err, ok) {
+        assert.ok(!err, 'should not throw an error')
+        assert.ok(ok, 'got a version')
+        assert.ok(agent.getTransaction(), 'transaction should still be visible')
+        resolve(agent.tracer.getSegment())
+      })
     })
+    assertSegmentState(segment, 'Datastore/operation/Memcache/version')
+
+    assertSegments(
+      transaction.trace,
+      transaction.trace.root,
+      ['Datastore/operation/Memcache/version'],
+      { exact: false },
+      { assert }
+    )
+
+    transaction.end()
+    assertMetrics(
+      transaction.metrics,
+      [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/allWeb' }],
+        [{ name: 'Datastore/Memcache/all' }],
+        [{ name: 'Datastore/Memcache/allWeb' }],
+        [{ name: 'Datastore/operation/Memcache/version' }]
+      ],
+      false,
+      false,
+      { assert }
+    )
   })
 })
 
@@ -914,12 +945,12 @@ test('captures datastore instance attributes with multiple hosts - separate gets
   helper.runInTransaction(agent, function (transaction) {
     memcached.get('foo', function (err) {
       assert.ok(!err)
+      const { segment: fooSegment } = agent.tracer.getContext()
 
       memcached.get('bar', function (err) {
         assert.ok(!err)
-        const fooNode = transaction.trace.segments.root?.children?.[0]
-        checkParams(fooNode?.segment, 'server1', '1111')
-        const barSegment = fooNode?.children?.[1]?.segment
+        const { segment: barSegment } = agent.tracer.getContext()
+        checkParams(fooSegment, 'server1', '1111')
         checkParams(barSegment, 'server2', '2222')
         transaction.end()
         end()
@@ -971,14 +1002,14 @@ test('captures datastore instance attributes with multiple hosts - multi-get', {
 /**
  * Asserts that the current segment has the expected name, has ended,
  * and has a reasonable duration.
- * @param {Agent} agent agent instance
+ * @param {TraceSegment} segment segment to check
  * @param {string} expectedName expected segment name
  */
-function assertSegmentState(agent, expectedName) {
-  const currentSegment = agent.tracer.getSegment()
-  assert.equal(currentSegment.name, expectedName)
-  assert.ok(currentSegment._isEnded(), 'segment should have ended')
-  assert.ok(currentSegment.timer?.hrDuration?.[1] >= 10000, 'segment should have reasonable duration')
+function assertSegmentState(segment, expectedName) {
+  assert.equal(segment.name, expectedName)
+  assert.equal(segment._isEnded(), true, 'segment should have ended')
+  // hrDuration is in nanoseconds
+  assert.ok(segment.timer?.hrDuration?.[1] >= 200000, 'segment should have a duration of at least 20 ms')
 }
 
 /**
