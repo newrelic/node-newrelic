@@ -4,12 +4,11 @@
  */
 
 'use strict'
-const assert = require('node:assert')
 const { runMultiple } = require('../../lib/promises/helpers')
 const { tspl } = require('@matteo.collina/tspl')
-const symbols = require('../../../lib/symbols')
 const helper = require('../../lib/agent_helper')
 const { setImmediate } = require('timers/promises')
+const { removeModules } = require('../../lib/cache-buster')
 
 async function beforeEach(ctx) {
   ctx.nr = {}
@@ -28,6 +27,7 @@ async function beforeEach(ctx) {
 async function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
   clearInterval(ctx.nr.interval)
+  removeModules(['bluebird'])
 
   await setImmediate()
 }
@@ -123,27 +123,9 @@ function testPromiseMethod({ t, count, factory, end }) {
   }
 }
 
-function areMethodsWrapped(source) {
-  const methods = Object.keys(source).sort()
-  methods.forEach((method) => {
-    const wrapped = source[method]
-    const original = wrapped[symbols.original]
-
-    // Skip this property if it is internal (starts or ends with underscore), is
-    // a class (starts with a capital letter), or is not a function.
-    if (/(?:^[_A-Z]|_$)/.test(method) || typeof original !== 'function') {
-      return
-    }
-
-    assert.ok(original, `${method} original exists`)
-    assert.notEqual(wrapped, original, `${method} wrapped is not diff from original`)
-  })
-}
-
 module.exports = {
   addTask,
   afterEach,
-  areMethodsWrapped,
   beforeEach,
   id,
   testPromiseClassMethod,

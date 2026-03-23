@@ -6,6 +6,7 @@
 'use strict'
 
 const test = require('node:test')
+const assert = require('node:assert')
 
 const helper = require('../../lib/agent_helper')
 const { version } = require('bluebird/package.json')
@@ -21,9 +22,6 @@ const {
   testThrowBehavior,
   testTryBehavior,
 } = require('./common-tests')
-const {
-  areMethodsWrapped,
-} = require('./helpers')
 
 testTryBehavior('try')
 testTryBehavior('attempt')
@@ -43,11 +41,18 @@ testAsCallbackBehavior('nodeify')
 testCatchBehavior('catch')
 testCatchBehavior('caught')
 
-test('bluebird static and instance methods check', function (t) {
+test('tracking metrics', async function (t) {
   const agent = helper.loadTestAgent(t)
+  t.after(() => {
+    helper.unloadAgent(agent)
+  })
   const Promise = require('bluebird')
+  await helper.runInTransaction(agent, async (tx) => {
+    assert.ok(tx)
+    await Promise.resolve()
+    const ctx = agent.tracer.getContext()
+    assert.ok(ctx.transaction)
+  })
 
-  areMethodsWrapped(Promise)
-  areMethodsWrapped(Promise.prototype)
-  assertPackageMetrics({ agent, pkg: 'bluebird', version })
+  assertPackageMetrics({ agent, pkg: 'bluebird', version, subscriberType: true })
 })

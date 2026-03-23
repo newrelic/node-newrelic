@@ -19,13 +19,12 @@ const {
 async function testPromiseContext({ t, factory }) {
   await t.test('context switch', async function (t) {
     const { agent, Promise } = t.nr
-    factory = factory.bind(null, Promise)
     const plan = tspl(t, { plan: 2 })
 
     const ctxA = helper.runInTransaction(agent, function (tx) {
       return {
         transaction: tx,
-        promise: factory('[tx a] ')
+        promise: factory(Promise, '[tx a] ')
       }
     })
 
@@ -50,7 +49,6 @@ async function testPromiseContext({ t, factory }) {
   await t.test('context loss', async function (t) {
     const plan = tspl(t, { plan: 2 })
     const { agent, Promise } = t.nr
-    factory = factory.bind(null, Promise)
 
     const ctxA = helper.runInTransaction(agent, function (tx) {
       t.after(function () {
@@ -59,7 +57,7 @@ async function testPromiseContext({ t, factory }) {
 
       return {
         transaction: tx,
-        promise: factory('[tx a] ')
+        promise: factory(Promise, '[tx a] ')
       }
     })
 
@@ -77,9 +75,8 @@ async function testPromiseContext({ t, factory }) {
   await t.test('context gain', async function (t) {
     const plan = tspl(t, { plan: 2 })
     const { agent, Promise } = t.nr
-    factory = factory.bind(null, Promise)
 
-    const promise = factory('[no tx] ')
+    const promise = factory(Promise, '[no tx] ')
 
     plan.ok(!agent.tracer.getTransaction(), 'should not be in transaction')
     helper.runInTransaction(agent, function (tx) {
@@ -97,12 +94,11 @@ async function testPromiseContext({ t, factory }) {
   await t.test('context expiration', async function (t) {
     const plan = tspl(t, { plan: 2 })
     const { agent, Promise } = t.nr
-    factory = factory.bind(null, Promise)
 
     const ctxA = helper.runInTransaction(agent, function (tx) {
       return {
         transaction: tx,
-        promise: factory('[tx a] ')
+        promise: factory(Promise, '[tx a] ')
       }
     })
 

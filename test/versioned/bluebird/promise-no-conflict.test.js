@@ -4,19 +4,22 @@
  */
 
 'use strict'
-
-// Some tests in this file need to assert that we handle non-error rejections:
-const assert = require('node:assert')
 const test = require('node:test')
+const { testPromiseContext } = require('./common-tests')
+const { beforeEach, afterEach } = require('./helpers')
 
-const symbols = require('../../../lib/symbols')
-const helper = require('../../lib/agent_helper')
+test('Promise.noConflict', async function (t) {
+  t.beforeEach((ctx) => {
+    beforeEach(ctx)
+    ctx.nr.Promise = ctx.nr.Promise.noConflict()
+  })
 
-test('Promise.noConflict', function (t) {
-  helper.loadTestAgent(t)
-  const Promise = require('bluebird')
-  const Promise2 = Promise.noConflict()
+  t.afterEach(afterEach)
 
-  assert.ok(Promise2.resolve[symbols.original], 'should have wrapped class methods')
-  assert.ok(Promise2.prototype.then[symbols.original], 'should have wrapped instance methods')
+  await testPromiseContext({
+    t,
+    factory: function (Promise, name) {
+      return Promise.resolve(name)
+    }
+  })
 })

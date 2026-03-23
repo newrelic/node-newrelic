@@ -6,20 +6,24 @@
 'use strict'
 
 // Some tests in this file need to assert that we handle non-error rejections:
-const assert = require('node:assert')
 const test = require('node:test')
 const semver = require('semver')
-
-const symbols = require('../../../lib/symbols')
-const helper = require('../../lib/agent_helper')
-
+const { testPromiseContext } = require('./common-tests')
+const { beforeEach, afterEach } = require('./helpers')
 const { version: pkgVersion } = require('bluebird/package')
 
-test('Promise.getNewLibraryCopy', { skip: semver.lt(pkgVersion, '3.4.1') }, function (t) {
-  helper.loadTestAgent(t)
-  const Promise = require('bluebird')
-  const Promise2 = Promise.getNewLibraryCopy()
+test('Promise.getNewLibraryCopy', { skip: semver.lt(pkgVersion, '3.4.1') }, async function (t) {
+  t.beforeEach((ctx) => {
+    beforeEach(ctx)
+    ctx.nr.Promise = ctx.nr.Promise.getNewLibraryCopy()
+  })
 
-  assert.ok(Promise2.resolve[symbols.original], 'should have wrapped class methods')
-  assert.ok(Promise2.prototype.then[symbols.original], 'should have wrapped instance methods')
+  t.afterEach(afterEach)
+
+  await testPromiseContext({
+    t,
+    factory: function (Promise, name) {
+      return Promise.resolve(name)
+    }
+  })
 })
