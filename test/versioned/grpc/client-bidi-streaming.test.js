@@ -65,7 +65,7 @@ test('should track bidirectional streaming requests as an external when in a tra
 
     names.forEach(({ name }, i) => {
       const response = responses[i]
-      assert.equal(responses[i].message, `Hello ${name}`, 'response stream message should be correct')
+      assert.equal(response.message, `Hello ${name}`, 'response stream message should be correct')
       assertContext({ response, key: 'client_stream_data', txId: tx.id, segmentName: 'helloworld.Greeter/SayHelloBidiStream', clientRequest: true })
     })
 

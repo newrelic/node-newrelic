@@ -44,18 +44,28 @@ function buildExpectedMetrics(port) {
  *  - stream_end - The end stream handler on grpc server method
  *
  * @param {object} params params object
- * @param {object} params.agent test agent
  * @param {object} params.response grpc response
  * @param {string} params.key phase of request
  * @param {Context} params.ctx if passed in will use to get transaction id and segment name
  */
-function addContextToResponse({ agent, response, key, ctx }) {
+function addContextToResponse({ response, key, ctx }) {
+  response[key] = {
+    transaction_id: ctx?.transaction?.id,
+    segment_name: ctx?.segment?.name
+  }
+}
+
+/**
+ * Optionally adds context to client responses.
+ * @param {object} params params object
+ * @param {object} params.response grpc response
+ * @param {string} params.key phase of request
+ * @param {Context} params.agent if passed in wil get current context and add to response
+ */
+function addContextToClientResponse({ response, key, agent }) {
   if (agent) {
-    ctx = ctx || agent.tracer.getContext()
-    response[key] = {
-      transaction_id: ctx?.transaction?.id,
-      segment_name: ctx?.segment?.name
-    }
+    const ctx = agent.tracer.getContext()
+    addContextToResponse({ response, key, ctx })
   }
 }
 
@@ -320,7 +330,7 @@ util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload, age
         return
       }
 
-      addContextToResponse({ agent, key: 'client_cb', response })
+      addContextToClientResponse({ agent, key: 'client_cb', response })
       resolve(response)
     })
   })
@@ -351,7 +361,7 @@ util.makeClientStreamingRequest = function makeClientStreamingRequest({
         return
       }
 
-      addContextToResponse({ agent, key: 'client_cb', response })
+      addContextToClientResponse({ agent, key: 'client_cb', response })
       resolve(response)
     })
 
@@ -378,13 +388,13 @@ util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, 
     const serverData = []
     const call = client[fnName](payload)
     call.on('data', (response) => {
-      addContextToResponse({ agent, key: 'client_stream_data', response })
+      addContextToClientResponse({ agent, key: 'client_stream_data', response })
       serverData.push(response)
     })
     call.on('end', () => {
       if (agent) {
         const response = { message: 'end' }
-        addContextToResponse({ agent, key: 'client_stream_end', response })
+        addContextToClientResponse({ agent, key: 'client_stream_end', response })
         serverData.push(response)
       }
       resolve(serverData)
@@ -411,13 +421,13 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
     const call = client[fnName]()
     payload.forEach((data) => call.write(data))
     call.on('data', function (response) {
-      addContextToResponse({ agent, key: 'client_stream_data', response })
+      addContextToClientResponse({ agent, key: 'client_stream_data', response })
       serverData.push(response)
     })
     call.on('end', () => {
       if (agent) {
         const response = { message: 'end' }
-        addContextToResponse({ agent, key: 'client_stream_end', response })
+        addContextToClientResponse({ agent, key: 'client_stream_end', response })
         serverData.push(response)
       }
       resolve(serverData)

@@ -60,7 +60,7 @@ function sayHello({ metadata, request: { name } }, cb) {
   SERVER.metadataMap.set(name, metadata.internalRepr)
   const message = `Hello ${name}`
   const response = { message }
-  ADD_CONTEXT({ agent: AGENT, response, key: 'cb', ctx })
+  ADD_CONTEXT({ response, key: 'cb', ctx })
   cb(null, response)
 }
 
@@ -78,9 +78,9 @@ function sayHelloClientStream(call, cb) {
     const endCtx = AGENT.tracer.getContext()
     const { name, txId, segName } = extractStreamData(data)
     const response = { message: `Hello ${name}` }
-    ADD_CONTEXT({ agent: AGENT, response, key: 'cb', ctx })
-    ADD_CONTEXT({ agent: AGENT, response, key: 'stream_end', ctx: endCtx })
-    ADD_CONTEXT({ agent: AGENT, response, key: 'stream_data', ctx: { transaction: { id: txId }, segment: { name: segName } } })
+    ADD_CONTEXT({ response, key: 'cb', ctx })
+    ADD_CONTEXT({ response, key: 'stream_end', ctx: endCtx })
+    ADD_CONTEXT({ response, key: 'stream_data', ctx: { transaction: { id: txId }, segment: { name: segName } } })
     cb(null, response)
   })
 }
@@ -95,7 +95,7 @@ function sayHelloServerStream(call) {
     // add the metadata from client that the server receives so we can assert DT functionality
     SERVER.metadataMap.set(n, metadata.internalRepr)
     const response = { message: `Hello ${n}` }
-    ADD_CONTEXT({ agent: AGENT, response, key: 'cb', ctx })
+    ADD_CONTEXT({ response, key: 'cb', ctx })
     call.write(response)
   })
   call.end()
@@ -110,14 +110,14 @@ function sayHelloBidiStream(call) {
     // add the metadata from client that the server receives so we can assert DT functionality
     SERVER.metadataMap.set(name, metadata.internalRepr)
     const response = { message: `Hello ${name}` }
-    ADD_CONTEXT({ agent: AGENT, response, key: 'cb', ctx })
-    ADD_CONTEXT({ agent: AGENT, response, key: 'stream_data', ctx: dataCtx })
+    ADD_CONTEXT({ response, key: 'cb', ctx })
+    ADD_CONTEXT({ response, key: 'stream_data', ctx: dataCtx })
     call.write(response)
   })
   call.on('end', () => {
     const endCtx = AGENT.tracer.getContext()
     const response = { message: 'end' }
-    ADD_CONTEXT({ agent: AGENT, response, key: 'stream_end', ctx: endCtx })
+    ADD_CONTEXT({ response, key: 'stream_end', ctx: endCtx })
     call.write(response)
     call.end()
   })
