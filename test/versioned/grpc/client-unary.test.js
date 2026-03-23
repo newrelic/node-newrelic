@@ -44,7 +44,7 @@ test.afterEach((ctx) => {
 
 test('should log tracking metrics', function(t) {
   const { agent } = t.nr
-  assertPackageMetrics({ agent, pkg: '@grpc/grpc-js', version })
+  assertPackageMetrics({ agent, pkg: '@grpc/grpc-js', version, subscriberType: true })
 })
 
 test('should track unary client requests as an external when in a transaction', (t, end) => {
