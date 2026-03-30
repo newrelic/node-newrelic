@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.18.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Instrumented grpc server stream to bind async context to stream event handlers"
+        ]
+      }
+    },
+    {
       "version": "13.17.0",
       "changes": {
         "security": [],
