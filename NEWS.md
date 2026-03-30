@@ -7,10 +7,12 @@
 #### Code refactoring
 
 *  Refactored `when` instrumentation to subscribe to events emitted ([#3866](https://github.com/newrelic/node-newrelic/pull/3866)) ([1b55c5a](https://github.com/newrelic/node-newrelic/commit/1b55c5ae5df8eb8d20d499e31b80014acd9b7833))
-* Refactor `memcached` instrumentation to subscribe to events emitted ([#3849](https://github.com/newrelic/node-newrelic/pull/3849)) ([915b320](https://github.com/newrelic/node-newrelic/commit/915b320e1b01944fe89754305e146c0c69dca0c6))
+* Refactored `memcached` instrumentation to subscribe to events emitted ([#3849](https://github.com/newrelic/node-newrelic/pull/3849)) ([915b320](https://github.com/newrelic/node-newrelic/commit/915b320e1b01944fe89754305e146c0c69dca0c6))
 * Refactored `bluebird` instrumentation to subscribe to events emitted ([#3858](https://github.com/newrelic/node-newrelic/pull/3858)) ([e3d84c2](https://github.com/newrelic/node-newrelic/commit/e3d84c285b9b73c2d2e7f690fe449371e92a5b1a))
 * Refactored `q` instrumentation to subscribe to events emitted ([#3853](https://github.com/newrelic/node-newrelic/pull/3853)) ([9fdb0b8](https://github.com/newrelic/node-newrelic/commit/9fdb0b80130998d283d3ec6a2f0e1b39916bd9e5))
-* Updated `@langchain/core` subscribers to properly the tool class methods ([#3850](https://github.com/newrelic/node-newrelic/pull/3850)) ([2d17eed](https://github.com/newrelic/node-newrelic/commit/2d17eeda540ef99f5ce829499ca1f4b0ef65e1a6))
+* Refactored `grpc-js` client instrumentation to subscriber type ([#3856](https://github.com/newrelic/node-newrelic/pull/3856)) ([057fca2](https://github.com/newrelic/node-newrelic/commit/057fca295e31a952795d688e7a12228c58d839ba))
+* Refactored `grpc-js` server instrumentation to subscriber type ([#3805](https://github.com/newrelic/node-newrelic/pull/3805)) ([ca3010a](https://github.com/newrelic/node-newrelic/commit/ca3010aca73cf69786794824063b4f2d5ce38d41))
+* Updated `@langchain/core` subscribers to properly instrument the tool class methods ([#3850](https://github.com/newrelic/node-newrelic/pull/3850)) ([2d17eed](https://github.com/newrelic/node-newrelic/commit/2d17eeda540ef99f5ce829499ca1f4b0ef65e1a6))
 
 #### Documentation
 
@@ -19,15 +21,13 @@
 #### Miscellaneous chores
 
 * Added subscriber packages to `load-externals` ([#3868](https://github.com/newrelic/node-newrelic/pull/3868)) ([83adcc4](https://github.com/newrelic/node-newrelic/commit/83adcc43b061e55b2d9d3df6fafa152b2ed201df))
-* Fixed issue with span links test ([#3863](https://github.com/newrelic/node-newrelic/pull/3863)) ([23a8594](https://github.com/newrelic/node-newrelic/commit/23a8594f7b0078b62c73f73e7afa0411e96ade69))
-* Refactored grpc-js client instrumentation to subscriber type ([#3856](https://github.com/newrelic/node-newrelic/pull/3856)) ([057fca2](https://github.com/newrelic/node-newrelic/commit/057fca295e31a952795d688e7a12228c58d839ba))
-* Refactored grpc-js server instrumentation to subscriber type ([#3805](https://github.com/newrelic/node-newrelic/pull/3805)) ([ca3010a](https://github.com/newrelic/node-newrelic/commit/ca3010aca73cf69786794824063b4f2d5ce38d41))
-* Removed segment duration timing threshold in `memcached` tests ([#3869](https://github.com/newrelic/node-newrelic/pull/3869)) ([bd24410](https://github.com/newrelic/node-newrelic/commit/bd24410f135868a4e86f4c5375baf67cee2ccbc7))
 
 #### Tests
 
 * Removed unused context manager feature flag for running versioned tests ([#3851](https://github.com/newrelic/node-newrelic/pull/3851)) ([15c9757](https://github.com/newrelic/node-newrelic/commit/15c9757339e0d811c96ff58fc275386b9fc2a7a4))
 * Updated core tracing cross agent tests ([#3860](https://github.com/newrelic/node-newrelic/pull/3860)) ([08e4570](https://github.com/newrelic/node-newrelic/commit/08e45703852ea556c8518acd0560c57f56ea9c8c))
+* Fixed issue with span links test ([#3863](https://github.com/newrelic/node-newrelic/pull/3863)) ([23a8594](https://github.com/newrelic/node-newrelic/commit/23a8594f7b0078b62c73f73e7afa0411e96ade69))
+* Removed segment duration timing threshold in `memcached` tests ([#3869](https://github.com/newrelic/node-newrelic/pull/3869)) ([bd24410](https://github.com/newrelic/node-newrelic/commit/bd24410f135868a4e86f4c5375baf67cee2ccbc7))
 
 ### v13.17.0 (2026-03-19)
 
