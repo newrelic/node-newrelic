@@ -1,0 +1,89 @@
+/*
+ * Copyright 2026 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+'use strict'
+
+module.exports = {
+  assertChatCompletionMessages,
+  assertChatCompletionSummary
+}
+
+const { match } = require('../../lib/custom-assertions')
+
+function assertChatCompletionMessages(
+  { tx, chatMsgs, model, reqContent, resContent, segment: segOverride },
+  { assert = require('node:assert') } = {}
+) {
+  const segment = segOverride || tx.trace.getChildren(tx.trace.root.id)[0]
+  const baseMsg = {
+    trace_id: tx.traceId,
+    span_id: segment.id,
+    'response.model': model,
+    vendor: 'anthropic',
+    ingest_source: 'Node',
+    role: 'user',
+    completion_id: /[a-f0-9]{32}/
+  }
+
+  chatMsgs.forEach((msg) => {
+    const expectedChatMsg = { ...baseMsg }
+    if (msg[1].sequence === 0) {
+      expectedChatMsg.sequence = 0
+      expectedChatMsg.id = /[a-f0-9]{32}/
+      expectedChatMsg.content = reqContent
+      expectedChatMsg.token_count = 0
+      expectedChatMsg.timestamp = /\d{13}/
+    } else if (msg[1].sequence === 1) {
+      expectedChatMsg.sequence = 1
+      expectedChatMsg.id = /[a-f0-9]{32}/
+      expectedChatMsg.content = 'What does 1 plus 1 equal?'
+      expectedChatMsg.token_count = 0
+      expectedChatMsg.timestamp = /\d{13}/
+    } else {
+      expectedChatMsg.sequence = 2
+      expectedChatMsg.role = 'assistant'
+      expectedChatMsg.id = /[a-f0-9]{32}/
+      expectedChatMsg.content = resContent
+      expectedChatMsg.is_response = true
+      expectedChatMsg.token_count = 0
+    }
+
+    assert.equal(msg[0].type, 'LlmChatCompletionMessage')
+    match(msg[1], expectedChatMsg, { assert })
+  })
+}
+
+function assertChatCompletionSummary(
+  { tx, model, chatSummary, error, promptTokens = 53, completionTokens = 11, segment: segOverride },
+  { assert = require('node:assert') } = {}
+) {
+  const segment = segOverride || tx.trace.getChildren(tx.trace.root.id)[0]
+  const expectedChatSummary = {
+    id: /[a-f0-9]{32}/,
+    trace_id: tx.traceId,
+    span_id: segment.id,
+    vendor: 'anthropic',
+    ingest_source: 'Node',
+    'request.model': model,
+    duration: segment.getDurationInMillis(),
+    'response.number_of_messages': 3,
+    'request.max_tokens': 100,
+    'request.temperature': 0.5,
+    timestamp: /\d{13}/
+  }
+
+  if (!error) {
+    expectedChatSummary['response.usage.prompt_tokens'] = promptTokens
+    expectedChatSummary['response.usage.completion_tokens'] = completionTokens
+    expectedChatSummary['response.usage.total_tokens'] = promptTokens + completionTokens
+    expectedChatSummary['response.model'] = model
+    expectedChatSummary['response.choices.finish_reason'] = 'end_turn'
+  } else {
+    expectedChatSummary.error = true
+  }
+
+  assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
+  match(chatSummary[1], expectedChatSummary, { assert })
+}

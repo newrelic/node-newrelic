@@ -106,6 +106,26 @@
   },
   {
     "kind": "sdk",
+    "title": "Anthropic",
+    "featuresPreamble": "Through the `@anthropic-ai/sdk` module, we support:",
+    "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
+    "features": [
+      {
+        "title": "Completions",
+        "supported": true
+      },
+      {
+        "title": "Chat",
+        "supported": true
+      },
+        {
+        "title": "Files",
+        "supported": false
+      }
+    ]
+  },
+  {
+    "kind": "sdk",
     "title": "OpenAI",
     "featuresPreamble": "Through the `openai` module, we support:",
     "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",

@@ -1,0 +1,28 @@
+{
+  "name": "@anthropic-ai/sdk-tests",
+  "targets": [
+    {
+      "name": "@anthropic-ai/sdk",
+      "minAgentVersion": "13.18.0"
+    }
+  ],
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "@anthropic-ai/sdk": ">=0.33.0"
+      },
+      "files": [
+        "chat-completions.test.js",
+        "feedback-messages.test.js"
+      ]
+    }
+  ]
+}
