@@ -6,7 +6,7 @@
 
 #### Code refactoring
 
-*  Refactored `when` instrumentation to subscribe to events emitted ([#3866](https://github.com/newrelic/node-newrelic/pull/3866)) ([1b55c5a](https://github.com/newrelic/node-newrelic/commit/1b55c5ae5df8eb8d20d499e31b80014acd9b7833))
+* Refactored `when` instrumentation to subscribe to events emitted ([#3866](https://github.com/newrelic/node-newrelic/pull/3866)) ([1b55c5a](https://github.com/newrelic/node-newrelic/commit/1b55c5ae5df8eb8d20d499e31b80014acd9b7833))
 * Refactored `memcached` instrumentation to subscribe to events emitted ([#3849](https://github.com/newrelic/node-newrelic/pull/3849)) ([915b320](https://github.com/newrelic/node-newrelic/commit/915b320e1b01944fe89754305e146c0c69dca0c6))
 * Refactored `bluebird` instrumentation to subscribe to events emitted ([#3858](https://github.com/newrelic/node-newrelic/pull/3858)) ([e3d84c2](https://github.com/newrelic/node-newrelic/commit/e3d84c285b9b73c2d2e7f690fe449371e92a5b1a))
 * Refactored `q` instrumentation to subscribe to events emitted ([#3853](https://github.com/newrelic/node-newrelic/pull/3853)) ([9fdb0b8](https://github.com/newrelic/node-newrelic/commit/9fdb0b80130998d283d3ec6a2f0e1b39916bd9e5))
