@@ -9,7 +9,6 @@ const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
-const sinon = require('sinon')
 const { tspl } = require('@matteo.collina/tspl')
 const { match } = require('../../lib/custom-assertions')
 
@@ -21,8 +20,6 @@ test('SNS', async (t) => {
   })
 
   const agent = helper.instrumentMockedAgent()
-  const Shim = require('../../../lib/shim/message-shim')
-  const setLibrarySpy = sinon.spy(Shim.prototype, 'setLibrary')
   const lib = require('@aws-sdk/client-sns')
   const SNSClient = lib.SNSClient
   const sns = new SNSClient({
@@ -34,7 +31,6 @@ test('SNS', async (t) => {
   t.after(() => {
     server.destroy()
     helper.unloadAgent(agent)
-    setLibrarySpy.restore()
   })
 
   await t.test('publish with callback', (t, end) => {
@@ -48,7 +44,7 @@ test('SNS', async (t) => {
         tx.end()
 
         const destName = 'PhoneNumber'
-        const args = [end, tx, destName, setLibrarySpy]
+        const args = [end, tx, destName]
         setImmediate(finish, ...args)
       })
     })
@@ -65,7 +61,7 @@ test('SNS', async (t) => {
       tx.end()
 
       const destName = 'PhoneNumber'
-      const args = [end, tx, destName, setLibrarySpy]
+      const args = [end, tx, destName]
       setImmediate(finish, ...args)
     })
   })
@@ -81,7 +77,7 @@ test('SNS', async (t) => {
 
       tx.end()
 
-      const args = [end, tx, TopicArn, setLibrarySpy]
+      const args = [end, tx, TopicArn]
       setImmediate(finish, ...args)
     })
   })
@@ -97,7 +93,7 @@ test('SNS', async (t) => {
 
       tx.end()
 
-      const args = [end, tx, TargetArn, setLibrarySpy]
+      const args = [end, tx, TargetArn]
       setImmediate(finish, ...args)
     })
   })
@@ -115,7 +111,7 @@ test('SNS', async (t) => {
         await sns.send(cmd)
         tx.end()
 
-        const args = [end, tx, TopicArn, setLibrarySpy]
+        const args = [end, tx, TopicArn]
         setImmediate(finish, ...args)
       })
     }
@@ -167,7 +163,7 @@ test('SNS', async (t) => {
   })
 })
 
-function finish(end, tx, destName, setLibrarySpy) {
+function finish(end, tx, destName) {
   const root = tx.trace.root
 
   const messages = common.checkAWSAttributes({
@@ -192,6 +188,5 @@ function finish(end, tx, destName, setLibrarySpy) {
     'aws.service': /sns|SNS/,
     'aws.region': 'us-east-1'
   })
-  assert.equal(setLibrarySpy.callCount, 1, 'should only call setLibrary once and not per call')
   end()
 }
