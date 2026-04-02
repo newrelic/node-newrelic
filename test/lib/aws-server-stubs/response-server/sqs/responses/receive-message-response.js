@@ -19,7 +19,17 @@ module.exports = (isJson) => {
             SenderId: '195004372649',
             SentTimestamp: '1238099229000',
             ApproximateReceiveCount: '2',
-            ApproximateFirstReceiveTimestamp: '1595887234772'
+            ApproximateFirstReceiveTimestamp: '1595887234772',
+          },
+          MessageAttributes: {
+            traceparent: {
+              DataType: 'String',
+              StringValue: '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
+            },
+            tracestate: {
+              DataType: 'String',
+              StringValue: '33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1775239200000'
+            }
           }
         }
       ],
@@ -56,6 +66,21 @@ module.exports = (isJson) => {
         <Name>ApproximateFirstReceiveTimestamp</Name>
         <Value>1595887234772</Value>
       </Attribute>
+      
+      <MessageAttribute>
+        <Name>traceparent</Name>
+        <Value>
+            <DataType>String</DataType>
+            <StringValue>00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00</StringValue>
+        </Value>
+      </MessageAttribute>
+      <MessageAttribute>
+        <Name>tracestate</Name>
+        <Value>
+            <DataType>String</DataType>
+            <StringValue>33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1775239200000</StringValue>
+        </Value>
+      </MessageAttribute>
     </Message>
   </ReceiveMessageResult>
   <ResponseMetadata>

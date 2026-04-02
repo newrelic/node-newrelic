@@ -5,9 +5,8 @@
 
 'use strict'
 
-const http = require('http')
+const http = require('node:http')
 const dns = require('node:dns')
-const semver = require('semver')
 const { getAddTagsResponse } = require('./elasticache')
 const { getAcceptExchangeResponse } = require('./redshift')
 const { getSendEmailResponse } = require('./ses')
@@ -32,19 +31,18 @@ function createResponseServer() {
     res.end()
   })
 
+  // Patch `node:dns` to return the address to our server when it sees
+  // a lookup request for SQS.
   const lookup = dns.lookup
   dns.lookup = (...args) => {
     const address = args[0]
     if (address === 'sqs.us-east-1.amazonaws.com') {
-      if (semver.satisfies(process.version, '18')) {
-        return args.pop()(null, '127.0.0.1', 4)
-      }
-      // Node >= 20 changes the callback signature.
       return args.pop()(null, [{ address: '127.0.0.1', family: 4 }])
     }
     lookup.apply(dns, args)
   }
 
+  // Patch `server.close` so that it undoes our `node:dns` patch.
   const close = server.close
   server.close = () => {
     close.call(server)
@@ -78,6 +76,7 @@ function handlePost(req, res) {
 
       if (isJson) {
         res.setHeader('x-amz-request-id', data.ResponseMetadata.RequestId)
+        data.ResponseMetadata.nrPayload = body
         data = JSON.stringify(data)
       }
       res.end(data)
