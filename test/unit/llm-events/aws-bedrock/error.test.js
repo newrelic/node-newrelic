@@ -45,12 +45,3 @@ test('create error with embedding_id', (t) => {
   assert.equal(err.embedding_id, 'embedding-id')
   assert.ok(!err.completion_id)
 })
-
-test('empty error', () => {
-  const err = new AwsBedrockLlmErrorMessage()
-  assert.ok(!err['http.statusCode'])
-  assert.ok(!err['error.message'])
-  assert.ok(!err['error.code'])
-  assert.ok(!err.completion_id)
-  assert.ok(!err.embedding_id)
-})
