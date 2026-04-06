@@ -13,6 +13,7 @@ const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 const { findSegment, getMetricHostName } = require('../../lib/metrics_helper')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
+const SLEEP_TIME = 1
 
 function runCommand(client, cmd) {
   return new Promise((resolve, reject) => {
@@ -327,7 +328,7 @@ module.exports = function runTests(name, clientFactory) {
         assert.ok(transaction, 'transaction should be visible')
         assert.equal(tx, transaction, 'We got the same transaction')
 
-        const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
+        const selQuery = `SELECT pg_sleep(${SLEEP_TIME}), now() as sleep;`
 
         client.connect(function (error) {
           assert.ifError(error)
@@ -347,7 +348,7 @@ module.exports = function runTests(name, clientFactory) {
             // since we know the duration, we're asserting it's within a range as well
             assert.equal(selectSegment.timer.touched, true)
             const duration = selectSegment.getDurationInMillis()
-            assert.ok(duration > 2000 && duration < 2100)
+            assert.ok(duration > SLEEP_TIME * 1000 && duration < (SLEEP_TIME + 0.1) * 1000)
             const finalTx = agent.getTransaction()
             assert.ok(finalTx, 'transaction should still be visible')
 
@@ -355,8 +356,8 @@ module.exports = function runTests(name, clientFactory) {
 
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
             assert.ok(
-              metrics.total > 2.0,
-              'Submittable style Query pg_sleep of 2 seconds should result in > 2 sec timing'
+              metrics.total > SLEEP_TIME,
+              `Submittable style Query pg_sleep of ${SLEEP_TIME} seconds should result in > ${SLEEP_TIME} sec timing`
             )
 
             end()
@@ -380,7 +381,7 @@ module.exports = function runTests(name, clientFactory) {
         const connectSegment = findSegment(tx.trace, tx.trace.root, 'connect')
         // asserting segment is touched to at least assert instrumentation touched it before transaction ends
         assert.equal(connectSegment.timer.touched, true)
-        const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
+        const selQuery = `SELECT pg_sleep(${SLEEP_TIME}), now() as sleep;`
 
         const selectResults = await client.query(selQuery)
         const selectSegment = findSegment(tx.trace, tx.trace.root, 'Datastore/statement/Postgres/unknown/select')
@@ -388,7 +389,7 @@ module.exports = function runTests(name, clientFactory) {
         // since we know the duration, we're asserting it's within a range as well
         assert.equal(selectSegment.timer.touched, true)
         const duration = selectSegment.getDurationInMillis()
-        assert.ok(duration > 2000 && duration < 2100)
+        assert.ok(duration > SLEEP_TIME * 1000 && duration < (SLEEP_TIME + 0.1) * 1000)
 
         const finalTx = agent.getTransaction()
         assert.ok(finalTx, 'transaction should still be visible')
@@ -397,8 +398,8 @@ module.exports = function runTests(name, clientFactory) {
 
         const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
         assert.ok(
-          metrics.total > 2.0,
-          'Promise style query pg_sleep of 2 seconds should result in > 2 sec timing'
+          metrics.total > SLEEP_TIME,
+          `Promise style query pg_sleep of ${SLEEP_TIME} seconds should result in > ${SLEEP_TIME} sec timing`
         )
       })
     })
@@ -429,7 +430,7 @@ module.exports = function runTests(name, clientFactory) {
         // is counting in instrumented, we do not want to end tx in callback
         // as it will produce a truncated segment
         const result = await new Promise((resolve) => {
-          const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
+          const selQuery = `SELECT pg_sleep(${SLEEP_TIME}), now() as sleep;`
 
           client.query(selQuery, function (error, ok) {
             assert.ifError(error)
@@ -442,7 +443,7 @@ module.exports = function runTests(name, clientFactory) {
         // since we know the duration, we're asserting it's within a range as well
         assert.equal(selectSegment.timer.touched, true)
         const duration = selectSegment.getDurationInMillis()
-        assert.ok(duration > 2000 && duration < 2100)
+        assert.ok(duration > SLEEP_TIME * 1000 && duration < (SLEEP_TIME + 0.1) * 1000)
         const finalTx = agent.getTransaction()
         assert.ok(finalTx, 'transaction should still be visible')
         assert.ok(result, 'everything should be peachy after setting')
@@ -450,8 +451,8 @@ module.exports = function runTests(name, clientFactory) {
         transaction.end()
         const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
         assert.ok(
-          metrics.total > 2.0,
-          'Callback style query pg_sleep of 2 seconds should result in > 2 sec timing'
+          metrics.total > SLEEP_TIME,
+          `Callback style query pg_sleep of ${SLEEP_TIME} seconds should result in > ${SLEEP_TIME} sec timing`
         )
       })
     })
