@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const LlmAgent = require('#agentlib/llm-events/langgraph/agent.js')
+const LlmAgent = require('#agentlib/llm-events/ai-agent.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -44,6 +44,7 @@ test.beforeEach((ctx) => {
   }
 
   ctx.nr.aiAgentName = 'test-agent'
+  ctx.nr.vendor = 'someVendor'
 })
 
 test('constructs default instance', async (t) => {
@@ -54,7 +55,7 @@ test('constructs default instance', async (t) => {
   assert.equal(event.trace_id, 'trace-1')
   assert.equal(event['llm.foo'], 'bar')
   assert.equal(event.ingest_source, 'Node')
-  assert.equal(event.vendor, 'langgraph')
+  assert.equal(event.vendor, 'someVendor')
 })
 
 test('constructs instance with error', async (t) => {

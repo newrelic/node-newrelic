@@ -1,0 +1,28 @@
+{
+  "name": "google-adk-tests",
+  "targets": [
+    {
+      "name": "@google/adk",
+      "minSupported": "0.1.0",
+      "minAgentVersion": "13.20.0"
+    }
+  ],
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "@google/adk": ">=0.1.0"
+      },
+      "files": [
+        "agent-run-async.test.js"
+      ]
+    }
+  ]
+}
