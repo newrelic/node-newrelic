@@ -8,6 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
+const awsEcho = require('./test-utils/aws-echo.js')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { tspl } = require('@matteo.collina/tspl')
 const { match } = require('../../lib/custom-assertions')
@@ -20,6 +21,7 @@ test('SNS', async (t) => {
   })
 
   const agent = helper.instrumentMockedAgent()
+  const http = require('node:http')
   const lib = require('@aws-sdk/client-sns')
   const SNSClient = lib.SNSClient
   const sns = new SNSClient({
@@ -160,6 +162,60 @@ test('SNS', async (t) => {
       tx.end()
       plan.ok(res)
     })
+  })
+
+  await t.test('attaches distributed trace headers when sending messages', async (t) => {
+    const params = { TargetArn: 'TargetArn', Message: 'Hello!' }
+    const { server, address } = await awsEcho({
+      http,
+      awsClient: sns,
+      cmd: params,
+      CreateCommand: lib.PublishCommand
+    })
+    t.after(() => {
+      server.close()
+    })
+
+    const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
+    const tracestate = `33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-${Date.now()}`
+    const response = await helper.asyncHttpCall(address, {
+      headers: { traceparent, tracestate }
+    })
+    const nrData = response.body.nrSendCommand
+    assert.equal(
+      nrData.MessageAttributes.traceparent.StringValue.startsWith(traceparent.slice(0, 35)),
+      true
+    )
+    assert.deepEqual(nrData.MessageAttributes.tracestate, {
+      DataType: 'String',
+      StringValue: tracestate
+    })
+  })
+
+  await t.test('does not attach distributed trace headers when disabled', async (t) => {
+    // This is a race condition waiting to happen.
+    agent.config.distributed_tracing.enabled = false
+
+    const params = { TargetArn: 'TargetArn', Message: 'Hello!' }
+    const { server, address } = await awsEcho({
+      http,
+      awsClient: sns,
+      cmd: params,
+      CreateCommand: lib.PublishCommand
+    })
+    t.after(() => {
+      agent.config.distributed_tracing.enabled = true
+      server.close()
+    })
+
+    const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
+    const tracestate = `33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-${Date.now()}`
+    const response = await helper.asyncHttpCall(address, {
+      headers: { traceparent, tracestate }
+    })
+    const nrData = response.body.nrSendCommand
+    assert.equal(nrData.MessageAttributes.traceparent, undefined)
+    assert.deepEqual(nrData.MessageAttributes.tracestate, undefined)
   })
 })
 

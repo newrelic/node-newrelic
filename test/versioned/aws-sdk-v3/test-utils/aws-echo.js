@@ -16,18 +16,19 @@
  * @param {object} params Function parameters.
  * @param {object} params.http The standard `node:http` module. This should
  * have been patched by the agent prior to be supplied to this function.
- * @param {object} params.sqsClient The SQS client instance to patch.
- * @param {object} params.sqs The actual result of
- * `require('@aws-sdk/client-sqs')`.
+ * @param {object} params.awsClient The AWS client instance to patch.
  * @param {object} params.cmd The full SQS command to provide to the client
  * when sending the request.
+ * @param {Function} params.CreateCommand Constructor that will accept the
+ * `cmd` parameter and return a new fully composed AWS message for sending
+ * to the remote system.
  *
  * @returns {object} Has a `server` property set to the server instance and
  * an `address` property set to the full HTTP URL for the listening server.
  */
-module.exports = async function sqsEcho({ http, sqsClient, sqs, cmd }) {
-  const send = sqsClient.send
-  sqsClient.send = async (...args) => {
+module.exports = async function awsEcho({ http, awsClient, cmd, CreateCommand }) {
+  const send = awsClient.send
+  awsClient.send = async (...args) => {
     // 1. This `send.apply` goes through our instrumentation of the
     // `awsSdk.send` method. Our method will mutate the `SendMessageCommand`
     // instance that is being sent to "AWS".
@@ -37,14 +38,14 @@ module.exports = async function sqsEcho({ http, sqsClient, sqs, cmd }) {
     // 3. Combining these things, we are able to attach enough data to the
     // result in order to verify things like distributed trace headers being
     // sent correctly.
-    const result = await send.apply(sqsClient, args)
+    const result = await send.apply(awsClient, args)
     result.nrSendCommand = args[0].input
     return result
   }
 
   const server = http.createServer((req, res) => {
-    const msg = new sqs.SendMessageCommand(cmd)
-    sqsClient.send(msg)
+    const msg = new CreateCommand(cmd)
+    awsClient.send(msg)
       .then((result) => {
         res.writeHead(200, { 'content-type': 'application/json' })
         res.end(JSON.stringify(result))

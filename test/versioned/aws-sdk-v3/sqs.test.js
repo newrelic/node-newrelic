@@ -10,7 +10,7 @@ const test = require('node:test')
 
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
-const sqsEcho = require('./test-utils/sqs-echo.js')
+const awsEcho = require('./test-utils/aws-echo.js')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
 
@@ -94,11 +94,11 @@ test('SQS API', async (t) => {
     const createPrams = getCreateParams(queueName)
     const createCommand = new lib.CreateQueueCommand(createPrams)
     const { QueueUrl } = await sqs.send(createCommand)
-    const { server, address } = await sqsEcho({
+    const { server, address } = await awsEcho({
       http,
-      sqsClient: sqs,
-      sqs: lib,
-      cmd: getSendMessageParams(QueueUrl)
+      awsClient: sqs,
+      cmd: getSendMessageParams(QueueUrl),
+      CreateCommand: lib.SendMessageCommand
     })
     t.after(() => {
       server.close()
@@ -127,11 +127,11 @@ test('SQS API', async (t) => {
     const createPrams = getCreateParams(queueName)
     const createCommand = new lib.CreateQueueCommand(createPrams)
     const { QueueUrl } = await sqs.send(createCommand)
-    const { server, address } = await sqsEcho({
+    const { server, address } = await awsEcho({
       http,
-      sqsClient: sqs,
-      sqs: lib,
-      cmd: getSendMessageParams(QueueUrl)
+      awsClient: sqs,
+      cmd: getSendMessageParams(QueueUrl),
+      CreateCommand: lib.SendMessageCommand
     })
     t.after(() => {
       server.close()
