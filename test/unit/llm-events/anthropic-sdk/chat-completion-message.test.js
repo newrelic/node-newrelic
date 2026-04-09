@@ -306,3 +306,39 @@ test('should handle content blocks in request messages', (t, end) => {
     })
   })
 })
+
+test('should return empty string for msg.content that is neither string nor array', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  let cbCalled = false
+  function cb() {
+    cbCalled = true
+    return 10
+  }
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      delete res.usage
+      const chatMessageEvent = new LlmChatCompletionMessage({
+        agent,
+        segment,
+        transaction: tx,
+        request: {
+          model: 'claude-sonnet-4-20250514',
+          messages: [{ role: 'user', content: { type: 'unsupported' } }]
+        },
+        response: res,
+        completionId: 'summary-id',
+        content: 'test',
+        role: 'user',
+        sequence: 0
+      })
+      // msg.content is an object (not string, not array) so promptContent = ''
+      // which causes the `if (promptContent && completionContent)` check to fail
+      assert.equal(cbCalled, false, 'should not invoke callback when promptContent is empty')
+      assert.equal(chatMessageEvent.token_count, undefined)
+      end()
+    })
+  })
+})

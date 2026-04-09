@@ -65,6 +65,14 @@ function handler(req, res) {
     const { code, body } = RESPONSES.get(prompt)
     res.statusCode = code
 
+    // Error responses are always JSON, even for streaming requests
+    if (code >= 400) {
+      res.setHeader('Content-Type', 'application/json')
+      res.write(JSON.stringify(body))
+      res.end()
+      return
+    }
+
     if (payload.stream === true) {
       res.setHeader('Content-Type', 'text/event-stream')
       res.setHeader('Transfer-Encoding', 'chunked')

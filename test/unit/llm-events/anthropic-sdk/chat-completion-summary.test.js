@@ -206,6 +206,107 @@ test('should use token callback to set the token usage attributes', (t, end) => 
   })
 })
 
+test('should use token callback with content block messages', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  const blockReq = {
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1024,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Hello' },
+          { type: 'text', text: ' world' }
+        ]
+      }
+    ]
+  }
+  function cb(model, content) {
+    // Content blocks are joined with ' ' separator
+    if (content === 'Hello  world') {
+      return 20
+    }
+    return 30
+  }
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment,
+        transaction: tx,
+        request: blockReq,
+        response: res
+      })
+      assert.equal(chatSummaryEvent['response.usage.prompt_tokens'], 20)
+      assert.equal(chatSummaryEvent['response.usage.completion_tokens'], 30)
+      assert.equal(chatSummaryEvent['response.usage.total_tokens'], 50)
+      end()
+    })
+  })
+})
+
+test('should not set tokens when callback present but no promptContent', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  function cb() {
+    return 10
+  }
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment,
+        transaction: tx,
+        request: {},
+        response: {}
+      })
+      assert.equal(chatSummaryEvent['response.usage.prompt_tokens'], undefined)
+      assert.equal(chatSummaryEvent['response.usage.completion_tokens'], undefined)
+      end()
+    })
+  })
+})
+
+test('should return empty string for msg.content that is neither string nor array', (t, end) => {
+  const { agent } = t.nr
+  const api = helper.getAgentApi()
+  let cbCalled = false
+  function cb() {
+    cbCalled = true
+    return 10
+  }
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment,
+        transaction: tx,
+        request: {
+          model: 'claude-sonnet-4-20250514',
+          messages: [{ role: 'user', content: { type: 'unsupported' } }]
+        },
+        response: res
+      })
+      // msg.content is an object (not string, not array) so promptContent = ''
+      // which causes the `if (promptContent && completionContent)` check to fail
+      assert.equal(cbCalled, false, 'should not invoke callback when promptContent is empty')
+      assert.equal(chatSummaryEvent['response.usage.prompt_tokens'], undefined)
+      assert.equal(chatSummaryEvent['response.usage.completion_tokens'], undefined)
+      end()
+    })
+  })
+})
+
 test('should set time_to_first_token for streaming', (t, end) => {
   const { agent } = t.nr
   const api = helper.getAgentApi()

@@ -429,6 +429,90 @@ test('should not create llm events when not in a transaction', async (t) => {
   assert.equal(events.length, 0, 'should not create llm events')
 })
 
+test('should not create llm events for streaming when not in a transaction', async (t) => {
+  const { client, agent } = t.nr
+  const stream = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 100,
+    stream: true,
+    messages: [{ role: 'user', content: 'Streamed response' }]
+  })
+
+  let response = ''
+  for await (const event of stream) {
+    response += event?.delta?.text ?? ''
+  }
+  assert.ok(response)
+
+  const events = agent.customEventAggregator.events.toArray()
+  assert.equal(events.length, 0, 'should not create llm events for streaming outside transaction')
+})
+
+test('auth errors should be tracked for streaming requests', (t, end) => {
+  const { client, agent } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    try {
+      await client.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 100,
+        stream: true,
+        messages: [{ role: 'user', content: 'Invalid API key.' }]
+      })
+    } catch {}
+
+    assert.equal(tx.exceptions.length, 1)
+    match(tx.exceptions[0], {
+      customAttributes: {
+        'error.message': /.*invalid x-api-key.*/,
+        completion_id: /\w{32}/
+      }
+    })
+
+    const summary = agent.customEventAggregator.events.toArray().find((e) => e[0].type === 'LlmChatCompletionSummary')
+    assert.ok(summary, 'should create a summary event for streaming auth error')
+    assert.equal(summary[1].error, true)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should handle array content blocks in request messages', (t, end) => {
+  const { client, agent } = t.nr
+  helper.runInTransaction(agent, async (tx) => {
+    const model = 'claude-sonnet-4-20250514'
+    await client.messages.create({
+      model,
+      max_tokens: 100,
+      temperature: 0.5,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'You are a scientist.' },
+            { type: 'text', text: ' Tell me about temperature.' }
+          ]
+        }
+      ]
+    })
+
+    const events = agent.customEventAggregator.events.toArray()
+    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+    assert.ok(chatMsgs.length >= 2, 'should create message events')
+
+    const reqMsg = chatMsgs.find((msg) => msg[1].sequence === 0)
+    assert.ok(reqMsg, 'should have a request message')
+    assert.equal(
+      reqMsg[1].content,
+      'You are a scientist. Tell me about temperature.',
+      'should join text blocks from array content'
+    )
+
+    tx.end()
+    end()
+  })
+})
+
 test('auth errors should be tracked', (t, end) => {
   const { client, agent } = t.nr
   helper.runInTransaction(agent, async (tx) => {
@@ -471,6 +555,67 @@ test('should add llm attribute to transaction', (t, end) => {
 
     const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
     assert.equal(attributes.llm, true)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not record content when ai_monitoring.record_content.enabled is false', (t, end) => {
+  const { client, agent } = t.nr
+  agent.config.ai_monitoring.record_content.enabled = false
+  helper.runInTransaction(agent, async (tx) => {
+    const model = 'claude-sonnet-4-20250514'
+    await client.messages.create({
+      model,
+      max_tokens: 100,
+      temperature: 0.5,
+      messages: [
+        { role: 'user', content: 'You are a mathematician.' },
+        { role: 'user', content: 'What does 1 plus 1 equal?' }
+      ]
+    })
+
+    const events = agent.customEventAggregator.events.toArray()
+    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+    assert.ok(chatMsgs.length > 0, 'should still create message events')
+    for (const msg of chatMsgs) {
+      assert.equal(msg[1].content, undefined, 'content should not be recorded')
+    }
+
+    tx.end()
+    end()
+  })
+})
+
+test('should not record content in streaming when ai_monitoring.record_content.enabled is false', (t, end) => {
+  const { client, agent } = t.nr
+  agent.config.ai_monitoring.record_content.enabled = false
+  helper.runInTransaction(agent, async (tx) => {
+    const model = 'claude-sonnet-4-20250514'
+    const stream = await client.messages.create({
+      model,
+      max_tokens: 100,
+      temperature: 0.5,
+      stream: true,
+      messages: [
+        { role: 'user', content: 'Streamed response' },
+        { role: 'user', content: 'What does 1 plus 1 equal?' }
+      ]
+    })
+
+    let response = ''
+    for await (const event of stream) {
+      response += event?.delta?.text ?? ''
+    }
+
+    assert.ok(response)
+    const events = agent.customEventAggregator.events.toArray()
+    const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+    assert.ok(chatMsgs.length > 0, 'should still create message events')
+    for (const msg of chatMsgs) {
+      assert.equal(msg[1].content, undefined, 'content should not be recorded in streaming')
+    }
 
     tx.end()
     end()
