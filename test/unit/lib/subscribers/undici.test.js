@@ -160,7 +160,7 @@ test('undici instrumentation', async function (t) {
         assert.ok(request[undiciParent])
         assert.ok(context.transaction)
         assert.ok(request[undiciSegment])
-        const segment = agent.tracer.getSegment()
+        const segment = request[undiciSegment]
         assert.equal(segment.name, 'External/unittesting.com/foo')
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
         assert.equal(attrs.url, 'https://unittesting.com/foo')
@@ -189,7 +189,7 @@ test('undici instrumentation', async function (t) {
       })
       context.extras = { undiciParent: parent }
       channels.create.publish({ request })
-      const segment = agent.tracer.getSegment()
+      const segment = request[undiciSegment]
       assert.equal(segment.name, 'External/unittesting.com/http')
       const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
       assert.equal(attrs.url, 'http://unittesting.com/http')
@@ -214,7 +214,7 @@ test('undici instrumentation', async function (t) {
       })
       context.extras = { undiciParent: parent }
       channels.create.publish({ request })
-      const segment = agent.tracer.getSegment()
+      const segment = request[undiciSegment]
       assert.equal(segment.name, 'External/unittesting.com:9999/port-https')
       const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
       assert.equal(attrs.url, 'https://unittesting.com:9999/port-https')
@@ -239,7 +239,7 @@ test('undici instrumentation', async function (t) {
       })
       context.extras = { undiciParent: parent }
       channels.create.publish({ request })
-      const segment = agent.tracer.getSegment()
+      const segment = request[undiciSegment]
       assert.equal(segment.name, 'External/unittesting.com:8080/port-http')
       const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
       assert.equal(attrs.url, 'http://unittesting.com:8080/port-http')
@@ -264,6 +264,7 @@ test('undici instrumentation', async function (t) {
       })
       context.extras = { undiciParent: parent }
       channels.create.publish({ request })
+      assert.ok(!request[undiciSegment])
       const segment = agent.tracer.getSegment()
       assert.equal(segment.name, 'ROOT', 'should not create a new segment if URL fails to parse')
       assert.equal(loggerMock.warn.callCount, 1, 'logs warning')
@@ -340,7 +341,6 @@ test('undici instrumentation', async function (t) {
       agent.tracer.setSegment({ segment, transaction: tx })
       channels.send.publish({ request })
       assert.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
-      assert.equal(parentSegment.id, agent.tracer.getSegment().id, 'parentSegment should now the active')
       tx.end()
       end()
     })
@@ -359,11 +359,6 @@ test('undici instrumentation', async function (t) {
         const error = new Error('request failed')
         channels.error.publish({ error, request })
         assert.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
-        assert.equal(
-          parentSegment.id,
-          agent.tracer.getSegment().id,
-          'parentSegment should now the active'
-        )
         assert.deepEqual(loggerMock.trace.args[0], [
           error,
           'Captured outbound error on behalf of the user.'

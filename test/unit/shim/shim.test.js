@@ -1657,7 +1657,7 @@ test('Shim', async function (t) {
       })
 
       helper.runInTransaction(agent, function (tx) {
-        shim.setActiveSegment(null)
+        agent.tracer.setSegment({ segment: null })
         const segment = wrappable.getActiveSegment()
         assert.equal(segment, null)
         tx.end()

@@ -229,12 +229,8 @@ test('concurrent requests', async (t) => {
     assert.equal(delaySegment.timer.state, 3)
 
     assert.equal(postSegment.parentId, tx.trace.root.id)
-    // parents of /put and /delay are the prior undici calls
-    // our instrumentation does not play nice with diagnostic_channel
-    // we're setting the active segment in the `undici:request:create` and restoring
-    // the parent segment in the request end
-    assert.equal(putSegment.parentId, postSegment.id)
-    assert.equal(delaySegment.parentId, putSegment.id)
+    assert.equal(putSegment.parentId, tx.trace.root.id)
+    assert.equal(delaySegment.parentId, tx.trace.root.id)
 
     assertSegments(tx.trace, tx.trace.root, [postSegment, putSegment, delaySegment], {
       exact: false

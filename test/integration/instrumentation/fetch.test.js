@@ -144,11 +144,7 @@ test('concurrent requests', async (t) => {
     const postSegment = metrics.findSegment(tx.trace, tx.trace.root, postName)
     assert.equal(postSegment.parentId, tx.trace.root.id)
     const putSegment = metrics.findSegment(tx.trace, tx.trace.root, putName)
-    // parent of put is the post segment because it is still the active one
-    // not ideal, but our instrumentation does not play nice with diagnostic_channel
-    // we're setting the active segment in the `undici:request:create` and restoring
-    // the parent segment in the request end
-    assert.equal(putSegment.parentId, postSegment.id)
+    assert.equal(putSegment.parentId, tx.trace.root.id)
     assertSegments(tx.trace, tx.trace.root, [postSegment, putSegment], {
       exact: false
     })
