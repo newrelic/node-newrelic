@@ -13,9 +13,10 @@ test('should not modify message when no headers provided', (t, end) => {
   const message = {
     MessageAttributes: {}
   }
-  const headers = {}
+  const subscriber = createMockSubscriber({})
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -29,13 +30,14 @@ test('should add headers in priority order when message has no existing attribut
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     newrelic: 'newrelic-value',
     traceparent: 'traceparent-value',
     tracestate: 'tracestate-value'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -69,11 +71,12 @@ test('should add only traceparent when only traceparent provided', (t, end) => {
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'traceparent-value'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -91,11 +94,12 @@ test('should add only tracestate when only tracestate provided', (t, end) => {
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     tracestate: 'tracestate-value'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -113,11 +117,12 @@ test('should add only newrelic when only newrelic provided', (t, end) => {
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     newrelic: 'newrelic-value'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -137,7 +142,7 @@ test('should add all priority headers when no existing attributes (availSlots=10
   }
   // The function only processes priority headers (traceparent, tracestate, newrelic)
   // Non-priority headers are ignored
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp',
     tracestate: 'ts',
     newrelic: 'nr',
@@ -148,9 +153,10 @@ test('should add all priority headers when no existing attributes (availSlots=10
     h8: 'v8',
     h9: 'v9',
     h10: 'v10'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -169,9 +175,10 @@ test('should not modify message when empty headers object provided with existing
       existing1: { DataType: 'String', StringValue: 'value1' }
     }
   }
-  const headers = {}
+  const subscriber = createMockSubscriber({})
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -194,15 +201,16 @@ test('should add all priority headers when 3 existing attributes (availSlots=7)'
       existing3: { DataType: 'String', StringValue: 'value3' }
     }
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp-value',
     tracestate: 'ts-value',
     newrelic: 'nr-value',
     other1: 'other1-value',
     other2: 'other2-value'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   // With 3 existing, availSlots = 10 - 3 = 7 (>= 3)
   // Should add all 3 priority headers
@@ -233,13 +241,14 @@ test('boundary: 10 existing attributes (availSlots=0) - adds 0 headers', (t, end
       e10: { DataType: 'String', StringValue: 'v10' }
     }
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp',
     tracestate: 'ts',
     newrelic: 'nr'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   // availSlots = 0, i=1 > 0, breaks immediately
   assert.strictEqual(
@@ -264,13 +273,14 @@ test('boundary: 9 existing attributes (availSlots=1) - adds 1 header', (t, end) 
       e9: { DataType: 'String', StringValue: 'v9' }
     }
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp',
     tracestate: 'ts',
     newrelic: 'nr'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   // availSlots = 1, i=1 not > 1 (add traceparent, i=2), i=2 > 1 (break)
   assert.strictEqual(
@@ -297,13 +307,14 @@ test('boundary: 8 existing attributes (availSlots=2) - adds 2 headers', (t, end)
       e8: { DataType: 'String', StringValue: 'v8' }
     }
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp',
     tracestate: 'ts',
     newrelic: 'nr'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   // availSlots = 2, i=1 not > 2 (add traceparent, i=2), i=2 not > 2 (add tracestate, i=3), i=3 > 2 (break)
   assert.strictEqual(
@@ -329,13 +340,14 @@ test('boundary: 7 existing attributes (availSlots=3) - adds 3 headers', (t, end)
       e7: { DataType: 'String', StringValue: 'v7' }
     }
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp',
     tracestate: 'ts',
     newrelic: 'nr'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   // availSlots = 3, can add all 3 priority headers
   assert.strictEqual(
@@ -355,7 +367,7 @@ test('should ignore non-priority headers regardless of count', (t, end) => {
       e1: { DataType: 'String', StringValue: 'v1' }
     }
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     h1: 'v1',
     h2: 'v2',
     h3: 'v3',
@@ -365,9 +377,10 @@ test('should ignore non-priority headers regardless of count', (t, end) => {
     h7: 'v7',
     h8: 'v8',
     h9: 'v9'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   // Non-priority headers are ignored, so nothing is added
   assert.strictEqual(
@@ -384,13 +397,14 @@ test('should add all priority headers when space is available', (t, end) => {
       e1: { DataType: 'String', StringValue: 'v1' }
     }
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp-value',
     tracestate: 'ts-value',
     newrelic: 'nr-value'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   // With 1 existing, availSlots = 10 - 1 = 9 (>= 3)
   // Should add all 3 priority headers
@@ -411,11 +425,12 @@ test('should preserve existing attributes and not overwrite them', (t, end) => {
       existing: { DataType: 'Number', StringValue: '123' }
     }
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp-value'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     message.MessageAttributes.existing.DataType,
@@ -439,11 +454,12 @@ test('should handle empty string header values', (t, end) => {
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: ''
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -462,7 +478,7 @@ test('should ignore non-priority headers even with 10 in headers object', (t, en
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     h1: 'v1',
     h2: 'v2',
     h3: 'v3',
@@ -473,9 +489,10 @@ test('should ignore non-priority headers even with 10 in headers object', (t, en
     h8: 'v8',
     h9: 'v9',
     h10: 'v10'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   // Only priority headers are processed, so nothing is added
   assert.strictEqual(
@@ -490,13 +507,14 @@ test('should add all 3 priority headers when no existing attributes', (t, end) =
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp',
     tracestate: 'ts',
     newrelic: 'nr'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -510,13 +528,14 @@ test('should ignore non-priority headers mixed with priority headers', (t, end) 
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp',
     otherHeader: 'should-not-be-added',
     anotherHeader: 'also-ignored'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -533,12 +552,13 @@ test('should skip priority headers not present in headers object', (t, end) => {
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp-value'
     // tracestate and newrelic not provided
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.strictEqual(
     Object.keys(message.MessageAttributes).length,
@@ -555,13 +575,14 @@ test('should handle undefined header values', (t, end) => {
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: 'tp-value',
     tracestate: undefined,
     newrelic: 'nr-value'
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   // Should add headers even with undefined values because Object.hasOwn returns true
   assert.ok(message.MessageAttributes.traceparent)
@@ -575,13 +596,76 @@ test('should handle null header values', (t, end) => {
   const message = {
     MessageAttributes: {}
   }
-  const headers = {
+  const subscriber = createMockSubscriber({
     traceparent: null
-  }
+  })
+  const context = {}
 
-  attachHeaders({ message, headers })
+  attachHeaders({ message, context, subscriber })
 
   assert.ok(message.MessageAttributes.traceparent, 'traceparent with null value should be added')
   assert.strictEqual(message.MessageAttributes.traceparent.StringValue, null)
   end()
 })
+
+test('should create MessageAttributes if missing', (t, end) => {
+  const message = {}
+  const subscriber = createMockSubscriber({
+    traceparent: 'tp-value'
+  })
+  const context = {}
+
+  attachHeaders({ message, context, subscriber })
+
+  assert.ok(message.MessageAttributes, 'MessageAttributes should be created')
+  assert.strictEqual(
+    Object.keys(message.MessageAttributes).length,
+    1,
+    'should have 1 message attribute'
+  )
+  assert.strictEqual(
+    message.MessageAttributes.traceparent.StringValue,
+    'tp-value'
+  )
+  end()
+})
+
+test('should call insertDTHeaders with correct parameters', (t, end) => {
+  const message = {}
+  const context = {}
+  let insertDTHeadersCalled = false
+  let capturedParams = null
+
+  const subscriber = {
+    insertDTHeaders(params) {
+      insertDTHeadersCalled = true
+      capturedParams = params
+      params.headers.traceparent = 'test-value'
+    }
+  }
+
+  attachHeaders({ message, context, subscriber })
+
+  assert.ok(insertDTHeadersCalled, 'insertDTHeaders should be called')
+  assert.ok(capturedParams, 'params should be captured')
+  assert.ok(capturedParams.headers, 'headers should be in params')
+  assert.strictEqual(capturedParams.ctx, context, 'context should be passed as ctx')
+  assert.strictEqual(capturedParams.useMqNames, true, 'useMqNames should be true')
+  end()
+})
+
+/**
+ * Creates a mock subscriber with a configurable insertDTHeaders method.
+ *
+ * @param {object} headersToInsert The headers that should be inserted by
+ * insertDTHeaders.
+ *
+ * @returns {object} Mock subscriber object.
+ */
+function createMockSubscriber(headersToInsert = {}) {
+  return {
+    insertDTHeaders({ headers }) {
+      Object.assign(headers, headersToInsert)
+    }
+  }
+}
