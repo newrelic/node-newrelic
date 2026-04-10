@@ -4,13 +4,21 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
+
 const helper = require('../../lib/agent_helper')
-const common = require('../aws-sdk-v3/common')
+const promiseResolvers = require('../../lib/promise-resolvers')
+const checkAWSAttributes = require('../aws-sdk-v3/test-utils/check-aws-attributes.js')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
-const promiseResolvers = require('../../lib/promise-resolvers')
+const {
+  EXTERN_PATTERN,
+  SEGMENT_DESTINATION,
+  SQS_PATTERN
+} = require('../aws-sdk-v3/test-utils/constants.js')
+
 const AWS_REGION = 'us-east-1'
 
 test('SQS API', async (t) => {
@@ -154,10 +162,10 @@ function finish({
   const expectedSegmentCount = 3
 
   const root = transaction.trace.root
-  const segments = common.checkAWSAttributes({
+  const segments = checkAWSAttributes({
     trace: transaction.trace,
     segment: root,
-    pattern: common.SQS_PATTERN
+    pattern: SQS_PATTERN
   })
 
   assert.equal(
@@ -166,10 +174,10 @@ function finish({
     `should have ${expectedSegmentCount} AWS MessageBroker/SQS segments`
   )
 
-  const externalSegments = common.checkAWSAttributes({
+  const externalSegments = checkAWSAttributes({
     trace: transaction.trace,
     segment: root,
-    pattern: common.EXTERN_PATTERN
+    pattern: EXTERN_PATTERN
   })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
@@ -194,7 +202,7 @@ function checkName(name, action, queueName) {
 }
 
 function checkAttributes(segment, operation, expectedRequestId) {
-  const actualAttributes = segment.attributes.get(common.SEGMENT_DESTINATION)
+  const actualAttributes = segment.attributes.get(SEGMENT_DESTINATION)
 
   const expectedAttributes = {
     'aws.operation': operation,

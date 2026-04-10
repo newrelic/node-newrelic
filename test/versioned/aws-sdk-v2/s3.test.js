@@ -4,13 +4,19 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
+
 const helper = require('../../lib/agent_helper')
-const common = require('../aws-sdk-v3/common')
+const promiseResolvers = require('../../lib/promise-resolvers')
+const checkAWSAttributes = require('../aws-sdk-v3/test-utils/check-aws-attributes.js')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
-const promiseResolvers = require('../../lib/promise-resolvers')
+const {
+  EXTERN_PATTERN,
+  SEGMENT_DESTINATION
+} = require('../aws-sdk-v3/test-utils/constants.js')
 
 test('S3 buckets', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -82,10 +88,10 @@ test('S3 buckets', async (t) => {
 })
 
 function finish(end, tx) {
-  const externals = common.checkAWSAttributes({
+  const externals = checkAWSAttributes({
     trace: tx.trace,
     segment: tx.trace.root,
-    pattern: common.EXTERN_PATTERN
+    pattern: EXTERN_PATTERN
   })
   assert.equal(externals.length, 3, 'should have 3 aws externals')
   const [head, create, del] = externals
@@ -97,7 +103,7 @@ function finish(end, tx) {
 }
 
 function checkAttrs(segment, operation) {
-  const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+  const attrs = segment.attributes.get(SEGMENT_DESTINATION)
   match(attrs, {
     'aws.operation': operation,
     'aws.requestId': String,

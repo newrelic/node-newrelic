@@ -4,13 +4,20 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
+
 const helper = require('../../lib/agent_helper')
-const common = require('../aws-sdk-v3/common')
+const promiseResolvers = require('../../lib/promise-resolvers')
+const checkAWSAttributes = require('../aws-sdk-v3/test-utils/check-aws-attributes.js')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
-const promiseResolvers = require('../../lib/promise-resolvers')
+const {
+  DATASTORE_PATTERN,
+  EXTERN_PATTERN,
+  SEGMENT_DESTINATION
+} = require('../aws-sdk-v3/test-utils/constants.js')
 
 test('DynamoDB', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -92,18 +99,18 @@ test('DynamoDB', async (t) => {
 
 function finish(end, tests, tx) {
   const root = tx.trace.root
-  const segments = common.checkAWSAttributes({
+  const segments = checkAWSAttributes({
     trace: tx.trace,
     segment: root,
-    pattern: common.DATASTORE_PATTERN
+    pattern: DATASTORE_PATTERN
   })
 
   assert.equal(segments.length, tests.length, `should have ${tests.length} aws datastore segments`)
 
-  const externalSegments = common.checkAWSAttributes({
+  const externalSegments = checkAWSAttributes({
     trace: tx.trace,
     segment: root,
-    pattern: common.EXTERN_PATTERN
+    pattern: EXTERN_PATTERN
   })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
@@ -114,7 +121,7 @@ function finish(end, tests, tx) {
       `Datastore/operation/DynamoDB/${operation}`,
       'should have operation in segment name'
     )
-    const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+    const attrs = segment.attributes.get(SEGMENT_DESTINATION)
     attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
     match(attrs, {
       host: String,

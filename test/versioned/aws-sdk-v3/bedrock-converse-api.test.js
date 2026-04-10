@@ -4,12 +4,13 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
-const {
-  assertChatCompletionMessages,
-  assertChatCompletionSummary,
-} = require('./common')
+const semver = require('semver')
+
+const assertChatCompletionMessages = require('./test-utils/assert-chat-completion-messages.js')
+const assertChatCompletionSummary = require('./test-utils/assert-chat-completion-summary.js')
 const helper = require('../../lib/agent_helper')
 const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
@@ -17,7 +18,6 @@ const { assertPackageMetrics, assertSegments, match } = require('../../lib/custo
 const promiseResolvers = require('../../lib/promise-resolvers')
 const responseConstants = require('../../lib/aws-server-stubs/ai-server/responses/constants')
 const createAiResponseServer = getAiResponseServer(__dirname)
-const semver = require('semver')
 
 // We'll test with only one model because the
 // request and response structure is the same

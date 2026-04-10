@@ -4,19 +4,19 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
-const {
-  assertChatCompletionMessages,
-  assertChatCompletionSummary,
-  assertChatCompletionMessage,
-} = require('./common')
+const { tspl } = require('@matteo.collina/tspl')
+
+const assertChatCompletionMessage = require('./test-utils/assert-chat-completion-message.js')
+const assertChatCompletionMessages = require('./test-utils/assert-chat-completion-messages.js')
+const assertChatCompletionSummary = require('./test-utils/assert-chat-completion-summary.js')
 const helper = require('../../lib/agent_helper')
 const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { assertSegments, match } = require('../../lib/custom-assertions')
 const promiseResolvers = require('../../lib/promise-resolvers')
-const { tspl } = require('@matteo.collina/tspl')
 const createAiResponseServer = getAiResponseServer(__dirname)
 
 function consumeStreamChunk() {

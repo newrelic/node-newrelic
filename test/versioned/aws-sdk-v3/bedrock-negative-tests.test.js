@@ -4,12 +4,14 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
+const sinon = require('sinon')
+
 const helper = require('../../lib/agent_helper')
 const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
-const sinon = require('sinon')
-const { afterEach } = require('./common')
+const afterEach = require('./test-utils/after-each.js')
 const createAiResponseServer = getAiResponseServer(__dirname)
 
 test.beforeEach(async (ctx) => {

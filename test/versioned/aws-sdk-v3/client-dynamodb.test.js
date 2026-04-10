@@ -4,10 +4,18 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
+
 const helper = require('../../lib/agent_helper')
-const common = require('./common')
+const afterEach = require('./test-utils/after-each.js')
+const checkAWSAttributes = require('./test-utils/check-aws-attributes.js')
+const {
+  DATASTORE_PATTERN,
+  EXTERN_PATTERN,
+  SEGMENT_DESTINATION
+} = require('./test-utils/constants.js')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
 
@@ -47,7 +55,7 @@ test('DynamoDB', async (t) => {
   })
 
   t.afterEach((ctx) => {
-    common.afterEach(ctx)
+    afterEach(ctx)
   })
 
   // See: https://github.com/newrelic/node-newrelic-aws-sdk/issues/160
@@ -112,14 +120,14 @@ test('DynamoDB', async (t) => {
       }
       tx.end()
       const root = tx.trace.root
-      const segments = common.checkAWSAttributes({
+      const segments = checkAWSAttributes({
         trace: tx.trace,
         segment: root,
-        pattern: common.DATASTORE_PATTERN
+        pattern: DATASTORE_PATTERN
       })
 
       segments.forEach((segment) => {
-        const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+        const attrs = segment.attributes.get(SEGMENT_DESTINATION)
         assert.equal(attrs['cloud.resource_id'], null)
       })
     })
@@ -186,10 +194,10 @@ function createCommands({ lib, tableName }) {
 
 function finish({ commands, tx }) {
   const root = tx.trace.root
-  const segments = common.checkAWSAttributes({
+  const segments = checkAWSAttributes({
     trace: tx.trace,
     segment: root,
-    pattern: common.DATASTORE_PATTERN
+    pattern: DATASTORE_PATTERN
   })
 
   assert.equal(
@@ -198,10 +206,10 @@ function finish({ commands, tx }) {
     `should have ${commands.length} AWS datastore segments`
   )
 
-  const externalSegments = common.checkAWSAttributes({
+  const externalSegments = checkAWSAttributes({
     trace: tx.trace,
     segment: root,
-    pattern: common.EXTERN_PATTERN
+    pattern: EXTERN_PATTERN
   })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
@@ -213,7 +221,7 @@ function finish({ commands, tx }) {
       `Datastore/operation/DynamoDB/${command.constructor.name}`,
       'should have operation in segment name'
     )
-    const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+    const attrs = segment.attributes.get(SEGMENT_DESTINATION)
     attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
     const accountId = tx.agent.config.cloud.aws.account_id
 

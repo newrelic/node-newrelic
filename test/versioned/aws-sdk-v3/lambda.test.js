@@ -6,14 +6,15 @@
 'use strict'
 
 const test = require('node:test')
-const helper = require('../../lib/agent_helper')
 const assert = require('node:assert')
+
+const helper = require('../../lib/agent_helper')
 const {
-  checkExternals,
-  checkAWSAttributes,
   EXTERN_PATTERN,
   SEGMENT_DESTINATION
-} = require('./common')
+} = require('./test-utils/constants.js')
+const checkAWSAttributes = require('./test-utils/check-aws-attributes.js')
+const checkExternals = require('./test-utils/check-externals.js')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
 

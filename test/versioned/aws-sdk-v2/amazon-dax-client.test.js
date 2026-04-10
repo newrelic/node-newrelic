@@ -4,12 +4,20 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
-const common = require('../aws-sdk-v3/common')
+
+const checkAWSAttributes = require('../aws-sdk-v3/test-utils/check-aws-attributes.js')
+const getMatchingSegments = require('../aws-sdk-v3/test-utils/get-matching-segments.js')
 const helper = require('../../lib/agent_helper')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
+const {
+  DATASTORE_PATTERN,
+  EXTERN_PATTERN,
+  SEGMENT_DESTINATION
+} = require('../aws-sdk-v3/test-utils/constants.js')
 
 // This will not resolve / allow web requests. Even with real ones, requests
 // have to execute within the same VPC as the DAX configuration. When adding DAX support,
@@ -61,25 +69,25 @@ test('amazon-dax-client', async (t) => {
         const root = transaction.trace.root
 
         // Won't have the attributes cause not making web request...
-        const segments = common.getMatchingSegments({
+        const segments = getMatchingSegments({
           trace: transaction.trace,
           segment: root,
-          pattern: common.DATASTORE_PATTERN
+          pattern: DATASTORE_PATTERN
         })
 
         assert.equal(segments.length, 1)
 
-        const externalSegments = common.checkAWSAttributes({
+        const externalSegments = checkAWSAttributes({
           trace: transaction.trace,
           segment: root,
-          pattern: common.EXTERN_PATTERN
+          pattern: EXTERN_PATTERN
         })
         assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
         const segment = segments[0]
         assert.equal(segment.name, 'Datastore/operation/DynamoDB/getItem')
 
-        const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+        const attrs = segment.attributes.get(SEGMENT_DESTINATION)
         match(attrs, {
           host: 'unknown',
           port_path_or_id: 'unknown',

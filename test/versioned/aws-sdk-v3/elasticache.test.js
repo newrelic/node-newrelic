@@ -4,9 +4,11 @@
  */
 
 'use strict'
+
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-const { afterEach, checkExternals } = require('./common')
+const afterEach = require('./test-utils/after-each.js')
+const checkExternals = require('./test-utils/check-externals.js')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 
 test('ElastiCacheClient', async (t) => {

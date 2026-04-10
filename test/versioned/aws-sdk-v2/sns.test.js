@@ -4,13 +4,21 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
+
 const helper = require('../../lib/agent_helper')
-const common = require('../aws-sdk-v3/common')
+const promiseResolvers = require('../../lib/promise-resolvers')
+const checkAWSAttributes = require('../aws-sdk-v3/test-utils/check-aws-attributes.js')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
-const promiseResolvers = require('../../lib/promise-resolvers')
+const {
+  EXTERN_PATTERN,
+  SEGMENT_DESTINATION,
+  SNS_PATTERN
+} = require('../aws-sdk-v3/test-utils/constants.js')
+
 const TopicArn = null
 
 test('SNS', async (t) => {
@@ -72,21 +80,21 @@ test('SNS', async (t) => {
 function finish(end, tx) {
   const root = tx.trace.root
 
-  const messages = common.checkAWSAttributes({
+  const messages = checkAWSAttributes({
     trace: tx.trace,
     segment: root,
-    pattern: common.SNS_PATTERN
+    pattern: SNS_PATTERN
   })
   assert.equal(messages.length, 1, 'should have 1 message broker segment')
 
-  const externalSegments = common.checkAWSAttributes({
+  const externalSegments = checkAWSAttributes({
     trace: tx.trace,
     segment: root,
-    pattern: common.EXTERN_PATTERN
+    pattern: EXTERN_PATTERN
   })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
-  const attrs = messages[0].attributes.get(common.SEGMENT_DESTINATION)
+  const attrs = messages[0].attributes.get(SEGMENT_DESTINATION)
   match(attrs, {
     'aws.operation': 'publish',
     'aws.requestId': String,
