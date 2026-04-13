@@ -7,9 +7,8 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Updated OTel DB attributes to stable names from semantic conventions 1.40.0",
           "Added instrumentation support for `@anthropic-ai/sdk`",
-          "Added `@aws-sdk/smithy-client` subscriber"
+          "Updated OTel DB attributes to stable names from semantic conventions 1.40.0"
         ]
       }
     },
