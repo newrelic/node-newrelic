@@ -8,7 +8,8 @@
         "bugfixes": [],
         "features": [
           "Added instrumentation support for `@anthropic-ai/sdk`",
-          "Updated OTel DB attributes to stable names from semantic conventions 1.40.0"
+          "Updated OTel DB attributes to stable names from semantic conventions 1.40.0",
+          "Added distributed tracing propagation to AWS SDK v3 SNS"
         ]
       }
     },
