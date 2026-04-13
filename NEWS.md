@@ -1,31 +1,30 @@
 ### v13.19.0 (2026-04-13)
 
 #### Features
-
-* Added `@aws-sdk/smithy-client` subscriber ([#3877](https://github.com/newrelic/node-newrelic/pull/3877)) ([0e350fc](https://github.com/newrelic/node-newrelic/commit/0e350fc92156b73928f37e6d32be0c3ea823d3e4))
 * Added instrumentation support for `@anthropic-ai/sdk` ([#3881](https://github.com/newrelic/node-newrelic/pull/3881)) ([e8713bb](https://github.com/newrelic/node-newrelic/commit/e8713bbe43d181ea96a33ccd6b241532e41206f4))
 * Updated OTel DB attributes to stable names from semantic conventions 1.40.0 ([#3826](https://github.com/newrelic/node-newrelic/pull/3826)) ([6d3000d](https://github.com/newrelic/node-newrelic/commit/6d3000d8dd699bdf5f3ecf4b4a18b28990234486))
+* Added distributed tracing propagation to SNS ([#3893](https://github.com/newrelic/node-newrelic/pull/3893)) ([8fc1144](https://github.com/newrelic/node-newrelic/commit/8fc11445122181f60404b7a75c35d2d914b0c5d0))
 
 #### Code refactoring
 
-* Added `@smithy/smithy-client` `send` subscriber with AWS Bedrock Middleware ([#3864](https://github.com/newrelic/node-newrelic/pull/3864)) ([5e0a6d1](https://github.com/newrelic/node-newrelic/commit/5e0a6d1cdbfbcc90d397c14e34e82ae86cb101b5))
-* Moved generic AWS `Client` middleware to subscriber ([#3889](https://github.com/newrelic/node-newrelic/pull/3889)) ([3cb1e1b](https://github.com/newrelic/node-newrelic/commit/3cb1e1bf6818d63475f132979e7e4c965ba7add5))
+* Refactor `@aws-sdk` v3 instrumentation to subscribe to events emitted
+	* Added `@aws-sdk/smithy-client` subscriber ([#3877](https://github.com/newrelic/node-newrelic/pull/3877)) ([0e350fc](https://github.com/newrelic/node-newrelic/commit/0e350fc92156b73928f37e6d32be0c3ea823d3e4))
+	* Added `@smithy/smithy-client` `send` subscriber with AWS Bedrock Middleware ([#3864](https://github.com/newrelic/node-newrelic/pull/3864)) ([5e0a6d1](https://github.com/newrelic/node-newrelic/commit/5e0a6d1cdbfbcc90d397c14e34e82ae86cb101b5))
+	* Moved generic AWS `Client` middleware to subscriber ([#3889](https://github.com/newrelic/node-newrelic/pull/3889)) ([3cb1e1b](https://github.com/newrelic/node-newrelic/commit/3cb1e1bf6818d63475f132979e7e4c965ba7add5))
+	* Updated `aws-sdk/dynamodb` instrumentation to a subscriber middleware ([#3891](https://github.com/newrelic/node-newrelic/pull/3891)) ([ff677a2](https://github.com/newrelic/node-newrelic/commit/ff677a26a62d4af80de7c92a238a0591a012485d))
+	* Updated aws sdk v3 instrumentation to split out bedrock utilities from actual wrapped middleware ([#3883](https://github.com/newrelic/node-newrelic/pull/3883)) ([eed340e](https://github.com/newrelic/node-newrelic/commit/eed340eb6bd66e1821a4f3659fe16e376555fd37))
+	* Updated Lambda instrumentation to a subscriber middleware ([#3890](https://github.com/newrelic/node-newrelic/pull/3890)) ([12f8284](https://github.com/newrelic/node-newrelic/commit/12f8284b2946101f295e7fabe439c7db8afb161d))
+	* Refactored SNS instrumentation to subscriber type ([#3876](https://github.com/newrelic/node-newrelic/pull/3876)) ([b9f3326](https://github.com/newrelic/node-newrelic/commit/b9f332644755c8bf89a88f8c786e642797cecf70))
+	* Refactored SQS instrumentation to subscriber type ([#3880](https://github.com/newrelic/node-newrelic/pull/3880)) ([de46dee](https://github.com/newrelic/node-newrelic/commit/de46deed6d9e1673e7504b5f48b5836d2c244a68))
 * Refactored `LlmErrorMessage` to use vendor-specific subclasses ([#3882](https://github.com/newrelic/node-newrelic/pull/3882)) ([5b0fd2b](https://github.com/newrelic/node-newrelic/commit/5b0fd2ba21a68ab678e05e1bb3533e1547c1f1d5))
-* Updated `aws-sdk/dynamodb` instrumentation to a subscriber middleware ([#3891](https://github.com/newrelic/node-newrelic/pull/3891)) ([ff677a2](https://github.com/newrelic/node-newrelic/commit/ff677a26a62d4af80de7c92a238a0591a012485d))
-* Updated aws sdk v3 instrumentation to split out bedrock utilities from actual wrapped middleware ([#3883](https://github.com/newrelic/node-newrelic/pull/3883)) ([eed340e](https://github.com/newrelic/node-newrelic/commit/eed340eb6bd66e1821a4f3659fe16e376555fd37))
-* Updated Lambda instrumentation to a subscriber middleware ([#3890](https://github.com/newrelic/node-newrelic/pull/3890)) ([12f8284](https://github.com/newrelic/node-newrelic/commit/12f8284b2946101f295e7fabe439c7db8afb161d))
+* Refactored `amqplib` to use message broker constants ([#3879](https://github.com/newrelic/node-newrelic/pull/3879)) ([77621fb](https://github.com/newrelic/node-newrelic/commit/77621fbb33169bad90165de95f11c3c4a1b7fc94))
 
 #### Documentation
 
 * Updated compatibility report ([#3874](https://github.com/newrelic/node-newrelic/pull/3874)) ([ae887c4](https://github.com/newrelic/node-newrelic/commit/ae887c42241dad86d222bd31c44b36af8e5ac76f))
-    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
 
 #### Miscellaneous chores
 
-* Added distributed tracing propagation to SNS ([#3893](https://github.com/newrelic/node-newrelic/pull/3893)) ([8fc1144](https://github.com/newrelic/node-newrelic/commit/8fc11445122181f60404b7a75c35d2d914b0c5d0))
-* Refactored amqplib to use message broker constants ([#3879](https://github.com/newrelic/node-newrelic/pull/3879)) ([77621fb](https://github.com/newrelic/node-newrelic/commit/77621fbb33169bad90165de95f11c3c4a1b7fc94))
-* Refactored SNS instrumentation to subscriber type ([#3876](https://github.com/newrelic/node-newrelic/pull/3876)) ([b9f3326](https://github.com/newrelic/node-newrelic/commit/b9f332644755c8bf89a88f8c786e642797cecf70))
-* Refactored SQS instrumentation to subscriber type ([#3880](https://github.com/newrelic/node-newrelic/pull/3880)) ([de46dee](https://github.com/newrelic/node-newrelic/commit/de46deed6d9e1673e7504b5f48b5836d2c244a68))
 * Updated `@apm-js-collab/tracing-hooks` to `0.6.0` ([#3884](https://github.com/newrelic/node-newrelic/pull/3884)) ([f6ef470](https://github.com/newrelic/node-newrelic/commit/f6ef470378445180bcd2fc12f5972df868bb74e5))
 * Updated Undici tests to cover version 8 ([#3896](https://github.com/newrelic/node-newrelic/pull/3896)) ([f27e75f](https://github.com/newrelic/node-newrelic/commit/f27e75fcb1cd5b87a3908f1e0f99cd2eb1eaae37))
 
