@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.19.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Updated OTel DB attributes to stable names from semantic conventions 1.40.0",
+          "Added instrumentation support for `@anthropic-ai/sdk`",
+          "Added `@aws-sdk/smithy-client` subscriber"
+        ]
+      }
+    },
+    {
       "version": "13.18.0",
       "changes": {
         "security": [],
