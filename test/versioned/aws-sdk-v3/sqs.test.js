@@ -179,6 +179,42 @@ test('SQS API', async (t) => {
       )
     })
   })
+
+  await t.test('handles messages with MessageAttributes under DT correctly', async (t) => {
+    // See issue https://github.com/newrelic/node-newrelic/issues/3901.
+    const { http, lib, queueName, sqs } = t.nr
+
+    const createPrams = getCreateParams(queueName)
+    const createCommand = new lib.CreateQueueCommand(createPrams)
+    const { QueueUrl } = await sqs.send(createCommand)
+
+    const messageParams = getSendMessageParams(QueueUrl)
+    messageParams.MessageAttributes = undefined
+    const { server, address } = await awsEcho({
+      http,
+      awsClient: sqs,
+      cmd: messageParams,
+      CreateCommand: lib.SendMessageCommand
+    })
+    t.after(() => {
+      server.close()
+    })
+
+    const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
+    const tracestate = `33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-${Date.now()}`
+    const response = await helper.asyncHttpCall(address, {
+      headers: { traceparent, tracestate }
+    })
+    const nrData = response.body.nrSendCommand
+    assert.equal(
+      nrData.MessageAttributes.traceparent.StringValue.startsWith(traceparent.slice(0, 35)),
+      true
+    )
+    assert.deepEqual(nrData.MessageAttributes.tracestate, {
+      DataType: 'String',
+      StringValue: tracestate
+    })
+  })
 })
 
 function finish({ transaction, queueName }) {
