@@ -1,12 +1,12 @@
-### v13.19.1 (2026-04-14)
+### v13.19.1 (2026-04-15)
 
 #### Bug fixes
 
 * Fixed detecting AWS SDK message attributes presence ([#3903](https://github.com/newrelic/node-newrelic/pull/3903)) ([e81dc61](https://github.com/newrelic/node-newrelic/commit/e81dc61924f756f8edf5b7ce0770840cdc435d76))
 
-#### Miscellaneous chores
+#### Tests 
 
-* Fix `minAgentVersion` for Anthropic versioned tests ([#3900](https://github.com/newrelic/node-newrelic/pull/3900)) ([e1f6c32](https://github.com/newrelic/node-newrelic/commit/e1f6c3295627126dad9333a58a83084312370c5b))
+* Updated `minAgentVersion` for Anthropic versioned tests ([#3900](https://github.com/newrelic/node-newrelic/pull/3900)) ([e1f6c32](https://github.com/newrelic/node-newrelic/commit/e1f6c3295627126dad9333a58a83084312370c5b))
 * Reorganized the test utilities in AWS versioned tests ([#3895](https://github.com/newrelic/node-newrelic/pull/3895)) ([3025571](https://github.com/newrelic/node-newrelic/commit/3025571741c71d8a41968a0c06a412f5a9689bad))
 
 ### v13.19.0 (2026-04-13)
