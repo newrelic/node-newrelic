@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.19.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed detecting AWS SDK message attributes presence"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "13.19.0",
       "changes": {
         "security": [],
