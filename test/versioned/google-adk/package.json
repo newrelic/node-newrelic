@@ -18,7 +18,7 @@
         "node": ">=20"
       },
       "dependencies": {
-        "@google/adk": ">=0.1.0"
+        "@google/adk": ">=0.6.0"
       },
       "files": [
         "agent-run-async.test.js"
