@@ -1,5 +1,97 @@
 [
   {
+    "kind": "sdk",
+    "title": "Anthropic",
+    "featuresPreamble": "Through the `@anthropic-ai/sdk` module, we support:",
+    "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
+    "features": [
+      {
+        "title": "Completions",
+        "supported": true
+      },
+      {
+        "title": "Chat",
+        "supported": true
+      },
+        {
+        "title": "Files",
+        "supported": false
+      }
+    ]
+  },
+  {
+    "kind": "sdk",
+    "title": "Google Gen AI",
+    "featuresPreamble": "Through the `@google/genai` module, we support:",
+    "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
+    "features": [
+      {
+        "title": "Text",
+        "supported": true
+      },
+      {
+        "title": "Image",
+        "supported": false
+      },
+      {
+        "title": "Audio",
+        "supported": false
+      },
+      {
+        "title": "Video",
+        "supported": false
+      },
+      {
+        "title": "PDF",
+        "supported": false
+      },
+      {
+        "title": "Chat",
+        "supported": true
+      },
+      {
+        "title": "Cache",
+        "supported": false
+      },
+      {
+        "title": "Embeddings",
+        "supported": true
+      }
+    ]
+  },
+  {
+    "kind": "sdk",
+    "title": "OpenAI",
+    "featuresPreamble": "Through the `openai` module, we support:",
+    "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
+    "features": [
+      {
+        "title": "Completions",
+        "supported": true
+      },
+      {
+        "title": "Chat",
+        "supported": true
+      },
+      {
+        "title": "Embeddings",
+        "supported": true
+      },
+      {
+        "title": "Files",
+        "supported": false
+      },
+      {
+        "title": "Images",
+        "supported": false
+      },
+      {
+        "title": "Audio",
+        "supported": false
+      }
+    ]
+  },
+  {
     "kind": "gateway",
     "title": "Amazon Bedrock",
     "preamble": "Through the `@aws-sdk/client-bedrock-runtime` module, we support all models (text-only) through the `Converse` API; for `InvokeModel` API, we support the following models:",
@@ -65,6 +157,29 @@
   },
   {
     "kind": "abstraction",
+    "title": "Google ADK",
+    "featuresPreamble": "Through the `@google/adk` module, we support the following features:",
+    "providersPreamble": "Models/providers are generally supported transitively by our instrumentation of the provider's module.",
+    "features": [
+      {
+        "title": "Agents",
+        "supported": true
+      },
+      {
+        "title": "Tools",
+        "supported": false
+      }
+    ],
+    "providers": [
+      {
+        "name": "Google Gemini",
+        "supported": true,
+        "transitively": true
+      }
+    ]
+  },
+  {
+    "kind": "abstraction",
     "title": "LangChain",
     "featuresPreamble": "The following general features of LangChain are supported:",
     "providersPreamble": "Models/providers are generally supported transitively by our instrumentation of the provider's module.",
@@ -105,101 +220,10 @@
     ]
   },
   {
-    "kind": "sdk",
-    "title": "Anthropic",
-    "featuresPreamble": "Through the `@anthropic-ai/sdk` module, we support:",
-    "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
-    "features": [
-      {
-        "title": "Completions",
-        "supported": true
-      },
-      {
-        "title": "Chat",
-        "supported": true
-      },
-        {
-        "title": "Files",
-        "supported": false
-      }
-    ]
-  },
-  {
-    "kind": "sdk",
-    "title": "OpenAI",
-    "featuresPreamble": "Through the `openai` module, we support:",
-    "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
-    "features": [
-      {
-        "title": "Completions",
-        "supported": true
-      },
-      {
-        "title": "Chat",
-        "supported": true
-      },
-      {
-        "title": "Embeddings",
-        "supported": true
-      },
-      {
-        "title": "Files",
-        "supported": false
-      },
-      {
-        "title": "Images",
-        "supported": false
-      },
-      {
-        "title": "Audio",
-        "supported": false
-      }
-    ]
-  },
-  {
-    "kind": "sdk",
-    "title": "Google Gen AI",
-    "featuresPreamble": "Through the `@google/genai` module, we support:",
-    "footnote": "Note: if a feature supports streaming, we also instrument the streaming variant.",
-    "features": [
-      {
-        "title": "Text",
-        "supported": true
-      },
-      {
-        "title": "Image",
-        "supported": false
-      },
-      {
-        "title": "Audio",
-        "supported": false
-      },
-      {
-        "title": "Video",
-        "supported": false
-      },
-      {
-        "title": "PDF",
-        "supported": false
-      },
-      {
-        "title": "Chat",
-        "supported": true
-      },
-      {
-        "title": "Cache",
-        "supported": false
-      },
-      {
-        "title": "Embeddings",
-        "supported": true
-      }
-    ]
-  },
-  {
-    "kind": "sdk",
+    "kind": "abstraction",
     "title": "Model Context Protocol SDK",
     "featuresPreamble": "Through the `@modelcontextprotocol/sdk` module, we support:",
+    "providersPreamble": "MCP is provider-agnostic. Any LLM provider that uses MCP tools is supported transitively.",
     "features": [
       {
         "title": "Tool Calls",
@@ -213,6 +237,7 @@
         "title": "Resource Reading",
         "supported": true
       }
-    ]
+    ],
+    "providers": []
   }
 ]
