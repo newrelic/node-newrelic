@@ -11,7 +11,6 @@ const cp = require('child_process')
 const fs = require('fs')
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify.js')
-const symbols = require('../../../lib/symbols')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
@@ -57,7 +56,8 @@ test('transaction context is preserved in subscribed events', function (t, end) 
   helper.runInTransaction(agent, function (transaction) {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
-    child.on('message', function () {
+    child.on('message', function (data) {
+      assert.equal(data, 'hello')
       assert.equal(agent.tracer.getTransaction(), transaction)
     })
 
@@ -68,69 +68,196 @@ test('transaction context is preserved in subscribed events', function (t, end) 
   })
 })
 
-test('should not break removeListener for single event', (t, end) => {
+test('transaction context is preserved in subscribed events with `once`', function (t, end) {
   const { agent } = t.nr
-
-  helper.runInTransaction(agent, function () {
+  helper.runInTransaction(agent, function (transaction) {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
-    function onMessage() {}
+    child.once('message', function (data) {
+      assert.equal(data, 'hello')
+      assert.equal(agent.tracer.getTransaction(), transaction)
+    })
 
-    child.on('message', onMessage)
-    assert.ok(child._events.message)
-
-    child.removeListener('message', onMessage)
-    assert.ok(!child._events.message)
-
-    child.on('exit', function () {
+    child.once('exit', function () {
+      assert.equal(agent.tracer.getTransaction(), transaction)
       end()
     })
   })
 })
 
-test('should not break removeListener for multiple events down to single', (t, end) => {
-  const { agent } = t.nr
+;['removeListener', 'off'].forEach((method) => {
+  test(`should not break ${method} for single event`, (t, end) => {
+    const { agent } = t.nr
 
-  helper.runInTransaction(agent, function () {
+    helper.runInTransaction(agent, function () {
+      const child = cp.fork('./exec-me.js', { cwd: __dirname })
+
+      function onMessage() {}
+
+      child.on('message', onMessage)
+      assert.equal(child._events.message, onMessage)
+
+      child[method]('message', onMessage)
+      assert.ok(!child._events.message)
+
+      child.on('exit', function () {
+        end()
+      })
+    })
+  })
+
+  test(`should not break ${method} for single event not called`, (t, end) => {
+    const { agent } = t.nr
+
+    helper.runInTransaction(agent, function () {
+      const child = cp.fork('./exec-me.js', { cwd: __dirname })
+
+      function onMessage() {}
+      function onError() {}
+
+      child.on('message', onMessage)
+      child.on('error', onError)
+      assert.equal(child._events.message, onMessage)
+      assert.equal(child._events.error, onError)
+
+      child[method]('message', onMessage)
+      assert.ok(!child._events.message)
+      child[method]('error', onError)
+      assert.ok(!child._events.error)
+
+      child.on('exit', function () {
+        end()
+      })
+    })
+  })
+
+  test('should not break removeListener for multiple events down to single', (t, end) => {
+    const { agent } = t.nr
+
+    helper.runInTransaction(agent, function () {
+      const child = cp.fork('./exec-me.js', { cwd: __dirname })
+
+      function onMessage() {}
+      function onMessage2() {}
+
+      child.on('message', onMessage)
+      child.on('message', onMessage2)
+      assert.equal(child._events.message.length, 2)
+
+      child[method]('message', onMessage)
+      assert.equal(child._events.message, onMessage2)
+
+      child.on('exit', function () {
+        end()
+      })
+    })
+  })
+
+  test('should not break removeListener for multiple events down to multiple', (t, end) => {
+    const { agent } = t.nr
+
+    helper.runInTransaction(agent, function () {
+      const child = cp.fork('./exec-me.js', { cwd: __dirname })
+
+      function onMessage() {}
+      function onMessage2() {}
+      function onMessage3() {}
+
+      child.on('message', onMessage)
+      child.on('message', onMessage2)
+      child.on('message', onMessage3)
+      assert.equal(child._events.message.length, 3)
+
+      child[method]('message', onMessage)
+      assert.equal(child._events.message.length, 2)
+
+      child.on('exit', function () {
+        end()
+      })
+    })
+  })
+
+  test('should not break once() removal of listener', (t, end) => {
+    const { agent } = t.nr
+
+    helper.runInTransaction(agent, function () {
+      const child = cp.fork('./exec-me.js', { cwd: __dirname })
+
+      let invokedMessage = false
+      function onMessage() {
+        invokedMessage = true
+      }
+      child.once('message', onMessage)
+      child[method]('message', onMessage)
+
+      child.on('exit', function () {
+        assert.ok(!invokedMessage, 'onMessage should not have been called')
+        assert.ok(!child._events.message)
+        end()
+      })
+    })
+  })
+
+  test('should not break once() removal of listener not fired', (t, end) => {
+    const { agent } = t.nr
+
+    helper.runInTransaction(agent, function () {
+      const child = cp.fork('./exec-me.js', { cwd: __dirname })
+
+      let invokedMessage = false
+      function onMessage() {
+        invokedMessage = true
+      }
+
+      let invokedError = false
+      function onError() {
+        invokedError = true
+      }
+      child.once('message', onMessage)
+      child.once('error', onError)
+      child[method]('message', onMessage)
+      child[method]('error', onError)
+
+      child.on('exit', function () {
+        assert.ok(!invokedMessage, 'onMessage should not have been called')
+        assert.ok(!invokedError, 'onError should not have been called')
+        assert.ok(!child._events.message)
+        assert.ok(!child._events.error)
+        end()
+      })
+    })
+  })
+
+  test(`should not affect calling ${method} on() when transaction is not active`, (t, end) => {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
-    function onMessage() {}
-    function onMessage2() {}
-
+    let invokedMessage = false
+    function onMessage() {
+      invokedMessage = true
+    }
     child.on('message', onMessage)
-    child.on('message', onMessage2)
-    assert.ok(child._events.message)
-
-    child.removeListener('message', onMessage)
-    assert.ok(child._events.message)
-    assert.equal(child._events.message[symbols.original], onMessage2)
+    child[method]('message', onMessage)
 
     child.on('exit', function () {
+      assert.ok(!invokedMessage, 'onMessage should not have been called')
+      assert.ok(!child._events.message)
       end()
     })
   })
-})
 
-test('should not break removeListener for multiple events down to multiple', (t, end) => {
-  const { agent } = t.nr
-
-  helper.runInTransaction(agent, function () {
+  test(`should not affect calling ${method} once() when transaction is not active`, (t, end) => {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
-    function onMessage() {}
-    function onMessage2() {}
-    function onMessage3() {}
-
-    child.on('message', onMessage)
-    child.on('message', onMessage2)
-    child.on('message', onMessage3)
-    assert.ok(child._events.message)
-
-    child.removeListener('message', onMessage)
-    assert.ok(child._events.message)
-    assert.equal(child._events.message.length, 2)
+    let invokedMessage = false
+    function onMessage() {
+      invokedMessage = true
+    }
+    child.once('message', onMessage)
+    child[method]('message', onMessage)
 
     child.on('exit', function () {
+      assert.ok(!invokedMessage, 'onMessage should not have been called')
+      assert.ok(!child._events.message)
       end()
     })
   })
@@ -152,6 +279,21 @@ test('should not break once() removal of listener', (t, end) => {
       assert.ok(invokedMessage, 'Must have onMessage called for test to be valid.')
       end()
     })
+  })
+})
+
+test('should not break once() removal of listener not an active tx', (t, end) => {
+  const child = cp.fork('./exec-me.js', { cwd: __dirname })
+
+  let invokedMessage = false
+  child.once('message', function onMessage() {
+    invokedMessage = true
+    assert.ok(!child._events.message)
+  })
+
+  child.on('exit', function () {
+    assert.ok(invokedMessage, 'Must have onMessage called for test to be valid.')
+    end()
   })
 })
 
@@ -178,7 +320,7 @@ test('should not break multiple once() for multiple events down to single', (t, 
       assert.ok(invokedMessage1, 'Must have onMessage called for test to be valid.')
       assert.ok(invokedMessage2, 'Must have onMessage2 called for test to be valid.')
 
-      assert.equal(child._events.message[symbols.original], onMessage3)
+      assert.equal(child._events.message, onMessage3)
       end()
     })
   })
@@ -215,15 +357,12 @@ test('should not break multiple once() for multiple events down to multiple', (t
   })
 })
 
-// Don't expect this should be possible but lets protect ourselves anyways.
-test('should not break removal of non-wrapped listener', (t, end) => {
+test('should not break removal of listener added via `addListener`', (t, end) => {
   const { agent } = t.nr
 
   helper.runInTransaction(agent, function () {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
-    // Avoid our instrumentation via private method.
-    // TODO: should we also be instrumenting addListener?
     function nonWrappedListener() {}
     child.addListener('message', nonWrappedListener)
 
@@ -236,11 +375,10 @@ test('should not break removal of non-wrapped listener', (t, end) => {
   })
 })
 
-// Don't expect this should be possible but lets protect ourselves anyways.
-test('should not break when non-wrapped listener exists', (t, end) => {
+test('should not break when listener exists added via `addListener`', (t, end) => {
   const { agent } = t.nr
 
-  helper.runInTransaction(agent, function () {
+  helper.runInTransaction(agent, function (transaction) {
     const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     let invokedMessage = false
@@ -248,8 +386,10 @@ test('should not break when non-wrapped listener exists', (t, end) => {
       invokedMessage = true
     })
 
-    // Avoid our instrumentation via private method.
-    function nonWrappedListener() {}
+    function nonWrappedListener() {
+      assert.equal(agent.tracer.getTransaction(), transaction)
+    }
+
     child.addListener('message', nonWrappedListener)
 
     child.on('exit', function () {
@@ -264,6 +404,7 @@ test('should not break when non-wrapped listener exists', (t, end) => {
 })
 
 test('should not introduce a new error nor hide error for missing handler', (t, end) => {
+  t.plan(2)
   const { agent } = t.nr
 
   helper.runInTransaction(agent, function () {
@@ -272,8 +413,8 @@ test('should not introduce a new error nor hide error for missing handler', (t, 
     try {
       child.on('message', null)
     } catch (error) {
-      assert.ok(error)
-      assert.ok(error.message.includes('"listener" argument must be'))
+      t.assert.ok(error)
+      t.assert.ok(error.message.includes('"listener" argument must be'))
     }
 
     child.on('exit', function () {
@@ -283,6 +424,7 @@ test('should not introduce a new error nor hide error for missing handler', (t, 
 })
 
 test('should not introduce a new error nor hide error for invalid handler', (t, end) => {
+  t.plan(2)
   const { agent } = t.nr
 
   helper.runInTransaction(agent, function () {
@@ -291,8 +433,8 @@ test('should not introduce a new error nor hide error for invalid handler', (t, 
     try {
       child.on('message', 1)
     } catch (error) {
-      assert.ok(error)
-      assert.ok(error.message.includes('"listener" argument must be'))
+      t.assert.ok(error)
+      t.assert.ok(error.message.includes('"listener" argument must be'))
     }
 
     child.on('exit', function () {
@@ -316,6 +458,30 @@ test('should not break removeAllListeners', (t, end) => {
     assert.ok(!child._events.message)
 
     child.on('exit', function () {
+      end()
+    })
+  })
+})
+
+test('should not break removeAllListeners with `onceListeners`', (t, end) => {
+  const { agent } = t.nr
+
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
+
+    let onMessageCalled = false
+    function onMessage() {
+      onMessageCalled = true
+    }
+
+    child.once('message', onMessage)
+    assert.ok(child._events.message)
+
+    child.removeAllListeners('message')
+    assert.ok(!child._events.message)
+
+    child.on('exit', function () {
+      assert.ok(!onMessageCalled)
       end()
     })
   })
