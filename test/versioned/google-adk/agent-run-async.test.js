@@ -6,7 +6,6 @@
 'use strict'
 
 const test = require('node:test')
-const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, match } = require('../../lib/custom-assertions')
@@ -78,6 +77,7 @@ test.afterEach((ctx) => {
 })
 
 test('should log tracking metrics', function (t, end) {
+  t.plan(5)
   const { agent, BaseAgent, adkVersion } = t.nr
   const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
@@ -96,7 +96,9 @@ test('should log tracking metrics', function (t, end) {
 })
 
 test('should create span on successful BaseAgent.runAsync', async (t) => {
+  t.plan(2)
   const { agent, BaseAgent } = t.nr
+  const assert = t.assert
 
   const testAgent = createTestAgent(BaseAgent, {
     name: 'span_agent',
@@ -108,14 +110,16 @@ test('should create span on successful BaseAgent.runAsync', async (t) => {
     assert.equal(results.length, 1)
     assertSegments(tx.trace, tx.trace.root, ['Llm/agent/ADK/runAsync/span_agent'], {
       exact: false
-    })
+    }, { assert })
 
     tx.end()
   })
 })
 
 test('should create LlmAgent event for BaseAgent.runAsync', async (t) => {
+  t.plan(8)
   const { agent, BaseAgent } = t.nr
+  const assert = t.assert
 
   const testAgent = createTestAgent(BaseAgent, {
     name: 'event_agent',
@@ -140,14 +144,16 @@ test('should create LlmAgent event for BaseAgent.runAsync', async (t) => {
       trace_id: tx.traceId,
       ingest_source: 'Node',
       vendor: 'adk'
-    })
+    }, { assert })
 
     tx.end()
   })
 })
 
 test('should record LLM custom events with attributes', async (t) => {
+  t.plan(2)
   const { agent, BaseAgent } = t.nr
+  const assert = t.assert
   const api = helper.getAgentApi()
 
   const testAgent = createTestAgent(BaseAgent, {
@@ -172,7 +178,9 @@ test('should record LLM custom events with attributes', async (t) => {
 })
 
 test('should add llm attribute to transaction', async (t) => {
+  t.plan(1)
   const { agent, BaseAgent } = t.nr
+  const assert = t.assert
 
   const testAgent = createTestAgent(BaseAgent, {
     name: 'tx_attr_agent',
@@ -190,7 +198,9 @@ test('should add llm attribute to transaction', async (t) => {
 })
 
 test('should add subcomponent attribute to span', async (t) => {
+  t.plan(1)
   const { agent, BaseAgent } = t.nr
+  const assert = t.assert
 
   const testAgent = createTestAgent(BaseAgent, {
     name: 'subcomp_agent',
@@ -209,7 +219,9 @@ test('should add subcomponent attribute to span', async (t) => {
 })
 
 test('should record error LlmAgent event when generator throws', async (t) => {
+  t.plan(4)
   const { agent, BaseAgent } = t.nr
+  const assert = t.assert
 
   const testAgent = createTestAgent(BaseAgent, {
     name: 'error_agent',
@@ -236,6 +248,7 @@ test('should record error LlmAgent event when generator throws', async (t) => {
 
 test('should not create llm events when not in a transaction', async (t) => {
   const { agent, BaseAgent } = t.nr
+  const assert = t.assert
 
   const testAgent = createTestAgent(BaseAgent, {
     name: 'no_tx_agent',
@@ -250,7 +263,9 @@ test('should not create llm events when not in a transaction', async (t) => {
 })
 
 test('should not create segment or events when ai_monitoring.enabled is false', async (t) => {
+  t.plan(2)
   const { agent, BaseAgent } = t.nr
+  const assert = t.assert
 
   agent.config.ai_monitoring.enabled = false
 
