@@ -1,3 +1,13 @@
+### v13.19.2 (2026-04-20)
+
+#### Bug fixes
+
+* Fixed `child_process` instrumentation to avoid leaking event handlers subscribed to once ([#3907](https://github.com/newrelic/node-newrelic/pull/3907)) ([ad0b1f6](https://github.com/newrelic/node-newrelic/commit/ad0b1f65700b5f34861062cb14e3a80fec924ca1))
+
+#### Documentation
+
+* Updated compatibility report ([#3897](https://github.com/newrelic/node-newrelic/pull/3897)) ([0ed2202](https://github.com/newrelic/node-newrelic/commit/0ed220224fb149e1e6b7bde3d26c1cccf415d392))
+
 ### v13.19.1 (2026-04-15)
 
 #### Bug fixes

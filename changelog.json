@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.19.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed `child_process` instrumentation to avoid leaking event handlers subscribed to once"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "13.19.1",
       "changes": {
         "security": [],
