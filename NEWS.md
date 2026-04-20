@@ -2,7 +2,7 @@
 
 #### Bug fixes
 
-* Fixed `child_process` instrumentation to avoid leaking event handlers subscribed to once ([#3907](https://github.com/newrelic/node-newrelic/pull/3907)) ([ad0b1f6](https://github.com/newrelic/node-newrelic/commit/ad0b1f65700b5f34861062cb14e3a80fec924ca1))
+* Fixed `child_process` instrumentation to avoid leaking event handlers subscribed to `once` ([#3907](https://github.com/newrelic/node-newrelic/pull/3907)) ([ad0b1f6](https://github.com/newrelic/node-newrelic/commit/ad0b1f65700b5f34861062cb14e3a80fec924ca1))
 
 #### Documentation
 

@@ -6,7 +6,7 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Fixed `child_process` instrumentation to avoid leaking event handlers subscribed to once"
+          "Fixed `child_process` instrumentation to avoid leaking event handlers subscribed to `once`"
         ],
         "features": []
       }
