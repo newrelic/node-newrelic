@@ -108,7 +108,7 @@ test('should create span on successful BaseAgent.runAsync', async (t) => {
   await helper.runInTransaction(agent, async (tx) => {
     const results = await consumeGenerator(testAgent.runAsync({}))
     assert.equal(results.length, 1)
-    assertSegments(tx.trace, tx.trace.root, ['Llm/agent/ADK/runAsync/span_agent'], {
+    assertSegments(tx.trace, tx.trace.root, ['Llm/agent/GoogleADK/runAsync/span_agent'], {
       exact: false
     }, { assert })
 
@@ -143,7 +143,7 @@ test('should create LlmAgent event for BaseAgent.runAsync', async (t) => {
       span_id: segment.id,
       trace_id: tx.traceId,
       ingest_source: 'Node',
-      vendor: 'adk'
+      vendor: 'google_adk'
     }, { assert })
 
     tx.end()
@@ -278,8 +278,8 @@ test('should not create segment or events when ai_monitoring.enabled is false', 
     await consumeGenerator(testAgent.runAsync({}))
 
     const segments = tx.trace.getChildren(tx.trace.root.id)
-    const adkSegments = segments.filter((s) => s.name.includes('Llm/agent/ADK'))
-    assert.equal(adkSegments.length, 0, 'should not create ADK segments')
+    const adkSegments = segments.filter((s) => s.name.includes('Llm/agent/GoogleADK'))
+    assert.equal(adkSegments.length, 0, 'should not create GoogleADK segments')
 
     const events = agent.customEventAggregator.events.toArray()
     const agentEvents = events.filter((e) => e[0].type === 'LlmAgent')
