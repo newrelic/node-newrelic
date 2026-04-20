@@ -160,7 +160,7 @@ jobs:
           name: integration-tests-esm-${{ matrix.node-version }}
           path: ./coverage/integration-esm/lcov.info
 
-  versioned-internal:
+  versioned:
     needs:
       - should_run
     if: github.event_name == 'workflow_dispatch' ||
@@ -184,7 +184,7 @@ jobs:
       - name: Run Docker Services
         run: npm run services
       - name: Run Versioned Tests
-        run: TEST_CHILD_TIMEOUT=600000 npm run versioned:internal
+        run: TEST_CHILD_TIMEOUT=600000 npm run versioned
         env:
           VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
           # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
@@ -210,37 +210,8 @@ jobs:
           name: logs-${{ matrix.node-version }}.tgz
           path: ./logs-${{ matrix.node-version }}.tgz
 
-  # There is no coverage for external as that's tracked in their respective repos
-  versioned-external:
-    needs:
-      - should_run
-    if: github.event_name == 'workflow_dispatch' ||
-      (needs.should_run.outputs.javascript_changed == 'true' ||
-      needs.should_run.outputs.deps_changed == 'true')
-    runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [20.x, 22.x, 24.x]
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install Dependencies
-        run: npm install
-      - name: Run Versioned Tests
-        run: TEST_CHILD_TIMEOUT=600000 npm run versioned:external
-        env:
-          VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
-          # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
-          JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
-
   codecov:
-    needs: [unit, integration, versioned-internal]
+    needs: [unit, integration, versioned]
     runs-on: ubuntu-latest
 
     strategy:
@@ -288,8 +259,7 @@ jobs:
       - ci
       - unit
       - integration
-      - versioned-internal
-      - versioned-external
+      - versioned
     steps:
       - name: All checks passed
         if: ${{ !(contains(needs.*.result, 'failure')) }}
