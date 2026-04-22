@@ -17,7 +17,7 @@ const {
 } = require('../../lib/apollo/common')
 const assert = require('node:assert')
 const semver = require('semver')
-const { assertSegments, assertMetrics } = require('../../lib/custom-assertions')
+const { assertSegments, assertMetrics, assertPackageMetrics } = require('../../lib/custom-assertions')
 
 const ANON_PLACEHOLDER = '<anonymous>'
 const UNKNOWN_OPERATION = '<unknown>'
@@ -33,7 +33,7 @@ const segmentsTests = []
 segmentsTests.push({
   name: 'anonymous query, single level',
   async fn(t) {
-    const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
+    const { agent, serverUrl, TRANSACTION_PREFIX, apolloServerPkg } = t.nr
     const { promise, resolve } = promiseResolvers()
 
     const query = `query {
@@ -53,6 +53,7 @@ segmentsTests.push({
     })
 
     executeQuery(serverUrl, query, (err, result) => {
+      assertPackageMetrics({ agent, pkg: '@apollo/server', version: apolloServerPkg.apolloVersion, subscriberType: true })
       assert.ifError(err)
       checkResult(assert, result, () => {
         resolve()

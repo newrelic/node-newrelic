@@ -2040,7 +2040,7 @@ API.prototype.setApolloOperationAttributesCallback = function setApolloOperation
  *  }
  * }
  *
- * newrelic.setApolloResolverAttributesCallback(customOperationAttributes)
+ * newrelic.setApolloResolverAttributesCallback(customResolverAttributes)
  */
 API.prototype.setApolloResolverAttributesCallback = function setApolloResolverAttributesCallback(callback) {
   const self = this

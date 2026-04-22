@@ -362,6 +362,15 @@ test('with default properties', async (t) => {
     assert.equal(otel.metrics.export_interval, 60_000)
     assert.equal(otel.metrics.export_timeout, 10_000)
   })
+
+  await t.test('apollo_server defaults', () => {
+    const apollo = configuration.apollo_server
+    assert.equal(apollo.scalars, false)
+    assert.equal(apollo.introspection_queries, false)
+    assert.equal(apollo.service_definition_queries, false)
+    assert.equal(apollo.health_check_queries, false)
+    assert.equal(apollo.field_metrics, false)
+  })
 })
 
 test('with undefined as default', async (t) => {

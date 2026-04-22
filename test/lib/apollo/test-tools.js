@@ -9,6 +9,7 @@
 
 module.exports = {
   afterEach,
+  requireApolloServer,
   setupCoreTest,
   unloadModules
 }

@@ -556,4 +556,24 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.profiling.sample_interval, 200)
     assert.deepEqual(configuration.profiling.include, ['cpu'])
   })
+
+  await t.test('should set apollo server options', () => {
+    const config = {
+      apollo_server: {
+        scalars: true,
+        introspection_queries: true,
+        service_definition_queries: true,
+        health_check_queries: true,
+        field_metrics: true
+      }
+    }
+
+    const configuration = Config.initialize(config)
+    const apollo = configuration.apollo_server
+    assert.equal(apollo.scalars, true)
+    assert.equal(apollo.introspection_queries, true)
+    assert.equal(apollo.service_definition_queries, true)
+    assert.equal(apollo.health_check_queries, true)
+    assert.equal(apollo.field_metrics, true)
+  })
 })

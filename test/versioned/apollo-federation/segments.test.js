@@ -7,7 +7,7 @@
 const test = require('node:test')
 const { tspl } = require('@matteo.collina/tspl')
 const { executeQuery, executeQueryBatch } = require('../../lib/apollo/test-client')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertSegments, assertPackageMetrics } = require('../../lib/custom-assertions')
 
 const ANON_PLACEHOLDER = '<anonymous>'
 const OPERATION_PREFIX = 'GraphQL/operation/ApolloServer'
@@ -28,7 +28,7 @@ test('apollo-federation: federated segments', async (t) => {
 
   await t.test('should nest sub graphs under operation', async (t) => {
     const plan = tspl(t, { plan: 7 })
-    const { agent, gatewayService, libraryService, magazineService, bookService } = t.nr
+    const { agent, gatewayService, libraryService, magazineService, bookService, apolloVersion } = t.nr
     const serverUrl = gatewayService.url
 
     const query = `query {
@@ -59,6 +59,7 @@ test('apollo-federation: federated segments', async (t) => {
     })
 
     executeQuery(serverUrl, query, (err, result) => {
+      assertPackageMetrics({ agent, pkg: '@apollo/server', version: apolloVersion, subscriberType: true })
       plan.ok(!err)
 
       const expectedSegments = [

@@ -5,7 +5,7 @@
 
 'use strict'
 const federatedData = require('./federated-data-definitions')
-const { unloadModules } = require('../../lib/apollo/test-tools')
+const { unloadModules, requireApolloServer } = require('../../lib/apollo/test-tools')
 const helper = require('../../lib/agent_helper')
 
 async function setupFederatedGateway({ instrumentSubGraphs, agentConfig, ctx }) {
@@ -14,9 +14,7 @@ async function setupFederatedGateway({ instrumentSubGraphs, agentConfig, ctx }) 
   const nrApi = helper.getAgentApi()
 
   // Do after instrumentation to ensure express isn't loaded too soon.
-  const { ApolloServer } = require('@apollo/server')
-  const { startStandaloneServer } = require('@apollo/server/standalone')
-  const gql = require('graphql-tag')
+  const { ApolloServer, gql, apolloVersion, startStandaloneServer } = requireApolloServer(__dirname)
 
   const subGraphPlugins = []
 
@@ -62,10 +60,11 @@ async function setupFederatedGateway({ instrumentSubGraphs, agentConfig, ctx }) 
   })
   ctx.nr = {
     agent,
+    apolloVersion,
     gatewayService,
     libraryService,
     magazineService,
-    bookService
+    bookService,
   }
 }
 
