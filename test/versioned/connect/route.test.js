@@ -8,7 +8,11 @@
 const test = require('node:test')
 const http = require('node:http')
 const tspl = require('@matteo.collina/tspl')
-const { assertPackageMetrics } = require('../../lib/custom-assertions')
+const {
+  assertMetrics,
+  assertPackageMetrics,
+  assertSegments
+} = require('../../lib/custom-assertions')
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
 
@@ -28,8 +32,9 @@ test.afterEach((ctx) => {
   removeModules(['connect'])
 })
 
-test('should log tracking metrics', function(t) {
-  const { agent, pkgVersion } = t.nr
+test('should log tracking metrics', (t) => {
+  const { agent, app, pkgVersion } = t.nr
+  app.use('/foo', () => {})
   assertPackageMetrics({
     agent,
     pkg: 'connect',
@@ -39,7 +44,7 @@ test('should log tracking metrics', function(t) {
 })
 
 test('should properly name transaction from route name', async (t) => {
-  const plan = tspl(t, { plan: 10 })
+  const plan = tspl(t, { plan: 27 })
   const { agent, app } = t.nr
 
   agent.once('transactionFinished', (tx) => {
@@ -52,6 +57,22 @@ test('should properly name transaction from route name', async (t) => {
     plan.ok(web, 'trace has web segment')
     plan.equal(web.name, tx.name, 'segment name and transaction name match')
     plan.equal(web.partialName, 'Connect/GET//foo', 'should have partial name for apdex')
+
+    assertSegments(tx.trace, web, ['Nodejs/Middleware/Connect/middleware//foo'], { exact: true }, { assert: plan })
+    const expectedMetrics = [
+      [{ name: 'WebTransaction' }],
+      [{ name: 'WebTransactionTotalTime' }],
+      [{ name: 'HttpDispatcher' }],
+      [{ name: 'WebTransaction/Connect/GET//foo' }],
+      [{ name: 'WebTransactionTotalTime/Connect/GET//foo' }],
+      [{ name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all' }],
+      [{ name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb' }],
+      [{ name: 'Apdex/Connect/GET//foo' }],
+      [{ name: 'Apdex' }],
+      [{ name: 'Nodejs/Middleware/Connect/middleware//foo' }],
+      [{ name: 'Nodejs/Middleware/Connect/middleware//foo', scope: 'WebTransaction/Connect/GET//foo' }],
+    ]
+    assertMetrics(tx.metrics, expectedMetrics, false, false, { assert: plan })
   })
 
   function middleware(req, res) {
