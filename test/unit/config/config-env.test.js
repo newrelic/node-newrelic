@@ -481,7 +481,7 @@ test('when overriding configuration values via environment variables', async (t)
 
   await t.test('should set the profiling options', (t, end) => {
     const env = {
-      NEW_RELIC_PROFILING_ENABLED: true,
+      NEW_RELIC_PROFILING_ENABLED: 'true',
       NEW_RELIC_PROFILING_INCLUDE: ['heap'],
       NEW_RELIC_PROFILING_DELAY: 100,
       NEW_RELIC_PROFILING_DURATION: 20000,
@@ -492,6 +492,26 @@ test('when overriding configuration values via environment variables', async (t)
       assert.deepStrictEqual(tc.profiling.include, ['heap'])
       assert.equal(tc.profiling.delay, 100)
       assert.equal(tc.profiling.duration, 20000)
+      end()
+    })
+  })
+
+  await t.test('should set the apollo server options', (t, end) => {
+    const env = {
+      NEW_RELIC_APOLLO_SERVER_SCALARS: 'true',
+      NEW_RELIC_APOLLO_SERVER_INTROSPECTION_QUERIES: 'true',
+      NEW_RELIC_APOLLO_SERVER_SERVICE_DEFINITION_QUERIES: 'true',
+      NEW_RELIC_APOLLO_SERVER_HEALTH_CHECK_QUERIES: 'true',
+      NEW_RELIC_APOLLO_SERVER_FIELD_METRICS: 'true',
+    }
+
+    idempotentEnv(env, (tc) => {
+      const apollo = tc.apollo_server
+      assert.equal(apollo.scalars, true)
+      assert.equal(apollo.introspection_queries, true)
+      assert.equal(apollo.service_definition_queries, true)
+      assert.equal(apollo.health_check_queries, true)
+      assert.equal(apollo.field_metrics, true)
       end()
     })
   })
