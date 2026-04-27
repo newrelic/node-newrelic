@@ -166,6 +166,31 @@ test('instruments all HTTP methods', async (t) => {
   }
 })
 
+test('does not create new transaction when one already exists', async (t) => {
+  bootstrapModule({ t })
+  const { agent, mockApi } = t.nr
+
+  const handler = async function () {
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    return response
+  }
+  const options = { handler }
+
+  mockApi.app.get('a-test', options)
+  const wrappedHandler = global.azure.handlers.at(-1)
+
+  await helper.runInTransaction(agent, async (existingTx) => {
+    const response = await mockApi.httpRequest('get', wrappedHandler)
+    assert.equal(response.body, 'ok')
+
+    // Should still be in the same transaction, not a new one
+    const currentTx = agent.tracer.getTransaction()
+    assert.equal(currentTx.id, existingTx.id, 'should reuse existing transaction')
+  })
+})
+
 test('handles distributed tracing information', async (t) => {
   const clientRequest = structuredClone(basicHttpRequest)
   clientRequest.headers = {

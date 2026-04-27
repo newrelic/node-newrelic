@@ -207,6 +207,27 @@ test('does not increment logging metrics when metrics are disabled', async (t) =
   assert.equal(unscoped['Logging/lines/ERROR'], undefined, 'Logging/lines/ERROR should not be incremented')
 })
 
+test('uses default values when context fields are missing', async (t) => {
+  bootstrapModule({ t })
+  const { agent, mockApi } = t.nr
+
+  const handler = async function () {
+    // Fire log hook with empty context to test defaults
+    for (const cb of global.azure.logHandlers) {
+      cb({})
+    }
+    return makeOkResponse()
+  }
+
+  await runHandlerAndWait(agent, mockApi, handler)
+
+  const agentLogs = agent.logs.getEvents()
+  assert.equal(agentLogs.length, 1, 'should have one log entry')
+  assert.equal(agentLogs[0].level, 'info', 'should default to info when context.level is not set')
+  assert.equal(agentLogs[0].message, 'unknown', 'should default to unknown when context.message is not set')
+  assert.equal(agentLogs[0].category, 'user', 'should default to user when context.category is not set')
+})
+
 // https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-node?tabs=javascript%2Cwindows%2Cazure-cli&pivots=nodejs-model-v4#log-levels
 test('captures correct log level for each context log method', async (t) => {
   bootstrapModule({ t })

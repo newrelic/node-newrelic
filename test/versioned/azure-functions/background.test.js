@@ -140,6 +140,25 @@ function bootstrapModule({ t }) {
   t.nr.mockApi = mockApi
 }
 
+test('does not create new transaction when one already exists', async (t) => {
+  bootstrapModule({ t })
+  const { agent, mockApi } = t.nr
+
+  const handler = async function () {}
+  const options = { handler }
+
+  mockApi.app.timer('a-test', options)
+  const wrappedHandler = global.azure.handlers.at(-1)
+
+  await helper.runInTransaction(agent, async (existingTx) => {
+    await mockApi.request('timer', wrappedHandler)
+
+    // Should still be in the same transaction, not a new one
+    const currentTx = agent.tracer.getTransaction()
+    assert.equal(currentTx.id, existingTx.id, 'should reuse existing transaction')
+  })
+})
+
 test('instruments background methods', async (t) => {
   bootstrapModule({ t })
   const { agent, mockApi } = t.nr
