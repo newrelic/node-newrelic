@@ -1,0 +1,27 @@
+{
+  "name": "apollo-server-tests",
+  "targets": [{"name":"@apollo/gateway","minAgentVersion":"14.0.0"}],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "@apollo/subgraph": "latest",
+        "@apollo/gateway": ">=2.3.0",
+        "@apollo/server": "latest",
+        "graphql-tag": "latest"
+      },
+      "files": [
+        "segments.test.js",
+        "service-definition-and-healthcheck-filtering.test.js",
+        "transaction-naming.test.js",
+        "sub-graph-transactions.test.js",
+        "query-obfuscation.test.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
