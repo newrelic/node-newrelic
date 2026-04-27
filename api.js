@@ -1977,4 +1977,89 @@ API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context
   return transaction._llmContextManager.run(fullContext, callback)
 }
 
+/**
+ * Function for adding a custom callback to generate custom attributes on apollo server operation segments.
+ *
+ * Provided functions must be synchronous and return an object of custom attribute key/values.
+ * The arguments provided to callback are: `requestContext`, which is the apollo server `requestContext`.
+ *
+ *
+ * @param {Function} callback - callback function to generate custom attributes on apollo operation segments
+ * @example
+ * function customOperationAttributes(requestContext) {
+ *  return {
+ *    clientName: requestContext.request.http.headers.get('graphql-client-name')
+ *  }
+ * }
+ *
+ * newrelic.setApolloOperationAttributesCallback(customOperationAttributes)
+ */
+API.prototype.setApolloOperationAttributesCallback = function setApolloOperationAttributesCallback(callback) {
+  const self = this
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setApolloOperationAttributesCallback'
+  )
+  metric.incrementCallCount()
+
+  if (!this.shim.isFunction(callback) || this.shim.isAsyncFunction(callback)) {
+    logger.warn(
+      'Apollo operation attributes callback must be a synchronous function, custom operation attributes will not be added.'
+    )
+    return
+  }
+
+  this.agent.customCallbacks.apollo.operationCallback = function wrappedOperationAttributesCb(requestContext) {
+    const result = callback(requestContext)
+    self.addCustomAttributes(result)
+  }
+}
+
+/**
+ * Function for adding a custom callback to generate custom attributes on apollo server resolver segments.
+ *
+ * Provided functions must be synchronous and return an object of custom attribute key/values.
+ * The arguments provided to callback are:
+ *
+ * ```
+ * {
+ *   source: object,
+ *   args: array,
+ *   contextValue: object,
+ *   info: object
+ * }
+ * ```
+ *
+ * @param {Function} callback - callback function to generate custom attributes on apollo operation segments
+ * @example
+ * function customResolverAttributes({ source, args, contextValue, info }}) {
+ *  return {
+ *    allArgs: Object.keys(args).join(','),
+ *    returnType: info.returnType.name,
+ *    sourceBranch: source?.branch
+ *    stage: contextValue.event.requestContext.stage
+ *  }
+ * }
+ *
+ * newrelic.setApolloResolverAttributesCallback(customResolverAttributes)
+ */
+API.prototype.setApolloResolverAttributesCallback = function setApolloResolverAttributesCallback(callback) {
+  const self = this
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setApolloResolverAttributesCallback'
+  )
+  metric.incrementCallCount()
+
+  if (!this.shim.isFunction(callback) || this.shim.isAsyncFunction(callback)) {
+    logger.warn(
+      'Apollo resolver attributes callback must be a synchronous function, custom resolver attributes will not be added.'
+    )
+    return
+  }
+
+  this.agent.customCallbacks.apollo.resolverCallback = function wrappedResolverAttributesCb(args) {
+    const result = callback(args)
+    self.addCustomAttributes(result)
+  }
+}
+
 module.exports = API

@@ -1,0 +1,33 @@
+{
+  "name": "apollo-server-tests",
+  "targets": [
+    {"name":"@apollo/server","minAgentVersion":"14.0.0"}
+  ],
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "dependencies": {
+        "@apollo/server": ">=4.0.0",
+        "graphql-tag": "latest"
+      },
+      "files": [
+        "transaction-naming.test.js",
+        "segments.test.js",
+        "agent-disabled.test.js",
+        "errors.test.js",
+        "attributes.test.js",
+        "query-obfuscation.test.js",
+        "metrics.test.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
+
