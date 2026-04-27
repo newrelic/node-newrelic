@@ -2008,7 +2008,7 @@ API.prototype.setApolloOperationAttributesCallback = function setApolloOperation
     return
   }
 
-  this.agent.apollo.operationCallback = function wrappedOperationAttributesCb(requestContext) {
+  this.agent.customCallbacks.apollo.operationCallback = function wrappedOperationAttributesCb(requestContext) {
     const result = callback(requestContext)
     self.addCustomAttributes(result)
   }
@@ -2056,7 +2056,7 @@ API.prototype.setApolloResolverAttributesCallback = function setApolloResolverAt
     return
   }
 
-  this.agent.apollo.resolverCallback = function wrappedResolverAttributesCb(args) {
+  this.agent.customCallbacks.apollo.resolverCallback = function wrappedResolverAttributesCb(args) {
     const result = callback(args)
     self.addCustomAttributes(result)
   }

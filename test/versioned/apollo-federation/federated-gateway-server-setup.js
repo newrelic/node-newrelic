@@ -100,9 +100,6 @@ async function loadGateway({ ApolloServer, startStandaloneServer, services, plug
 
   const { url } = await startStandaloneServer(server, { listen: { port: 0 } })
 
-  // eslint-disable-next-line no-console
-  console.log(`${name} ready at ${url}`)
-
   return { name, url, server, gateway }
 }
 
@@ -132,9 +129,6 @@ async function loadServer({ ApolloServer, config, plugins, startStandaloneServer
   })
 
   const { url } = await startStandaloneServer(server, { listen: { port: 0 } })
-
-  // eslint-disable-next-line no-console
-  console.log(`${name} service ready at ${url}`)
 
   return { name, url, server }
 }

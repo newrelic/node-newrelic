@@ -48,7 +48,7 @@ for (const scenario of scenarios) {
 
     await t.test('should attach callback function when a function', (t, end) => {
       const { api, agent } = t.nr
-      assert.ok(!agent.apollo[property])
+      assert.ok(!agent.customCallbacks.apollo[property])
       const expectedAttrs = { key: 'value' }
       const callback = function myTestCallback() {
         return expectedAttrs
@@ -57,13 +57,13 @@ for (const scenario of scenarios) {
 
       assert.equal(loggerMock.warn.callCount, 0, 'should not log warnings when successful')
       assert.ok(
-        agent.apollo[property],
+        agent.customCallbacks.apollo[property],
         'should attach the callback on the apollo agent property'
       )
 
       helper.runInTransaction(agent, (tx) => {
         helper.runInSegment(agent, 'test-segment', (segment) => {
-          agent.apollo[property]({ test: 'value' })
+          agent.customCallbacks.apollo[property]({ test: 'value' })
           assert.equal(
             api.agent.metrics.getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/${method}`)
               .callCount,
@@ -85,7 +85,7 @@ for (const scenario of scenarios) {
 
       assert.equal(loggerMock.warn.callCount, 1, 'should log warning when failed')
       assert.ok(
-        !api.agent.apollo[method],
+        !api.agent.customCallbacks.apollo[method],
         'should not attach the callback on apollo key'
       )
       assert.equal(
@@ -110,7 +110,7 @@ for (const scenario of scenarios) {
 
       assert.equal(loggerMock.warn.callCount, 1, 'should log warning when failed')
       assert.ok(
-        !api.agent.apollo[property],
+        !api.agent.customCallbacks.apollo[property],
         'should not attach the callback when callback is async'
       )
       assert.equal(

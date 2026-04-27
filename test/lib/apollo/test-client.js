@@ -5,7 +5,7 @@
 
 'use strict'
 
-const http = require('http')
+const http = require('node:http')
 
 /**
  * Execute a GraphQL POST request with multiple queries batched.
