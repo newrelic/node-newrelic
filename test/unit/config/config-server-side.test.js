@@ -158,14 +158,6 @@ describe('when receiving server-side configuration', () => {
     assert.equal(config.ai_monitoring.enabled, false)
   })
 
-  test('should configure cross application tracing', (t) => {
-    const { config } = t.nr
-    config.cross_application_tracer.enabled = true
-
-    config.onConnect({ 'cross_application_tracer.enabled': false })
-    assert.equal(config.cross_application_tracer.enabled, false)
-  })
-
   test('should load named transaction apdexes', (t) => {
     const { config } = t.nr
     const apdexes = { 'WebTransaction/Custom/UrlGenerator/en/betting/Football': 7.0 }

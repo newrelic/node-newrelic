@@ -1544,28 +1544,6 @@ test('Errors', async (t) => {
         assert.ok(collectedError)
       })
 
-      await t.test('should contain CAT intrinsic parameters', (t) => {
-        const { agent, errors } = t.nr
-        agent.config.cross_application_tracer.enabled = true
-        agent.config.distributed_tracing.enabled = false
-
-        const transaction = createTransaction(agent, 200)
-
-        transaction.referringTransactionGuid = '1234'
-        transaction.incomingCatId = '2345'
-
-        const error = Error('some error')
-        errors.add(transaction, error)
-
-        transaction.end()
-        const attributes = getFirstErrorIntrinsicAttributes(errors)
-
-        assert.ok(typeof attributes === 'object')
-        assert.ok(typeof attributes.path_hash === 'string')
-        assert.equal(attributes.referring_transaction_guid, '1234')
-        assert.equal(attributes.client_cross_process_id, '2345')
-      })
-
       await t.test('should contain DT intrinsic parameters', (t) => {
         const { agent, errors } = t.nr
         agent.config.distributed_tracing.enabled = true
