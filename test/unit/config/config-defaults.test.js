@@ -54,10 +54,6 @@ test('with default properties', async (t) => {
     assert.equal(configuration.ssl, true)
   })
 
-  await t.test('should have no security_policies_token', () => {
-    assert.equal(configuration.security_policies_token, '')
-  })
-
   await t.test('should have no proxy host', () => {
     assert.equal(configuration.proxy_host, '')
   })

@@ -16,7 +16,6 @@ const Collector = require('../../lib/test-collector')
 const CollectorResponse = require('../../../lib/collector/response')
 const helper = require('../../lib/agent_helper')
 const { match } = require('#test/assert')
-const { securityPolicies } = require('../../lib/fixtures')
 const CollectorApi = require('../../../lib/collector/api')
 
 const RUN_ID = 1337
@@ -178,8 +177,7 @@ for (const retryCount of retryCounts) {
         }
         res.json({
           return_value: {
-            redirect_host: `${collector.host}:${collector.port}`,
-            security_policies: {}
+            redirect_host: `${collector.host}:${collector.port}`
           }
         })
       })
@@ -631,68 +629,6 @@ test('non-specific error statuses', async (t) => {
     collectorApi.connect(() => {})
 
     await plan.completed
-  })
-})
-
-test('in a LASP/CSP enabled agent', async (t) => {
-  const SECURITY_POLICIES_TOKEN = 'TEST-TEST-TEST-TEST'
-
-  t.beforeEach(async (ctx) => {
-    ctx.nr = {}
-
-    const collector = new Collector({ runId: RUN_ID })
-    ctx.nr.collector = collector
-    await collector.listen()
-
-    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
-      config: { run_id: RUN_ID }
-    })
-    ctx.nr.agent = helper.loadMockedAgent(config)
-    ctx.nr.agent.reconfigure = function () {}
-    ctx.nr.agent.setState = function () {}
-    ctx.nr.agent.config.security_policies_token = SECURITY_POLICIES_TOKEN
-
-    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
-    ctx.nr.policies = securityPolicies()
-
-    ctx.nr.validResponse = { agent_run_id: RUN_ID, security_policies: ctx.nr.policies }
-    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
-      res.json({
-        payload: {
-          return_value: {
-            redirect_host: `https://${collector.host}:${collector.port}`,
-            security_policies: ctx.nr.policies
-          }
-        }
-      })
-    })
-    collector.addHandler(helper.generateCollectorPath('connect'), (req, res) => {
-      res.json({ payload: { return_value: ctx.nr.validResponse } })
-    })
-  })
-
-  t.afterEach(afterEach)
-
-  await t.test('should include security policies in api callback response', (t, end) => {
-    const { collectorApi } = t.nr
-    collectorApi.connect((error, res) => {
-      assert.equal(error, undefined)
-      assert.deepStrictEqual(res.payload, t.nr.validResponse)
-      end()
-    })
-  })
-
-  await t.test('drops data collected before connect when policies are update', (t, end) => {
-    const { agent, collectorApi } = t.nr
-    agent.config.api.custom_events_enabled = true
-    agent.customEventAggregator.add(['will be overwritten'])
-    assert.equal(agent.customEventAggregator.length, 1)
-    collectorApi.connect((error, res) => {
-      assert.equal(error, undefined)
-      assert.deepStrictEqual(res.payload, t.nr.validResponse)
-      assert.equal(agent.customEventAggregator.length, 0)
-      end()
-    })
   })
 })
 
