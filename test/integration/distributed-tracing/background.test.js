@@ -14,7 +14,7 @@ const API = require('../../../api')
 let compareSampled = null
 
 test('background transactions should not blow up with DT', async (t) => {
-  const plan = tspl(t, { plan: 24 })
+  const plan = tspl(t, { plan: 25 })
 
   const config = {
     distributed_tracing: {
@@ -37,7 +37,8 @@ test('background transactions should not blow up with DT', async (t) => {
   const api = new API(agent)
 
   const server = http.createServer(function (req, res) {
-    plan.ok(req.headers.newrelic, 'got incoming newrelic header')
+    plan.ok(req.headers.traceparent, 'got incoming traceparent header')
+    plan.ok(req.headers.tracestate, 'got incoming tracestate header')
 
     req.resume()
     res.end()

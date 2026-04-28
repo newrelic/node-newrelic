@@ -21,7 +21,7 @@ const symbols = require('../../../lib/symbols')
 let compareSampled = null
 
 test('distributed tracing full integration', async (t) => {
-  const plan = tspl(t, { plan: 79 })
+  const plan = tspl(t, { plan: 81 })
 
   const config = {
     distributed_tracing: {
@@ -73,7 +73,8 @@ test('distributed tracing full integration', async (t) => {
   const START_PORT = start.address().port
 
   const middle = generateServer(http, api, started, (req, res) => {
-    plan.ok(req.headers.newrelic, 'middle received newrelic from start')
+    plan.ok(req.headers.traceparent, 'received `traceparent` header within call')
+    plan.ok(req.headers.tracestate, 'received `tracestate` header within call')
 
     const tx = agent.tracer.getTransaction()
     tx.nameState.appendPath('foobar')
@@ -90,7 +91,8 @@ test('distributed tracing full integration', async (t) => {
   MIDDLE_PORT = middle.address().port
 
   const end = generateServer(http, api, started, (req, res) => {
-    plan.ok(req.headers.newrelic, 'end received newrelic from middle')
+    plan.ok(req.headers.traceparent, 'received `traceparent` header within end call')
+    plan.ok(req.headers.tracestate, 'received `tracestate` header within end call')
     res.end()
   })
 
@@ -302,8 +304,10 @@ test('distributed tracing', async (t) => {
       get(generateUrl(START_PORT, 'start'), (err, { body }) => {
         assert.ifError(err)
 
-        assert.ok(body.start.newrelic, 'should have DT headers from the start')
-        assert.ok(body.middle.newrelic, 'should continue trace to through next state')
+        assert.ok(body.start.traceparent, 'should have traceparent from the start')
+        assert.ok(body.start.tracestate, 'should have tracestate from the start')
+        assert.ok(body.middle.traceparent, 'should continue traceparent to through next state')
+        assert.ok(body.middle.tracestate, 'should continue tracestate to through next state')
         assert.ok(tx.isDistributedTrace, 'should mark transaction as distributed')
 
         end()
@@ -319,9 +323,11 @@ test('distributed tracing', async (t) => {
         const headers = { [header]: 'true' }
         get(generateUrl(START_PORT, 'start'), { headers }, (err, { body }) => {
           assert.ifError(err)
-          assert.equal(body.start.newrelic, undefined, 'should not add DT header when disabled')
+          assert.equal(body.start.traceparent, undefined, 'should not add traceparent when disabled')
+          assert.equal(body.start.tracestate, undefined, 'should not add tracestate when disabled')
           assert.equal(body.start[OLD_HEADER], undefined, 'should not add old CAT header either')
-          assert.ok(body.middle.newrelic, undefined, 'should not stop down-stream DT from working')
+          assert.ok(body.middle.traceparent, undefined, 'should not stop down-stream traceparent from working')
+          assert.ok(body.middle.tracestate, undefined, 'should not stop down-stream tracestate from working')
 
           assert.equal(
             tx.isDistributedTrace,
