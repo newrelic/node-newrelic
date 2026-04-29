@@ -219,7 +219,7 @@ test('should add subcomponent attribute to span', async (t) => {
 })
 
 test('should record error LlmAgent event when generator throws', async (t) => {
-  t.plan(4)
+  t.plan(7)
   const { agent, BaseAgent } = t.nr
   const assert = t.assert
 
@@ -241,6 +241,13 @@ test('should record error LlmAgent event when generator throws', async (t) => {
     const [[{ type }, agentEvent]] = agentEvents
     assert.equal(type, 'LlmAgent')
     assert.equal(agentEvent.error, true)
+
+    const exceptions = tx.exceptions
+    assert.equal(exceptions.length, 1, 'should have one exception')
+    const [exception] = exceptions
+    const str = Object.prototype.toString.call(exception.customAttributes)
+    assert.equal(str, '[object LlmErrorMessage]', 'should be a LlmErrorMessage')
+    assert.equal(exception.customAttributes.agent_id, agentEvent.id, 'agent_id should match LlmAgent event id')
 
     tx.end()
   })
