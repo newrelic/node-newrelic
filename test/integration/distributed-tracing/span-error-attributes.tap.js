@@ -105,7 +105,7 @@ test('should not add error attributes to spans when errors disabled', (t, end) =
   })
 })
 
-test("Span error attributes aren't added with LASP/HSM", (t, end) => {
+test("Span error attributes aren't added with HSM", (t, end) => {
   const agent = helper.instrumentMockedAgent({
     distributed_tracing: { enabled: true },
     high_security: true
