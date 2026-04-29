@@ -111,6 +111,8 @@ async function runTestCase(testCase, parentTest) {
     agent.config.primary_application_id = 4657
     agent.config.span_events.enabled = testCase.span_events_enabled
     agent.config.transaction_events.enabled = testCase.transaction_events_enabled
+    agent.config.distributed_tracing.enabled = true
+    agent.config.distributed_tracing.exclude_newrelic_header = false
 
     t.after(() => helper.unloadAgent(agent))
 

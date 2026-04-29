@@ -15,10 +15,10 @@ const recordSupportability = require('../../../lib/agent').prototype.recordSuppo
 
 const testCases = require('../../lib/cross_agent_tests/distributed_tracing/distributed_tracing.json')
 
-test('distributed tracing', async function (t) {
+test('distributed tracing(newrelic header)', async function (t) {
   t.beforeEach((ctx) => {
     ctx.nr = {}
-    const agent = helper.loadMockedAgent({ distributed_tracing: { enabled: true } })
+    const agent = helper.loadMockedAgent({ distributed_tracing: { enabled: true, exclude_newrelic_header: false } })
     agent.recordSupportability = recordSupportability
     ctx.nr.agent = agent
   })
