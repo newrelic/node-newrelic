@@ -8,7 +8,6 @@ const assert = require('node:assert')
 const test = require('node:test')
 const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 const NAMES = require('../../../../lib/metrics/names')
-const hashes = require('../../../../lib/util/hashes')
 const helper = require('../../../lib/agent_helper')
 const createHttp2ResponseServer = require('./fixtures/http2')
 const events = require('node:events')
@@ -648,40 +647,6 @@ test('http trace headers', async (t) => {
         assert.equal(traceId, transaction.traceId)
         assert.equal(parentSpanId, transaction.trace.root.id)
         assert.equal(sampledFlag, '01')
-        end()
-      }
-    })
-
-    await t.test(`header type (${requestHeaders}): should add CAT headers when 'cross_application_tracer' is enabled`, (t, end) => {
-      const { agent, http2, protocol, host, port, path } = t.nr
-      const encKey = 'testEncodingKey'
-      agent.config.distributed_tracing.enabled = false
-      agent.config.cross_application_tracer.enabled = true
-      agent.config.encoding_key = encKey
-      agent.config.trusted_account_ids = [123]
-      const appData = ['123#456', 'abc', 0, 0, -1, 'xyz']
-      const obfData = hashes.obfuscateNameUsingKey(JSON.stringify(appData), encKey)
-      const testHeaders = formatHeaders({ 'x-newrelic-app-data': obfData, host: `${host}:${port}`, ':path': path, ':method': 'GET' }, requestHeaders)
-
-      helper.runInTransaction(agent, function () {
-        t.nr.transaction = agent.getTransaction()
-        makeRequest(
-          http2,
-          {
-            protocol,
-            host,
-            port,
-            testing: { overrideHeaders: testHeaders }
-          },
-          finish
-        )
-      })
-
-      function finish(err, headers) {
-        assert.ok(!err)
-        assert.ok(headers['x-newrelic-transaction'], 'New Relic header')
-        assert.match(headers['x-newrelic-transaction'], /^[\w/-]{60,80}={0,2}$/)
-        assert.ok(headers['x-newrelic-app-data'], 'New Relic app data header')
         end()
       }
     })

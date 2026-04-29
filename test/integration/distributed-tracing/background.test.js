@@ -14,13 +14,12 @@ const API = require('../../../api')
 let compareSampled = null
 
 test('background transactions should not blow up with DT', async (t) => {
-  const plan = tspl(t, { plan: 25 })
+  const plan = tspl(t, { plan: 20 })
 
   const config = {
     distributed_tracing: {
       enabled: true
     },
-    cross_application_tracer: { enabled: false },
     account_id: '1337',
     primary_application_id: '7331',
     trusted_account_key: '1337',
@@ -80,11 +79,6 @@ test('background transactions should not blow up with DT', async (t) => {
         intrinsic['parent.transportDuration'],
         'web should have parent transport duration on event'
       )
-      plan.equal(
-        intrinsic['nr.alternatePathHashes'],
-        undefined,
-        'web should not have an nr.alternatePathHashes on event'
-      )
 
       compareSampled = currySampled(plan, {
         sampled: intrinsic.sampled,
@@ -99,26 +93,6 @@ test('background transactions should not blow up with DT', async (t) => {
       plan.ok(intrinsic.priority, 'bg should have a priority on event')
       plan.ok(intrinsic.guid, 'bg should have a guid on event')
       plan.ok(intrinsic.sampled != null, 'bg should have a sampled boolean on event')
-      plan.equal(
-        intrinsic['nr.referringPathHash'],
-        undefined,
-        'bg should not have an nr.referringPathHash on event'
-      )
-      plan.equal(
-        intrinsic['nr.referringTransactionGuid'],
-        undefined,
-        'bg should not have an nr.referringTransactionGuid on event'
-      )
-      plan.equal(
-        intrinsic['nr.apdexPerfZone'],
-        undefined,
-        'bg should have an nr.apdexPerfZone on event'
-      )
-      plan.equal(
-        intrinsic['nr.alternatePathHashes'],
-        undefined,
-        'bg should have an nr.alternatePathHashes on event'
-      )
 
       compareSampled({
         sampled: intrinsic.sampled,

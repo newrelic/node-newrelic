@@ -11,20 +11,9 @@ const Subscriber = require('#agentlib/subscribers/base.js')
 const helper = require('#testlib/agent_helper.js')
 const loggerMock = require('../../mocks/logger')
 const { tspl } = require('@matteo.collina/tspl')
-const hashes = require('#agentlib/util/hashes.js')
 const { EventEmitter } = require('node:events')
 
-// Used for insertDTHeaders tests below
-function setupCATConfig(subscriber) {
-  subscriber.config.cross_application_tracer.enabled = true
-  subscriber.config.distributed_tracing.enabled = false
-  const key = 'this is an encoding key'
-  subscriber.config.encoding_key = key
-  subscriber.config.obfuscatedId = hashes.obfuscateNameUsingKey('1234#4321', key)
-}
-
 function setupDTConfig(subscriber) {
-  subscriber.config.cross_application_tracer.enabled = false
   subscriber.config.distributed_tracing.enabled = true
 }
 
@@ -626,7 +615,6 @@ test('should wrap event emitter and propagate context', async (t) => {
 
 test('should not run if disabled', function (t, end) {
   const { agent, subscriber } = t.nr
-  subscriber.config.cross_application_tracer.enabled = false
   subscriber.config.distributed_tracing.enabled = false
   helper.runInTransaction(agent, function () {
     const headers = {}
@@ -641,145 +629,6 @@ test('should not run if disabled', function (t, end) {
     end()
   })
 })
-
-test('should not run if the encoding key is missing', function (t, end) {
-  const { agent, subscriber } = t.nr
-  subscriber.config.cross_application_tracer.enabled = true
-  subscriber.config.distributed_tracing.enabled = false
-  helper.runInTransaction(agent, function () {
-    const headers = {}
-    const ctx = agent.tracer.getContext()
-
-    subscriber.insertDTHeaders({ ctx, headers })
-
-    assert.ok(!headers.NewRelicID)
-    assert.ok(!headers.NewRelicTransaction)
-    assert.ok(!headers['X-NewRelic-Id'])
-    assert.ok(!headers['X-NewRelic-Transaction'])
-    end()
-  })
-})
-
-test('should fail gracefully when no headers are given', function (t) {
-  const { agent, subscriber } = t.nr
-  setupCATConfig(subscriber)
-  helper.runInTransaction(agent, function () {
-    assert.doesNotThrow(function () {
-      subscriber.insertDTHeaders()
-    })
-  })
-})
-
-test(
-  'should use MessageQueueStyleHeaders',
-  function (t, end) {
-    const { agent, subscriber } = t.nr
-    setupCATConfig(subscriber)
-    helper.runInTransaction(agent, function () {
-      const headers = {}
-      const ctx = agent.tracer.getContext()
-      subscriber.insertDTHeaders({ ctx, headers, useMqNames: true })
-
-      assert.ok(!headers['X-NewRelic-Id'])
-      assert.ok(!headers['X-NewRelic-Transaction'])
-      assert.equal(headers.NewRelicID, 'RVpaRwNdQBJQ')
-      assert.match(headers.NewRelicTransaction, /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-      end()
-    })
-  }
-)
-
-test(
-  'should append the current path hash to the transaction - DT disabled',
-  function (t, end) {
-    const { agent, subscriber } = t.nr
-    setupCATConfig(subscriber)
-    helper.runInTransaction(agent, function (tx) {
-      tx.nameState.appendPath('foobar')
-      assert.equal(tx.pathHashes.length, 0)
-
-      const headers = {}
-      const ctx = agent.tracer.getContext()
-      subscriber.insertDTHeaders({ ctx, headers })
-
-      assert.equal(tx.pathHashes.length, 1)
-      assert.equal(tx.pathHashes[0], '0f9570a6')
-      end()
-    })
-  }
-)
-
-test('should be an obfuscated value - DT disabled, id header', function (t, end) {
-  const { agent, subscriber } = t.nr
-  setupCATConfig(subscriber)
-  helper.runInTransaction(agent, function () {
-    const headers = {}
-    const ctx = agent.tracer.getContext()
-    subscriber.insertDTHeaders({ ctx, headers })
-
-    assert.match(headers['X-NewRelic-Id'], /^[a-zA-Z0-9/-]+={0,2}$/)
-    end()
-  })
-})
-
-test('should deobfuscate to the app id - DT disabled, id header', function (t, end) {
-  const { agent, subscriber } = t.nr
-  setupCATConfig(subscriber)
-  helper.runInTransaction(agent, function () {
-    const headers = {}
-    const ctx = agent.tracer.getContext()
-    subscriber.insertDTHeaders({ ctx, headers })
-
-    const id = hashes.deobfuscateNameUsingKey(
-      headers['X-NewRelic-Id'],
-      subscriber.config.encoding_key
-    )
-    assert.equal(id, '1234#4321')
-    end()
-  })
-})
-
-test(
-  'should be an obfuscated value - DT disabled, transaction header',
-  function (t, end) {
-    const { agent, subscriber } = t.nr
-    setupCATConfig(subscriber)
-    helper.runInTransaction(agent, function () {
-      const headers = {}
-      const ctx = agent.tracer.getContext()
-      subscriber.insertDTHeaders({ ctx, headers })
-
-      assert.match(headers['X-NewRelic-Transaction'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-      end()
-    })
-  }
-)
-
-test(
-  'should deobfuscate to transaction information - DT disabled, transaction header',
-  function (t, end) {
-    const { agent, subscriber } = t.nr
-    setupCATConfig(subscriber)
-    helper.runInTransaction(agent, function () {
-      const headers = {}
-      const ctx = agent.tracer.getContext()
-      subscriber.insertDTHeaders({ ctx, headers })
-
-      let txInfo = hashes.deobfuscateNameUsingKey(
-        headers['X-NewRelic-Transaction'],
-        subscriber.config.encoding_key
-      )
-
-      assert.doesNotThrow(function () {
-        txInfo = JSON.parse(txInfo)
-      })
-
-      assert.ok(Array.isArray(txInfo))
-      assert.equal(txInfo.length, 4)
-      end()
-    })
-  }
-)
 
 test(
   'should assign traceparent header to transaction when tx is not sampled',
