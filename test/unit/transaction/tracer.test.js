@@ -6,6 +6,8 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
 const helper = require('#testlib/agent_helper.js')
 const Segment = require('#agentlib/transaction/trace/segment.js')
 const Transaction = require('#agentlib/transaction/index.js')
@@ -261,7 +263,17 @@ test('Tracer', async function (t) {
     })
 
     await t.test('should stop adding segments to trace when `max_trace_segments` is exceeded', (t) => {
-      const { agent, tracer } = t.nr
+      const { agent } = t.nr
+      const loggerStub = {
+        trace: sinon.stub(),
+        traceEnabled: sinon.stub().returns(true)
+      }
+      const Tracer = proxyquire('../../../lib/transaction/tracer/index.js', {
+        '../../logger': {
+          child: sinon.stub().returns(loggerStub)
+        }
+      })
+      const tracer = new Tracer(agent)
       const tx = new Transaction(agent)
 
       const ar = new Array(1000).fill('a')
@@ -272,6 +284,9 @@ test('Tracer', async function (t) {
       const [,,,,childSegments] = tx.trace.toJSON()
       // max_trace_segments is 900(ROOT + 899 child segments
       assert.equal(childSegments.length, 899)
+
+      const logCalls = loggerStub.trace.args.filter(([msg]) => typeof msg === 'string' && msg.includes('has exceeded its max segment limit'))
+      assert.ok(logCalls.length > 0, 'should log trace message when max_trace_segments is exceeded')
     })
   })
 })
