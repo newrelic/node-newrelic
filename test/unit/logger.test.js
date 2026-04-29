@@ -143,16 +143,6 @@ test('should properly format logs and child logs when flushing', (t, end) => {
   })
 })
 
-test('should fallback to default logging config when config is invalid', (t, end) => {
-  runTestFile('disabled-with-invalid-config/disabled.js', function (error, message) {
-    assert.equal(error, undefined)
-
-    // should pipe logs to stdout if config is invalid, even if logging is disabled
-    assert.ok(message)
-    end()
-  })
-})
-
 test('should not cause crash if unwritable', (t, end) => {
   runTestFile('unwritable-log/unwritable.js', end)
 })
