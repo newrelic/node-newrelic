@@ -650,7 +650,6 @@ test('should call insertDTHeaders with correct parameters', (t, end) => {
   assert.ok(capturedParams, 'params should be captured')
   assert.ok(capturedParams.headers, 'headers should be in params')
   assert.strictEqual(capturedParams.ctx, context, 'context should be passed as ctx')
-  assert.strictEqual(capturedParams.useMqNames, true, 'useMqNames should be true')
   end()
 })
 

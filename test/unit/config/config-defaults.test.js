@@ -177,10 +177,6 @@ test('with default properties', async (t) => {
     assert.deepStrictEqual(configuration.error_collector.ignore_status_codes, [])
   })
 
-  await t.test('should disable cross application tracer', () => {
-    assert.equal(configuration.cross_application_tracer.enabled, false)
-  })
-
   await t.test('should enable message tracer segment parameters', () => {
     assert.equal(configuration.message_tracer.segment_parameters.enabled, true)
   })

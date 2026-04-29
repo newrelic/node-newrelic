@@ -27,7 +27,6 @@ test('distributed tracing full integration', async (t) => {
     distributed_tracing: {
       enabled: true
     },
-    cross_application_tracer: { enabled: false },
     encoding_key: 'some key'
   }
   const agent = helper.instrumentMockedAgent(config)
@@ -263,7 +262,6 @@ test('distributed tracing', async (t) => {
   t.beforeEach(async (ctx) => {
     const agent = helper.instrumentMockedAgent({
       distributed_tracing: { enabled: true },
-      cross_application_tracer: { enabled: true }
     })
     agent.config.primary_application_id = APP_ID
     agent.config.account_id = ACCOUNT_ID
@@ -319,13 +317,11 @@ test('distributed tracing', async (t) => {
     await t.test(`should be disabled by ${header.toString()}`, (t, end) => {
       const { agent, START_PORT } = t.nr
       helper.runInTransaction(agent, (tx) => {
-        const OLD_HEADER = 'x-newrelic-transaction'
         const headers = { [header]: 'true' }
         get(generateUrl(START_PORT, 'start'), { headers }, (err, { body }) => {
           assert.ifError(err)
           assert.equal(body.start.traceparent, undefined, 'should not add traceparent when disabled')
           assert.equal(body.start.tracestate, undefined, 'should not add tracestate when disabled')
-          assert.equal(body.start[OLD_HEADER], undefined, 'should not add old CAT header either')
           assert.ok(body.middle.traceparent, undefined, 'should not stop down-stream traceparent from working')
           assert.ok(body.middle.tracestate, undefined, 'should not stop down-stream tracestate from working')
 
