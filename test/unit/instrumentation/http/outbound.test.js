@@ -585,11 +585,12 @@ test('when working with http.request', async (t) => {
     })
   })
 
-  await t.test('generates dt and w3c trace context headers to outbound request', (t, end) => {
+  await t.test('generates dt and w3c trace context headers to outbound request when exclude_newrelic_header: false', (t, end) => {
     const { agent } = t.nr
     agent.config.trusted_account_key = 190
     agent.config.account_id = 190
     agent.config.primary_application_id = '389103'
+    agent.config.distributed_tracing.exclude_newrelic_header = false
     const host = 'http://www.google.com'
     const path = '/index.html'
     let headers
