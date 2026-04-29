@@ -23,16 +23,6 @@ test('should be true when config true', () => {
 })
 
 test('serverless_mode via configuration input', async (t) => {
-  await t.test('should explicitly disable cross_application_tracer', () => {
-    const config = Config.initialize({
-      cross_application_tracer: { enabled: true },
-      serverless_mode: {
-        enabled: true
-      }
-    })
-    assert.equal(config.cross_application_tracer.enabled, false)
-  })
-
   await t.test('should explicitly disable infinite tracing', () => {
     const config = Config.initialize({
       serverless_mode: { enabled: true },
@@ -213,22 +203,6 @@ test('serverless mode via ENV variables', async (t) => {
         assert.equal(tc.trusted_account_key, null)
         end()
       })
-    }
-  )
-
-  await t.test(
-    'should explicitly disable cross_application_tracer in serverless_mode',
-    (t, end) => {
-      idempotentEnv(
-        {
-          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
-        },
-        (tc) => {
-          assert.equal(tc.serverless_mode.enabled, true)
-          assert.equal(tc.cross_application_tracer.enabled, false)
-          end()
-        }
-      )
     }
   )
 

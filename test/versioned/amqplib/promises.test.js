@@ -24,12 +24,6 @@ test('amqplib promise instrumentation', async function (t) {
       }
     })
 
-    const params = {
-      encoding_key: 'this is an encoding key',
-      cross_process_id: '1234#4321'
-    }
-    agent.config._fromServer(params, 'encoding_key')
-    agent.config._fromServer(params, 'cross_process_id')
     agent.config.trusted_account_ids = [1234]
 
     const api = new API(agent)
@@ -241,43 +235,6 @@ test('amqplib promise instrumentation', async function (t) {
         queue
       })
     })
-  })
-
-  await t.test('consume in a transaction with old CAT', async function (t) {
-    const { agent, api, channel } = t.nr
-    const { promise, resolve } = promiseResolvers()
-    agent.config.cross_application_tracer.enabled = true
-    agent.config.distributed_tracing.enabled = false
-    const exchange = amqpUtils.DIRECT_EXCHANGE
-
-    await channel.assertExchange(exchange, 'direct')
-    const { queue } = await channel.assertQueue('', { exclusive: true })
-    await channel.bindQueue(queue, exchange, 'consume-tx-key')
-    let publishTx
-    let consumeTx
-    // set up consume, this creates its own transaction
-    await channel.consume(queue, function (msg) {
-      const consumeTxnHandle = api.getTransaction()
-      consumeTx = consumeTxnHandle._transaction
-      assert.ok(msg, 'should receive a message')
-
-      const body = msg.content.toString('utf8')
-      assert.equal(body, 'hello', 'should receive expected body')
-
-      channel.ack(msg)
-      publishTx.end()
-      resolve()
-    })
-    await helper.runInTransaction(agent, async function (tx) {
-      publishTx = tx
-      amqpUtils.verifyTransaction(agent, tx, 'consume')
-      channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
-    })
-    await promise
-    assert.notStrictEqual(consumeTx, publishTx, 'should not be in original transaction')
-    amqpUtils.verifySubscribe(publishTx, exchange, 'consume-tx-key')
-    amqpUtils.verifyConsumeTransaction(consumeTx, exchange, queue, 'consume-tx-key')
-    amqpUtils.verifyCAT(publishTx, consumeTx)
   })
 
   await t.test('consume in a transaction with distributed tracing', async function (t) {

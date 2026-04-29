@@ -9,7 +9,6 @@ const test = require('node:test')
 const sinon = require('sinon')
 const helper = require('#testlib/agent_helper.js')
 const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
-const hashes = require('#agentlib/util/hashes.js')
 const HOST = 'https://www.example.com'
 const UndiciSubscriber = require('#agentlib/subscribers/undici/index.js')
 const diagnosticsChannel = require('diagnostics_channel')
@@ -21,7 +20,6 @@ test('undici instrumentation', async function (t) {
     const loggerMock = require('../../mocks/logger')(sandbox)
     const agent = helper.loadMockedAgent()
     agent.config.distributed_tracing.enabled = false
-    agent.config.cross_application_tracer.enabled = false
     agent.config.encoding_key = 'encKey'
     const logger = loggerMock
     const subscriber = new UndiciSubscriber({ agent, logger })
@@ -121,23 +119,6 @@ test('undici instrumentation', async function (t) {
       end()
     })
   })
-
-  await t.test(
-    'should add CAT headers when `cross_application_tracer` is enabled',
-    function (t, end) {
-      const { agent, channels, sandbox } = t.nr
-      agent.config.cross_application_tracer.enabled = true
-      helper.runInTransaction(agent, function (tx) {
-        const addHeader = sandbox.stub()
-        channels.create.publish({ request: { origin: HOST, path: '/foo-2', addHeader } })
-        assert.equal(addHeader.callCount, 1)
-        assert.equal(addHeader.args[0][0], 'X-NewRelic-Transaction')
-        assert.match(addHeader.args[0][1], /^[\w/-]{60,80}={0,2}$/)
-        tx.end()
-        end()
-      })
-    }
-  )
 
   await t.test(
     'should name segment with appropriate attrs based on request.path',
@@ -308,30 +289,6 @@ test('undici instrumentation', async function (t) {
     })
   })
 
-  await t.test('should rename segment based on CAT data', function (t, end) {
-    const { agent, channels } = t.nr
-    agent.config.cross_application_tracer.enabled = true
-    agent.config.trusted_account_ids = [111]
-    helper.runInTransaction(agent, function (tx) {
-      const segment = agent.tracer.createSegment({ name: 'active', parent: tx.trace.root, transaction: tx })
-      segment.addAttribute('url', 'https://www.unittesting.com/path')
-      const request = { [undiciSegment]: segment }
-      const response = {
-        headers: {
-          'x-newrelic-app-data': hashes.obfuscateNameUsingKey(
-            JSON.stringify(['111#456', 'abc', 0, 0, -1, 'xyz']),
-            agent.config.encoding_key
-          )
-        },
-        statusCode: 200,
-        statusText: 'OK'
-      }
-      channels.headers.publish({ response, request })
-      assert.equal(segment.name, 'ExternalTransaction/www.unittesting.com/111#456/abc')
-      tx.end()
-      end()
-    })
-  })
   await t.test('should end current segment and restore to parent', function (t, end) {
     const { agent, channels } = t.nr
     helper.runInTransaction(agent, function (tx) {

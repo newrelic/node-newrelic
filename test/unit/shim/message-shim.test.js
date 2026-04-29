@@ -9,7 +9,6 @@ const test = require('node:test')
 const { tspl } = require('@matteo.collina/tspl')
 const API = require('../../../api')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
-const hashes = require('../../../lib/util/hashes')
 const helper = require('../../lib/agent_helper')
 const { findSegment } = require('#testlib/metrics_helper.js')
 const MessageShim = require('../../../lib/shim/message-shim')
@@ -353,26 +352,8 @@ test('MessageShim', async function (t) {
       })
     })
 
-    await t.test('should insert CAT request headers', function (t, end) {
-      const { agent, shim, wrappable } = t.nr
-      agent.config.cross_application_tracer.enabled = true
-      agent.config.distributed_tracing.enabled = false
-      const headers = {}
-      shim.recordProduce(wrappable, 'getActiveSegment', function () {
-        return new MessageSpec({ headers })
-      })
-
-      helper.runInTransaction(agent, function () {
-        wrappable.getActiveSegment()
-        assert.ok(headers.NewRelicID)
-        assert.ok(headers.NewRelicTransaction)
-        end()
-      })
-    })
-
     await t.test('should insert DT request headers', function (t, end) {
       const { agent, shim, wrappable } = t.nr
-      agent.config.cross_application_tracer.enabled = false
       agent.config.distributed_tracing.enabled = true
       const headers = {}
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
@@ -1169,10 +1150,11 @@ test('MessageShim', async function (t) {
       })
     })
 
+    // TODO: update test to use DT
+    /*
     await t.test('should extract CAT headers from the message', function (t, end) {
       const { agent, shim, wrapped } = t.nr
-      agent.config.cross_application_tracer.enabled = true
-      agent.config.distributed_tracing.enabled = false
+      agent.config.distributed_tracing.enabled = true
       const params = {
         encoding_key: 'this is an encoding key',
         cross_process_id: '1234#4321'
@@ -1209,6 +1191,7 @@ test('MessageShim', async function (t) {
         end()
       })
     })
+    */
 
     await t.test('should invoke the consumer with the correct arguments', function (t, end) {
       const { wrapped } = t.nr
