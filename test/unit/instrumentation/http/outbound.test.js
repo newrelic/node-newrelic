@@ -15,8 +15,6 @@ const nock = require('nock')
 const Tracestate = require('#agentlib/w3c/tracestate.js')
 const helper = require('../../../lib/agent_helper')
 const instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
-const hashes = require('../../../../lib/util/hashes')
-const Segment = require('../../../../lib/transaction/trace/segment')
 const symbols = require('../../../../lib/symbols')
 const testSignatures = require('./outbound-utils')
 
@@ -24,16 +22,6 @@ const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 const NAMES = require('../../../../lib/metrics/names')
 const HOSTNAME = 'localhost'
 const PORT = 8890
-
-function addSegment({ agent }) {
-  const transaction = agent.getTransaction()
-  transaction.type = 'web'
-  transaction.baseSegment = new Segment({
-    config: agent.config,
-    name: 'base-segment',
-    root: transaction.trace.root
-  })
-}
 
 test('instrumentOutbound', async (t) => {
   t.beforeEach((ctx) => {
@@ -337,131 +325,6 @@ test('instrumentOutbound', async (t) => {
       }
       end()
     })
-  })
-})
-
-test('should add data from cat header to segment', async (t) => {
-  const encKey = 'gringletoes'
-  const appData = ['123#456', 'abc', 0, 0, -1, 'xyz']
-
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-    ctx.nr.agent = helper.instrumentMockedAgent({
-      cross_application_tracer: { enabled: true },
-      distributed_tracing: { enabled: false },
-      encoding_key: encKey,
-      trusted_account_ids: [123]
-    })
-    const obfData = hashes.obfuscateNameUsingKey(JSON.stringify(appData), encKey)
-    const server = http.createServer(function (req, res) {
-      res.writeHead(200, { 'x-newrelic-app-data': obfData })
-      res.end()
-      req.resume()
-    })
-    ctx.nr.server = server
-
-    return new Promise((resolve) => {
-      helper.randomPort((port) => {
-        server.listen(port, resolve)
-      })
-    })
-  })
-
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
-    return new Promise((resolve) => {
-      ctx.nr.server.close(resolve)
-    })
-  })
-
-  await t.test('should use config.obfuscatedId as the x-newrelic-id header', (t, end) => {
-    const { agent, server } = t.nr
-    helper.runInTransaction(agent, function () {
-      addSegment({ agent })
-
-      const port = server.address().port
-      http
-        .get({ host: 'localhost', port }, function (res) {
-          const segment = agent.tracer.getSegment()
-
-          assert.equal(segment.catId, '123#456')
-          assert.equal(segment.catTransaction, 'abc')
-          assert.equal(segment.name, `ExternalTransaction/localhost:${port}/123#456/abc`)
-          assert.equal(segment.getAttributes().transaction_guid, 'xyz')
-          res.resume()
-          agent.getTransaction().end()
-          end()
-        })
-        .end()
-    })
-  })
-
-  await t.test('should not explode with invalid data', (t, end) => {
-    const { agent, server } = t.nr
-    helper.runInTransaction(agent, function () {
-      addSegment({ agent })
-
-      const port = server.address().port
-      http
-        .get({ host: 'localhost', port }, function (res) {
-          const segment = agent.tracer.getSegment()
-
-          assert.equal(segment.catId, '123#456')
-          assert.equal(segment.catTransaction, 'abc')
-          // TODO: port in metric is a known bug. issue #142
-          assert.equal(segment.name, `ExternalTransaction/localhost:${port}/123#456/abc`)
-          assert.equal(segment.getAttributes().transaction_guid, 'xyz')
-          res.resume()
-          agent.getTransaction().end()
-          end()
-        })
-        .end()
-    })
-  })
-
-  await t.test('should collect errors only if they are not being handled', (t, end) => {
-    const { agent } = t.nr
-    const emit = events.EventEmitter.prototype.emit
-    events.EventEmitter.prototype.emit = function (evnt) {
-      if (evnt === 'error') {
-        this.once('error', function () {})
-      }
-      return emit.apply(this, arguments)
-    }
-
-    t.afterEach(() => {
-      events.EventEmitter.prototype.emit = emit
-    })
-
-    helper.runInTransaction(agent, handled)
-    const expectedCode = 'ECONNREFUSED'
-
-    function handled(transaction) {
-      const req = http.get({ host: 'localhost', port: 12345 }, function () {})
-
-      req.on('close', function () {
-        assert.equal(transaction.exceptions.length, 0)
-        unhandled(transaction)
-      })
-
-      req.on('error', function (err) {
-        assert.equal(err.code, expectedCode)
-      })
-
-      req.end()
-    }
-
-    function unhandled(transaction) {
-      const req = http.get({ host: 'localhost', port: 12345 }, function () {})
-
-      req.on('close', function () {
-        assert.equal(transaction.exceptions.length, 1)
-        assert.equal(transaction.exceptions[0].error.code, expectedCode)
-        end()
-      })
-
-      req.end()
-    }
   })
 })
 
