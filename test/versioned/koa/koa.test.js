@@ -58,9 +58,8 @@ function checkSegments(plan, tx) {
   assertSegments(
     tx.trace,
     tx.trace.root,
-    // TODO: does this need to be removed?
     [
-      // Until koa-router is instrumented and transaction naming is addressed,
+      // Until transaction naming is addressed,
       // names will be inconsistent depending on whether there is an error.
       tx.name,
       ['Nodejs/Middleware/Koa/one', ['Nodejs/Middleware/Koa/two']]
