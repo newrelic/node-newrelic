@@ -212,6 +212,70 @@ test('should record error LlmTool event when execute throws', async (t) => {
   })
 })
 
+test('should record LlmTool event with undefined input when args cannot be stringified', async (t) => {
+  t.plan(3)
+  const { agent, FunctionTool } = t.nr
+  const assert = t.assert
+
+  const tool = new FunctionTool({
+    name: 'circular_tool',
+    description: 'A tool with circular args',
+    execute: async () => 'done'
+  })
+
+  const circular = {}
+  circular.self = circular
+
+  await helper.runInTransaction(agent, async (tx) => {
+    await tool.runAsync({
+      args: circular,
+      toolContext: { actions: {}, state: { toRecord: () => { return {} } } }
+    })
+
+    const events = agent.customEventAggregator.events.toArray()
+    const toolEvents = events.filter((e) => e[0].type === 'LlmTool')
+    assert.equal(toolEvents.length, 1, 'should still record LlmTool event')
+
+    const [[{ type }, toolEvent]] = toolEvents
+    assert.equal(type, 'LlmTool')
+    assert.equal(toolEvent.input, undefined, 'input should be undefined when stringify fails')
+
+    tx.end()
+  })
+})
+
+test('should record LlmTool event with undefined output when result cannot be stringified', async (t) => {
+  t.plan(3)
+  const { agent, FunctionTool } = t.nr
+  const assert = t.assert
+
+  const circular = {}
+  circular.self = circular
+
+  const tool = new FunctionTool({
+    name: 'circular_output_tool',
+    description: 'A tool with circular output',
+    execute: async () => circular
+  })
+
+  await helper.runInTransaction(agent, async (tx) => {
+    await tool.runAsync({
+      args: {},
+      toolContext: { actions: {}, state: { toRecord: () => { return {} } } }
+    })
+
+    const events = agent.customEventAggregator.events.toArray()
+    const toolEvents = events.filter((e) => e[0].type === 'LlmTool')
+    assert.equal(toolEvents.length, 1, 'should still record LlmTool event')
+
+    const [[{ type }, toolEvent]] = toolEvents
+    assert.equal(type, 'LlmTool')
+    assert.equal(toolEvent.output, undefined, 'output should be undefined when stringify fails')
+
+    tx.end()
+  })
+})
+
 test('should record LLM custom attributes on tool events', async (t) => {
   t.plan(2)
   const { agent, FunctionTool } = t.nr
