@@ -59,8 +59,6 @@ function checkSegments(plan, tx) {
     tx.trace,
     tx.trace.root,
     [
-      // Until koa-router is instrumented and transaction naming is addressed,
-      // names will be inconsistent depending on whether there is an error.
       tx.name,
       ['Nodejs/Middleware/Koa/one', ['Nodejs/Middleware/Koa/two']]
     ],
