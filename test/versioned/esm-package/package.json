@@ -7,7 +7,7 @@
     "tests": [
       {
         "engines": {
-          "node": ">=20"
+          "node": ">=22"
         },
         "dependencies": {
           "parse-json": "6.0.2"

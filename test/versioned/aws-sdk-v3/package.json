@@ -1,7 +1,7 @@
 {
   "name": "aws-sdk-v3-tests",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "targets": [
     {
@@ -40,7 +40,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-api-gateway": {
@@ -54,7 +54,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-elasticache": {
@@ -68,7 +68,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-elastic-load-balancing": {
@@ -82,7 +82,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-lambda": {
@@ -96,7 +96,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-rds": {
@@ -110,7 +110,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-redshift": {
@@ -124,7 +124,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-rekognition": {
@@ -138,7 +138,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-s3": {
@@ -152,7 +152,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-ses": {
@@ -166,7 +166,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-sns": {
@@ -180,7 +180,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-sqs": {
@@ -194,7 +194,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-dynamodb": {
@@ -208,7 +208,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/lib-dynamodb": {
@@ -222,7 +222,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@aws-sdk/client-bedrock-runtime": ">=3.474.0"
