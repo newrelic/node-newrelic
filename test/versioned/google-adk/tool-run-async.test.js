@@ -8,16 +8,13 @@
 const test = require('node:test')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments } = require('../../lib/custom-assertions')
+const { assertSegments, match } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 const config = {
   ai_monitoring: {
-    enabled: true,
-    streaming: {
-      enabled: true
-    }
+    enabled: true
   }
 }
 
@@ -37,14 +34,14 @@ test.afterEach((ctx) => {
 })
 
 test('should create LlmTool event for FunctionTool.runAsync', async (t) => {
-  t.plan(7)
+  t.plan(11)
   const { agent, FunctionTool } = t.nr
   const assert = t.assert
 
   const tool = new FunctionTool({
     name: 'get_weather',
     description: 'Gets the weather for a location',
-    execute: async (args) => {
+    execute: async () => {
       return { temperature: '72F', unit: 'fahrenheit' }
     }
   })
@@ -63,10 +60,18 @@ test('should create LlmTool event for FunctionTool.runAsync', async (t) => {
 
     const [[{ type }, toolEvent]] = toolEvents
     assert.equal(type, 'LlmTool')
-    assert.equal(toolEvent.name, 'get_weather')
-    assert.equal(toolEvent.vendor, 'google_adk')
-    assert.equal(toolEvent.input, '{"location":"San Francisco"}')
-    assert.equal(toolEvent.output, '{"temperature":"72F","unit":"fahrenheit"}')
+
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
+    match(toolEvent, {
+      id: /[a-f0-9]{32}/,
+      span_id: segment.id,
+      trace_id: tx.traceId,
+      ingest_source: 'Node',
+      vendor: 'google_adk',
+      name: 'get_weather',
+      input: '{"location":"San Francisco"}',
+      output: '{"temperature":"72F","unit":"fahrenheit"}'
+    }, { assert })
 
     tx.end()
   })
