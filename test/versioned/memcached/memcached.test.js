@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const { getMetricHostName } = require('../../lib/metrics_helper')
-const { assertPackageMetrics, assertMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertPackageMetrics, assertMetrics, assertSegmentDuration, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 test('memcached instrumentation', { timeout: 5000 }, async function (t) {
   await t.test('generates correct metrics and trace segments', async function (t) {
@@ -49,14 +49,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.touch('foo', 1, function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/touch')
 
         assertSegments(
@@ -95,14 +95,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.get('foo', function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/get')
 
         assertSegments(
@@ -135,14 +135,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.gets('foo', function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/gets')
 
         assertSegments(
@@ -175,14 +175,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.getMulti(['foo', 'bar'], function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/get')
 
         assertSegments(
@@ -215,14 +215,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.set('foo', 'bar', 10, function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/set')
 
         assertSegments(
@@ -259,14 +259,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.replace('foo', 'new', 10, function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/replace')
 
         assertSegments(
@@ -299,14 +299,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.add('foo', 'bar', 10, function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/add')
 
         assertSegments(
@@ -347,14 +347,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.cas('foo', 'bar', data.cas, 10, function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/cas')
 
         assertSegments(
@@ -391,14 +391,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.append('foo', 'bar', function (err) {
             assert.ok(!err)
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/append')
 
         assertSegments(
@@ -434,14 +434,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.prepend('foo', 'bar', function (err) {
             assert.ok(!err)
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/prepend')
 
         assertSegments(
@@ -478,14 +478,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.del('foo', function (err) {
             assert.ok(!err)
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/delete')
 
         assertSegments(
@@ -518,14 +518,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.incr('foo', 10, function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/incr')
 
         assertSegments(
@@ -558,14 +558,14 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.decr('foo', 10, function (err) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/decr')
 
         assertSegments(
@@ -598,15 +598,15 @@ test('memcached instrumentation', { timeout: 5000 }, async function (t) {
 
       await helper.runInTransaction(agent, async function (transaction) {
         const { segment } = await new Promise((resolve) => {
-          const now = process.hrtime()
           memcached.version(function (err, ok) {
             assert.ok(!err, 'should not throw an error')
             assert.ok(ok, 'got a version')
             assert.ok(agent.getTransaction(), 'transaction should still be visible')
-            const end = process.hrtime(now)
-            resolve({ segment: agent.tracer.getSegment(), actualTime: end })
+            resolve({ segment: agent.tracer.getSegment() })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        assertSegmentDuration({ segment, actualTime })
         assertSegmentState(segment, 'Datastore/operation/Memcache/version')
 
         assertSegments(
