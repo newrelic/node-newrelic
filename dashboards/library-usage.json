@@ -1168,35 +1168,6 @@
           }
         },
         {
-          "title": "koa-router",
-          "layout": {
-            "column": 5,
-            "row": 40,
-            "width": 4,
-            "height": 3
-          },
-          "linkedEntityGuids": null,
-          "visualization": {
-            "id": "viz.bar"
-          },
-          "rawConfiguration": {
-            "facet": {
-              "showOtherSeries": false
-            },
-            "nrqlQueries": [
-              {
-                "accountIds": [
-                  1
-                ],
-                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `koa-router.version` IS NOT NULL and node.version.major >= '16' facet `koa-router.version`, agentVersion, node.version.major limit max"
-              }
-            ],
-            "platformOptions": {
-              "ignoreTimeRange": false
-            }
-          }
-        },
-        {
           "title": "memcached",
           "layout": {
             "column": 9,
