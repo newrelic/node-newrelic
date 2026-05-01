@@ -185,9 +185,7 @@ test('mysql2 promises pool', async function (t) {
       await pool.query(`SELECT SLEEP (${WAIT})`)
       const activeTx = agent.getTransaction()
       assert.equal(tx.name, activeTx.name)
-      const staticSegment = activeTx?.trace?.segments?.root?.children?.[0]
-      assert.equal(staticSegment?.segment?.name, 'MySQL Pool#query') // TODO: this useless 'MySQL Pool#query' segment should be removed in 14.x
-      const querySegment = staticSegment?.children?.[1]?.segment
+      const [, querySegment] = activeTx.trace.getChildren(activeTx.trace.root.id)
       assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
       assert.ok(querySegment._isEnded(), 'query segment should have ended')
       assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
@@ -237,7 +235,7 @@ test('mysql2 promises pool', async function (t) {
       await connection.query(`SELECT SLEEP (${WAIT})`)
       const activeTx = agent.getTransaction()
       assert.equal(tx.name, activeTx.name)
-      const querySegment = activeTx?.trace?.segments?.root?.children?.[1]?.segment
+      const [, querySegment] = activeTx.trace.getChildren(activeTx.trace.root.id)
       assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
       assert.ok(querySegment._isEnded(), 'query segment should have ended')
       assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')
@@ -363,13 +361,7 @@ if (semver.satisfies(pkgVersion, '>=2.3.0')) {
         await masterPool.query('SELECT SLEEP(?)', [WAIT])
         const activeTx = agent.getTransaction()
         assert.equal(tx.name, activeTx.name)
-        let querySegment
-        if (semver.satisfies(pkgVersion, '>=2.0.0 <3.0.0')) {
-          querySegment = activeTx?.trace?.segments?.root?.children?.[1]?.segment
-        } else {
-          const staticSegment = activeTx?.trace?.segments?.root?.children?.[0]
-          querySegment = staticSegment?.children?.[1]?.segment
-        }
+        const [, querySegment] = activeTx.trace.getChildren(activeTx.trace.root.id)
         assert.equal(querySegment?.name, 'Datastore/statement/MySQL/unknown/select')
         assert.ok(querySegment._isEnded(), 'query segment should have ended')
         assert.ok(querySegment.getDurationInMillis() >= WAIT * 1000, 'query segment should be at least as long as the sleep')

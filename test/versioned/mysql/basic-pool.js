@@ -106,14 +106,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         pool.query('SELECT 1 + 1 AS solution', function (err) {
           assert.ok(!err, 'should not error')
-          const [firstChild] = txn.trace.getChildren(txn.trace.root.id)
-          assert.equal(firstChild?.name, 'MySQL Pool#query')
-          const children = txn.trace.getChildren(firstChild.id)
-
-          const [seg] = children.filter(function (trace) {
-            return /Datastore\/statement\/MySQL/.test(trace.name)
-          })
-
+          const seg = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
           assert.ok(seg, 'should have a segment (' + (seg && seg?.name) + ')')
           const attributes = seg.getAttributes()
           assert.equal(
@@ -136,7 +129,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
         agent.config.datastore_tracer.instance_reporting.enabled = false
         pool.query('SELECT 1 + 1 AS solution', function (err) {
           assert.ok(!err, 'should not error making query')
-          const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
+          const seg = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
           assert.ok(seg, 'should have a datastore segment')
 
           const attributes = seg.getAttributes()
@@ -157,7 +150,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
         agent.config.datastore_tracer.database_name_reporting.enabled = false
         pool.query('SELECT 1 + 1 AS solution', function (err) {
           assert.ok(!err, 'no errors')
-          const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
+          const seg = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
           assert.ok(seg, 'there is a datastore segment')
           const attributes = seg.getAttributes()
           assert.equal(
@@ -188,7 +181,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
           // In the case where you don't have a server running on
           // localhost the data will still be correctly associated
           // with the query.
-          const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
+          const seg = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
           assert.ok(seg, 'there is a datastore segment')
           const attributes = seg.getAttributes()
           assert.equal(attributes.host, agent.config.getHostnameSafe(), 'set host')
@@ -210,7 +203,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         defaultPool.query('SELECT 1 + 1 AS solution', function (err) {
           assert.ok(!err, 'should not error making query')
-          const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
+          const seg = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
           assert.ok(seg, 'there is a datastore segment')
           const attributes = seg.getAttributes()
 
@@ -258,12 +251,11 @@ module.exports = function ({ factory, constants, pkgVersion }) {
           assert.ok(!err, 'no error occurred')
           const transaction = agent.getTransaction()
           assert.ok(transaction, 'transaction should exist')
-          const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+          const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
 
           assert.ok(segment, 'segment should exist')
           assert.ok(segment.timer.start > 0, 'starts at a positive time')
           assert.ok(segment.timer.start <= Date.now(), 'starts in past')
-          assert.equal(segment.name, 'MySQL Pool#query', 'is named')
           txn.end()
           end()
         })
@@ -278,11 +270,10 @@ module.exports = function ({ factory, constants, pkgVersion }) {
           const transaction = agent.getTransaction()
           assert.ok(transaction, 'should not lose transaction')
           if (transaction) {
-            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+            const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
-            assert.equal(segment.name, 'MySQL Pool#query', 'is named')
           }
 
           txn.end()
@@ -303,7 +294,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
 
           connection.query('SELECT 1 + 1 AS solution', function (err) {
             const transaction = agent.getTransaction()
-            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+            const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
 
             assert.ok(!err, 'no error occurred')
             assert.ok(transaction, 'transaction should exist')
@@ -333,7 +324,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const transaction = agent.getTransaction()
             assert.ok(transaction, 'should not lose transaction')
             if (transaction) {
-              const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+              const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
               assert.ok(segment, 'segment should exist')
               assert.ok(segment.timer.start > 0, 'starts at a positive time')
               assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -360,11 +351,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
         helper.runInTransaction(agent, function transactionInScope(txn) {
           socketPool.query('SELECT 1 + 1 AS solution', function (err) {
             assert.ok(!err, 'should not error making query')
-
-            const seg = getDatastoreSegment({
-              trace: txn.trace,
-              segment: agent.tracer.getSegment()
-            })
+            const seg = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
             const attributes = seg.getAttributes()
 
             // In the case where you don't have a server running on localhost
@@ -400,7 +387,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
 
         query.on('end', function () {
           const transaction = agent.getTransaction()
-          const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+          const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
 
           assert.ok(results, 'stream result should be received')
           assert.ok(transaction, 'transaction should exist')
@@ -467,7 +454,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const transaction = agent.getTransaction()
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+            const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -494,7 +481,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const transaction = agent.getTransaction()
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+            const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -521,7 +508,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const transaction = agent.getTransaction()
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+            const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -547,7 +534,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const transaction = agent.getTransaction()
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+            const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -574,7 +561,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             const currentTransaction = agent.getTransaction()
             assert.ok(currentTransaction, 'transaction should exist')
             assert.equal(currentTransaction.id, txn.id, 'transaction must be same')
-            const segment = txn.trace.getParent(agent.tracer.getSegment().id)
+            const segment = getDatastoreSegment({ trace: txn.trace, segment: txn.trace.root })
             assert.ok(segment, 'segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -602,12 +589,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
             assert.ok(transaction, 'transaction should exist')
             assert.equal(transaction, txn, 'transaction must be same')
 
-            // We should be in a 'MySQL Pool#query' segment.
-            // It should have a 'Datastore/statement/MySQL/unknown/select' child.
-            const activeSegment = agent.tracer.getSegment()
-            assert.ok(activeSegment)
-            assert.equal(activeSegment.name, 'MySQL Pool#query', 'is named')
-            const segment = getDatastoreSegment({ segment: agent.tracer.getSegment(), trace: txn.trace })
+            const segment = getDatastoreSegment({ segment: txn.trace.root, trace: txn.trace })
             assert.ok(segment, 'Datastore segment should exist')
             assert.ok(segment.timer.start > 0, 'starts at a positive time')
             assert.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -618,13 +600,7 @@ module.exports = function ({ factory, constants, pkgVersion }) {
               transaction = agent.getTransaction()
               assert.ok(transaction, 'transaction should exist')
               assert.equal(transaction, txn, 'transaction must be same')
-
-              // We should be in a 'MySQL Pool#query' segment.
-              // It should have a 'Datastore/statement/MySQL/unknown/select' child.
-              const activeSegment = agent.tracer.getSegment()
-              assert.ok(activeSegment)
-              assert.equal(activeSegment.name, 'MySQL Pool#query', 'is named')
-              const segment = getDatastoreSegment({ segment: agent.tracer.getSegment(), trace: txn.trace })
+              const segment = getDatastoreSegment({ segment: txn.trace.root, trace: txn.trace })
               assert.ok(segment, 'segment should exist')
               assert.ok(segment.timer.start > 0, 'starts at a positive time')
               assert.ok(segment.timer.start <= Date.now(), 'starts in past')
