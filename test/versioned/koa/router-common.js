@@ -12,7 +12,7 @@ const helper = require('../../lib/agent_helper')
 const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 /**
- * koa-router and @koa/router updated how they defined wildcard routing
+ * `@koa/router` updated how they defined wildcard routing
  * It used to be native and then relied on `path-to-regexp`. If `path-to-regexp`
  * is present get the version. For post 8 it relies on different syntax to define
  * routes. If it is not present assume the pre 8 behavior of `path-to-regexp`
@@ -396,12 +396,9 @@ module.exports = (pkg) => {
 
           let segmentTree
           /**
-           * Since this file is being used to test both `koa-router`(deprecated)
-           * and `@koa/router`. The behavior of resolving middleware changes.
+           * Since this file is being used to test `@koa/router`. The behavior of resolving middleware changes.
            * In `@koa/router` 14.x there was a bug, this check works around all tested versions
-           * of both `koa-router` and `@koa/router`
-           * We will remove testing `koa-router` in an upcoming major release.
-           * See: https://github.com/newrelic/node-newrelic/issues/3549
+           * of `@koa/router`.
            */
           if (pkg === '@koa/router' && semver.gte(pkgVersion, '15.0.0')) {
             segmentTree = [
