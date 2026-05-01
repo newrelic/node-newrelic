@@ -12,7 +12,7 @@ const helper = require('../../lib/agent_helper')
 const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 /**
- * @koa/router updated how they defined wildcard routing
+ * `@koa/router` updated how they defined wildcard routing
  * It used to be native and then relied on `path-to-regexp`. If `path-to-regexp`
  * is present get the version. For post 8 it relies on different syntax to define
  * routes. If it is not present assume the pre 8 behavior of `path-to-regexp`
