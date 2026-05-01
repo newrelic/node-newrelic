@@ -16,8 +16,8 @@
       "supported": false,
       "comment": "Used to assert our instrumentation does not get loaded on old versions.",
       "dependencies": {
-        "fastify": "3.29.0",
-        "middie": "3.2.1"
+        "fastify": "^4.0.0",
+        "middie": ">=3.0.0 && <7.0.0"
       },
       "files": [
         "fastify-no-op.test.js"
