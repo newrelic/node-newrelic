@@ -6,10 +6,6 @@
 'use strict'
 
 const test = require('node:test')
-const semver = require('semver')
-
-const { version: pkgVersion } = require('fastify/package')
-
 const { removeModules } = require('../../lib/cache-buster')
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
@@ -34,13 +30,7 @@ function getExpectedSegments(uri) {
 
 async function setupFastifyServer(fastify, calls) {
   common.setupRoutes(fastify)
-
-  if (semver.major(pkgVersion) === 3) {
-    await fastify.register(require('middie'))
-  } else {
-    await fastify.register(require('@fastify/middie'))
-  }
-
+  await fastify.register(require('@fastify/middie'))
   common.registerMiddlewares({ fastify, calls })
 }
 
@@ -65,7 +55,7 @@ test('standard export', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
     ctx.nr.fastify.close()
 
-    removeModules(['fastify', '@fastify/middie', 'middie'])
+    removeModules(['fastify', '@fastify/middie'])
   })
 
   await t.test(async (t) => {
@@ -94,7 +84,7 @@ test('fastify property', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
     ctx.nr.fastify.close()
 
-    removeModules(['fastify', '@fastify/middie', 'middie'])
+    removeModules(['fastify', '@fastify/middie'])
   })
 
   await t.test(async (t) => {
@@ -123,7 +113,7 @@ test('default property', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
     ctx.nr.fastify.close()
 
-    removeModules(['fastify', '@fastify/middie', 'middie'])
+    removeModules(['fastify', '@fastify/middie'])
   })
 
   await t.test(async (t) => {

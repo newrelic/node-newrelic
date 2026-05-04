@@ -7,10 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const semver = require('semver')
-
-const { version: pkgVersion } = require('fastify/package')
-
 const { removeModules } = require('../../lib/cache-buster')
 const { assertCLMAttrs } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
@@ -29,7 +25,7 @@ test.afterEach((ctx) => {
     ctx.nr.fastify.close()
   }
 
-  removeModules(['fastify', '@fastify/middie', 'middie'])
+  removeModules(['fastify', '@fastify/middie'])
 })
 
 async function setup(t, config) {
@@ -39,11 +35,7 @@ async function setup(t, config) {
   const { fastify, calls } = t.nr
   common.setupRoutes(fastify)
 
-  if (semver.major(pkgVersion) < 4) {
-    await fastify.register(require('middie'))
-  } else {
-    await fastify.register(require('@fastify/middie'))
-  }
+  await fastify.register(require('@fastify/middie'))
   common.registerMiddlewares({ fastify, calls })
 }
 
