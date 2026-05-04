@@ -13,13 +13,14 @@
       "engines": {
         "node": ">=20"
       },
+      "supported": false,
+      "comment": "Used to assert our instrumentation does not get loaded on old versions.",
       "dependencies": {
-        "fastify": "^3.0.0",
-        "middie": ">=3.0.0 && <7.0.0"
+        "fastify": "3.29.0",
+        "middie": "3.2.1"
       },
       "files": [
-        "fastify-gte3.test.js",
-        "fastify-gte3-naming.test.js"
+        "fastify-no-op.test.js"
       ]
     },
 
@@ -32,8 +33,7 @@
         "@fastify/middie": ">=7.0.0 && <9.0.0"
       },
       "files": [
-        "fastify-gte3.test.js",
-        "fastify-gte3-naming.test.js",
+        "fastify-naming.test.js",
         "add-hook.test.js",
         "code-level-metrics-middleware.test.js",
         "code-level-metrics-hooks.test.js",
@@ -52,23 +52,15 @@
         "@fastify/middie": ">=9.0.0"
       },
       "files": [
-        "fastify-gte3.test.js",
-        "fastify-gte3-naming.test.js",
+        "fastify-naming.test.js",
         "add-hook.test.js",
         "code-level-metrics-middleware.test.js",
         "code-level-metrics-hooks.test.js",
         "express-compat-errors.test.js",
         "errors.test.js",
-        "new-state-tracking.test.js"
+        "new-state-tracking.test.js",
+        "usage-metric.test.js"
       ]
-    },
-
-    {
-      "engines": { "node": ">=20" },
-      "dependencies": {
-        "fastify": ">=5.0.0"
-      },
-      "files": [ "usage-metric.test.js" ]
     }
   ]
 }
