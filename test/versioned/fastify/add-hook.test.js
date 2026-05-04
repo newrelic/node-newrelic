@@ -59,7 +59,7 @@ test.afterEach((ctx) => {
 test('should load tracking metrics', (t) => {
   const { agent } = t.nr
   const { version } = require('fastify/package.json')
-  assertPackageMetrics({ agent, pkg: 'fastify', version })
+  assertPackageMetrics({ agent, pkg: 'fastify', version, subscriberType: true })
 })
 
 test('non-error hooks', async (t) => {
