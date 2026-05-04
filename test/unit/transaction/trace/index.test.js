@@ -797,8 +797,8 @@ test('when inserting segments', async (t) => {
     segment4._collect = false
     const segment5 = trace.add('4', null, segment)
     segment5.ignore = true
-    let { children } = trace.getNode(segment.id)
-    children = trace.getCollectedChildren(children)
+    let { children } = trace.segments.find(segment.id)
+    children = children.filter((child) => child.segment._collect && !child.segment.ignore)
     assert.ok(children.length, 2)
     assert.deepEqual(children[0].segment, segment2)
     assert.deepEqual(children[0].children, [])
@@ -810,7 +810,7 @@ test('when inserting segments', async (t) => {
     const { trace } = t.nr
     const segment = trace.add('base')
     const segment2 = trace.add('1', null, segment)
-    const parent = trace.getParent(segment2.parentId)
+    const { segment: parent } = trace.segments.find(segment2.parentId)
     assert.equal(parent, segment)
   })
 })

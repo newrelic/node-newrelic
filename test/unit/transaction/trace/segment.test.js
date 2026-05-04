@@ -32,39 +32,30 @@ test('TraceSegment', async (t) => {
 
   await t.test('has a name', (t) => {
     const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
     const success = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
     })
     assert.equal(success.name, 'UnitTest')
   })
 
   await t.test('has a timer', (t) => {
     const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
     })
     assert.ok(segment.timer)
   })
 
   await t.test('does not start its timer on creation', (t) => {
     const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
     })
     assert.equal(segment.timer.isRunning(), false)
   })
@@ -72,13 +63,13 @@ test('TraceSegment', async (t) => {
   await t.test('does not crash when calculating exclusive time', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const root = trans.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
+      parentId: trans.trace.root.id
     })
+    trans.trace.segments.add(segment)
     segment.start()
     segment.touch()
     const duration = segment.getExclusiveDurationInMillis(trans.trace)
@@ -87,13 +78,10 @@ test('TraceSegment', async (t) => {
 
   await t.test('allows the timer to be updated without ending it', (t) => {
     const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
     })
     segment.start()
     segment.touch()
@@ -103,28 +91,22 @@ test('TraceSegment', async (t) => {
 
   await t.test('uses id passed in instead of unique id', (t) => {
     const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
     const id = hashes.makeId()
     const segment = new TraceSegment({
       id,
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
     })
     assert.equal(segment.id, id)
   })
 
   await t.test('should return the segment id when dt and spans are enabled', (t) => {
     const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'Test',
       collect: true,
-      root
     })
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
@@ -133,30 +115,24 @@ test('TraceSegment', async (t) => {
 
   await t.test('should return null when dt is disabled', (t) => {
     const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
     agent.config.distributed_tracing.enabled = false
     agent.config.span_events.enabled = true
     const segment = new TraceSegment({
       config: agent.config,
       name: 'Test',
       collect: true,
-      root
     })
     assert.equal(segment.getSpanId(), null)
   })
 
   await t.test('should return null when spans are disabled', (t) => {
     const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = false
     const segment = new TraceSegment({
       config: agent.config,
       name: 'Test',
       collect: true,
-      root
     })
     assert.ok(segment.getSpanId() === null)
   })
@@ -165,12 +141,10 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const trace = trans.trace
-    const root = trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'Test',
       collect: true,
-      root
     })
 
     segment.setDurationInMillis(10, 0)
@@ -186,12 +160,10 @@ test('TraceSegment', async (t) => {
   await t.test('toJSON should not modify attributes', (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
-    const root = transaction.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'TestSegment',
       collect: true,
-      root
     })
     transaction.trace.toJSON()
     assert.deepEqual(segment.getAttributes(), {})
@@ -199,13 +171,10 @@ test('TraceSegment', async (t) => {
 
   await t.test('when ended stops its timer', (t) => {
     const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
     })
     segment.end()
     assert.equal(segment.timer.isRunning(), false)
@@ -241,7 +210,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'TestSegment',
       collect: true,
-      root,
       parentId: root.id
     })
 
@@ -265,7 +233,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: segmentName,
       collect: true,
-      root,
       parentId: root.id
     })
 
@@ -561,14 +528,12 @@ test('when serialized', async (t) => {
   t.beforeEach((ctx) => {
     const agent = helper.loadMockedAgent()
     const transaction = new Transaction(agent)
-    const root = transaction.trace.root
     const segment = transaction.trace.add('UnitTest')
 
     ctx.nr = {
       agent,
       segment,
       transaction,
-      root
     }
 
     ctx.nr.agent.config.logging.diagnostics = true
@@ -604,12 +569,10 @@ test('getSpanContext', async (t) => {
       }
     })
     const transaction = new Transaction(agent)
-    const root = transaction.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
     })
     ctx.nr = {
       agent,
@@ -634,26 +597,24 @@ test('getSpanContext', async (t) => {
   })
 
   await t.test('should not create a new context when empty and DT disabled', (t) => {
-    const { agent, transaction } = t.nr
+    const { agent } = t.nr
     agent.config.distributed_tracing.enabled = false
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root: transaction.trace.root
     })
     const spanContext = segment.getSpanContext()
     assert.ok(!spanContext)
   })
 
   await t.test('should not create a new context when empty and Spans disabled', (t) => {
-    const { agent, transaction } = t.nr
+    const { agent } = t.nr
     agent.config.span_events.enabled = false
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root: transaction.trace.root
     })
     const spanContext = segment.getSpanContext()
     assert.ok(!spanContext)
@@ -685,12 +646,10 @@ test('addSpanLink', async (t) => {
       }
     }
     const transaction = new Transaction(agent)
-    const root = transaction.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
     }, { logger })
 
     ctx.nr.agent = agent
@@ -752,12 +711,10 @@ test('addTimedEvent', async (t) => {
       }
     }
     const transaction = new Transaction(agent)
-    const root = transaction.trace.root
     const segment = new TraceSegment({
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      root
     }, { logger })
 
     ctx.nr.agent = agent
