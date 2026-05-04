@@ -11,24 +11,24 @@ supported by the agent.
 
 | Package name | Minimum supported version | Latest published version | Introduced in* |
 | --- | --- | --- | --- |
-| `@anthropic-ai/sdk` | 0.33.0 | 0.91.1 | 13.19.0 |
+| `@anthropic-ai/sdk` | 0.33.0 | 0.93.0 | 13.19.0 |
 | `@apollo/gateway` | 2.3.0 | 2.14.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 5.5.0 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.1039.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.1039.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.1039.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.1039.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.1039.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.1042.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.1042.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.1042.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.1042.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.1042.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.14.0 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.3.4 | 11.9.0 |
-| `@google/adk` | 0.1.0 | 1.1.0 | 13.20.0 |
+| `@google/adk` | 1.1.0 | 1.1.0 | 13.20.0 |
 | `@google/genai` | 1.1.0 | 1.51.0 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.14.3 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.8 | 9.0.0 |
-| `@koa/router` | 12.0.1 | 15.4.0 | 3.2.0 |
+| `@koa/router` | 12.0.1 | 15.5.0 | 3.2.0 |
 | `@langchain/aws` | 0.1.3 | 1.3.5 | 13.8.0 |
-| `@langchain/core` | 0.2.0 | 1.1.42 | 11.13.0 |
+| `@langchain/core` | 0.2.0 | 1.1.44 | 11.13.0 |
 | `@langchain/langgraph` | 1.0.0 | 1.2.9 | 13.12.0 |
 | `@langchain/openai` | 0.2.0 | 1.4.5 | 11.13.0 |
 | `@modelcontextprotocol/sdk` | 1.13.0 | 1.29.0 | 13.2.0 |
@@ -56,7 +56,7 @@ supported by the agent.
 | `mysql` | 2.16.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.22.3 | 1.32.0 |
 | `next` | 13.4.19 | 16.2.4 | 12.0.0 |
-| `openai` | 4.0.0 | 6.35.0 | 11.13.0 |
+| `openai` | 4.0.0 | 6.36.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.20.0 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.7.0 | 9.0.0 |
 | `pino` | 8.0.0 | 10.3.1 | 8.11.0 |
@@ -64,7 +64,7 @@ supported by the agent.
 | `redis` | 3.1.0 | 5.12.1 | 1.31.0 |
 | `restify` | 11.0.0 | 11.1.0 | 2.6.0 |
 | `superagent` | 3.0.0 | 10.3.0 | 4.9.0 |
-| `undici` | 5.0.0 | 8.1.0 | 11.1.0 |
+| `undici` | 5.0.0 | 8.2.0 | 11.1.0 |
 | `when` | 3.7.0 | 3.7.8 | 1.26.2 |
 | `winston` | 3.0.0 | 3.19.0 | 8.11.0 |
 
@@ -94,7 +94,7 @@ Through the `@google/adk` module, we support the following features:
 
 | Agents | Tools |
 | --- | --- |
-| ✅ | ❌ |
+| ✅ | ✅ |
 
 Models/providers are generally supported transitively by our instrumentation of the provider's module.
 
