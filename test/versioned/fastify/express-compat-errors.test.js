@@ -6,7 +6,6 @@
 'use strict'
 
 const test = require('node:test')
-const semver = require('semver')
 const { tspl } = require('@matteo.collina/tspl')
 const helper = require('../../lib/agent_helper')
 const { makeRequest } = require('./common')
@@ -20,18 +19,13 @@ test('Test Errors', async (t) => {
   })
 
   const fastify = require('fastify')()
-  const { version: pkgVersion } = require('fastify/package')
 
   t.after(() => {
     helper.unloadAgent(agent)
     fastify.close()
   })
 
-  if (semver.major(pkgVersion) < 4) {
-    await fastify.register(require('middie'))
-  } else {
-    await fastify.register(require('@fastify/middie'))
-  }
+  await fastify.register(require('@fastify/middie'))
 
   fastify.use((req, res, next) => {
     const err = new Error('Not found')
