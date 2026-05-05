@@ -557,3 +557,31 @@ test('distributed tracing samplers', async (t) => {
     assert.deepEqual(configuration.profiling.include, ['cpu'])
   })
 })
+
+test('redacted_license_key', async (t) => {
+  await t.test('should show first 10 characters and redact the rest', () => {
+    const key = 'usa123abcdefghijklmnopqrstuvwxyz1234'
+    const config = new Config({ license_key: key })
+    assert.equal(config.redacted_license_key.substring(0, 10), key.substring(0, 10), 'first 10 chars should be visible')
+    assert.equal(config.redacted_license_key.substring(10), '*'.repeat(key.length - 10), 'remaining chars should be redacted')
+  })
+
+  await t.test('should maintain original license key length after redaction', () => {
+    const key = 'usa123abcdefghijklmnopqrstuvwxyz1234'
+    const config = new Config({ license_key: key })
+    assert.equal(config.redacted_license_key.length, key.length, 'redacted key should have same length as original')
+    assert.equal(config.redacted_license_key, 'usa123abcd**************************', 'first 10 chars visible, rest replaced with *')
+  })
+
+  await t.test('should fully redact license keys of 10 or fewer characters', () => {
+    const key = 'usa123'
+    const config = new Config({ license_key: key })
+    assert.equal(config.redacted_license_key.length, key.length, 'redacted key should have same length as original')
+    assert.equal(config.redacted_license_key, '******', 'short keys should be fully redacted')
+  })
+
+  await t.test('should return empty string when license_key is empty', () => {
+    const config = new Config({ license_key: '' })
+    assert.equal(config.redacted_license_key, '', 'should return empty string for empty license')
+  })
+})
