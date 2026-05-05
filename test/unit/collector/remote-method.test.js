@@ -751,7 +751,7 @@ test('_safeRequest logging', async (t) => {
       body: 'test-body',
       path: '/nonexistent'
     }
-    ctx.nr.config = new Config({ license_key: 'shhh-dont-tell' })
+    ctx.nr.config = new Config({ license_key: 'shhh-dont-tell', max_payload_size_in_bytes: 10_000 })
   })
 
   await t.test('should use redacted license key in logs', (t) => {
