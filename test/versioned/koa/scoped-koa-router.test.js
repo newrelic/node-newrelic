@@ -83,8 +83,9 @@ test(`${pkg} instrumentation`, async (t) => {
     t.afterEach(tearDown)
 
     await t.test('should log tracking metrics', function(t) {
-      const { agent } = t.nr
-      assertPackageMetrics({ agent, pkg, version: pkgVersion })
+      const { agent, router } = t.nr
+      router.get('/', () => {})
+      assertPackageMetrics({ agent, pkg, version: pkgVersion, subscriberType: true })
     })
 
     await t.test('should name and produce segments for matched path', (t, end) => {

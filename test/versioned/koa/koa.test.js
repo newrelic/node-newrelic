@@ -19,7 +19,6 @@ test.beforeEach((ctx) => {
 
   const Koa = require('koa')
   ctx.nr.app = new Koa()
-  ctx.nr.testShim = helper.getShim(Koa)
 })
 
 test.afterEach((ctx) => {
@@ -76,9 +75,10 @@ function checkSegments(plan, tx) {
 }
 
 test('should log tracking metrics', function(t) {
-  const { agent } = t.nr
+  const { agent, app } = t.nr
   const { version } = require('koa/package.json')
-  assertPackageMetrics({ agent, pkg: 'koa', version })
+  app.use(() => {})
+  assertPackageMetrics({ agent, pkg: 'koa', version, subscriberType: true })
 })
 
 test('Should name after koa framework and verb when body set', async (t) => {
@@ -287,13 +287,13 @@ test('produces transaction trace with multiple middleware', async (t) => {
 
 test('correctly records actions interspersed among middleware', async (t) => {
   const plan = tspl(t, { plan: 13 })
-  const { agent, app, testShim } = t.nr
+  const { agent, app } = t.nr
 
   app.use(function one(ctx, next) {
     const parent = agent.tracer.getSegment()
-    testShim.createSegment({ name: 'testSegment', parent })
+    agent.tracer.createSegment({ name: 'testSegment', parent, transaction: agent.getTransaction() })?.start()
     return next().then(function () {
-      testShim.createSegment({ name: 'nestedSegment', parent })
+      agent.tracer.createSegment({ name: 'nestedSegment', parent, transaction: agent.getTransaction() })?.start()
     })
   })
   app.use(function two(ctx, next) {
