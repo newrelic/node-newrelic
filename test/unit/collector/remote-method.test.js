@@ -770,11 +770,36 @@ test('_safeRequest logging', async (t) => {
           'https',
           options.host,
           options.port,
-          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=REDACTED&method=test'
+          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=shhh-dont-****&method=test'
         ]
       ],
       'should redact key in trace level log'
     )
+  })
+
+  await t.test('should maintain original license key length after redaction', (t) => {
+    const { RemoteMethod, config } = t.nr
+    const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
+    const redacted = method._redactLicenseKey(config.license_key)
+    assert.equal(redacted.length, config.license_key.length, 'redacted key should have same length as original')
+    assert.equal(redacted, 'shhh-dont-****', 'first 10 chars visible, rest replaced with *')
+  })
+
+  await t.test('should fully redact license keys of 10 or fewer characters', (t) => {
+    const { RemoteMethod, config } = t.nr
+    const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
+    const shortKey = 'short'
+    const redacted = method._redactLicenseKey(shortKey)
+    assert.equal(redacted.length, shortKey.length, 'redacted key should have same length as original')
+    assert.equal(redacted, '*****', 'short keys should be fully redacted')
+  })
+
+  await t.test('should return empty string for null, undefined, or empty license keys', (t) => {
+    const { RemoteMethod, config } = t.nr
+    const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
+    assert.equal(method._redactLicenseKey(null), '', 'null key should return empty string')
+    assert.equal(method._redactLicenseKey(undefined), '', 'undefined key should return empty string')
+    assert.equal(method._redactLicenseKey(''), '', 'empty key should return empty string')
   })
 
   await t.test('should call logger if trace is not enabled but audit logging is enabled', (t) => {
@@ -794,7 +819,7 @@ test('_safeRequest logging', async (t) => {
           'https',
           options.host,
           options.port,
-          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=REDACTED&method=test'
+          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=shhh-dont-****&method=test'
         ]
       ],
       'should redact key in trace level log'
