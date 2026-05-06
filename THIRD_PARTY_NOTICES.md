@@ -95,7 +95,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @apm-js-collab/tracing-hooks
 
-This product includes source derived from [@apm-js-collab/tracing-hooks](https://github.com/apm-js-collab/tracing-hooks) ([v0.6.0](https://github.com/apm-js-collab/tracing-hooks/tree/v0.6.0)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/tracing-hooks/blob/v0.6.0/LICENSE):
+This product includes source derived from [@apm-js-collab/tracing-hooks](https://github.com/apm-js-collab/tracing-hooks) ([v0.7.0](https://github.com/apm-js-collab/tracing-hooks/tree/v0.7.0)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/tracing-hooks/blob/v0.7.0/LICENSE):
 
 ```
 
@@ -723,7 +723,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.2](https://github.com/newrelic/csec-node-agent/tree/v3.0.2)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.2/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.3](https://github.com/newrelic/csec-node-agent/tree/v3.0.3)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.3/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -1187,7 +1187,7 @@ This product includes source derived from [@opentelemetry/api](https://github.co
 
 ### @opentelemetry/core
 
-This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.6.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.6.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.6.1/LICENSE):
+This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.7.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.7.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.7.1/LICENSE):
 
 ```
                                  Apache License
@@ -1605,7 +1605,7 @@ This product includes source derived from [@opentelemetry/exporter-metrics-otlp-
 
 ### @opentelemetry/resources
 
-This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.6.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.6.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.6.1/LICENSE):
+This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.7.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.7.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.7.1/LICENSE):
 
 ```
                                  Apache License
@@ -2023,7 +2023,7 @@ This product includes source derived from [@opentelemetry/sdk-logs](https://gith
 
 ### @opentelemetry/sdk-metrics
 
-This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.6.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.6.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.6.1/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.7.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.7.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.7.1/LICENSE):
 
 ```
                                  Apache License
@@ -2232,7 +2232,7 @@ This product includes source derived from [@opentelemetry/sdk-metrics](https://g
 
 ### @opentelemetry/sdk-trace-base
 
-This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.6.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.6.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.6.1/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.7.1](https://github.com/open-telemetry/opentelemetry-js/tree/v2.7.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.7.1/LICENSE):
 
 ```
                                  Apache License
@@ -2961,7 +2961,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1019.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1019.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1019.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1039.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1039.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1039.0/LICENSE):
 
 ```
                                 Apache License
@@ -3170,7 +3170,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1019.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1019.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1019.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1039.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1039.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1039.0/LICENSE):
 
 ```
                                 Apache License
@@ -4511,7 +4511,7 @@ Apache License
 
 ### ajv
 
-This product includes source derived from [ajv](https://github.com/ajv-validator/ajv) ([v6.14.0](https://github.com/ajv-validator/ajv/tree/v6.14.0)), distributed under the [MIT License](https://github.com/ajv-validator/ajv/blob/v6.14.0/LICENSE):
+This product includes source derived from [ajv](https://github.com/ajv-validator/ajv) ([v6.15.0](https://github.com/ajv-validator/ajv/tree/v6.15.0)), distributed under the [MIT License](https://github.com/ajv-validator/ajv/blob/v6.15.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -4829,7 +4829,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### clean-jsdoc-theme
 
-This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.3.0](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.3.0)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.3.0/LICENSE):
+This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.3.2](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.3.2)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.3.2/LICENSE):
 
 ```
 MIT License
@@ -5530,7 +5530,7 @@ SOFTWARE.
 
 ### protobufjs
 
-This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.4](https://github.com/protobufjs/protobuf.js/tree/v7.5.4)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.4/LICENSE):
+This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.6](https://github.com/protobufjs/protobuf.js/tree/v7.5.6)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.6/LICENSE):
 
 ```
 This license applies to all parts of protobuf.js except those files
