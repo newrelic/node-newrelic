@@ -16,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     if:  ${{ github.event.sender.login == 'snyk-bot' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js LTS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - name: Install Dependencies
