@@ -1,11 +1,7 @@
 name: Generate Compatibility Report
 
-# peter-evans/create-pull-request falls back to GITHUB_TOKEN when NODE_AGENT_GH_TOKEN
-# is unavailable; that path needs contents:write to push the branch and pull-requests:write
-# to open the PR.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 on:
   workflow_dispatch:
@@ -40,6 +36,14 @@ jobs:
       (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'workflow_dispatch' &&
       (inputs.repo_target == 'local' || inputs.repo_target == 'both'))
+
+    # peter-evans/create-pull-request falls back to GITHUB_TOKEN when NODE_AGENT_GH_TOKEN
+    # is unavailable; that path needs contents:write to push the branch and pull-requests:write
+    # to open the PR.
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - uses: actions/checkout@v4
       - uses: jaxxstorm/action-install-gh-release@71d17cb091aa850acb2a1a4cf87258d183eb941b
@@ -82,6 +86,14 @@ jobs:
       (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'workflow_dispatch' &&
       (inputs.repo_target == 'docs' || inputs.repo_target == 'both'))
+    
+    # peter-evans/create-pull-request falls back to GITHUB_TOKEN when NODE_AGENT_GH_TOKEN
+    # is unavailable; that path needs contents:write to push the branch and pull-requests:write
+    # to open the PR.
+    permissions:
+      contents: write
+      pull-requests: write
+    
     env:
       DOCS_TARGET: src/content/docs/apm/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.mdx
     steps:

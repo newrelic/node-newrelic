@@ -2,21 +2,23 @@
 # workflow_dispatch to work properly
 name: Repolinter Action
 
+permissions:
+  contents: read
+
 # NOTE: This workflow will ONLY check the default branch!
 # Currently there is no elegant way to specify the default
 # branch in the event filtering, so branches are instead
 # filtered in the "Test Default Branch" step.
-# repolinter-action with output_type: issue files GitHub issues when rules fail.
-permissions:
-  contents: read
-  issues: write
-
 on: [push, workflow_dispatch]
 
 jobs:
   repolint:
     name: Run Repolinter
     runs-on: ubuntu-latest
+    # repolinter-action with output_type: issue files GitHub issues when rules fail.
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Test Default Branch
         id: default-branch
