@@ -34,7 +34,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' &&
       (inputs.repo_target == 'local' || inputs.repo_target == 'both'))
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: jaxxstorm/action-install-gh-release@71d17cb091aa850acb2a1a4cf87258d183eb941b
         with:
           repo: newrelic/newrelic-node-versions
@@ -78,10 +78,10 @@ jobs:
     env:
       DOCS_TARGET: src/content/docs/apm/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.mdx
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: agent
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: newrelic/docs-website
           path: docs
