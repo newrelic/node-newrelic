@@ -116,7 +116,7 @@ jobs:
       - name: Run Unit Tests
         run: npm run unit
       - name: Archive Unit Test Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unit-tests-${{ matrix.node-version }}
           path: ./coverage/unit/lcov.info
@@ -150,12 +150,12 @@ jobs:
       - name: Run ESM Integration Tests
         run: npm run integration:esm
       - name: Archive Integration Test Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-tests-cjs-${{ matrix.node-version }}
           path: ./coverage/integration/lcov.info
       - name: Archive Integration (ESM) Test Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-tests-esm-${{ matrix.node-version }}
           path: ./coverage/integration-esm/lcov.info
@@ -191,7 +191,7 @@ jobs:
           JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
           C8_REPORTER: lcovonly
       - name: Archive Versioned Test Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: versioned-tests-${{ matrix.node-version }}
           path: ./coverage/versioned/lcov.info
@@ -205,7 +205,7 @@ jobs:
         run: tar cvzf ./logs-${{ matrix.node-version }}.tgz ./logs-${{ matrix.node-version }}
       - name: Upload logs to GitHub
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.node-version }}.tgz
           path: ./logs-${{ matrix.node-version }}.tgz
