@@ -34,14 +34,14 @@ jobs:
 
     steps:
     # Check out caller repo
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     # check out agent repo to agent-repo for the bin folders
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         repository: newrelic/node-newrelic
         path: agent-repo
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         # As of 2025-10-21, we must specify a version to use because we need
         # a specific version of npm in order to perform OIDC based publishing.
