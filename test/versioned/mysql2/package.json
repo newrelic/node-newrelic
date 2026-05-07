@@ -9,7 +9,7 @@
         "node": ">=22"
       },
       "dependencies": {
-        "mysql2": ">=3.0.0",
+        "mysql2": ">=2.0.0",
         "generic-pool": ">=2.4 <2.5 || latest"
       },
       "files": [

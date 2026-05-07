@@ -9,7 +9,7 @@
         "node": ">=22"
       },
       "dependencies": {
-        "@nestjs/cli": ">=10.0.0 <11.0.9 || >11.0.11"
+        "@nestjs/cli": ">=9.0.0 <11.0.9 || >11.0.11"
       },
       "files": [
         "nest.test.js"

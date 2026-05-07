@@ -12,6 +12,18 @@
         "bluebird": ">=2.0.0"
       },
       "files": [
+        "regressions.test.js",
+        "transaction-state.test.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=22"
+      },
+      "dependencies": {
+        "bluebird": ">=3.0.0"
+      },
+      "files": [
         "baseline.test.js",
         "promise-all.test.js",
         "promise-all-settled.test.js",
@@ -46,9 +58,7 @@
         "promise-tap-catch.test.js",
         "promise-then.test.js",
         "promise-then-return.test.js",
-        "promise-timeout.test.js",
-        "regressions.test.js",
-        "transaction-state.test.js"
+        "promise-timeout.test.js"
       ]
     }
   ],
