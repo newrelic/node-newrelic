@@ -1,5 +1,9 @@
 name: Agent Release Lambda Layers and K8s Init Containers
 
+# gh release create calls use NODE_AGENT_GH_TOKEN against other repos; GITHUB_TOKEN only needs read.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   workflow_run:

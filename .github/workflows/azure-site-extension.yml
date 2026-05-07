@@ -11,6 +11,8 @@ env:
   SPEC_FILE_TEMPLATE: 'NewRelic.Azure.WebSites.Extension.NodeAgent.nuspec'
 
 permissions:
+  # contents:read is required for actions/checkout.
+  contents: read
   # id-token must be set to `write` for OIDC publishing.
   id-token: write
 

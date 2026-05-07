@@ -6,6 +6,11 @@ name: Repolinter Action
 # Currently there is no elegant way to specify the default
 # branch in the event filtering, so branches are instead
 # filtered in the "Test Default Branch" step.
+# repolinter-action with output_type: issue files GitHub issues when rules fail.
+permissions:
+  contents: read
+  issues: write
+
 on: [push, workflow_dispatch]
 
 jobs:

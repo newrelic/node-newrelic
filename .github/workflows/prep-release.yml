@@ -1,5 +1,10 @@
 name: Prepare Release PR
 
+# prepare-release.js uses GITHUB_TOKEN to push a release-notes branch and open a PR.
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   workflow_call:
     inputs:

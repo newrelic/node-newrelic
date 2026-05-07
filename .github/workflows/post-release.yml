@@ -1,5 +1,9 @@
 name: Agent Post Release
 
+# Docs PR creation uses NODE_AGENT_GH_TOKEN against the docs-website repo, not GITHUB_TOKEN.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:

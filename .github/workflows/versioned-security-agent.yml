@@ -4,6 +4,9 @@
 
 name: Versioned Tests w/ Security Agent
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:

@@ -1,5 +1,12 @@
 name: Generate Compatibility Report
 
+# peter-evans/create-pull-request falls back to GITHUB_TOKEN when NODE_AGENT_GH_TOKEN
+# is unavailable; that path needs contents:write to push the branch and pull-requests:write
+# to open the PR.
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   workflow_dispatch:
     inputs:

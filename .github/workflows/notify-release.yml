@@ -1,4 +1,9 @@
 name: Notify Unreleased PRs
+
+# Uses NODE_AGENT_GH_TOKEN (not GITHUB_TOKEN) for cross-repo PR lookup and Slack posting.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   schedule:

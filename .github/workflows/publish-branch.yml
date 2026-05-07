@@ -1,5 +1,9 @@
 name: Publish Branch
 
+# npm publish authenticates with NODE_AGENT_NPM_TOKEN; no GITHUB_TOKEN writes.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch: # Allow manual trigger for non-standard cases.
 

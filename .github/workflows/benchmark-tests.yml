@@ -1,5 +1,8 @@
 name: Benchmark Tests
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
