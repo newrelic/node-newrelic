@@ -13,7 +13,7 @@ const SegmentTree = require('../../../../lib/transaction/trace/segment-tree')
 test('should add root to segment tree', () => {
   const segment = { id: '1', name: 'ROOT' }
   const tree = new SegmentTree(segment)
-  assert.deepEqual(tree.root, { segment, children: [] })
+  assert.deepEqual(tree.root, { _ranges: null, segment, children: [] })
 })
 
 test('should find the proper parent node', () => {

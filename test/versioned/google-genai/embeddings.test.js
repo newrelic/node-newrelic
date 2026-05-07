@@ -192,7 +192,7 @@ test('should not create llm events when ai_monitoring is disabled', (t, end) => 
     assert.equal(events.length, 0, 'should not create llm events')
 
     const activeSeg = agent.tracer.getSegment()
-    assert.equal(activeSeg?.isRoot, true)
+    assert.equal(activeSeg.name, 'ROOT')
     const children = tx.trace.getChildren(activeSeg.id)
     assert.notEqual(children?.[0]?.name, GEMINI.EMBEDDING)
 

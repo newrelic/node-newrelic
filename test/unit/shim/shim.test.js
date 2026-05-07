@@ -362,11 +362,9 @@ test('Shim', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
 
-      const transaction = new Transaction(ctx.nr.agent)
       ctx.nr.segment = new TraceSegment({
         config: ctx.nr.agent.config,
-        name: 'test',
-        root: transaction.trace.root
+        name: 'test'
       })
       ctx.nr.startingSegment = ctx.nr.tracer.getSegment()
     })
@@ -1936,11 +1934,9 @@ test('Shim', async function (t) {
   await t.test('#getSegment', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
-      const transaction = new Transaction(ctx.nr.agent)
       ctx.nr.segment = new TraceSegment({
         config: ctx.nr.agent.config,
-        name: 'test',
-        root: transaction.trace.root
+        name: 'test'
       })
     })
     t.afterEach(afterEach)
@@ -1974,7 +1970,6 @@ test('Shim', async function (t) {
       ctx.nr.segment = new TraceSegment({
         config: ctx.nr.agent.config,
         name: 'test',
-        root: transaction.trace.root
       })
       ctx.nr.transaction = transaction
     })
@@ -2218,11 +2213,9 @@ test('Shim', async function (t) {
   await t.test('#applySegment', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
-      const transaction = new Transaction(ctx.nr.agent)
       ctx.nr.segment = new TraceSegment({
         config: ctx.nr.agent.config,
-        name: 'test',
-        root: transaction.trace.root
+        name: 'test'
       })
     })
     t.afterEach(afterEach)
