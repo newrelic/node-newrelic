@@ -1,5 +1,9 @@
 name: Publish Branch
 
+# npm publish authenticates with NODE_AGENT_NPM_TOKEN; no GITHUB_TOKEN writes.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch: # Allow manual trigger for non-standard cases.
 
@@ -12,9 +16,9 @@ jobs:
         node-version: [lts/*]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4 # https://github.com/actions/setup-node
+      uses: actions/setup-node@v6 # https://github.com/actions/setup-node
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'

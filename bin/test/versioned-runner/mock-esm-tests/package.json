@@ -1,0 +1,10 @@
+{
+  "name": "mock-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "tests": [{
+    "dependencies": {"redis": ">=1.0.0"},
+    "files": ["redis.mock.fake-test.js"]
+  }]
+}

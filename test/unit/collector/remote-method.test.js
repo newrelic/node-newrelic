@@ -751,13 +751,10 @@ test('_safeRequest logging', async (t) => {
       body: 'test-body',
       path: '/nonexistent'
     }
-    ctx.nr.config = {
-      license_key: 'shhh-dont-tell',
-      max_payload_size_in_bytes: 10_000
-    }
+    ctx.nr.config = new Config({ license_key: 'shhh-dont-tell', max_payload_size_in_bytes: 10_000 })
   })
 
-  await t.test('should redact license key in logs', (t) => {
+  await t.test('should use redacted license key in logs', (t) => {
     const { RemoteMethod, options, config } = t.nr
     const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
     method._safeRequest(options)
@@ -770,7 +767,7 @@ test('_safeRequest logging', async (t) => {
           'https',
           options.host,
           options.port,
-          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=REDACTED&method=test'
+          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=shhh-dont-****&method=test'
         ]
       ],
       'should redact key in trace level log'
@@ -794,10 +791,10 @@ test('_safeRequest logging', async (t) => {
           'https',
           options.host,
           options.port,
-          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=REDACTED&method=test'
+          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=shhh-dont-****&method=test'
         ]
       ],
-      'should redact key in trace level log'
+      'should use redacted key in trace level log'
     )
   })
 

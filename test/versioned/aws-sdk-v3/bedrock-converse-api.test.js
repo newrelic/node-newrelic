@@ -54,7 +54,13 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
   })
 
   await t.test('should properly create completion segment', async (t) => {
-    const { version } = require('@smithy/smithy-client/package.json')
+    // the package we subscribe to changes in `4.13.0` of `@smithy/smithy-client` to `@smithy/core`
+    let { version } = require('@smithy/smithy-client/package.json')
+    let pkg = '@smithy/smithy-client'
+    if (semver.gte(version, '4.13.0')) {
+      ;({ version } = require('@smithy/core/package.json'))
+      pkg = '@smithy/core'
+    }
     const prompt = 'text converse ultimate question'
     const input = {
       modelId,
@@ -76,7 +82,7 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
         ['Llm/completion/Bedrock/ConverseCommand', [expectedExternalPath(modelId)]],
         { exact: false }
       )
-      assertPackageMetrics({ agent, pkg: '@smithy/smithy-client', version, subscriberType: true })
+      assertPackageMetrics({ agent, pkg, version, subscriberType: true })
       tx.end()
     })
   })

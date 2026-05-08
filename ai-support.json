@@ -167,7 +167,7 @@
       },
       {
         "title": "Tools",
-        "supported": false
+        "supported": true
       }
     ],
     "providers": [

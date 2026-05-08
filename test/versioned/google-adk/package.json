@@ -3,7 +3,7 @@
   "targets": [
     {
       "name": "@google/adk",
-      "minSupported": "0.1.0",
+      "minSupported": "1.1.0",
       "minAgentVersion": "13.20.0"
     }
   ],
@@ -21,7 +21,8 @@
         "@google/adk": ">=1.1.0"
       },
       "files": [
-        "agent-run-async.test.js"
+        "agent-run-async.test.js",
+        "tool-run-async.test.js"
       ]
     }
   ]

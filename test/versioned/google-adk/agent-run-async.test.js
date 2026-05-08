@@ -6,7 +6,6 @@
 'use strict'
 
 const test = require('node:test')
-
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, match } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')

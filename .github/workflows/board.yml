@@ -14,6 +14,12 @@
 # You can find a project via `orgs/newrelic/projects`, `repos/newrelic/<repo-name>/projects`
 
 name: Add Issues/PRs to project board
+
+# GITHUB_TOKEN is unused here — all gh CLI calls authenticate with the passed-in
+# gh_token secret for org-level project access — so the default token only needs read.
+permissions:
+  contents: read
+
 on:
   workflow_call:
     inputs:

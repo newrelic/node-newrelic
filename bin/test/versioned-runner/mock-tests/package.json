@@ -1,0 +1,13 @@
+{
+  "name": "mock-tests",
+  "version": "1.0.0",
+  "private": true,
+  "tests": [{
+    "engines": {"node": "<0.1.0"},
+    "dependencies": {"redis": "*"},
+    "files": ["redis.mock.fake-test.js", "other.mock.fake-test.js"]
+  }, {
+    "dependencies": {"redis": ">=1.0.0"},
+    "files": ["redis.mock.fake-test.js", "other.mock.fake-test.js"]
+  }]
+}

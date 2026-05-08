@@ -1,5 +1,8 @@
 name: Benchmark Tests
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -20,9 +23,9 @@ jobs:
         node-version: [20.x, 22.x, 24.x]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
@@ -34,7 +37,7 @@ jobs:
     - name: Verify Benchmark Output
       run: ls benchmark_results
     - name: Archive Benchmark Test
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: benchmark-tests-${{ github.base_ref || 'main' }}-${{ matrix.node-version }}
         path: ./benchmark_results

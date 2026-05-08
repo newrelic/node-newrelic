@@ -1,5 +1,9 @@
 name: Agent Release Lambda Layers and K8s Init Containers
 
+# gh release create calls use NODE_AGENT_GH_TOKEN against other repos; GITHUB_TOKEN only needs read.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   workflow_run:
@@ -14,7 +18,7 @@ jobs:
       (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'workflow_dispatch')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 2
       - id: get_tag

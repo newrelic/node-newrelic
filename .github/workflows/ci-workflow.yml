@@ -1,5 +1,8 @@
 name: Node Agent CI
 
+permissions:
+  contents: read
+
 on:
   push:
   pull_request:
@@ -25,10 +28,10 @@ jobs:
       javascript_changed: ${{ steps.filter.outputs.javascript }}
       deps_changed: ${{ steps.deps.outputs.divergent }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 2
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
         id: filter
         with:
           filters: |
@@ -39,7 +42,7 @@ jobs:
               - 'stub_api.js'
               - 'lib/**/*.{js,json,mjs,cjs}'
               - 'test/**/*.{js,json,mjs,cjs}'
-      - uses: jsumners-nr/gha-node-deps-divergent@643628fe0da51ec025e984c4644f17fd9f9e93f6
+      - uses: jsumners-nr/gha-node-deps-divergent@8a3756574008854718621aee6de408fc2e79d70c
         id: deps
         with:
           base-sha: ${{ github.base_ref || 'main' }}
@@ -58,9 +61,9 @@ jobs:
         node-version: [lts/*]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install Dependencies
@@ -82,9 +85,9 @@ jobs:
         node-version: [lts/*]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install Dependencies
@@ -106,9 +109,9 @@ jobs:
         node-version: [20.x, 22.x, 24.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install Dependencies
@@ -116,7 +119,7 @@ jobs:
       - name: Run Unit Tests
         run: npm run unit
       - name: Archive Unit Test Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unit-tests-${{ matrix.node-version }}
           path: ./coverage/unit/lcov.info
@@ -138,9 +141,9 @@ jobs:
         node-version: [20.x, 22.x, 24.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install Dependencies
@@ -150,12 +153,12 @@ jobs:
       - name: Run ESM Integration Tests
         run: npm run integration:esm
       - name: Archive Integration Test Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-tests-cjs-${{ matrix.node-version }}
           path: ./coverage/integration/lcov.info
       - name: Archive Integration (ESM) Test Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-tests-esm-${{ matrix.node-version }}
           path: ./coverage/integration-esm/lcov.info
@@ -174,9 +177,9 @@ jobs:
         node-version: [20.x, 22.x, 24.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install Dependencies
@@ -191,7 +194,7 @@ jobs:
           JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
           C8_REPORTER: lcovonly
       - name: Archive Versioned Test Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: versioned-tests-${{ matrix.node-version }}
           path: ./coverage/versioned/lcov.info
@@ -205,7 +208,7 @@ jobs:
         run: tar cvzf ./logs-${{ matrix.node-version }}.tgz ./logs-${{ matrix.node-version }}
       - name: Upload logs to GitHub
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.node-version }}.tgz
           path: ./logs-${{ matrix.node-version }}.tgz
@@ -219,9 +222,9 @@ jobs:
         node-version: [20.x, 22.x, 24.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
       - name: Post Unit Test Coverage
         uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303
         with:

@@ -1,4 +1,9 @@
 name: Notify Unreleased PRs
+
+# Uses NODE_AGENT_GH_TOKEN (not GITHUB_TOKEN) for cross-repo PR lookup and Slack posting.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   schedule:
@@ -9,9 +14,9 @@ jobs:
   checking-pending-prs:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: lts/*
     - name: Install Dependencies
