@@ -51,11 +51,11 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [@smithy/eventstream-codec](#smithyeventstream-codec)
 * [@smithy/util-utf8](#smithyutil-utf8)
 * [ajv](#ajv)
-* [async](#async)
 * [aws-sdk](#aws-sdk)
 * [borp](#borp)
 * [c8](#c8)
 * [clean-jsdoc-theme](#clean-jsdoc-theme)
+* [colors](#colors)
 * [commander](#commander)
 * [conventional-changelog-conventionalcommits](#conventional-changelog-conventionalcommits)
 * [conventional-changelog-writer](#conventional-changelog-writer)
@@ -70,9 +70,11 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [jsdoc](#jsdoc)
 * [lint-staged](#lint-staged)
 * [lockfile-lint](#lockfile-lint)
+* [log-update](#log-update)
 * [nock](#nock)
 * [protobufjs](#protobufjs)
 * [proxyquire](#proxyquire)
+* [readline](#readline)
 * [rimraf](#rimraf)
 * [self-cert](#self-cert)
 * [should](#should)
@@ -4539,33 +4541,6 @@ SOFTWARE.
 
 ```
 
-### async
-
-This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.6](https://github.com/caolan/async/tree/v3.2.6)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.6/LICENSE):
-
-```
-Copyright (c) 2010-2018 Caolan McMahon
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-```
-
 ### aws-sdk
 
 This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1693.0](https://github.com/aws/aws-sdk-js/tree/v2.1693.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1693.0/LICENSE.txt):
@@ -4853,6 +4828,39 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+```
+
+### colors
+
+This product includes source derived from [colors](https://github.com/Marak/colors.js) ([v1.4.0](https://github.com/Marak/colors.js/tree/v1.4.0)), distributed under the [MIT License](https://github.com/Marak/colors.js/blob/v1.4.0/LICENSE):
+
+```
+MIT License
+
+Original Library
+  - Copyright (c) Marak Squires
+
+Additional Functionality
+ - Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
 ```
 
@@ -5499,6 +5507,23 @@ This product includes source derived from [lockfile-lint](https://github.com/lir
    limitations under the License.
 ```
 
+### log-update
+
+This product includes source derived from [log-update](https://github.com/sindresorhus/log-update) ([v8.0.0](https://github.com/sindresorhus/log-update/tree/v8.0.0)), distributed under the [MIT License](https://github.com/sindresorhus/log-update/blob/v8.0.0/license):
+
+```
+MIT License
+
+Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+```
+
 ### nock
 
 This product includes source derived from [nock](https://github.com/nock/nock) ([v11.8.0](https://github.com/nock/nock/tree/v11.8.0)), distributed under the [MIT License](https://github.com/nock/nock/blob/v11.8.0/LICENSE):
@@ -5604,6 +5629,14 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
+```
+
+### readline
+
+This product includes source derived from [readline](https://github.com/maleck13/readline) ([v1.3.0](https://github.com/maleck13/readline/tree/v1.3.0)), distributed under the [UNKNOWN License](https://github.com/maleck13/readline/blob/v1.3.0/README.md):
+
+```
+undefined
 ```
 
 ### rimraf

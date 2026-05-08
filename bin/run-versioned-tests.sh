@@ -46,7 +46,6 @@ then
 else
   directories=(
     "test/versioned/"
-    "test/versioned-external"
   )
 fi
 
@@ -73,12 +72,10 @@ then
 fi
 export NR_LOADER=./esm-loader.mjs
 
-time $C8 ./node_modules/.bin/versioned-tests \
+$C8 ./bin/version-manager.js \
   $VERSIONED_MODE \
   $MATRIX_COUNT \
   --print $OUTPUT_MODE \
-  -i 100 \
-  --all \
   --strict \
   --samples $SAMPLES \
   $JOBS_ARGS \
