@@ -17,7 +17,7 @@ const {
   SEGMENT_DESTINATION
 } = require('./test-utils/constants.js')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
-const { match } = require('../../lib/custom-assertions')
+const { match, assertSegmentDuration } = require('../../lib/custom-assertions')
 
 const AWS_REGION = 'us-east-1'
 
@@ -83,30 +83,45 @@ test('DynamoDB', async (t) => {
 
   await t.test('commands, promise-style', async (t) => {
     const { agent, commands, client } = t.nr
+    const times = []
     await helper.runInTransaction(agent, async (tx) => {
+      let i = 0
       for (const command of commands) {
         await client.send(command)
+        const children = tx.trace.getChildren(tx.trace.root.id)
+        const actualTime = process.hrtime(children[i].timer.hrstart)
+        times.push(actualTime)
+        i++
       }
       tx.end()
-      finish({ commands, tx })
+      finish({ commands, tx, times })
     })
   })
 
   await t.test('commands, callback-style', async (t) => {
     const { agent, commands, client } = t.nr
+    const times = []
     await helper.runInTransaction(agent, async (tx) => {
+      let i = 0
       for (const command of commands) {
-        await new Promise((resolve) => {
+        const segment = await new Promise((resolve) => {
           client.send(command, (err) => {
             assert.ok(!err)
+            const children = tx.trace.getChildren(tx.trace.root.id)
+            const segment = children[i]
+            i++
 
-            return setImmediate(resolve)
+            setImmediate(() => {
+              resolve(segment)
+            })
           })
         })
+        const actualTime = process.hrtime(segment.timer.hrstart)
+        times.push(actualTime)
       }
 
       tx.end()
-      finish({ commands, tx })
+      finish({ commands, tx, times })
     })
   })
 
@@ -192,7 +207,7 @@ function createCommands({ lib, tableName }) {
   ]
 }
 
-function finish({ commands, tx }) {
+function finish({ commands, tx, times }) {
   const root = tx.trace.root
   const segments = checkAWSAttributes({
     trace: tx.trace,
@@ -215,6 +230,8 @@ function finish({ commands, tx }) {
 
   segments.forEach((segment, i) => {
     const command = commands[i]
+    const actualTime = times[i]
+    assertSegmentDuration({ segment, actualTime })
     assert.ok(command)
     assert.equal(
       segment.name,

@@ -18,7 +18,7 @@ const {
   SQS_PATTERN
 } = require('./test-utils/constants.js')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
-const { match } = require('../../lib/custom-assertions')
+const { match, assertSegmentDuration } = require('../../lib/custom-assertions')
 
 const AWS_REGION = 'us-east-1'
 
@@ -72,25 +72,32 @@ test('SQS API', async (t) => {
     const { QueueUrl } = await sqs.send(createCommand)
     assert.ok(QueueUrl)
     // run send/receive commands in transaction
+    const times = []
     await helper.runInTransaction(agent, async (transaction) => {
       // send message
       const sendMessageParams = getSendMessageParams(QueueUrl)
       const sendMessageCommand = new SendMessageCommand(sendMessageParams)
       const { MessageId } = await sqs.send(sendMessageCommand)
+      const [sendSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+      times.push(process.hrtime(sendSegment.timer.hrstart))
       assert.ok(MessageId)
       // send message batch
       const sendMessageBatchParams = getSendMessageBatchParams(QueueUrl)
       const sendMessageBatchCommand = new SendMessageBatchCommand(sendMessageBatchParams)
       const { Successful } = await sqs.send(sendMessageBatchCommand)
+      const [, sendBatchSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+      times.push(process.hrtime(sendBatchSegment.timer.hrstart))
       assert.ok(Successful)
       // receive message
       const receiveMessageParams = getReceiveMessageParams(QueueUrl)
       const receiveMessageCommand = new ReceiveMessageCommand(receiveMessageParams)
       const { Messages } = await sqs.send(receiveMessageCommand)
+      const [, , receiveSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+      times.push(process.hrtime(receiveSegment.timer.hrstart))
       assert.ok(Messages)
       // wrap up
       transaction.end()
-      await finish({ transaction, queueName })
+      finish({ transaction, queueName, times })
     })
   })
 
@@ -217,7 +224,7 @@ test('SQS API', async (t) => {
   })
 })
 
-function finish({ transaction, queueName }) {
+function finish({ transaction, queueName, times }) {
   const expectedSegmentCount = 3
 
   const root = transaction.trace.root
@@ -241,6 +248,10 @@ function finish({ transaction, queueName }) {
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   const [sendMessage, sendMessageBatch, receiveMessage] = segments
+  const [sendTime, batchTime, receiveTime] = times
+  assertSegmentDuration({ segment: sendMessage, actualTime: sendTime })
+  assertSegmentDuration({ segment: sendMessageBatch, actualTime: batchTime })
+  assertSegmentDuration({ segment: receiveMessage, actualTime: receiveTime })
 
   checkName(sendMessage.name, 'Produce', queueName)
   checkAttributes(sendMessage, 'SendMessageCommand')

@@ -53,5 +53,5 @@ function checkExternals({ service, operations, tx, end }) {
       'aws.region': 'us-east-1'
     })
   })
-  end()
+  end?.()
 }
