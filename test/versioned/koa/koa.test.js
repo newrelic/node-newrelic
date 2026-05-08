@@ -470,3 +470,46 @@ test('errors caught by default error listener are recorded', async (t) => {
   run({ t, expected: 'Internal Server Error', plan })
   await plan.completed
 })
+
+test('middleware called outside a transaction calls the original handler', async (t) => {
+  const plan = tspl(t, { plan: 1 })
+  const { app } = t.nr
+
+  let called = false
+  app.use(function one(ctx, next) {
+    called = true
+    return next()
+  })
+
+  await app.middleware[0]({}, () => Promise.resolve())
+  plan.equal(called, true, 'original handler was called without a transaction')
+  await plan.completed
+})
+
+test('middleware continues when createSegment returns null', async (t) => {
+  const plan = tspl(t, { plan: 2 })
+  const { agent, app } = t.nr
+
+  let called = false
+  app.use(function one(ctx) {
+    called = true
+    ctx.body = 'done'
+  })
+
+  // Purposefully make createSegment fail
+  const orig = agent.tracer.createSegment.bind(agent.tracer)
+  agent.tracer.createSegment = (opts) => {
+    if (opts.name?.startsWith('Nodejs/Middleware/Koa')) {
+      return null
+    }
+    return orig(opts)
+  }
+  t.after(() => { agent.tracer.createSegment = orig })
+
+  agent.on('transactionFinished', () => {
+    plan.equal(called, true, 'original handler was called despite null segment')
+  })
+
+  run({ t, plan })
+  await plan.completed
+})
