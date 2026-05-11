@@ -7,7 +7,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "@grpc/grpc-js": ">=1.4.0"

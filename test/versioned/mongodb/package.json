@@ -12,7 +12,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "mongodb": ">=4.1.4"
@@ -29,6 +29,6 @@
     }
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }

@@ -12,7 +12,7 @@ const loadExternals = require('../../load-externals')
 
 test('should load libs to webpack externals', async () => {
   const config = {
-    target: 'node-20.x',
+    target: 'node-22.x',
     externals: ['test-pkg']
   }
   loadExternals(config)

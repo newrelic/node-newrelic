@@ -6,7 +6,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "iovalkey": ">=0.1.0"
