@@ -4,16 +4,23 @@
  */
 
 'use strict'
+
 const assert = require('node:assert')
 const test = require('node:test')
+const path = require('node:path')
 const amqpUtils = require('./amqp-utils')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const promiseResolvers = require('../../lib/promise-resolvers')
-const { version } = require('amqplib/package.json')
+const getPackageVersion = require('../../../lib/util/get-package-version')
+
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
 const PROMISE_WAIT = 100
+
+const version = getPackageVersion(
+  path.join(__dirname, 'node_modules', 'amqplib')
+)
 
 test('amqplib callback instrumentation', async function (t) {
   t.beforeEach(async function (ctx) {
