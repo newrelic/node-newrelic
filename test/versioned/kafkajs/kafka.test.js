@@ -57,7 +57,7 @@ test.afterEach(async (ctx) => {
 test('should log tracking metrics', function(t) {
   const { agent } = t.nr
   const { version } = require('kafkajs/package.json')
-  assertPackageMetrics({ agent, pkg: 'kafkajs', version })
+  assertPackageMetrics({ agent, pkg: 'kafkajs', version, subscriberType: true })
 })
 
 test('send records correctly', async (t) => {
@@ -126,6 +126,12 @@ test('send records correctly', async (t) => {
 })
 
 test('send passes along DT headers', async (t) => {
+  // 1. Subscribe to the remote topic.
+  // 2. Add a consumer handler that will add transactions for incoming
+  // messages to a collection array.
+  // 3. Use the producer to put messages on the queue for delivery.
+  // 4. Verify that received messages had the correct DT headers added
+  // when they were "produced" to the remote queue.
   const plan = tspl(t, { plan: 13 })
   const { agent, consumer, producer, topic } = t.nr
   const expectedName = 'produce-tx'

@@ -82,58 +82,98 @@ test('constructor', async (t) => {
     )
   })
 
-  await t.test('overwrites destinationType for AMQP library', () => {
+  await t.test('preserves user-provided destinationType for AMQP library', () => {
     const desc = new MessageBrokerDescription({
       libraryName: 'AMQP',
       destinationType: MessageBrokerDescription.DESTINATION_TYPE_QUEUE
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/AMQP/AMQP/Produce/Temp'
+      'MessageBroker/AMQP/Queue/Produce/Temp'
     )
   })
 
-  await t.test('overwrites destinationType for IronMQ library', () => {
+  await t.test('preserves user-provided destinationType for IronMQ library', () => {
     const desc = new MessageBrokerDescription({
       libraryName: 'IronMQ',
       destinationType: MessageBrokerDescription.DESTINATION_TYPE_QUEUE
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/IronMQ/IronMQ/Produce/Temp'
+      'MessageBroker/IronMQ/Queue/Produce/Temp'
     )
   })
 
-  await t.test('overwrites destinationType for Kafka library', () => {
+  await t.test('preserves user-provided destinationType for Kafka library', () => {
     const desc = new MessageBrokerDescription({
       libraryName: 'Kafka',
       destinationType: MessageBrokerDescription.DESTINATION_TYPE_QUEUE
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/Kafka/Kafka/Produce/Temp'
+      'MessageBroker/Kafka/Queue/Produce/Temp'
     )
   })
 
-  await t.test('overwrites destinationType for RabbitMQ library', () => {
+  await t.test('preserves user-provided destinationType for RabbitMQ library', () => {
     const desc = new MessageBrokerDescription({
       libraryName: 'RabbitMQ',
       destinationType: MessageBrokerDescription.DESTINATION_TYPE_QUEUE
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/RabbitMQ/AMQP/Produce/Temp'
+      'MessageBroker/RabbitMQ/Queue/Produce/Temp'
     )
   })
 
-  await t.test('handles case-insensitive library names for special cases', () => {
+  await t.test('preserves user-provided destinationType even for case-insensitive library names', () => {
     const desc = new MessageBrokerDescription({
       libraryName: 'kafka',
       destinationType: MessageBrokerDescription.DESTINATION_TYPE_TOPIC
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/kafka/Kafka/Produce/Temp'
+      'MessageBroker/kafka/Topic/Produce/Temp'
+    )
+  })
+
+  await t.test('defaults to Exchange when no destinationType provided for AMQP', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'AMQP'
+    })
+    assert.equal(
+      desc.segmentName,
+      'MessageBroker/AMQP/Exchange/Produce/Temp'
+    )
+  })
+
+  await t.test('defaults to Exchange when no destinationType provided for IronMQ', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'IronMQ'
+    })
+    assert.equal(
+      desc.segmentName,
+      'MessageBroker/IronMQ/Exchange/Produce/Temp'
+    )
+  })
+
+  await t.test('defaults to Exchange when no destinationType provided for Kafka', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'Kafka'
+    })
+    assert.equal(
+      desc.segmentName,
+      'MessageBroker/Kafka/Exchange/Produce/Temp'
+    )
+  })
+
+  await t.test('defaults to Exchange when no destinationType provided for RabbitMQ', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'RabbitMQ'
+    })
+    assert.equal(
+      desc.segmentName,
+      'MessageBroker/RabbitMQ/Exchange/Produce/Temp'
     )
   })
 
@@ -204,7 +244,7 @@ test('constructor', async (t) => {
     )
   })
 
-  await t.test('mode CONSUME works with special library types that overwrite destinationType', () => {
+  await t.test('mode CONSUME preserves user-provided destinationType for special library types', () => {
     const desc = new MessageBrokerDescription({
       libraryName: 'Kafka',
       destinationType: MessageBrokerDescription.DESTINATION_TYPE_QUEUE,
@@ -213,7 +253,7 @@ test('constructor', async (t) => {
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/Kafka/Kafka/Consume/Named/events-topic'
+      'MessageBroker/Kafka/Queue/Consume/Named/events-topic'
     )
   })
 
@@ -225,7 +265,7 @@ test('constructor', async (t) => {
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/AMQP/AMQP/Produce/Named/exchange-name'
+      'MessageBroker/AMQP/Exchange/Produce/Named/exchange-name'
     )
   })
 
@@ -237,7 +277,7 @@ test('constructor', async (t) => {
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/RabbitMQ/AMQP/Consume/Named/my-queue'
+      'MessageBroker/RabbitMQ/Exchange/Consume/Named/my-queue'
     )
   })
 
@@ -284,7 +324,7 @@ test('segmentName getter', async (t) => {
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/Kafka/Kafka/Produce/Named/user-events'
+      'MessageBroker/Kafka/Exchange/Produce/Named/user-events'
     )
   })
 
@@ -295,7 +335,7 @@ test('segmentName getter', async (t) => {
     })
     assert.equal(
       desc.segmentName,
-      'MessageBroker/RabbitMQ/AMQP/Produce/Temp'
+      'MessageBroker/RabbitMQ/Exchange/Produce/Temp'
     )
   })
 
@@ -363,11 +403,11 @@ test('segmentName getter', async (t) => {
 
     assert.equal(
       produceDesc.segmentName,
-      'MessageBroker/Kafka/Kafka/Produce/Named/events'
+      'MessageBroker/Kafka/Exchange/Produce/Named/events'
     )
     assert.equal(
       consumeDesc.segmentName,
-      'MessageBroker/Kafka/Kafka/Consume/Named/events'
+      'MessageBroker/Kafka/Exchange/Consume/Named/events'
     )
   })
 
@@ -414,6 +454,120 @@ test('segmentName getter', async (t) => {
     assert.equal(
       produceDesc.segmentName,
       'MessageBroker/TestLib/Exchange/Produce/Temp'
+    )
+  })
+})
+
+test('includeMessageBrokerPrefix parameter', async (t) => {
+  await t.test('defaults to true when not provided', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'Kafka',
+      destinationName: 'my-topic'
+    })
+    assert.equal(
+      desc.segmentName,
+      'MessageBroker/Kafka/Exchange/Produce/Named/my-topic'
+    )
+  })
+
+  await t.test('includes MessageBroker prefix when explicitly set to true', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'SNS',
+      destinationName: 'my-topic',
+      destinationType: MessageBrokerDescription.DESTINATION_TYPE_TOPIC,
+      includeMessageBrokerPrefix: true
+    })
+    assert.equal(
+      desc.segmentName,
+      'MessageBroker/SNS/Topic/Produce/Named/my-topic'
+    )
+  })
+
+  await t.test('omits MessageBroker prefix when set to false', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'Kafka',
+      destinationName: 'my-topic',
+      includeMessageBrokerPrefix: false
+    })
+    assert.equal(
+      desc.segmentName,
+      'Kafka/Exchange/Produce/Named/my-topic'
+    )
+  })
+
+  await t.test('omits MessageBroker prefix with CONSUME mode', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'SQS',
+      destinationName: 'my-queue',
+      destinationType: MessageBrokerDescription.DESTINATION_TYPE_QUEUE,
+      mode: MessageBrokerDescription.BROKER_MODE_CONSUME,
+      includeMessageBrokerPrefix: false
+    })
+    assert.equal(
+      desc.segmentName,
+      'SQS/Queue/Consume/Named/my-queue'
+    )
+  })
+
+  await t.test('omits MessageBroker prefix with unnamed destination', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'RabbitMQ',
+      includeMessageBrokerPrefix: false
+    })
+    assert.equal(
+      desc.segmentName,
+      'RabbitMQ/Exchange/Produce/Temp'
+    )
+  })
+
+  await t.test('omits MessageBroker prefix with AMQP transport type', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'AMQP',
+      destinationName: 'exchange-name',
+      includeMessageBrokerPrefix: false
+    })
+    assert.equal(
+      desc.segmentName,
+      'AMQP/Exchange/Produce/Named/exchange-name'
+    )
+  })
+
+  await t.test('omits MessageBroker prefix with custom mode', () => {
+    const desc = new MessageBrokerDescription({
+      libraryName: 'CustomLib',
+      destinationName: 'custom-queue',
+      mode: 'CustomMode',
+      includeMessageBrokerPrefix: false
+    })
+    assert.equal(
+      desc.segmentName,
+      'CustomLib/Exchange/CustomMode/Named/custom-queue'
+    )
+  })
+
+  await t.test('works correctly with all parameters including prefix control', () => {
+    const withPrefix = new MessageBrokerDescription({
+      libraryName: 'Kafka',
+      destinationName: 'events',
+      destinationType: MessageBrokerDescription.DESTINATION_TYPE_TOPIC,
+      mode: MessageBrokerDescription.BROKER_MODE_CONSUME,
+      includeMessageBrokerPrefix: true
+    })
+    const withoutPrefix = new MessageBrokerDescription({
+      libraryName: 'Kafka',
+      destinationName: 'events',
+      destinationType: MessageBrokerDescription.DESTINATION_TYPE_TOPIC,
+      mode: MessageBrokerDescription.BROKER_MODE_CONSUME,
+      includeMessageBrokerPrefix: false
+    })
+
+    assert.equal(
+      withPrefix.segmentName,
+      'MessageBroker/Kafka/Topic/Consume/Named/events'
+    )
+    assert.equal(
+      withoutPrefix.segmentName,
+      'Kafka/Topic/Consume/Named/events'
     )
   })
 })
