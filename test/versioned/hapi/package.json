@@ -1,6 +1,15 @@
 {
   "name": "hapi-tests",
-  "targets": [{"name":"@hapi/hapi","minAgentVersion":"9.0.0"}],
+  "targets": [
+    {
+      "name": "@hapi/hapi",
+      "minAgentVersion": "9.0.0"
+    },
+    {
+      "name": "@hapi/vision",
+      "minAgentVersion": "9.0.0"
+    }
+  ],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -11,13 +20,12 @@
       "dependencies": {
         "ejs": "2.5.5",
         "@hapi/hapi": ">=20.1.2",
-        "@hapi/vision": "latest"
+        "@hapi/vision": ">=5.0.0"
       },
       "files": [
         "capture-params.test.js",
         "errors.test.js",
         "ext.test.js",
-        "hapi.test.js",
         "ignoring.test.js",
         "plugins.test.js",
         "render.test.js",
