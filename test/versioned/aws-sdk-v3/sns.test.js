@@ -19,7 +19,7 @@ const {
   SNS_PATTERN
 } = require('./test-utils/constants.js')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
-const { match } = require('../../lib/custom-assertions')
+const { match, assertSegmentDuration } = require('../../lib/custom-assertions')
 
 test('SNS', async (t) => {
   const server = createResponseServer()
@@ -43,42 +43,45 @@ test('SNS', async (t) => {
     helper.unloadAgent(agent)
   })
 
-  await t.test('publish with callback', (t, end) => {
+  await t.test('publish with callback', async (t) => {
     const { PublishCommand } = lib
-    helper.runInTransaction(agent, (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       const params = { Message: 'Hello!' }
 
       const cmd = new PublishCommand(params)
-      sns.send(cmd, (err) => {
-        assert.ok(!err)
-        tx.end()
-
-        const destName = 'PhoneNumber'
-        const args = [end, tx, destName]
-        setImmediate(finish, ...args)
+      const segment = await new Promise((resolve) => {
+        sns.send(cmd, (err) => {
+          assert.ok(!err)
+          tx.end()
+          const [segment] = tx.trace.getChildren(tx.trace.root.id)
+          resolve(segment)
+        })
       })
+      const actualTime = process.hrtime(segment.timer.hrstart)
+      finish({ tx, destName: 'PhoneNumber', actualTime })
     })
   })
 
-  await t.test('publish with default destination(PhoneNumber)', (t, end) => {
+  await t.test('publish with default destination(PhoneNumber)', async (t) => {
     const { PublishCommand } = lib
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       const params = { Message: 'Hello!' }
 
       const cmd = new PublishCommand(params)
       await sns.send(cmd)
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
+      const actualTime = process.hrtime(segment.timer.hrstart)
 
       tx.end()
 
       const destName = 'PhoneNumber'
-      const args = [end, tx, destName]
-      setImmediate(finish, ...args)
+      finish({ tx, destName, actualTime })
     })
   })
 
-  await t.test('publish with TopicArn as destination', (t, end) => {
+  await t.test('publish with TopicArn as destination', async (t) => {
     const { PublishCommand } = lib
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       const TopicArn = 'TopicArn'
       const params = { TopicArn, Message: 'Hello!' }
 
@@ -87,14 +90,13 @@ test('SNS', async (t) => {
 
       tx.end()
 
-      const args = [end, tx, TopicArn]
-      setImmediate(finish, ...args)
+      finish({ tx, destName: TopicArn })
     })
   })
 
-  await t.test('publish with TargetArn as destination', (t, end) => {
+  await t.test('publish with TargetArn as destination', async (t) => {
     const { PublishCommand } = lib
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       const TargetArn = 'TargetArn'
       const params = { TargetArn, Message: 'Hello!' }
 
@@ -103,16 +105,15 @@ test('SNS', async (t) => {
 
       tx.end()
 
-      const args = [end, tx, TargetArn]
-      setImmediate(finish, ...args)
+      finish({ tx, destName: TargetArn })
     })
   })
 
   await t.test(
     'publish with TopicArn as destination when both Topic and Target Arn are defined',
-    (t, end) => {
+    async (t) => {
       const { PublishCommand } = lib
-      helper.runInTransaction(agent, async (tx) => {
+      await helper.runInTransaction(agent, async (tx) => {
         const TargetArn = 'TargetArn'
         const TopicArn = 'TopicArn'
         const params = { TargetArn, TopicArn, Message: 'Hello!' }
@@ -121,17 +122,16 @@ test('SNS', async (t) => {
         await sns.send(cmd)
         tx.end()
 
-        const args = [end, tx, TopicArn]
-        setImmediate(finish, ...args)
+        finish({ tx, destName: TopicArn })
       })
     }
   )
 
   await t.test(
     'should record external segment and not a SNS segment for a command that is not PublishCommand',
-    (t, end) => {
+    async (t) => {
       const { ListTopicsCommand } = lib
-      helper.runInTransaction(agent, async (tx) => {
+      await helper.runInTransaction(agent, async (tx) => {
         const TargetArn = 'TargetArn'
         const TopicArn = 'TopicArn'
         const params = { TargetArn, TopicArn, Message: 'Hello!' }
@@ -139,12 +139,8 @@ test('SNS', async (t) => {
         const cmd = new ListTopicsCommand(params)
         await sns.send(cmd)
         tx.end()
-
-        setImmediate(checkExternals, {
-          end,
-          tx,
-          service: 'SNS',
-          operations: ['ListTopicsCommand']
+        checkExternals({
+          tx, service: 'SNS', operations: ['ListTopicsCommand']
         })
       })
     }
@@ -227,7 +223,7 @@ test('SNS', async (t) => {
   })
 })
 
-function finish(end, tx, destName) {
+function finish({ tx, destName, actualTime }) {
   const root = tx.trace.root
 
   const messages = checkAWSAttributes({
@@ -237,6 +233,9 @@ function finish(end, tx, destName) {
   })
   assert.equal(messages.length, 1, 'should have 1 message broker segment')
   assert.ok(messages[0].name.endsWith(destName), 'should have appropriate destination')
+  if (actualTime) {
+    assertSegmentDuration({ actualTime, segment: messages[0] })
+  }
 
   const externalSegments = checkAWSAttributes({
     trace: tx.trace,
@@ -252,5 +251,4 @@ function finish(end, tx, destName) {
     'aws.service': /sns|SNS/,
     'aws.region': 'us-east-1'
   })
-  end()
 }
