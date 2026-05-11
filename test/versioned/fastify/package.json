@@ -11,7 +11,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "supported": false,
       "comment": "Used to assert our instrumentation does not get loaded on old versions.",
@@ -26,7 +26,7 @@
 
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "fastify": "^4.0.0",
@@ -45,7 +45,7 @@
 
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "fastify": ">=5.0.0",

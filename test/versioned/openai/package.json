@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "tests": [
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "openai": ">=4.0.0"
@@ -22,7 +22,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "dependencies": {
         "openai": ">=4.87.0"
