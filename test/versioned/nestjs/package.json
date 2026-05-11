@@ -1,6 +1,6 @@
 {
   "name": "nestjs-tests",
-  "targets": [{"name":"@nestjs/cli","minAgentVersion":"10.1.0"}],
+  "targets": [{"name":"@nestjs/core","minAgentVersion":"10.1.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -9,7 +9,7 @@
         "node": ">=20"
       },
       "dependencies": {
-        "@nestjs/cli": ">=9.0.0 <11.0.9 || >11.0.11"
+        "@nestjs/cli": ">=10.0.0 <11.0.9 || >11.0.11"
       },
       "files": [
         "nest.test.js"
