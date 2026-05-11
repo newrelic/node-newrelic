@@ -38,11 +38,17 @@ Suite.prototype.prepare = function prepare() {
     const testPackage = require(path.join(folder, 'package'))
     if (testPackage.tests) {
       testPackage.tests.forEach((test) => {
-        const dependencies = Object.keys(test.dependencies)
-        dependencies.forEach((dep) => {
-          const versions = getPkgVersions(test.dependencies[dep])
-          this._buildPkgMeta(dep, versions)
-        })
+        if (test.dependencies) {
+          Object.keys(test.dependencies).forEach((dep) => {
+            const versions = getPkgVersions(test.dependencies[dep])
+            this._buildPkgMeta(dep, versions)
+          })
+        }
+        if (test.groupedDependencies && test.groupedDependencies.packages?.length) {
+          const { packages, version } = test.groupedDependencies
+          const versions = getPkgVersions(version)
+          packages.forEach((dep) => this._buildPkgMeta(dep, versions))
+        }
       })
     }
   })

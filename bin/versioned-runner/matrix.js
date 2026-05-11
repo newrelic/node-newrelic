@@ -32,7 +32,81 @@ const semver = require('semver')
  *  Maps package names to all known versions of that package.
  */
 
-/* eslint sonarjs/cognitive-complexity: ["error", 32] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
+/**
+ * Resolves the matching versions for one or more packages that should iterate
+ * together. All packages share the same version range; when multiple names are
+ * provided they install at the same version on each iteration (the intersection
+ * of their matching versions is used).
+ *
+ * @param {Array.<string>} names Package names being resolved.
+ * @param {string|object} wanted Declared version spec shared by every name —
+ *   either a semver range string, `'latest'`, or `{ versions, samples }`.
+ * @param {PackageVersions} pkgVersions pkg versions list
+ * @param {number} globalSamples value of samples at runner
+ * @returns {object} The iterator descriptor: `{ names, next, versions }`.
+ */
+function resolveIterator(names, wanted, pkgVersions, globalSamples) {
+  let samples = Infinity
+  let range = wanted
+  if (typeof wanted === 'object') {
+    samples = wanted.samples
+    range = wanted.versions
+  }
+
+  let commonVersions = null
+  for (const name of names) {
+    const matching = pkgVersions[name].versions.filter((v) => (
+      range === 'latest' ? pkgVersions[name].latest === v : semver.satisfies(v, range)
+    ))
+
+    commonVersions = commonVersions === null
+      ? new Set(matching)
+      : new Set(matching.filter((v) => commonVersions.has(v)))
+  }
+
+  let versions = [...commonVersions]
+
+  /**
+   * The package versions provided are just the most recent versions of the
+   * packages according to our testing mode (i.e. major, minor, patch). If
+   * none of the latest packages match, then an older version is requested
+   * or a tag is used. Attempt to grab the package as-is.
+   *
+   * Failure to install later will result in failing the test, which is also
+   * ideal VS a warn-only failure that passes CI.
+   */
+  if (versions.length === 0) {
+    /* eslint-disable no-console */
+    console.log(
+      'No version match found. Attempting direct install of %s@%s',
+      names.join(', '),
+      range
+    )
+    /* eslint-enable no-console */
+    versions = [range]
+  }
+
+  if (globalSamples) {
+    samples = Math.min(globalSamples, samples)
+  }
+
+  if (samples != null && versions.length > samples) {
+    // Since we take the latest version, we drop an intermediate version
+    samples -= 1
+
+    const sampled = []
+    for (let i = 0; i < samples; i += 1) {
+      sampled[i] = versions[Math.floor((versions.length * i) / samples)]
+    }
+
+    // Always take the latest
+    sampled.push(versions[versions.length - 1])
+    versions = sampled
+  }
+
+  return { names, next: 0, versions }
+}
+
 /**
  * Constructs a test matrix from the given test descriptor and package versions.
  *
@@ -80,7 +154,9 @@ function TestMatrix(tests, pkgVersions, globalSamples) {
   // this:
   //  [{
   //    "packages": [{
-  //      "name": "redis",            // <-- Package name.
+  //      "names": ["redis"],         // <-- Package name(s). Multiple names means
+  //                                  //     they install together at the same
+  //                                  //     version (grouped dependency).
   //      "next": 0,                  // <-- Iteration point.
   //      "versions": [               // <-- List of versions to iterate through.
   //        "1.2", "1.3", "2.0"
@@ -102,71 +178,24 @@ function TestMatrix(tests, pkgVersions, globalSamples) {
           files: test.files,
           next: 0
         },
-        packages: null
+        packages: []
       }
-      task.packages = Object.keys(test.dependencies).map((pkg) => {
-        let wantedVersions = test.dependencies[pkg]
-        let samples = Infinity
 
-        if (typeof wantedVersions === 'object') {
-          samples = wantedVersions.samples
-          wantedVersions = wantedVersions.versions
-        }
-
-        const pkgIterator = {
-          name: pkg,
-          next: 0,
-          // return the latest version when semver range is `latest` otherwsie check if semver is sastisfied
-          versions: pkgVersions[pkg].versions.filter((v) => (wantedVersions === 'latest' ? pkgVersions[pkg].latest === v : semver.satisfies(v, wantedVersions)))
-        }
-
-        // If global samples value provided
-        // use whichever is the least between local samples
-        // and global value
-        if (globalSamples) {
-          samples = Math.min(globalSamples, samples)
-        }
-
-        /**
-         * The package versions provided are just the most recent versions of the
-         * packages according to our testing mode (i.e. major, minor, patch). If
-         * none of the latest packages match, then an older version is requested
-         * or a tag is used. Attempt to grab the package as-is.
-         *
-         * Failure to install later will result in failing the test, which is also ideal
-         * VS a warn-only failure that passes CI.
-         */
-        if (pkgIterator.versions.length === 0) {
-          /* eslint-disable no-console */
-          console.log(
-            'No version match found. Attempting direct install of %s@%s',
-            pkg,
-            wantedVersions
+      if (test.dependencies) {
+        Object.keys(test.dependencies).forEach((pkg) => {
+          task.packages.push(
+            resolveIterator([pkg], test.dependencies[pkg], pkgVersions, globalSamples)
           )
-          /* eslint-enable no-console */
+        })
+      }
 
-          pkgIterator.versions = [wantedVersions]
-        }
+      if (test.groupedDependencies && test.groupedDependencies.packages?.length) {
+        const { packages, version } = test.groupedDependencies
+        task.packages.push(
+          resolveIterator(packages, version, pkgVersions, globalSamples)
+        )
+      }
 
-        // Sample the versions down to the limit if applicable
-        const versions = pkgIterator.versions
-        if (samples != null && versions.length > samples) {
-          // Since we take the latest version, we drop an intermediate version
-          samples -= 1
-
-          const sampledVersions = []
-          for (let i = 0; i < samples; i += 1) {
-            sampledVersions[i] = versions[Math.floor((versions.length * i) / samples)]
-          }
-
-          // Always take the latest
-          sampledVersions.push(versions[versions.length - 1])
-
-          pkgIterator.versions = sampledVersions
-        }
-
-        return pkgIterator
-      })
       return task
     })
     : []
@@ -179,12 +208,13 @@ Object.defineProperty(TestMatrix.prototype, 'versionsByPkg', {
     if (!this._versionsByPkg) {
       const versionMatrix = this._matrix.reduce((accum, tests) => {
         tests.packages.forEach((pkg) => {
-          if (!Object.prototype.hasOwnProperty.call(accum, pkg.name)) {
-            accum[pkg.name] = []
+          for (const name of pkg.names) {
+            if (!Object.prototype.hasOwnProperty.call(accum, name)) {
+              accum[name] = []
+            }
+            const versions = pkg.versions.filter((version) => !accum[name].includes(version))
+            accum[name].push(...versions)
           }
-
-          const versions = pkg.versions.filter((version) => !accum[pkg.name].includes(version))
-          accum[pkg.name].push(...versions)
         })
         return accum
       }, {})
@@ -313,7 +343,9 @@ TestMatrix.prototype._peekPackages = function _peekPackages(pkgs) {
       next = 0
     }
 
-    nextPackages[pkg.name] = pkg.versions[next]
+    for (const name of pkg.names) {
+      nextPackages[name] = pkg.versions[next]
+    }
   }
 
   return nextPackages
@@ -341,7 +373,9 @@ TestMatrix.prototype._getNextPackages = function _getNextPackages(pkgs) {
       ++pkgs[i + 1].next
       pkg.next = 0
     }
-    nextPackages[pkg.name] = pkg.versions[pkg.next]
+    for (const name of pkg.names) {
+      nextPackages[name] = pkg.versions[pkg.next]
+    }
   }
 
   // The next run should use the next version of the first package.
@@ -353,7 +387,8 @@ TestMatrix.prototype._getNextPackages = function _getNextPackages(pkgs) {
 TestMatrix.prototype._calculateLength = function _calculateLength() {
   //  [{
   //    "packages": [{
-  //      "name": "redis",            // <-- Package name.
+  //      "names": ["redis"],         // <-- Package name(s). Grouped deps have
+  //                                  //     multiple names sharing one iterator.
   //      "next": 0,                  // <-- Iteration point.
   //      "versions": [               // <-- List of versions to iterate through.
   //        "1.2", "1.3", "2.0"

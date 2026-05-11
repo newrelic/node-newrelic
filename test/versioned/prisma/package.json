@@ -16,16 +16,25 @@
       "engines": {
         "node": ">=20"
       },
-      "dependencies": {
-        "@prisma/client": ">=5.0.0 <5.9.0 || >=5.9.1 <7.0.0"
+      "groupedDependencies": {
+        "version": ">=5.0.0 <5.9.0 || >=5.9.1 <7.0.0",
+        "packages": ["prisma", "@prisma/client"]
       },
       "files": [
         "prisma.test.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=20"
+      },
+      "groupedDependencies": {
+        "version": ">=7.0.0",
+        "packages": ["prisma", "@prisma/client", "@prisma/adapter-pg"]
+      },
+      "files": [
+        "prisma-7plus.test.js"
+      ]
     }
-  ],
-  "prisma": {
-    "schema": "./prisma/schema.prisma",
-    "seed": "node ./prisma/seed.js"
-  }
+  ]
 }
