@@ -127,20 +127,31 @@ function resolveIterator(names, wanted, pkgVersions, globalSamples) {
 function TestMatrix(tests, pkgVersions, globalSamples) {
   // The tests object is an array of objects pairing package version ranges with
   // an array of test files. These look like this:
-  //  [{
-  //    "engines": {"node": ">=4"}
-  //    "dependencies": {"redis": "1.0.0"},
-  //    "files": ["redis.tap.js"]
-  //  }, {
-  //    "engines": {"node": ">=4"}
-  //    "dependencies": {
-  //      "redis": {
-  //        "versions": ">1.0.0",
-  //        "samples": 10
-  //      }
+  //  [
+  //    {
+  //      "engines": {"node": ">=22"}
+  //      "dependencies": {"redis": "1.0.0"},
+  //      "files": ["redis.test.js"]
   //    },
-  //    "files": ["redis.tap.js"]
-  //  }]
+  //    {
+  //      "engines": {"node": ">=22"}
+  //      "dependencies": {
+  //        "redis": {
+  //          "versions": ">1.0.0 <2.0.0",
+  //          "samples": 10
+  //        }
+  //      },
+  //      "files": ["redis.test.js"]
+  //    },
+  //    {
+  //      "engines": {"node": ">=22"},
+  //      "groupedDependencies": {
+  //        "version": ">=2.0.0",
+  //        "packages": ["redis", "@redis/client"]
+  //      },
+  //      "files": "redis.test.js"
+  //    }
+  //  ]
   //
   // The pkgVersions object is a pairing of package names to arrays of versions
   // that look like this:
@@ -163,7 +174,7 @@ function TestMatrix(tests, pkgVersions, globalSamples) {
   //      ]
   //    }],
   //    "tests": {
-  //      "files": ["redis.tap.js"],  // <-- List of test files to iterate through.
+  //      "files": ["redis.test.js"],  // <-- List of test files to iterate through.
   //      "next": 0                   // <-- File iteration point.
   //    }
   //  }]
@@ -182,11 +193,11 @@ function TestMatrix(tests, pkgVersions, globalSamples) {
       }
 
       if (test.dependencies) {
-        Object.keys(test.dependencies).forEach((pkg) => {
+        for (const pkg of Object.keys(test.dependencies)) {
           task.packages.push(
             resolveIterator([pkg], test.dependencies[pkg], pkgVersions, globalSamples)
           )
-        })
+        }
       }
 
       if (test.groupedDependencies && test.groupedDependencies.packages?.length) {
@@ -207,7 +218,7 @@ Object.defineProperty(TestMatrix.prototype, 'versionsByPkg', {
   get: function versionsByPkg() {
     if (!this._versionsByPkg) {
       const versionMatrix = this._matrix.reduce((accum, tests) => {
-        tests.packages.forEach((pkg) => {
+        for (const pkg of tests.packages) {
           for (const name of pkg.names) {
             if (!Object.prototype.hasOwnProperty.call(accum, name)) {
               accum[name] = []
@@ -215,7 +226,7 @@ Object.defineProperty(TestMatrix.prototype, 'versionsByPkg', {
             const versions = pkg.versions.filter((version) => !accum[name].includes(version))
             accum[name].push(...versions)
           }
-        })
+        }
         return accum
       }, {})
 
@@ -395,7 +406,7 @@ TestMatrix.prototype._calculateLength = function _calculateLength() {
   //      ]
   //    }],
   //    "tests": {
-  //      "files": ["redis.tap.js"],  // <-- List of test files to iterate through.
+  //      "files": ["redis.test.js"],  // <-- List of test files to iterate through.
   //      "next": 0                   // <-- File iteration point.
   //    }
   //  }]

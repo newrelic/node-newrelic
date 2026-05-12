@@ -9,12 +9,12 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "tests": [
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "groupedDependencies": {
         "version": ">=5.0.0 <5.9.0 || >=5.9.1 <7.0.0",
@@ -26,7 +26,7 @@
     },
     {
       "engines": {
-        "node": ">=20"
+        "node": ">=22"
       },
       "groupedDependencies": {
         "version": ">=7.0.0",

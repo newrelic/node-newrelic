@@ -34,24 +34,28 @@ util.inherits(Suite, EventEmitter)
  * latest flag and static versions for every unique package.
  */
 Suite.prototype.prepare = function prepare() {
-  this.testFolders.forEach((folder) => {
+  for (const folder of this.testFolders) {
     const testPackage = require(path.join(folder, 'package'))
-    if (testPackage.tests) {
-      testPackage.tests.forEach((test) => {
-        if (test.dependencies) {
-          Object.keys(test.dependencies).forEach((dep) => {
-            const versions = getPkgVersions(test.dependencies[dep])
-            this._buildPkgMeta(dep, versions)
-          })
-        }
-        if (test.groupedDependencies && test.groupedDependencies.packages?.length) {
-          const { packages, version } = test.groupedDependencies
-          const versions = getPkgVersions(version)
-          packages.forEach((dep) => this._buildPkgMeta(dep, versions))
-        }
-      })
+    for (const test of testPackage.tests ?? []) {
+      this._collectTestDeps(test)
     }
-  })
+  }
+}
+
+Suite.prototype._collectTestDeps = function _collectTestDeps(test) {
+  if (test.dependencies) {
+    for (const dep of Object.keys(test.dependencies)) {
+      this._buildPkgMeta(dep, getPkgVersions(test.dependencies[dep]))
+    }
+  }
+
+  if (test.groupedDependencies?.packages?.length) {
+    const { packages, version } = test.groupedDependencies
+    const versions = getPkgVersions(version)
+    for (const dep of packages) {
+      this._buildPkgMeta(dep, versions)
+    }
+  }
 }
 
 Suite.prototype.start = async function start() {
@@ -136,12 +140,12 @@ Suite.prototype.maxVersionPerMode = async function maxVersionPerMode(pkg) {
     greatestVersions.push(latestVersion)
   }
 
-  Object.values(versionsByMajor).forEach((value) => {
+  for (const value of Object.values(versionsByMajor)) {
     const maxVersion = semver.maxSatisfying(value, semverRanges)
     if (maxVersion && !greatestVersions.includes(maxVersion)) {
       greatestVersions.push(maxVersion)
     }
-  })
+  }
 
   return semver.sort(greatestVersions)
 }
@@ -232,9 +236,10 @@ Suite.prototype._runTests = async function _runTests(pkgVersions) {
   this.tests = this.testFolders
     .map((folder) => new Test(folder, pkgVersions, this.opts))
     .sort((firstEl, secondEl) => secondEl.matrix.length - firstEl.matrix.length)
-  this.tests.forEach((test) => {
+
+  for (const test of this.tests) {
     queue.push(test)
-  })
+  }
 
   await queue.drain()
 }
