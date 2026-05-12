@@ -2,6 +2,23 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "13.20.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `tracer.bindFunction` to touch segment if a promise is fulfilled or rejected",
+          "Updated aws sdk v3 instrumentation to handle using `@smithy/smithy-client` 4.13.0+",
+          "Updated `connect` instrumentation queries to handle file restructure in `<3.4.0`"
+        ],
+        "features": [
+          "Updated how license keys are redacted in logs",
+          "Instrument Google ADK `FunctionTool.runAsync`",
+          "Added instrumentation for Google ADK `BaseAgent.runAsync`",
+          "Updated `@azure/functions` instrumentation to a subscriber type"
+        ]
+      }
+    },
+    {
       "version": "13.19.2",
       "changes": {
         "security": [],

@@ -1,3 +1,44 @@
+### v13.20.0 (2026-05-12)
+
+#### Features
+
+* Added instrumentation for Google ADK `BaseAgent.runAsync` ([#3905](https://github.com/newrelic/node-newrelic/pull/3905)) ([c6c51d5](https://github.com/newrelic/node-newrelic/commit/c6c51d56d24f59badef2de7b4710b87496080196))
+* Instrument Google ADK `FunctionTool.runAsync` ([#3935](https://github.com/newrelic/node-newrelic/pull/3935)) ([57f9ed7](https://github.com/newrelic/node-newrelic/commit/57f9ed72dd905687a348d7d3bb3dcd39bfeedd53))
+* Updated `@azure/functions` instrumentation to subscriber type ([#3915](https://github.com/newrelic/node-newrelic/pull/3915)) ([227e779](https://github.com/newrelic/node-newrelic/commit/227e779696f6b1e5c267884035b299233cef8cba))
+* Updated how license keys are redacted in logs ([#3945](https://github.com/newrelic/node-newrelic/pull/3945)) ([6289502](https://github.com/newrelic/node-newrelic/commit/6289502ba49d88b8746ac8a42a34e5c2069f0d84))
+
+#### Bug fixes
+
+* Updated `connect` instrumentation queries to handle file restructure in `<3.4.0` ([#3923](https://github.com/newrelic/node-newrelic/pull/3923)) ([00b615c](https://github.com/newrelic/node-newrelic/commit/00b615c160c7251d1177482cf69a54e14d4d32a5))
+* Updated `tracer.bindFunction` to touch segment if a promise is fulfilled or rejected ([#3967](https://github.com/newrelic/node-newrelic/pull/3967)) ([712db61](https://github.com/newrelic/node-newrelic/commit/712db6197e4a6a07c7f8e7a24d25f52141cfb236))
+* Updated aws sdk v3 instrumentation to handle using `@smithy/smithy-client` 4.13.0+ ([#3965](https://github.com/newrelic/node-newrelic/pull/3965)) ([5e0fe24](https://github.com/newrelic/node-newrelic/commit/5e0fe249b011d6a269ca809827e7fb8f5d457ec9))
+
+#### Code refactoring
+
+* Removed reliance on `AsyncLocalStorage.enterWith` for undici, domain and `process._fatalException` instrumentation ([#3894](https://github.com/newrelic/node-newrelic/pull/3894)) ([612b449](https://github.com/newrelic/node-newrelic/commit/612b449f25d4a39fca399fa20058c74cd7e2b6c6))
+
+#### Documentation
+
+* Updated compatibility report ([#3941](https://github.com/newrelic/node-newrelic/pull/3941)) ([214b353](https://github.com/newrelic/node-newrelic/commit/214b3539cffad2397523d88aade40ccec3e3b7d2)) ([#3934](https://github.com/newrelic/node-newrelic/pull/3934)) ([5a962d4](https://github.com/newrelic/node-newrelic/commit/5a962d45485fad2c43001d20301542419279958d)) ([#3909](https://github.com/newrelic/node-newrelic/pull/3909)) ([ad6fa8a](https://github.com/newrelic/node-newrelic/commit/ad6fa8a2aac2e96c4d013c009055e9d757172a58))
+
+#### Miscellaneous chores
+
+* Added log line when `max_trace_segments` is hit ([#3933](https://github.com/newrelic/node-newrelic/pull/3933)) ([46b9238](https://github.com/newrelic/node-newrelic/commit/46b9238d057c84d63d61c23585b8078a4da453b2))
+* Comment out `assertSegmentDuration` for `client-dynamodb` test ([#3972](https://github.com/newrelic/node-newrelic/pull/3972)) ([590cd3e](https://github.com/newrelic/node-newrelic/commit/590cd3e32e74d8c1c89d56d58bfb314c12050ab4))
+* Fix issue with amqplib tests ([#3969](https://github.com/newrelic/node-newrelic/pull/3969)) ([a770000](https://github.com/newrelic/node-newrelic/commit/a770000447ecc2215b94472fcef022ee0ee7c5fb))
+* Refactored Connect instrumentation to subscriber type ([#3912](https://github.com/newrelic/node-newrelic/pull/3912)) ([e5d87b7](https://github.com/newrelic/node-newrelic/commit/e5d87b7a97138c953cf4016440272c443c304119))
+* Refactored kafkajs instrumentation to subscriber type ([#3958](https://github.com/newrelic/node-newrelic/pull/3958)) ([72e383c](https://github.com/newrelic/node-newrelic/commit/72e383c91ec26cdfd06ebb505b358623df829bd4))
+* Remove `actualTime` vs `segmentDuration` assertion in `memcached` tests ([#3932](https://github.com/newrelic/node-newrelic/pull/3932)) ([98c50e0](https://github.com/newrelic/node-newrelic/commit/98c50e00bbf470cf2aedffe36f499525f0d335fe))
+* Updated `@apm-js-collab/tracing-hooks` to `0.7.0` ([#3949](https://github.com/newrelic/node-newrelic/pull/3949)) ([5c99cd1](https://github.com/newrelic/node-newrelic/commit/5c99cd182796fdacfcfea45467eba6efce12b17d))
+
+#### Tests
+
+* Added `assertSegmentDuration` custom assertion and added it to `memcached` tests ([#3875](https://github.com/newrelic/node-newrelic/pull/3875)) ([b28d866](https://github.com/newrelic/node-newrelic/commit/b28d86688637ba4f1e74a243539dbea70e925e57))
+
+#### Continuous integration
+
+* Applied least-privilege model to all workflows to appease CodeQL ([#3961](https://github.com/newrelic/node-newrelic/pull/3961)) ([237d5b9](https://github.com/newrelic/node-newrelic/commit/237d5b9fe93e12e03601372886dc87c576116097))
+
 ### v13.19.2 (2026-04-20)
 
 #### Bug fixes
