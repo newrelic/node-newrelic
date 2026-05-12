@@ -114,6 +114,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+      # This step can be removed when we drop support for Node 22
+      - name: Upgrade npm
+        if: matrix.node-version == '22.x'
+        run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
       - name: Run Unit Tests
@@ -146,6 +150,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+      # This step can be removed when we drop support for Node 22
+      - name: Upgrade npm
+        if: matrix.node-version == '22.x'
+        run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
       - name: Run Integration Tests
@@ -182,6 +190,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+      # This step can be removed when we drop support for Node 22
+      - name: Upgrade npm
+        if: matrix.node-version == '22.x'
+        run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
       - name: Run Docker Services

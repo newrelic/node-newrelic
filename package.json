@@ -184,8 +184,7 @@
     "versioned:major": "VERSIONED_MODE=--major npm run versioned",
     "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh",
     "versioned:security": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned",
-    "versioned:security:major": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned:major",
-    "prepare": "husky install"
+    "versioned:security:major": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned:major"
   },
   "bin": {
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
@@ -253,7 +252,6 @@
     "git-raw-commits": "^2.0.11",
     "glob": "^7.1.2",
     "got": "^11.8.5",
-    "husky": "^6.0.0",
     "jsdoc": "^4.0.0",
     "lint-staged": "^11.0.0",
     "lockfile-lint": "^4.9.6",

@@ -45,6 +45,13 @@ There are a variety of ways to get the latest changes into your local branches. 
 1. `git checkout main`
 2. `git pull upstream main`
 
+### Pre-Commit Hooks
+To reduce the burden of having to fix linting errors in CI, as well as keep our `THIRD_PARTY_NOTICES.md` up to date, run the following to register git hooks:
+
+```sh
+git config --local core.hooksPath .githooks
+```
+
 ### Testing
 
 In addition to basic unit tests that can be run with `npm run unit`, we have
