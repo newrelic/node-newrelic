@@ -65,12 +65,100 @@ test(
     const { packages } = matrix._matrix[0]
 
     assert.deepEqual(packages, [
-      { name: 'test', next: 0, versions: ['1.0.2'] },
-      { name: 'dep', next: 0, versions: ['0.0.1', '1.0.2'] },
-      { name: 'string-dep', next: 0, versions: ['0.0.0', '100.0.0'] }
+      { names: ['test'], next: 0, versions: ['1.0.2'] },
+      { names: ['dep'], next: 0, versions: ['0.0.1', '1.0.2'] },
+      { names: ['string-dep'], next: 0, versions: ['0.0.0', '100.0.0'] }
     ])
   }
 )
+
+test('TestMatrix groupedDependencies iterate together at the same version', function (t) {
+  const matrix = new TestMatrix(
+    [
+      {
+        groupedDependencies: {
+          version: '>=7.0.0',
+          packages: ['prisma', '@prisma/client']
+        },
+        files: ['prisma.test.js']
+      }
+    ],
+    {
+      prisma: { versions: ['7.0.0', '7.1.0', '7.2.0'], latest: '7.2.0' },
+      '@prisma/client': { versions: ['7.0.0', '7.1.0', '7.2.0'], latest: '7.2.0' }
+    }
+  )
+
+  const { packages } = matrix._matrix[0]
+  assert.deepEqual(
+    packages,
+    [{ names: ['prisma', '@prisma/client'], next: 0, versions: ['7.0.0', '7.1.0', '7.2.0'] }],
+    'grouped packages share a single iterator'
+  )
+
+  assert.equal(matrix.length, 3, 'length is linear in grouped packages, not cartesian')
+
+  assert.deepEqual(matrix.next(), {
+    packages: { prisma: '7.0.0', '@prisma/client': '7.0.0' },
+    test: 'prisma.test.js'
+  })
+  assert.deepEqual(matrix.next(), {
+    packages: { prisma: '7.1.0', '@prisma/client': '7.1.0' },
+    test: 'prisma.test.js'
+  })
+  assert.deepEqual(matrix.next(), {
+    packages: { prisma: '7.2.0', '@prisma/client': '7.2.0' },
+    test: 'prisma.test.js'
+  })
+  assert.equal(matrix.next(), null, 'no more combinations after linear iteration')
+})
+
+test('TestMatrix groupedDependencies intersect matching versions across packages', function (t) {
+  const matrix = new TestMatrix(
+    [
+      {
+        groupedDependencies: {
+          version: '>=7.0.0',
+          packages: ['prisma', '@prisma/client']
+        },
+        files: ['prisma.test.js']
+      }
+    ],
+    {
+      prisma: { versions: ['7.0.0', '7.1.0', '7.2.0'], latest: '7.2.0' },
+      '@prisma/client': { versions: ['7.0.0', '7.2.0'], latest: '7.2.0' }
+    }
+  )
+
+  const { packages } = matrix._matrix[0]
+  assert.deepEqual(
+    packages[0].versions,
+    ['7.0.0', '7.2.0'],
+    'grouped versions are the intersection of per-package matches'
+  )
+})
+
+test('TestMatrix can mix dependencies and groupedDependencies', function (t) {
+  const matrix = new TestMatrix(
+    [
+      {
+        dependencies: { redis: '>=1.0.0' },
+        groupedDependencies: {
+          version: '>=7.0.0',
+          packages: ['prisma', '@prisma/client']
+        },
+        files: ['mixed.test.js']
+      }
+    ],
+    {
+      redis: { versions: ['1.0.0', '2.0.0'], latest: '2.0.0' },
+      prisma: { versions: ['7.0.0', '7.1.0'], latest: '7.1.0' },
+      '@prisma/client': { versions: ['7.0.0', '7.1.0'], latest: '7.1.0' }
+    }
+  )
+
+  assert.equal(matrix.length, 4, 'cartesian of redis (2) x grouped-prisma (2) x files (1)')
+})
 
 test('TestMatrix methods and members', async function (t) {
   t.beforeEach(function (ctx) {

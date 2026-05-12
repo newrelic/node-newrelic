@@ -74,7 +74,7 @@ that are specific to our versioned test runner. The following is a
         // a static version is also likely. If the version of Node.js being
         // used to run the suite does not match the constraint, then the test
         // block will be skipped.
-        "node": ">= 18"
+        "node": ">=22"
       },
       
       // `dependencies` lists dependencies that a needed in order to execute
@@ -104,11 +104,11 @@ that are specific to our versioned test runner. The following is a
       ]
     },
     
-    // This example block will only run on Node.js 20.x. Pay attention
+    // This example block will only run on Node.js 22.x. Pay attention
     // to the "dependencies" section for a special dependency declaration
     // supported by our versioned test runner.
     {
-      "engines": { "node": "20" },
+      "engines": { "node": "22" },
       "dependencies": {
         "module-name": {
           // Again, a standard semver range to indicate the versions of the
@@ -120,7 +120,26 @@ that are specific to our versioned test runner. The following is a
           // although some of our tooling will likely coerce it to an integer.
           "samples": "2"
         }
-      }
+      },
+      "files": [
+        "test-one.test.js"
+      ]
+    },
+
+    // This example block will run a set of dependencies on the same version.
+    // This is intended to be used with packages from monorepos where there are
+    // peer deps that require to be on the same version.
+    {
+      "engines": {
+        "node": ">=22"
+      },
+      "groupedDependencies": {
+        "version": ">=7.0.0",
+        "packages": ["prisma", "@prisma/client", "@prisma/adapter-pg"]
+      },
+      "files": [
+        "prisma-7plus.test.js"
+      ]
     }
   ]
 }
