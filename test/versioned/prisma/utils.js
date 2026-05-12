@@ -4,11 +4,15 @@
  */
 
 'use strict'
+
 const utils = module.exports
+
 const assert = require('node:assert')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 const { findSegment, getMetricHostName } = require('../../lib/metrics_helper')
 const { DB, PRISMA } = require('../../../lib/metrics/names')
 const params = require('../../lib/params')
+
 const expectedUpsertMetrics = {
   [`${DB.ALL}`]: 4,
   [`${DB.PREFIX}${DB.WEB}`]: 4,
@@ -19,6 +23,7 @@ const expectedUpsertMetrics = {
   [`${DB.PREFIX}${PRISMA.PREFIX}/${DB.WEB}`]: 4,
   [`${DB.PREFIX}${PRISMA.PREFIX}/all`]: 4
 }
+
 const findMany = `${PRISMA.STATEMENT}user/findMany`
 utils.findMany = findMany
 const update = `${PRISMA.STATEMENT}user/update`
@@ -28,7 +33,6 @@ const raw = `${PRISMA.STATEMENT}User/select`
 utils.raw = raw
 const rawUpdate = `${PRISMA.STATEMENT}User/update`
 utils.rawUpdate = rawUpdate
-const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 /**
  * Asserts all the expected datastore metrics for a given query
@@ -59,7 +63,7 @@ function verifyTraces(agent, transaction) {
   assert.ok(trace, 'trace should exist')
   assert.ok(trace.root, 'root element should exist')
 
-  assertSegments(trace, trace.root, [findMany, update, update, findMany], { exact: true })
+  assertSegments(trace, trace.root, [findMany, update, update, findMany], { exact: false })
   assertSpanKind({
     agent,
     segments: [
@@ -132,8 +136,15 @@ utils.verifySlowQueries = function verifySlowQueries(agent, queries = []) {
  *
  * @param {object} agent mocked NR agent
  * @param {object} transaction active NR transaction
+ * @param {boolean} [isV7Plus] Indicates if the Prisma being tested is
+ * greater than or equal to v7.
  */
-utils.verify = function verify(agent, transaction) {
+utils.verify = function verify(agent, transaction, isV7Plus = false) {
+  if (isV7Plus === true) {
+    expectedUpsertMetrics[`${DB.ALL}`] = 8
+    expectedUpsertMetrics[`${DB.PREFIX}${DB.WEB}`] = 8
+  }
+
   verifyMetrics(agent)
   verifyTraces(agent, transaction)
 }

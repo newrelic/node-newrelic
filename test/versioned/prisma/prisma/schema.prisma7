@@ -1,0 +1,16 @@
+generator client {
+  provider        = "prisma-client-js"
+  output = "../node_modules/.prisma/client"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  name      String
+  updatedBy String?
+}
