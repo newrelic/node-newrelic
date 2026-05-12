@@ -42,45 +42,39 @@
       "engines": {
         "node": ">=22"
       },
+      "comment": "These are sampled at 1 because it is a smoke test to verify AWS attributes on generic calls",
       "groupedDependencies": {
         "version": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0",
-          "samples": 5
+          "versions": ">3.377.0",
+          "samples": 1
         },
         "packages": [
           "@aws-sdk/client-api-gateway",
-          "@aws-sdk/client-dynamodb",
           "@aws-sdk/client-elasticache",
           "@aws-sdk/client-elastic-load-balancing",
-          "@aws-sdk/client-lambda",
           "@aws-sdk/client-rds",
           "@aws-sdk/client-redshift",
           "@aws-sdk/client-rekognition",
           "@aws-sdk/client-s3",
-          "@aws-sdk/client-ses",
-          "@aws-sdk/client-sns",
-          "@aws-sdk/client-sqs"
+          "@aws-sdk/client-ses"
         ]
       },
       "files": [
         "api-gateway.test.js",
-        "client-dynamodb.test.js",
         "elasticache.test.js",
         "elb.test.js",
-        "lambda.test.js",
         "rds.test.js",
         "redshift.test.js",
         "rekognition.test.js",
         "s3.test.js",
-        "ses.test.js",
-        "sns.test.js",
-        "sqs.test.js"
+        "ses.test.js"
       ]
     },
     {
       "engines": {
         "node": ">=22"
       },
+      "comment": "These are sampled at 10 because we have first-class instrumentation for the packages below via middleware in `lib/subscribers/aws-sdk`",
       "groupedDependencies": {
         "version": {
           "versions": ">3.377.0 <3.967.0 || >=3.983.0",
@@ -88,25 +82,23 @@
         },
         "packages": [
           "@aws-sdk/client-dynamodb",
-          "@aws-sdk/lib-dynamodb"
+          "@aws-sdk/client-lambda",
+          "@aws-sdk/client-sqs",
+          "@aws-sdk/client-sns",
+          "@aws-sdk/lib-dynamodb",
+          "@aws-sdk/client-bedrock-runtime"
         ]
-      },
-      "files": [
-        "lib-dynamodb.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-bedrock-runtime": ">=3.474.0"
       },
       "files": [
         "bedrock-chat-completions.test.js",
         "bedrock-embeddings.test.js",
         "bedrock-negative-tests.test.js",
-        "bedrock-converse-api.test.js"
+        "bedrock-converse-api.test.js",
+        "client-dynamodb.test.js",
+        "lambda.test.js",
+        "lib-dynamodb.test.js",
+        "sns.test.js",
+        "sqs.test.js"
       ]
     }
   ]
