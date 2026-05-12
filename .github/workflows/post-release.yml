@@ -24,6 +24,9 @@ on:
 
 jobs:
   local:
+    # `public-docs` commits/pushes the docs to the `gh-pages` branch
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     if:
       (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
