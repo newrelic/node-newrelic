@@ -1,6 +1,6 @@
 {
   "name": "nestjs-tests",
-  "targets": [{"name":"@nestjs/core","minAgentVersion":"10.1.0"}],
+  "targets": [{"name":"@nestjs/core","minAgentVersion":"10.1.0", "minSupported": "10.0.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [
