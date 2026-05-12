@@ -1,6 +1,5 @@
 name: Prepare Agent Release PR
 
-# Reusable callee prep-release.yml declares its own contents/pull-requests write perms.
 permissions:
   contents: write
   pull-requests: write
