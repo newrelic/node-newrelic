@@ -1,7 +1,7 @@
 name: Prepare Release PR
 
 permissions:
-  contents: read
+  contents: write
 
 on:
   workflow_call:
@@ -23,14 +23,14 @@ on:
 
 jobs:
   generate-release-notes:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [lts/*]
     # prepare-release.js uses GITHUB_TOKEN to push a release-notes branch and open a PR.
     permissions:
       contents: write
       pull-requests: write
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [lts/*]
 
     steps:
     # Check out caller repo
