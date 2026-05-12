@@ -4,8 +4,7 @@
 
 * Added instrumentation for Google ADK `BaseAgent.runAsync` ([#3905](https://github.com/newrelic/node-newrelic/pull/3905)) ([c6c51d5](https://github.com/newrelic/node-newrelic/commit/c6c51d56d24f59badef2de7b4710b87496080196))
 * Instrument Google ADK `FunctionTool.runAsync` ([#3935](https://github.com/newrelic/node-newrelic/pull/3935)) ([57f9ed7](https://github.com/newrelic/node-newrelic/commit/57f9ed72dd905687a348d7d3bb3dcd39bfeedd53))
-* Updated `@azure/functions` instrumentation to a subscriber type ([#3915](https://github.com/newrelic/node-newrelic/pull/3915)) ([227e779](https://github.com/newrelic/node-newrelic/commit/227e779696f6b1e5c267884035b299233cef8cba))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
+* Updated `@azure/functions` instrumentation to subscriber type ([#3915](https://github.com/newrelic/node-newrelic/pull/3915)) ([227e779](https://github.com/newrelic/node-newrelic/commit/227e779696f6b1e5c267884035b299233cef8cba))
 * Updated how license keys are redacted in logs ([#3945](https://github.com/newrelic/node-newrelic/pull/3945)) ([6289502](https://github.com/newrelic/node-newrelic/commit/6289502ba49d88b8746ac8a42a34e5c2069f0d84))
 
 #### Bug fixes
@@ -20,23 +19,15 @@
 
 #### Documentation
 
-* Updated compatibility report ([#3941](https://github.com/newrelic/node-newrelic/pull/3941)) ([214b353](https://github.com/newrelic/node-newrelic/commit/214b3539cffad2397523d88aade40ccec3e3b7d2))
-* Updated compatibility report ([#3934](https://github.com/newrelic/node-newrelic/pull/3934)) ([5a962d4](https://github.com/newrelic/node-newrelic/commit/5a962d45485fad2c43001d20301542419279958d))
-    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
-* Updated compatibility report ([#3909](https://github.com/newrelic/node-newrelic/pull/3909)) ([ad6fa8a](https://github.com/newrelic/node-newrelic/commit/ad6fa8a2aac2e96c4d013c009055e9d757172a58))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#3941](https://github.com/newrelic/node-newrelic/pull/3941)) ([214b353](https://github.com/newrelic/node-newrelic/commit/214b3539cffad2397523d88aade40ccec3e3b7d2)) ([#3934](https://github.com/newrelic/node-newrelic/pull/3934)) ([5a962d4](https://github.com/newrelic/node-newrelic/commit/5a962d45485fad2c43001d20301542419279958d)) ([#3909](https://github.com/newrelic/node-newrelic/pull/3909)) ([ad6fa8a](https://github.com/newrelic/node-newrelic/commit/ad6fa8a2aac2e96c4d013c009055e9d757172a58))
 
 #### Miscellaneous chores
 
 * Added log line when `max_trace_segments` is hit ([#3933](https://github.com/newrelic/node-newrelic/pull/3933)) ([46b9238](https://github.com/newrelic/node-newrelic/commit/46b9238d057c84d63d61c23585b8078a4da453b2))
 * Comment out `assertSegmentDuration` for `client-dynamodb` test ([#3972](https://github.com/newrelic/node-newrelic/pull/3972)) ([590cd3e](https://github.com/newrelic/node-newrelic/commit/590cd3e32e74d8c1c89d56d58bfb314c12050ab4))
 * Fix issue with amqplib tests ([#3969](https://github.com/newrelic/node-newrelic/pull/3969)) ([a770000](https://github.com/newrelic/node-newrelic/commit/a770000447ecc2215b94472fcef022ee0ee7c5fb))
-* Fix prepare-release workflow ([#3974](https://github.com/newrelic/node-newrelic/pull/3974)) ([78c6226](https://github.com/newrelic/node-newrelic/commit/78c6226f3993f60447451d2ae4cf6a2cd281be8c))
-* Fix prepare-release workflow attempt 2 ([#3975](https://github.com/newrelic/node-newrelic/pull/3975)) ([89f2bc3](https://github.com/newrelic/node-newrelic/commit/89f2bc372963ba1020fe1f8da99ef321251e15aa))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
 * Refactored Connect instrumentation to subscriber type ([#3912](https://github.com/newrelic/node-newrelic/pull/3912)) ([e5d87b7](https://github.com/newrelic/node-newrelic/commit/e5d87b7a97138c953cf4016440272c443c304119))
 * Refactored kafkajs instrumentation to subscriber type ([#3958](https://github.com/newrelic/node-newrelic/pull/3958)) ([72e383c](https://github.com/newrelic/node-newrelic/commit/72e383c91ec26cdfd06ebb505b358623df829bd4))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
 * Remove `actualTime` vs `segmentDuration` assertion in `memcached` tests ([#3932](https://github.com/newrelic/node-newrelic/pull/3932)) ([98c50e0](https://github.com/newrelic/node-newrelic/commit/98c50e00bbf470cf2aedffe36f499525f0d335fe))
 * Updated `@apm-js-collab/tracing-hooks` to `0.7.0` ([#3949](https://github.com/newrelic/node-newrelic/pull/3949)) ([5c99cd1](https://github.com/newrelic/node-newrelic/commit/5c99cd182796fdacfcfea45467eba6efce12b17d))
 
