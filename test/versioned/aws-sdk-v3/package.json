@@ -42,153 +42,38 @@
       "engines": {
         "node": ">=22"
       },
-      "dependencies": {
-        "@aws-sdk/client-api-gateway": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+      "groupedDependencies": {
+        "version": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0",
           "samples": 5
-        }
+        },
+        "packages": [
+          "@aws-sdk/client-api-gateway",
+          "@aws-sdk/client-dynamodb",
+          "@aws-sdk/client-elasticache",
+          "@aws-sdk/client-elastic-load-balancing",
+          "@aws-sdk/client-lambda",
+          "@aws-sdk/client-rds",
+          "@aws-sdk/client-redshift",
+          "@aws-sdk/client-rekognition",
+          "@aws-sdk/client-s3",
+          "@aws-sdk/client-ses",
+          "@aws-sdk/client-sns",
+          "@aws-sdk/client-sqs"
+        ]
       },
       "files": [
-        "api-gateway.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-elasticache": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 2
-        }
-      },
-      "files": [
-        "elasticache.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-elastic-load-balancing": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 2
-        }
-      },
-      "files": [
-        "elb.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-lambda": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 2
-        }
-      },
-      "files": [
-        "lambda.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-rds": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 2
-        }
-      },
-      "files": [
-        "rds.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-redshift": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 2
-        }
-      },
-      "files": [
-        "redshift.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-rekognition": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 2
-        }
-      },
-      "files": [
-        "rekognition.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-s3": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 5
-        }
-      },
-      "files": [
-        "s3.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-ses": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 2
-        }
-      },
-      "files": [
-        "ses.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-sns": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 10
-        }
-      },
-      "files": [
-        "sns.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/client-sqs": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 10
-        }
-      },
-      "files": [
+        "api-gateway.test.js",
+        "client-dynamodb.test.js",
+        "elasticache.test.js",
+        "elb.test.js",
+        "lambda.test.js",
+        "rds.test.js",
+        "redshift.test.js",
+        "rekognition.test.js",
+        "s3.test.js",
+        "ses.test.js",
+        "sns.test.js",
         "sqs.test.js"
       ]
     },
@@ -196,25 +81,15 @@
       "engines": {
         "node": ">=22"
       },
-      "dependencies": {
-        "@aws-sdk/client-dynamodb": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
-          "samples": 10
-        }
-      },
-      "files": [
-        "client-dynamodb.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "@aws-sdk/lib-dynamodb": {
+      "groupedDependencies": {
+        "version": {
           "versions": ">3.377.0 <3.967.0 || >=3.983.0",
           "samples": 10
-        }
+        },
+        "packages": [
+          "@aws-sdk/client-dynamodb",
+          "@aws-sdk/lib-dynamodb"
+        ]
       },
       "files": [
         "lib-dynamodb.test.js"
