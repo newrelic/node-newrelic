@@ -72,9 +72,9 @@
       "engines": {
         "node": ">=22"
       },
-      "comment": "These are sampled at 10 because we have first-class instrumentation for the packages below via middleware in `lib/subscribers/aws-sdk`",
+      "comment": "These are sampled at 7 because we have first-class instrumentation for the packages below via middleware in `lib/subscribers/aws-sdk`",
       "groupedDependencies": {
-        "samples": 10,
+        "samples": 7,
         "version": ">3.377.0 <3.967.0 || >=3.983.0",
         "packages": [
           "@aws-sdk/client-dynamodb",
