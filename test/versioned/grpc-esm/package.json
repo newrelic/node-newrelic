@@ -12,7 +12,7 @@
       "dependencies": {
         "@grpc/grpc-js": {
           "versions": ">=1.4.0",
-          "samples": 2
+          "samples": 1
         }
       },
       "files": [

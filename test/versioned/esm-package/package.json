@@ -12,7 +12,7 @@
         "dependencies": {
           "parse-json": {
             "versions": "6.0.2",
-            "samples": 2
+            "samples": 1
           }
         },
         "files": [

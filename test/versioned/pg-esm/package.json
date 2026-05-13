@@ -10,7 +10,10 @@
         "node": ">=22"
       },
       "dependencies": {
-        "pg": ">=8.2.0"
+        "pg": {
+          "versions": ">=8.2.0",
+          "samples": 1
+        }
       },
       "files": [
         "pg.test.mjs"
@@ -21,8 +24,14 @@
         "node": ">=22 <24"
       },
       "dependencies": {
-        "pg": ">=8.2.0",
-        "pg-native": ">=3.0.0 <3.4.0 || >=3.4.5"
+        "pg": {
+          "versions": ">=8.2.0",
+          "samples": 1
+        },
+        "pg-native": {
+          "versions": ">=3.0.0 <3.4.0 || >=3.4.5",
+          "samples": 1
+        }
       },
       "files": [
         "force-native.test.mjs",
@@ -34,8 +43,14 @@
         "node": ">=24"
       },
       "dependencies": {
-        "pg": ">=8.16.0",
-        "pg-native": ">=3.5.0"
+        "pg": {
+          "versions": ">=8.16.0",
+          "samples": 1
+        },
+        "pg-native": {
+          "versions": ">=3.5.0",
+          "samples": 1
+        }
       },
       "files": [
         "force-native.test.mjs",
