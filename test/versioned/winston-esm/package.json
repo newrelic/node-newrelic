@@ -10,8 +10,14 @@
         "node": ">=22"
       },
       "dependencies": {
-        "winston": ">=3.0.0",
-        "winston-transport": ">=4.0.0"
+        "winston": {
+          "versions": ">=3.0.0",
+          "samples": 1
+        },
+        "winston-transport": {
+          "versions": ">=4.0.0",
+          "samples": 1
+        }
       },
       "files": [
         "winston.test.mjs"

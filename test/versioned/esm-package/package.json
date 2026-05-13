@@ -10,7 +10,10 @@
           "node": ">=22"
         },
         "dependencies": {
-          "parse-json": "6.0.2"
+          "parse-json": {
+            "versions": "6.0.2",
+            "samples": 1
+          }
         },
         "files": [
           "parse-json.test.mjs"
