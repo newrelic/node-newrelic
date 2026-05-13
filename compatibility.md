@@ -11,13 +11,13 @@ supported by the agent.
 
 | Package name | Minimum supported version | Latest published version | Introduced in* |
 | --- | --- | --- | --- |
-| `@anthropic-ai/sdk` | 0.33.0 | 0.95.2 | 13.19.0 |
+| `@anthropic-ai/sdk` | 0.33.0 | 0.96.0 | 13.19.0 |
 | `@apollo/gateway` | 2.3.0 | 2.14.0 | 14.0.0 |
 | `@apollo/server` | 4.0.0 | 5.5.1 | 14.0.0 |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.1045.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.1045.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.1045.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.1045.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.377.0 | 3.1045.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.377.0 | 3.1045.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.377.0 | 3.1045.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.377.0 | 3.1045.0 | 8.7.1 |
 | `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.1045.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.14.0 | 12.18.0 |
