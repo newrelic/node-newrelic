@@ -138,6 +138,80 @@ test('TestMatrix groupedDependencies intersect matching versions across packages
   )
 })
 
+test('TestMatrix groupedDependencies honors a child `samples` value', function (t) {
+  const matrix = new TestMatrix(
+    [
+      {
+        groupedDependencies: {
+          samples: 3,
+          version: '>=7.0.0',
+          packages: ['prisma', '@prisma/client']
+        },
+        files: ['prisma.test.js']
+      }
+    ],
+    {
+      prisma: {
+        versions: ['7.0.0', '7.1.0', '7.2.0', '7.3.0', '7.4.0', '7.5.0', '7.6.0'],
+        latest: '7.6.0'
+      },
+      '@prisma/client': {
+        versions: ['7.0.0', '7.1.0', '7.2.0', '7.3.0', '7.4.0', '7.5.0', '7.6.0'],
+        latest: '7.6.0'
+      }
+    }
+  )
+
+  const { packages } = matrix._matrix[0]
+  assert.equal(
+    packages[0].versions.length,
+    3,
+    'samples limits the grouped iterator to the requested count'
+  )
+  assert.equal(
+    packages[0].versions[packages[0].versions.length - 1],
+    '7.6.0',
+    'samples always retains the latest matching version'
+  )
+  assert.equal(matrix.length, 3, 'matrix length reflects the sampled grouped versions')
+})
+
+test(
+  'TestMatrix groupedDependencies global samples overrides a larger local samples',
+  function (t) {
+    const matrix = new TestMatrix(
+      [
+        {
+          groupedDependencies: {
+            samples: 5,
+            version: '>=7.0.0',
+            packages: ['prisma', '@prisma/client']
+          },
+          files: ['prisma.test.js']
+        }
+      ],
+      {
+        prisma: {
+          versions: ['7.0.0', '7.1.0', '7.2.0', '7.3.0', '7.4.0'],
+          latest: '7.4.0'
+        },
+        '@prisma/client': {
+          versions: ['7.0.0', '7.1.0', '7.2.0', '7.3.0', '7.4.0'],
+          latest: '7.4.0'
+        }
+      },
+      2
+    )
+
+    const { packages } = matrix._matrix[0]
+    assert.equal(
+      packages[0].versions.length,
+      2,
+      'min(globalSamples, localSamples) is applied to grouped iterators'
+    )
+  }
+)
+
 test('TestMatrix can mix dependencies and groupedDependencies', function (t) {
   const matrix = new TestMatrix(
     [

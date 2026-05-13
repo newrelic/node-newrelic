@@ -201,9 +201,10 @@ function TestMatrix(tests, pkgVersions, globalSamples) {
       }
 
       if (test.groupedDependencies && test.groupedDependencies.packages?.length) {
-        const { packages, version } = test.groupedDependencies
+        const { packages, version, samples } = test.groupedDependencies
+        // passing in object as 2nd arg to handle finding minimum of samples vs globalSamples
         task.packages.push(
-          resolveIterator(packages, version, pkgVersions, globalSamples)
+          resolveIterator(packages, { versions: version, samples }, pkgVersions, globalSamples)
         )
       }
 
