@@ -9,7 +9,10 @@
         "node": ">=22"
       },
       "dependencies": {
-        "amqplib": ">=0.5.0"
+        "amqplib": {
+          "versions": ">=0.5.0",
+          "samples": 2
+        }
       },
       "files": [
         "issue-2663.test.mjs"

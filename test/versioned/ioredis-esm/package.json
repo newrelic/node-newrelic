@@ -10,7 +10,10 @@
         "node": ">=22"
       },
       "dependencies": {
-        "ioredis": ">=4.0.0"
+        "ioredis": {
+          "versions": ">=4.0.0",
+          "samples": 2
+        }
       },
       "files": [
         "ioredis.test.js"
