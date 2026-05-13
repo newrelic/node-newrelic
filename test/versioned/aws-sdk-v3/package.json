@@ -44,10 +44,8 @@
       },
       "comment": "These are sampled at 1 because it is a smoke test to verify AWS attributes on generic calls",
       "groupedDependencies": {
-        "version": {
-          "versions": ">3.377.0",
-          "samples": 1
-        },
+        "samples": 1,
+        "version": ">3.377.0",
         "packages": [
           "@aws-sdk/client-api-gateway",
           "@aws-sdk/client-elasticache",
@@ -76,10 +74,8 @@
       },
       "comment": "These are sampled at 10 because we have first-class instrumentation for the packages below via middleware in `lib/subscribers/aws-sdk`",
       "groupedDependencies": {
-        "version": {
-          "versions": ">3.377.0 <3.967.0 || >=3.983.0",
-          "samples": 10
-        },
+        "samples": 10,
+        "version": ">3.377.0 <3.967.0 || >=3.983.0",
         "packages": [
           "@aws-sdk/client-dynamodb",
           "@aws-sdk/client-lambda",
