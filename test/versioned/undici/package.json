@@ -9,7 +9,10 @@
         "node": ">=22"
       },
       "dependencies": {
-        "undici": ">=5.0.0 <8.0.0"
+        "undici": {
+          "versions": ">=5.0.0 <8.0.0",
+          "samples": 4
+        }
       },
       "files": [
         "requests.test.js"

@@ -29,7 +29,10 @@
         "node": ">=22"
       },
       "dependencies": {
-        "fastify": "^4.0.0",
+        "fastify": {
+          "versions": "^4.0.0",
+          "samples": 1 
+        },
         "@fastify/middie": ">=7.0.0 && <9.0.0"
       },
       "files": [

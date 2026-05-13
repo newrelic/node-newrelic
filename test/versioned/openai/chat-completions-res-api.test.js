@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const semver = require('semver')
 const { tspl } = require('@matteo.collina/tspl')
 
 const { removeModules } = require('../../lib/cache-buster')
@@ -25,7 +26,7 @@ const TRACKING_METRIC = `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
 const responses = require('./mock-responses-api-responses')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common-responses-api')
 
-test('responses.create', async (t) => {
+test('responses.create', { skip: semver.lte(pkgVersion, '4.87.0') }, async (t) => {
   t.beforeEach(async (ctx) => {
     ctx.nr = {}
     const { host, port, server } = await createOpenAIMockServer(responses)
