@@ -11,6 +11,22 @@ a version for each minor between `0` and `10`, then our versioned test runner
 will run the test suite across a sampling of versions in that range, e.g.
 versions `1.0.0`, `1.3.0`, and `1.10.0`.
 
+## Versioned Tests `npm-env.json`
+We have a few npm config options in `node-newrelic/.npmrc`. These options are intended
+to harden our security posture, however they may conflict with how our versioned test runner
+operates.  In `bin/verisoned-runnner.js` we pass a cli arg of `--min-release-age=0` to allow
+us to test the latest versions of packages.  For packages that have to build as part of a postinstall
+step, you must provide a `npm-env.json` file with the following fields:
+
+```json
+{
+  "NPM_CONFIG_IGNORE_SCRIPTS": false
+}
+```
+
+This will be used to set the values as env vars when running a given test suite. In the future, 
+if the are other npm config options that need overriden, they follow the convention of `NPM_CONFIG_<npm config option in upper case>=<value>``
+
 ## Versioned Tests `package.json`
 
 The versioned test runner reads a `package.json` in each test suite. This

@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon May 11 2026 13:07:11 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu May 14 2026 10:43:24 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -16,27 +16,27 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/fn-inspect@4.4.0": {
+    "@newrelic/fn-inspect@5.0.0": {
       "name": "@newrelic/fn-inspect",
-      "version": "4.4.0",
-      "range": "^4.4.0",
+      "version": "5.0.0",
+      "range": "^5.0.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/newrelic-forks/node-fn-inspect",
-      "versionedRepoUrl": "https://github.com/newrelic-forks/node-fn-inspect/tree/v4.4.0",
+      "versionedRepoUrl": "https://github.com/newrelic-forks/node-fn-inspect/tree/v5.0.0",
       "licenseFile": "node_modules/@newrelic/fn-inspect/LICENSE",
-      "licenseUrl": "https://github.com/newrelic-forks/node-fn-inspect/blob/v4.4.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic-forks/node-fn-inspect/blob/v5.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
-    "@newrelic/native-metrics@12.0.0": {
+    "@newrelic/native-metrics@13.0.0": {
       "name": "@newrelic/native-metrics",
-      "version": "12.0.0",
-      "range": "^12.0.0",
+      "version": "13.0.0",
+      "range": "^13.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v12.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v13.0.0",
       "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v12.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v13.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -345,28 +345,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.1042.0": {
+    "@aws-sdk/client-s3@3.1044.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.1042.0",
+      "version": "3.1044.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1042.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1042.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.1042.0": {
+    "@aws-sdk/s3-request-presigner@3.1044.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.1042.0",
+      "version": "3.1044.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1042.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1042.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -664,19 +664,6 @@
       "licenseFile": "node_modules/got/license",
       "licenseUrl": "https://github.com/sindresorhus/got/blob/v11.8.6/license",
       "licenseTextSource": "file"
-    },
-    "husky@6.0.0": {
-      "name": "husky",
-      "version": "6.0.0",
-      "range": "^6.0.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/typicode/husky",
-      "versionedRepoUrl": "https://github.com/typicode/husky/tree/v6.0.0",
-      "licenseFile": "node_modules/husky/LICENSE",
-      "licenseUrl": "https://github.com/typicode/husky/blob/v6.0.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Typicode",
-      "email": "typicode@gmail.com"
     },
     "jsdoc@4.0.5": {
       "name": "jsdoc",

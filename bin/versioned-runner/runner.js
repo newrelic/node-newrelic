@@ -55,7 +55,8 @@ async function installPackages() {
         '--no-save', // do not update package file
         '--no-package-lock', // do not update package-lock file
         '--no-audit', // skip audit output
-        '--no-fund' // skip funding output
+        '--no-fund', // skip funding output
+        '--min-release-age=0' // skip publish date checks
       ]
       args = args.concat(packages)
       try {

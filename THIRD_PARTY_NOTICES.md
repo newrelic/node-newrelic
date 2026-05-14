@@ -65,7 +65,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [git-raw-commits](#git-raw-commits)
 * [glob](#glob)
 * [got](#got)
-* [husky](#husky)
 * [jsdoc](#jsdoc)
 * [lint-staged](#lint-staged)
 * [lockfile-lint](#lockfile-lint)
@@ -2962,7 +2961,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1042.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1042.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1042.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1044.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE):
 
 ```
                                 Apache License
@@ -3171,7 +3170,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1042.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1042.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1042.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1044.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE):
 
 ```
                                 Apache License
@@ -4931,35 +4930,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-### husky
-
-This product includes source derived from [husky](https://github.com/typicode/husky) ([v6.0.0](https://github.com/typicode/husky/tree/v6.0.0)), distributed under the [MIT License](https://github.com/typicode/husky/blob/v6.0.0/LICENSE):
-
-```
-MIT License
-
-Copyright (c) 2021 typicode
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-```
-
 ### jsdoc
 
 This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.5](https://github.com/jsdoc/jsdoc/tree/v4.0.5)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.5/LICENSE.md):
@@ -5785,7 +5755,7 @@ This product includes source derived from [@datadog/pprof](https://github.com/Da
 
 ### @newrelic/fn-inspect
 
-This product includes source derived from [@newrelic/fn-inspect](https://github.com/newrelic-forks/node-fn-inspect) ([v4.4.0](https://github.com/newrelic-forks/node-fn-inspect/tree/v4.4.0)), distributed under the [MIT License](https://github.com/newrelic-forks/node-fn-inspect/blob/v4.4.0/LICENSE):
+This product includes source derived from [@newrelic/fn-inspect](https://github.com/newrelic-forks/node-fn-inspect) ([v5.0.0](https://github.com/newrelic-forks/node-fn-inspect/tree/v5.0.0)), distributed under the [MIT License](https://github.com/newrelic-forks/node-fn-inspect/blob/v5.0.0/LICENSE):
 
 ```
 Copyright 2022 Contrast Security, Inc
@@ -5811,7 +5781,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @newrelic/native-metrics
 
-This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v12.0.0](https://github.com/newrelic/node-native-metrics/tree/v12.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v12.0.0/LICENSE):
+This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v13.0.0](https://github.com/newrelic/node-native-metrics/tree/v13.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v13.0.0/LICENSE):
 
 ```
                                  Apache License

@@ -127,6 +127,15 @@ Test.prototype.run = function run() {
     additionalArgs.NR_LOADER = loaderPath
   }
 
+  // file used to override our default npm config from `node-newrelic/.npmrc`
+  // They must be env vars prefixed with `NPM_CONFIG_` config value
+  try {
+    const envJson = require(`${this.directory}/npm-env.json`)
+    for (const [key, value] of Object.entries(envJson)) {
+      additionalArgs[key] = value
+    }
+  } catch {}
+
   // Spawn another runner instance with list of packages to install
   // eslint-disable-next-line sonarjs/no-os-command-from-path
   const child = cp.spawn('node', [TEST_EXECUTOR, task.test].concat(task.packageVersions), {
