@@ -9,6 +9,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const semver = require('semver')
 
+const getPackageVersion = require('../../lib/get-package-version.js')
 const assertChatCompletionMessages = require('./test-utils/assert-chat-completion-messages.js')
 const assertChatCompletionSummary = require('./test-utils/assert-chat-completion-summary.js')
 const helper = require('../../lib/agent_helper')
@@ -54,13 +55,21 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
   })
 
   await t.test('should properly create completion segment', async (t) => {
-    // the package we subscribe to changes in `4.13.0` of `@smithy/smithy-client` to `@smithy/core`
-    let { version } = require('@smithy/smithy-client/package.json')
+    // the package we subscribe to changes in `4.13.0` from
+    // `@smithy/smithy-client` to `@smithy/core`
     let pkg = '@smithy/smithy-client'
-    if (semver.gte(version, '4.13.0')) {
-      ;({ version } = require('@smithy/core/package.json'))
+    let version = getPackageVersion({
+      pkgName: pkg,
+      baseDir: __dirname
+    })
+    if (version === undefined) {
       pkg = '@smithy/core'
+      version = getPackageVersion({
+        pkgName: '@smithy/core',
+        baseDir: __dirname
+      })
     }
+
     const prompt = 'text converse ultimate question'
     const input = {
       modelId,
