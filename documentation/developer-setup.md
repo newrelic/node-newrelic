@@ -49,7 +49,7 @@ There are a variety of ways to get the latest changes into your local branches. 
 To reduce the burden of having to fix linting errors in CI, as well as keep our `THIRD_PARTY_NOTICES.md` up to date, run the following to register git hooks:
 
 ```sh
-git config --local core.hooksPath .githooks
+npm run addhook:precommit
 ```
 
 ### Testing
@@ -58,11 +58,11 @@ In addition to basic unit tests that can be run with `npm run unit`, we have
 a set of "versioned" integration style tests. See the [package.json](../package.json)
 for the full set of scripts, but a short list of common scenarios is:
 
-+ `npm run versioned:internal` - to run all versioned tests across all supported
++ `npm run versioned` - to run all versioned tests across all supported
   versions of each instrumented module.
-+ `npm run versioned:internal:major` - to run all versioned tests for each
++ `npm run versioned:major` - to run all versioned tests for each
   current major release of each instrumented module.
-+ `npm run versioned:internal:major foo` - to run a specific versioned test
++ `npm run versioned:major foo` - to run a specific versioned test
   for the latest major version of the instrumented module named "foo" (as an
   example).
 

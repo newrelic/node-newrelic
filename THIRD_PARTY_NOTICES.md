@@ -2905,7 +2905,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.8.0](https://github.com/npm/node-semver/tree/v7.8.0)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.8.0/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.4](https://github.com/npm/node-semver/tree/v7.7.4)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.4/LICENSE):
 
 ```
 The ISC License
@@ -2961,7 +2961,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1045.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1044.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE):
 
 ```
                                 Apache License
@@ -3170,7 +3170,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1045.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1044.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE):
 
 ```
                                 Apache License
@@ -5315,7 +5315,7 @@ SOFTWARE.
 
 ### protobufjs
 
-This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.7](https://github.com/protobufjs/protobuf.js/tree/v7.5.7)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.7/LICENSE):
+This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.6](https://github.com/protobufjs/protobuf.js/tree/v7.5.6)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.6/LICENSE):
 
 ```
 This license applies to all parts of protobuf.js except those files

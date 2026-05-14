@@ -158,6 +158,7 @@
     "lib": "lib"
   },
   "scripts": {
+    "addhook:precommit": "git config --local core.hooksPath .githooks",
     "bench": "node ./bin/run-bench.js",
     "docker-env": "./bin/docker-env-vars.sh",
     "docs": "rm -rf ./out && jsdoc -c ./jsdoc-conf.jsonc --private -r .",

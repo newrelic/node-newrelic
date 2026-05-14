@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed May 13 2026 15:25:57 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu May 14 2026 10:43:24 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -318,15 +318,15 @@
       "email": "w@tson.dk",
       "url": "https://twitter.com/wa7son"
     },
-    "semver@7.8.0": {
+    "semver@7.7.4": {
       "name": "semver",
-      "version": "7.8.0",
+      "version": "7.7.4",
       "range": "^7.5.2",
       "licenses": "ISC",
       "repoUrl": "https://github.com/npm/node-semver",
-      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.8.0",
+      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.7.4",
       "licenseFile": "node_modules/semver/LICENSE",
-      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.8.0/LICENSE",
+      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.7.4/LICENSE",
       "licenseTextSource": "file",
       "publisher": "GitHub Inc."
     },
@@ -345,28 +345,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.1045.0": {
+    "@aws-sdk/client-s3@3.1044.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.1045.0",
+      "version": "3.1044.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.1045.0": {
+    "@aws-sdk/s3-request-presigner@3.1044.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.1045.0",
+      "version": "3.1044.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -732,15 +732,15 @@
       "publisher": "Pedro Teixeira",
       "email": "pedro.teixeira@gmail.com"
     },
-    "protobufjs@7.5.7": {
+    "protobufjs@7.5.6": {
       "name": "protobufjs",
-      "version": "7.5.7",
+      "version": "7.5.6",
       "range": "^7.5.3",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/protobufjs/protobuf.js",
-      "versionedRepoUrl": "https://github.com/protobufjs/protobuf.js/tree/v7.5.7",
+      "versionedRepoUrl": "https://github.com/protobufjs/protobuf.js/tree/v7.5.6",
       "licenseFile": "node_modules/protobufjs/LICENSE",
-      "licenseUrl": "https://github.com/protobufjs/protobuf.js/blob/v7.5.7/LICENSE",
+      "licenseUrl": "https://github.com/protobufjs/protobuf.js/blob/v7.5.6/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Daniel Wirtz",
       "email": "dcode+protobufjs@dcode.io"
