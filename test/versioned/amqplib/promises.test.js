@@ -7,20 +7,17 @@
 
 const assert = require('node:assert')
 const test = require('node:test')
-const path = require('node:path')
 const amqpUtils = require('./amqp-utils')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const promiseResolvers = require('../../lib/promise-resolvers')
-const getPackageVersion = require('../../../lib/util/get-package-version')
+const getPackageVersion = require('../../lib/get-package-version')
 const metrics = require('../../lib/metrics_helper')
 const { assertPackageMetrics, assertMetrics, assertSegments } = require('./../../lib/custom-assertions')
 const PROMISE_WAIT = 100
 
-const version = getPackageVersion(
-  path.join(__dirname, 'node_modules', 'amqplib')
-)
+const version = getPackageVersion({ pkgName: 'amqplib', baseDir: __dirname })
 
 test('amqplib promise instrumentation', async function (t) {
   t.beforeEach(async function (ctx) {
