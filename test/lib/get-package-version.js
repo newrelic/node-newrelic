@@ -34,13 +34,14 @@ module.exports = function getPackageVersion({
   const root = path.dirname(baseDir) === 'node_modules'
     ? baseDir
     : path.join(baseDir, 'node_modules')
-  const resolvedPath = path.resolve(path.join(root, pkgName, 'package.js'))
+  const resolvedPath = path.resolve(path.join(root, pkgName, 'package.json'))
   try {
     // We cannot `require(json)` here because some packages defined an exports
     // map which prohibits access to the manifest file. We need to
     // circumvent that.
     const pkg = fs.readFileSync(resolvedPath)
-    return pkg.version
+    const { version } = JSON.parse(pkg)
+    return version
   } catch {
     return returnProcessVersion === true
       ? process.version.slice(1)

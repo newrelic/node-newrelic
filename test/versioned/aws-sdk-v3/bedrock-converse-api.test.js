@@ -62,10 +62,11 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
       pkgName: pkg,
       baseDir: __dirname
     })
-    if (version === undefined) {
+
+    if (version === undefined || semver.gte(version, '4.13.0')) {
       pkg = '@smithy/core'
       version = getPackageVersion({
-        pkgName: '@smithy/core',
+        pkgName: pkg,
         baseDir: __dirname
       })
     }
