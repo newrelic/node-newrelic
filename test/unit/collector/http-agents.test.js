@@ -7,13 +7,27 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { HttpsProxyAgent } = require('https-proxy-agent')
-
+const helper = require('#testlib/agent_helper.js')
 const PROXY_HOST = 'unique.newrelic.com'
 const PROXY_PORT = '54532'
 const PROXY_URL_WITH_PORT = `https://${PROXY_HOST}:${PROXY_PORT}`
 const PROXY_URL_WITHOUT_PORT = `https://${PROXY_HOST}`
 const httpAgentsPath = require.resolve('../../../lib/collector/http-agents')
+
+// `https-proxy-agent` ships as ESM, and its dep graph imports `node:http`.
+// If we top-level-require it from `http-agents.js`, that import locks the ESM
+// `node:http` namespace exports to the *unwrapped* functions before our http
+// instrumentation can monkey-patch them. Downstream consumers that reach for
+// http via `await import('node:http')` (e.g. `@smithy/node-http-handler`, `undici`) then
+// bypass our instrumentation entirely.
+test('does not pollute ESM node:http namespace on load', async () => {
+  require(httpAgentsPath)
+  helper.instrumentMockedAgent()
+  const http = require('node:http')
+  assert.equal(http.request.name, 'wrappedRequest')
+  const ns = await import('node:http')
+  assert.equal(ns.request.name, 'wrappedRequest')
+})
 
 test('keepAlive agent', async (t) => {
   t.beforeEach((ctx) => {
@@ -112,6 +126,7 @@ test('proxy agent', async (t) => {
       ssl: true
     }
     const agent = t.nr.proxyAgent(config)
+    const { HttpsProxyAgent } = require('https-proxy-agent')
     assert.equal(agent instanceof HttpsProxyAgent, true)
     assert.equal(agent.proxy.host, `${PROXY_HOST}:${PROXY_PORT}`, 'should have correct proxy host')
     assert.deepStrictEqual(agent.connectOpts.ca, ['cert1'], 'should have correct certs')
