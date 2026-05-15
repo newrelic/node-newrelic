@@ -179,13 +179,9 @@ test('external requests', async function (t) {
       nock.enableNetConnect()
     })
     nock('https://example.com').get('/').reply(200)
-    const got = require('got')
+    const got = require('got').default
     await helper.runInTransaction(agent, async function () {
-      const req = got('https://example.com/')
-      t.after(function () {
-        req.cancel()
-      })
-      await req
+      await got('https://example.com/')
       plan.ok(true)
     })
   })

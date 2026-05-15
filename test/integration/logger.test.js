@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const path = require('node:path')
 const fs = require('node:fs')
 
-const rimraf = require('rimraf')
+const { rimraf } = require('rimraf')
 const DIRNAME = 'XXXNOCONFTEST'
 
 test('logger', async (t) => {
@@ -21,13 +21,9 @@ test('logger', async (t) => {
 
     const dirPath = path.join(process.cwd(), DIRNAME)
 
-    await new Promise((resolve) => {
-      if (fs.existsSync(dirPath)) {
-        rimraf(dirPath, resolve)
-      } else {
-        resolve()
-      }
-    })
+    if (fs.existsSync(dirPath)) {
+      await rimraf(dirPath)
+    }
     delete process.env.NEW_RELIC_LOG
   })
 
