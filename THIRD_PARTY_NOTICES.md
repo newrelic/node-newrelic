@@ -33,7 +33,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [json-bigint](#json-bigint)
 * [json-stringify-safe](#json-stringify-safe)
 * [module-details-from-path](#module-details-from-path)
-* [readable-stream](#readable-stream)
 * [require-in-the-middle](#require-in-the-middle)
 * [semver](#semver)
 * [winston-transport](#winston-transport)
@@ -514,7 +513,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.15](https://github.com/grpc/grpc-node/tree/v0.7.15)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.15/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.8.1](https://github.com/grpc/grpc-node/tree/v0.8.1)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.8.1/LICENSE):
 
 ```
                                  Apache License
@@ -769,7 +768,7 @@ This license terminates when the Software stops being provided by New Relic or w
 
 ### @opentelemetry/api-logs
 
-This product includes source derived from [@opentelemetry/api-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.203.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.203.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.203.0/LICENSE):
+This product includes source derived from [@opentelemetry/api-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.217.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.217.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.217.0/LICENSE):
 
 ```
                                  Apache License
@@ -1396,7 +1395,7 @@ This product includes source derived from [@opentelemetry/core](https://github.c
 
 ### @opentelemetry/exporter-metrics-otlp-proto
 
-This product includes source derived from [@opentelemetry/exporter-metrics-otlp-proto](https://github.com/open-telemetry/opentelemetry-js) ([v0.201.1](https://github.com/open-telemetry/opentelemetry-js/tree/v0.201.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.201.1/LICENSE):
+This product includes source derived from [@opentelemetry/exporter-metrics-otlp-proto](https://github.com/open-telemetry/opentelemetry-js) ([v0.217.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.217.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.217.0/LICENSE):
 
 ```
                                  Apache License
@@ -1814,7 +1813,7 @@ This product includes source derived from [@opentelemetry/resources](https://git
 
 ### @opentelemetry/sdk-logs
 
-This product includes source derived from [@opentelemetry/sdk-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.203.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.203.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.203.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.217.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.217.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.217.0/LICENSE):
 
 ```
                                  Apache License
@@ -2501,7 +2500,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### https-proxy-agent
 
-This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/proxy-agents) ([v7.0.6](https://github.com/TooTallNate/proxy-agents/tree/v7.0.6)), distributed under the [MIT License](https://github.com/TooTallNate/proxy-agents/blob/v7.0.6/LICENSE):
+This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/proxy-agents) ([v9.0.0](https://github.com/TooTallNate/proxy-agents/tree/v9.0.0)), distributed under the [MIT License](https://github.com/TooTallNate/proxy-agents/blob/v9.0.0/LICENSE):
 
 ```
 (The MIT License)
@@ -2530,7 +2529,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.15.0](https://github.com/nodejs/import-in-the-middle/tree/v1.15.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.15.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v3.0.1](https://github.com/nodejs/import-in-the-middle/tree/v3.0.1)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v3.0.1/LICENSE):
 
 ```
                                  Apache License
@@ -2817,64 +2816,9 @@ SOFTWARE.
 
 ```
 
-### readable-stream
-
-This product includes source derived from [readable-stream](https://github.com/nodejs/readable-stream) ([v3.6.2](https://github.com/nodejs/readable-stream/tree/v3.6.2)), distributed under the [MIT License](https://github.com/nodejs/readable-stream/blob/v3.6.2/LICENSE):
-
-```
-Node.js is licensed for use as follows:
-
-"""
-Copyright Node.js contributors. All rights reserved.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to
-deal in the Software without restriction, including without limitation the
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-sell copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
-"""
-
-This license applies to parts of Node.js originating from the
-https://github.com/joyent/node repository:
-
-"""
-Copyright Joyent, Inc. and other Node contributors. All rights reserved.
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to
-deal in the Software without restriction, including without limitation the
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-sell copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
-"""
-
-```
-
 ### require-in-the-middle
 
-This product includes source derived from [require-in-the-middle](https://github.com/nodejs/require-in-the-middle) ([v7.5.2](https://github.com/nodejs/require-in-the-middle/tree/v7.5.2)), distributed under the [MIT License](https://github.com/nodejs/require-in-the-middle/blob/v7.5.2/LICENSE):
+This product includes source derived from [require-in-the-middle](https://github.com/nodejs/require-in-the-middle) ([v8.0.1](https://github.com/nodejs/require-in-the-middle/tree/v8.0.1)), distributed under the [MIT License](https://github.com/nodejs/require-in-the-middle/blob/v8.0.1/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2905,7 +2849,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.4](https://github.com/npm/node-semver/tree/v7.7.4)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.4/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.8.0](https://github.com/npm/node-semver/tree/v7.8.0)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.8.0/LICENSE):
 
 ```
 The ISC License
@@ -2961,7 +2905,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1044.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1045.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE):
 
 ```
                                 Apache License
@@ -3170,7 +3114,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1044.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1044.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1044.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1045.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE):
 
 ```
                                 Apache License
@@ -5315,7 +5259,7 @@ SOFTWARE.
 
 ### protobufjs
 
-This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.6](https://github.com/protobufjs/protobuf.js/tree/v7.5.6)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.6/LICENSE):
+This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.7](https://github.com/protobufjs/protobuf.js/tree/v7.5.7)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.7/LICENSE):
 
 ```
 This license applies to all parts of protobuf.js except those files

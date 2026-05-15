@@ -10,7 +10,7 @@ const Logger = require('../../../lib/util/logger')
 const { Transform } = require('stream')
 const DEFAULT_KEYS = ['hostname', 'level', 'msg', 'name', 'pid', 'time', 'v']
 
-function expectEntry(entry, msg, level, keys) {
+function expectEntry({ entry, msg, level, keys }, { assert = require('node:assert') } = {}) {
   assert.equal(entry.hostname, 'my-host')
   assert.equal(entry.name, 'my-logger')
   assert.equal(entry.pid, process.pid)
@@ -48,8 +48,8 @@ test('logger', async function (t) {
     process.nextTick(function () {
       const { results } = t.nr
       assert.equal(results.length, 2)
-      expectEntry(results[0], '1: a', 30)
-      expectEntry(results[1], '123 4 5', 30)
+      expectEntry({ entry: results[0], msg: '1: a', level: 30 })
+      expectEntry({ entry: results[1], msg: '123 4 5', level: 30 })
       end()
     })
   })
@@ -68,10 +68,10 @@ test('logger', async function (t) {
       const { results } = t.nr
       const keys = ['a', 'b'].concat(DEFAULT_KEYS)
       assert.equal(results.length, 2)
-      expectEntry(results[0], '1: a', 30, keys)
+      expectEntry({ entry: results[0], msg: '1: a', level: 30, keys })
       assert.equal(results[0].a, 1)
       assert.equal(results[0].b, 2)
-      expectEntry(results[1], '123 4 5', 30, keys)
+      expectEntry({ entry: results[1], msg: '123 4 5', level: 30, keys })
       assert.equal(results[1].a, 1)
       assert.equal(results[1].b, 2)
       end()
@@ -84,7 +84,7 @@ test('logger', async function (t) {
     process.nextTick(() => {
       const { results } = t.nr
       assert.equal(results.length, 1)
-      expectEntry(results[0], 'hello world', 30, ['data', ...DEFAULT_KEYS])
+      expectEntry({ entry: results[0], msg: 'hello world', level: 30, keys: ['data', ...DEFAULT_KEYS] })
       end()
     })
   })
@@ -133,18 +133,18 @@ test('logger', async function (t) {
     process.nextTick(function () {
       let { results } = t.nr
       assert.equal(results.length, 4)
-      expectEntry(results[0], 'info', 30)
-      expectEntry(results[1], 'warn', 40)
-      expectEntry(results[2], 'error', 50)
-      expectEntry(results[3], 'fatal', 60)
+      expectEntry({ entry: results[0], msg: 'info', level: 30 })
+      expectEntry({ entry: results[1], msg: 'warn', level: 40 })
+      expectEntry({ entry: results[2], msg: 'error', level: 50 })
+      expectEntry({ entry: results[3], msg: 'fatal', level: 60 })
 
       logger.level('trace')
       logger.trace('trace')
       logger.debug('debug')
       ;({ results } = t.nr)
       assert.equal(results.length, 6)
-      expectEntry(results[4], 'trace', 10)
-      expectEntry(results[5], 'debug', 20)
+      expectEntry({ entry: results[4], msg: 'trace', level: 10 })
+      expectEntry({ entry: results[5], msg: 'debug', level: 20 })
       end()
     })
   })
@@ -169,22 +169,22 @@ test('logger', async function (t) {
     process.nextTick(function () {
       let { results } = t.nr
       assert.equal(results.length, 8)
-      expectEntry(results[0], 'info', 30, ['aChild'].concat(DEFAULT_KEYS))
-      expectEntry(results[1], 'warn', 40, ['aChild'].concat(DEFAULT_KEYS))
-      expectEntry(results[2], 'error', 50, ['aChild'].concat(DEFAULT_KEYS))
-      expectEntry(results[3], 'fatal', 60, ['aChild'].concat(DEFAULT_KEYS))
-      expectEntry(results[4], 'info', 30, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
-      expectEntry(results[5], 'warn', 40, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
-      expectEntry(results[6], 'error', 50, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
-      expectEntry(results[7], 'fatal', 60, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      expectEntry({ entry: results[0], msg: 'info', level: 30, keys: ['aChild'].concat(DEFAULT_KEYS) })
+      expectEntry({ entry: results[1], msg: 'warn', level: 40, keys: ['aChild'].concat(DEFAULT_KEYS) })
+      expectEntry({ entry: results[2], msg: 'error', level: 50, keys: ['aChild'].concat(DEFAULT_KEYS) })
+      expectEntry({ entry: results[3], msg: 'fatal', level: 60, keys: ['aChild'].concat(DEFAULT_KEYS) })
+      expectEntry({ entry: results[4], msg: 'info', level: 30, keys: ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS) })
+      expectEntry({ entry: results[5], msg: 'warn', level: 40, keys: ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS) })
+      expectEntry({ entry: results[6], msg: 'error', level: 50, keys: ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS) })
+      expectEntry({ entry: results[7], msg: 'fatal', level: 60, keys: ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS) })
 
       logger.level('trace')
       child.trace('trace')
       grandchild.debug('debug')
       ;({ results } = t.nr)
       assert.equal(results.length, 10)
-      expectEntry(results[8], 'trace', 10, ['aChild'].concat(DEFAULT_KEYS))
-      expectEntry(results[9], 'debug', 20, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      expectEntry({ entry: results[8], msg: 'trace', level: 10, keys: ['aChild'].concat(DEFAULT_KEYS) })
+      expectEntry({ entry: results[9], msg: 'debug', level: 20, keys: ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS) })
       end()
     })
   })
@@ -265,11 +265,11 @@ test('logger', async function (t) {
       const { results } = t.nr
       assert.equal(results.length, 3)
       assert.equal(results[0].a, 1)
-      expectEntry(results[1], 'hello b', 30, ['b', 'c'].concat(DEFAULT_KEYS))
+      expectEntry({ entry: results[1], msg: 'hello b', level: 30, keys: ['b', 'c'].concat(DEFAULT_KEYS) })
       assert.equal(results[1].b, 5)
       assert.equal(results[1].c, 3)
 
-      expectEntry(results[2], 'hello c', 30, ['a', 'b', 'c'].concat(DEFAULT_KEYS))
+      expectEntry({ entry: results[2], msg: 'hello c', level: 30, keys: ['a', 'b', 'c'].concat(DEFAULT_KEYS) })
       assert.equal(results[2].a, 10)
       assert.equal(results[2].b, 2)
       assert.equal(results[2].c, 6)
@@ -309,7 +309,7 @@ test('logger', async function (t) {
       process.nextTick(function () {
         ;({ results } = t.nr)
         assert.equal(results.length, 1)
-        expectEntry(results[0], 'value', 30, DEFAULT_KEYS)
+        expectEntry({ entry: results[0], msg: 'value', level: 30, keys: DEFAULT_KEYS })
         end()
       })
     })
@@ -324,8 +324,8 @@ test('logger', async function (t) {
     process.nextTick(function () {
       const { results } = t.nr
       assert.equal(results.length, 2)
-      expectEntry(results[0], 'info', 30, DEFAULT_KEYS)
-      expectEntry(results[1], 'another', 30, DEFAULT_KEYS)
+      expectEntry({ entry: results[0], msg: 'info', level: 30, keys: DEFAULT_KEYS })
+      expectEntry({ entry: results[1], msg: 'another', level: 30, keys: DEFAULT_KEYS })
       end()
     })
   })
@@ -339,7 +339,7 @@ test('logger', async function (t) {
       const { results } = t.nr
       assert.equal(results.length, 1)
       assert.equal(results[0].a, 2)
-      expectEntry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
+      expectEntry({ entry: results[0], msg: 'hello a', level: 30, keys: ['a'].concat(DEFAULT_KEYS) })
       end()
     })
   })
@@ -355,7 +355,7 @@ test('logger', async function (t) {
       process.nextTick(function () {
         ;({ results } = t.nr)
         assert.equal(results.length, 1)
-        expectEntry(results[0], 'value', 30, DEFAULT_KEYS)
+        expectEntry({ entry: results[0], msg: 'value', level: 30, keys: DEFAULT_KEYS })
         end()
       })
     })
@@ -372,8 +372,8 @@ test('logger', async function (t) {
         process.nextTick(function () {
           const { results } = t.nr
           assert.equal(results.length, 2)
-          expectEntry(results[0], 'value', 30, DEFAULT_KEYS)
-          expectEntry(results[1], 'value', 30, DEFAULT_KEYS)
+          expectEntry({ entry: results[0], msg: 'value', level: 30, keys: DEFAULT_KEYS })
+          expectEntry({ entry: results[1], msg: 'value', level: 30, keys: DEFAULT_KEYS })
           end()
         })
       }, 100)
@@ -388,7 +388,7 @@ test('logger', async function (t) {
       const { results } = t.nr
       assert.equal(results.length, 1)
       assert.equal(results[0].a, 2)
-      expectEntry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
+      expectEntry({ entry: results[0], msg: 'hello a', level: 30, keys: ['a'].concat(DEFAULT_KEYS) })
       end()
     })
   })
@@ -431,7 +431,7 @@ test('logger', async function (t) {
     process.nextTick(function () {
       const { results } = t.nr
       assert.equal(results.length, 1)
-      expectEntry(results[0], 'JSON: {"a":1,"b":2,"self":"[Circular ~]"}', 30)
+      expectEntry({ entry: results[0], msg: 'JSON: {"a":1,"b":2,"self":"[Circular ~]"}', level: 30 })
       end()
     })
   })
@@ -447,13 +447,14 @@ test('logger', async function (t) {
     process.nextTick(function () {
       const { results } = t.nr
       assert.equal(results.length, 1)
-      expectEntry(results[0], 'JSON: [UNPARSABLE OBJECT]', 30)
+      expectEntry({ entry: results[0], msg: 'JSON: [UNPARSABLE OBJECT]', level: 30 })
       end()
     })
   })
 })
 
 test('logger write queue should buffer writes', function (t, end) {
+  t.plan(21)
   const bigString = new Array(16 * 1024).join('a')
 
   const logger = new Logger({
@@ -462,34 +463,27 @@ test('logger write queue should buffer writes', function (t, end) {
     hostname: 'my-host'
   })
 
+  const logEntries = ['b', 'c', 'd']
+  const queuedStrings = []
   logger.once('readable', function () {
     logger.push = function (str) {
       const pushed = Logger.prototype.push.call(this, str)
       if (pushed) {
-        const parts = str
-          .split('\n')
-          .filter(Boolean)
-          .map(function (a) {
-            return a.toString()
-          })
-          .map(JSON.parse)
-        expectEntry(parts[0], 'b', 30)
-        expectEntry(parts[1], 'c', 30)
-        expectEntry(parts[2], 'd', 30)
+        queuedStrings.push(str)
       }
-
       return pushed
     }
 
-    logger.info('b')
-    logger.info('c')
-    logger.info('d')
+    for (const entry of logEntries) {
+      logger.info(entry)
+    }
 
     logger.read()
-
-    process.nextTick(function () {
-      end()
-    })
+    for (let i = 0; i < queuedStrings.length; i++) {
+      const entry = queuedStrings[i]
+      expectEntry({ entry: JSON.parse(entry), msg: logEntries[i], level: 30 }, { assert: t.assert })
+    }
+    end()
   })
   logger.info(bigString)
 })
