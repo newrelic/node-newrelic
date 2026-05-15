@@ -7,7 +7,7 @@
 'use strict'
 
 const cp = require('child_process')
-const glob = require('glob')
+const { globSync } = require('glob')
 const path = require('path')
 const { errorAndExit } = require('./utils')
 const fs = require('fs/promises')
@@ -148,7 +148,7 @@ async function run() {
       return resolved.forEach(mergeResolved)
     }
 
-    const globbed = globs.map((item) => glob.sync(item))
+    const globbed = globs.map((item) => globSync(item))
     return afterGlobbing(globbed)
   }
 

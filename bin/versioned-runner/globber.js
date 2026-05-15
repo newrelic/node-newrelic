@@ -6,10 +6,7 @@
 'use strict'
 
 const path = require('path')
-const globToFilesCb = require('glob')
-const { promisify } = require('util')
-
-const globToFiles = promisify(globToFilesCb)
+const { glob: globToFiles } = require('glob')
 
 function buildGlobs(testGlobs, patterns = []) {
   // Turn the given globs into searches for package.json files.
