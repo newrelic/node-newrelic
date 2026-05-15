@@ -20,9 +20,12 @@ const httpAgentsPath = require.resolve('../../../lib/collector/http-agents')
 // instrumentation can monkey-patch them. Downstream consumers that reach for
 // http via `await import('node:http')` (e.g. `@smithy/node-http-handler`, `undici`) then
 // bypass our instrumentation entirely.
-test('does not pollute ESM node:http namespace on load', async () => {
+test('does not pollute ESM node:http namespace on load', async (t) => {
   require(httpAgentsPath)
-  helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
+  t.after(() => {
+    helper.unloadAgent(agent)
+  })
   const http = require('node:http')
   assert.equal(http.request.name, 'wrappedRequest')
   const ns = await import('node:http')
