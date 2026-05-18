@@ -722,7 +722,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.3](https://github.com/newrelic/csec-node-agent/tree/v3.0.3)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.3/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.4](https://github.com/newrelic/csec-node-agent/tree/v3.0.4)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.4/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -2905,7 +2905,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1045.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1048.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1048.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1048.0/LICENSE):
 
 ```
                                 Apache License
@@ -3114,7 +3114,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1045.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1048.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1048.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1048.0/LICENSE):
 
 ```
                                 Apache License
@@ -5259,7 +5259,7 @@ SOFTWARE.
 
 ### protobufjs
 
-This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.7](https://github.com/protobufjs/protobuf.js/tree/v7.5.7)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.7/LICENSE):
+This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v8.3.0](https://github.com/protobufjs/protobuf.js/tree/v8.3.0)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v8.3.0/LICENSE):
 
 ```
 This license applies to all parts of protobuf.js except those files
