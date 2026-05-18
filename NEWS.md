@@ -4,21 +4,23 @@
 This version of the Node.js agent is a SemVer MAJOR update and contains the following breaking changes. MAJOR versions may drop support for language runtimes that have reached End-of-Life according to the maintainer. Additionally, MAJOR versions may drop support for and remove certain instrumentation. For more details on these changes please see the [migration guide](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/update-nodejs-agent/).
 
 * Dropped support for Node.js 20
+* Migrated `@apollo/sever` instrumentation from a plugin(`@newrelic/apollo-server-plugin`) to traditional instrumentation
+* Removed Cross Application Tracing(CAT) functionality
+* Removed support for License, Application, and Security Policies(LASP)
+* Removed instrumentation for `koa-route`
+* Removed instrumentation for `koa-router`
+* Removed `shim.prefixRouteParameters` as the logic was previously moved to when a transaction ends
+* Removed creating `MySQL Pool#query` segments
+* Removed `shim.argsToArray`
 * Updated minimum supported version of `@nestjs/cli` and `@nestjs/core` to `10.0.0`
 * Updated minimum supported version of `next` to 14
 * Updated minimum supported version of `bluebird` to `3.0.0`
 * Updated minimum supported version of `mysql2` to `3.0.0`
 * Updated minimum supported version for `cassandra-driver` to `4.0.0`
-* Removed instrumentation for `koa-route`
-* Removed `shim.prefixRouteParameters` as the logic was previously moved to when a transaction ends
 * Dropped support for `fastify` 3.x
-* Removed creating `MySQL Pool#query` segments
-* Removed instrumentation for `koa-router`
-* Removed Cross Application Tracing(CAT) functionality
-* Removed support for License, Application, and Security Policies(LASP)
-* Removed `shim.argsToArray`
 * Updated `config.distributed_tracing.exclude_newrelic_header` to be set to `true` by default
-* Migrated `@apollo/sever` instrumentation from a plugin(`@newrelic/apollo-server-plugin`) to traditional instrumentation
+
+For more information on migration steps from v13 to v14, please read the [migration guide](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/update-nodejs-agent/#node-agent-v14)
 
 #### Features
 
@@ -47,19 +49,10 @@ This version of the Node.js agent is a SemVer MAJOR update and contains the foll
 #### Documentation
 
 * Updated compatibility report ([#3990](https://github.com/newrelic/node-newrelic/pull/3990)) ([f3bb380](https://github.com/newrelic/node-newrelic/commit/f3bb380770e575e1ef3600e6601ddbf944b189ea))
-* Updated compatibility report ([#3989](https://github.com/newrelic/node-newrelic/pull/3989)) ([a59e1f5](https://github.com/newrelic/node-newrelic/commit/a59e1f5ac21a36554d5a1222d72b1c57a2689ba8))
-* Updated compatibility report ([#3981](https://github.com/newrelic/node-newrelic/pull/3981)) ([9b829ce](https://github.com/newrelic/node-newrelic/commit/9b829ceb31fd880ff799a02a4b1932d490c3536b))
-* Updated compatibility report ([#3977](https://github.com/newrelic/node-newrelic/pull/3977)) ([5225249](https://github.com/newrelic/node-newrelic/commit/52252496908fa399330986463490188fa2942799))
 
 #### Miscellaneous chores
 
-* Decrease smoke-like esm tests' sample size ([#3986](https://github.com/newrelic/node-newrelic/pull/3986)) ([40669fb](https://github.com/newrelic/node-newrelic/commit/40669fbc157d65b53a4e5b7c22061ede7f26e630))
-* Fixed `test/lib/get-package-version.js` ([#3993](https://github.com/newrelic/node-newrelic/pull/3993)) ([5d31f08](https://github.com/newrelic/node-newrelic/commit/5d31f08fb542f7b58bf89457f8a30255511ee9e0))
-* fixed issues from rebase ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([3f9eb31](https://github.com/newrelic/node-newrelic/commit/3f9eb31a9a427b5149009e4ea920caee5b209444))
-* Fixed version lookup issue in aws-sdk-v3 tests ([#3992](https://github.com/newrelic/node-newrelic/pull/3992)) ([7be3f4a](https://github.com/newrelic/node-newrelic/commit/7be3f4ab5a69fa7563752f584704e59cf6a863d2))
-* Removed `husky` in lieu of git hoooks, added security hardened options to `npm install` ([#3988](https://github.com/newrelic/node-newrelic/pull/3988)) ([e3a7dda](https://github.com/newrelic/node-newrelic/commit/e3a7ddaee58f393cf347d812fed6b4c6ab1505f0))
-* Restructure `aws-sdk-v3` test runner to use `groupedDependencies` ([#3984](https://github.com/newrelic/node-newrelic/pull/3984)) ([fc67490](https://github.com/newrelic/node-newrelic/commit/fc674909e176f0f5305a0798c14d3c8447e58155))
-* Updated a few versioned test stanzas to reduce the number of combinations it runs ([#3991](https://github.com/newrelic/node-newrelic/pull/3991)) ([d606305](https://github.com/newrelic/node-newrelic/commit/d6063055ebd034deabd2f2c3f1acba8162a5bd44))
+* Removed `husky` in lieu of git hooks, added security hardened options to `npm install` ([#3988](https://github.com/newrelic/node-newrelic/pull/3988)) ([e3a7dda](https://github.com/newrelic/node-newrelic/commit/e3a7ddaee58f393cf347d812fed6b4c6ab1505f0))
 * Updated production dependencies to the latest ([#3996](https://github.com/newrelic/node-newrelic/pull/3996)) ([b710bac](https://github.com/newrelic/node-newrelic/commit/b710bacff2231c8038b792ac4c7a570991566835))
 
 #### Tests
@@ -68,6 +61,11 @@ This version of the Node.js agent is a SemVer MAJOR update and contains the foll
 * Added prisma 7 tests ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([116ee9c](https://github.com/newrelic/node-newrelic/commit/116ee9cd006d378afba1922d8daa27e213d1f6ab))
 * Moved versioned test runner code from `@newrelic/test-utilties` to agent ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([d4f9a0c](https://github.com/newrelic/node-newrelic/commit/d4f9a0ce27364b7cfb723fa6a7c56a5ccdc07b68))
 * Removed `@newrelic/test-utilities` ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([1751147](https://github.com/newrelic/node-newrelic/commit/1751147503c9ff971208c2977912d7298e9e923f))
+* Decrease smoke-like esm tests' sample size ([#3986](https://github.com/newrelic/node-newrelic/pull/3986)) ([40669fb](https://github.com/newrelic/node-newrelic/commit/40669fbc157d65b53a4e5b7c22061ede7f26e630))
+* Fixed `test/lib/get-package-version.js` ([#3993](https://github.com/newrelic/node-newrelic/pull/3993)) ([5d31f08](https://github.com/newrelic/node-newrelic/commit/5d31f08fb542f7b58bf89457f8a30255511ee9e0))
+* Fixed version lookup issue in aws-sdk-v3 tests ([#3992](https://github.com/newrelic/node-newrelic/pull/3992)) ([7be3f4a](https://github.com/newrelic/node-newrelic/commit/7be3f4ab5a69fa7563752f584704e59cf6a863d2))
+* Restructure `aws-sdk-v3` test runner to use `groupedDependencies` ([#3984](https://github.com/newrelic/node-newrelic/pull/3984)) ([fc67490](https://github.com/newrelic/node-newrelic/commit/fc674909e176f0f5305a0798c14d3c8447e58155))
+* Updated a few versioned test stanzas to reduce the number of combinations it runs ([#3991](https://github.com/newrelic/node-newrelic/pull/3991)) ([d606305](https://github.com/newrelic/node-newrelic/commit/d6063055ebd034deabd2f2c3f1acba8162a5bd44))
 
 #### Continuous integration
 
