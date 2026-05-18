@@ -10,6 +10,7 @@ const test = require('node:test')
 const { tspl } = require('@matteo.collina/tspl')
 
 const helper = require('../../lib/agent_helper')
+const afterEach = require('./test-utils/after-each.js')
 const awsEcho = require('./test-utils/aws-echo.js')
 const checkAWSAttributes = require('./test-utils/check-aws-attributes.js')
 const checkExternals = require('./test-utils/check-externals.js')
@@ -22,29 +23,31 @@ const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server
 const { match, assertSegmentDuration } = require('../../lib/custom-assertions')
 
 test('SNS', async (t) => {
-  const server = createResponseServer()
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+    const server = createResponseServer()
 
-  await new Promise((resolve) => {
-    server.listen(0, resolve)
+    await new Promise((resolve) => {
+      server.listen(0, resolve)
+    })
+
+    ctx.nr.server = server
+    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.http = require('node:http')
+    const lib = require('@aws-sdk/client-sns')
+    const SNSClient = lib.SNSClient
+    ctx.nr.lib = lib
+    ctx.nr.sns = new SNSClient({
+      credentials: FAKE_CREDENTIALS,
+      endpoint: `http://localhost:${server.address().port}`,
+      region: 'us-east-1'
+    })
   })
 
-  const agent = helper.instrumentMockedAgent()
-  const http = require('node:http')
-  const lib = require('@aws-sdk/client-sns')
-  const SNSClient = lib.SNSClient
-  const sns = new SNSClient({
-    credentials: FAKE_CREDENTIALS,
-    endpoint: `http://localhost:${server.address().port}`,
-    region: 'us-east-1'
-  })
-
-  t.after(() => {
-    server.destroy()
-    helper.unloadAgent(agent)
-  })
+  t.afterEach(afterEach)
 
   await t.test('publish with callback', async (t) => {
-    const { PublishCommand } = lib
+    const { agent, sns, lib: { PublishCommand } } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
       const params = { Message: 'Hello!' }
 
@@ -63,7 +66,7 @@ test('SNS', async (t) => {
   })
 
   await t.test('publish with default destination(PhoneNumber)', async (t) => {
-    const { PublishCommand } = lib
+    const { agent, sns, lib: { PublishCommand } } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
       const params = { Message: 'Hello!' }
 
@@ -80,7 +83,7 @@ test('SNS', async (t) => {
   })
 
   await t.test('publish with TopicArn as destination', async (t) => {
-    const { PublishCommand } = lib
+    const { agent, sns, lib: { PublishCommand } } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
       const TopicArn = 'TopicArn'
       const params = { TopicArn, Message: 'Hello!' }
@@ -95,7 +98,7 @@ test('SNS', async (t) => {
   })
 
   await t.test('publish with TargetArn as destination', async (t) => {
-    const { PublishCommand } = lib
+    const { agent, sns, lib: { PublishCommand } } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
       const TargetArn = 'TargetArn'
       const params = { TargetArn, Message: 'Hello!' }
@@ -112,7 +115,7 @@ test('SNS', async (t) => {
   await t.test(
     'publish with TopicArn as destination when both Topic and Target Arn are defined',
     async (t) => {
-      const { PublishCommand } = lib
+      const { agent, sns, lib: { PublishCommand } } = t.nr
       await helper.runInTransaction(agent, async (tx) => {
         const TargetArn = 'TargetArn'
         const TopicArn = 'TopicArn'
@@ -130,7 +133,7 @@ test('SNS', async (t) => {
   await t.test(
     'should record external segment and not a SNS segment for a command that is not PublishCommand',
     async (t) => {
-      const { ListTopicsCommand } = lib
+      const { agent, sns, lib: { ListTopicsCommand } } = t.nr
       await helper.runInTransaction(agent, async (tx) => {
         const TargetArn = 'TargetArn'
         const TopicArn = 'TopicArn'
@@ -147,8 +150,8 @@ test('SNS', async (t) => {
   )
 
   await t.test('should mark requests to be dt-disabled', async (t) => {
+    const { agent, sns, lib: { ListTopicsCommand } } = t.nr
     const plan = tspl(t, { plan: 2 })
-    const { ListTopicsCommand } = lib
 
     await helper.runInTransaction(agent, async (tx) => {
       const params = { Message: 'Hiya' }
@@ -170,6 +173,7 @@ test('SNS', async (t) => {
   })
 
   await t.test('attaches distributed trace headers when sending messages', async (t) => {
+    const { http, sns, lib } = t.nr
     const params = { TargetArn: 'TargetArn', Message: 'Hello!' }
     const { server, address } = await awsEcho({
       http,
@@ -198,7 +202,7 @@ test('SNS', async (t) => {
   })
 
   await t.test('does not attach distributed trace headers when disabled', async (t) => {
-    // This is a race condition waiting to happen.
+    const { agent, http, sns, lib } = t.nr
     agent.config.distributed_tracing.enabled = false
 
     const params = { TargetArn: 'TargetArn', Message: 'Hello!' }
@@ -209,7 +213,6 @@ test('SNS', async (t) => {
       CreateCommand: lib.PublishCommand
     })
     t.after(() => {
-      agent.config.distributed_tracing.enabled = true
       server.close()
     })
 

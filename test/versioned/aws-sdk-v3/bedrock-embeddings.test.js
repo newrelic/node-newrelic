@@ -10,6 +10,7 @@ const helper = require('../../lib/agent_helper')
 const { assertSegments, match } = require('../../lib/custom-assertions')
 const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const afterEach = require('./test-utils/after-each.js')
 const createAiResponseServer = getAiResponseServer(__dirname)
 const requests = {
   amazon: (prompt, modelId) => {
@@ -27,30 +28,30 @@ const requests = {
 }
 
 test('Embeddings', async (t) => {
-  const agent = helper.instrumentMockedAgent({
-    ai_monitoring: {
-      enabled: true
-    }
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.instrumentMockedAgent({
+      ai_monitoring: {
+        enabled: true
+      }
+    })
+
+    const bedrock = require('@aws-sdk/client-bedrock-runtime')
+    ctx.nr.bedrock = bedrock
+
+    const { server, baseUrl, responses, host, port } = await createAiResponseServer()
+    ctx.nr.server = server
+    ctx.nr.responses = responses
+    ctx.nr.expectedExternalPath = (modelId) => `External/${host}:${port}/model/${modelId}/invoke`
+
+    ctx.nr.client = new bedrock.BedrockRuntimeClient({
+      region: 'us-east-1',
+      credentials: FAKE_CREDENTIALS,
+      endpoint: baseUrl
+    })
   })
 
-  const bedrock = require('@aws-sdk/client-bedrock-runtime')
-  const { server, baseUrl, responses, host, port } = await createAiResponseServer()
-  const expectedExternalPath = (modelId) => `External/${host}:${port}/model/${modelId}/invoke`
-
-  const client = new bedrock.BedrockRuntimeClient({
-    region: 'us-east-1',
-    credentials: FAKE_CREDENTIALS,
-    endpoint: baseUrl
-  })
-  test.after(() => {
-    server.destroy()
-    helper.unloadAgent(agent)
-  })
-
-  test.afterEach(() => {
-    agent.customEventAggregator.clear()
-    agent.llm.tokenCountCallback = null
-  })
+  t.afterEach(afterEach)
 
   const tests = [
     { modelId: 'amazon.titan-embed-text-v1', resKey: 'amazon' },
@@ -60,6 +61,7 @@ test('Embeddings', async (t) => {
   for (const data of tests) {
     const { modelId, resKey } = data
     await t.test(`${modelId}: should properly create embedding segment`, async (t) => {
+      const { agent, bedrock, client, responses, expectedExternalPath } = t.nr
       const prompt = `text ${resKey} ultimate question`
       const input = requests[resKey](prompt, modelId)
 
@@ -82,6 +84,7 @@ test('Embeddings', async (t) => {
     })
 
     await t.test(`${modelId}: should properly create the LlmEmbedding event`, async (t) => {
+      const { agent, bedrock, client } = t.nr
       const prompt = `embed text ${resKey} success`
       const input = requests[resKey](prompt, modelId)
       const command = new bedrock.InvokeModelCommand(input)
@@ -116,6 +119,7 @@ test('Embeddings', async (t) => {
     // Amazon Bedrock does not currently support streaming responses for amazon titan embeddings
     // See: https://docs.aws.amazon.com/bedrock/latest/userguide/service_code_examples_bedrock-runtime_amazon_titan_text_embeddings.html
     await t.test(`${modelId}: text answer (streamed)`, { skip: resKey === 'amazon' }, async (t) => {
+      const { agent, bedrock, client } = t.nr
       const prompt = `text ${resKey} ultimate question streamed`
       const input = requests[resKey](prompt, modelId)
       const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
@@ -156,6 +160,7 @@ test('Embeddings', async (t) => {
     })
 
     await t.test(`${modelId}: should properly create errors on embeddings`, async (t) => {
+      const { agent, bedrock, client, expectedExternalPath } = t.nr
       const prompt = `embed text ${resKey} error`
       const input = requests[resKey](prompt, modelId)
       const command = new bedrock.InvokeModelCommand(input)
@@ -219,6 +224,7 @@ test('Embeddings', async (t) => {
     })
 
     await t.test(`${modelId}: should add llm attribute to transaction`, async (t) => {
+      const { agent, bedrock, client } = t.nr
       const prompt = `embed text ${resKey} success`
       const input = requests[resKey](prompt, modelId)
       const command = new bedrock.InvokeModelCommand(input)
@@ -233,6 +239,7 @@ test('Embeddings', async (t) => {
     })
 
     await t.test(`${modelId}: should decorate messages with custom attrs`, async (t) => {
+      const { agent, bedrock, client } = t.nr
       const prompt = `embed text ${resKey} success`
       const input = requests[resKey](prompt, modelId)
       const command = new bedrock.InvokeModelCommand(input)

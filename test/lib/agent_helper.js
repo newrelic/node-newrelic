@@ -193,8 +193,28 @@ helper.instrumentMockedAgent = (conf, setState = true, shimmer = require('../../
   shimmer.bootstrapInstrumentation(agent)
   shimmer.registerHooks(agent)
   helper.maybeLoadSecurityAgent(agent)
+  installStableHttpRequest()
 
   return agent
+}
+
+// @smithy/node-http-handler ≥ 4.7.3 captures http.request via
+// `await import('node:http')`, which snapshots the ESM namespace at first
+// import. Subsequent shimmer.unwrap/re-wrap cycles (per-test agent setup)
+// are invisible to that snapshot, leaving smithy bound to a defunct agent.
+// Install a stable forwarding shim once; each instrumentMockedAgent call
+// just updates what it delegates to.
+let _activeHttpRequest = null
+let _stableHttpRequest = null
+function installStableHttpRequest() {
+  _activeHttpRequest = http.request
+  if (!_stableHttpRequest) {
+    // Name mirrors shimmer's wrapper so http.request.name assertions still hold.
+    _stableHttpRequest = function wrappedRequest(...args) {
+      return _activeHttpRequest.apply(this, args)
+    }
+  }
+  http.request = _stableHttpRequest
 }
 
 /**
