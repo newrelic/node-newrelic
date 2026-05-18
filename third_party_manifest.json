@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri May 15 2026 13:55:43 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon May 18 2026 16:20:40 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -91,15 +91,15 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/security-agent@3.0.3": {
+    "@newrelic/security-agent@3.0.4": {
       "name": "@newrelic/security-agent",
-      "version": "3.0.3",
+      "version": "3.0.4",
       "range": "^3.0.0",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v3.0.3",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v3.0.4",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v3.0.3/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v3.0.4/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -334,28 +334,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.1045.0": {
+    "@aws-sdk/client-s3@3.1048.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.1045.0",
+      "version": "3.1048.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1048.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1048.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.1045.0": {
+    "@aws-sdk/s3-request-presigner@3.1048.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.1045.0",
+      "version": "3.1048.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1045.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1048.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1045.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1048.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -721,15 +721,15 @@
       "publisher": "Pedro Teixeira",
       "email": "pedro.teixeira@gmail.com"
     },
-    "protobufjs@7.5.7": {
+    "protobufjs@8.3.0": {
       "name": "protobufjs",
-      "version": "7.5.7",
-      "range": "^7.5.3",
+      "version": "8.3.0",
+      "range": "^8.3.0",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/protobufjs/protobuf.js",
-      "versionedRepoUrl": "https://github.com/protobufjs/protobuf.js/tree/v7.5.7",
+      "versionedRepoUrl": "https://github.com/protobufjs/protobuf.js/tree/v8.3.0",
       "licenseFile": "node_modules/protobufjs/LICENSE",
-      "licenseUrl": "https://github.com/protobufjs/protobuf.js/blob/v7.5.7/LICENSE",
+      "licenseUrl": "https://github.com/protobufjs/protobuf.js/blob/v8.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Daniel Wirtz",
       "email": "dcode+protobufjs@dcode.io"
