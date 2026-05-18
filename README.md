@@ -148,10 +148,6 @@ For more information on getting started, [check the Node.js docs](https://docs.n
 
 There are modules that can be installed and configured to accompany the Node.js agent:
 
- * [`@newrelic/apollo-server-plugin`](https://github.com/newrelic/newrelic-node-apollo-server-plugin): New Relic's official Apollo Server plugin for use with the Node.js agent.
-
-There are modules included within the Node.js agent to add more instrumentation for 3rd party modules:
-
  * [`@newrelic/native-metrics`](https://github.com/newrelic/node-native-metrics): Provides hooks into the native v8 layer of Node.js to provide metrics to the Node.js agent.
 
 ## Usage
