@@ -1,3 +1,15 @@
+### v14.0.1 (2026-05-18)
+
+#### Documentation
+
+* Removed linked to `@newrelic/apollo-server-plugin` as instrumentation was merged into agent ([#4003](https://github.com/newrelic/node-newrelic/pull/4003)) ([9afd9cb](https://github.com/newrelic/node-newrelic/commit/9afd9cb8d721e175f60d31dc7384b752632f9ae5))
+* Updated compatibility report ([#4002](https://github.com/newrelic/node-newrelic/pull/4002)) ([33a8236](https://github.com/newrelic/node-newrelic/commit/33a82361674d29e53db9b699048c7a7970445d7c))
+
+#### Miscellaneous chores
+
+* Moved `apollo-server` docs to the docs website ([#3994](https://github.com/newrelic/node-newrelic/pull/3994)) ([11ca2ae](https://github.com/newrelic/node-newrelic/commit/11ca2ae419ebc616bed4d072641cedb42b48be87))
+* Updated protobufjs to latest ([#4006](https://github.com/newrelic/node-newrelic/pull/4006)) ([45c61f3](https://github.com/newrelic/node-newrelic/commit/45c61f3624945553bfa5aac331c577255827f7bc))
+
 ### v14.0.0 (2026-05-18)
 #### ⚠ BREAKING CHANGES
 
