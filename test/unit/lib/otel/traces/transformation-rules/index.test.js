@@ -7,12 +7,50 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const fs = require('node:fs')
+const path = require('node:path')
 
 const rules = require('#agentlib/otel/traces/transformation-rules/index.js')
 
 test('transformation rules module', async (t) => {
   await t.test('should export an array', () => {
     assert.ok(Array.isArray(rules), 'rules should be an array')
+  })
+
+  await t.test('files should follow numbering scheme by type', () => {
+    const rulesDir = path.join(__dirname, '../../../../../../lib/otel/traces/transformation-rules')
+    const files = fs.readdirSync(rulesDir)
+      .filter((file) => /^\d{3}-.+\.json$/.test(file))
+      .sort()
+
+    // Verify server rules (100-199)
+    const serverFiles = files.filter((f) => f.startsWith('1'))
+    assert.ok(serverFiles.every((f) => parseInt(f) >= 100 && parseInt(f) < 200),
+      'server rules should be numbered 100-199')
+
+    // Verify consumer rules (200-299)
+    const consumerFiles = files.filter((f) => f.startsWith('2') && !f.startsWith('999'))
+    assert.ok(consumerFiles.every((f) => parseInt(f) >= 200 && parseInt(f) < 300),
+      'consumer rules should be numbered 200-299')
+
+    // Verify database rules (300-399)
+    const dbFiles = files.filter((f) => f.startsWith('3'))
+    assert.ok(dbFiles.every((f) => parseInt(f) >= 300 && parseInt(f) < 400),
+      'database rules should be numbered 300-399')
+
+    // Verify client/external rules (400-499)
+    const clientFiles = files.filter((f) => f.startsWith('4'))
+    assert.ok(clientFiles.every((f) => parseInt(f) >= 400 && parseInt(f) < 500),
+      'client rules should be numbered 400-499')
+
+    // Verify producer rules (500-599)
+    const producerFiles = files.filter((f) => f.startsWith('5'))
+    assert.ok(producerFiles.every((f) => parseInt(f) >= 500 && parseInt(f) < 600),
+      'producer rules should be numbered 500-599')
+
+    // Verify fallback rule (999)
+    const fallbackFiles = files.filter((f) => f.startsWith('999'))
+    assert.equal(fallbackFiles.length, 1, 'should have exactly one fallback rule at 999')
   })
 
   await t.test('should contain 31 rules', () => {
