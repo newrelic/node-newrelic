@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const fs = require('node:fs')
 const path = require('node:path')
 
-const rules = require('#agentlib/otel/traces/transformation-rules/index.js')
+const rules = require('#agentlib/otel/traces/transformation-rules/index.js')()
 
 test('transformation rules module', async (t) => {
   await t.test('should export an array', () => {
@@ -79,8 +79,7 @@ test('transformation rules module', async (t) => {
       assert.ok(files.includes(filename), `${filename} should exist`)
       const rule = require(path.join(rulesDir, filename))
       assert.equal(rule.type, expectedType, `${filename} should be of type ${expectedType}`)
-      assert.equal(rule.matcher.required_attribute_keys.length, 0,
-        `${filename} should have no required attributes`)
+      assert.equal(rule.matcher.required_attribute_keys.length, 0, `${filename} should have no required attributes`)
     }
   })
 
