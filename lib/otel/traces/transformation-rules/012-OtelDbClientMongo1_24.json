@@ -1,0 +1,47 @@
+{
+  "name": "OtelDbClientMongo1_24",
+  "type": "db",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": [
+      "db.system",
+      "server.address",
+      "server.port"
+    ],
+    "attribute_conditions": {
+      "db.system": ["mongodb"]
+    }
+  },
+  "attributes": [
+    {
+      "key": "db.system",
+      "target": "segment",
+      "name": "product"
+    },
+    {
+      "key": "db.name",
+      "target": "segment",
+      "name": "database_name"
+    },
+    {
+      "key": "server.address",
+      "target": "segment",
+      "name": "host"
+    },
+    {
+      "key": "server.port",
+      "target": "segment",
+      "name": "port_path_or_id"
+    }
+  ],
+  "segment": {
+    "operation": "db.operation",
+    "collection": "db.mongodb.collection",
+    "type": "db.system",
+    "name": {
+      "template": "Datastore/statement/${type}/${collection}/${operation}"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "name": "OtelHttpClient1_17",
+  "type": "external",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": [
+      "http.method"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "http.status_code",
+      "target": "segment",
+      "name": "http.statusCode"
+    },
+    {
+      "key": "http.method",
+      "target": "segment",
+      "name": "procedure"
+    },
+    {
+      "key": "net.peer.name",
+      "target": "segment",
+      "name": "hostname"
+    },
+    {
+      "key": "net.peer.port",
+      "target": "segment",
+      "name": "port"
+    },
+    {
+      "key": "http.url",
+      "regex": {
+        "statement": "(.*)\\?(.*)",
+        "groups": [
+          {
+            "group": 1,
+            "name": "url",
+            "target": "segment"
+          },
+          {
+            "group": 2,
+            "regex": {
+              "statement": "([^&=?]+)=([^&]*)",
+              "flags": "g",
+              "name": 1,
+              "value": 2,
+              "target": "segment",
+              "prefix": "request.parameters."
+            }
+          }
+        ]
+      },
+      "target": "segment"
+    }
+  ],
+  "segment": {
+    "host": "net.peer.name",
+    "url": "http.url",
+    "name": {
+      "template": "External/${host}${path}"
+    }
+  }
+}

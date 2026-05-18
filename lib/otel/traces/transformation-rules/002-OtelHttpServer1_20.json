@@ -1,0 +1,54 @@
+{
+  "name": "OtelHttpServer1_20",
+  "type": "server",
+  "matcher": {
+    "required_span_kinds": [
+      "server"
+    ],
+    "required_attribute_keys": [
+      "http.method"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "http.status_code",
+      "target": "trace",
+      "name": "http.statusCode"
+    },
+    {
+      "key": "http.status_code",
+      "target": "transaction",
+      "name": "statusCode"
+    },
+    {
+      "key": "http.method",
+      "target": "trace",
+      "name": "request.method"
+    },
+    {
+      "key": "net.host.port",
+      "target": "segment",
+      "name": "port"
+    },
+    {
+      "key": "http.route",
+      "target": "segment",
+      "name": "http.route"
+    },
+    {
+      "key": "net.host.name",
+      "target": "segment",
+      "name": "host"
+    }
+  ],
+  "transaction": {
+    "type": "web",
+    "name": {
+      "verb": "http.method",
+      "path": "http.route"
+    },
+    "url": {
+      "key": "http.url"
+    }
+  }
+}

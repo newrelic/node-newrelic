@@ -1,0 +1,66 @@
+{
+  "name": "OtelHttpClient1_23",
+  "type": "external",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": [
+      "http.request.method"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "http.response.status_code",
+      "target": "segment",
+      "name": "http.statusCode"
+    },
+    {
+      "key": "http.request.method",
+      "target": "segment",
+      "name": "procedure"
+    },
+    {
+      "key": "server.address",
+      "target": "segment",
+      "name": "hostname"
+    },
+    {
+      "key": "server.port",
+      "target": "segment",
+      "name": "port"
+    },
+    {
+      "key": "url.full",
+      "regex": {
+        "statement": "^([^?]+)(?:\\?(.+))?$",
+        "groups": [
+          {
+            "group": 1,
+            "name": "url",
+            "target": "segment"
+          },
+          {
+            "group": 2,
+            "regex": {
+              "statement": "([^&=?]+)=([^&]*)",
+              "flags": "g",
+              "name": 1,
+              "value": 2,
+              "prefix": "request.parameters.",
+              "target": "segment"
+            }
+          }
+        ]
+      },
+      "target": "segment"
+    }
+  ],
+  "segment": {
+    "host": "server.address",
+    "url": "url.full",
+    "name": {
+      "template": "External/${host}${path}"
+    }
+  }
+}

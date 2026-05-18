@@ -1,0 +1,44 @@
+{
+  "name": "OtelRpcServer1_20",
+  "type": "server",
+  "matcher": {
+    "required_span_kinds": [
+      "server"
+    ],
+    "required_attribute_keys": [
+      "rpc.system"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "rpc.grpc.status_code",
+      "target": "trace",
+      "name": "response.status"
+    },
+    {
+      "key": "rpc.grpc.status_code",
+      "target": "segment",
+      "name": "rpc.grpc.status_code"
+    },
+    {
+      "key": "rpc.system",
+      "target": "segment",
+      "name": "component"
+    },
+    {
+      "key": "rpc.method",
+      "target": "trace",
+      "name": "request.method"
+    }
+  ],
+  "transaction": {
+    "type": "web",
+    "name": {
+      "prefix": "rpc.system",
+      "templatePath": "${rpc.service}/${rpc.method}"
+    },
+    "url": {
+      "template": "${rpc.service}/${rpc.method}"
+    }
+  }
+}

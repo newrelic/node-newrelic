@@ -1,0 +1,44 @@
+{
+  "name": "OtelDbClientDynamo1_40",
+  "type": "db",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": [
+      "db.system.name"
+    ],
+    "attribute_conditions": {
+      "db.system.name": ["dynamodb"]
+    }
+  },
+  "attributes": [
+    {
+      "key": "db.system.name",
+      "target": "segment",
+      "name": "product"
+    },
+    {
+      "template": "dynamodb.${aws.region}.amazonaws.com",
+      "target": "segment",
+      "name": "host"
+    },
+    {
+      "value": "443",
+      "target": "segment",
+      "name": "port_path_or_id"
+    },
+    {
+      "template": "arn:aws:dynamodb:${aws.region}:${accountId}:table/${aws.dynamodb.table_names}",
+      "target": "segment",
+      "name": "cloud.resource_id"
+    }
+  ],
+  "segment": {
+    "operation": "db.operation.name",
+    "type": "db.system.name",
+    "name": {
+      "template": "Datastore/operation/${type}/${operation}"
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "ProducerSQS_1_17",
+  "type": "producer",
+  "matcher": {
+    "required_span_kinds": [
+      "producer"
+    ],
+    "required_attribute_keys": [
+      "messaging.system",
+      "messaging.destination"
+    ],
+    "attribute_conditions": {
+      "messaging.system": ["aws.sqs"]
+    }
+  },
+  "attributes": [
+    {
+      "value": "aws_sqs",
+      "target": "segment",
+      "name": "messaging.system"
+    },
+    {
+      "key": "messaging.destination",
+      "target": "segment",
+      "name": "messaging.destination.name"
+    },
+    {
+      "key": "aws.region",
+      "target": "segment",
+      "name": "cloud.region"
+    },
+    {
+      "key": "messaging.url",
+      "regex": {
+        "statement": "\\/\\/([\\w-\\.]+)\\/(\\d+)\\/.*$",
+        "groups": [
+          {
+            "group": 1,
+            "name": "host",
+            "target": "segment"
+          },
+          {
+            "group": 2,
+            "name": "cloud.account.id",
+            "target": "segment"
+          }
+        ]
+      }
+    },
+    {
+      "key": "messaging.message_id",
+      "target": "segment",
+      "name": "correlation_id"
+    }
+  ],
+  "segment": {
+    "name": {
+      "template": "MessageBroker/${messaging.system}/${messaging.operation}/Produce/Named/${messaging.destination}"
+    }
+  }
+}
