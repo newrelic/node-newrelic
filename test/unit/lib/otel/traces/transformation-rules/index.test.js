@@ -23,6 +23,14 @@ test('transformation rules module', async (t) => {
       .filter((file) => /^\d{3}-.+\.json$/.test(file))
       .sort()
 
+    // Numbering scheme:
+    // - Server rules: 100-199 (fallback at 199)
+    // - Consumer rules: 200-299 (fallback at 299)
+    // - Database rules: 300-399 (no fallback)
+    // - Client/External rules: 400-499 (fallback at 499)
+    // - Producer rules: 500-599 (fallback at 599)
+    // - Internal fallback: 999
+
     // Verify server rules (100-199)
     const serverFiles = files.filter((f) => f.startsWith('1'))
     assert.ok(serverFiles.every((f) => parseInt(f) >= 100 && parseInt(f) < 200),
@@ -48,9 +56,32 @@ test('transformation rules module', async (t) => {
     assert.ok(producerFiles.every((f) => parseInt(f) >= 500 && parseInt(f) < 600),
       'producer rules should be numbered 500-599')
 
-    // Verify fallback rule (999)
+    // Verify final internal fallback rule (999)
     const fallbackFiles = files.filter((f) => f.startsWith('999'))
     assert.equal(fallbackFiles.length, 1, 'should have exactly one fallback rule at 999')
+  })
+
+  await t.test('fallback rules should be at X99 positions', () => {
+    const rulesDir = path.join(__dirname, '../../../../../../lib/otel/traces/transformation-rules')
+    const files = fs.readdirSync(rulesDir)
+      .filter((file) => /^\d{3}-.+\.json$/.test(file))
+
+    // Verify specific fallback positions
+    const fallbackPositions = {
+      '199-FallbackServer.json': 'server',
+      '299-FallbackConsumer.json': 'consumer',
+      '499-FallbackClient.json': 'external',
+      '599-FallbackProducer.json': 'producer',
+      '999-Fallback.json': 'internal'
+    }
+
+    for (const [filename, expectedType] of Object.entries(fallbackPositions)) {
+      assert.ok(files.includes(filename), `${filename} should exist`)
+      const rule = require(path.join(rulesDir, filename))
+      assert.equal(rule.type, expectedType, `${filename} should be of type ${expectedType}`)
+      assert.equal(rule.matcher.required_attribute_keys.length, 0,
+        `${filename} should have no required attributes`)
+    }
   })
 
   await t.test('should contain 31 rules', () => {
