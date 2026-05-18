@@ -2,6 +2,31 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.0.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Dropped support for Node.js 20",
+          "Updated minimum supported version of `@nestjs/cli` and `@nestjs/core` to `10.0.0`",
+          "Updated minimum supported version of `next` to 14",
+          "Updated minimum supported version of `bluebird` to `3.0.0`",
+          "Updated minimum supported version of `mysql2` to `3.0.0`",
+          "Updated minimum supported version for `cassandra-driver` to `4.0.0`",
+          "Removed instrumentation for `koa-route`",
+          "Removed `shim.prefixRouteParameters` as the logic was previously moved to when a transaction ends",
+          "Dropped support for `fastify` 3.x",
+          "Removed creating `MySQL Pool#query` segments",
+          "Removed instrumentation for `koa-router`",
+          "Removed Cross Application Tracing(CAT) functionality",
+          "Removed support for License, Application, and Security Policies(LASP)",
+          "Removed `shim.argsToArray`",
+          "Updated `config.distributed_tracing.exclude_newrelic_header` to be set to `true` by default",
+          "Migrated `@apollo/sever` instrumentation from a plugin(`@newrelic/apollo-server-plugin`) to traditional instrumentation"
+        ]
+      }
+    },
+    {
       "version": "13.20.0",
       "changes": {
         "security": [],
