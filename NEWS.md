@@ -1,3 +1,77 @@
+### v14.0.0 (2026-05-18)
+#### ⚠ BREAKING CHANGES
+
+This version of the Node.js agent is a SemVer MAJOR update and contains the following breaking changes. MAJOR versions may drop support for language runtimes that have reached End-of-Life according to the maintainer. Additionally, MAJOR versions may drop support for and remove certain instrumentation. For more details on these changes please see the [migration guide](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/update-nodejs-agent/).
+
+* Dropped support for Node.js 20
+* Migrated `@apollo/sever` instrumentation from a plugin(`@newrelic/apollo-server-plugin`) to traditional instrumentation
+* Removed Cross Application Tracing(CAT) functionality
+* Removed support for License, Application, and Security Policies(LASP)
+* Removed instrumentation for `koa-route`
+* Removed instrumentation for `koa-router`
+* Removed `shim.prefixRouteParameters` as the logic was previously moved to when a transaction ends
+* Removed creating `MySQL Pool#query` segments
+* Removed `shim.argsToArray`
+* Updated minimum supported version of `@nestjs/cli` and `@nestjs/core` to `10.0.0`
+* Updated minimum supported version of `next` to 14
+* Updated minimum supported version of `bluebird` to `3.0.0`
+* Updated minimum supported version of `mysql2` to `3.0.0`
+* Updated minimum supported version for `cassandra-driver` to `4.0.0`
+* Dropped support for `fastify` 3.x
+* Updated `config.distributed_tracing.exclude_newrelic_header` to be set to `true` by default
+
+#### Features
+
+* Dropped support for `fastify` 3.x ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([720979b](https://github.com/newrelic/node-newrelic/commit/720979bccb65c93a143d1e069a32904bff78f02b))
+* Dropped support for Node.js 20 ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([5306223](https://github.com/newrelic/node-newrelic/commit/530622314532e3c7eb4d8c3685e0b1974df61b8f))
+* Migrated `@apollo/sever` instrumentation from a plugin(`@newrelic/apollo-server-plugin`) to traditional instrumentation ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([736e0a4](https://github.com/newrelic/node-newrelic/commit/736e0a40b78224e32e263a3aa0264c150d29982d))
+* Removed `shim.argsToArray` ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([9183d29](https://github.com/newrelic/node-newrelic/commit/9183d29c456aba6ad003bc0a365c14d9b5d3044c))
+* Removed `shim.prefixRouteParameters` as the logic was previously moved to when a transaction ends ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([9f1408e](https://github.com/newrelic/node-newrelic/commit/9f1408e26b168733644b3c9160dc45726c4b0034))
+* Removed creating `MySQL Pool#query` segments ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([1d5a6dd](https://github.com/newrelic/node-newrelic/commit/1d5a6dde7f5c1280079cdca859cc5a2fc3121556))
+* Removed Cross Application Tracing(CAT) functionality ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([a87ed4d](https://github.com/newrelic/node-newrelic/commit/a87ed4dbd3aad072de81475601844efebd8353ac))
+* Removed instrumentation for `koa-route` ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([40c10d9](https://github.com/newrelic/node-newrelic/commit/40c10d90fdebd08dba7bb8e99856def93093267a))
+* Removed instrumentation for `koa-router` ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([038ecc7](https://github.com/newrelic/node-newrelic/commit/038ecc749a0fd5d2cdd0ba6b5b0c9537f04a3208))
+* Removed support for License, Application, and Security Policies(LASP) ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([bc09485](https://github.com/newrelic/node-newrelic/commit/bc094850bd18daf6be047615ad71c4dc13a7ec85))
+* Updated `config.distributed_tracing.exclude_newrelic_header` to be set to `true` by default ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([774ce08](https://github.com/newrelic/node-newrelic/commit/774ce0805ddefd4a6e89d8635183d31e2d7e1d3a))
+* Updated minimum supported version for `cassandra-driver` to `4.0.0` ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([419337a](https://github.com/newrelic/node-newrelic/commit/419337a78d126467cbf4fc70b94ec293fb919bbf))
+* Updated minimum supported version of `@nestjs/cli` and `@nestjs/core` to `10.0.0` ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([120e6de](https://github.com/newrelic/node-newrelic/commit/120e6deef05c940baea52656dd04fdd992e9061d))
+* Updated minimum supported version of `bluebird` to `3.0.0` ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([369f920](https://github.com/newrelic/node-newrelic/commit/369f920a86b81980552fe97c708b1aeb3a70771f))
+* Updated minimum supported version of `mysql2` to `3.0.0` ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([2861406](https://github.com/newrelic/node-newrelic/commit/2861406c6d9d41f71dab2332d1fd22c27ddfda7c))
+* Updated minimum supported version of `next` to 14 ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([80c5c0c](https://github.com/newrelic/node-newrelic/commit/80c5c0ca1ffdf2c2fa6d4abf74c8b7c3e2024a2e))
+
+#### Code refactoring
+
+* Updated how exclusive time and trace total time is calculated ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([b227ed6](https://github.com/newrelic/node-newrelic/commit/b227ed6975b077a8e16cffafc781a14d55636059))
+* Updated instances of `tracer.bindFunction` with `tracer.runInContext` to improve performance in hot paths ([#3811](https://github.com/newrelic/node-newrelic/pull/3811)) ([5d77085](https://github.com/newrelic/node-newrelic/commit/5d77085b89e98bb1e09a9206a5d5656cdc410c2d))
+
+#### Documentation
+
+* Updated compatibility report ([#3990](https://github.com/newrelic/node-newrelic/pull/3990)) ([f3bb380](https://github.com/newrelic/node-newrelic/commit/f3bb380770e575e1ef3600e6601ddbf944b189ea))
+
+#### Miscellaneous chores
+
+* Removed `husky` in lieu of git hooks, added security hardened options to `npm install` ([#3988](https://github.com/newrelic/node-newrelic/pull/3988)) ([e3a7dda](https://github.com/newrelic/node-newrelic/commit/e3a7ddaee58f393cf347d812fed6b4c6ab1505f0))
+* Updated production dependencies to the latest ([#3996](https://github.com/newrelic/node-newrelic/pull/3996)) ([b710bac](https://github.com/newrelic/node-newrelic/commit/b710bacff2231c8038b792ac4c7a570991566835))
+
+#### Tests
+
+* Added `minSupported` to the nest js versioned tests package.json to ensure the compatibility report will show we support `@nestjs/core` ([#3982](https://github.com/newrelic/node-newrelic/pull/3982)) ([bfa4aa1](https://github.com/newrelic/node-newrelic/commit/bfa4aa1d7b1fa60b8ac0da221f132124fb31ea6d))
+* Added prisma 7 tests ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([116ee9c](https://github.com/newrelic/node-newrelic/commit/116ee9cd006d378afba1922d8daa27e213d1f6ab))
+* Moved versioned test runner code from `@newrelic/test-utilties` to agent ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([d4f9a0c](https://github.com/newrelic/node-newrelic/commit/d4f9a0ce27364b7cfb723fa6a7c56a5ccdc07b68))
+* Removed `@newrelic/test-utilities` ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([1751147](https://github.com/newrelic/node-newrelic/commit/1751147503c9ff971208c2977912d7298e9e923f))
+* Decrease smoke-like esm tests' sample size ([#3986](https://github.com/newrelic/node-newrelic/pull/3986)) ([40669fb](https://github.com/newrelic/node-newrelic/commit/40669fbc157d65b53a4e5b7c22061ede7f26e630))
+* Fixed `test/lib/get-package-version.js` ([#3993](https://github.com/newrelic/node-newrelic/pull/3993)) ([5d31f08](https://github.com/newrelic/node-newrelic/commit/5d31f08fb542f7b58bf89457f8a30255511ee9e0))
+* Fixed version lookup issue in aws-sdk-v3 tests ([#3992](https://github.com/newrelic/node-newrelic/pull/3992)) ([7be3f4a](https://github.com/newrelic/node-newrelic/commit/7be3f4ab5a69fa7563752f584704e59cf6a863d2))
+* Restructure `aws-sdk-v3` test runner to use `groupedDependencies` ([#3984](https://github.com/newrelic/node-newrelic/pull/3984)) ([fc67490](https://github.com/newrelic/node-newrelic/commit/fc674909e176f0f5305a0798c14d3c8447e58155))
+* Updated a few versioned test stanzas to reduce the number of combinations it runs ([#3991](https://github.com/newrelic/node-newrelic/pull/3991)) ([d606305](https://github.com/newrelic/node-newrelic/commit/d6063055ebd034deabd2f2c3f1acba8162a5bd44))
+
+#### Continuous integration
+
+* Added `contents: write` to `post-release` to allow commit/push of api docs ([#3978](https://github.com/newrelic/node-newrelic/pull/3978)) ([90c4e61](https://github.com/newrelic/node-newrelic/commit/90c4e61ac304715dc0848aad091ec1725e057367))
+* Updated remaining actions so they are running on Node 24 ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([ea21934](https://github.com/newrelic/node-newrelic/commit/ea21934a7b638855610ff193e88d15f8b910d8a8))
+* Updated version of `actions/download-artifact` to v8 ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([54a58b9](https://github.com/newrelic/node-newrelic/commit/54a58b95bb8b5a15d7f7b340a9c8da2a3d3e88a9))
+* Updated versions of actions to ensure they are running on node 24 ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([6302002](https://github.com/newrelic/node-newrelic/commit/630200223d03e39249e359563727900a70ce15cf))
+
 ### v13.20.0 (2026-05-12)
 
 #### Features
