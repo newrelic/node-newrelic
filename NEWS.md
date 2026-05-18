@@ -20,8 +20,6 @@ This version of the Node.js agent is a SemVer MAJOR update and contains the foll
 * Dropped support for `fastify` 3.x
 * Updated `config.distributed_tracing.exclude_newrelic_header` to be set to `true` by default
 
-For more information on migration steps from v13 to v14, please read the [migration guide](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/update-nodejs-agent/#node-agent-v14)
-
 #### Features
 
 * Dropped support for `fastify` 3.x ([#3980](https://github.com/newrelic/node-newrelic/pull/3980)) ([720979b](https://github.com/newrelic/node-newrelic/commit/720979bccb65c93a143d1e069a32904bff78f02b))
