@@ -723,7 +723,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.3](https://github.com/newrelic/csec-node-agent/tree/v3.0.3)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.3/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.4](https://github.com/newrelic/csec-node-agent/tree/v3.0.4)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.4/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -769,7 +769,7 @@ This license terminates when the Software stops being provided by New Relic or w
 
 ### @opentelemetry/api-logs
 
-This product includes source derived from [@opentelemetry/api-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.203.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.203.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.203.0/LICENSE):
+This product includes source derived from [@opentelemetry/api-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.218.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.218.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.218.0/LICENSE):
 
 ```
                                  Apache License
@@ -1396,7 +1396,7 @@ This product includes source derived from [@opentelemetry/core](https://github.c
 
 ### @opentelemetry/exporter-metrics-otlp-proto
 
-This product includes source derived from [@opentelemetry/exporter-metrics-otlp-proto](https://github.com/open-telemetry/opentelemetry-js) ([v0.201.1](https://github.com/open-telemetry/opentelemetry-js/tree/v0.201.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.201.1/LICENSE):
+This product includes source derived from [@opentelemetry/exporter-metrics-otlp-proto](https://github.com/open-telemetry/opentelemetry-js) ([v0.218.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.218.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.218.0/LICENSE):
 
 ```
                                  Apache License
@@ -1814,7 +1814,7 @@ This product includes source derived from [@opentelemetry/resources](https://git
 
 ### @opentelemetry/sdk-logs
 
-This product includes source derived from [@opentelemetry/sdk-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.203.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.203.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.203.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.218.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.218.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.218.0/LICENSE):
 
 ```
                                  Apache License
@@ -2905,7 +2905,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.7.4](https://github.com/npm/node-semver/tree/v7.7.4)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.7.4/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.8.0](https://github.com/npm/node-semver/tree/v7.8.0)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.8.0/LICENSE):
 
 ```
 The ISC License
@@ -2961,7 +2961,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1039.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1039.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1039.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1048.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1048.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1048.0/LICENSE):
 
 ```
                                 Apache License
@@ -3170,7 +3170,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1039.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1039.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1039.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1048.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1048.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1048.0/LICENSE):
 
 ```
                                 Apache License
@@ -5530,7 +5530,7 @@ SOFTWARE.
 
 ### protobufjs
 
-This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.5.6](https://github.com/protobufjs/protobuf.js/tree/v7.5.6)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.5.6/LICENSE):
+This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v7.6.0](https://github.com/protobufjs/protobuf.js/tree/v7.6.0)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v7.6.0/LICENSE):
 
 ```
 This license applies to all parts of protobuf.js except those files
