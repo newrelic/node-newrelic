@@ -15,21 +15,6 @@
         "koa": {
           "versions": ">=2.0.0",
           "samples": 5
-        }
-      },
-      "files": [
-        "koa.test.js",
-        "code-level-metrics.test.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=22"
-      },
-      "dependencies": {
-        "koa": {
-          "versions": ">=2.0.0",
-          "samples": 5
         },
         "@koa/router": {
           "versions": ">=12.0.1",
@@ -37,6 +22,8 @@
         }
       },
       "files": [
+        "koa.test.js",
+        "code-level-metrics.test.js",
         "scoped-koa-router.test.js",
         "scoped-koa-router-clm.test.js"
       ]

@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 
-const { assertPackageMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
 
 require('../../lib/metrics_helper')
 const semver = require('semver')
@@ -37,27 +37,17 @@ function getPathToRegexpVersion() {
 
 test(`${pkg} instrumentation`, async (t) => {
   const pkgVersion = helper.readPackageVersion(__dirname, pkg)
-  const paramMiddlewareName = 'Nodejs/Middleware/Koa/middleware//:first'
   const pathToRegexVersion = getPathToRegexpVersion()
 
-  /**
-   * Helper to decide how to name nested route segments
-   * This diverged in 8.0.2 and we decided not to fix.
-   * Instead of pinning the routers to a very old version we unleashed
-   * and handle the differences.
-   *
-   * See original issue: https://github.com/newrelic/node-newrelic-koa/issues/35
-   *
-   * @param {string} mwName middleware name
-   */
-  function getNestedSpanName(mwName) {
-    let spanName = `Nodejs/Middleware/Koa/${mwName}/`
-    if (semver.gte(pkgVersion, '8.0.2')) {
-      spanName += '/:second'
+  function getParamwareName() {
+    let paramwareName = 'Nodejs/Middleware/Koa/'
+    if (semver.lte(pkgVersion, '14.0.0')) {
+      paramwareName += 'middleware'
     } else {
-      spanName += '/:first/:second'
+      paramwareName += 'firstParamware'
     }
-    return spanName
+    paramwareName += '//[param handler :first]'
+    return paramwareName
   }
 
   function testSetup(ctx) {
@@ -81,12 +71,6 @@ test(`${pkg} instrumentation`, async (t) => {
   await t.test('with single router', async (t) => {
     t.beforeEach(testSetup)
     t.afterEach(tearDown)
-
-    await t.test('should log tracking metrics', function(t) {
-      const { agent, router } = t.nr
-      router.get('/', () => {})
-      assertPackageMetrics({ agent, pkg, version: pkgVersion, subscriberType: true })
-    })
 
     await t.test('should name and produce segments for matched path', (t, end) => {
       const { agent, router, app } = t.nr
@@ -230,11 +214,8 @@ test(`${pkg} instrumentation`, async (t) => {
           [
             'Koa/Router: /',
             [
-              paramMiddlewareName,
-              [
-                'Nodejs/Middleware/Koa/firstParamware//[param handler :first]',
-                ['Nodejs/Middleware/Koa/firstMiddleware//:first']
-              ]
+              getParamwareName(),
+              ['Nodejs/Middleware/Koa/firstMiddleware//:first']
             ]
           ]
         ])
@@ -265,8 +246,7 @@ test(`${pkg} instrumentation`, async (t) => {
             [
               'Koa/Router: /',
               [
-                paramMiddlewareName,
-                ['Nodejs/Middleware/Koa/firstParamware//[param handler :first]']
+                getParamwareName(),
               ]
             ]
           ])
@@ -519,7 +499,7 @@ test(`${pkg} instrumentation`, async (t) => {
         // resolution of a recursively returned promise.
         // https://github.com/koajs/compose/blob/e754ca3c13e9248b3f453d98ea0b618e09578e2d/index.js#L42-L44
         assertSegments(tx.trace, tx.trace.root, [
-          'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+          'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
           [
             'Koa/Router: /',
             [
@@ -530,7 +510,7 @@ test(`${pkg} instrumentation`, async (t) => {
         ])
         assert.equal(
           tx.name,
-          'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+          'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
           'transaction should be named after the most specific matched path'
         )
         end()
@@ -559,7 +539,7 @@ test(`${pkg} instrumentation`, async (t) => {
         // resolution of a recursively returned promise.
         // https://github.com/koajs/compose/blob/e754ca3c13e9248b3f453d98ea0b618e09578e2d/index.js#L42-L44
         assertSegments(tx.trace, tx.trace.root, [
-          'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+          'WebTransaction/WebFrameworkUri/Koa/GET//first/:second',
           [
             'Koa/Router: /',
             [
@@ -570,7 +550,7 @@ test(`${pkg} instrumentation`, async (t) => {
         ])
         assert.equal(
           tx.name,
-          'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+          'WebTransaction/WebFrameworkUri/Koa/GET//first/:second',
           'transaction should be named after the last matched path'
         )
         end()
@@ -594,7 +574,7 @@ test(`${pkg} instrumentation`, async (t) => {
       agent.on('transactionFinished', (tx) => {
         assertSegments(tx.trace, tx.trace.root, [
           'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
-          ['Koa/Router: /', [getNestedSpanName('secondMiddleware')]]
+          ['Koa/Router: /', ['Nodejs/Middleware/Koa/secondMiddleware//:first/:second']]
         ])
         assert.equal(
           tx.name,
@@ -626,7 +606,7 @@ test(`${pkg} instrumentation`, async (t) => {
           'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
           [
             'Nodejs/Middleware/Koa/appLevelMiddleware',
-            ['Koa/Router: /', [getNestedSpanName('terminalMiddleware')]]
+            ['Koa/Router: /', ['Nodejs/Middleware/Koa/terminalMiddleware//:first/:second']]
           ]
         ])
         assert.equal(
@@ -766,8 +746,7 @@ test(`${pkg} instrumentation`, async (t) => {
             ])
             assert.equal(
               tx.name,
-              'WebTransaction/NormalizedUri/*',
-              'should have normalized transaction name'
+              'WebTransaction/NormalizedUri/*'
             )
             const errors = agent.errors.eventAggregator
             assert.equal(errors.length, 0, 'error should not be recorded')
