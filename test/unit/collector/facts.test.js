@@ -204,7 +204,8 @@ test('fun facts about apps that New Relic is interested in including', async (t)
     agent.config.parsedLabels = parseLabels(
       {
         a: 'b',
-        [longKey]: longValue
+        [longKey]: longValue,
+        c: undefined
       },
       { child: () => logger }
     )
@@ -214,6 +215,21 @@ test('fun facts about apps that New Relic is interested in including', async (t)
         { label_type: '€'.repeat(255), label_value: '𝌆'.repeat(255) }
       ]
       assert.deepEqual(result.labels, expected)
+      end()
+    })
+  })
+
+  await t.test('should not convert label object if empty values', (t, end) => {
+    const { agent, logger, facts } = t.nr
+    agent.config.parsedLabels = parseLabels(
+      {
+        a: undefined,
+        b: undefined
+      },
+      { child: () => logger }
+    )
+    facts(agent, (result) => {
+      assert.deepEqual(result.labels, [])
       end()
     })
   })

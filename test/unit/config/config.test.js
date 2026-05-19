@@ -151,6 +151,19 @@ test('parsedLabels', () => {
   ])
 })
 
+test('parsedLabels object', () => {
+  const configuration = Config.initialize({ labels: { foo: 'bar', bar: 'baz' } })
+  assert.deepEqual(configuration.parsedLabels, [
+    { label_type: 'foo', label_value: 'bar' },
+    { label_type: 'bar', label_value: 'baz' },
+  ])
+})
+
+test('parsedLabels empty values in object', () => {
+  const configuration = Config.initialize({ labels: { foo: undefined, bar: undefined } })
+  assert.deepEqual(configuration.parsedLabels, [])
+})
+
 test('loggingLabels', async (t) => {
   await t.test('should exclude labels regardless of case', () => {
     const config = {
