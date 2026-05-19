@@ -41,6 +41,12 @@ Each item in the array is a rule object with the following properties:
 - **attribute_conditions** (`object`, optional):  
   An object where each key is an attribute name and the value is an array of allowed values for that attribute.
 
+- **scope_name** (`string`, optional):
+  Indicates that the span's `instrumentationScope.name` must be set to the  specified value.
+
+- **scope_version** (`string`, optional):
+  Indicates that the span's `instrumentationScope.version` must satisfy the provided version range. For example, the value in the rule may be `^1.0.0` and the value in the span may be `1.5.0`.
+
 ---
 
 ### attributes
