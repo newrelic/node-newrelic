@@ -1,0 +1,16 @@
+{
+  "name": "FallbackClient",
+  "type": "external",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": []
+  },
+  "attributes": [],
+  "segment": {
+    "name": {
+      "template": "External/unknown"
+    }
+  }
+}

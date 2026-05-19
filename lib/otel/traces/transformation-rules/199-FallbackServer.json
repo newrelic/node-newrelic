@@ -1,0 +1,17 @@
+{
+  "name": "FallbackServer",
+  "type": "server",
+  "matcher": {
+    "required_span_kinds": [
+      "server"
+    ],
+    "required_attribute_keys": []
+  },
+  "attributes": [],
+  "transaction": {
+    "type": "web",
+    "name": {
+      "value": "WebFrameworkUri//unknown"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "FallbackProducer",
+  "type": "producer",
+  "matcher": {
+    "required_span_kinds": [
+      "producer"
+    ],
+    "required_attribute_keys": []
+  },
+  "attributes": [],
+  "segment": {
+    "name": {
+      "template": "MessageBroker/unknown/unknown/Produce"
+    }
+  }
+}

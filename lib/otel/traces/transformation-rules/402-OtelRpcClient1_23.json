@@ -1,0 +1,59 @@
+{
+  "name": "OtelRpcClient1_23",
+  "type": "external",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": [
+      "rpc.system",
+      "server.address"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "rpc.grpc.status_code",
+      "target": "segment",
+      "name": "grpc.statusCode"
+    },
+    {
+      "key": "rpc.system",
+      "target": "segment",
+      "name": "component"
+    },
+    {
+      "key": "rpc.method",
+      "target": "segment",
+      "name": "procedure"
+    },
+    {
+      "key": "server.address",
+      "target": "segment",
+      "name": "hostname"
+    },
+    {
+      "key": "server.port",
+      "target": "segment",
+      "name": "port"
+    },
+    {
+      "template": "grpc://${server.address}${server.port}/${rpc.service}/${rpc.method}",
+      "target": "segment",
+      "mappings": [
+        {
+          "key": "server.port",
+          "arguments": "value",
+          "body": "return value !== 80 && value !== 443 ? `:${value}` : ''"
+        }
+      ],
+      "name": "url"
+    }
+  ],
+  "segment": {
+    "host": "server.address",
+    "system": "rpc.system",
+    "name": {
+      "template": "External/${server.address}/${rpc.service}/${rpc.method}"
+    }
+  }
+}

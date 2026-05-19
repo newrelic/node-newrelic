@@ -1,0 +1,57 @@
+{
+  "name": "OtelMessagingConsumer1_30",
+  "type": "consumer",
+  "matcher": {
+    "required_span_kinds": [
+      "consumer"
+    ],
+    "required_attribute_keys": [
+      "messaging.system",
+      "messaging.operation.name",
+      "messaging.destination.name"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "messaging.destination.name",
+      "target": "trace",
+      "name": "message.queueName",
+      "highSecurity": true
+    },
+    {
+      "key": "messaging.destination.name",
+      "target": "segment",
+      "name": "message.queueName",
+      "highSecurity": true
+    },
+    {
+      "key": "server.port",
+      "target": "segment",
+      "name": "port"
+    },
+    {
+      "key": "server.address",
+      "target": "segment",
+      "name": "host"
+    },
+    {
+      "key": "messaging.kafka.message.key",
+      "target": "trace",
+      "name": "message.routingKey",
+      "highSecurity": true
+    },
+    {
+      "key": "messaging.rabbitmq.destination.routing_key",
+      "target": "trace",
+      "name": "message.routingKey",
+      "highSecurity": true
+    }
+  ],
+  "transaction": {
+    "type": "message",
+    "system": "messaging.system",
+    "name": {
+      "templateValue": "${messaging.system}/${messaging.operation.name}/Named/${messaging.destination.name}"
+    }
+  }
+}

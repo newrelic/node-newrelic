@@ -1,0 +1,36 @@
+{
+  "name": "OtelLambdaClient1_17",
+  "type": "external",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": [
+      "rpc.system",
+      "faas.invoked_provider"
+    ],
+    "attribute_conditions": {
+      "faas.invoked_provider": ["aws"]
+    }
+  },
+  "attributes": [
+    {
+      "value": "aws_lambda",
+      "target": "segment",
+      "name": "cloud.platform"
+    },
+    {
+      "template": "arn:aws:lambda:${faas.invoked_region}:${accountId}:function:${faas.invoked_name}",
+      "target": "segment",
+      "name": "cloud.resource_id"
+    }
+  ],
+  "segment": {
+    "host": {
+      "template": "lambda.${aws.region}.amazonaws.com"
+    },
+    "name": {
+      "template": "External/${host}"
+    }
+  }
+}

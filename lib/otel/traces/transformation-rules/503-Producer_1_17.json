@@ -1,0 +1,40 @@
+{
+  "name": "Producer_1_17",
+  "type": "producer",
+  "matcher": {
+    "required_span_kinds": [
+      "producer"
+    ],
+    "required_attribute_keys": [
+      "messaging.system",
+      "messaging.destination_kind"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "net.peer.name",
+      "target": "segment",
+      "name": "host"
+    },
+    {
+      "key": "net.peer.port",
+      "target": "segment",
+      "name": "port"
+    },
+    {
+      "key": "messaging.rabbitmq.routing_key",
+      "target": "segment",
+      "name": "routing_key"
+    },
+    {
+      "key": "messaging.conversation_id",
+      "target": "segment",
+      "name": "correlation_id"
+    }
+  ],
+  "segment": {
+    "name": {
+      "template": "MessageBroker/${messaging.system}/${messaging.destination_kind}/Produce/Named/${messaging.destination}"
+    }
+  }
+}

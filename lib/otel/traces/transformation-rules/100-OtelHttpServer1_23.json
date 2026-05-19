@@ -1,0 +1,66 @@
+{
+  "name": "OtelHttpServer1_23",
+  "type": "server",
+  "matcher": {
+    "required_span_kinds": [
+      "server"
+    ],
+    "required_attribute_keys": [
+      "http.request.method"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "http.response.status_code",
+      "target": "trace",
+      "name": "http.statusCode"
+    },
+    {
+      "key": "http.response.status_code",
+      "target": "transaction",
+      "name": "statusCode"
+    },
+    {
+      "key": "http.request.method",
+      "target": "trace",
+      "name": "request.method"
+    },
+    {
+      "key": "server.port",
+      "target": "segment",
+      "name": "port"
+    },
+    {
+      "key": "http.route",
+      "target": "segment",
+      "name": "http.route"
+    },
+    {
+      "key": "server.address",
+      "target": "segment",
+      "name": "host"
+    }
+  ],
+  "transaction": {
+    "type": "web",
+    "name": {
+      "verb": "http.request.method",
+      "path": "http.route"
+    },
+    "url": {
+      "template": "${url.scheme}://${server.address}${server.port}${url.path}${url.query}",
+      "mappings": [
+        {
+          "key": "server.port",
+          "arguments": "value",
+          "body": "return value !== 80 && value !== 443 ? `:${value}` : ''"
+        },
+        {
+          "key": "url.query",
+          "arguments": "value",
+          "body": "return value.startsWith('?') ? value : `?${value}`"
+        }
+      ]
+    }
+  }
+}

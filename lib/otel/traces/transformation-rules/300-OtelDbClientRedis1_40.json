@@ -1,0 +1,41 @@
+{
+  "name": "OtelDbClientRedis1_40",
+  "type": "db",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": [
+      "db.system.name",
+      "server.address",
+      "server.port"
+    ],
+    "attribute_conditions": {
+      "db.system.name": ["redis", "memcached"]
+    }
+  },
+  "attributes": [
+    {
+      "key": "db.system.name",
+      "target": "segment",
+      "name": "product"
+    },
+    {
+      "key": "server.address",
+      "target": "segment",
+      "name": "host"
+    },
+    {
+      "key": "server.port",
+      "target": "segment",
+      "name": "port_path_or_id"
+    }
+  ],
+  "segment": {
+    "operation": "db.query.text",
+    "type": "db.system.name",
+    "name": {
+      "template": "Datastore/operation/${type}/${operation}"
+    }
+  }
+}

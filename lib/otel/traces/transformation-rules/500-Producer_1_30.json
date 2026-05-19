@@ -1,0 +1,46 @@
+{
+  "name": "Producer_1_30",
+  "type": "producer",
+  "matcher": {
+    "required_span_kinds": [
+      "producer"
+    ],
+    "required_attribute_keys": [
+      "messaging.system",
+      "messaging.operation.name",
+      "messaging.destination.name"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "server.address",
+      "target": "segment",
+      "name": "host"
+    },
+    {
+      "key": "server.port",
+      "target": "segment",
+      "name": "port"
+    },
+    {
+      "key": "messaging.kafka.message.key",
+      "target": "segment",
+      "name": "routing_key"
+    },
+    {
+      "key": "messaging.rabbitmq.destination.routing_key",
+      "target": "segment",
+      "name": "routing_key"
+    },
+    {
+      "key": "messaging.message.conversation_id",
+      "target": "segment",
+      "name": "correlation_id"
+    }
+  ],
+  "segment": {
+    "name": {
+      "template": "MessageBroker/${messaging.system}/${messaging.operation.name}/Produce/Named/${messaging.destination.name}"
+    }
+  }
+}

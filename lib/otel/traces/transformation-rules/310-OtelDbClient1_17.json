@@ -1,0 +1,43 @@
+{
+  "name": "OtelDbClient1_17",
+  "type": "db",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": [
+      "db.system",
+      "net.peer.name",
+      "net.peer.port"
+    ]
+  },
+  "attributes": [
+    {
+      "key": "db.system",
+      "target": "segment",
+      "name": "product"
+    },
+    {
+      "key": "db.name",
+      "target": "segment",
+      "name": "database_name"
+    },
+    {
+      "key": "net.peer.name",
+      "target": "segment",
+      "name": "host"
+    },
+    {
+      "key": "net.peer.port",
+      "target": "segment",
+      "name": "port_path_or_id"
+    }
+  ],
+  "segment": {
+    "statement": "db.statement",
+    "type": "db.system",
+    "name": {
+      "template": "Datastore/statement/${type}/${collection}/${operation}"
+    }
+  }
+}
