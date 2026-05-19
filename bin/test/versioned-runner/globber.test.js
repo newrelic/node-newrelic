@@ -47,7 +47,7 @@ test('resolveGlobs', async (t) => {
   await t.test('resolve asterisk', async (t) => {
     const files = await globber.resolveGlobs([`${TEST_DIR}/*.js`])
     assert.equal(files.length, 2)
-    assert.deepEqual(files, [`${TEST_DIR}/other.mock.fake-test.js`, `${TEST_DIR}/redis.mock.fake-test.js`])
+    assert.deepEqual(files, [`${TEST_DIR}/redis.mock.fake-test.js`, `${TEST_DIR}/other.mock.fake-test.js`])
   })
 
   await t.test('filter out node modules', async (t) => {
@@ -71,6 +71,6 @@ test('resolveGlobs', async (t) => {
   await t.test('handle duplicates', async (t) => {
     const files = await globber.resolveGlobs([`${TEST_DIR}/*.js`, `${TEST_DIR}/*.js`])
     assert.equal(files.length, 2)
-    assert.deepEqual(files, [`${TEST_DIR}/other.mock.fake-test.js`, `${TEST_DIR}/redis.mock.fake-test.js`])
+    assert.deepEqual(files, [`${TEST_DIR}/redis.mock.fake-test.js`, `${TEST_DIR}/other.mock.fake-test.js`])
   })
 })

@@ -8,55 +8,47 @@
 
 'use strict'
 
-var path = require('path')
-var glob = require('glob')
-var exec = require('child_process').exec
+const path = require('node:path')
+const { glob } = require('glob')
+const util = require('node:util')
+const exec = util.promisify(require('child_process').exec)
 
-var options = {
-  ignore: '**/test/{versioned,versioned-external}/**'
+const options = {
+  ignore: '**/test/versioned/**'
 }
 
-var folder
+let folder
 if (process.argv.length > 2) {
   folder = process.argv[2]
 }
 
-getPackages(folder, function(packages) {
-  var correctPackages = packages.filter(function(line) {
-    return !/node_modules|example/.test(line)
-  })
-  install(correctPackages)
-})
 
-var retries = 2
-function install(packages, retry) {
+const retries = 2
+async function install(packages, retry) {
   if (!retry) retry = 0
 
-  var failed = []
-  var counter = 0
-  packages.forEach(function(packageJsonPath) {
-    var packagePath = path.resolve(packageJsonPath).split('/').slice(0, -1).join('/')
+  const failed = []
+  let counter = 0
+  for (const packageJsonPath of packages) {
+    const packagePath = path.resolve(packageJsonPath).split('/').slice(0, -1).join('/')
     console.log('installing deps in ' + packagePath)
-    exec('cd ' + packagePath + ' && rm -rf node_modules && npm i --no-package-lock',
-      {maxBuffer: 1024 * 500},
-      function(err, stdout, stderr) {
-        if (err || isErrorOutput(stderr)) {
-          printError(packageJsonPath, err || stderr)
-          if (retry < retries) {
-            failed.push(packageJsonPath)
-          }
-        }
+    const { stderr } = await exec('cd ' + packagePath + ' && rm -rf node_modules && npm i --no-package-lock', 
+      {maxBuffer: 1024 * 500})
+    if (isErrorOutput(stderr)) {
+      printError(packageJsonPath, stderr)
+      if (retry < retries) {
+        failed.push(packageJsonPath)
+      }
+    }
 
-        if (++counter === packages.length) {
-          if (failed.length > 0 && retry < retries) {
-            console.log('%s package(s) failed to install, retrying...', failed.length)
-            exec('npm cache clean', function() {
-              install(failed, ++retry)
-            })
-          }
-        }
-      })
-  })
+    if (++counter === packages.length) {
+      if (failed.length > 0 && retry < retries) {
+        console.log('%s package(s) failed to install, retrying...', failed.length)
+        await exec('npm cache clean')
+        await install(failed, ++retry)
+      }
+    }
+  }
 }
 
 // determines if stderr contains errors
@@ -64,26 +56,21 @@ function isErrorOutput(text) {
   return (text && text.indexOf('npm ERR') > -1)
 }
 
-function getPackages(folder, callback) {
+async function getPackages(folder) {
   if (folder) {
-    getCommonPackages(function(commonPackages) {
-      glob('**/test/' + folder + '/**/package.json', options,
-        function gotPackages(err, packages) {
-          callback(commonPackages.concat(packages))
-        })
-    })
+    const commonPackages = await getCommonPackages()
+    const packages = await glob(`**/test/${folder}/**/package.json`, options)
+    return commonPackages.concat(packages)
   } else {
-    glob('**/test/**/package.json', options, function gotPackages(err, packages) {
-      callback(packages)
-    })
+    const packages = await glob('**/test/**/package.json', options)
+    return packages
   }
 }
 
-function getCommonPackages(callback) {
-  glob('**/test/lib/**/package.json', options, function gotPackages(err, packages) {
-    packages.unshift('test/package.json', 'test/helpers/package.json')
-    callback(packages)
-  })
+async function getCommonPackages() {
+  const packages = await glob('**/test/lib/**/package.json', options)
+  packages.unshift('test/package.json', 'test/helpers/package.json')
+  return packages
 }
 
 function printError(packagePath, error) {
@@ -92,3 +79,14 @@ function printError(packagePath, error) {
   console.log(error)
   console.log('-----------------------------------------------------------')
 }
+
+async function main() {
+  debugger
+  const packages = await getPackages(folder)
+  const correctPackages = packages.filter(function(line) {
+    return !/node_modules|example/.test(line)
+  })
+  await install(correctPackages)
+}
+
+main()

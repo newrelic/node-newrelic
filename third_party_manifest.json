@@ -629,19 +629,19 @@
       "email": "maochenyan@gmail.com",
       "url": "https://github.com/stevemao"
     },
-    "glob@7.2.3": {
+    "glob@13.0.6": {
       "name": "glob",
-      "version": "7.2.3",
-      "range": "^7.1.2",
-      "licenses": "ISC",
+      "version": "13.0.6",
+      "range": "^13.0.6",
+      "licenses": "BlueOak-1.0.0",
       "repoUrl": "https://github.com/isaacs/node-glob",
-      "versionedRepoUrl": "https://github.com/isaacs/node-glob/tree/v7.2.3",
-      "licenseFile": "node_modules/glob/LICENSE",
-      "licenseUrl": "https://github.com/isaacs/node-glob/blob/v7.2.3/LICENSE",
+      "versionedRepoUrl": "https://github.com/isaacs/node-glob/tree/v13.0.6",
+      "licenseFile": "node_modules/glob/LICENSE.md",
+      "licenseUrl": "https://github.com/isaacs/node-glob/blob/v13.0.6/LICENSE.md",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
-      "url": "http://blog.izs.me/"
+      "url": "https://blog.izs.me/"
     },
     "got@11.8.6": {
       "name": "got",
