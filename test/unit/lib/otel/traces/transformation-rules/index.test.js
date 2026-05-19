@@ -83,8 +83,8 @@ test('transformation rules module', async (t) => {
     }
   })
 
-  await t.test('should contain 31 rules', () => {
-    assert.equal(rules.length, 31, 'should have exactly 31 rules')
+  await t.test('should contain 32 rules', () => {
+    assert.equal(rules.length, 32, 'should have exactly 32 rules')
   })
 
   await t.test('should load rules in correct order', () => {
@@ -108,6 +108,7 @@ test('transformation rules module', async (t) => {
       'OtelDbClientDynamo1_40',
       'OtelDbClientDynamo1_17',
       'OtelDbClient1_17',
+      'OtelDbClientPrisma1_40',
       'OtelHttpClient1_23',
       'OtelHttpClient1_17',
       'OtelRpcClient1_23',
@@ -150,7 +151,7 @@ test('transformation rules module', async (t) => {
         'OtelDbClient1_40', 'OtelDbClient1_24',
         'OtelDbClientRedis1_17', 'OtelDbClientMongo1_17',
         'OtelDbClientDynamo1_40', 'OtelDbClientDynamo1_17',
-        'OtelDbClient1_17'
+        'OtelDbClient1_17', 'OtelDbClientPrisma1_40'
       ],
       external: [
         'OtelHttpClient1_23', 'OtelHttpClient1_17',
