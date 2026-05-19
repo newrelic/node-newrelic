@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon May 18 2026 16:20:40 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon May 18 2026 21:05:22 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -103,15 +103,15 @@
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
-    "@opentelemetry/api-logs@0.217.0": {
+    "@opentelemetry/api-logs@0.218.0": {
       "name": "@opentelemetry/api-logs",
-      "version": "0.217.0",
-      "range": "^0.217.0",
+      "version": "0.218.0",
+      "range": "^0.218.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.217.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.218.0",
       "licenseFile": "node_modules/@opentelemetry/api-logs/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.217.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.218.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
@@ -139,15 +139,15 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@opentelemetry/exporter-metrics-otlp-proto@0.217.0": {
+    "@opentelemetry/exporter-metrics-otlp-proto@0.218.0": {
       "name": "@opentelemetry/exporter-metrics-otlp-proto",
-      "version": "0.217.0",
-      "range": "^0.217.0",
+      "version": "0.218.0",
+      "range": "^0.218.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.217.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.218.0",
       "licenseFile": "node_modules/@opentelemetry/exporter-metrics-otlp-proto/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.217.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.218.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
@@ -163,15 +163,15 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@opentelemetry/sdk-logs@0.217.0": {
+    "@opentelemetry/sdk-logs@0.218.0": {
       "name": "@opentelemetry/sdk-logs",
-      "version": "0.217.0",
-      "range": "^0.217.0",
+      "version": "0.218.0",
+      "range": "^0.218.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.217.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.218.0",
       "licenseFile": "node_modules/@opentelemetry/sdk-logs/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.217.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.218.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
