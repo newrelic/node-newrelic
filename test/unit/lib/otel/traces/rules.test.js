@@ -131,3 +131,28 @@ test('scope_version matching rule is met', () => {
   assert.notEqual(foundRule, undefined)
   assert.equal(foundRule.name, rule.name)
 })
+
+test('scope_version does not satisfy', () => {
+  const rule = {
+    name: 'test-rule',
+    type: 'db',
+    matcher: {
+      required_span_kinds: ['client'],
+      required_attribute_keys: ['db.system'],
+      scope_version: '^1.0.0'
+    },
+    attributes: [{
+      key: 'db.system',
+      target: 'segment',
+      name: 'product'
+    }]
+  }
+  const engine = new RulesEngine({ rules: [rule] })
+  const span = tracer.startSpan('test-span', { kind: SpanKind.CLIENT }, ROOT_CONTEXT)
+  span.setAttribute('db.system', 'test-db')
+  span.instrumentationScope = { version: '2.0.0' }
+  span.end()
+
+  const foundRule = engine.test(span)
+  assert.equal(foundRule, undefined)
+})
