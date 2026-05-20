@@ -133,6 +133,8 @@ common.test('updateOne', async function updateOneTest(collection, verify) {
 })
 
 if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
+  // collection.insert/remove/update are deprecated v4 sync wrappers that delegate
+  // to insertMany/deleteMany/updateMany; we instrument the canonical methods only.
   common.test('insert', async function insertTest(collection, verify) {
     const data = await collection.insert({ foo: 'bar' })
     assertExpectedResult({
@@ -146,7 +148,7 @@ if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
       }
     })
 
-    verify(null, [`${STATEMENT_PREFIX}/insert`], ['insert'], { strict: false })
+    verify(null, [`${STATEMENT_PREFIX}/insertMany`], ['insertMany'], { strict: false })
   })
 
   common.test('remove', async function removeTest(collection, verify) {
@@ -157,7 +159,7 @@ if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
       keyPrefix: 'deleted'
     })
 
-    verify(null, [`${STATEMENT_PREFIX}/remove`], ['remove'], { strict: false })
+    verify(null, [`${STATEMENT_PREFIX}/deleteMany`], ['deleteMany'], { strict: false })
   })
 
   common.test('update', async function updateTest(collection, verify) {
@@ -173,6 +175,6 @@ if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
       }
     })
 
-    verify(null, [`${STATEMENT_PREFIX}/update`], ['update'], { strict: false })
+    verify(null, [`${STATEMENT_PREFIX}/updateMany`], ['updateMany'], { strict: false })
   })
 }

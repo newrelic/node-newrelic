@@ -52,7 +52,7 @@ function dbTest(name, run) {
     await t.test('should log tracking metrics', function(t) {
       const { agent } = t.nr
       const { version } = require('mongodb/package.json')
-      assertPackageMetrics({ agent, pkg: 'mongodb', version })
+      assertPackageMetrics({ agent, pkg: 'mongodb', version, subscriberType: true })
     })
 
     await t.test('without transaction', (t, end) => {

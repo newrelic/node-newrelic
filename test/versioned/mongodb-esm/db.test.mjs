@@ -3,8 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import test from 'node:test'
 import assert from 'node:assert'
 
+import helper from '../../lib/agent_helper.js'
+import params from '../../lib/params.js'
 import { dbTest } from './db-common.mjs'
 import common from '../mongodb/common.js'
 
@@ -31,6 +34,16 @@ dbTest('addUser, removeUser', async function addUserTest(db, verify) {
     'Datastore/operation/MongoDB/command',
     'Datastore/operation/MongoDB/removeUser'
   ])
+})
+
+dbTest('collection', async function collectionFactoryTest(db, verify) {
+  const collection = db.collection(COLLECTIONS.collection1)
+  assert.equal(
+    collection.collectionName,
+    COLLECTIONS.collection1,
+    'returned collection should have correct name'
+  )
+  verify(['Datastore/operation/MongoDB/collection'])
 })
 
 dbTest('collections', async function collectionsTest(db, verify) {
@@ -106,4 +119,39 @@ dbTest('stats', async function statsTest(db, verify) {
   const stats = await db.stats({})
   assert.ok(stats, 'got stats')
   verify(['Datastore/operation/MongoDB/stats'])
+})
+
+test('MongoClient.connect', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.instrumentMockedAgent()
+    const { default: mongodb } = await import('mongodb')
+    ctx.nr.mongodb = mongodb
+  })
+
+  t.afterEach(async (ctx) => {
+    if (ctx.nr.client) {
+      await ctx.nr.client.close(true)
+    }
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should produce a connect operation segment', (t, end) => {
+    const { agent, mongodb } = t.nr
+    const connString = `mongodb://${params.mongodb_host}:${params.mongodb_port}`
+    helper.runInTransaction(agent, async (transaction) => {
+      t.nr.client = await mongodb.MongoClient.connect(connString)
+
+      const children = transaction.trace
+        .getChildren(transaction.trace.root.id)
+        .filter((c) => c.name !== 'net.createConnection')
+      const connectSegment = children.find(
+        (c) => c.name === 'Datastore/operation/MongoDB/connect'
+      )
+      assert.ok(connectSegment, 'should have connect segment under trace root')
+
+      transaction.end()
+      end()
+    })
+  })
 })
