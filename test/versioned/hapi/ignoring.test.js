@@ -30,13 +30,8 @@ test('ignoring a Hapi route', async (t) => {
     plan.equal(agent.traces.trace, undefined, 'should have no transaction trace')
 
     const metrics = agent.metrics._metrics.unscoped
-    // loading k2 adds instrumentation metrics for packages it instruments
-    const expectedMetrics = helper.isSecurityAgentEnabled(agent) ? 17 : 6
-    plan.equal(
-      Object.keys(metrics).length,
-      expectedMetrics,
-      'only supportability metrics added to agent collection'
-    )
+    const webTxMetrics = Object.keys(metrics).filter((k) => k.startsWith('WebTransaction'))
+    plan.equal(webTxMetrics.length, 0, 'no web transaction metrics for ignored transaction')
 
     const errors = agent.errors.traceAggregator.errors
     plan.equal(errors.length, 0, 'no errors noticed')

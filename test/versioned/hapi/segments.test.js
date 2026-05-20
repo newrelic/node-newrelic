@@ -9,7 +9,7 @@ const test = require('node:test')
 const http = require('node:http')
 
 const helper = require('../../lib/agent_helper')
-const { assertCLMAttrs, assertMetrics, assertSegments, assertSpanKind } = require('../../lib/custom-assertions')
+const { assertCLMAttrs, assertMetrics, assertSegments, assertSpanKind, assertPackageMetrics } = require('../../lib/custom-assertions')
 const utils = require('./hapi-utils')
 
 const NAMES = require('../../../lib/metrics/names')
@@ -64,6 +64,14 @@ function checkMetrics(metrics, expected, path) {
 
   assertMetrics(metrics, expectedAll, true, false)
 }
+
+test('should log tracking metrics', function(t) {
+  const { agent, server } = t.nr
+  require('@hapi/hapi')
+  const { version } = require('@hapi/hapi/package.json')
+  server.route({ method: 'GET', path: '/test', handler: () => {} })
+  assertPackageMetrics({ agent, pkg: '@hapi/hapi', version, subscriberType: true })
+})
 
 test('route handler is recorded as middleware', (t, end) => {
   const { agent, server } = t.nr

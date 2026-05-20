@@ -101,7 +101,7 @@ test('using EJS templates', { timeout: 2000 }, (t, end) => {
     assert.equal(stats.callCount, 1, 'should note the view rendering')
     verifyEnded(tx.trace.root, tx)
     const { version } = require('@hapi/vision')
-    assertPackageMetrics({ agent, pkg: '@hapi/vision', version })
+    assertPackageMetrics({ agent, pkg: '@hapi/vision', version, subscriberType: true })
   })
 
   function verifyEnded(root, tx) {
