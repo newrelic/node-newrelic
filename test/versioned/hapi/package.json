@@ -7,7 +7,8 @@
     },
     {
       "name": "@hapi/vision",
-      "minAgentVersion": "9.0.0"
+      "minAgentVersion": "9.0.0",
+      "minSupported": "5.0.0"
     }
   ],
   "version": "0.0.0",
@@ -20,7 +21,7 @@
       "dependencies": {
         "ejs": "2.5.5",
         "@hapi/hapi": ">=20.1.2",
-        "@hapi/vision": ">=5.0.0"
+        "@hapi/vision": "latest"
       },
       "files": [
         "capture-params.test.js",
