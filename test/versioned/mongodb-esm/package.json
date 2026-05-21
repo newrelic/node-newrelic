@@ -10,8 +10,9 @@
       },
       "dependencies": {
         "mongodb": {
-          "versions": ">=4.1.4 < 5",
-          "samples": 1
+          "versions": ">=4.1.4",
+          "comment": "4 samples for 1 test of each major v4-v7",
+          "samples": 4
         }
       },
       "files": [
