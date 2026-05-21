@@ -629,15 +629,15 @@
       "email": "maochenyan@gmail.com",
       "url": "https://github.com/stevemao"
     },
-    "got@11.8.6": {
+    "got@15.0.5": {
       "name": "got",
-      "version": "11.8.6",
-      "range": "^11.8.5",
+      "version": "15.0.5",
+      "range": "^15.0.5",
       "licenses": "MIT",
       "repoUrl": "https://github.com/sindresorhus/got",
-      "versionedRepoUrl": "https://github.com/sindresorhus/got/tree/v11.8.6",
+      "versionedRepoUrl": "https://github.com/sindresorhus/got/tree/v15.0.5",
       "licenseFile": "node_modules/got/license",
-      "licenseUrl": "https://github.com/sindresorhus/got/blob/v11.8.6/license",
+      "licenseUrl": "https://github.com/sindresorhus/got/blob/v15.0.5/license",
       "licenseTextSource": "file"
     },
     "jsdoc@4.0.5": {
@@ -746,20 +746,6 @@
       "FOR_REVIEW": [
         "Unable to determine source for license text."
       ]
-    },
-    "rimraf@2.7.1": {
-      "name": "rimraf",
-      "version": "2.7.1",
-      "range": "^2.6.3",
-      "licenses": "ISC",
-      "repoUrl": "https://github.com/isaacs/rimraf",
-      "versionedRepoUrl": "https://github.com/isaacs/rimraf/tree/v2.7.1",
-      "licenseFile": "node_modules/rimraf/LICENSE",
-      "licenseUrl": "https://github.com/isaacs/rimraf/blob/v2.7.1/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Isaac Z. Schlueter",
-      "email": "i@izs.me",
-      "url": "http://blog.izs.me/"
     },
     "self-cert@2.0.1": {
       "name": "self-cert",

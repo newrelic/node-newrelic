@@ -8,42 +8,23 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const path = require('node:path')
-const fs = require('node:fs')
-
-const rimraf = require('rimraf')
+const fs = require('node:fs/promises')
 const DIRNAME = 'XXXNOCONFTEST'
 
-test('logger', async (t) => {
-  t.afterEach(async () => {
-    if (path.basename(process.cwd()) === DIRNAME) {
-      process.chdir('..')
-    }
+test.afterEach(async () => {
+  // use working dir because the test changes to the directory
+  const dirPath = path.resolve(process.cwd())
+  await fs.rm(dirPath, { recursive: true })
+  delete process.env.NEW_RELIC_LOG
+})
 
-    const dirPath = path.join(process.cwd(), DIRNAME)
+test('logger: configuration from environment', async () => {
+  await fs.mkdir(DIRNAME)
+  process.chdir(DIRNAME)
 
-    await new Promise((resolve) => {
-      if (fs.existsSync(dirPath)) {
-        rimraf(dirPath, resolve)
-      } else {
-        resolve()
-      }
-    })
-    delete process.env.NEW_RELIC_LOG
-  })
+  process.env.NEW_RELIC_LOG = 'stdout'
 
-  await t.test('configuration from environment', (t, end) => {
-    fs.mkdir(DIRNAME, function (error) {
-      assert.ifError(error, 'should not fail to make directory')
-
-      process.chdir(DIRNAME)
-
-      process.env.NEW_RELIC_LOG = 'stdout'
-
-      assert.doesNotThrow(function () {
-        assert.ok(require('../../lib/logger'), 'requiring logger returned a logging object')
-      })
-
-      end()
-    })
+  assert.doesNotThrow(function () {
+    assert.ok(require('../../lib/logger'), 'requiring logger returned a logging object')
   })
 })
