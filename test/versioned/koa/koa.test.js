@@ -107,7 +107,7 @@ test('Should name after koa framework and verb when body set', async (t) => {
   await plan.completed
 })
 
-test('Should name `/` when no work is performed', async (t) => {
+test('Should still name transaction `/` when no work is performed', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, app } = t.nr
 

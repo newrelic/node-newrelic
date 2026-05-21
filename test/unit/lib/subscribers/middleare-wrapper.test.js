@@ -18,9 +18,16 @@ test.beforeEach((ctx) => {
   function handler (arg1, arg2, arg3) {
     return `${arg2}, ${arg3}`
   }
+
+  function errorHandler(err) {
+    if (err) {
+      throw err
+    }
+  }
   const origExtractTxInfo = wrapper.extractTxInfo
   ctx.nr = {
     agent,
+    errorHandler,
     handler,
     logger,
     wrapper
@@ -36,6 +43,7 @@ test.beforeEach((ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
+
 test('should not wrap handler if it is not a function', function (t) {
   const { logger, wrapper } = t.nr
   const handler = 'test'
@@ -80,7 +88,7 @@ test('should run wrapped handler in context if transaction present, and properly
 })
 
 test('should handle error when passed in to done handler', function (t, end) {
-  const { agent, wrapper } = t.nr
+  const { agent, wrapper, errorHandler } = t.nr
   const error = new Error('test error')
   function handler (req, res, next) {
     next(error)
@@ -91,7 +99,10 @@ test('should handle error when passed in to done handler', function (t, end) {
   helper.runInTransaction(agent, function (tx) {
     tx.type = 'web'
     tx.url = route
-    wrapped(request, 'one', function() {})
+    try {
+      wrapped(request, 'one', errorHandler)
+    } catch {}
+
     assert.deepEqual(t.nr.txInfo.error, error)
     assert.equal(t.nr.txInfo.errorHandled, false)
 
@@ -101,7 +112,7 @@ test('should handle error when passed in to done handler', function (t, end) {
 })
 
 test('should handle error when passed in to done handler `request.raw`', function (t, end) {
-  const { agent, wrapper } = t.nr
+  const { agent, wrapper, errorHandler } = t.nr
   const error = new Error('test error')
   function handler (req, res, next) {
     next(error)
@@ -112,7 +123,9 @@ test('should handle error when passed in to done handler `request.raw`', functio
   helper.runInTransaction(agent, function (tx) {
     tx.type = 'web'
     tx.url = route
-    wrapped(request, 'one', function() {})
+    try {
+      wrapped(request, 'one', errorHandler)
+    } catch {}
     assert.deepEqual(t.nr.txInfo.error, error)
     assert.equal(t.nr.txInfo.errorHandled, false)
     assert.deepEqual(request.raw[transactionInfo], t.nr.txInfo)
@@ -122,7 +135,7 @@ test('should handle error when passed in to done handler `request.raw`', functio
 })
 
 test('should handle error when passed in to done handler `request`', function (t, end) {
-  const { agent, wrapper } = t.nr
+  const { agent, wrapper, errorHandler } = t.nr
   const error = new Error('test error')
   function handler (req, res, next) {
     next(error)
@@ -133,7 +146,9 @@ test('should handle error when passed in to done handler `request`', function (t
   helper.runInTransaction(agent, function (tx) {
     tx.type = 'web'
     tx.url = route
-    wrapped(request, 'one', function() {})
+    try {
+      wrapped(request, 'one', errorHandler)
+    } catch {}
     assert.deepEqual(t.nr.txInfo.error, error)
     assert.equal(t.nr.txInfo.errorHandled, false)
     assert.deepEqual(request[transactionInfo], t.nr.txInfo)
@@ -174,7 +189,9 @@ test('should not handle error when no error is passed to done handler', function
     tx.type = 'web'
     tx.url = route
     wrapped(request, 'one', function() {})
-    assert.deepEqual(t.nr.txInfo, {})
+    assert.deepEqual(t.nr.txInfo, {
+      errorHandled: true
+    })
 
     tx.end()
     end()
@@ -197,7 +214,9 @@ test('should not handle error when isError is not using default handler', functi
     tx.type = 'web'
     tx.url = route
     wrapped(request, 'one', function() {})
-    assert.deepEqual(t.nr.txInfo, {})
+    assert.deepEqual(t.nr.txInfo, {
+      errorHandled: true
+    })
     tx.end()
     end()
   })
