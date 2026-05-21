@@ -20,8 +20,8 @@ const symbols = require('../../lib/symbols')
 
 const TEST_MODULE_PATH = 'test-mod/module'
 const TEST_MODULE_RELATIVE_PATH = `../helpers/node_modules/${TEST_MODULE_PATH}`
-const TEST_MODULE = 'sinon'
-const TEST_PATH_WITHIN = `${TEST_MODULE}/lib/sinon/spy`
+const TEST_MODULE = 'c8'
+const TEST_PATH_WITHIN = `${TEST_MODULE}/lib/report.js`
 
 async function makeModuleTests({ moduleName, relativePath, throwsError }, t) {
   t.beforeEach(function (ctx) {

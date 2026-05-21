@@ -79,7 +79,10 @@ This version of the Node.js agent is a SemVer MAJOR update and contains the foll
 
 test('Conventional Changelog Class', async (t) => {
   t.beforeEach((ctx) => {
-    const clock = sinon.useFakeTimers(new Date('2020-04-03'))
+    const clock = sinon.useFakeTimers({
+      now: new Date('2020-04-03'),
+      toFake: ['Date']
+    })
     const mockGetPrByCommit = sinon.stub()
     const MockGithubSdk = sinon.stub().returns({
       getPullRequestByCommit: mockGetPrByCommit

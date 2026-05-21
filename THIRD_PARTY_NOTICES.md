@@ -5124,7 +5124,7 @@ THE SOFTWARE.
 
 ### sinon
 
-This product includes source derived from [sinon](https://github.com/sinonjs/sinon) ([v5.1.1](https://github.com/sinonjs/sinon/tree/v5.1.1)), distributed under the [BSD-3-Clause License](https://github.com/sinonjs/sinon/blob/v5.1.1/LICENSE):
+This product includes source derived from [sinon](https://github.com/sinonjs/sinon) ([v22.0.0](https://github.com/sinonjs/sinon/tree/v22.0.0)), distributed under the [BSD-3-Clause License](https://github.com/sinonjs/sinon/blob/v22.0.0/LICENSE):
 
 ```
 (The BSD License)
