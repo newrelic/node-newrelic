@@ -4598,7 +4598,7 @@ THE SOFTWARE.
 
 ### commander
 
-This product includes source derived from [commander](https://github.com/tj/commander.js) ([v7.2.0](https://github.com/tj/commander.js/tree/v7.2.0)), distributed under the [MIT License](https://github.com/tj/commander.js/blob/v7.2.0/LICENSE):
+This product includes source derived from [commander](https://github.com/tj/commander.js) ([v14.0.3](https://github.com/tj/commander.js/tree/v14.0.3)), distributed under the [MIT License](https://github.com/tj/commander.js/blob/v14.0.3/LICENSE):
 
 ```
 (The MIT License)
