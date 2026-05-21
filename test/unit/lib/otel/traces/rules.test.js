@@ -93,3 +93,66 @@ test('fallback internal rule is met', () => {
   assert.notEqual(rule, undefined)
   assert.equal(rule.name, 'Fallback')
 })
+
+test('scope_name rule is met', () => {
+  const engine = new RulesEngine()
+  const span = tracer.startSpan('test-span', { kind: SpanKind.CLIENT }, ROOT_CONTEXT)
+  span.setAttribute('db.system.name', 'postgresql')
+  span.instrumentationScope = { name: 'prisma' }
+  span.end()
+
+  const rule = engine.test(span)
+  assert.notEqual(rule, undefined)
+  assert.equal(rule.name, 'OtelDbClientPrisma1_40')
+})
+
+test('scope_version matching rule is met', () => {
+  const rule = {
+    name: 'test-rule',
+    type: 'db',
+    matcher: {
+      required_span_kinds: ['client'],
+      required_attribute_keys: ['db.system'],
+      scope_version: '^1.0.0'
+    },
+    attributes: [{
+      key: 'db.system',
+      target: 'segment',
+      name: 'product'
+    }]
+  }
+  const engine = new RulesEngine({ rules: [rule] })
+  const span = tracer.startSpan('test-span', { kind: SpanKind.CLIENT }, ROOT_CONTEXT)
+  span.setAttribute('db.system', 'test-db')
+  span.instrumentationScope = { version: '1.2.3' }
+  span.end()
+
+  const foundRule = engine.test(span)
+  assert.notEqual(foundRule, undefined)
+  assert.equal(foundRule.name, rule.name)
+})
+
+test('scope_version does not satisfy', () => {
+  const rule = {
+    name: 'test-rule',
+    type: 'db',
+    matcher: {
+      required_span_kinds: ['client'],
+      required_attribute_keys: ['db.system'],
+      scope_version: '^1.0.0'
+    },
+    attributes: [{
+      key: 'db.system',
+      target: 'segment',
+      name: 'product'
+    }]
+  }
+  const engine = new RulesEngine({ rules: [rule] })
+  const span = tracer.startSpan('test-span', { kind: SpanKind.CLIENT }, ROOT_CONTEXT)
+  span.setAttribute('db.system', 'test-db')
+  span.instrumentationScope = { version: '2.0.0' }
+  span.end()
+
+  const foundRule = engine.test(span)
+  assert.equal(foundRule, undefined)
+})

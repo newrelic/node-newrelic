@@ -1,0 +1,28 @@
+{
+  "name": "OtelDbClientPrisma1_40",
+  "comment": "This rule supports the JS variant of Prisma 7. Their @prisma/instrumentation otel spans only include `db.system.name` and `db.query.text`. This means we were unable to match the standard rule.",
+  "type": "db",
+  "matcher": {
+    "required_span_kinds": [
+      "client"
+    ],
+    "required_attribute_keys": [
+      "db.system.name"
+    ],
+    "scope_name": "prisma"
+  },
+  "attributes": [
+    {
+      "key": "db.system.name",
+      "target": "segment",
+      "name": "product"
+    }
+  ],
+  "segment": {
+    "statement": "db.query.text",
+    "type": "db.system.name",
+    "name": {
+      "template": "Datastore/statement/${type}/${collection}/${operation}"
+    }
+  }
+}
