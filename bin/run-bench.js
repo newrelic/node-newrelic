@@ -6,11 +6,11 @@
 
 'use strict'
 
-const cp = require('child_process')
-const { globSync } = require('glob')
-const path = require('path')
+const cp = require('node:child_process')
+const path = require('node:path')
 const { errorAndExit } = require('./utils')
-const fs = require('fs/promises')
+const fs = require('node:fs/promises')
+const { globSync } = require('node:fs')
 const { sendBenchmarkTestMetrics, meterProvider } = require('./otel-metrics-sender')
 
 const cwd = path.resolve(__dirname, '..')
