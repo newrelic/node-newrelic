@@ -9,12 +9,12 @@
 'use strict'
 
 const path = require('node:path')
-const { glob } = require('glob')
+const { glob } = require('node:fs/promises')
 const util = require('node:util')
 const exec = util.promisify(require('child_process').exec)
 
 const options = {
-  ignore: '**/test/versioned/**'
+  exclude: (f) => f.includes('test/versioned')
 }
 
 let folder
@@ -59,16 +59,16 @@ function isErrorOutput(text) {
 async function getPackages(folder) {
   if (folder) {
     const commonPackages = await getCommonPackages()
-    const packages = await glob(`**/test/${folder}/**/package.json`, options)
+    const packages = await Array.fromAsync(glob(`**/test/${folder}/**/package.json`, options))
     return commonPackages.concat(packages)
   } else {
-    const packages = await glob('**/test/**/package.json', options)
+    const packages = await Array.fromAsync(glob('**/test/**/package.json', options))
     return packages
   }
 }
 
 async function getCommonPackages() {
-  const packages = await glob('**/test/lib/**/package.json', options)
+  const packages = await Array.fromAsync(glob('**/test/lib/**/package.json', options))
   packages.unshift('test/package.json', 'test/helpers/package.json')
   return packages
 }
@@ -81,7 +81,6 @@ function printError(packagePath, error) {
 }
 
 async function main() {
-  debugger
   const packages = await getPackages(folder)
   const correctPackages = packages.filter(function(line) {
     return !/node_modules|example/.test(line)

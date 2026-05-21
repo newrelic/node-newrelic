@@ -132,9 +132,11 @@ module.exports = [
   jsdocConfig,
   jsdocOverrides,
 
+  // we do not ship `bin/` dir so ignore the node recommended for this but
+  // do not add to test files because we still want to lint them like our other linting rules
   {
     ...sharedConfig.configs.nodeRecommended,
-    ignores: testFiles
+    ignores: [...testFiles, 'bin/**']
   },
   {
     files: ['bin/*.js'],

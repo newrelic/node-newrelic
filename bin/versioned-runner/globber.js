@@ -6,7 +6,7 @@
 'use strict'
 
 const path = require('path')
-const { glob: globToFiles } = require('glob')
+const { glob: fsGlob } = require('node:fs/promises')
 
 function buildGlobs(testGlobs, patterns = []) {
   // Turn the given globs into searches for package.json files.
@@ -40,30 +40,28 @@ function buildGlobs(testGlobs, patterns = []) {
 }
 
 async function resolveGlobs(globs, skip = []) {
-  // resolve each glob into a list of files
-  const globFiles = []
-  for (const glob of globs) {
-    const files = await globToFiles(glob, { absolute: true })
-    globFiles.push(files)
-  }
-  // flatten and deduplicate our list of lists of files
-  return globFiles.reduce((allFiles, files) => {
-    for (const file of files) {
+  const allFiles = []
+  const seen = new Set()
+
+  for (const pattern of globs) {
+    // Ensure the pattern is absolute so fs.glob returns absolute paths
+    const absPattern = path.isAbsolute(pattern) ? pattern : path.resolve(pattern)
+    for await (const file of fsGlob(absPattern)) {
       // Filter out any package.json files from our `node_modules` directory
       // which aren't from the `@newrelic` scope.
       const inNodeModules = /\/node_modules\/(?!@newrelic\/)/g.test(file)
 
-      if (!inNodeModules) {
-        const shouldSkip = skip.some((s) => file.indexOf(s) >= 0)
-        const isDuplicate = allFiles.includes(file)
-
-        if (!shouldSkip && !isDuplicate) {
+      if (!inNodeModules && !seen.has(file)) {
+        const shouldSkip = skip.some((s) => file.includes(s))
+        if (!shouldSkip) {
+          seen.add(file)
           allFiles.push(file)
         }
       }
     }
-    return allFiles
-  }, [])
+  }
+
+  return allFiles
 }
 
 module.exports = {

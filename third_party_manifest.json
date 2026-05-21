@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon May 18 2026 16:20:40 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu May 21 2026 14:45:39 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -628,20 +628,6 @@
       "publisher": "Steve Mao",
       "email": "maochenyan@gmail.com",
       "url": "https://github.com/stevemao"
-    },
-    "glob@13.0.6": {
-      "name": "glob",
-      "version": "13.0.6",
-      "range": "^13.0.6",
-      "licenses": "BlueOak-1.0.0",
-      "repoUrl": "https://github.com/isaacs/node-glob",
-      "versionedRepoUrl": "https://github.com/isaacs/node-glob/tree/v13.0.6",
-      "licenseFile": "node_modules/glob/LICENSE.md",
-      "licenseUrl": "https://github.com/isaacs/node-glob/blob/v13.0.6/LICENSE.md",
-      "licenseTextSource": "file",
-      "publisher": "Isaac Z. Schlueter",
-      "email": "i@izs.me",
-      "url": "https://blog.izs.me/"
     },
     "got@11.8.6": {
       "name": "got",

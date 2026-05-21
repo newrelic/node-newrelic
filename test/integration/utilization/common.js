@@ -6,7 +6,7 @@
 'use strict'
 const assert = require('node:assert')
 const fs = require('fs/promises')
-const { glob } = require('glob')
+const { glob } = fs
 const JSONbig = require('json-bigint')({ useNativeBigInt: true })
 const path = require('path')
 
@@ -40,7 +40,7 @@ async function getTestCases(vendor) {
 
 async function getProcTests(type) {
   const testDir = path.resolve(__dirname, '../../lib/cross_agent_tests', type)
-  return glob(path.join(testDir, '*.txt'))
+  return Array.fromAsync(glob(path.join(testDir, '*.txt')))
 }
 
 module.exports = {
