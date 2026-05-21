@@ -39,7 +39,8 @@ test.beforeEach((ctx) => {
     level: 'trace',
     hostname: 'my-host',
     enabled: true,
-    configured: true
+    configured: true,
+    audit_log: false
   })
 })
 
@@ -139,6 +140,40 @@ test('should properly format logs and child logs when flushing', (t, end) => {
     expectEntry(results[3], '1: a', 30)
     expectEntry(results[4], 'trace', 10)
     expectEntry(results[5], 'Test error 1 sub', 50)
+    end()
+  })
+})
+
+test('should indicate when audit logging is enabled', (t) => {
+  const { logger } = t.nr
+
+  logger.options.audit_log = true
+  let result = logger.auditEnabled()
+  assert.equal(result, true)
+
+  logger.options.audit_log = false
+  logger.level('trace')
+  result = logger.auditEnabled()
+  assert.equal(result, true)
+
+  logger.level('info')
+  result = logger.auditEnabled()
+  assert.equal(result, false)
+})
+
+test('should log audit logs', (t, end) => {
+  t.plan(2)
+  const { logger } = t.nr
+  t.nr.results = []
+  logger.pipe(new Transform({
+    transform: addResult.bind(this, t)
+  }))
+  logger.options.auditLogging = true
+  logger.audit('test log')
+  process.nextTick(() => {
+    const { results } = t.nr
+    t.assert.equal(results.length, 1)
+    t.assert.equal(results[0].msg, 'test log')
     end()
   })
 })

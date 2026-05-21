@@ -54,7 +54,8 @@ test('Bootstrapped Logger', async (t) => {
           logging: {
             enabled: true,
             filepath: '/foo/bar/baz',
-            level: 'debug'
+            level: 'debug',
+            auditLogging: false
           }
         })
       }
@@ -73,7 +74,8 @@ test('Bootstrapped Logger', async (t) => {
       fakeLoggerConfigure.calledOnceWithExactly({
         name: 'newrelic',
         level: 'debug',
-        enabled: true
+        enabled: true,
+        auditLogging: false
       }),
       'should call logger.configure with config options'
     )
@@ -163,7 +165,8 @@ test('Bootstrapped Logger', async (t) => {
       fakeLoggerConfigure.calledOnceWithExactly({
         name: 'newrelic',
         level: 'debug',
-        enabled: false
+        enabled: false,
+        auditLogging: false
       }),
       'should call logger.configure with config options'
     )
