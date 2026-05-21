@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu May 21 2026 16:16:32 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu May 21 2026 17:46:58 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -669,15 +669,15 @@
       "email": "sindresorhus@gmail.com",
       "url": "https://sindresorhus.com"
     },
-    "nock@11.8.0": {
+    "nock@14.0.15": {
       "name": "nock",
-      "version": "11.8.0",
-      "range": "11.8.0",
+      "version": "14.0.15",
+      "range": "^14.0.15",
       "licenses": "MIT",
       "repoUrl": "https://github.com/nock/nock",
-      "versionedRepoUrl": "https://github.com/nock/nock/tree/v11.8.0",
+      "versionedRepoUrl": "https://github.com/nock/nock/tree/v14.0.15",
       "licenseFile": "node_modules/nock/LICENSE",
-      "licenseUrl": "https://github.com/nock/nock/blob/v11.8.0/LICENSE",
+      "licenseUrl": "https://github.com/nock/nock/blob/v14.0.15/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Pedro Teixeira",
       "email": "pedro.teixeira@gmail.com"

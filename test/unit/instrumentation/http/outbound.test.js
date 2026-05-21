@@ -454,16 +454,21 @@ test('when working with http.request', async (t) => {
     agent.config.account_id = 190
     agent.config.primary_application_id = '389103'
     agent.config.distributed_tracing.exclude_newrelic_header = false
-    const host = 'http://www.google.com'
-    const path = '/index.html'
-    let headers
 
-    nock(host)
-      .get(path)
+    let headers
+    nock('http://www.google.com')
+      .get('/index.html')
       .reply(200, function () {
-        const { transaction, segment } = agent.tracer.getContext()
-        assert.equal(segment.name, 'External/www.google.com')
         headers = this.req.headers
+      })
+
+    // nock 14 (mswjs) discards agent-injected headers when normalizing a URL
+    // string into request options. Passing an options object bypasses that
+    // normalization and keeps this.req.headers intact in the reply callback.
+    helper.runInTransaction(agent, (transaction) => {
+      http.get({ hostname: 'www.google.com', port: 80, path: '/index.html' }, (res) => {
+        const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.equal(segment.name, 'External/www.google.com/index.html')
         assert.ok(headers.traceparent, 'traceparent header')
         const [version, traceId, parentSpanId, sampledFlag] = headers.traceparent.split('-')
         assert.equal(version, '00')
@@ -473,16 +478,11 @@ test('when working with http.request', async (t) => {
         assert.ok(headers.tracestate, 'tracestate header')
         assert.ok(!headers.tracestate.includes('null'))
         assert.ok(!headers.tracestate.includes('true'))
-
-        assert.ok(headers.newrelic, 'dt headers')
-      })
-
-    helper.runInTransaction(agent, (transaction) => {
-      http.get(`${host}${path}`, (res) => {
-        res.resume()
-        transaction.end()
+        assert.ok(headers.newrelic, 'newrelic dt header')
         const valid = Tracestate.fromHeader({ header: headers.tracestate, agent })
         assert.ok(valid.intrinsics)
+        res.resume()
+        transaction.end()
         end()
       })
     })
@@ -494,29 +494,29 @@ test('when working with http.request', async (t) => {
     agent.config.trusted_account_key = 190
     agent.config.account_id = 190
     agent.config.primary_application_id = '389103'
-    const host = 'http://www.google.com'
-    const path = '/index.html'
-    let headers
 
-    nock(host)
-      .get(path)
+    let headers
+    nock('http://www.google.com')
+      .get('/index.html')
       .reply(200, function () {
         headers = this.req.headers
+      })
+
+    // nock 14 (mswjs) discards agent-injected headers when normalizing a URL
+    // string into request options. Passing an options object bypasses that
+    // normalization and keeps this.req.headers intact in the reply callback.
+    helper.runInTransaction(agent, (transaction) => {
+      http.get({ hostname: 'www.google.com', port: 80, path: '/index.html' }, (res) => {
         assert.ok(headers.traceparent)
         assert.equal(headers.traceparent.split('-').length, 4)
         assert.ok(headers.tracestate)
         assert.ok(!headers.tracestate.includes('null'))
         assert.ok(!headers.tracestate.includes('true'))
-
         assert.ok(!headers.newrelic)
-      })
-
-    helper.runInTransaction(agent, (transaction) => {
-      http.get(`${host}${path}`, (res) => {
-        res.resume()
-        transaction.end()
         const valid = Tracestate.fromHeader({ header: headers.tracestate, agent })
         assert.ok(valid.intrinsics)
+        res.resume()
+        transaction.end()
         end()
       })
     })

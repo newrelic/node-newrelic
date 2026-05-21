@@ -8,7 +8,6 @@
 const helper = require('../../lib/agent_helper')
 const test = require('node:test')
 const symbols = require('../../../lib/symbols')
-const nock = require('nock')
 const { tspl } = require('@matteo.collina/tspl')
 const net = require('net')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
@@ -174,11 +173,17 @@ test('external requests', async function (t) {
     const { agent } = t.nr
     // Our way of wrapping HTTP response objects caused `got` to hang. This was
     // resolved in agent 2.5.1.
+    // nock is required lazily here (and in the tests below) so that
+    // @mswjs/interceptors is not installed before the proxy test runs.
+    // nock 14 uses @mswjs/interceptors which crashes on proxy-style requests
+    // (where `path` is an absolute URL); requiring nock after that test avoids
+    // the issue.
+    const nock = require('nock')
     nock.disableNetConnect()
     t.after(() => {
       nock.enableNetConnect()
     })
-    nock('https://example.com').get('/').reply(200)
+    nock('https://example.com').get('/').reply(200, '', { 'Content-Length': '0' })
     const got = require('got').default
     await helper.runInTransaction(agent, async function () {
       await got('https://example.com/')
@@ -233,11 +238,12 @@ test('external requests', async function (t) {
   await t.test('should record requests to default ports', async (t) => {
     const plan = tspl(t, { plan: 1 })
     const { agent, http } = t.nr
+    const nock = require('nock')
     nock.disableNetConnect()
     t.after(() => {
       nock.enableNetConnect()
     })
-    nock('http://example.com').get('/').reply(200)
+    nock('http://example.com').get('/').reply(200, '', { 'Content-Length': '0' })
     helper.runInTransaction(agent, (tx) => {
       http.get('http://example.com/', (res) => {
         res.resume()
@@ -254,11 +260,12 @@ test('external requests', async function (t) {
   await t.test('should expose the external segment on the http request', async (t) => {
     const plan = tspl(t, { plan: 2 })
     const { agent, http } = t.nr
+    const nock = require('nock')
     nock.disableNetConnect()
     t.after(() => {
       nock.enableNetConnect()
     })
-    nock('http://example.com').get('/').reply(200)
+    nock('http://example.com').get('/').reply(200, '', { 'Content-Length': '0' })
     helper.runInTransaction(agent, (tx) => {
       let reqSegment = null
       const req = http.get('http://example.com/', (res) => {

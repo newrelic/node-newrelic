@@ -4956,7 +4956,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### nock
 
-This product includes source derived from [nock](https://github.com/nock/nock) ([v11.8.0](https://github.com/nock/nock/tree/v11.8.0)), distributed under the [MIT License](https://github.com/nock/nock/blob/v11.8.0/LICENSE):
+This product includes source derived from [nock](https://github.com/nock/nock) ([v14.0.15](https://github.com/nock/nock/tree/v14.0.15)), distributed under the [MIT License](https://github.com/nock/nock/blob/v14.0.15/LICENSE):
 
 ```
 MIT License

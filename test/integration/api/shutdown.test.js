@@ -9,11 +9,11 @@ const test = require('node:test')
 const assert = require('node:assert')
 const nock = require('nock')
 const helper = require('../../lib/agent_helper')
+const { jsonReply, nockRequest } = require('../../lib/nock-utils')
 const API = require('../../../api')
 // This key is hardcoded in the agent helper
 const EXPECTED_LICENSE_KEY = 'license key here'
 const TEST_DOMAIN = 'test-collector.newrelic.com'
-const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`
 
 // TODO: should work after the agent has restarted
 /**
@@ -77,24 +77,19 @@ test('#shutdown should force harvest and callback after agent restart', (t, end)
 function setupShutdownEndpoints(runId) {
   // Final harvest
   return {
-    metric_data: nockRequest('metric_data', runId).reply(200),
-    shutdown: nockRequest('shutdown', runId).reply(200)
+    metric_data: nockRequest('metric_data', runId).reply(200, ...jsonReply({ return_value: null })),
+    shutdown: nockRequest('shutdown', runId).reply(200, ...jsonReply({ return_value: null }))
   }
 }
 
 function setupConnectionEndpoints(runId) {
   return {
-    preconnect: nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN }),
-    connect: nockRequest('connect').reply(200, {
+    preconnect: nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN })),
+    connect: nockRequest('connect').reply(200, ...jsonReply({
       return_value: {
         agent_run_id: runId
       }
-    }),
-    settings: nockRequest('agent_settings', runId).reply(200, { return_value: [] })
+    })),
+    settings: nockRequest('agent_settings', runId).reply(200, ...jsonReply({ return_value: [] }))
   }
-}
-
-function nockRequest(endpointMethod, runId) {
-  const relativepath = helper.generateCollectorPath(endpointMethod, runId)
-  return nock(TEST_COLLECTOR_URL).post(relativepath)
 }

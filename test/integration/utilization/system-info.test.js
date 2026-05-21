@@ -11,6 +11,7 @@ const assert = require('node:assert')
 const nock = require('nock')
 const proxyquire = require('proxyquire')
 const fetchSystemInfo = require('../../../lib/system-info')
+const { jsonReply } = require('../../lib/nock-utils')
 
 test.beforeEach(() => {
   nock.disableNetConnect()
@@ -32,12 +33,12 @@ test('pricing system-info aws', function (t, end) {
     }
   }
 
-  const ecsScope = nock(awsHost).get('/docker').reply(200, { DockerId: 'ecs-container-1' })
+  const ecsScope = nock(awsHost).get('/docker').reply(200, ...jsonReply({ DockerId: 'ecs-container-1' }))
   const awsRedirect = nock(awsHost)
   awsRedirect.put('/latest/api/token').reply(200, 'awsToken')
 
   for (const awsPath in awsResponses) {
-    awsRedirect.get(`/latest/${awsPath}`).reply(200, awsResponses[awsPath])
+    awsRedirect.get(`/latest/${awsPath}`).reply(200, ...jsonReply(awsResponses[awsPath]))
   }
 
   const agent = helper.loadMockedAgent({
@@ -88,7 +89,7 @@ test('pricing system-info azure', function (t, end) {
   }
 
   const azureRedirect = nock(azureHost)
-  azureRedirect.get('/metadata/instance/compute?api-version=2017-03-01').reply(200, azureResponse)
+  azureRedirect.get('/metadata/instance/compute?api-version=2017-03-01').reply(200, ...jsonReply(azureResponse))
 
   const agent = helper.loadMockedAgent({
     utilization: {
@@ -133,12 +134,12 @@ test('pricing system-info gcp', function (t, end) {
   })
     .get('/computeMetadata/v1/instance/')
     .query({ recursive: true })
-    .reply(200, {
+    .reply(200, ...jsonReply({
       id: '3161347020215157123',
       machineType: 'projects/492690098729/machineTypes/custom-1-1024',
       name: 'aef-default-20170501t160547-7gh8',
       zone: 'projects/492690098729/zones/us-central1-c'
-    })
+    }))
 
   const agent = helper.loadMockedAgent({
     utilization: {
