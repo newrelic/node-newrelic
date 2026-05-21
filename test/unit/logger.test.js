@@ -161,7 +161,7 @@ test('should indicate when audit logging is enabled', (t) => {
   assert.equal(result, false)
 })
 
-test('should log audit logs', (t, end) => {
+test('should log audit logs (via config.audit_log)', (t, end) => {
   t.plan(2)
   const { logger } = t.nr
   t.nr.results = []
@@ -169,6 +169,24 @@ test('should log audit logs', (t, end) => {
     transform: addResult.bind(this, t)
   }))
   logger.options.auditLogging = true
+  logger.audit('test log')
+  process.nextTick(() => {
+    const { results } = t.nr
+    t.assert.equal(results.length, 1)
+    t.assert.equal(results[0].msg, 'test log')
+    end()
+  })
+})
+
+test('should log audit logs (via log level)', (t, end) => {
+  t.plan(2)
+  const { logger } = t.nr
+  t.nr.results = []
+  logger.pipe(new Transform({
+    transform: addResult.bind(this, t)
+  }))
+  logger.options.auditLogging = false
+  logger.level('trace')
   logger.audit('test log')
   process.nextTick(() => {
     const { results } = t.nr

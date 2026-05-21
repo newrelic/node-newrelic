@@ -23,8 +23,12 @@ test.beforeEach((ctx) => {
     export(items, callback) {
       callback({ code: 0 })
     },
-    forceFlush() {},
-    shutdown() {}
+    forceFlush() {
+      return 'flushed'
+    },
+    shutdown() {
+      return 'stopped'
+    }
   }
 
   ctx.nr.delegate = new NRProxyingDelegate(mockDelegate, ctx.nr.logger)
@@ -41,4 +45,11 @@ test('logs during export', (t) => {
       0
     ])
   })
+})
+
+test('appease coverage bot', (t) => {
+  t.plan(2)
+  const { delegate } = t.nr
+  t.assert.equal('flushed', delegate.forceFlush())
+  t.assert.equal('stopped', delegate.shutdown())
 })
