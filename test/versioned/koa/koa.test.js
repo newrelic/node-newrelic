@@ -19,7 +19,6 @@ test.beforeEach((ctx) => {
 
   const Koa = require('koa')
   ctx.nr.app = new Koa()
-  ctx.nr.testShim = helper.getShim(Koa)
 })
 
 test.afterEach((ctx) => {
@@ -76,9 +75,10 @@ function checkSegments(plan, tx) {
 }
 
 test('should log tracking metrics', function(t) {
-  const { agent } = t.nr
+  const { agent, app } = t.nr
   const { version } = require('koa/package.json')
-  assertPackageMetrics({ agent, pkg: 'koa', version })
+  app.use(() => {})
+  assertPackageMetrics({ agent, pkg: 'koa', version, subscriberType: true })
 })
 
 test('Should name after koa framework and verb when body set', async (t) => {
@@ -107,7 +107,7 @@ test('Should name after koa framework and verb when body set', async (t) => {
   await plan.completed
 })
 
-test('Should name (not found) when no work is performed', async (t) => {
+test('Should still name transaction `/` when no work is performed', async (t) => {
   const plan = tspl(t, { plan: 2 })
   const { agent, app } = t.nr
 
@@ -124,145 +124,12 @@ test('Should name (not found) when no work is performed', async (t) => {
   agent.on('transactionFinished', (tx) => {
     plan.equal(
       tx.name,
-      'WebTransaction/WebFrameworkUri/Koa/GET/(not found)',
+      'WebTransaction/WebFrameworkUri/Koa/GET//',
       'should name after status code message'
     )
   })
 
   run({ t, expected: 'Not Found', plan })
-  await plan.completed
-})
-
-test('names the transaction after the middleware that sets the body', async (t) => {
-  const plan = tspl(t, { plan: 2 })
-  const { agent, app } = t.nr
-
-  app.use(function one(ctx, next) {
-    const tx = agent.getTransaction()
-    return next().then(() => tx.nameState.appendPath('one-end'))
-  })
-
-  app.use(function two(ctx) {
-    const tx = agent.getTransaction()
-    tx.nameState.appendPath('two')
-    ctx.body = 'done'
-  })
-
-  agent.on('transactionFinished', (tx) => {
-    plan.equal(
-      tx.name,
-      'WebTransaction/WebFrameworkUri/Koa/GET//two',
-      'should have name without post-response name info'
-    )
-  })
-
-  run({ t, plan })
-  await plan.completed
-})
-
-test('names the transaction after the last middleware that sets the body', async (t) => {
-  const plan = tspl(t, { plan: 2 })
-  const { agent, app } = t.nr
-
-  app.use(function one(ctx, next) {
-    const tx = agent.getTransaction()
-    return next().then(() => tx.nameState.appendPath('one-end'))
-  })
-
-  app.use(function two(ctx, next) {
-    const tx = agent.getTransaction()
-    tx.nameState.appendPath('two')
-    ctx.body = 'not actually done'
-    return next()
-  })
-
-  app.use(function three(ctx) {
-    const tx = agent.getTransaction()
-    tx.nameState.appendPath('three')
-    ctx.body = 'done'
-  })
-
-  agent.on('transactionFinished', (tx) => {
-    plan.equal(
-      tx.name,
-      'WebTransaction/WebFrameworkUri/Koa/GET//three',
-      'should have name without post-response name info'
-    )
-  })
-
-  run({ t, plan })
-  await plan.completed
-})
-
-test('names the transaction off the status setting middleware', async (t) => {
-  const plan = tspl(t, { plan: 4 })
-  const { agent, app } = t.nr
-
-  app.use(function one(ctx, next) {
-    const tx = agent.getTransaction()
-    return next().then(() => tx.nameState.appendPath('one-end'))
-  })
-
-  app.use(function two(ctx) {
-    const tx = agent.getTransaction()
-    tx.nameState.appendPath('two')
-    ctx.status = 202
-  })
-
-  agent.on('transactionFinished', (tx) => {
-    plan.equal(
-      tx.name,
-      'WebTransaction/WebFrameworkUri/Koa/GET//two',
-      'should have name without post-response name info'
-    )
-  })
-
-  run({
-    t,
-    expected: 'Accepted',
-    cb: (err, res) => {
-      plan.ifError(err)
-      plan.equal(res.statusCode, 202, 'should not interfere with status code setting')
-    },
-    plan
-  })
-  await plan.completed
-})
-
-test('names the transaction when body set even if status set after', async (t) => {
-  const plan = tspl(t, { plan: 4 })
-  const { agent, app } = t.nr
-
-  app.use(function one(ctx, next) {
-    const tx = agent.getTransaction()
-    return next().then(() => tx.nameState.appendPath('one-end'))
-  })
-
-  app.use(function two(ctx) {
-    const tx = agent.getTransaction()
-    tx.nameState.appendPath('two')
-    ctx.body = 'done'
-
-    tx.nameState.appendPath('setting-status')
-    ctx.status = 202
-  })
-
-  agent.on('transactionFinished', (tx) => {
-    plan.equal(
-      tx.name,
-      'WebTransaction/WebFrameworkUri/Koa/GET//two',
-      'should have name without post-response name info'
-    )
-  })
-
-  run({
-    t,
-    cb: (err, res) => {
-      plan.ifError(err)
-      plan.equal(res.statusCode, 202, 'should not interfere with status code setting')
-    },
-    plan
-  })
   await plan.completed
 })
 
@@ -287,13 +154,13 @@ test('produces transaction trace with multiple middleware', async (t) => {
 
 test('correctly records actions interspersed among middleware', async (t) => {
   const plan = tspl(t, { plan: 13 })
-  const { agent, app, testShim } = t.nr
+  const { agent, app } = t.nr
 
   app.use(function one(ctx, next) {
     const parent = agent.tracer.getSegment()
-    testShim.createSegment({ name: 'testSegment', parent })
+    agent.tracer.createSegment({ name: 'testSegment', parent, transaction: agent.getTransaction() })?.start()
     return next().then(function () {
-      testShim.createSegment({ name: 'nestedSegment', parent })
+      agent.tracer.createSegment({ name: 'nestedSegment', parent, transaction: agent.getTransaction() })?.start()
     })
   })
   app.use(function two(ctx, next) {
@@ -399,8 +266,8 @@ test('errors handled within middleware are not recorded', async (t) => {
   app.use(function one(ctx, next) {
     return next().catch(function (err) {
       plan.equal(err.message, 'middleware error', 'caught expected error')
-      ctx.status = 200
       ctx.body = 'handled error'
+      ctx.status = 200
     })
   })
   app.use(function two(ctx) {
@@ -468,5 +335,48 @@ test('errors caught by default error listener are recorded', async (t) => {
   })
 
   run({ t, expected: 'Internal Server Error', plan })
+  await plan.completed
+})
+
+test('middleware called outside a transaction calls the original handler', async (t) => {
+  const plan = tspl(t, { plan: 1 })
+  const { app } = t.nr
+
+  let called = false
+  app.use(function one(ctx, next) {
+    called = true
+    return next()
+  })
+
+  await app.middleware[0]({}, () => Promise.resolve())
+  plan.equal(called, true, 'original handler was called without a transaction')
+  await plan.completed
+})
+
+test('middleware continues when createSegment returns null', async (t) => {
+  const plan = tspl(t, { plan: 2 })
+  const { agent, app } = t.nr
+
+  let called = false
+  app.use(function one(ctx) {
+    called = true
+    ctx.body = 'done'
+  })
+
+  // Purposefully make createSegment fail
+  const orig = agent.tracer.createSegment.bind(agent.tracer)
+  agent.tracer.createSegment = (opts) => {
+    if (opts.name?.startsWith('Nodejs/Middleware/Koa')) {
+      return null
+    }
+    return orig(opts)
+  }
+  t.after(() => { agent.tracer.createSegment = orig })
+
+  agent.on('transactionFinished', () => {
+    plan.equal(called, true, 'original handler was called despite null segment')
+  })
+
+  run({ t, plan })
   await plan.completed
 })

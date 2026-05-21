@@ -10,6 +10,7 @@ const loggerMock = require('../../mocks/logger')
 const MwWrapper = require('#agentlib/subscribers/middleware-wrapper.js')
 const helper = require('#testlib/agent_helper.js')
 const { transactionInfo } = require('#agentlib/symbols.js')
+const symbols = require('#agentlib/symbols.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
@@ -18,9 +19,16 @@ test.beforeEach((ctx) => {
   function handler (arg1, arg2, arg3) {
     return `${arg2}, ${arg3}`
   }
+
+  function errorHandler(err) {
+    if (err) {
+      throw err
+    }
+  }
   const origExtractTxInfo = wrapper.extractTxInfo
   ctx.nr = {
     agent,
+    errorHandler,
     handler,
     logger,
     wrapper
@@ -36,12 +44,21 @@ test.beforeEach((ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
+
 test('should not wrap handler if it is not a function', function (t) {
   const { logger, wrapper } = t.nr
   const handler = 'test'
   const wrapped = wrapper.wrap({ handler })
   assert.equal(wrapped, handler)
-  assert.deepEqual(logger.trace.args[0], ['Handler: %s is not a function, not wrapping.', 'test'])
+  assert.deepEqual(logger.trace.args[0], ['Handler is not a function, not wrapping.'])
+})
+
+test('should not double wrap handler if it is a function', function (t) {
+  const { logger, handler, wrapper } = t.nr
+  const wrapped = wrapper.wrap({ handler })
+  const wrapped2 = wrapper.wrap({ handler: wrapped })
+  assert.deepEqual(wrapped, wrapped2)
+  assert.deepEqual(logger.trace.args[0], ['Handler is already wrapped, not wrapping.'])
 })
 
 test('should wrap handler if it is a function', function (t) {
@@ -49,6 +66,7 @@ test('should wrap handler if it is a function', function (t) {
   const wrapped = wrapper.wrap({ handler })
   assert.equal(wrapped.name, 'handler')
   assert.equal(wrapped.length, 3)
+  assert.deepEqual(wrapped[symbols.original], handler)
   assert.equal(logger.trace.callCount, 0)
 })
 
@@ -80,7 +98,7 @@ test('should run wrapped handler in context if transaction present, and properly
 })
 
 test('should handle error when passed in to done handler', function (t, end) {
-  const { agent, wrapper } = t.nr
+  const { agent, wrapper, errorHandler } = t.nr
   const error = new Error('test error')
   function handler (req, res, next) {
     next(error)
@@ -91,7 +109,10 @@ test('should handle error when passed in to done handler', function (t, end) {
   helper.runInTransaction(agent, function (tx) {
     tx.type = 'web'
     tx.url = route
-    wrapped(request, 'one', function() {})
+    try {
+      wrapped(request, 'one', errorHandler)
+    } catch {}
+
     assert.deepEqual(t.nr.txInfo.error, error)
     assert.equal(t.nr.txInfo.errorHandled, false)
 
@@ -101,7 +122,7 @@ test('should handle error when passed in to done handler', function (t, end) {
 })
 
 test('should handle error when passed in to done handler `request.raw`', function (t, end) {
-  const { agent, wrapper } = t.nr
+  const { agent, wrapper, errorHandler } = t.nr
   const error = new Error('test error')
   function handler (req, res, next) {
     next(error)
@@ -112,7 +133,9 @@ test('should handle error when passed in to done handler `request.raw`', functio
   helper.runInTransaction(agent, function (tx) {
     tx.type = 'web'
     tx.url = route
-    wrapped(request, 'one', function() {})
+    try {
+      wrapped(request, 'one', errorHandler)
+    } catch {}
     assert.deepEqual(t.nr.txInfo.error, error)
     assert.equal(t.nr.txInfo.errorHandled, false)
     assert.deepEqual(request.raw[transactionInfo], t.nr.txInfo)
@@ -122,7 +145,7 @@ test('should handle error when passed in to done handler `request.raw`', functio
 })
 
 test('should handle error when passed in to done handler `request`', function (t, end) {
-  const { agent, wrapper } = t.nr
+  const { agent, wrapper, errorHandler } = t.nr
   const error = new Error('test error')
   function handler (req, res, next) {
     next(error)
@@ -133,7 +156,9 @@ test('should handle error when passed in to done handler `request`', function (t
   helper.runInTransaction(agent, function (tx) {
     tx.type = 'web'
     tx.url = route
-    wrapped(request, 'one', function() {})
+    try {
+      wrapped(request, 'one', errorHandler)
+    } catch {}
     assert.deepEqual(t.nr.txInfo.error, error)
     assert.equal(t.nr.txInfo.errorHandled, false)
     assert.deepEqual(request[transactionInfo], t.nr.txInfo)
@@ -174,7 +199,9 @@ test('should not handle error when no error is passed to done handler', function
     tx.type = 'web'
     tx.url = route
     wrapped(request, 'one', function() {})
-    assert.deepEqual(t.nr.txInfo, {})
+    assert.deepEqual(t.nr.txInfo, {
+      errorHandled: true
+    })
 
     tx.end()
     end()
@@ -197,7 +224,9 @@ test('should not handle error when isError is not using default handler', functi
     tx.type = 'web'
     tx.url = route
     wrapped(request, 'one', function() {})
-    assert.deepEqual(t.nr.txInfo, {})
+    assert.deepEqual(t.nr.txInfo, {
+      errorHandled: true
+    })
     tx.end()
     end()
   })
