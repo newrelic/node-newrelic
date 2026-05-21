@@ -74,18 +74,23 @@ test(`${pkg} instrumentation`, async (t) => {
 
     await t.test('should name and produce segments for matched path', (t, end) => {
       const { agent, router, app } = t.nr
+      let calls = 0
       router.get(
         '/:first',
         function firstMiddleware(ctx, next) {
+          calls++
           next().then(() => {
             ctx.body = 'first'
           })
         },
         function secondMiddleware(ctx) {
+          calls++
           ctx.body = 'second'
         }
       )
 
+      app.use(router.routes())
+      // load the routers again to ensure we are not double wrapping
       app.use(router.routes())
       agent.on('transactionFinished', (tx) => {
         assertSegments(tx.trace, tx.trace.root, [
@@ -112,6 +117,7 @@ test(`${pkg} instrumentation`, async (t) => {
             { name: 'Nodejs/Middleware/Koa/secondMiddleware//:first', kind: 'internal' },
           ]
         })
+        assert.equal(calls, 2, 'should only call each middleware once')
         end()
       })
       run({ context: t.nr })

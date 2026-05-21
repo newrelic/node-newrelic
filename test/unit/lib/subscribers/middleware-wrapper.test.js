@@ -10,6 +10,7 @@ const loggerMock = require('../../mocks/logger')
 const MwWrapper = require('#agentlib/subscribers/middleware-wrapper.js')
 const helper = require('#testlib/agent_helper.js')
 const { transactionInfo } = require('#agentlib/symbols.js')
+const symbols = require('#agentlib/symbols.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
@@ -49,7 +50,15 @@ test('should not wrap handler if it is not a function', function (t) {
   const handler = 'test'
   const wrapped = wrapper.wrap({ handler })
   assert.equal(wrapped, handler)
-  assert.deepEqual(logger.trace.args[0], ['Handler: %s is not a function, not wrapping.', 'test'])
+  assert.deepEqual(logger.trace.args[0], ['Handler is not a function, not wrapping.'])
+})
+
+test('should not double wrap handler if it is a function', function (t) {
+  const { logger, handler, wrapper } = t.nr
+  const wrapped = wrapper.wrap({ handler })
+  const wrapped2 = wrapper.wrap({ handler: wrapped })
+  assert.deepEqual(wrapped, wrapped2)
+  assert.deepEqual(logger.trace.args[0], ['Handler is already wrapped, not wrapping.'])
 })
 
 test('should wrap handler if it is a function', function (t) {
@@ -57,6 +66,7 @@ test('should wrap handler if it is a function', function (t) {
   const wrapped = wrapper.wrap({ handler })
   assert.equal(wrapped.name, 'handler')
   assert.equal(wrapped.length, 3)
+  assert.deepEqual(wrapped[symbols.original], handler)
   assert.equal(logger.trace.callCount, 0)
 })
 
