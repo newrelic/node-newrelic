@@ -747,20 +747,6 @@
         "Unable to determine source for license text."
       ]
     },
-    "rimraf@6.1.3": {
-      "name": "rimraf",
-      "version": "6.1.3",
-      "range": "^6.1.3",
-      "licenses": "BlueOak-1.0.0",
-      "repoUrl": "https://github.com/isaacs/rimraf",
-      "versionedRepoUrl": "https://github.com/isaacs/rimraf/tree/v6.1.3",
-      "licenseFile": "node_modules/rimraf/LICENSE.md",
-      "licenseUrl": "https://github.com/isaacs/rimraf/blob/v6.1.3/LICENSE.md",
-      "licenseTextSource": "file",
-      "publisher": "Isaac Z. Schlueter",
-      "email": "i@izs.me",
-      "url": "http://blog.izs.me/"
-    },
     "self-cert@2.0.1": {
       "name": "self-cert",
       "version": "2.0.1",
