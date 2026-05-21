@@ -8,7 +8,11 @@ const test = require('node:test')
 const assert = require('node:assert')
 const proxyquire = require('proxyquire')
 const sinon = require('sinon')
-const { getReleaseDate } = require('../prepare-release')
+const { removeModules } = require('#testlib/cache-buster.js')
+
+function afterEach() {
+  removeModules(['commander'])
+}
 
 test('Prepare Release script', async (t) => {
   await t.test('generateConventionalReleaseNotes', async (t) => {
@@ -39,6 +43,8 @@ test('Prepare Release script', async (t) => {
         script
       }
     })
+
+    t.afterEach(afterEach)
 
     await t.test('should return the markdown and json generated notes', async (t) => {
       const {
@@ -161,6 +167,8 @@ test('Prepare Release script', async (t) => {
       }
     })
 
+    t.afterEach(afterEach)
+
     await t.test('should return true if force mode enabled', async (t) => {
       const { script } = t.nr
       const result = await script.isValid({ force: true })
@@ -196,17 +204,17 @@ test('Prepare Release script', async (t) => {
   })
 })
 
-test('getReleaseDate', async (t) => {
-  t.beforeEach(async (ctx) => {
-    const now = Date.now
-    Date.now = function now() {
-      return new Date('2023-11-08T22:45:00.000-05:00').getTime()
-    }
-    ctx.nr = { now }
-  })
+test('getReleaseDate returns the correct string', async (t) => {
+  // lazy-load to avoid commander complaining
+  const { getReleaseDate } = require('../prepare-release')
+  const now = Date.now
+  Date.now = function now() {
+    return new Date('2023-11-08T22:45:00.000-05:00').getTime()
+  }
 
-  t.afterEach(async (ctx) => {
-    Date.now = ctx.nr.now
+  t.after(() => {
+    Date.now = now
+    afterEach()
   })
 
   await t.test('returns the correct string', async () => {

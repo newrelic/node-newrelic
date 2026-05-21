@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu May 21 2026 14:45:39 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu May 21 2026 16:16:32 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -522,15 +522,15 @@
       "licenseTextSource": "file",
       "publisher": "Marak Squires"
     },
-    "commander@7.2.0": {
+    "commander@14.0.3": {
       "name": "commander",
-      "version": "7.2.0",
-      "range": "^7.0.0",
+      "version": "14.0.3",
+      "range": "^14.0.3",
       "licenses": "MIT",
       "repoUrl": "https://github.com/tj/commander.js",
-      "versionedRepoUrl": "https://github.com/tj/commander.js/tree/v7.2.0",
+      "versionedRepoUrl": "https://github.com/tj/commander.js/tree/v14.0.3",
       "licenseFile": "node_modules/commander/LICENSE",
-      "licenseUrl": "https://github.com/tj/commander.js/blob/v7.2.0/LICENSE",
+      "licenseUrl": "https://github.com/tj/commander.js/blob/v14.0.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"

@@ -31,7 +31,7 @@ program.option(
 )
 program.option('--dry-run', 'executes script but does not commit nor create PR')
 program.option(
-  '--repo-path <path',
+  '--repo-path <path>',
   'Path to the docs-website fork on local machine',
   // eslint-disable-next-line sonarjs/publicly-writable-directories
   '/tmp/docs-website'
