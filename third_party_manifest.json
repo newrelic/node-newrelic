@@ -748,15 +748,15 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
-    "sinon@5.1.1": {
+    "sinon@22.0.0": {
       "name": "sinon",
-      "version": "5.1.1",
-      "range": "^5.1.1",
+      "version": "22.0.0",
+      "range": "^22.0.0",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/sinonjs/sinon",
-      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v5.1.1",
+      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v22.0.0",
       "licenseFile": "node_modules/sinon/LICENSE",
-      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v5.1.1/LICENSE",
+      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v22.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     }
