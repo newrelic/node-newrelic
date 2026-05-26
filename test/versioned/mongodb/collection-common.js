@@ -11,7 +11,7 @@ const assert = require('node:assert')
 const { removeModules } = require('../../lib/cache-buster')
 const common = require('./common')
 const helper = require('../../lib/agent_helper')
-const mongoPackage = require('mongodb/package.json')
+const getPackageVersion = require('../../lib/get-package-version')
 
 let METRIC_HOST_NAME = null
 let METRIC_HOST_PORT = null
@@ -21,7 +21,7 @@ exports.close = common.close
 exports.test = collectionTest
 exports.dropTestCollections = dropTestCollections
 exports.populate = populate
-exports.pkgVersion = mongoPackage.version
+exports.pkgVersion = getPackageVersion({ pkgName: 'mongodb', baseDir: __dirname })
 
 const { COLLECTIONS } = common
 

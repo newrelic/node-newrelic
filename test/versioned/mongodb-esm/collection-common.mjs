@@ -5,13 +5,10 @@
 
 import test from 'node:test'
 import assert from 'node:assert'
-import { createRequire } from 'node:module'
 
 import helper from '../../lib/agent_helper.js'
 import common from '../mongodb/common.js'
-
-const require = createRequire(import.meta.url)
-const mongoPackage = require('mongodb/package.json')
+import getPackageVersion from '../../lib/get-package-version.js'
 
 const { COLLECTIONS } = common.ESM
 const DB_NAME = common.ESM.DB_NAME
@@ -20,7 +17,10 @@ const STATEMENT_PREFIX = common.ESM.STATEMENT_PREFIX
 let METRIC_HOST_NAME = null
 let METRIC_HOST_PORT = null
 
-const pkgVersion = mongoPackage.version
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+const __filename = fileURLToPath(import.meta.url)
+const pkgVersion = getPackageVersion({ pkgName: 'mongodb', baseDir: dirname(__filename) })
 
 export {
   collectionTest,
