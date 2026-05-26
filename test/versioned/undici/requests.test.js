@@ -117,6 +117,33 @@ test('should add HTTPS port to segment name when provided', async (t) => {
   })
 })
 
+test('should handle undici.Agent with rejectUnauthorized', async (t) => {
+  const { agent, undici } = t.nr
+  const { httpsServer } = createHttpsServer()
+  const { port } = httpsServer.address()
+  const customAgent = new undici.Agent({
+    connect: { rejectUnauthorized: false }
+  })
+  t.after(() => {
+    httpsServer.close()
+  })
+
+  await helper.runInTransaction(agent, async (transaction) => {
+    const response = await undici.fetch(`https://localhost:${port}`, {
+      dispatcher: customAgent
+    })
+    assert.equal(response.status, 200)
+    const body = await response.text()
+    assert.equal(body, 'SSL response')
+
+    assertSegments(transaction.trace, transaction.trace.root, [`External/localhost:${port}/`], {
+      exact: false
+    })
+
+    transaction.end()
+  })
+})
+
 test('should add attributes to external segment', async (t) => {
   const { agent, undici, HOST, PORT, REQUEST_URL } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
