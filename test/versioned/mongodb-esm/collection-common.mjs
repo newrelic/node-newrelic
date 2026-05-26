@@ -17,10 +17,11 @@ const STATEMENT_PREFIX = common.ESM.STATEMENT_PREFIX
 let METRIC_HOST_NAME = null
 let METRIC_HOST_PORT = null
 
-import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-const __filename = fileURLToPath(import.meta.url)
-const pkgVersion = getPackageVersion({ pkgName: 'mongodb', baseDir: dirname(__filename) })
+const pkgVersion = getPackageVersion({
+  pkgName: 'mongodb',
+  baseDir: dirname(import.meta.filename)
+})
 
 export {
   collectionTest,
