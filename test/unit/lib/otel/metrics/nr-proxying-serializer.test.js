@@ -94,3 +94,19 @@ test('logs when deserializing', async (t) => {
     ]
   )
 })
+
+test('does not log when audit logging is disabled', async (t) => {
+  const { meterProvider, reader, serializer } = t.nr
+  t.nr.logger.auditEnabled = () => false
+  const meter = meterProvider.getMeter('test-meter')
+  const counter = meter.createCounter('test-counter')
+  counter.add(1, { foo: 'bar' })
+
+  const collected = await reader.collect()
+  const input = collected.resourceMetrics
+  const expected = ProtobufMetricsSerializer.serializeRequest(input)
+  const found = serializer.serializeRequest(input)
+
+  assert.equal(Buffer.compare(found, expected), 0)
+  assert.deepEqual(t.nr.logs, [])
+})
