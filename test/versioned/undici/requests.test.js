@@ -117,7 +117,7 @@ test('should add HTTPS port to segment name when provided', async (t) => {
   })
 })
 
-test('should handle undici.Agent with rejectUnauthorized', async (t) => {
+test('should handle undici.Agent with rejectUnauthorized', { skip: semver.lt(pkgVersion, '5.2.0') }, async (t) => {
   const { agent, undici } = t.nr
   const { httpsServer } = createHttpsServer()
   const { port } = httpsServer.address()
