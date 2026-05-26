@@ -187,6 +187,32 @@ test('should handle error when passed in to done handler but mark error handled 
   })
 })
 
+test('should handle error when passed in to done handler but subsequent middleware handles error', function (t, end) {
+  t.plan(3)
+  const { agent, wrapper } = t.nr
+  const error = new Error('test error')
+  function handler (req, res, next) {
+    next(error)
+  }
+  const route = '/test/url'
+  const wrapped = wrapper.wrap({ handler, route })
+  const request = {}
+  helper.runInTransaction(agent, function (tx) {
+    tx.type = 'web'
+    tx.url = route
+    wrapped(request, 'one', function(err) {
+      // this middleware essentially swallows error
+      // thus handling it and marking error in txInfo
+      // as handled so it will not report
+      t.assert.equal(err.message, error.message)
+    })
+    t.assert.deepEqual(t.nr.txInfo.error, error)
+    t.assert.equal(t.nr.txInfo.errorHandled, true)
+    tx.end()
+    end()
+  })
+})
+
 test('should not handle error when no error is passed to done handler', function (t, end) {
   const { agent, wrapper } = t.nr
   function handler (req, res, next) {
@@ -199,10 +225,7 @@ test('should not handle error when no error is passed to done handler', function
     tx.type = 'web'
     tx.url = route
     wrapped(request, 'one', function() {})
-    assert.deepEqual(t.nr.txInfo, {
-      errorHandled: true
-    })
-
+    assert.deepEqual(t.nr.txInfo, {})
     tx.end()
     end()
   })
@@ -224,9 +247,7 @@ test('should not handle error when isError is not using default handler', functi
     tx.type = 'web'
     tx.url = route
     wrapped(request, 'one', function() {})
-    assert.deepEqual(t.nr.txInfo, {
-      errorHandled: true
-    })
+    assert.deepEqual(t.nr.txInfo, {})
     tx.end()
     end()
   })
