@@ -11,8 +11,8 @@
       "dependencies": {
         "mongodb": {
           "versions": ">=4.1.4",
-          "comment": "4 samples for 1 test of each major v4-v7",
-          "samples": 4
+          "comment": "Only need to test latest major, CJS tests will cover other majors",
+          "samples": 1
         }
       },
       "files": [
