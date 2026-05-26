@@ -25,7 +25,10 @@ test.beforeEach((ctx) => {
     child() { return this }
   }
 
-  ctx.nr.serializer = new NRProxyingSerializer(ctx.nr.logger)
+  ctx.nr.serializer = new NRProxyingSerializer({
+    destinationUrl: 'http://example.com:1234/v1/metrics',
+    logger: ctx.nr.logger
+  })
   ctx.nr.reader = new PeriodicExportingMetricReader({
     exporter: {
       export: () => {},
@@ -60,6 +63,7 @@ test('logs when serializing', async (t) => {
     t.nr.logs[0],
     [
       {
+        destUrl: 'http://example.com:1234/v1/metrics',
         data: buffer.toString('base64'),
         bytes: buffer.byteLength
       },
