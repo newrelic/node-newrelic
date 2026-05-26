@@ -56,16 +56,23 @@ function makeTest(testCase, vendor, getInfo) {
 
       redirection = host.get(endpoint)
 
+      const body = JSONbig.stringify(responseData.response || '')
       if (responseData.timeout) {
         redirection = redirection.delay(timeout)
       }
-      redirection.reply(200, JSONbig.stringify(responseData.response || ''))
+      redirection.reply(200, body, {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      })
     }
 
     // This may be messy but AWS makes an extra call to get an auth token
     // we need to nock this out once
     if (vendor === 'aws') {
-      host.put('/latest/api/token').reply(200, 'awsAuthToken')
+      const tokenBody = 'awsAuthToken'
+      host.put('/latest/api/token').reply(200, tokenBody, {
+        'Content-Length': Buffer.byteLength(tokenBody)
+      })
     }
 
     getInfo(agent, function (err, info) {

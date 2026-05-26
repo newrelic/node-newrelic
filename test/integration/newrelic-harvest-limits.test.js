@@ -7,7 +7,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const nock = require('nock')
-const { nockRequest } = require('./response-handling-utils')
+const { nockRequest, jsonReply } = require('./response-handling-utils')
 const sinon = require('sinon')
 const helper = require('../lib/agent_helper')
 const TEST_DOMAIN = 'test-collector.newrelic.com'
@@ -33,13 +33,13 @@ test('Connect calls re-generate harvest limits from original config values', (t,
     }
   }
   nock.disableNetConnect()
-  nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN })
-  nockRequest('connect').reply(200, { return_value: { agent_run_id: RUN_ID, ...serverHarvest } })
-  nockRequest('agent_settings', RUN_ID).reply(200, { return_value: [] })
-  nockRequest('metric_data', RUN_ID).reply(409, { return_value: [] })
-  nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN })
-  nockRequest('connect').reply(200, { return_value: { agent_run_id: RUN_ID, ...serverHarvest } })
-  nockRequest('agent_settings', RUN_ID).reply(200, { return_value: [] })
+  nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN }))
+  nockRequest('connect').reply(200, ...jsonReply({ return_value: { agent_run_id: RUN_ID, ...serverHarvest } }))
+  nockRequest('agent_settings', RUN_ID).reply(200, ...jsonReply({ return_value: [] }))
+  nockRequest('metric_data', RUN_ID).reply(409, ...jsonReply({ return_value: [] }))
+  nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN }))
+  nockRequest('connect').reply(200, ...jsonReply({ return_value: { agent_run_id: RUN_ID, ...serverHarvest } }))
+  nockRequest('agent_settings', RUN_ID).reply(200, ...jsonReply({ return_value: [] }))
   const agent = helper.loadMockedAgent({
     license_key: 'license key here',
     host: TEST_DOMAIN,

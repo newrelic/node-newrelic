@@ -6,7 +6,7 @@
 'use strict'
 const test = require('node:test')
 const nock = require('nock')
-const { nockRequest } = require('./response-handling-utils')
+const { nockRequest, jsonReply } = require('./response-handling-utils')
 const grpc = require('@grpc/grpc-js')
 const protoLoader = require('@grpc/proto-loader')
 const { tspl } = require('@matteo.collina/tspl')
@@ -140,7 +140,7 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
         const RESTARTED_SESSION_ID = 'restarted session id'
 
         // 409 response will trigger a restart
-        const restartMetricEndpoint = nockRequest('metric_data', INITIAL_RUN_ID).reply(409)
+        const restartMetricEndpoint = nockRequest('metric_data', INITIAL_RUN_ID).reply(409, ...jsonReply({ return_value: null }))
 
         const expectedRunId = RESTARTED_RUN_ID
         const expectedSessionId = RESTARTED_SESSION_ID
@@ -169,10 +169,17 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
             plan.equal(agent.spanEventAggregator.started, false)
 
             agent.spanEventAggregator.once('started', () => {
-              // if new endpoints weren't hit, something else went wrong with test.
-              verifyAgentStart({ endpoints: restartEndpoints, plan })
+              // Defer one tick: with nock 14 keep-alive connections, the
+              // agent_settings request is pipelined and nock only matches it
+              // after the connect response body is drained from the socket.
+              // setImmediate gives nock time to process the in-flight request
+              // before we assert isDone().
+              setImmediate(() => {
+                // if new endpoints weren't hit, something else went wrong with test.
+                verifyAgentStart({ endpoints: restartEndpoints, plan })
 
-              createTestData({ agent, names })
+                createTestData({ agent, names })
+              })
             })
           })
 
@@ -415,16 +422,16 @@ function createTestData({ agent, names }) {
 
 function setupConnectionEndpoints(runId, sessionId) {
   return {
-    preconnect: nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN }),
-    connect: nockRequest('connect').reply(200, {
+    preconnect: nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN })),
+    connect: nockRequest('connect').reply(200, ...jsonReply({
       return_value: {
         agent_run_id: runId,
         request_headers_map: {
           SESSION_ID: sessionId
         }
       }
-    }),
-    settings: nockRequest('agent_settings', runId).reply(200, { return_value: [] })
+    })),
+    settings: nockRequest('agent_settings', runId).reply(200, ...jsonReply({ return_value: [] }))
   }
 }
 

@@ -5,10 +5,9 @@
 
 'use strict'
 const assert = require('node:assert')
-const nock = require('nock')
 const helper = require('../lib/agent_helper')
+const { jsonReply, nockRequest } = require('../lib/nock-utils')
 const TEST_DOMAIN = 'test-collector.newrelic.com'
-const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`
 const RUN_ID = 'runId'
 
 const endpointDataChecks = {
@@ -194,20 +193,16 @@ function whenAllAggregatorsSend(agent) {
 
 function setupConnectionEndpoints() {
   return {
-    preconnect: nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN }),
-    connect: nockRequest('connect').reply(200, { return_value: { agent_run_id: RUN_ID } }),
-    settings: nockRequest('agent_settings', RUN_ID).reply(200, { return_value: [] })
+    preconnect: nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN })),
+    connect: nockRequest('connect').reply(200, ...jsonReply({ return_value: { agent_run_id: RUN_ID } })),
+    settings: nockRequest('agent_settings', RUN_ID).reply(200, ...jsonReply({ return_value: [] }))
   }
-}
-
-function nockRequest(endpointMethod, runId, bodyMatcher) {
-  const relativepath = helper.generateCollectorPath(endpointMethod, runId)
-  return nock(TEST_COLLECTOR_URL).post(relativepath, bodyMatcher)
 }
 
 module.exports = {
   createTestData,
   endpointDataChecks,
+  jsonReply,
   nockRequest,
   setupConnectionEndpoints,
   RUN_ID,

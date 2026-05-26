@@ -17,6 +17,7 @@ const CollectorResponse = require('../../../lib/collector/response')
 const helper = require('../../lib/agent_helper')
 const { match } = require('#test/assert')
 const CollectorApi = require('../../../lib/collector/api')
+const { jsonReply } = require('../../lib/nock-utils')
 
 const RUN_ID = 1337
 const baseAgentConfig = {
@@ -443,8 +444,12 @@ test('retries on misconfigured proxy', async (t) => {
   // See https://github.com/nock/nock/blob/66eb7f48a7bdf50ee79face6403326b02d23253b/lib/socket.js#L81-L88.
   // That `destroy` method is what ends up implementing the functionality
   // behind `nock.replyWithError`.
-
-  const expectedError = { code: 'EPROTO' }
+  //
+  // Use a real `Error` instance: nock 14 routes non-`Error` payloads passed
+  // to `replyWithError` through the mswjs response path, which crashes in
+  // `getRawFetchHeaders` because the value has no `headers` property. An
+  // `Error` instance is dispatched through the request-error path instead.
+  const expectedError = Object.assign(new Error('EPROTO'), { code: 'EPROTO' })
 
   t.beforeEach(async (ctx) => {
     ctx.nr = {}
@@ -465,10 +470,12 @@ test('retries on misconfigured proxy', async (t) => {
     const baseURL = 'https://collector.newrelic.com'
     const preconnectURL = helper.generateCollectorPath('preconnect')
     ctx.nr.failure = nock(baseURL).post(preconnectURL).times(1).replyWithError(expectedError)
-    ctx.nr.success = nock(baseURL).post(preconnectURL).reply(200, { return_value: {} })
+    ctx.nr.success = nock(baseURL)
+      .post(preconnectURL)
+      .reply(200, ...jsonReply({ return_value: {} }))
     ctx.nr.connect = nock(baseURL)
       .post(helper.generateCollectorPath('connect'))
-      .reply(200, { return_value: { agent_run_id: 31338 } })
+      .reply(200, ...jsonReply({ return_value: { agent_run_id: 31338 } }))
 
     ctx.nr.logs = []
     const CAPI = proxyquire('../../../lib/collector/api', {
