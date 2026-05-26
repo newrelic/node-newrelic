@@ -1493,6 +1493,10 @@ API.prototype.instrumentMessages = function instrumentMessages(moduleName, onReq
  * Applies an instrumentation to an already loaded CommonJs module.
  *
  * Note: This function will not work for ESM packages.
+ *
+ * @deprecated Scheduled for removal in v15. Load the agent via
+ * `node -r newrelic` (or `NODE_OPTIONS='-r newrelic'`), so the agent is active
+ * before user modules resolve.
  * @example
  *
  * // oh no, express was loaded before newrelic
@@ -1511,6 +1515,12 @@ API.prototype.instrumentMessages = function instrumentMessages(moduleName, onReq
  * @returns {boolean} Whether or not the module was successfully instrumented
  */
 API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleName, module) {
+  logger.warn(
+    'newrelic.instrumentLoadedModule is deprecated and will be removed in v15. ' +
+      'Load the agent via `node -r newrelic` (or NODE_OPTIONS=\'-r newrelic\'), ' +
+      'so it is active before user modules resolve.'
+  )
+
   const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'
   )

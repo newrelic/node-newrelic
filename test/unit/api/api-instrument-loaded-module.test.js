@@ -6,6 +6,8 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
 const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
 const symbols = require('../../../lib/symbols')
@@ -108,5 +110,39 @@ test('Agent API - instrumentLoadedModule', async (t) => {
     assert.doesNotThrow(() => {
       api.instrumentLoadedModule('mysql', mod)
     })
+  })
+})
+
+test('Agent API - instrumentLoadedModule deprecation warning', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const loggerMock = require('../mocks/logger')()
+    const DeprecatingAPI = proxyquire('../../../api', {
+      './lib/logger': {
+        child: sinon.stub().callsFake(() => loggerMock)
+      }
+    })
+    const agent = agentHelper.instrumentMockedAgent()
+    ctx.nr.api = new DeprecatingAPI(agent)
+    ctx.nr.agent = agent
+    ctx.nr.loggerMock = loggerMock
+  })
+
+  t.afterEach((ctx) => {
+    agentHelper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('logs the deprecation warning on every call', (t) => {
+    const { api, loggerMock } = t.nr
+
+    api.instrumentLoadedModule('myTestModule')
+    api.instrumentLoadedModule('myTestModule')
+    api.instrumentLoadedModule('anotherModule')
+
+    const deprecationCalls = loggerMock.warn
+      .getCalls()
+      .filter((call) => /instrumentLoadedModule is deprecated/.test(call.args[0]))
+    assert.equal(deprecationCalls.length, 3)
+    assert.match(deprecationCalls[0].args[0], /removed in v15/)
   })
 })
