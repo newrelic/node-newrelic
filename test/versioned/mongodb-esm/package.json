@@ -10,7 +10,8 @@
       },
       "dependencies": {
         "mongodb": {
-          "versions": ">=4.1.4 < 5",
+          "versions": ">=4.1.4",
+          "comment": "Only need to test latest major, CJS tests will cover other majors",
           "samples": 1
         }
       },

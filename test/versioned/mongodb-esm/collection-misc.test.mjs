@@ -3,216 +3,135 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import test from 'node:test'
 import assert from 'node:assert'
-import helper from '../../lib/agent_helper.js'
-import { ESM } from './common.cjs'
-import { beforeEach, afterEach } from './test-hooks.mjs'
-import { getValidatorCallback } from './test-assertions.mjs'
+import semver from 'semver'
+
+import { collectionTest, pkgVersion } from './collection-common.mjs'
 import common from '../mongodb/common.js'
 
-const { DB_NAME, COLLECTIONS, STATEMENT_PREFIX } = ESM
+const { COLLECTIONS, DB_NAME, STATEMENT_PREFIX } = common.ESM
 
-test('collection misc tests', async (t) => {
-  t.beforeEach(beforeEach)
-  t.afterEach(afterEach)
+function verifyAggregateData(data) {
+  assert.equal(data.length, 3, 'should have expected amount of results')
+  assert.deepStrictEqual(
+    data,
+    [{ value: 5 }, { value: 15 }, { value: 25 }],
+    'should have expected results'
+  )
+}
 
-  await t.test('aggregate v4', { skip: true }, (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`]
-    const metrics = ['aggregate', 'toArray']
-
-    helper.runInTransaction(agent, async (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      const data = await collection
-        .aggregate([
-          { $sort: { i: 1 } },
-          { $match: { mod10: 5 } },
-          { $limit: 3 },
-          { $project: { value: '$i', _id: 0 } }
-        ])
-        .toArray()
-      assert.equal(data.length, 3, 'should have expected amount of results')
-      assert.deepStrictEqual(
-        data,
-        [{ value: 5 }, { value: 15 }, { value: 25 }],
-        'should have expected results'
-      )
-      getValidatorCallback({ t, tx, segments, metrics, childrenLength: 2, end })()
-    })
-  })
-
-  await t.test('bulkWrite', (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/bulkWrite`, 'Callback: onWrite']
-    const metrics = ['bulkWrite']
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      collection.bulkWrite(
-        [{ deleteMany: { filter: {} } }, { insertOne: { document: { a: 1 } } }],
-        { ordered: true, w: 1 },
-        onWrite
-      )
-
-      function onWrite(error, data) {
-        assert.equal(error, undefined)
-        assert.equal(data.insertedCount, 1)
-        assert.equal(data.deletedCount, 30)
-        getValidatorCallback({ t, tx, segments, metrics, end })()
-      }
-    })
-  })
-
-  await t.test('count', (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/count`, 'Callback: onCount']
-    const metrics = ['count']
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      collection.count(function onCount(error, data) {
-        assert.equal(error, undefined)
-        assert.equal(data, 30)
-        getValidatorCallback({ t, tx, segments, metrics, end })()
-      })
-    })
-  })
-
-  await t.test('distinct', (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/distinct`, 'Callback: done']
-    const metrics = ['distinct']
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      collection.distinct('mod10', function done(error, data) {
-        assert.equal(error, undefined)
-        assert.deepStrictEqual(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        getValidatorCallback({ t, tx, segments, metrics, end })()
-      })
-    })
-  })
-
-  await t.test('drop', (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/drop`, 'Callback: done']
-    const metrics = ['drop']
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      collection.drop(function done(error, data) {
-        assert.equal(error, undefined)
-        assert.equal(data, true)
-        getValidatorCallback({ t, tx, segments, metrics, end })()
-      })
-    })
-  })
-
-  await t.test('isCapped', (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/isCapped`, 'Callback: done']
-    const metrics = ['isCapped']
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      collection.isCapped(function done(error, data) {
-        assert.equal(error, undefined)
-        assert.equal(data, false)
-        getValidatorCallback({ t, tx, segments, metrics, end })()
-      })
-    })
-  })
-
-  await t.test('mapReduce', (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/mapReduce`, 'Callback: done']
-    const metrics = ['mapReduce']
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      collection.mapReduce(map, reduce, { out: { inline: 1 } }, done)
-
-      function done(error, data) {
-        assert.equal(error, undefined)
-        const expectedData = [
-          { _id: 0, value: 30 },
-          { _id: 1, value: 33 },
-          { _id: 2, value: 36 },
-          { _id: 3, value: 39 },
-          { _id: 4, value: 42 },
-          { _id: 5, value: 45 },
-          { _id: 6, value: 48 },
-          { _id: 7, value: 51 },
-          { _id: 8, value: 54 },
-          { _id: 9, value: 57 }
-        ]
-
-        // data is not sorted depending on speed of
-        // db calls, sort to compare vs expected collection
-        data.sort((a, b) => a._id - b._id)
-        assert.deepStrictEqual(data, expectedData)
-
-        getValidatorCallback({ t, tx, segments, metrics, end })()
-      }
-
-      /* eslint-disable */
-      function map(obj) {
-        emit(this.mod10, this.i)
-      }
-      /* eslint-enable */
-
-      function reduce(key, vals) {
-        return vals.reduce(function sum(prev, val) {
-          return prev + val
-        }, 0)
-      }
-    })
-  })
-
-  await t.test('options', (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/options`, 'Callback: done']
-    const metrics = ['options']
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      collection.options(function done(error, data) {
-        assert.equal(error, undefined)
-        assert.deepStrictEqual(data, {}, 'should have expected results')
-        getValidatorCallback({ t, tx, segments, metrics, end })()
-      })
-    })
-  })
-
-  await t.test('rename', (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/rename`, 'Callback: done']
-    const metrics = ['rename']
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      collection.rename(COLLECTIONS.collection2, function done(error) {
-        assert.equal(error, undefined)
-        getValidatorCallback({ t, tx, segments, metrics, end })()
-      })
-    })
-  })
-
-  await t.test('stats', (t, end) => {
-    const { agent, collection } = t.nr
-    const segments = [`${STATEMENT_PREFIX}/stats`, 'Callback: done']
-    const metrics = ['stats']
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.name = common.TRANSACTION_NAME
-      collection.stats({ i: 5 }, function done(error, data) {
-        assert.equal(error, undefined)
-        assert.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
-        assert.equal(data.count, 30)
-        assert.equal(data.ok, 1)
-        getValidatorCallback({ t, tx, segments, metrics, end })()
-      })
-    })
-  })
+collectionTest('aggregate', async function aggregateTest(collection, verify) {
+  const data = await collection
+    .aggregate([
+      { $sort: { i: 1 } },
+      { $match: { mod10: 5 } },
+      { $limit: 3 },
+      { $project: { value: '$i', _id: 0 } }
+    ])
+    .toArray()
+  verifyAggregateData(data)
+  verify(
+    null,
+    [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`],
+    ['aggregate', 'toArray'],
+    { childrenLength: 2 }
+  )
 })
+
+collectionTest('bulkWrite', async function bulkWriteTest(collection, verify) {
+  const data = await collection.bulkWrite(
+    [{ deleteMany: { filter: {} } }, { insertOne: { document: { a: 1 } } }],
+    { ordered: true, w: 1 }
+  )
+  assert.equal(data.insertedCount, 1)
+  assert.equal(data.deletedCount, 30)
+  verify(null, [`${STATEMENT_PREFIX}/bulkWrite`], ['bulkWrite'], { strict: false })
+})
+
+collectionTest('count', async function countTest(collection, verify) {
+  const data = await collection.count()
+  assert.equal(data, 30)
+  verify(null, [`${STATEMENT_PREFIX}/count`], ['count'], { strict: false })
+})
+
+collectionTest('distinct', async function distinctTest(collection, verify) {
+  const data = await collection.distinct('mod10')
+  assert.deepStrictEqual(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+  verify(null, [`${STATEMENT_PREFIX}/distinct`], ['distinct'], { strict: false })
+})
+
+collectionTest('drop', async function dropTest(collection, verify) {
+  const data = await collection.drop()
+  assert.equal(data, true)
+  verify(null, [`${STATEMENT_PREFIX}/drop`], ['drop'], { strict: false })
+})
+
+collectionTest('isCapped', async function isCappedTest(collection, verify) {
+  const data = await collection.isCapped()
+  assert.equal(data, false)
+  verify(null, [`${STATEMENT_PREFIX}/isCapped`], ['isCapped'], { strict: false })
+})
+
+collectionTest('options', async function optionsTest(collection, verify) {
+  const data = await collection.options()
+
+  if (data) {
+    assert.deepStrictEqual(data, {}, 'should have expected results')
+  } else {
+    assert.equal(data, false, 'should have expected results')
+  }
+
+  verify(null, [`${STATEMENT_PREFIX}/options`], ['options'], { strict: false })
+})
+
+collectionTest('rename', async function renameTest(collection, verify) {
+  await collection.rename(COLLECTIONS.collection2)
+
+  verify(null, [`${STATEMENT_PREFIX}/rename`], ['rename'], { strict: false })
+})
+
+if (semver.satisfies(pkgVersion, '<6.0.0')) {
+  collectionTest('stats', async function statsTest(collection, verify) {
+    const data = await collection.stats({ i: 5 })
+    assert.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
+    assert.equal(data.count, 30)
+    assert.equal(data.ok, 1)
+
+    verify(null, [`${STATEMENT_PREFIX}/stats`], ['stats'], { strict: false })
+  })
+}
+
+if (semver.satisfies(pkgVersion, '<5.0.0')) {
+  collectionTest('mapReduce', async function mapReduceTest(collection, verify) {
+    const data = await collection.mapReduce(map, reduce, { out: { inline: 1 } })
+
+    const expectedData = [
+      { _id: 0, value: 30 },
+      { _id: 1, value: 33 },
+      { _id: 2, value: 36 },
+      { _id: 3, value: 39 },
+      { _id: 4, value: 42 },
+      { _id: 5, value: 45 },
+      { _id: 6, value: 48 },
+      { _id: 7, value: 51 },
+      { _id: 8, value: 54 },
+      { _id: 9, value: 57 }
+    ]
+
+    data.sort((a, b) => a._id - b._id)
+    assert.deepStrictEqual(data, expectedData)
+
+    verify(null, [`${STATEMENT_PREFIX}/mapReduce`], ['mapReduce'], { strict: false })
+
+    function map() {
+      // eslint-disable-next-line no-undef -- `emit` is provided by MongoDB's mapReduce runtime
+      emit(this.mod10, this.i)
+    }
+
+    function reduce(_key, vals) {
+      return vals.reduce(function sum(prev, val) {
+        return prev + val
+      }, 0)
+    }
+  })
+}
