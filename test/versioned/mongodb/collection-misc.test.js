@@ -128,11 +128,10 @@ if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
 
     verify(null, [`${STATEMENT_PREFIX}/mapReduce`], ['mapReduce'], { strict: false })
 
-    /* eslint-disable */
     function map() {
+      // eslint-disable-next-line no-undef -- `emit` is provided by MongoDB's mapReduce runtime
       emit(this.mod10, this.i)
     }
-    /* eslint-enable */
 
     function reduce(_key, vals) {
       return vals.reduce(function sum(prev, val) {
