@@ -26,9 +26,8 @@ test('transformation rules module', async (t) => {
     // Numbering scheme:
     // - Server rules: 100-199 (fallback at 199)
     // - Consumer rules: 200-299 (fallback at 299)
-    // - Database rules: 300-399 (no fallback)
-    // - Client/External rules: 400-499 (fallback at 499)
-    // - Producer rules: 500-599 (fallback at 599)
+    // - Client rules: 300-399 (fallback at 399)
+    // - Producer rules: 400-499 (fallback at 499)
     // - Internal fallback: 999
 
     // Verify server rules (100-199)
@@ -41,20 +40,15 @@ test('transformation rules module', async (t) => {
     assert.ok(consumerFiles.every((f) => parseInt(f) >= 200 && parseInt(f) < 300),
       'consumer rules should be numbered 200-299')
 
-    // Verify database rules (300-399)
-    const dbFiles = files.filter((f) => f.startsWith('3'))
-    assert.ok(dbFiles.every((f) => parseInt(f) >= 300 && parseInt(f) < 400),
-      'database rules should be numbered 300-399')
+    // Verify client rules (300-399) - includes both DB and HTTP/RPC/Lambda clients
+    const clientFiles = files.filter((f) => f.startsWith('3'))
+    assert.ok(clientFiles.every((f) => parseInt(f) >= 300 && parseInt(f) < 400),
+      'client rules should be numbered 300-399')
 
-    // Verify client/external rules (400-499)
-    const clientFiles = files.filter((f) => f.startsWith('4'))
-    assert.ok(clientFiles.every((f) => parseInt(f) >= 400 && parseInt(f) < 500),
-      'client rules should be numbered 400-499')
-
-    // Verify producer rules (500-599)
-    const producerFiles = files.filter((f) => f.startsWith('5'))
-    assert.ok(producerFiles.every((f) => parseInt(f) >= 500 && parseInt(f) < 600),
-      'producer rules should be numbered 500-599')
+    // Verify producer rules (400-499)
+    const producerFiles = files.filter((f) => f.startsWith('4'))
+    assert.ok(producerFiles.every((f) => parseInt(f) >= 400 && parseInt(f) < 500),
+      'producer rules should be numbered 400-499')
 
     // Verify final internal fallback rule (999)
     const fallbackFiles = files.filter((f) => f.startsWith('999'))
@@ -70,8 +64,8 @@ test('transformation rules module', async (t) => {
     const fallbackPositions = {
       '199-FallbackServer.json': 'server',
       '299-FallbackConsumer.json': 'consumer',
-      '499-FallbackClient.json': 'external',
-      '599-FallbackProducer.json': 'producer',
+      '399-FallbackClient.json': 'external',
+      '499-FallbackProducer.json': 'producer',
       '999-Fallback.json': 'internal'
     }
 
