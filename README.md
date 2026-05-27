@@ -136,7 +136,7 @@ We support the following custom instrumentation API methods in ES module apps:
 * `newrelic.instrumentMessages`
 * `newrelic.instrumentWebframework`
 
-Note that we _do not_ support `newrelic.instrumentLoadedModule`, for the same issue of immutability mentioned above.
+Note that `newrelic.instrumentLoadedModule` is deprecated and scheduled for removal in v15. It was never supported in ES module apps, and in CommonJS it only existed to retrofit instrumentation when the agent was loaded after user modules, which is no longer supported.
 
 If you want to see an example of how to write custom instrumentation in an ES module app, check out our [examples](https://github.com/newrelic/newrelic-node-examples/tree/main/esm-app) repo for a working demo.
 
