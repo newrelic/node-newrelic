@@ -1515,11 +1515,11 @@ API.prototype.instrumentMessages = function instrumentMessages(moduleName, onReq
  * @returns {boolean} Whether or not the module was successfully instrumented
  */
 API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleName, module) {
-  logger.warn(
-    'newrelic.instrumentLoadedModule is deprecated and will be removed in v15. ' +
-      'Load the agent via `node -r newrelic` (or NODE_OPTIONS=\'-r newrelic\'), ' +
+  const warningMsg = 'newrelic.instrumentLoadedModule is deprecated and will be removed in v15. ' +
+      'Load the agent via `node -r newrelic` (or NODE_OPTIONS=\'-r newrelic\') ' +
       'so it is active before user modules resolve.'
-  )
+  logger.warn(warningMsg)
+  process.emitWarning(warningMsg, { type: 'DeprecationWarning' })
 
   const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'

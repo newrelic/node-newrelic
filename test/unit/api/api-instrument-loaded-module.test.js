@@ -132,6 +132,21 @@ test('Agent API - instrumentLoadedModule deprecation warning', async (t) => {
     agentHelper.unloadAgent(ctx.nr.agent)
   })
 
+  await t.test('emits a user-visible DeprecationWarning via process.emitWarning', async (t) => {
+    const { api } = t.nr
+    const warnings = []
+    const onWarning = (warning) => warnings.push(warning)
+    process.on('warning', onWarning)
+    t.after(() => process.off('warning', onWarning))
+
+    api.instrumentLoadedModule('myTestModule')
+    await new Promise((resolve) => setImmediate(resolve))
+
+    const deprecation = warnings.find((w) => /instrumentLoadedModule is deprecated/.test(w.message))
+    assert.ok(deprecation, 'expected a DeprecationWarning to be emitted')
+    assert.equal(deprecation.name, 'DeprecationWarning')
+  })
+
   await t.test('logs the deprecation warning on every call', (t) => {
     const { api, loggerMock } = t.nr
 
