@@ -18,6 +18,7 @@ const {
   createHttpClientSpan,
   createHttpServerSpan,
   createHttpServer1dot23Span,
+  createNextjsServerSpan,
   createRpcServerSpan
 } = require('../fixtures')
 
@@ -639,4 +640,22 @@ test('finalizeWebTransaction logs if url is invalid', (t) => {
     '/user/1',
     'Invalid URL'
   ])
+})
+
+test('finalizeTransaction handles next.js server spans', (t) => {
+  t.plan(3)
+  const { processor, tracer } = t.nr
+
+  const span = createNextjsServerSpan({ tracer })
+  processor.onStart(span)
+
+  const { transaction, rule } = span[otelSynthesis]
+  processor.finalizeTransaction({
+    span,
+    transaction,
+    rule
+  })
+  t.assert.equal(transaction.url, '/user/1')
+  t.assert.equal(t.nr.logs.debug.length, 0)
+  t.assert.equal(transaction.name, 'WebTransaction/WebFrameworkUri//PUT/user/:id')
 })

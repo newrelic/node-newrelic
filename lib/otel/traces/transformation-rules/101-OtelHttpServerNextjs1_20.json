@@ -1,0 +1,45 @@
+{
+  "name": "OtelHttpServerNextjs1_20",
+  "type": "server",
+  "matcher": {
+    "required_span_kinds": [
+      "server"
+    ],
+    "required_attribute_keys": [
+      "http.method"
+    ],
+    "scope_name": "next.js"
+  },
+  "attributes": [
+    {
+      "key": "http.status_code",
+      "target": "trace",
+      "name": "http.statusCode"
+    },
+    {
+      "key": "http.status_code",
+      "target": "transaction",
+      "name": "statusCode"
+    },
+    {
+      "key": "http.method",
+      "target": "trace",
+      "name": "request.method"
+    },
+    {
+      "key": "http.route",
+      "target": "segment",
+      "name": "http.route"
+    }
+  ],
+  "transaction": {
+    "type": "web",
+    "name": {
+      "verb": "http.method",
+      "path": "http.route"
+    },
+    "url": {
+      "template": "http://localhost${http.target}"
+    }
+  }
+}

@@ -17,7 +17,8 @@ const {
   createFallbackServer,
   createRpcServerSpan,
   createHttpServerSpan,
-  createHttpServer1dot23Span
+  createHttpServer1dot23Span,
+  createNextjsServerSpan
 } = require('./server')
 const { createProducerSpan } = require('./producer')
 const { createConsumerSpan } = require('./consumer')
@@ -32,6 +33,7 @@ module.exports = {
   createHttpServer1dot23Span,
   createMemcachedDbSpan,
   createMongoDbSpan,
+  createNextjsServerSpan,
   createRedisDbSpan,
   createRpcServerSpan,
   createSpan,
