@@ -197,7 +197,7 @@
     "#test/assert": "./test/lib/custom-assertions/index.js"
   },
   "dependencies": {
-    "@apm-js-collab/tracing-hooks": "^0.7.0",
+    "@apm-js-collab/tracing-hooks": "^0.9.1",
     "@grpc/grpc-js": "^1.13.2",
     "@grpc/proto-loader": "^0.8.1",
     "@newrelic/security-agent": "^3.0.0",
