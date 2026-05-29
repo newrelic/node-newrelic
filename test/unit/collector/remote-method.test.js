@@ -720,8 +720,7 @@ test('_safeRequest logging', async (t) => {
     ctx.nr = {}
 
     ctx.nr.logs = {
-      info: [],
-      trace: []
+      info: []
     }
     ctx.nr.logger = {
       child() {
@@ -730,10 +729,10 @@ test('_safeRequest logging', async (t) => {
       info(...args) {
         ctx.nr.logs.info.push(args)
       },
-      trace(...args) {
-        ctx.nr.logs.trace.push(args)
+      audit(...args) {
+        return this.info.apply(this, args)
       },
-      traceEnabled() {
+      auditEnabled() {
         return true
       }
     }
@@ -759,7 +758,7 @@ test('_safeRequest logging', async (t) => {
     const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
     method._safeRequest(options)
     assert.deepStrictEqual(
-      t.nr.logs.trace,
+      t.nr.logs.info,
       [
         [
           { body: options.body },
@@ -770,15 +769,15 @@ test('_safeRequest logging', async (t) => {
           '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=shhh-dont-****&method=test'
         ]
       ],
-      'should redact key in trace level log'
+      'should redact key in audit log'
     )
   })
 
-  await t.test('should call logger if trace is not enabled but audit logging is enabled', (t) => {
+  await t.test('should call logger if audit logging is enabled', (t) => {
     const { RemoteMethod, options, config, logger } = t.nr
-    logger.traceEnabled = () => false
     config.logging = { level: 'info' }
     config.audit_log = { enabled: true, endpoints: ['test'] }
+    logger.auditEnabled = () => config.audit_log.enabled
 
     const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
     method._safeRequest(options)
@@ -798,13 +797,12 @@ test('_safeRequest logging', async (t) => {
     )
   })
 
-  await t.test('should not call logger if trace or audit logging is not enabled', (t) => {
+  await t.test('should not call logger if audit logging is not enabled', (t) => {
     const { RemoteMethod, options, config, logger } = t.nr
-    logger.traceEnabled = () => false
+    logger.auditEnabled = () => false
 
     const method = new RemoteMethod({ name: 'test', agent: { config }, endpoint: {} })
     method._safeRequest(options)
     assert.equal(t.nr.logs.info.length, 0)
-    assert.equal(t.nr.logs.trace.length, 0)
   })
 })
