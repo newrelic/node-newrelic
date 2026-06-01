@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.1.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated label parser to handle empty values in an object key"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "14.0.0",
       "changes": {
         "security": [],
