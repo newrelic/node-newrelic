@@ -77,13 +77,14 @@ test('transformation rules module', async (t) => {
     }
   })
 
-  await t.test('should contain 32 rules', () => {
-    assert.equal(rules.length, 32, 'should have exactly 32 rules')
+  await t.test('should contain 33 rules', () => {
+    assert.equal(rules.length, 33, 'should have exactly 33 rules')
   })
 
   await t.test('should load rules in correct order', () => {
     const expectedOrder = [
       'OtelHttpServer1_23',
+      'OtelHttpServerNextjs1_20',
       'OtelHttpServer1_20',
       'OtelRpcServer1_20',
       'FallbackServer',
@@ -137,7 +138,7 @@ test('transformation rules module', async (t) => {
 
   await t.test('should have correct rule types', () => {
     const expectedTypes = {
-      server: ['OtelHttpServer1_23', 'OtelHttpServer1_20', 'OtelRpcServer1_20', 'FallbackServer'],
+      server: ['OtelHttpServer1_23', 'OtelHttpServerNextjs1_20', 'OtelHttpServer1_20', 'OtelRpcServer1_20', 'FallbackServer'],
       consumer: ['OtelMessagingConsumer1_30', 'OtelMessagingConsumer1_24', 'OtelMessagingConsumer1_17', 'FallbackConsumer'],
       db: [
         'OtelDbClientRedis1_40', 'OtelDbClientRedis1_24',

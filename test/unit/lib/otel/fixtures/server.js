@@ -12,6 +12,7 @@ const {
   ATTR_HTTP_METHOD,
   ATTR_HTTP_REQUEST_METHOD,
   ATTR_HTTP_ROUTE,
+  ATTR_HTTP_TARGET,
   ATTR_HTTP_URL,
   ATTR_RPC_METHOD,
   ATTR_RPC_SERVICE,
@@ -46,9 +47,19 @@ function createHttpServer1dot23Span({ tracer, name = 'test-span', spanContext })
   return span
 }
 
+function createNextjsServerSpan({ tracer, name = 'test-span', spanContext }) {
+  const span = createSpan({ name, kind: SpanKind.SERVER, tracer, spanContext })
+  span.instrumentationScope = { name: 'next.js' }
+  span.setAttribute(ATTR_HTTP_METHOD, 'PUT')
+  span.setAttribute(ATTR_HTTP_ROUTE, '/user/:id')
+  span.setAttribute(ATTR_HTTP_TARGET, '/user/1?foo=bar')
+  return span
+}
+
 module.exports = {
   createFallbackServer,
   createHttpServerSpan,
   createHttpServer1dot23Span,
+  createNextjsServerSpan,
   createRpcServerSpan
 }
