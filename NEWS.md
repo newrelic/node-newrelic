@@ -17,32 +17,29 @@
 #### Documentation
 
 * Removed linked to `@newrelic/apollo-server-plugin` as instrumentation was merged into agent ([#4003](https://github.com/newrelic/node-newrelic/pull/4003)) ([9afd9cb](https://github.com/newrelic/node-newrelic/commit/9afd9cb8d721e175f60d31dc7384b752632f9ae5))
-* Updated compatibility report ([#4028](https://github.com/newrelic/node-newrelic/pull/4028)) ([b16ad6e](https://github.com/newrelic/node-newrelic/commit/b16ad6e2dfee69e424f1e54ee7f7c69207842339))
-    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
-* Updated compatibility report ([#4014](https://github.com/newrelic/node-newrelic/pull/4014)) ([3efa1ff](https://github.com/newrelic/node-newrelic/commit/3efa1ff3af27178c410ac7332e714f1d126d07dd))
-* Updated compatibility report ([#4002](https://github.com/newrelic/node-newrelic/pull/4002)) ([33a8236](https://github.com/newrelic/node-newrelic/commit/33a82361674d29e53db9b699048c7a7970445d7c))
+* Moved `apollo-server` docs to the docs website ([#3994](https://github.com/newrelic/node-newrelic/pull/3994)) ([11ca2ae](https://github.com/newrelic/node-newrelic/commit/11ca2ae419ebc616bed4d072641cedb42b48be87))
+* Updated compatibility report ([#4028](https://github.com/newrelic/node-newrelic/pull/4028)) ([b16ad6e](https://github.com/newrelic/node-newrelic/commit/b16ad6e2dfee69e424f1e54ee7f7c69207842339)) ([#4014](https://github.com/newrelic/node-newrelic/pull/4014)) ([3efa1ff](https://github.com/newrelic/node-newrelic/commit/3efa1ff3af27178c410ac7332e714f1d126d07dd)) ([#4002](https://github.com/newrelic/node-newrelic/pull/4002)) ([33a8236](https://github.com/newrelic/node-newrelic/commit/33a82361674d29e53db9b699048c7a7970445d7c))
 
 #### Miscellaneous chores
 
-* Added audit logging for OTEL metrics ([#4018](https://github.com/newrelic/node-newrelic/pull/4018)) ([494c836](https://github.com/newrelic/node-newrelic/commit/494c8369176994c01e75b5bf1f28ff471654d31a))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
-* Added baseline instructions for Claude bot ([#4036](https://github.com/newrelic/node-newrelic/pull/4036)) ([c8f6649](https://github.com/newrelic/node-newrelic/commit/c8f66496764cab5e3361d4b0b0f21bd889356189))
-* Added OTEL rule to support Prisma 7 ([#4013](https://github.com/newrelic/node-newrelic/pull/4013)) ([c142c60](https://github.com/newrelic/node-newrelic/commit/c142c60162cb9409946d8a1babb6f59cd569f6ea))
 * Deprecate `instrumentLoadedModule` API ([#4034](https://github.com/newrelic/node-newrelic/pull/4034)) ([306ff86](https://github.com/newrelic/node-newrelic/commit/306ff86e4ffeaaa094c3ee3f93e9248c74d3d4d1))
+* Added audit logging for OTEL metrics ([#4018](https://github.com/newrelic/node-newrelic/pull/4018)) ([494c836](https://github.com/newrelic/node-newrelic/commit/494c8369176994c01e75b5bf1f28ff471654d31a))
+* Added OTEL rule to support Prisma 7 ([#4013](https://github.com/newrelic/node-newrelic/pull/4013)) ([c142c60](https://github.com/newrelic/node-newrelic/commit/c142c60162cb9409946d8a1babb6f59cd569f6ea))
 * Fix ordering of OTEL rules ([#4025](https://github.com/newrelic/node-newrelic/pull/4025)) ([150476a](https://github.com/newrelic/node-newrelic/commit/150476a61cd272a29ed7c03366e879f6eb009298))
+* Refactored OTEL transform rules ([#3999](https://github.com/newrelic/node-newrelic/pull/3999)) ([48ff739](https://github.com/newrelic/node-newrelic/commit/48ff739e47a21a1ac5c0fa5673e8ef4fc4f153fb))
 * Fixed node-version in CI workflow ([#4042](https://github.com/newrelic/node-newrelic/pull/4042)) ([dd05ea9](https://github.com/newrelic/node-newrelic/commit/dd05ea914e157278e56b0887ec89317dcc1852d8))
-* Moved `apollo-server` docs to the docs website ([#3994](https://github.com/newrelic/node-newrelic/pull/3994)) ([11ca2ae](https://github.com/newrelic/node-newrelic/commit/11ca2ae419ebc616bed4d072641cedb42b48be87))
-* Refactored otel transform rules ([#3999](https://github.com/newrelic/node-newrelic/pull/3999)) ([48ff739](https://github.com/newrelic/node-newrelic/commit/48ff739e47a21a1ac5c0fa5673e8ef4fc4f153fb))
-* Removed unused dev dependencies ([#4005](https://github.com/newrelic/node-newrelic/pull/4005)) ([e00f7d3](https://github.com/newrelic/node-newrelic/commit/e00f7d3132a8d7635a65162d80fd3217edad35f5))
-* Update `@apm-js-collab/tracing-hooks` to `0.9.1` ([#4043](https://github.com/newrelic/node-newrelic/pull/4043)) ([f05e5d4](https://github.com/newrelic/node-newrelic/commit/f05e5d473e641ed783ced0b1ef8b2fabc5df3502))
-* Updated `commander` to latest ([#4021](https://github.com/newrelic/node-newrelic/pull/4021)) ([83b1d58](https://github.com/newrelic/node-newrelic/commit/83b1d5871bd70244ece463cbca23f34cbacfe6d7))
-* Updated `nock` to latest ([#4022](https://github.com/newrelic/node-newrelic/pull/4022)) ([9bf79ab](https://github.com/newrelic/node-newrelic/commit/9bf79ab23eefabd22a529a26a7d3d75e7ff08a19))
-* Updated `sinon` to latest ([#4020](https://github.com/newrelic/node-newrelic/pull/4020)) ([0ced304](https://github.com/newrelic/node-newrelic/commit/0ced30446a9be2711c96c0afa6453e6b87c014ad))
 * Updated codecov action ([#4039](https://github.com/newrelic/node-newrelic/pull/4039)) ([31b9c84](https://github.com/newrelic/node-newrelic/commit/31b9c8416116c8b04293f53335540729e934c768))
-* Updated protobufjs to latest ([#4006](https://github.com/newrelic/node-newrelic/pull/4006)) ([45c61f3](https://github.com/newrelic/node-newrelic/commit/45c61f3624945553bfa5aac331c577255827f7bc))
 * Updated remote-method to use audit method of logger ([#4038](https://github.com/newrelic/node-newrelic/pull/4038)) ([0e4507e](https://github.com/newrelic/node-newrelic/commit/0e4507e27a62f880f9748d675d2b2127b1605d0f))
-* Upgraded `glob` to 13 ([#4008](https://github.com/newrelic/node-newrelic/pull/4008)) ([3053545](https://github.com/newrelic/node-newrelic/commit/3053545aa3c1ed673255887448b65f20137d670e))
-* Upgraded `got` and `rimraf` to latest ([#4007](https://github.com/newrelic/node-newrelic/pull/4007)) ([b967593](https://github.com/newrelic/node-newrelic/commit/b9675938bfa0165b54f3df583577bfd36c70cdcd))
+* Added baseline instructions for Claude bot ([#4036](https://github.com/newrelic/node-newrelic/pull/4036)) ([c8f6649](https://github.com/newrelic/node-newrelic/commit/c8f66496764cab5e3361d4b0b0f21bd889356189))
+* Updated dependencies
+	* Removed unused dev dependencies ([#4005](https://github.com/newrelic/node-newrelic/pull/4005)) ([e00f7d3](https://github.com/newrelic/node-newrelic/commit/e00f7d3132a8d7635a65162d80fd3217edad35f5))
+	* Updated `@apm-js-collab/tracing-hooks` to `0.9.1` ([#4043](https://github.com/newrelic/node-newrelic/pull/4043)) ([f05e5d4](https://github.com/newrelic/node-newrelic/commit/f05e5d473e641ed783ced0b1ef8b2fabc5df3502))
+	* Updated `commander` to latest ([#4021](https://github.com/newrelic/node-newrelic/pull/4021)) ([83b1d58](https://github.com/newrelic/node-newrelic/commit/83b1d5871bd70244ece463cbca23f34cbacfe6d7))
+	* Updated `nock` to latest ([#4022](https://github.com/newrelic/node-newrelic/pull/4022)) ([9bf79ab](https://github.com/newrelic/node-newrelic/commit/9bf79ab23eefabd22a529a26a7d3d75e7ff08a19))
+	* Updated `sinon` to latest ([#4020](https://github.com/newrelic/node-newrelic/pull/4020)) ([0ced304](https://github.com/newrelic/node-newrelic/commit/0ced30446a9be2711c96c0afa6453e6b87c014ad))
+	* Updated `protobufjs` to latest ([#4006](https://github.com/newrelic/node-newrelic/pull/4006)) ([45c61f3](https://github.com/newrelic/node-newrelic/commit/45c61f3624945553bfa5aac331c577255827f7bc))
+	* Upgraded `glob` to 13 ([#4008](https://github.com/newrelic/node-newrelic/pull/4008)) ([3053545](https://github.com/newrelic/node-newrelic/commit/3053545aa3c1ed673255887448b65f20137d670e))
+	* Upgraded `got` and `rimraf` to latest ([#4007](https://github.com/newrelic/node-newrelic/pull/4007)) ([b967593](https://github.com/newrelic/node-newrelic/commit/b9675938bfa0165b54f3df583577bfd36c70cdcd))
 
 #### Tests
 
