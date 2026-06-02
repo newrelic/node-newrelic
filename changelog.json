@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.1.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated label parser to handle empty values in an object key"
+        ],
+        "features": [
+          "Added support for native Next.js otel instrumentation via the Hybrid Agent"
+        ]
+      }
+    },
+    {
       "version": "14.0.0",
       "changes": {
         "security": [],
