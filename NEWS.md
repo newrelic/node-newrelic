@@ -2,7 +2,7 @@
 
 #### Features
 
-* Added support for native Next.js otel instrumentation via the Hybrid Agent ([#4040](https://github.com/newrelic/node-newrelic/pull/4040)) ([1944f39](https://github.com/newrelic/node-newrelic/commit/1944f395de1a1f23a535b0188502eb257beb8c6a))
+* Added support for native Next.js OTEL instrumentation via the Hybrid Agent ([#4040](https://github.com/newrelic/node-newrelic/pull/4040)) ([1944f39](https://github.com/newrelic/node-newrelic/commit/1944f395de1a1f23a535b0188502eb257beb8c6a))
 
 #### Bug fixes
 
