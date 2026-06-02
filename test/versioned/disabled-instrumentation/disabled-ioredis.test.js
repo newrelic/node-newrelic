@@ -9,6 +9,7 @@ const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const { assertSegments } = require('../../lib/custom-assertions')
+const mongoCommon = require('../mongodb/common')
 
 test('Disabled ioredis scenarios', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -21,23 +22,21 @@ test('Disabled ioredis scenarios', async (t) => {
       }
     })
     const Redis = require('ioredis')
-    const { MongoClient } = require('mongodb')
-    const mongoClient = await MongoClient.connect(
-      `mongodb://${params.mongodb_host}:${params.mongodb_port}`
-    )
-    const db = mongoClient.db('integration')
-    const collection = db.collection('disabled-inst-test')
+    const mongodb = require('mongodb')
+    const mongo = await mongoCommon.connect({ mongodb })
+    const collection = mongo.db.collection('disabled-inst-test')
     const redisClient = new Redis(params.redis_port, params.redis_host)
     await redisClient.select(1)
     ctx.nr.redisClient = redisClient
     ctx.nr.agent = agent
     ctx.nr.collection = collection
-    ctx.nr.mongoClient = mongoClient
+    ctx.nr.db = mongo.db
+    ctx.nr.mongoClient = mongo.client
   })
 
   t.afterEach(async (ctx) => {
-    const { agent, redisClient, mongoClient } = ctx.nr
-    await mongoClient.close(true)
+    const { agent, redisClient, mongoClient, db } = ctx.nr
+    await mongoCommon.close(mongoClient, db)
     redisClient.disconnect()
     helper.unloadAgent(agent)
   })
@@ -49,6 +48,9 @@ test('Disabled ioredis scenarios', async (t) => {
       await collection.countDocuments()
       await redisClient.get('bar')
       tx.end()
+      // TODO: countDocuments is argubaly more useful than two
+      // segments (aggregate and next from Cursor instrumentation)
+      // but it is a major change
       assertSegments(tx.trace, tx.trace.root, [
         'Datastore/statement/MongoDB/disabled-inst-test/countDocuments'
       ])

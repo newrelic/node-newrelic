@@ -860,6 +860,32 @@ test('Shimmer subscriber setup/teardown', async (t) => {
     shimmer.teardownSubscribers()
     assert.deepEqual(shimmer._subscribers, {}, 'should not have subscribers after teardown')
   })
+
+  await t.test(
+    'should forward channelName so a subscriber reused across channels binds to the correct one',
+    (t) => {
+      const { agent, shimmer } = t.nr
+      shimmer.setupSubscribers(agent)
+
+      // mongodb registers multiple subscriber configs that share a single
+      // subscriber path (./mongodb/query.js) but each have a distinct
+      // channelName. Forwarding channelName lets each instance bind to its
+      // own diagnostics channel rather than collapsing into one.
+      const count = shimmer._subscribers['orchestrion:mongodb:nr_collection_count']
+      const explain = shimmer._subscribers['orchestrion:mongodb:nr_cursor_explain']
+
+      assert.ok(count, 'should create a subscriber bound to the nr_collection_count channel')
+      assert.ok(explain, 'should create a subscriber bound to the nr_cursor_explain channel')
+      assert.equal(count.channelName, 'nr_collection_count')
+      assert.equal(explain.channelName, 'nr_cursor_explain')
+      assert.equal(
+        count.constructor,
+        explain.constructor,
+        'both subscribers should come from the same reused subscriber path'
+      )
+      assert.notEqual(count.id, explain.id, 'each channel should produce a distinct subscriber id')
+    }
+  )
 })
 
 function clearCachedModules(modules) {
