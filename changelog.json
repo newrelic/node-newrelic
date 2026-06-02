@@ -9,7 +9,7 @@
           "Updated label parser to handle empty values in an object key"
         ],
         "features": [
-          "Added support for native Next.js otel instrumentation via the Hybrid Agent"
+          "Added support for native Next.js OTEL instrumentation via the Hybrid Agent"
         ]
       }
     },
