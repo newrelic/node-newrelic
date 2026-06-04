@@ -34,7 +34,7 @@ test('should return http.Agent for HTTP protocol', () => {
     ssl: true
   }
   const factory = generateProxyAgentFactory({ agentConfig })
-  const agent = factory('http')
+  const agent = factory()
 
   assert.ok(agent instanceof http.Agent)
   // proxyEnv is an internal option and may not be exposed on the agent
@@ -47,23 +47,11 @@ test('should return HttpsProxyAgent for HTTPS protocol', () => {
     ssl: true
   }
   const factory = generateProxyAgentFactory({ agentConfig })
-  const agent = factory('https')
+  const agent = factory()
 
   assert.ok(agent instanceof HttpsProxyAgent)
   assert.equal(agent.proxy.hostname, PROXY_HOST)
   assert.equal(agent.proxy.port, PROXY_PORT)
-})
-
-test('should handle uppercase protocol', () => {
-  const agentConfig = {
-    proxy: `https://${PROXY_HOST}:${PROXY_PORT}`,
-    host: 'collector.newrelic.com',
-    ssl: true
-  }
-  const factory = generateProxyAgentFactory({ agentConfig })
-  const agent = factory('HTTP')
-
-  assert.ok(agent instanceof http.Agent)
 })
 
 test('should handle proxy with authentication', () => {
@@ -76,7 +64,7 @@ test('should handle proxy with authentication', () => {
     ssl: true
   }
   const factory = generateProxyAgentFactory({ agentConfig })
-  const agent = factory('https')
+  const agent = factory()
 
   // proxyAgent returns a singleton, so we just verify it returns an agent instance
   assert.ok(agent instanceof HttpsProxyAgent)
@@ -94,30 +82,11 @@ test('should use provided logger', () => {
   }
   const factory = generateProxyAgentFactory({ agentConfig, logger: mockLogger })
 
-  factory('https')
+  factory()
 
   assert.equal(logCalls.length, 1)
   assert.equal(logCalls[0].level, 'trace')
   assert.equal(logCalls[0].msg, 'returning https proxy agent')
-})
-
-test('should log for HTTP protocol', () => {
-  const agentConfig = {
-    proxy: `https://${PROXY_HOST}:${PROXY_PORT}`,
-    host: 'collector.newrelic.com',
-    ssl: true
-  }
-  const logCalls = []
-  const mockLogger = {
-    trace: (msg) => logCalls.push({ level: 'trace', msg })
-  }
-  const factory = generateProxyAgentFactory({ agentConfig, logger: mockLogger })
-
-  factory('http')
-
-  assert.equal(logCalls.length, 1)
-  assert.equal(logCalls[0].level, 'trace')
-  assert.equal(logCalls[0].msg, 'returning http proxy agent')
 })
 
 test('should handle proxy_host and proxy_port configuration', () => {
@@ -130,7 +99,7 @@ test('should handle proxy_host and proxy_port configuration', () => {
     ssl: true
   }
   const factory = generateProxyAgentFactory({ agentConfig })
-  const agent = factory('https')
+  const agent = factory()
 
   assert.ok(agent instanceof HttpsProxyAgent)
   assert.equal(agent.proxy.hostname, PROXY_HOST)
