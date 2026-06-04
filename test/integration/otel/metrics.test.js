@@ -7,13 +7,9 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const https = require('node:https')
-const path = require('node:path')
 const { once } = require('node:events')
-const protobuf = require('protobufjs')
-
-const fakeCert = require('#testlib/fake-cert.js')
 const helper = require('#testlib/agent_helper.js')
+const createOtelMetricsServer = require('./otel-metrics-server.js')
 
 test.beforeEach(async (ctx) => {
   ctx.nr = {}
@@ -30,40 +26,11 @@ test.beforeEach(async (ctx) => {
   ctx.nr.agent.config.entity_guid = 'guid-123456'
   ctx.nr.agent.config.license_key = 'license-123456'
 
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-  const cert = fakeCert()
-  const serverOpts = {
-    key: cert.privateKeyBuffer,
-    cert: cert.certificateBuffer
-  }
-
   ctx.nr.data = {}
-  const server = https.createServer(serverOpts, (req, res) => {
-    ctx.nr.data.path = req.url
-    ctx.nr.data.headers = structuredClone(req.headers)
-
-    let payload = Buffer.alloc(0)
-    req.on('data', (d) => {
-      payload = Buffer.concat([payload, d])
-    })
-    req.on('end', () => {
-      res.writeHead(200, { 'content-type': 'text/plain' })
-      res.end('ok')
-
-      ctx.nr.data.payload = payload
-      server.emit('requestComplete', payload)
-    })
-  })
-
-  ctx.nr.server = server
-  await new Promise((resolve, reject) => {
-    server.listen(0, '127.0.0.1', (error) => {
-      if (error) return reject(error)
-      ctx.nr.agent.config.host = server.address().address
-      ctx.nr.agent.config.port = server.address().port
-      resolve()
-    })
-  })
+  const otelServer = await createOtelMetricsServer(ctx.nr.data)
+  ctx.nr.server = otelServer.server
+  ctx.nr.agent.config.host = otelServer.host
+  ctx.nr.agent.config.port = otelServer.port
 })
 
 test.afterEach((ctx) => {
@@ -81,12 +48,6 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
 
   const { agent, server } = t.nr
   const { metrics } = require('@opentelemetry/api')
-  const otlpSchemas = new protobuf.Root()
-  otlpSchemas.resolvePath = (...args) => path.join(__dirname, 'schemas', args[1])
-  await otlpSchemas.load('opentelemetry/proto/collector/metrics/v1/metrics_service.proto')
-  const requestSchema = otlpSchemas.lookupType(
-    'opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest'
-  )
 
   // Add increment a metric prior to the agent being ready:
   const counter = metrics.getMeter('test-meter').createCounter('test-counter')
@@ -105,9 +66,7 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   assert.equal(t.nr.data.path, '/v1/metrics')
   assert.equal(t.nr.data.headers['api-key'], agent.config.license_key)
 
-  let payload = requestSchema.decode(
-    new protobuf.BufferReader(t.nr.data.payload)
-  )
+  let payload = t.nr.data.payload
   let resource = payload.resourceMetrics[0].resource
   assert.equal(resource.attributes[0].key, 'entity.guid')
   assert.deepEqual(resource.attributes[0].value, { stringValue: 'guid-123456' })
@@ -122,9 +81,7 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   assert.deepEqual(metric.sum.dataPoints[0].attributes[0].value, { stringValue: 'no' })
 
   await once(server, 'requestComplete')
-  payload = requestSchema.decode(
-    new protobuf.BufferReader(t.nr.data.payload)
-  )
+  payload = t.nr.data.payload
   resource = payload.resourceMetrics[0].resource
   assert.equal(resource.attributes[0].key, 'entity.guid')
   assert.deepEqual(resource.attributes[0].value, { stringValue: 'guid-123456' })
