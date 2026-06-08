@@ -30,7 +30,13 @@ test.beforeEach((ctx) => {
     },
     metrics: {
       getOrCreateMetric(name) {
-        ctx.assert.equal(name, 'Supportability/Metrics/Nodejs/OpenTelemetryBridge/enabled')
+        // Accept multiple metric names now that we record export success/failure
+        const validMetrics = [
+          'Supportability/Metrics/Nodejs/OpenTelemetryBridge/enabled',
+          'Supportability/Metrics/Nodejs/OpenTelemetryBridge/export/success',
+          'Supportability/Metrics/Nodejs/OpenTelemetryBridge/export/failure'
+        ]
+        ctx.assert.ok(validMetrics.includes(name), `Unexpected metric: ${name}`)
         return this
       },
       incrementCallCount() {
