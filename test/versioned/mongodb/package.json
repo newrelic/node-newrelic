@@ -18,6 +18,7 @@
         "mongodb": ">=4.1.4"
       },
       "files": [
+        "aggregation.test.js",
         "bulk.test.js",
         "collection-find.test.js",
         "collection-index.test.js",
