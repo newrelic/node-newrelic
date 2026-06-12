@@ -39,3 +39,10 @@ common.test('toArray', async function toArrayTest(collection, verify) {
   assert.equal(data[0].i, 0)
   verify(null, [`${STATEMENT_PREFIX}/toArray`], ['toArray'], { strict: false })
 })
+
+common.test('each', async function eachTest(collection, verify) {
+  let count = 0
+  await collection.find({ i: 0 }).forEach(() => { count += 1 })
+  assert.equal(count === 1, true)
+  verify(null, [`${STATEMENT_PREFIX}/forEach`], ['forEach'], { strict: false })
+})
