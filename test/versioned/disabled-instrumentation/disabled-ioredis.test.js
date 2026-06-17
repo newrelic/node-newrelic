@@ -48,11 +48,9 @@ test('Disabled ioredis scenarios', async (t) => {
       await collection.countDocuments()
       await redisClient.get('bar')
       tx.end()
-      // TODO: countDocuments is argubaly more useful than two
-      // segments (aggregate and next from Cursor instrumentation)
-      // but it is a major change
       assertSegments(tx.trace, tx.trace.root, [
-        'Datastore/statement/MongoDB/disabled-inst-test/countDocuments'
+        'Datastore/statement/MongoDB/disabled-inst-test/aggregate',
+        'Datastore/statement/MongoDB/disabled-inst-test/next'
       ])
     })
   })
@@ -68,7 +66,8 @@ test('Disabled ioredis scenarios', async (t) => {
             tx.end()
             assert.equal(innerErr, null)
             assertSegments(tx.trace, tx.trace.root, [
-              'Datastore/statement/MongoDB/disabled-inst-test/countDocuments'
+              'Datastore/statement/MongoDB/disabled-inst-test/aggregate',
+              'Datastore/statement/MongoDB/disabled-inst-test/next'
             ])
             resolve()
           })
