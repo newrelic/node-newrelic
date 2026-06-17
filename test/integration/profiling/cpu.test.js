@@ -11,7 +11,6 @@ const zlib = require('node:zlib')
 
 const helper = require('../../lib/agent_helper')
 const CpuProfiler = require('../../../lib/profiling/profilers/cpu')
-const Context = require('../../../lib/context-manager/context')
 const { Profile } = require('pprof-format')
 
 const logger = { trace() {}, debug() {}, error() {} }
@@ -93,7 +92,7 @@ test('attaches a span: label with the active span_id and trace_id to CPU samples
     const parent = agent.tracer.getSegment()
     agent.tracer.addSegment('burnCpu', null, parent, false, (segment) => {
       burnCpu(500)
-      expected = { id: transaction.id, traceId: transaction.traceId, spanId: segment.getSpanId() }
+      expected = { traceId: transaction.traceId, spanId: segment.getSpanId() }
     })
   })
 
@@ -106,7 +105,7 @@ test('attaches a span: label with the active span_id and trace_id to CPU samples
   assert.ok(labelled.length > 0, 'at least some samples should carry a span: label')
 
   // Assert that `span:` key and value contains correct trace_id and span_id
-  const expectedKey = `span:${expected.id}:${name}`
+  const expectedKey = `span:${expected.traceId.slice(0, 16)}:${name}`
   for (const sample of labelled) {
     const [{ key, extracted }] = sample.spanLabels
     assert.equal(key, expectedKey, 'label key should be span:<transaction.id>:<name>')
@@ -133,8 +132,14 @@ test('attaches at most one `span:` label per sample', async (t) => {
   }
 })
 
-test('emits trace_id only when a transaction is active but there is no segment', async (t) => {
+test('emits trace_id only when span events are disabled so the segment has no span id', async (t) => {
   const { agent, profiler } = t.nr
+
+  // With span events disabled, a segment is still active but `getSpanId()`
+  // returns null, so `getLinkingMetadata` yields trace.id without span.id.
+  // `spansEnabled` is read when the segment is built, so disable before the
+  // transaction (and its segments) are created.
+  agent.config.span_events.enabled = false
 
   profiler.start()
 
@@ -142,12 +147,14 @@ test('emits trace_id only when a transaction is active but there is no segment',
   let expected
   await helper.runInTransaction(agent, 'test', async (transaction) => {
     transaction.name = name
-    expected = { id: transaction.id, traceId: transaction.traceId }
-    // Run with a context that carries the transaction but no active segment, so
-    // `getSpanId()` is never reached and the label omits `span_id`.
-    const context = new Context({ transaction, segment: null })
-    agent.tracer.runInContext({ handler: () => burnCpu(500), context })
+    const parent = agent.tracer.getSegment()
+    agent.tracer.addSegment('burnCpu', null, parent, false, (segment) => {
+      burnCpu(500)
+      expected = { traceId: transaction.traceId, spanId: segment.getSpanId() }
+    })
   })
+
+  assert.equal(expected.spanId, null, 'sanity: getSpanId() should be null when span events are disabled')
 
   const encoded = await profiler.collect()
   const { samples } = decodeSamples(encoded)
@@ -155,12 +162,12 @@ test('emits trace_id only when a transaction is active but there is no segment',
   const labelled = samples.filter((s) => s.spanLabels.length > 0)
   assert.ok(labelled.length > 0, 'at least some samples should carry a span: label')
 
-  const expectedKey = `span:${expected.id}:${name}`
+  const expectedKey = `span:${expected.traceId.slice(0, 16)}:${name}`
   for (const sample of labelled) {
     const [{ key, extracted }] = sample.spanLabels
     assert.equal(key, expectedKey, 'label key should be span:<transaction.id>:<name>')
     assert.equal(extracted.trace_id, expected.traceId, 'trace_id should match the active transaction')
-    assert.equal(extracted.span_id, undefined, 'no span_id should be present without an active segment')
+    assert.equal(extracted.span_id, undefined, 'no span_id should be present when span events are disabled')
   }
 })
 
