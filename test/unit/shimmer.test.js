@@ -862,28 +862,23 @@ test('Shimmer subscriber setup/teardown', async (t) => {
   })
 
   await t.test(
-    'should forward channelName so a subscriber reused across channels binds to the correct one',
+    'should forward channelName from config so each subscriber binds to its own channel',
     (t) => {
       const { agent, shimmer } = t.nr
       shimmer.setupSubscribers(agent)
 
-      // mongodb registers multiple subscriber configs that share a single
-      // subscriber path (./mongodb/query.js) but each have a distinct
-      // channelName. Forwarding channelName lets each instance bind to its
-      // own diagnostics channel rather than collapsing into one.
-      const count = shimmer._subscribers['orchestrion:mongodb:nr_collection_count']
-      const explain = shimmer._subscribers['orchestrion:mongodb:nr_cursor_explain']
+      // mongodb registers a subscriber per driver class, each with a distinct
+      // channelName supplied only by its config entry. Forwarding channelName
+      // lets each instance bind to its own diagnostics channel rather than a
+      // hardcoded default.
+      const collection = shimmer._subscribers['orchestrion:mongodb:nr_mongodb_collection']
+      const cursor = shimmer._subscribers['orchestrion:mongodb:nr_mongodb_cursor']
 
-      assert.ok(count, 'should create a subscriber bound to the nr_collection_count channel')
-      assert.ok(explain, 'should create a subscriber bound to the nr_cursor_explain channel')
-      assert.equal(count.channelName, 'nr_collection_count')
-      assert.equal(explain.channelName, 'nr_cursor_explain')
-      assert.equal(
-        count.constructor,
-        explain.constructor,
-        'both subscribers should come from the same reused subscriber path'
-      )
-      assert.notEqual(count.id, explain.id, 'each channel should produce a distinct subscriber id')
+      assert.ok(collection, 'should create a subscriber bound to the nr_mongodb_collection channel')
+      assert.ok(cursor, 'should create a subscriber bound to the nr_mongodb_cursor channel')
+      assert.equal(collection.channelName, 'nr_mongodb_collection')
+      assert.equal(cursor.channelName, 'nr_mongodb_cursor')
+      assert.notEqual(collection.id, cursor.id, 'each channel should produce a distinct subscriber id')
     }
   )
 })
