@@ -66,10 +66,15 @@ function dbTest(name, run) {
     await t.test('with transaction', (t, end) => {
       const { agent, db } = t.nr
       assert.equal(agent.getTransaction(), undefined, 'should not have transaction')
-      helper.runInTransaction(agent, function (transaction) {
-        run(db, function (names, opts = {}) {
-          verifyMongoSegments(agent, transaction, names, opts)
+      helper.runInTransaction(agent, async function (transaction) {
+        transaction.name = common.TRANSACTION_NAME
+        await run(db, function (segments, metrics, opts = {}) {
+          // Verify segments before ending transaction
+          verifyMongoSegments(agent, transaction, segments, opts)
+          // End transaction to finalize metrics
           transaction.end()
+          // Verify metrics after ending transaction
+          verifyMongoMetrics(agent, metrics)
           end()
         })
       })
@@ -77,27 +82,37 @@ function dbTest(name, run) {
   })
 }
 
-function verifyMongoSegments(agent, transaction, names, opts) {
+function verifyMongoSegments(agent, transaction, segments, opts = {}) {
   assert.ok(agent.getTransaction(), 'should not lose transaction state')
   assert.equal(agent.getTransaction().id, transaction.id, 'transaction is correct')
 
-  const segment = agent.tracer.getSegment()
-  let current = transaction.trace.root
-  let child
+  const rootSegment = transaction.trace.root
 
-  for (let i = 0, l = names.length; i < l; ++i) {
-    let children = transaction.trace.getChildren(current.id)
-    if (opts.legacy) {
-      // Filter out net.createConnection segments as they could occur during execution, which is fine
-      // but breaks out assertion function
-      children = children.filter((c) => c.name !== 'net.createConnection')
-      assert.equal(children.length, 1, 'should have one child segment')
-      child = children[0]
-      current = children[0]
-    } else {
-      child = children[i]
+  // Get all direct children of root (DB operations are flat, not nested)
+  let children = transaction.trace.getChildren(rootSegment.id)
+  if (opts.legacy) {
+    // Filter out net.createConnection segments as they could occur during execution, which is fine
+    // but breaks our assertion function.
+    children = children.filter((c) => c.name !== 'net.createConnection')
+  }
+
+  // Verify we have the right number of segments
+  assert.equal(children.length, segments.length, `should have ${segments.length} child segment(s)`)
+
+  // Verify each segment
+  for (let i = 0; i < segments.length; i++) {
+    const child = children[i]
+    assert.equal(child.name, segments[i], 'segment should be named ' + segments[i])
+
+    // If checkNoChildren is set, verify this segment has no children (opaque behavior)
+    if (opts.checkNoChildren) {
+      const childSegments = transaction.trace.getChildren(child.id)
+      assert.equal(
+        childSegments.length,
+        0,
+        `segment ${child.name} should have no children (opaque should be true)`
+      )
     }
-    assert.equal(child.name, names[i], 'segment should be named ' + names[i])
 
     // If this is a Mongo operation/statement segment then it should have the
     // datastore instance attributes.
@@ -122,11 +137,14 @@ function verifyMongoSegments(agent, transaction, names, opts) {
       assert.equal(attributes.product, 'MongoDB', 'should have correct product attribute')
     }
   }
+}
 
-  if (opts.legacy) {
-    // Do not use `assert.equal` for this comparison. When it is false tap would dump
-    // way too much information to be useful.
-    assert.ok(current === segment, 'current segment is ' + segment.name)
+function verifyMongoMetrics(agent, metrics) {
+  const agentMetrics = agent.metrics._metrics.unscoped
+  for (const metricName of metrics) {
+    const fullMetricName = `Datastore/operation/MongoDB/${metricName}`
+    assert.ok(agentMetrics[fullMetricName], `should have metric ${fullMetricName}`)
+    assert.ok(agentMetrics[fullMetricName].callCount > 0, `metric ${fullMetricName} should have been called`)
   }
 }
 
