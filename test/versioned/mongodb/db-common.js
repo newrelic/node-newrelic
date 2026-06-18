@@ -140,11 +140,48 @@ function verifyMongoSegments(agent, transaction, segments, opts = {}) {
 }
 
 function verifyMongoMetrics(agent, metrics) {
-  const agentMetrics = agent.metrics._metrics.unscoped
+  const agentMetrics = agent.metrics._metrics
+  const unscopedMetrics = agentMetrics.unscoped
+  const scopedMetrics = agentMetrics.scoped[common.TRANSACTION_NAME]
+
+  assert.ok(scopedMetrics, 'should have scoped metrics')
+
+  let totalOperations = 0
   for (const metricName of metrics) {
+    totalOperations += 1
     const fullMetricName = `Datastore/operation/MongoDB/${metricName}`
-    assert.ok(agentMetrics[fullMetricName], `should have metric ${fullMetricName}`)
-    assert.ok(agentMetrics[fullMetricName].callCount > 0, `metric ${fullMetricName} should have been called`)
+
+    // Verify unscoped operation metric
+    assert.ok(unscopedMetrics[fullMetricName], `should have unscoped metric ${fullMetricName}`)
+    assert.ok(
+      unscopedMetrics[fullMetricName].callCount > 0,
+      `metric ${fullMetricName} should have been called`
+    )
+
+    // Verify scoped operation metric
+    assert.ok(scopedMetrics[fullMetricName], `should have scoped metric ${fullMetricName}`)
+    assert.ok(
+      scopedMetrics[fullMetricName].callCount > 0,
+      `scoped metric ${fullMetricName} should have been called`
+    )
+  }
+
+  // Verify rollup metrics created by database recorder
+  const expectedRollupMetrics = [
+    'Datastore/all',
+    'Datastore/allWeb',
+    'Datastore/MongoDB/all',
+    'Datastore/MongoDB/allWeb',
+    `Datastore/instance/MongoDB/${MONGO_HOST}/${MONGO_PORT}`
+  ]
+
+  for (const metric of expectedRollupMetrics) {
+    assert.ok(unscopedMetrics[metric], `should have rollup metric ${metric}`)
+    assert.equal(
+      unscopedMetrics[metric].callCount,
+      totalOperations,
+      `rollup metric ${metric} should have correct call count`
+    )
   }
 }
 

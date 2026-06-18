@@ -146,3 +146,17 @@ dbTest('db operations should be opaque', async function opaqueTest(db, verify) {
     { checkNoChildren: true }
   )
 })
+
+dbTest('db operations should create database rollup metrics', async function rollupTest(db, verify) {
+  // The db subscriber uses the database recorder which creates rollup metrics
+  // including Datastore/all, Datastore/MongoDB/all, and instance-specific metrics.
+  // This test verifies that these metrics are properly created.
+  await db.command({ ping: 1 })
+
+  // The verify function checks for:
+  // - Datastore/operation/MongoDB/command (unscoped and scoped)
+  // - Datastore/all, Datastore/allWeb
+  // - Datastore/MongoDB/all, Datastore/MongoDB/allWeb
+  // - Datastore/instance/MongoDB/{host}/{port}
+  verify(['Datastore/operation/MongoDB/command'], ['command'])
+})
