@@ -227,6 +227,28 @@ test('the RUM API', async function (t) {
     }
   )
 
+  await t.test(
+    'should get browser agent script without loader script if hasToRemoveLoaderScript passed in options',
+    function (t, end) {
+      const SCRIPT_START = String.raw`<script type='text\/javascript'>`
+      const NREUM_INFO = String.raw`window\.NREUM\|\|\(NREUM=\{\}\);NREUM\.info = \{"licenseKey":1234,"applicationID":12345,"agentToken":null,"applicationTime":\d+(?:\.\d+)?,"transactionName":"OwwBMRwSC1MKBg1JBwJGLQocHgRMAh8cRD0eAExP","queueTime":0,"ttGuid":"[a-f0-9]{16}","atts":"F0sCR1QIR1IOFAxFGxhHFhcHUV8CRA0cTAQDSx4Y"\};`
+      const SCRIPT_END = String.raw`<\/script>`
+
+      const { agent, api } = t.nr
+      helper.runInTransaction(agent, function (tx) {
+        tx.url = '/hello'
+        tx.finalizeNameFromWeb()
+        
+        assert.match(
+          api.getBrowserTimingHeader({ hasToRemoveLoaderScript: true }),
+          new RegExp(`^${SCRIPT_START}${NREUM_INFO}\\s*${SCRIPT_END}$`)
+        )
+  
+        end()
+      })
+    }
+  )
+
   await t.test('should add custom attributes', function (t, end) {
     const { agent, api } = t.nr
     helper.runInTransaction(agent, function (tx) {
@@ -242,5 +264,29 @@ test('the RUM API', async function (t) {
       assert.equal(JSON.parse(deobf).u.hello, 1)
       end()
     })
+  })
+
+  await t.test('getBrowserAgentLoader - should get the loader script with wrapping tag', function (t) {
+    const { api } = t.nr
+    const loader = api.getBrowserAgentLoader()
+    assert.equal(loader, `<script type='text/javascript'>function() {}</script>`)
+  })
+
+  await t.test('getBrowserAgentLoader - should get the loader script with wrapping tag and nonce', function (t) {
+    const { api } = t.nr
+    const loader = api.getBrowserAgentLoader({ nonce: '12345' })
+    assert.equal(loader, `<script type='text/javascript' nonce="12345">function() {}</script>`)
+  })
+
+  await t.test('getBrowserAgentLoader - should get the loader script without wrapping tag when hasToRemoveScriptWrapper is true', function (t) {
+    const { api } = t.nr
+    const loader = api.getBrowserAgentLoader({ hasToRemoveScriptWrapper: true })
+    assert.equal(loader, 'function() {}')
+  })
+
+  await t.test('getBrowserAgentLoader - should return error comment if configuration is disabled', function (t) {
+    const { agent, api } = t.nr
+    agent.config.browser_monitoring.enable = false
+    assert.equal(api.getBrowserAgentLoader(), '<!-- NREUM: (0) -->')
   })
 })

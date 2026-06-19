@@ -40,6 +40,7 @@ Stub.prototype.startWebTransaction = startWebTransaction
 Stub.prototype.startBackgroundTransaction = startBackgroundTransaction
 Stub.prototype.getTransaction = getTransaction
 Stub.prototype.getBrowserTimingHeader = getBrowserTimingHeader
+Stub.prototype.getBrowserAgentLoader = getBrowserAgentLoader
 Stub.prototype.shutdown = shutdown
 Stub.prototype.setLambdaHandler = setLambdaHandler
 Stub.prototype.getLinkingMetadata = getLinkingMetadata
@@ -49,6 +50,11 @@ Stub.prototype.getTraceMetadata = getTraceMetadata
 // and we don't want it to return undefined/null.
 function getBrowserTimingHeader() {
   logger.debug('Not calling getBrowserTimingHeader because New Relic is disabled.')
+  return ''
+}
+
+function getBrowserAgentLoader() {
+  logger.debug('Not calling getBrowserAgentLoader because New Relic is disabled.')
   return ''
 }
 
