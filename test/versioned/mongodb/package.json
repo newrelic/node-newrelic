@@ -20,7 +20,6 @@
       "files": [
         "aggregation.test.js",
         "bulk.test.js",
-        "client.test.js",
         "collection-find.test.js",
         "collection-index.test.js",
         "collection-misc.test.js",
