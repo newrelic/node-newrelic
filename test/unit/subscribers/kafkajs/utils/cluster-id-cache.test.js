@@ -7,13 +7,10 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { getClusterIdFromCache, _fetchAndCacheClusterId } = require('#agentlib/subscribers/kafkajs/utils/cluster-id-cache.js')
+const { getClusterIdFromCache, fetchAndCacheClusterId } = require('#agentlib/subscribers/kafkajs/utils/cluster-id-cache.js')
 
-// Module-level Maps persist across tests; use unique broker strings per test to prevent contamination.
-let _counter = 0
-function uniqueBrokers(n = 1) {
-  const prefix = `test-host-${++_counter}`
-  return Array.from({ length: n }, (_, i) => `${prefix}-${i}:909${i}`)
+function freshMaps() {
+  return { cache: new Map(), inFlight: new Map() }
 }
 
 function makeClient(clusterId, { connectError, describeError } = {}) {
@@ -28,56 +25,66 @@ function makeClient(clusterId, { connectError, describeError } = {}) {
   }
 }
 
+const BROKERS = ['host-a:9092', 'host-b:9093']
+
 // ── getClusterIdFromCache ────────────────────────────────────────────────────
 
 test('getClusterIdFromCache returns undefined for null', () => {
-  assert.strictEqual(getClusterIdFromCache(null), undefined)
+  const { cache } = freshMaps()
+  assert.strictEqual(getClusterIdFromCache(cache, null), undefined)
 })
 
 test('getClusterIdFromCache returns undefined for undefined', () => {
-  assert.strictEqual(getClusterIdFromCache(undefined), undefined)
+  const { cache } = freshMaps()
+  assert.strictEqual(getClusterIdFromCache(cache, undefined), undefined)
 })
 
 test('getClusterIdFromCache returns undefined for a string', () => {
-  assert.strictEqual(getClusterIdFromCache('localhost:9092'), undefined)
+  const { cache } = freshMaps()
+  assert.strictEqual(getClusterIdFromCache(cache, 'localhost:9092'), undefined)
 })
 
 test('getClusterIdFromCache returns undefined for a function', () => {
-  assert.strictEqual(getClusterIdFromCache(() => ['localhost:9092']), undefined)
+  const { cache } = freshMaps()
+  assert.strictEqual(getClusterIdFromCache(cache, () => ['localhost:9092']), undefined)
 })
 
 test('getClusterIdFromCache returns undefined for an empty array', () => {
-  assert.strictEqual(getClusterIdFromCache([]), undefined)
+  const { cache } = freshMaps()
+  assert.strictEqual(getClusterIdFromCache(cache, []), undefined)
 })
 
 test('getClusterIdFromCache returns undefined on cache miss', () => {
-  assert.strictEqual(getClusterIdFromCache(uniqueBrokers()), undefined)
+  const { cache } = freshMaps()
+  assert.strictEqual(getClusterIdFromCache(cache, BROKERS), undefined)
 })
 
 test('getClusterIdFromCache returns the cluster ID after a successful fetch', async () => {
-  const brokers = uniqueBrokers(2)
-  await _fetchAndCacheClusterId(makeClient('cluster-hit'), brokers)
-  assert.strictEqual(getClusterIdFromCache(brokers), 'cluster-hit')
+  const { cache, inFlight } = freshMaps()
+  await fetchAndCacheClusterId(cache, inFlight, makeClient('cluster-hit'), BROKERS)
+  assert.strictEqual(getClusterIdFromCache(cache, BROKERS), 'cluster-hit')
 })
 
 test('getClusterIdFromCache normalizes broker order for lookup', async () => {
-  const brokers = uniqueBrokers(2)
-  await _fetchAndCacheClusterId(makeClient('cluster-order'), brokers)
-  assert.strictEqual(getClusterIdFromCache([...brokers].reverse()), 'cluster-order')
+  const { cache, inFlight } = freshMaps()
+  await fetchAndCacheClusterId(cache, inFlight, makeClient('cluster-order'), BROKERS)
+  assert.strictEqual(getClusterIdFromCache(cache, [...BROKERS].reverse()), 'cluster-order')
 })
 
-// ── _fetchAndCacheClusterId ──────────────────────────────────────────────────
+// ── fetchAndCacheClusterId ──────────────────────────────────────────────────
 
-test('_fetchAndCacheClusterId returns null for a non-array broker list', async () => {
-  assert.strictEqual(await _fetchAndCacheClusterId(makeClient('x'), null), null)
+test('fetchAndCacheClusterId returns null for a non-array broker list', async () => {
+  const { cache, inFlight } = freshMaps()
+  assert.strictEqual(await fetchAndCacheClusterId(cache, inFlight, makeClient('x'), null), null)
 })
 
-test('_fetchAndCacheClusterId returns null for an empty broker array', async () => {
-  assert.strictEqual(await _fetchAndCacheClusterId(makeClient('x'), []), null)
+test('fetchAndCacheClusterId returns null for an empty broker array', async () => {
+  const { cache, inFlight } = freshMaps()
+  assert.strictEqual(await fetchAndCacheClusterId(cache, inFlight, makeClient('x'), []), null)
 })
 
-test('_fetchAndCacheClusterId returns the cached value without calling admin again', async () => {
-  const brokers = uniqueBrokers()
+test('fetchAndCacheClusterId returns the cached value without calling admin again', async () => {
+  const { cache, inFlight } = freshMaps()
   let adminCalls = 0
   const client = {
     admin() {
@@ -89,51 +96,53 @@ test('_fetchAndCacheClusterId returns the cached value without calling admin aga
       }
     }
   }
-  await _fetchAndCacheClusterId(client, brokers)
+  await fetchAndCacheClusterId(cache, inFlight, client, BROKERS)
   assert.strictEqual(adminCalls, 1)
-  await _fetchAndCacheClusterId(client, brokers)
+  await fetchAndCacheClusterId(cache, inFlight, client, BROKERS)
   assert.strictEqual(adminCalls, 1)
 })
 
-test('_fetchAndCacheClusterId deduplicates concurrent in-flight requests', async () => {
-  const brokers = uniqueBrokers()
+test('fetchAndCacheClusterId deduplicates concurrent in-flight requests', async () => {
+  const { cache, inFlight } = freshMaps()
   const client = makeClient('cluster-inflight')
-  const p1 = _fetchAndCacheClusterId(client, brokers)
-  const p2 = _fetchAndCacheClusterId(client, brokers)
+  const p1 = fetchAndCacheClusterId(cache, inFlight, client, BROKERS)
+  const p2 = fetchAndCacheClusterId(cache, inFlight, client, BROKERS)
   assert.strictEqual(p1, p2)
   await p1
 })
 
-test('_fetchAndCacheClusterId fetches and caches the cluster ID on success', async () => {
-  const brokers = uniqueBrokers(3)
-  const result = await _fetchAndCacheClusterId(makeClient('cluster-success'), brokers)
+test('fetchAndCacheClusterId fetches and caches the cluster ID on success', async () => {
+  const { cache, inFlight } = freshMaps()
+  const result = await fetchAndCacheClusterId(cache, inFlight, makeClient('cluster-success'), BROKERS)
   assert.strictEqual(result, 'cluster-success')
-  assert.strictEqual(getClusterIdFromCache(brokers), 'cluster-success')
+  assert.strictEqual(getClusterIdFromCache(cache, BROKERS), 'cluster-success')
 })
 
-test('_fetchAndCacheClusterId returns null when connect throws', async () => {
-  const brokers = uniqueBrokers()
-  const result = await _fetchAndCacheClusterId(
+test('fetchAndCacheClusterId returns null when connect throws', async () => {
+  const { cache, inFlight } = freshMaps()
+  const result = await fetchAndCacheClusterId(
+    cache, inFlight,
     makeClient(null, { connectError: new Error('connection refused') }),
-    brokers
+    BROKERS
   )
   assert.strictEqual(result, null)
 })
 
-test('_fetchAndCacheClusterId returns null when describeCluster throws', async () => {
-  const brokers = uniqueBrokers()
-  const result = await _fetchAndCacheClusterId(
+test('fetchAndCacheClusterId returns null when describeCluster throws', async () => {
+  const { cache, inFlight } = freshMaps()
+  const result = await fetchAndCacheClusterId(
+    cache, inFlight,
     makeClient(null, { describeError: new Error('not authorized') }),
-    brokers
+    BROKERS
   )
   assert.strictEqual(result, null)
 })
 
-test('_fetchAndCacheClusterId clears the in-flight entry after the promise settles', async () => {
-  const brokers = uniqueBrokers()
-  const p1 = _fetchAndCacheClusterId(makeClient('cluster-settled'), brokers)
+test('fetchAndCacheClusterId clears the in-flight entry after the promise settles', async () => {
+  const { cache, inFlight } = freshMaps()
+  const p1 = fetchAndCacheClusterId(cache, inFlight, makeClient('cluster-settled'), BROKERS)
   await p1
-  const p2 = _fetchAndCacheClusterId(makeClient('cluster-settled'), brokers)
+  const p2 = fetchAndCacheClusterId(cache, inFlight, makeClient('cluster-settled'), BROKERS)
   assert.notStrictEqual(p1, p2)
   assert.strictEqual(await p2, 'cluster-settled')
 })
