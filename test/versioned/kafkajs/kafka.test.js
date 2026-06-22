@@ -443,3 +443,73 @@ test('consume batch inside of a transaction', async (t) => {
 
   await plan.completed
 })
+
+test('send records cluster-level produce metric', async (t) => {
+  // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Produce is recorded
+  // for the single-message send() path.
+  const plan = tspl(t, { plan: 1 })
+  const { agent, producer, topic } = t.nr
+
+  const { kafkaCtx } = require('../../../lib/symbols')
+  const testClusterId = 'test-cluster-produce-metric'
+  if (producer[kafkaCtx]) {
+    producer[kafkaCtx].clusterId = testClusterId
+  }
+
+  const expectedMetricName = `MessageBroker/Kafka/Cluster/${testClusterId}/Topic/${topic}/Produce`
+
+  agent.on('transactionFinished', () => {})
+  helper.runInTransaction(agent, async (tx) => {
+    await producer.send({
+      acks: 1,
+      topic,
+      messages: [{ key: 'k', value: 'v' }]
+    })
+    tx.end()
+
+    const metric = agent.metrics.getMetric(expectedMetricName)
+    plan.ok(metric && metric.callCount > 0, `Expected metric ${expectedMetricName} to be recorded`)
+  })
+
+  await plan.completed
+})
+
+test('consume records cluster-level consume metric', async (t) => {
+  // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Consume is recorded
+  const plan = tspl(t, { plan: 1 })
+  const { agent, consumer, producer, topic } = t.nr
+
+  const { kafkaCtx } = require('../../../lib/symbols')
+  const testClusterId = 'test-cluster-consume-metric'
+  // Set cluster ID on the consumer's context
+  if (consumer[kafkaCtx]) {
+    consumer[kafkaCtx].clusterId = testClusterId
+  }
+
+  const expectedMetricName = `MessageBroker/Kafka/Cluster/${testClusterId}/Topic/${topic}/Consume`
+
+  const txPromise = new Promise((resolve) => {
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name && tx.name.includes(topic)) {
+        const metric = agent.metrics.getMetric(expectedMetricName)
+        plan.ok(metric && metric.callCount > 0, `Expected metric ${expectedMetricName}`)
+        resolve()
+      }
+    })
+  })
+
+  await consumer.subscribe({ topics: [topic], fromBeginning: true })
+  const msgPromise = new Promise((resolve) => {
+    consumer.run({
+      eachMessage: async () => { resolve() }
+    })
+  })
+  await utils.waitForConsumersToJoinGroup({ consumer })
+  await producer.send({
+    acks: 1,
+    topic,
+    messages: [{ key: 'k', value: 'consume-test' }]
+  })
+  await Promise.all([msgPromise, txPromise])
+  await plan.completed
+})
