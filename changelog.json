@@ -5,7 +5,7 @@
       "version": "14.1.1",
       "changes": {
         "security": [
-          "Update min version of `@opentelemetry` `0.x` packages to `^0.219.0`"
+          "Updated min version of `@opentelemetry` `0.x` packages to `^0.219.0`"
         ],
         "bugfixes": [],
         "features": []
