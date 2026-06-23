@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.1.1",
+      "changes": {
+        "security": [
+          "Updated min version of `@opentelemetry` `0.x` packages to `^0.219.0`"
+        ],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
       "version": "14.1.0",
       "changes": {
         "security": [],
