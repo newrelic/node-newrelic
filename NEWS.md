@@ -1,3 +1,17 @@
+### v14.1.1 (2026-06-23)
+
+#### Documentation
+
+* Removed outdated Next.js documentation in repo ([#4060](https://github.com/newrelic/node-newrelic/pull/4060)) ([185bb66](https://github.com/newrelic/node-newrelic/commit/185bb66c6b8c8ddc26c934adccc28bf47e9ddfd9))
+* Updated compatibility report ([#4047](https://github.com/newrelic/node-newrelic/pull/4047)) ([25cbd38](https://github.com/newrelic/node-newrelic/commit/25cbd38f8da143c7c0010634b0282f2409cc0631))
+    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Added proxy config support to OTEL metrics ([#4041](https://github.com/newrelic/node-newrelic/pull/4041)) ([6c04b8a](https://github.com/newrelic/node-newrelic/commit/6c04b8ab780006ff3e15406a56e9efafa79b1509))
+* Added supportability metrics to OTEL metrics export ([#4051](https://github.com/newrelic/node-newrelic/pull/4051)) ([db6e4e3](https://github.com/newrelic/node-newrelic/commit/db6e4e364e61deb5da33a25d9ce13fb950c01162))
+* Update min version of `[@opentelemetry](https://github.com/opentelemetry)` `0.x` packages to `^0.219.0` ([#4065](https://github.com/newrelic/node-newrelic/pull/4065)) ([3f58ad0](https://github.com/newrelic/node-newrelic/commit/3f58ad010592fe9909a210f7688bce6f4e72c188))
+
 ### v14.1.0 (2026-06-02)
 
 #### Features
