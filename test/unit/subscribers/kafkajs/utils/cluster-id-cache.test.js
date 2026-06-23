@@ -17,8 +17,8 @@ function makeClient(clusterId, { connectError, describeError } = {}) {
   return {
     admin() {
       return {
-        connect: () => connectError ? Promise.reject(connectError) : Promise.resolve(),
-        describeCluster: () => describeError ? Promise.reject(describeError) : Promise.resolve({ clusterId }),
+        connect: () => (connectError ? Promise.reject(connectError) : Promise.resolve()),
+        describeCluster: () => (describeError ? Promise.reject(describeError) : Promise.resolve({ clusterId })),
         disconnect: () => Promise.resolve()
       }
     }
@@ -121,7 +121,8 @@ test('fetchAndCacheClusterId fetches and caches the cluster ID on success', asyn
 test('fetchAndCacheClusterId returns null when connect throws', async () => {
   const { cache, inFlight } = freshMaps()
   const result = await fetchAndCacheClusterId(
-    cache, inFlight,
+    cache,
+    inFlight,
     makeClient(null, { connectError: new Error('connection refused') }),
     BROKERS
   )
@@ -131,7 +132,8 @@ test('fetchAndCacheClusterId returns null when connect throws', async () => {
 test('fetchAndCacheClusterId returns null when describeCluster throws', async () => {
   const { cache, inFlight } = freshMaps()
   const result = await fetchAndCacheClusterId(
-    cache, inFlight,
+    cache,
+    inFlight,
     makeClient(null, { describeError: new Error('not authorized') }),
     BROKERS
   )
