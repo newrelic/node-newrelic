@@ -387,3 +387,40 @@ test('ends transaction on stream close', async (t) => {
     })
   })
 })
+
+test('collects response headers', async (t) => {
+  bootstrapModule({ t })
+  const { agent, mockApi } = t.nr
+  agent.config.allow_all_headers = true
+
+  const handler = async function () {
+    const response = new AzureFunctionHttpResponse()
+    response.body = 'ok'
+    response.status = 200
+    response.headers = {
+      'content-type': 'application/json',
+      'x-custom-header': 'custom-value'
+    }
+    return response
+  }
+  const options = { handler }
+
+  const txFinished = once(agent, 'transactionFinished')
+  mockApi.app.get('a-test', options)
+  const wrappedHandler = global.azure.handlers.at(-1)
+  const response = await mockApi.httpRequest('get', wrappedHandler)
+  assert.equal(response.body, 'ok')
+
+  const [tx] = await txFinished
+  assert.ok(tx)
+
+  // Verify response headers were collected as transaction attributes
+  const attributes = tx.trace.attributes.get(DESTS.TRANS_COMMON)
+  assert.equal(attributes['response.headers.contentType'], 'application/json')
+  assert.equal(attributes['response.headers.xCustomHeader'], 'custom-value')
+
+  // Verify response headers were also added to the base segment as span attributes
+  const spanAttributes = tx.baseSegment.attributes.get(DESTS.SPAN_EVENT)
+  assert.equal(spanAttributes['response.headers.contentType'], 'application/json')
+  assert.equal(spanAttributes['response.headers.xCustomHeader'], 'custom-value')
+})
