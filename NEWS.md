@@ -1,3 +1,13 @@
+### v14.1.2 (2026-06-25)
+
+#### Bug fixes
+
+* Fixed Azure functions crashing when they include response headers ([#4070](https://github.com/newrelic/node-newrelic/pull/4070)) ([c88d2b7](https://github.com/newrelic/node-newrelic/commit/c88d2b7da7d723fa63b85d7bd802a7601717155f))
+
+#### Documentation
+
+* Updated compatibility report ([#4067](https://github.com/newrelic/node-newrelic/pull/4067)) ([0ae24b8](https://github.com/newrelic/node-newrelic/commit/0ae24b865d61b0035cffdafbcfc6543cd7dce27d))
+
 ### v14.1.1 (2026-06-23)
 
 #### Documentation
