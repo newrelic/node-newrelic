@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [lts/*]
+        node-version: [24.16.0]
 
     steps:
     # Check out caller repo
@@ -48,7 +48,7 @@ jobs:
         # That version of npm is 11.5.1, which first ships with v24.5.0.
         # Once v24 is the minimum LTS release, we can revert this back to
         # utilizing the matrix defined version.
-        node-version: 24.x
+        node-version: 24.16.0
         registry-url: 'https://registry.npmjs.org'
     # Only need to install deps in agent-repo because of the bin scripts
     - name: Install Dependencies
