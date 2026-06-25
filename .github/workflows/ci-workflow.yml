@@ -106,7 +106,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [22.22.3, 24.16.0]
 
     steps:
       - uses: actions/checkout@v6
@@ -116,7 +116,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       # This step can be removed when we drop support for Node 22
       - name: Upgrade npm
-        if: matrix.node-version == '22.x'
+        if: matrix.node-version == '22.22.3'
         run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
@@ -142,7 +142,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [22.22.3, 24.16.0]
 
     steps:
       - uses: actions/checkout@v6
@@ -152,7 +152,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       # This step can be removed when we drop support for Node 22
       - name: Upgrade npm
-        if: matrix.node-version == '22.x'
+        if: matrix.node-version == '22.22.3'
         run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
@@ -192,7 +192,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       # This step can be removed when we drop support for Node 22
       - name: Upgrade npm
-        if: matrix.node-version == '22.x'
+        if: matrix.node-version == '22.22.3'
         run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
@@ -231,7 +231,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [22.22.3, 24.16.0]
 
     steps:
       - uses: actions/checkout@v6
