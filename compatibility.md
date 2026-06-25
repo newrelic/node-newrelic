@@ -11,7 +11,7 @@ supported by the agent.
 
 | Package name | Minimum supported version | Latest published version | Introduced in* |
 | --- | --- | --- | --- |
-| `@anthropic-ai/sdk` | 0.33.0 | 0.105.0 | 13.19.0 |
+| `@anthropic-ai/sdk` | 0.33.0 | 0.106.0 | 13.19.0 |
 | `@apollo/gateway` | 2.3.0 | 2.14.1 | 14.0.0 |
 | `@apollo/server` | 4.0.0 | 5.5.1 | 14.0.0 |
 | `@aws-sdk/client-bedrock-runtime` | 3.377.0 | 3.1075.0 | 11.13.0 |
@@ -23,14 +23,14 @@ supported by the agent.
 | `@azure/functions` | 4.7.0 | 4.16.1 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.4.2 | 11.9.0 |
 | `@google/adk` | 1.1.0 | 1.3.0 | 13.20.0 |
-| `@google/genai` | 1.1.0 | 2.9.0 | 12.21.0 |
+| `@google/genai` | 1.1.0 | 2.10.0 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.14.4 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.4.9 | 9.0.0 |
 | `@hapi/vision` | 5.0.0 | 7.0.3 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 15.6.0 | 3.2.0 |
 | `@langchain/aws` | 0.1.3 | 1.4.2 | 13.8.0 |
 | `@langchain/core` | 0.2.0 | 1.2.1 | 11.13.0 |
-| `@langchain/langgraph` | 1.0.0 | 1.4.5 | 13.12.0 |
+| `@langchain/langgraph` | 1.0.0 | 1.4.6 | 13.12.0 |
 | `@langchain/openai` | 0.2.0 | 1.5.3 | 11.13.0 |
 | `@modelcontextprotocol/sdk` | 1.13.0 | 1.29.0 | 13.2.0 |
 | `@nestjs/core` | 10.0.0 | 11.1.27 | 10.1.0 |
@@ -55,12 +55,12 @@ supported by the agent.
 | `mysql` | 2.16.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 3.0.0 | 3.22.5 | 1.32.0 |
 | `next` | 14.0.0 | 16.2.9 | 12.0.0 |
-| `openai` | 4.0.0 | 6.44.0 | 11.13.0 |
+| `openai` | 4.0.0 | 6.45.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.22.0 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.8.0 | 9.0.0 |
 | `pino` | 8.0.0 | 10.3.1 | 8.11.0 |
 | `q` | 1.3.0 | 1.5.1 | 1.26.2 |
-| `redis` | 3.1.0 | 6.0.0 | 1.31.0 |
+| `redis` | 3.1.0 | 6.0.1 | 1.31.0 |
 | `restify` | 11.0.0 | 11.1.0 | 2.6.0 |
 | `superagent` | 3.0.0 | 10.3.0 | 4.9.0 |
 | `undici` | 5.0.0 | 8.5.0 | 11.1.0 |
