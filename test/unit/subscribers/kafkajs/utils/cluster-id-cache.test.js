@@ -148,3 +148,48 @@ test('fetchAndCacheClusterId clears the in-flight entry after the promise settle
   assert.notStrictEqual(p1, p2)
   assert.strictEqual(await p2, 'cluster-settled')
 })
+
+// ── TTL expiry ──────────────────────────────────────────────────────────────
+
+test('getClusterIdFromCache returns undefined for expired entries', () => {
+  const { cache } = freshMaps()
+  const key = BROKERS.slice().sort().join(',')
+  cache.set(key, { clusterId: 'old-cluster', fetchedAt: 0 })
+  assert.strictEqual(getClusterIdFromCache(cache, BROKERS), undefined)
+})
+
+test('fetchAndCacheClusterId re-fetches after TTL expiry', async () => {
+  const { cache, inFlight } = freshMaps()
+  let adminCalls = 0
+  const client = {
+    admin() {
+      adminCalls++
+      return {
+        connect: () => Promise.resolve(),
+        describeCluster: () => Promise.resolve({ clusterId: 'cluster-refreshed' }),
+        disconnect: () => Promise.resolve()
+      }
+    }
+  }
+  const key = BROKERS.slice().sort().join(',')
+  cache.set(key, { clusterId: 'cluster-old', fetchedAt: 0 })
+  const result = await fetchAndCacheClusterId(cache, inFlight, client, BROKERS)
+  assert.strictEqual(adminCalls, 1)
+  assert.strictEqual(result, 'cluster-refreshed')
+  assert.strictEqual(getClusterIdFromCache(cache, BROKERS), 'cluster-refreshed')
+})
+
+test('fetchAndCacheClusterId evicts oldest entry when cache is full', async () => {
+  const { cache, inFlight } = freshMaps()
+  const freshAt = Date.now()
+  for (let i = 0; i < 128; i++) {
+    cache.set(`broker-${i}:9092`, { clusterId: `cluster-${i}`, fetchedAt: freshAt })
+  }
+  assert.strictEqual(cache.size, 128)
+  const firstKey = cache.keys().next().value
+  const newBrokers = ['new-broker:9092']
+  await fetchAndCacheClusterId(cache, inFlight, makeClient('cluster-new'), newBrokers)
+  assert.strictEqual(cache.size, 128)
+  assert.strictEqual(cache.has(firstKey), false, 'oldest entry should have been evicted')
+  assert.strictEqual(getClusterIdFromCache(cache, newBrokers), 'cluster-new')
+})
