@@ -19,6 +19,7 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: lts/*
+        check-latest: true
     - name: Install Dependencies
       run: npm install
     - name: Check for PRs not yet released

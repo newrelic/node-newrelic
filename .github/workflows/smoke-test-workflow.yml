@@ -35,6 +35,7 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
+        check-latest: true
     # This step can be removed when we drop support for Node 22
     - name: Upgrade npm
       if: matrix.node-version == '22.x'

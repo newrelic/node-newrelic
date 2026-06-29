@@ -39,6 +39,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
+          check-latest: true
       - run: npm install
       - run: |
           git config user.name ${GITHUB_ACTOR}
@@ -60,6 +61,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
+          check-latest: true
       - run: npm install
       - run: |
           git config user.name ${GITHUB_ACTOR}
