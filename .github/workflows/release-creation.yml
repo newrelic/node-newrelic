@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [24.16.0]
+        node-version: [lts/*]
 
     steps:
     # Check out caller repo
@@ -43,12 +43,7 @@ jobs:
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v6
       with:
-        # As of 2025-10-21, we must specify a version to use because we need
-        # a specific version of npm in order to perform OIDC based publishing.
-        # That version of npm is 11.5.1, which first ships with v24.5.0.
-        # Once v24 is the minimum LTS release, we can revert this back to
-        # utilizing the matrix defined version.
-        node-version: 24.16.0
+        node-version: ${{ matrix.node-version}} 
         check-latest: true
         registry-url: 'https://registry.npmjs.org'
     # Only need to install deps in agent-repo because of the bin scripts
