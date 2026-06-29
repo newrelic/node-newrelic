@@ -42,6 +42,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+          check-latest: true
           architecture: ${{ matrix.arch }}
 
       - name: Get local agent version 

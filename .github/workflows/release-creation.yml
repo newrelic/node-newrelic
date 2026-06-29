@@ -49,6 +49,7 @@ jobs:
         # Once v24 is the minimum LTS release, we can revert this back to
         # utilizing the matrix defined version.
         node-version: 24.16.0
+        check-latest: true
         registry-url: 'https://registry.npmjs.org'
     # Only need to install deps in agent-repo because of the bin scripts
     - name: Install Dependencies

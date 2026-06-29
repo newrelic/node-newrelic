@@ -46,6 +46,7 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
+        check-latest: true
     # Only need to install deps in agent-repo because of the bin scripts
     - name: Install Dependencies
       run: npm install --prefix agent-repo

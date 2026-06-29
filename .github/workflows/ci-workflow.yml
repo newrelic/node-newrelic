@@ -66,6 +66,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+          check-latest: true
       - name: Install Dependencies
         run: npm install
       - name: Run Linting
@@ -90,6 +91,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+          check-latest: true
       - name: Install Dependencies
         run: npm install
       - name: Run CI Script Unit Tests
@@ -106,7 +108,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22.22.3, 24.16.0]
+        node-version: [22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v6
@@ -114,9 +116,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+          check-latest: true
       # This step can be removed when we drop support for Node 22
       - name: Upgrade npm
-        if: matrix.node-version == '22.22.3'
+        if: matrix.node-version == '22.x'
         run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
@@ -142,7 +145,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22.22.3, 24.16.0]
+        node-version: [22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v6
@@ -150,9 +153,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+          check-latest: true
       # This step can be removed when we drop support for Node 22
       - name: Upgrade npm
-        if: matrix.node-version == '22.22.3'
+        if: matrix.node-version == '22.x'
         run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
@@ -182,7 +186,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22.22.3, 24.16.0]
+        node-version: [22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v6
@@ -190,9 +194,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+          check-latest: true
       # This step can be removed when we drop support for Node 22
       - name: Upgrade npm
-        if: matrix.node-version == '22.22.3'
+        if: matrix.node-version == '22.x'
         run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
@@ -231,13 +236,14 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22.22.3, 24.16.0]
+        node-version: [22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
+          check-latest: true
       - name: Download artifacts
         uses: actions/download-artifact@v8
       - name: Post Unit Test Coverage
