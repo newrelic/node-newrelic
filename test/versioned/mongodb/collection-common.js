@@ -118,7 +118,7 @@ function collectionTest(name, run) {
               )
               const segment = agent.tracer.getSegment()
               let current = transaction.trace.root
-              const children = transaction.trace.getChildren(current.id)
+              let children = transaction.trace.getChildren(current.id)
 
               // this logic is just for the collection.aggregate.
               // aggregate no longer returns a callback with cursor
@@ -131,7 +131,7 @@ function collectionTest(name, run) {
               // there is an extra segment for the callback of our test which we do not care
               // to assert
               if (childrenLength === 2) {
-                assert.equal(children.length, childrenLength, 'should have one child')
+                assert.equal(children.length, childrenLength, 'should have two children')
 
                 segments.forEach((expectedSegment, i) => {
                   const child = children[i]
@@ -162,6 +162,8 @@ function collectionTest(name, run) {
                     checkSegmentParams(current)
                     assert.equal(current.ignore, false, 'should not ignore segment')
                   }
+                  // Move down the tree for the next iteration
+                  children = currentChildren
                 }
 
                 if (strict) {
@@ -282,7 +284,7 @@ function collectionTest(name, run) {
               )
               const segment = agent.tracer.getSegment()
               let current = transaction.trace.root
-              const children = transaction.trace.getChildren(current.id)
+              let children = transaction.trace.getChildren(current.id)
 
               // this logic is just for the collection.aggregate.
               // aggregate no longer returns a callback with cursor
@@ -326,6 +328,8 @@ function collectionTest(name, run) {
                     checkSegmentParams(current)
                     assert.equal(current.ignore, false, 'should not ignore segment')
                   }
+                  // Move down the tree for the next iteration
+                  children = currentChildren
                 }
 
                 if (strict) {
