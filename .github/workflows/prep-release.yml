@@ -28,9 +28,6 @@ jobs:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [24.16.0]
 
     steps:
     # Check out caller repo
@@ -42,10 +39,9 @@ jobs:
       with:
         repository: newrelic/node-newrelic
         path: agent-repo
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6
+    - uses: actions/setup-node@v6
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: lts/*
         check-latest: true
     # Only need to install deps in agent-repo because of the bin scripts
     - name: Install Dependencies
