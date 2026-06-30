@@ -846,6 +846,7 @@ test('host facts', async (t) => {
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
     delete process.env.K_SERVICE
+    delete process.env.K_REVISION
 
     // Restore system-info cache
     if (ctx.systemInfoPath) {
@@ -910,6 +911,65 @@ test('host facts', async (t) => {
 
     facts(agent, (result) => {
       assert.equal(result.host, os.hostname(), 'Hostname should not be set to GCP instance ID')
+      end()
+    })
+  })
+
+  await t.test('should be K_REVISION-GCPid when gcp_cloud_run.include_revision_in_host is true', (t, end) => {
+    const { agent, facts } = t.nr
+
+    agent.config.utilization = {
+      gcp_use_instance_as_host: true,
+      gcp_cloud_run: { include_revision_in_host: true }
+    }
+    process.env.K_SERVICE = 'mock-service'
+    process.env.K_REVISION = 'mock-revision'
+
+    facts(agent, (result) => {
+      assert.equal(
+        result.host,
+        'mock-revision-mock-gcp-instance-id',
+        'Hostname should include the GCP revision and instance ID'
+      )
+      end()
+    })
+  })
+
+  await t.test('should be GCP id when gcp_cloud_run.include_revision_in_host is true but K_REVISION is not set', (t, end) => {
+    const { agent, facts } = t.nr
+
+    agent.config.utilization = {
+      gcp_use_instance_as_host: true,
+      gcp_cloud_run: { include_revision_in_host: true }
+    }
+    process.env.K_SERVICE = 'mock-service'
+
+    facts(agent, (result) => {
+      assert.equal(
+        result.host,
+        'mock-gcp-instance-id',
+        'Hostname should fall back to the GCP instance ID when K_REVISION is absent'
+      )
+      end()
+    })
+  })
+
+  await t.test('should be GCP id when K_REVISION is set but gcp_cloud_run.include_revision_in_host is false', (t, end) => {
+    const { agent, facts } = t.nr
+
+    agent.config.utilization = {
+      gcp_use_instance_as_host: true,
+      gcp_cloud_run: { include_revision_in_host: false }
+    }
+    process.env.K_SERVICE = 'mock-service'
+    process.env.K_REVISION = 'mock-revision'
+
+    facts(agent, (result) => {
+      assert.equal(
+        result.host,
+        'mock-gcp-instance-id',
+        'Hostname should be set to the GCP instance ID only'
+      )
       end()
     })
   })
