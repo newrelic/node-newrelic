@@ -45,6 +45,14 @@ test.beforeEach(async (ctx) => {
   const consumer = kafka.consumer({ groupId: 'kafka' })
   await consumer.connect()
   ctx.nr.consumer = consumer
+
+  // The constructor hook fires fetchAndCacheClusterId async; poll until resolved.
+  const { kafkaCtx: kCtx } = require('../../../lib/symbols')
+  const pollDeadline = Date.now() + 3000
+  while (!producer[kCtx]?.clusterId && Date.now() < pollDeadline) {
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  }
+  ctx.nr.clusterId = producer[kCtx]?.clusterId ?? null
 })
 
 test.afterEach(async (ctx) => {
@@ -446,17 +454,12 @@ test('consume batch inside of a transaction', async (t) => {
 
 test('send records cluster-level produce metric', async (t) => {
   // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Produce is recorded
-  // for the single-message send() path.
+  // for the single-message send() path. Uses the real cluster ID resolved by
+  // fetchAndCacheClusterId at constructor time (stored in ctx.nr.clusterId).
   const plan = tspl(t, { plan: 1 })
-  const { agent, producer, topic } = t.nr
+  const { agent, producer, topic, clusterId } = t.nr
 
-  const { kafkaCtx } = require('../../../lib/symbols')
-  const testClusterId = 'test-cluster-produce-metric'
-  if (producer[kafkaCtx]) {
-    producer[kafkaCtx].clusterId = testClusterId
-  }
-
-  const expectedMetricName = `MessageBroker/Kafka/Cluster/${testClusterId}/Topic/${topic}/Produce`
+  const expectedMetricName = `MessageBroker/Kafka/Cluster/${clusterId}/Topic/${topic}/Produce`
 
   agent.on('transactionFinished', () => {})
   helper.runInTransaction(agent, async (tx) => {
@@ -475,18 +478,13 @@ test('send records cluster-level produce metric', async (t) => {
 })
 
 test('consume records cluster-level consume metric', async (t) => {
-  // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Consume is recorded
+  // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Consume is recorded.
+  // Uses the real cluster ID resolved at constructor time (stored in ctx.nr.clusterId);
+  // recordDataMetrics reads kafkaCtx.clusterId which is set by the same async fetch.
   const plan = tspl(t, { plan: 1 })
-  const { agent, consumer, producer, topic } = t.nr
+  const { agent, consumer, producer, topic, clusterId } = t.nr
 
-  const { kafkaCtx } = require('../../../lib/symbols')
-  const testClusterId = 'test-cluster-consume-metric'
-  // Set cluster ID on the consumer's context
-  if (consumer[kafkaCtx]) {
-    consumer[kafkaCtx].clusterId = testClusterId
-  }
-
-  const expectedMetricName = `MessageBroker/Kafka/Cluster/${testClusterId}/Topic/${topic}/Consume`
+  const expectedMetricName = `MessageBroker/Kafka/Cluster/${clusterId}/Topic/${topic}/Consume`
 
   const txPromise = new Promise((resolve) => {
     agent.on('transactionFinished', (tx) => {
