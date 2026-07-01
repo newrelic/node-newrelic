@@ -251,7 +251,7 @@ test('when forcing transaction ignore status', async (t) => {
   })
 })
 
-test('#harvesters.start should start  and stop all aggregators', (t) => {
+test('#harvesters.start should start  and stop all aggregators', async (t) => {
   const agent = helper.loadMockedAgent({
     profiling: {
       enabled: true
@@ -265,6 +265,9 @@ test('#harvesters.start should start  and stop all aggregators', (t) => {
   })
 
   agent.harvester.start()
+  // The profiling aggregator starts asynchronously (it builds the CPU profiler's
+  // SourceMapper), so let its start settle before asserting the timers are armed.
+  await new Promise((resolve) => setImmediate(resolve))
   const aggregators = [
     agent.traces,
     agent.errors.traceAggregator,

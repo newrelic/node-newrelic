@@ -33,7 +33,9 @@ const globalIgnores = {
     'out/', // Compiled jsdocs directory.
     'test/versioned-external',
     'test/versioned/nextjs/app',
-    'test/versioned/nextjs/app-dir'
+    'test/versioned/nextjs/app-dir',
+    // Transpiled profiler fixture (checked-in .ts + generated .js/.js.map).
+    'test/integration/profiling/fixtures/'
   ]
 }
 

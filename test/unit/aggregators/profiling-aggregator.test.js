@@ -83,17 +83,15 @@ test('should not send any data if there are no profilers registered', async (t) 
   })
 })
 
-test('should not crash if profilers are started more than once', (t) => {
+test('should not crash if profilers are started more than once', async (t) => {
   const { profilingAggregator } = t.nr
-  profilingAggregator.start()
-  assert.doesNotThrow(() => {
-    profilingAggregator.start()
-  })
+  await profilingAggregator.start()
+  await assert.doesNotReject(profilingAggregator.start())
 })
 
-test('should stop ProfilingManager when aggregator is stopped', (t) => {
+test('should stop ProfilingManager when aggregator is stopped', async (t) => {
   const { profilingAggregator, sandbox } = t.nr
-  profilingAggregator.start()
+  await profilingAggregator.start()
   assert.ok(profilingAggregator.sendTimer)
   sandbox.spy(profilingAggregator.profilingManager.profilers.get('HeapProfiler'), 'stop')
   sandbox.spy(profilingAggregator.profilingManager.profilers.get('CpuProfiler'), 'stop')
@@ -107,9 +105,9 @@ test('should stop ProfilingManager when aggregator is stopped', (t) => {
   }
 })
 
-test('should not crash if profilers are stopped more than once', (t) => {
+test('should not crash if profilers are stopped more than once', async (t) => {
   const { profilingAggregator } = t.nr
-  profilingAggregator.start()
+  await profilingAggregator.start()
   profilingAggregator.stop()
   assert.doesNotThrow(() => {
     profilingAggregator.stop()
