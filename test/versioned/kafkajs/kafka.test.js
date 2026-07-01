@@ -45,6 +45,14 @@ test.beforeEach(async (ctx) => {
   const consumer = kafka.consumer({ groupId: 'kafka' })
   await consumer.connect()
   ctx.nr.consumer = consumer
+
+  // The constructor hook fires fetchAndCacheClusterId async; poll until resolved.
+  const { kafkaCtx: kCtx } = require('../../../lib/symbols')
+  const pollDeadline = Date.now() + 3000
+  while (!producer[kCtx]?.clusterId && Date.now() < pollDeadline) {
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  }
+  ctx.nr.clusterId = producer[kCtx]?.clusterId ?? null
 })
 
 test.afterEach(async (ctx) => {
@@ -441,5 +449,65 @@ test('consume batch inside of a transaction', async (t) => {
     return Promise.all([txPromise, testPromise])
   })
 
+  await plan.completed
+})
+
+test('send records cluster-level produce metric', async (t) => {
+  // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Produce is recorded
+  // for the single-message send() path. Uses the real cluster ID resolved by
+  // fetchAndCacheClusterId at constructor time (stored in ctx.nr.clusterId).
+  const plan = tspl(t, { plan: 1 })
+  const { agent, producer, topic, clusterId } = t.nr
+
+  const expectedMetricName = `MessageBroker/Kafka/Cluster/${clusterId}/Topic/${topic}/Produce`
+
+  agent.on('transactionFinished', () => {})
+  helper.runInTransaction(agent, async (tx) => {
+    await producer.send({
+      acks: 1,
+      topic,
+      messages: [{ key: 'k', value: 'v' }]
+    })
+    tx.end()
+
+    const metric = agent.metrics.getMetric(expectedMetricName)
+    plan.ok(metric && metric.callCount > 0, `Expected metric ${expectedMetricName} to be recorded`)
+  })
+
+  await plan.completed
+})
+
+test('consume records cluster-level consume metric', async (t) => {
+  // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Consume is recorded.
+  // Uses the real cluster ID resolved at constructor time (stored in ctx.nr.clusterId);
+  // recordDataMetrics reads kafkaCtx.clusterId which is set by the same async fetch.
+  const plan = tspl(t, { plan: 1 })
+  const { agent, consumer, producer, topic, clusterId } = t.nr
+
+  const expectedMetricName = `MessageBroker/Kafka/Cluster/${clusterId}/Topic/${topic}/Consume`
+
+  const txPromise = new Promise((resolve) => {
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name && tx.name.includes(topic)) {
+        const metric = agent.metrics.getMetric(expectedMetricName)
+        plan.ok(metric && metric.callCount > 0, `Expected metric ${expectedMetricName}`)
+        resolve()
+      }
+    })
+  })
+
+  await consumer.subscribe({ topics: [topic], fromBeginning: true })
+  const msgPromise = new Promise((resolve) => {
+    consumer.run({
+      eachMessage: async () => { resolve() }
+    })
+  })
+  await utils.waitForConsumersToJoinGroup({ consumer })
+  await producer.send({
+    acks: 1,
+    topic,
+    messages: [{ key: 'k', value: 'consume-test' }]
+  })
+  await Promise.all([msgPromise, txPromise])
   await plan.completed
 })
