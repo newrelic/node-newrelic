@@ -76,6 +76,12 @@ test('logs warning and uses defaults when export_interval <= export_timeout', as
 
   let warnMessage = null
   const logger = {
+    debugEnabled() {
+      return false
+    },
+    traceEnabled() {
+      return false
+    },
     warn(...args) {
       warnMessage = args[0]
       t.assert.ok(args[0].includes('export_interval'))
@@ -88,4 +94,63 @@ test('logs warning and uses defaults when export_interval <= export_timeout', as
   const signal = new SetupMetrics({ agent, logger })
   t.assert.ok(signal)
   t.assert.ok(warnMessage !== null, 'warning should have been logged')
+})
+
+test('forwards OTEL diagnostics to agent logger when debug logging is enabled', async (t) => {
+  const { agent } = t.nr
+  const { diag } = require('@opentelemetry/api')
+  t.after(() => diag.disable())
+
+  const debugMessages = []
+  const logger = {
+    debugEnabled() {
+      return true
+    },
+    traceEnabled() {
+      return false
+    },
+    warn() {},
+    error() {},
+    info() {},
+    trace() {},
+    debug(...args) {
+      debugMessages.push(args)
+    }
+  }
+
+  const signal = new SetupMetrics({ agent, logger })
+  t.assert.ok(signal)
+
+  diag.debug('test diagnostic message', { detail: 1 })
+  const forwarded = debugMessages.find((args) => args[0] === 'test diagnostic message')
+  t.assert.deepEqual(
+    forwarded,
+    ['test diagnostic message', { detail: 1 }],
+    'OTEL diag debug logs should be forwarded to the agent logger'
+  )
+})
+
+test('does not register a diag logger when debug and trace logging are disabled', async (t) => {
+  const { agent } = t.nr
+  const { diag } = require('@opentelemetry/api')
+  t.after(() => diag.disable())
+
+  const logger = {
+    debugEnabled() {
+      return false
+    },
+    traceEnabled() {
+      return false
+    },
+    warn() {},
+    debug() {
+      t.assert.fail('agent logger should not receive forwarded diag logs')
+    }
+  }
+
+  const signal = new SetupMetrics({ agent, logger })
+  t.assert.ok(signal)
+
+  // The default noop diag logger swallows this; nothing should reach the agent.
+  diag.debug('should not be forwarded')
 })
