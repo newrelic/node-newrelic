@@ -343,6 +343,7 @@ test('with default properties', async (t) => {
     assert.equal(configuration.profiling.delay, 0)
     assert.equal(configuration.profiling.duration, 0)
     assert.deepEqual(configuration.profiling.include, ['cpu', 'heap'])
+    assert.equal(configuration.profiling.source_mapping.enabled, false)
   })
 
   await t.test('opentelemetry', () => {
