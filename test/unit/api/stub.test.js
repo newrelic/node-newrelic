@@ -72,6 +72,14 @@ test('Agent API - Stubbed Agent API', async (t) => {
     end()
   })
 
+  await t.test('should return an empty string when requesting browser monitoring loader script', (t, end) => {
+    const { api } = t.nr
+    const loader = api.getBrowserAgentLoader()
+    assert.equal(loader, '')
+
+    end()
+  })
+
   await t.test('should return a function when calling setLambdaHandler', (t, end) => {
     const { api } = t.nr
     function myNop() {}

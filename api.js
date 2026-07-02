@@ -632,25 +632,34 @@ function _gracefail(errorCode, quiet) {
  * @private
  * @param {object} options Configuration options for RUM
  * @param {string} [options.nonce] Nonce to inject into `<script>` header.
+ * @param {boolean} [options.hasToRemoveLoaderScript] Used to strip loader script. Renders only RUM header.
  * @param {boolean} [options.hasToRemoveScriptWrapper] Used to import agent script without `<script>` tag wrapper.
  * @param {string} metadata Stringified representation of rumHash metadata
  * @param {string} loader Agent Loader script
  * @returns {string} fully formed RUM header
  */
-function _generateRUMHeader(options = {}, metadata, loader) {
-  const formatArgs = []
-
+/**
+ * Wraps `content` in a `<script>` tag, respecting nonce and hasToRemoveScriptWrapper options.
+ *
+ * @param {string} content
+ * @param {object} options
+ * @param {string} [options.nonce]
+ * @param {boolean} [options.hasToRemoveScriptWrapper]
+ * @returns {string}
+ */
+function _wrapScriptTag(content, options = {}) {
   if (options.hasToRemoveScriptWrapper) {
-    formatArgs.push(RUM_STUB)
-  } else if (options.nonce) {
-    formatArgs.push(RUM_STUB_SHELL_WITH_NONCE_PARAM, `nonce="${options.nonce}"`)
-  } else {
-    formatArgs.push(RUM_STUB_SHELL)
+    return content
   }
+  if (options.nonce) {
+    return `<script type='text/javascript' nonce="${options.nonce}">${content}</script>`
+  }
+  return `<script type='text/javascript'>${content}</script>`
+}
 
-  formatArgs.push(metadata, loader)
-
-  return util.format(...formatArgs)
+function _generateRUMHeader(options = {}, metadata, loader) {
+  const body = util.format(RUM_STUB, metadata, options.hasToRemoveLoaderScript ? '' : loader)
+  return _wrapScriptTag(body, options)
 }
 
 /**
@@ -744,6 +753,7 @@ function validateBrowserMonitoring(config, transaction, allowTransactionlessInje
  *
  * @param {object} options configuration options
  * @param {string} [options.nonce] - Nonce to inject into `<script>` header.
+ * @param {boolean} [options.hasToRemoveLoaderScript] Used to strip loader script. Renders only RUM header.
  * @param {boolean} [options.hasToRemoveScriptWrapper] - Used to import agent script without `<script>` tag wrapper.
  * @param {options} [options.allowTransactionlessInjection] Whether or not to allow the Browser Agent to be injected when there is no active transaction
  * @returns {string} The script content to be injected in `<head>` or put inside `<script>` tag (depending on options)
@@ -837,7 +847,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options =
 
   // the complete header to be written to the browser
   const out = _generateRUMHeader(
-    { nonce: options.nonce, hasToRemoveScriptWrapper: options.hasToRemoveScriptWrapper },
+    { nonce: options.nonce, hasToRemoveScriptWrapper: options.hasToRemoveScriptWrapper, hasToRemoveLoaderScript: options.hasToRemoveLoaderScript },
     json,
     config.browser_monitoring.js_agent_loader
   )
@@ -845,6 +855,33 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options =
   logger.trace('generating RUM header', out)
 
   return out
+}
+
+/**
+ * Generates the Browser Monitoring agent loader script (excluding configuration metadata).
+ *
+ * @param {object} [options] Configuration options for the loader script
+ * @param {string} [options.nonce] Nonce to inject into `<script>` tag.
+ * @param {boolean} [options.hasToRemoveScriptWrapper] Used to export the script without `<script>` tag wrapper.
+ * @returns {string} The loader script, optionally wrapped in `<script>` tags
+ */
+API.prototype.getBrowserAgentLoader = function getBrowserAgentLoader(options = {}) {
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/getBrowserAgentLoader'
+  )
+  metric.incrementCallCount()
+
+  const { isValidConfig, failureIdx, quietMode } = validateBrowserMonitoring(
+    this.agent.config,
+    null,
+    true
+  )
+
+  if (!isValidConfig) {
+    return _gracefail(failureIdx, quietMode)
+  }
+
+  return _wrapScriptTag(this.agent.config.browser_monitoring.js_agent_loader, options)
 }
 
 /**
