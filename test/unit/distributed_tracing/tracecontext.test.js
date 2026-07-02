@@ -183,6 +183,7 @@ test('TraceContext', async function (t) {
   await t.test('header creation', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
+
     await t.test('creating traceparent twice should give the same value', function (ctx, end) {
       const { agent } = ctx.nr
       helper.runInTransaction(agent, function (txn) {
@@ -232,7 +233,6 @@ test('TraceContext', async function (t) {
       const acctKey = '190'
       agent.config.trusted_account_key = acctKey
       const duplicateAcctTraceState =
-
         '42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,190@nr=bar'
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
       const appId = '109354'
@@ -258,6 +258,38 @@ test('TraceContext', async function (t) {
 
         const nonNrMatch = traceContextPayload.tracestate.match(/42@bar/g) || []
         assert.equal(nonNrMatch.length, 1, 'contains non-nr entry')
+
+        txn.end()
+        end()
+      })
+    })
+
+    await t.test('should not add spanId in outgoing NR formatted tracestate header', (ctx, end) => {
+      const { agent } = ctx.nr
+      const acctKey = '190'
+      agent.config.trusted_account_key = acctKey
+      const incomingTracestate =
+        '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827'
+      const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
+      const appId = '109354'
+
+      agent.config.trusted_account_key = acctKey
+      agent.config.account_id = acctKey
+      agent.config.primary_application_id = appId
+      agent.samplers.root.shouldSample = () => false
+
+      helper.runInTransaction(agent, function (txn) {
+        const childSegment = txn.trace.add('child')
+        agent.tracer.setSegment({ segment: childSegment })
+        childSegment.start()
+
+        txn.traceContext.acceptTraceContextPayload(traceparent, incomingTracestate)
+        const traceContextPayload = getTraceContextHeaders(txn)
+        const incoming = Tracestate.fromHeader({ header: incomingTracestate, agent })
+        const outgoing = Tracestate.fromHeader({ header: traceContextPayload.tracestate, agent })
+
+        assert.equal(incoming.spanId, 'f85f42fd82a4cf1d')
+        assert.equal(outgoing.spanId, null)
 
         txn.end()
         end()
@@ -343,44 +375,6 @@ test('TraceContext', async function (t) {
           txn.end()
           end()
         })
-      })
-    })
-
-    await t.test('should not generate spanId if no span/segment in context', (ctx, end) => {
-      const { agent } = ctx.nr
-      // This is a corner case and ideally never happens but is potentially possible
-      // due to state loss.
-
-      agent.config.account_id = 'AccountId1'
-      agent.config.distributed_tracing.enabled = true
-      agent.config.span_events.enabled = true
-
-      const expectedVersion = '00'
-      const expectedTraceId = '4bf92f3577b34da6a3ce929d0e0e4736'
-      const traceparent = `${expectedVersion}-${expectedTraceId}-00f067aa0ba902b7-00`
-      const incomingTraceState = 'test=test'
-
-      helper.runInTransaction(agent, function (txn) {
-        helper.runOutOfContext(() => {
-          txn.acceptTraceContextPayload(traceparent, incomingTraceState)
-
-          const outboundHeaders = getTraceContextHeaders(txn)
-          const tracestate = outboundHeaders.tracestate
-
-          // The test key/value should propagate at the end of the string
-          assert.ok(tracestate.endsWith(incomingTraceState))
-
-          const secondListMemberIndex = tracestate.indexOf(incomingTraceState)
-          const nrItem = tracestate.substring(0, secondListMemberIndex)
-
-          const splitData = nrItem.split('-')
-          const { 4: spanId } = splitData
-
-          assert.equal(spanId, '')
-
-          txn.end()
-        })
-        end()
       })
     })
 

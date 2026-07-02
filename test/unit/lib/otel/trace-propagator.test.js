@@ -56,7 +56,7 @@ test('should set traceparent and tracestate on outgoing headers when otel root c
     propagation.inject(otel.ROOT_CONTEXT, carrier, setter)
     assert.equal(carrier.traceparent, `00-${tx.traceId}-${tx.trace.root.id}-01`)
     assert.equal(tx.isDistributedTrace, true)
-    assert.ok(carrier.tracestate.startsWith(`1@nr=0-0-1-2-${tx.trace.root.id}-${tx.id}-1`))
+    assert.ok(carrier.tracestate.startsWith(`1@nr=0-0-1-2--${tx.id}-1`))
     tx.end()
   })
 })
