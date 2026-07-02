@@ -1530,7 +1530,7 @@ test('insertDistributedTraceHeaders', async (t) => {
     txn.insertDistributedTraceHeaders(headers, setter, spanContext)
     const { traceparent, tracestate } = headers
     assert.equal(traceparent, `00-${traceId}-${spanId}-01`)
-    assert.ok(tracestate.startsWith(`${trustedAccountKey}@nr=0-0-AccountId1-Application1-${spanId}-${txn.id}`))
+    assert.ok(tracestate.startsWith(`${trustedAccountKey}@nr=0-0-AccountId1-Application1--${txn.id}`))
   })
 
   await t.test('should not set newrelic header if empty string', (t) => {

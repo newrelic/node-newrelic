@@ -44,6 +44,7 @@ async function runTestCase(testCase, parentTest) {
       'web_transaction',
       'comment',
       'transaction_events_enabled',
+      'exclude_newrelic_header',
       // Sampling
       'distributed_tracing_enabled',
       'full_granularity_enabled',
