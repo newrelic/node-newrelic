@@ -11,16 +11,11 @@ jobs:
   publish:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [lts/*]
-
     steps:
     - uses: actions/checkout@v6
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6 # https://github.com/actions/setup-node
+    - uses: actions/setup-node@v6
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: lts/*
         check-latest: true
         registry-url: 'https://registry.npmjs.org'
     - name: Install Dependencies
