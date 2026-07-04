@@ -178,6 +178,132 @@ test('end(): does not fetch or set cluster ID for function-based broker resolver
   assert.strictEqual(ctx.clusterId, undefined)
 })
 
+// ── helpers for cluster-metrics tests ─────────────────────────────────────────
+
+function makeMetrics() {
+  const store = new Map()
+  return {
+    store,
+    getOrCreateMetric(name) {
+      if (!store.has(name)) {
+        store.set(name, { callCount: 0, incrementCallCount(n = 1) { this.callCount += n } })
+      }
+      return store.get(name)
+    }
+  }
+}
+
+/**
+ * Creates a fully-mocked subscriber with metrics, tracer.getContext(),
+ * tracer.createSegment(), and tracer.runInContext() for testing the wrapped
+ * producer/consumer paths.
+ *
+ * @param {object} [opts]
+ * @param {boolean} [opts.kafka_cluster_metrics=true]
+ * @param {boolean} [opts.withTransaction=false] When true, getContext() returns an active transaction.
+ */
+function makeSubscriberFull({ kafka_cluster_metrics = true, withTransaction = false } = {}) {
+  const als = new AsyncLocalStorage()
+  const metrics = makeMetrics()
+  const fakeSegment = { opaque: false, shimId: null, start() {} }
+  const fakeCtx = withTransaction
+    ? {
+        transaction: { isActive: () => true },
+        segment: null,
+        enterSegment({ segment }) { return { ...this, segment } }
+      }
+    : { transaction: null }
+  const agent = {
+    config: { feature_flag: { kafkajs_instrumentation: true, kafka_cluster_metrics } },
+    tracer: {
+      _contextManager: { _asyncLocalStorage: als },
+      getContext: () => fakeCtx,
+      createSegment: () => fakeSegment,
+      runInContext: ({ handler, thisArg, args }) => handler.apply(thisArg, args)
+    },
+    metrics
+  }
+  const logger = { child: () => ({ debug() {}, info() {}, warn() {}, error() {}, trace() {} }) }
+  return { subscriber: new ConstructorSubscriber({ agent, logger }), metrics }
+}
+
+const CLUSTER_ID = 'cluster-abc'
+
+/** Calls end(), waits for the async cluster-ID fetch to settle, returns { client, metrics }. */
+async function setupWithCache(opts) {
+  const { subscriber, metrics } = makeSubscriberFull(opts)
+  const client = makeKafkaClient(CLUSTER_ID)
+  subscriber.end({ arguments: [{ brokers: BROKERS }], self: client }, {})
+  await new Promise(setImmediate)
+  return { client, metrics }
+}
+
+// ── #refreshAndRecordProduceMetrics via producer.send() (non-tx path) ─────────
+
+test('producer.send(): kafka_cluster_metrics off → no cluster produce metric', async () => {
+  const { client, metrics } = await setupWithCache({ kafka_cluster_metrics: false })
+  const producer = client.producer()
+  producer.send({ topic: 'orders', messages: [{ value: 'a' }] })
+  assert.strictEqual(metrics.store.has(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/orders/Produce`), false)
+})
+
+test('producer.send(): cluster ID cached → records produce metric', async () => {
+  const { client, metrics } = await setupWithCache({ kafka_cluster_metrics: true })
+  const producer = client.producer()
+  producer.send({ topic: 'orders', messages: [{ value: 'a' }, { value: 'b' }] })
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/orders/Produce`)?.callCount, 2)
+})
+
+test('producer.sendBatch(): cluster ID cached → records produce metric per topic', async () => {
+  const { client, metrics } = await setupWithCache({ kafka_cluster_metrics: true })
+  const producer = client.producer()
+  producer.sendBatch({
+    topicMessages: [
+      { topic: 'topic-a', messages: [{ value: '1' }] },
+      { topic: 'topic-b', messages: [{ value: '2' }, { value: '3' }] }
+    ]
+  })
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/topic-a/Produce`)?.callCount, 1)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/topic-b/Produce`)?.callCount, 2)
+})
+
+test('producer.send(): cluster ID not yet cached, kafkaCtx.clusterId fallback → records metric with fallback', async () => {
+  const { subscriber, metrics } = makeSubscriberFull({ kafka_cluster_metrics: true })
+  const client = makeKafkaClient(CLUSTER_ID)
+  subscriber.end({ arguments: [{ brokers: BROKERS }], self: client }, {})
+  // Do NOT await – cluster ID is in-flight but not yet cached; fallback value is used instead.
+  client[kafkaCtx].clusterId = 'fallback-id'
+  const producer = client.producer()
+  producer.send({ topic: 'events', messages: [{ value: 'x' }] })
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/fallback-id/Topic/events/Produce`)?.callCount, 1)
+})
+
+test('producer.send(): no cached ID, no kafkaCtx.clusterId → no metric recorded', async () => {
+  const { subscriber, metrics } = makeSubscriberFull({ kafka_cluster_metrics: true })
+  const client = makeKafkaClient(CLUSTER_ID)
+  subscriber.end({ arguments: [{ brokers: BROKERS }], self: client }, {})
+  // Do NOT await; remove _kafkaClient so no background fetch is triggered.
+  client[kafkaCtx]._kafkaClient = null
+  const producer = client.producer()
+  producer.send({ topic: 'events', messages: [{ value: 'x' }] })
+  assert.strictEqual(metrics.store.has(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/events/Produce`), false)
+})
+
+// ── eachBatch cluster consume metrics (active-transaction path) ───────────────
+
+test('consumer.run({ eachBatch }): cluster ID cached → records consume metric per message', async () => {
+  const { client, metrics } = await setupWithCache({ kafka_cluster_metrics: true, withTransaction: true })
+  const consumer = client.consumer()
+  const runArgs = [{ eachBatch: () => {} }]
+  consumer.run(...runArgs)
+  // After run(), runArgs[0].eachBatch is the wrapped nrWrappedEachBatch closure.
+  runArgs[0].eachBatch({ batch: { topic: 'events', messages: [1, 2, 3] } })
+  assert.strictEqual(
+    metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/events/Consume`)?.callCount,
+    3
+  )
+})
+
 // ── admin() is not called with auth options directly ──────────────────────────
 
 test('end(): admin() is called with no arguments (auth inherited via kafkajs closure)', async () => {
