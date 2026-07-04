@@ -21,7 +21,8 @@ test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent({
     feature_flag: {
-      kafkajs_instrumentation: true
+      kafkajs_instrumentation: true,
+      kafka_cluster_metrics: true
     }
   })
 
