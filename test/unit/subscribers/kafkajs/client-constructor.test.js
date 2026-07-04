@@ -16,7 +16,7 @@ const ConstructorSubscriber = require('#agentlib/subscribers/kafkajs/client-cons
 function makeSubscriber() {
   const als = new AsyncLocalStorage()
   const agent = {
-    config: { feature_flag: { kafkajs_instrumentation: true } },
+    config: { feature_flag: { kafkajs_instrumentation: true, kafka_cluster_metrics: true } },
     tracer: { _contextManager: { _asyncLocalStorage: als } }
   }
   const logger = { child: () => { return { debug() {}, info() {}, warn() {}, error() {} } } }

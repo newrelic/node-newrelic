@@ -1,6 +1,6 @@
 {
   "name": "kafka-tests",
-  "targets": [{"name":"kafkajs","minAgentVersion":"11.19.0"}],
+  "targets": [{ "name": "kafkajs", "minAgentVersion": "11.19.0" }],
   "dockerServices": ["kafka", "zookeeper"],
   "version": "0.0.0",
   "private": true,
@@ -16,5 +16,8 @@
         "kafka.test.js"
       ]
     }
-  ]
+  ],
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  }
 }
