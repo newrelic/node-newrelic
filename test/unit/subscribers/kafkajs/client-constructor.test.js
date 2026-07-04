@@ -193,16 +193,7 @@ function makeMetrics() {
   }
 }
 
-/**
- * Creates a fully-mocked subscriber with metrics, tracer.getContext(),
- * tracer.createSegment(), and tracer.runInContext() for testing the wrapped
- * producer/consumer paths.
- *
- * @param {object} [opts]
- * @param {boolean} [opts.kafka_cluster_metrics=true]
- * @param {boolean} [opts.withTransaction=false] When true, getContext() returns an active transaction.
- */
-function makeSubscriberFull({ kafka_cluster_metrics = true, withTransaction = false } = {}) {
+function makeSubscriberFull({ kafka_cluster_metrics: kafkaClusterMetrics = true, withTransaction = false } = {}) {
   const als = new AsyncLocalStorage()
   const metrics = makeMetrics()
   const fakeSegment = { opaque: false, shimId: null, start() {} }
@@ -214,7 +205,7 @@ function makeSubscriberFull({ kafka_cluster_metrics = true, withTransaction = fa
       }
     : { transaction: null }
   const agent = {
-    config: { feature_flag: { kafkajs_instrumentation: true, kafka_cluster_metrics } },
+    config: { feature_flag: { kafkajs_instrumentation: true, kafka_cluster_metrics: kafkaClusterMetrics } },
     tracer: {
       _contextManager: { _asyncLocalStorage: als },
       getContext: () => fakeCtx,
@@ -223,7 +214,7 @@ function makeSubscriberFull({ kafka_cluster_metrics = true, withTransaction = fa
     },
     metrics
   }
-  const logger = { child: () => ({ debug() {}, info() {}, warn() {}, error() {}, trace() {} }) }
+  const logger = { child: () => { return { debug() {}, info() {}, warn() {}, error() {}, trace() {} } } }
   return { subscriber: new ConstructorSubscriber({ agent, logger }), metrics }
 }
 
@@ -275,7 +266,7 @@ test('producer.send(): cluster ID not yet cached, kafkaCtx.clusterId fallback â†
   client[kafkaCtx].clusterId = 'fallback-id'
   const producer = client.producer()
   producer.send({ topic: 'events', messages: [{ value: 'x' }] })
-  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/fallback-id/Topic/events/Produce`)?.callCount, 1)
+  assert.strictEqual(metrics.store.get('MessageBroker/Kafka/Cluster/fallback-id/Topic/events/Produce')?.callCount, 1)
 })
 
 test('producer.send(): no cached ID, no kafkaCtx.clusterId â†’ no metric recorded', async () => {
