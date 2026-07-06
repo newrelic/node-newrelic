@@ -242,8 +242,12 @@ test('TraceSegment', async (t) => {
     sinon.stub(segment.timer, 'softEnd').returns(true)
     sinon.stub(segment.timer, 'endsAfter').returns(true)
 
-    // Make root duration calculation predictable
+    // Make root duration calculation predictable. The root timer must have a
+    // fixed duration; otherwise it keeps reporting live wall-clock elapsed time,
+    // which makes `_computeTotalTime`'s `rootDuration > root duration` check
+    // (and thus this assertion) flaky on slower machines.
     root.timer.start = 1000
+    root.overwriteDurationInMillis(1)
     segment.timer.start = 1001
     segment.overwriteDurationInMillis(3)
 
