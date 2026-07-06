@@ -51,12 +51,19 @@
  *   measured from segment.timer.hrstart as the reference point
  * @param {number} [params.threshold] maximum allowed ratio difference between the
  *   two measurements
+ * @param {number} [params.minDelta] absolute difference (in ms) tolerated
+ *   regardless of the ratio. For sub-millisecond operations the fixed
+ *   subscriber/diagnostics-channel overhead between the two measurements can
+ *   dominate the ratio (e.g. a 0.3ms difference on a 0.8ms operation is 36%),
+ *   so a difference this small is treated as measurement noise rather than a
+ *   real discrepancy.
  * @param {object} [params.assert] assertion library to use
  */
 module.exports = function assertSegmentDuration({
   segment,
   actualTime,
   threshold = 0.20,
+  minDelta = 2,
   assert = require('node:assert')
 }) {
   assert.equal(segment._isEnded(), true, 'segment should have ended')
@@ -69,8 +76,9 @@ module.exports = function assertSegmentDuration({
   const ratio = maxDuration > 0 ? diff / maxDuration : 0
 
   assert.ok(
-    ratio <= threshold,
+    diff <= minDelta || ratio <= threshold,
     `segment duration (${segmentDuration}ms) and actual duration (${actualDuration}ms) ` +
-    `differ by ${(ratio * 100).toFixed(1)}% which exceeds the ${threshold * 100}% threshold`
+    `differ by ${diff.toFixed(3)}ms (${(ratio * 100).toFixed(1)}%) which exceeds the ` +
+    `${minDelta}ms / ${threshold * 100}% thresholds`
   )
 }

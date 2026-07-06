@@ -80,7 +80,7 @@ test('amqplib callback instrumentation', async function (t) {
 
   await t.test('sendToQueue', function (t, end) {
     const { agent, channel } = t.nr
-    agent.on('transactionFinished', function (tx) {
+    agent.once('transactionFinished', function (tx) {
       amqpUtils.verifySendToQueue(tx)
       end()
     })
@@ -98,7 +98,7 @@ test('amqplib callback instrumentation', async function (t) {
     const { agent, channel } = t.nr
     const exchange = amqpUtils.FANOUT_EXCHANGE
 
-    agent.on('transactionFinished', function (tx) {
+    agent.once('transactionFinished', function (tx) {
       amqpUtils.verifyProduce(tx, exchange, null, true)
       end()
     })
@@ -131,7 +131,7 @@ test('amqplib callback instrumentation', async function (t) {
     const { agent, channel } = t.nr
     const exchange = amqpUtils.DIRECT_EXCHANGE
 
-    agent.on('transactionFinished', function (tx) {
+    agent.once('transactionFinished', function (tx) {
       amqpUtils.verifyProduce(tx, exchange, 'key1', true)
       end()
     })
@@ -164,7 +164,7 @@ test('amqplib callback instrumentation', async function (t) {
     const exchange = amqpUtils.DIRECT_EXCHANGE
     let queueName = null
 
-    agent.on('transactionFinished', function (tx) {
+    agent.once('transactionFinished', function (tx) {
       amqpUtils.verifyPurge(tx, true)
       end()
     })
@@ -344,7 +344,7 @@ test('amqplib callback instrumentation', async function (t) {
     const exchange = amqpUtils.DIRECT_EXCHANGE
     let queue = null
 
-    agent.on('transactionFinished', function (tx) {
+    agent.once('transactionFinished', function (tx) {
       amqpUtils.verifyConsumeTransaction(tx, exchange, queue, 'consume-tx-key')
       end()
     })
@@ -386,7 +386,7 @@ test('amqplib callback instrumentation', async function (t) {
     const exchange = amqpUtils.DIRECT_EXCHANGE
     let queue = null
 
-    agent.on('transactionFinished', function (tx) {
+    agent.once('transactionFinished', function (tx) {
       assert.equal(
         tx.getFullName(),
         'OtherTransaction/Message/Custom/foobar',
@@ -429,7 +429,7 @@ test('amqplib callback instrumentation', async function (t) {
     const exchange = amqpUtils.DIRECT_EXCHANGE
     let queue = null
 
-    agent.on('transactionFinished', function (tx) {
+    agent.once('transactionFinished', function (tx) {
       amqpUtils.verifyConsumeTransaction(tx, exchange, queue, 'consume-tx-key')
       assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
 
@@ -475,7 +475,7 @@ test('amqplib callback instrumentation', async function (t) {
     const exchange = amqpUtils.DIRECT_EXCHANGE
     let queue = null
 
-    agent.on('transactionFinished', function (tx) {
+    agent.once('transactionFinished', function (tx) {
       amqpUtils.verifyConsumeTransaction(tx, exchange, queue, 'consume-tx-key')
       assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
       end()
