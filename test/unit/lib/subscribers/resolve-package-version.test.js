@@ -103,6 +103,37 @@ test('returns unknown if app root does not have manifest', (t) => {
   t.assert.equal(result.stdout.toString(), 'unknown\n')
 })
 
+// Simulates a stack where the diagnostics channel event was published from a
+// Node.js bundled module (e.g. modern Node's internal undici), so the publisher
+// frame is a `node:internal` path rather than a real filesystem path.
+const bundledPublisherStack = () => [
+  '    at Channel.publish (node:diagnostics_channel:186:9)',
+  '    at new Request (node:internal/deps/undici/undici:2914:27)'
+]
+
+test('resolves userland package when published from a Node.js bundled module', (t) => {
+  const result = resolvePackageVersion('semver', {
+    ...t.nr,
+    getStack: bundledPublisherStack
+  })
+  t.assert.equal(result, require('semver/package.json').version)
+  t.assert.deepStrictEqual(t.nr.logs.warn, [])
+})
+
+test('returns unknown when bundled module has no userland install', (t) => {
+  const result = resolvePackageVersion('not-a-real-package', {
+    ...t.nr,
+    getStack: bundledPublisherStack
+  })
+  t.assert.equal(result, 'unknown')
+  t.assert.deepStrictEqual(t.nr.logs.warn, [
+    [
+      { moduleSpecifier: 'not-a-real-package' },
+      'Could not resolve module path. Possibly a built-in or Node.js bundled module.'
+    ]
+  ])
+})
+
 test('returns version', (t) => {
   t.plan(2)
 
