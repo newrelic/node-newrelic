@@ -1184,7 +1184,7 @@ This product includes source derived from [@opentelemetry/api](https://github.co
 
 ### @opentelemetry/core
 
-This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.8.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.8.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.8.0/LICENSE):
+This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.9.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE):
 
 ```
                                  Apache License
@@ -2020,7 +2020,7 @@ This product includes source derived from [@opentelemetry/otlp-transformer](http
 
 ### @opentelemetry/resources
 
-This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.8.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.8.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.8.0/LICENSE):
+This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.9.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE):
 
 ```
                                  Apache License
@@ -2438,7 +2438,7 @@ This product includes source derived from [@opentelemetry/sdk-logs](https://gith
 
 ### @opentelemetry/sdk-metrics
 
-This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.8.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.8.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.8.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.9.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE):
 
 ```
                                  Apache License
@@ -2647,7 +2647,7 @@ This product includes source derived from [@opentelemetry/sdk-metrics](https://g
 
 ### @opentelemetry/sdk-trace-base
 
-This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.8.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.8.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.8.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.9.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE):
 
 ```
                                  Apache License
@@ -2945,7 +2945,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v3.1.0](https://github.com/nodejs/import-in-the-middle/tree/v3.1.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v3.1.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v3.2.0](https://github.com/nodejs/import-in-the-middle/tree/v3.2.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v3.2.0/LICENSE):
 
 ```
                                  Apache License
@@ -3321,7 +3321,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1073.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1073.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1073.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1079.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1079.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1079.0/LICENSE):
 
 ```
                                 Apache License
@@ -3530,7 +3530,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1073.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1073.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1073.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1079.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1079.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1079.0/LICENSE):
 
 ```
                                 Apache License
@@ -4454,7 +4454,7 @@ SOFTWARE.
 
 ### @smithy/eventstream-codec
 
-This product includes source derived from [@smithy/eventstream-codec](https://github.com/smithy-lang/smithy-typescript) ([v4.4.1](https://github.com/smithy-lang/smithy-typescript/tree/v4.4.1)), distributed under the [Apache-2.0 License](https://github.com/smithy-lang/smithy-typescript/blob/v4.4.1/LICENSE):
+This product includes source derived from [@smithy/eventstream-codec](https://github.com/smithy-lang/smithy-typescript) ([v4.4.6](https://github.com/smithy-lang/smithy-typescript/tree/v4.4.6)), distributed under the [Apache-2.0 License](https://github.com/smithy-lang/smithy-typescript/blob/v4.4.6/LICENSE):
 
 ```
                                 Apache License
@@ -4663,7 +4663,7 @@ This product includes source derived from [@smithy/eventstream-codec](https://gi
 
 ### @smithy/util-utf8
 
-This product includes source derived from [@smithy/util-utf8](https://github.com/smithy-lang/smithy-typescript) ([v4.4.1](https://github.com/smithy-lang/smithy-typescript/tree/v4.4.1)), distributed under the [Apache-2.0 License](https://github.com/smithy-lang/smithy-typescript/blob/v4.4.1/LICENSE):
+This product includes source derived from [@smithy/util-utf8](https://github.com/smithy-lang/smithy-typescript) ([v4.4.6](https://github.com/smithy-lang/smithy-typescript/tree/v4.4.6)), distributed under the [Apache-2.0 License](https://github.com/smithy-lang/smithy-typescript/blob/v4.4.6/LICENSE):
 
 ```
 Apache License
@@ -5215,7 +5215,7 @@ SOFTWARE.
 
 ### got
 
-This product includes source derived from [got](https://github.com/sindresorhus/got) ([v15.0.5](https://github.com/sindresorhus/got/tree/v15.0.5)), distributed under the [MIT License](https://github.com/sindresorhus/got/blob/v15.0.5/license):
+This product includes source derived from [got](https://github.com/sindresorhus/got) ([v15.1.0](https://github.com/sindresorhus/got/tree/v15.1.0)), distributed under the [MIT License](https://github.com/sindresorhus/got/blob/v15.1.0/license):
 
 ```
 MIT License
@@ -5586,7 +5586,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### nock
 
-This product includes source derived from [nock](https://github.com/nock/nock) ([v14.0.15](https://github.com/nock/nock/tree/v14.0.15)), distributed under the [MIT License](https://github.com/nock/nock/blob/v14.0.15/LICENSE):
+This product includes source derived from [nock](https://github.com/nock/nock) ([v14.0.16](https://github.com/nock/nock/tree/v14.0.16)), distributed under the [MIT License](https://github.com/nock/nock/blob/v14.0.16/LICENSE):
 
 ```
 MIT License
@@ -5615,7 +5615,7 @@ SOFTWARE.
 
 ### protobufjs
 
-This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v8.6.4](https://github.com/protobufjs/protobuf.js/tree/v8.6.4)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v8.6.4/LICENSE):
+This product includes source derived from [protobufjs](https://github.com/protobufjs/protobuf.js) ([v8.6.5](https://github.com/protobufjs/protobuf.js/tree/v8.6.5)), distributed under the [BSD-3-Clause License](https://github.com/protobufjs/protobuf.js/blob/v8.6.5/LICENSE):
 
 ```
 This license applies to all parts of protobuf.js except those files
@@ -5792,7 +5792,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### @datadog/pprof
 
-This product includes source derived from [@datadog/pprof](https://github.com/DataDog/pprof-nodejs) ([v5.15.0](https://github.com/DataDog/pprof-nodejs/tree/v5.15.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/pprof-nodejs/blob/v5.15.0/LICENSE):
+This product includes source derived from [@datadog/pprof](https://github.com/DataDog/pprof-nodejs) ([v5.16.0](https://github.com/DataDog/pprof-nodejs/tree/v5.16.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/pprof-nodejs/blob/v5.16.0/LICENSE):
 
 ```
 
@@ -6002,7 +6002,7 @@ This product includes source derived from [@datadog/pprof](https://github.com/Da
 
 ### @newrelic/fn-inspect
 
-This product includes source derived from [@newrelic/fn-inspect](https://github.com/newrelic-forks/node-fn-inspect) ([v5.0.0](https://github.com/newrelic-forks/node-fn-inspect/tree/v5.0.0)), distributed under the [MIT License](https://github.com/newrelic-forks/node-fn-inspect/blob/v5.0.0/LICENSE):
+This product includes source derived from [@newrelic/fn-inspect](https://github.com/newrelic-forks/node-fn-inspect) ([v5.1.0](https://github.com/newrelic-forks/node-fn-inspect/tree/v5.1.0)), distributed under the [MIT License](https://github.com/newrelic-forks/node-fn-inspect/blob/v5.1.0/LICENSE):
 
 ```
 Copyright 2022 Contrast Security, Inc
@@ -6028,7 +6028,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @newrelic/native-metrics
 
-This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v13.0.0](https://github.com/newrelic/node-native-metrics/tree/v13.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v13.0.0/LICENSE):
+This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v13.1.0](https://github.com/newrelic/node-native-metrics/tree/v13.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v13.1.0/LICENSE):
 
 ```
                                  Apache License
