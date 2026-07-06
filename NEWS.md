@@ -1,25 +1,25 @@
-### v14.2.0 (2026-07-06)
+### v14.2.0 (2026-07-07)
 
 #### Features
 
-* Add `profiling.source_mapping.enabled` config option ([#4090](https://github.com/newrelic/node-newrelic/pull/4090)) ([43add80](https://github.com/newrelic/node-newrelic/commit/43add80d07cccb1fd48190a60895d88cbde17b00))
-* Add `span_id` and `trace_id` labels to `CpuProfiler` sample data ([#4049](https://github.com/newrelic/node-newrelic/pull/4049)) ([c2b1737](https://github.com/newrelic/node-newrelic/commit/c2b1737ac87a26b7fce6d170597301cf97d26b22))
-* Add new GCP Cloud Run hostname logic to include `K_REVISION` ([#4069](https://github.com/newrelic/node-newrelic/pull/4069)) ([02855dc](https://github.com/newrelic/node-newrelic/commit/02855dc82b636c655e9808b50897b4dc5c7b1bba))
 * Added Node.js 26 support ([#4084](https://github.com/newrelic/node-newrelic/pull/4084)) ([4a7f777](https://github.com/newrelic/node-newrelic/commit/4a7f7775d8598656f84bd1590a80e56458feb185))
+* Added `span_id` and `trace_id` labels to `CpuProfiler` sample data ([#4049](https://github.com/newrelic/node-newrelic/pull/4049)) ([c2b1737](https://github.com/newrelic/node-newrelic/commit/c2b1737ac87a26b7fce6d170597301cf97d26b22))
+* Added new GCP Cloud Run hostname logic to include `K_REVISION` ([#4069](https://github.com/newrelic/node-newrelic/pull/4069)) ([02855dc](https://github.com/newrelic/node-newrelic/commit/02855dc82b636c655e9808b50897b4dc5c7b1bba))
+* Added `profiling.source_mapping.enabled` config option ([#4090](https://github.com/newrelic/node-newrelic/pull/4090)) ([43add80](https://github.com/newrelic/node-newrelic/commit/43add80d07cccb1fd48190a60895d88cbde17b00))
+* Removed `spanId` in outgoing `tracestate` header ([#4091](https://github.com/newrelic/node-newrelic/pull/4091)) ([40a8bf1](https://github.com/newrelic/node-newrelic/commit/40a8bf1682860d11f2bf46fbfdaae840b6f3fa18))
+
+#### Code refactoring
+
+* Refactored `mongodb` instrumentation to subscribe to events emitted ([#4059](https://github.com/newrelic/node-newrelic/pull/4059)) ([d2777ba](https://github.com/newrelic/node-newrelic/commit/d2777ba6b29ab30f1a158e993283029bf40cff86))
 
 #### Documentation
 
 * Updated compatibility report ([#4078](https://github.com/newrelic/node-newrelic/pull/4078)) ([047a063](https://github.com/newrelic/node-newrelic/commit/047a063dd9e21097d2995dbd7f14ee564b96efcd))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
-* Updated compatibility report ([#4074](https://github.com/newrelic/node-newrelic/pull/4074)) ([0520c35](https://github.com/newrelic/node-newrelic/commit/0520c354df0ffcefc31e4581641741f03d7e525b))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 
 #### Miscellaneous chores
 
 * Addressed long standing CI flakes ([#4093](https://github.com/newrelic/node-newrelic/pull/4093)) ([ae973a0](https://github.com/newrelic/node-newrelic/commit/ae973a0d7bfd7da54bd0fe5e68d79fa77b180cfe))
-* Converted mongodb instrumentation to subscriber based ([#4059](https://github.com/newrelic/node-newrelic/pull/4059)) ([d2777ba](https://github.com/newrelic/node-newrelic/commit/d2777ba6b29ab30f1a158e993283029bf40cff86))
 * Fixed package version resolution on Node 26 ([#4094](https://github.com/newrelic/node-newrelic/pull/4094)) ([73d14a9](https://github.com/newrelic/node-newrelic/commit/73d14a98c3bd678be499e14533e66f86b7b9996b))
-* Removed spanId in outgoing tracestate header ([#4091](https://github.com/newrelic/node-newrelic/pull/4091)) ([40a8bf1](https://github.com/newrelic/node-newrelic/commit/40a8bf1682860d11f2bf46fbfdaae840b6f3fa18))
 
 #### Continuous integration
 

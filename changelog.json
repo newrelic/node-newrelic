@@ -8,9 +8,10 @@
         "bugfixes": [],
         "features": [
           "Added Node.js 26 support",
-          "Add `profiling.source_mapping.enabled` config option",
-          "Add `span_id` and `trace_id` labels to `CpuProfiler` sample data",
-          "Add new GCP Cloud Run hostname logic to include `K_REVISION`"
+          "Added `span_id` and `trace_id` labels to `CpuProfiler` sample data",
+          "Added new GCP Cloud Run hostname logic to include `K_REVISION`",
+          "Added `profiling.source_mapping.enabled` config option",
+          "Removed `spanId` in outgoing `tracestate` header"
         ]
       }
     },
