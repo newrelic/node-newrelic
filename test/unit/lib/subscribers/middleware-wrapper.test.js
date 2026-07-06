@@ -6,6 +6,7 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
+const semver = require('semver')
 const loggerMock = require('../../mocks/logger')
 const MwWrapper = require('#agentlib/subscribers/middleware-wrapper.js')
 const helper = require('#testlib/agent_helper.js')
@@ -251,4 +252,79 @@ test('should not handle error when isError is not using default handler', functi
     tx.end()
     end()
   })
+})
+
+test('should record error from a rejected promise handler', async function (t) {
+  const { agent, wrapper } = t.nr
+  const error = new Error('async failure')
+  async function handler() {
+    throw error
+  }
+  const wrapped = wrapper.wrap({ handler, route: '/promise' })
+  await helper.runInTransaction(agent, async function (tx) {
+    tx.type = 'web'
+    await assert.rejects(wrapped({}, 'one', 'two'), error)
+    assert.equal(t.nr.txInfo.error, error, 'error from settled promise should be recorded on txInfo')
+    tx.end()
+  })
+})
+
+test('should pass through resolved value from a promise handler', async function (t) {
+  const { agent, wrapper } = t.nr
+  async function handler() {
+    return 'resolved'
+  }
+  const wrapped = wrapper.wrap({ handler, route: '/promise' })
+  await helper.runInTransaction(agent, async function (tx) {
+    tx.type = 'web'
+    assert.equal(await wrapped({}, 'one', 'two'), 'resolved')
+    tx.end()
+  })
+})
+
+// see: https://github.com/newrelic/node-newrelic/issues/4092.
+// A wrapped middleware handler that returns a promise gets a `.then`
+// link so errors can be recorded when it settles. That propagation must not
+// pin the transaction: an application-held promise that settles late or never
+// would otherwise keep the segment (and its parent transaction) alive forever.
+//
+// This test is only valid where AsyncContextFrame is enabled(Node's default from v24),
+// so they are skipped below v24 where a held pending promise pins the async
+// context regardless of the agent. See the tracer suite for the same rationale.
+test('should not retain the segment for a pending promise handler', { skip: semver.lt(process.version, '24.0.0') }, async function (t) {
+  const { agent, wrapper } = t.nr
+  const v8 = require('node:v8')
+  const vm = require('node:vm')
+  v8.setFlagsFromString('--expose-gc')
+  const gc = vm.runInNewContext('gc')
+  v8.setFlagsFromString('--no-expose-gc')
+
+  async function collect() {
+    for (let i = 0; i < 30; i++) {
+      gc()
+      await new Promise((resolve) => setImmediate(resolve))
+    }
+  }
+
+  const held = []
+  function handler() {
+    const promise = new Promise(() => {})
+    held.push(promise)
+    return promise
+  }
+  const wrapped = wrapper.wrap({ handler, route: '/leak' })
+
+  let ref
+  helper.runInTransaction(agent, function (tx) {
+    tx.type = 'web'
+    held.push(wrapped({}, 'one', 'two'))
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
+    ref = new WeakRef(segment)
+    tx.end()
+  })
+
+  await collect()
+
+  assert.equal(held.length, 2, 'application still holds the pending promises')
+  assert.equal(ref.deref(), undefined, 'segment should be collected even though the middleware promise never settled')
 })

@@ -7,6 +7,7 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const sinon = require('sinon')
+const semver = require('semver')
 const proxyquire = require('proxyquire')
 const helper = require('#testlib/agent_helper.js')
 const Segment = require('#agentlib/transaction/trace/segment.js')
@@ -287,6 +288,101 @@ test('Tracer', async function (t) {
 
       const logCalls = loggerStub.trace.args.filter(([msg]) => typeof msg === 'string' && msg.includes('has exceeded its max segment limit'))
       assert.ok(logCalls.length > 0, 'should log trace message when max_trace_segments is exceeded')
+    })
+  })
+
+  // see: https://github.com/newrelic/node-newrelic/issues/4092.
+  // `_maybeBindPromise` attaches a `.then()` link to the promise to touch a segment when
+  // a promise resolves/rejects.
+  // The propagation must not hold a strong reference to the segment, otherwise a
+  // pending/never-settled promise the application retains keeps the segment (and
+  // its parent) alive forever, producing volume-scaled heap growth.
+  //
+  // The "never settles" assertions only apply to AsyncContextFrame, Node's
+  // default from v24 on. Under the pre-v24 async_hooks `AsyncLocalStorage`, a
+  // promise created inside `runInContext` captures the async resource, so an
+  // application-held pending promise pins the context (and thus the transaction)
+  // regardless of the agent -- the `full: false` case, which attaches no agent
+  // binding at all, leaks just the same. Those cases are therefore skipped below
+  // v24, where the leak this fix targets is neither observable nor fixable.
+  const skipPreAcf = semver.lt(process.version, '24.0.0')
+  await t.test('#addSegment promise binding does not leak segments', async (t) => {
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+
+    // Obtain a callable gc() without requiring the `--expose-gc` CLI flag so this
+    // suite runs under a plain `node --test`.
+    const v8 = require('node:v8')
+    const vm = require('node:vm')
+    v8.setFlagsFromString('--expose-gc')
+    const gc = vm.runInNewContext('gc')
+    v8.setFlagsFromString('--no-expose-gc')
+
+    // Pre-ACF async_hooks (Node's default before v24) needs several ticks for
+    // `destroy` hooks to fire and release retained resources, so give GC ample
+    // cycles to keep this deterministic across Node versions.
+    async function collect() {
+      for (let i = 0; i < 30; i++) {
+        gc()
+        await new Promise((resolve) => setImmediate(resolve))
+      }
+    }
+
+    // Runs one "request": a `full`-wrapped task returns a promise. The test only
+    // keeps a WeakRef to the created segment; when `settle` is false the returned
+    // promise is pushed into `held` so it stays pending and reachable, exactly
+    // like an application holding an in-flight promise.
+    function makeRequest({ agent, tracer, full, settle, held }) {
+      let ref
+      helper.runInTransaction(agent, function (tx) {
+        const parent = tracer.getSegment()
+        tracer.addSegment('segment', null, parent, full, function task() {
+          ref = new WeakRef(tracer.getSegment())
+          let resolveFn
+          const promise = new Promise((resolve) => {
+            resolveFn = resolve
+          })
+          if (settle) {
+            resolveFn()
+          } else {
+            held.push(promise)
+          }
+          return promise
+        })
+        tx.end()
+      })
+      return ref
+    }
+
+    await t.test('releases the segment for a pending, application-held promise', { skip: skipPreAcf }, async (t) => {
+      const { agent, tracer } = t.nr
+      const held = []
+      const ref = makeRequest({ agent, tracer, full: true, settle: false, held })
+
+      await collect()
+
+      assert.equal(held.length, 1, 'application still holds the pending promise')
+      assert.equal(ref.deref(), undefined, 'segment should be collected even though the promise never settled')
+    })
+
+    await t.test('releases the segment for a settled promise', async (t) => {
+      const { agent, tracer } = t.nr
+      const ref = makeRequest({ agent, tracer, full: true, settle: true, held: [] })
+
+      await collect()
+
+      assert.equal(ref.deref(), undefined, 'segment should be collected after the promise settles')
+    })
+
+    await t.test('does not retain the segment when full is false', { skip: skipPreAcf }, async (t) => {
+      const { agent, tracer } = t.nr
+      const held = []
+      const ref = makeRequest({ agent, tracer, full: false, settle: false, held })
+
+      await collect()
+
+      assert.equal(held.length, 1, 'application still holds the pending promise')
+      assert.equal(ref.deref(), undefined, 'segment should be collected when no promise binding is attached')
     })
   })
 })
