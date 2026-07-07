@@ -176,8 +176,9 @@ jobs:
           path: ./coverage/integration-esm/lcov.info
 
   # Partition the versioned test suites across shards so the matrix below can
-  # run them on separate runners in parallel. Emits a shard list and a
-  # shard-index -> suite-dirs map consumed by the `versioned` job matrix.
+  # run them on separate runners in parallel. Emits a shard list, a
+  # shard-index -> suite-dirs map, and a shard-index -> docker-services map,
+  # all consumed by the `versioned` job matrix.
   versioned-setup:
     needs:
       - should_run
@@ -188,6 +189,7 @@ jobs:
     outputs:
       shards: ${{ steps.plan.outputs.shards }}
       dirmap: ${{ steps.plan.outputs.dirmap }}
+      servicemap: ${{ steps.plan.outputs.servicemap }}
     steps:
       - uses: actions/checkout@v6
       - name: Plan versioned shards
@@ -225,8 +227,13 @@ jobs:
         run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
+      # Start only the docker services this shard's suites need. Shards whose
+      # suites need no services skip this step entirely (zero containers).
       - name: Run Docker Services
-        run: npm run services
+        if: ${{ fromJSON(needs.versioned-setup.outputs.servicemap)[matrix.shard] != '' }}
+        run: ./bin/start-services.sh $SERVICES
+        env:
+          SERVICES: ${{ fromJSON(needs.versioned-setup.outputs.servicemap)[matrix.shard] }}
       - name: Run Versioned Tests
         run: TEST_CHILD_TIMEOUT=600000 npm run versioned
         env:

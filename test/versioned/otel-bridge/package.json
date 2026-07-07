@@ -1,5 +1,6 @@
 {
   "name": "otel-tests",
+  "dockerServices": ["rmq"],
   "version": "0.0.0",
   "private": true,
   "tests": [

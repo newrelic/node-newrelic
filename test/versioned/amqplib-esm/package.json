@@ -1,5 +1,6 @@
 {
   "name": "amqplib-esm-tests",
+  "dockerServices": ["rmq"],
   "version": "0.0.0",
   "type": "module",
   "private": true,

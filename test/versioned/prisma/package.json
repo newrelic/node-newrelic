@@ -6,6 +6,7 @@
       "minAgentVersion": "11.0.0"
     }
   ],
+  "dockerServices": ["pg_prisma"],
   "version": "0.0.0",
   "private": true,
   "engines": {

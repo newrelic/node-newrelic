@@ -14,19 +14,53 @@
 // shard therefore holds an alphabetically adjacent run of suites. New suites are
 // picked up automatically.
 //
-// Outputs two values, written to `$GITHUB_OUTPUT` when present (otherwise
+// Outputs three values, written to `$GITHUB_OUTPUT` when present (otherwise
 // stdout for local inspection):
 //   - shards: a JSON array of shard index strings, e.g. ["0","1","2","3"]
 //   - dirmap: a JSON object of shard index -> space separated suite dir names
+//   - servicemap: a JSON object of shard index -> space separated docker-compose
+//     service names that shard's suites need (empty string when none). CI uses
+//     this to start only the required services per shard, or skip Docker entirely.
 //
 // A suite dir qualifies if it is a directory containing a `package.json`. This
 // naturally excludes stray files such as the `*.md` notes in `test/versioned/`.
+// A suite declares its docker service needs via a top-level `dockerServices`
+// array in its package.json; absence means the suite needs no services.
 
 const fs = require('fs')
 const path = require('path')
 
 const VERSIONED_DIR = path.join(process.cwd(), 'test', 'versioned')
+const COMPOSE_FILE = path.join(process.cwd(), 'docker-compose.yml')
 const SHARD_SIZE = parseInt(process.env.SHARD_SIZE, 10) || 5
+
+// The set of valid docker service names, read from docker-compose.yml so the
+// allowlist can never drift from what actually exists. Service names are the
+// keys directly under the top-level `services:` block.
+function knownServices(composeFile = COMPOSE_FILE) {
+  const lines = fs.readFileSync(composeFile, 'utf8').split('\n')
+  const services = new Set()
+  let inServices = false
+  for (const line of lines) {
+    if (/^services:\s*$/.test(line)) {
+      inServices = true
+      continue
+    }
+    if (!inServices) {
+      continue
+    }
+    // A non-indented, non-blank line ends the services block.
+    if (/^\S/.test(line)) {
+      break
+    }
+    // Service names are keys indented exactly two spaces: `  <name>:`.
+    const match = line.match(/^ {2}([a-zA-Z0-9_-]+):\s*$/)
+    if (match) {
+      services.add(match[1])
+    }
+  }
+  return services
+}
 
 function listSuites() {
   return fs
@@ -39,6 +73,23 @@ function listSuites() {
     })
     .map((entry) => entry.name)
     .sort()
+}
+
+// Reads a suite's declared docker service dependencies, validating each against
+// the known service set to catch typos (an unknown name would silently never
+// start, hanging the suite). Absent `dockerServices` means no services.
+function readServices(dir, known) {
+  const pkg = JSON.parse(fs.readFileSync(path.join(VERSIONED_DIR, dir, 'package.json'), 'utf8'))
+  const services = pkg.dockerServices ?? []
+  for (const service of services) {
+    if (!known.has(service)) {
+      throw new Error(
+        `Suite "${dir}" declares unknown docker service "${service}". ` +
+          `Known services: ${[...known].sort().join(', ')}.`
+      )
+    }
+  }
+  return services
 }
 
 function planShards(suites, shardSize) {
@@ -71,13 +122,32 @@ function planShards(suites, shardSize) {
   return dirmap
 }
 
+// For each shard, computes the deduped, sorted union of docker services its
+// suites need. `getServices` maps a suite dir to its service list (injectable
+// for testing); it defaults to reading each suite's package.json.
+function planServices(dirmap, getServices) {
+  const servicemap = {}
+  for (const [shard, suites] of Object.entries(dirmap)) {
+    const services = new Set()
+    for (const suite of suites) {
+      for (const service of getServices(suite)) {
+        services.add(service)
+      }
+    }
+    servicemap[shard] = [...services].sort().join(' ')
+  }
+  return servicemap
+}
+
 function main() {
   const suites = listSuites()
   if (!suites.length) {
     throw new Error(`No versioned test suites found in ${VERSIONED_DIR}`)
   }
 
+  const known = knownServices()
   const dirmap = planShards(suites, SHARD_SIZE)
+  const servicemap = planServices(dirmap, (dir) => readServices(dir, known))
   const shards = Object.keys(dirmap)
 
   const dirmapOut = {}
@@ -87,14 +157,27 @@ function main() {
 
   const shardsLine = `shards=${JSON.stringify(shards)}`
   const dirmapLine = `dirmap=${JSON.stringify(dirmapOut)}`
+  const servicemapLine = `servicemap=${JSON.stringify(servicemap)}`
 
   if (process.env.GITHUB_OUTPUT) {
-    fs.appendFileSync(process.env.GITHUB_OUTPUT, `${shardsLine}\n${dirmapLine}\n`)
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `${shardsLine}\n${dirmapLine}\n${servicemapLine}\n`)
   }
 
   // Always echo for logs / local inspection.
   console.log(shardsLine)
   console.log(dirmapLine)
+  console.log(servicemapLine)
 }
 
-main()
+if (require.main === module) {
+  main()
+}
+
+module.exports = {
+  knownServices,
+  listSuites,
+  readServices,
+  planShards,
+  planServices,
+  main
+}

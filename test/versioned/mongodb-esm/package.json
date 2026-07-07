@@ -1,5 +1,6 @@
 {
   "name": "mongodb-esm-tests",
+  "dockerServices": ["mongodb_5"],
   "version": "0.0.0",
   "type": "module",
   "private": true,

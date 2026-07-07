@@ -1,6 +1,7 @@
 {
   "name": "disabled-instrumentation-tests",
   "targets": [],
+  "dockerServices": ["redis", "mongodb_5"],
   "version": "0.0.0",
   "private": true,
   "tests": [
