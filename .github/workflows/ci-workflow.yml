@@ -194,7 +194,8 @@ jobs:
         id: plan
         run: node ./bin/versioned-runner/shard-plan.js
         env:
-          SHARD_COUNT: ${{ github.ref == 'refs/heads/main' && 8 || 4 }}
+          # At most 5 suites per shard; the shard count derives from suite count.
+          SHARD_SIZE: 5
 
   versioned:
     needs:

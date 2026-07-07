@@ -8,9 +8,11 @@
 /* eslint-disable no-console */
 
 // Partitions the versioned test suites in `test/versioned/` across a number of
-// shards so that CI can run them on separate runners in parallel. Suites are
-// assigned round-robin (`shard = index % SHARD_COUNT`) over a deterministic,
-// sorted listing of suite directories. New suites are picked up automatically.
+// shards so that CI can run them on separate runners in parallel. The suite
+// directories are listed in alphabetical order and split into contiguous chunks
+// of at most SHARD_SIZE suites; the number of shards is derived from that. Each
+// shard therefore holds an alphabetically adjacent run of suites. New suites are
+// picked up automatically.
 //
 // Outputs two values, written to `$GITHUB_OUTPUT` when present (otherwise
 // stdout for local inspection):
@@ -24,7 +26,7 @@ const fs = require('fs')
 const path = require('path')
 
 const VERSIONED_DIR = path.join(process.cwd(), 'test', 'versioned')
-const SHARD_COUNT = parseInt(process.env.SHARD_COUNT, 10) || 4
+const SHARD_SIZE = parseInt(process.env.SHARD_SIZE, 10) || 5
 
 function listSuites() {
   return fs
@@ -39,15 +41,15 @@ function listSuites() {
     .sort()
 }
 
-function planShards(suites, shardCount) {
+function planShards(suites, shardSize) {
   const dirmap = {}
-  for (let i = 0; i < shardCount; i++) {
-    dirmap[String(i)] = []
-  }
 
-  suites.forEach((suite, index) => {
-    dirmap[String(index % shardCount)].push(suite)
-  })
+  // Split the alphabetically sorted list into contiguous chunks of at most
+  // `shardSize` suites. The number of shards falls out of the suite count.
+  for (let i = 0; i < suites.length; i += shardSize) {
+    const shard = String(i / shardSize)
+    dirmap[shard] = suites.slice(i, i + shardSize)
+  }
 
   // Safety check: `--strict` in the versioned runner only flags files within a
   // listed suite dir; it does NOT catch an entire suite that no shard runs. So
@@ -75,7 +77,7 @@ function main() {
     throw new Error(`No versioned test suites found in ${VERSIONED_DIR}`)
   }
 
-  const dirmap = planShards(suites, SHARD_COUNT)
+  const dirmap = planShards(suites, SHARD_SIZE)
   const shards = Object.keys(dirmap)
 
   const dirmapOut = {}
