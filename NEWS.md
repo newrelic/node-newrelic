@@ -1,3 +1,31 @@
+### v14.2.0 (2026-07-07)
+
+#### Features
+
+* Added Node.js 26 support ([#4084](https://github.com/newrelic/node-newrelic/pull/4084)) ([4a7f777](https://github.com/newrelic/node-newrelic/commit/4a7f7775d8598656f84bd1590a80e56458feb185))
+* Added `span_id` and `trace_id` labels to `CpuProfiler` sample data ([#4049](https://github.com/newrelic/node-newrelic/pull/4049)) ([c2b1737](https://github.com/newrelic/node-newrelic/commit/c2b1737ac87a26b7fce6d170597301cf97d26b22))
+* Added new GCP Cloud Run hostname logic to include `K_REVISION` ([#4069](https://github.com/newrelic/node-newrelic/pull/4069)) ([02855dc](https://github.com/newrelic/node-newrelic/commit/02855dc82b636c655e9808b50897b4dc5c7b1bba))
+* Added `profiling.source_mapping.enabled` config option ([#4090](https://github.com/newrelic/node-newrelic/pull/4090)) ([43add80](https://github.com/newrelic/node-newrelic/commit/43add80d07cccb1fd48190a60895d88cbde17b00))
+* Removed `spanId` in outgoing `tracestate` header ([#4091](https://github.com/newrelic/node-newrelic/pull/4091)) ([40a8bf1](https://github.com/newrelic/node-newrelic/commit/40a8bf1682860d11f2bf46fbfdaae840b6f3fa18))
+
+#### Code refactoring
+
+* Refactored `mongodb` instrumentation to subscribe to events emitted ([#4059](https://github.com/newrelic/node-newrelic/pull/4059)) ([d2777ba](https://github.com/newrelic/node-newrelic/commit/d2777ba6b29ab30f1a158e993283029bf40cff86))
+
+#### Documentation
+
+* Updated compatibility report ([#4078](https://github.com/newrelic/node-newrelic/pull/4078)) ([047a063](https://github.com/newrelic/node-newrelic/commit/047a063dd9e21097d2995dbd7f14ee564b96efcd))
+
+#### Miscellaneous chores
+
+* Addressed long standing CI flakes ([#4093](https://github.com/newrelic/node-newrelic/pull/4093)) ([ae973a0](https://github.com/newrelic/node-newrelic/commit/ae973a0d7bfd7da54bd0fe5e68d79fa77b180cfe))
+* Fixed package version resolution on Node 26 ([#4094](https://github.com/newrelic/node-newrelic/pull/4094)) ([73d14a9](https://github.com/newrelic/node-newrelic/commit/73d14a98c3bd678be499e14533e66f86b7b9996b))
+
+#### Continuous integration
+
+* Updated `release-creation` to use `lts/*` for node-version ([#4080](https://github.com/newrelic/node-newrelic/pull/4080)) ([7eaed22](https://github.com/newrelic/node-newrelic/commit/7eaed22f92af2da5db31232b60b5bf35f0ca3e02))
+* Updated `setup-node` job to include `check-latest` to ensure we are getting the latest version of node ([#4079](https://github.com/newrelic/node-newrelic/pull/4079)) ([4a425f6](https://github.com/newrelic/node-newrelic/commit/4a425f692c8eacac1e4967e7517c34605f67ad82))
+
 ### v14.1.2 (2026-06-25)
 
 #### Bug fixes
