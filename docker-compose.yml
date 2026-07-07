@@ -54,6 +54,11 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 1s
+      timeout: 10s
+      retries: 30
   kafka:
     container_name: nr_node_kafka
     image: confluentinc/cp-kafka:7.9.1
@@ -81,6 +86,14 @@ services:
     image: memcached
     ports:
       - "11211:11211"
+    healthcheck:
+      # The memcached image is minimal (no shell utilities), but it ships a
+      # bash that can open a TCP socket to verify the daemon is accepting
+      # connections.
+      test: ["CMD", "bash", "-c", "printf 'stats\\r\\nquit\\r\\n' > /dev/tcp/127.0.0.1/11211"]
+      interval: 1s
+      timeout: 10s
+      retries: 30
 
   mongodb_5:
     container_name: nr_node_mongodb_5
@@ -147,12 +160,17 @@ services:
       timeout: 10s
       retries: 20
 
-  # pg 9.2 has built in healthcheck
   pg:
     container_name: nr_node_postgres
     image: postgres:9.2
     ports:
       - "5432:5432"
+    healthcheck:
+      # postgres:9.2 predates `pg_isready` (added in 9.3), so probe with psql.
+      test: ["CMD", "psql", "-U", "postgres", "-c", "select 1"]
+      interval: 1s
+      timeout: 10s
+      retries: 30
 
   pg_prisma:
     container_name: nr_node_postgres_prisma
@@ -174,3 +192,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      # `ping` only confirms the node is up; `check_port_connectivity` gates on
+      # the AMQP listener actually accepting connections, which is what tests
+      # need (the node reports up before the listener is ready).
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 2s
+      timeout: 10s
+      retries: 30
