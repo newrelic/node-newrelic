@@ -192,6 +192,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      # Provide the Erlang cookie via the environment so the node never reads
+      # the on-disk .erlang.cookie, which the image writes with a permission
+      # race that intermittently crashes boot with "eacces".
+      RABBITMQ_ERLANG_COOKIE: "nr-node-test-cookie"
     healthcheck:
       # `ping` only confirms the node is up; `check_port_connectivity` gates on
       # the AMQP listener actually accepting connections, which is what tests
