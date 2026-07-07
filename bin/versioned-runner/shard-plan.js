@@ -9,10 +9,13 @@
 
 // Partitions the versioned test suites in `test/versioned/` across a number of
 // shards so that CI can run them on separate runners in parallel. The suite
-// directories are listed in alphabetical order and split into contiguous chunks
-// of at most SHARD_SIZE suites; the number of shards is derived from that. Each
-// shard therefore holds an alphabetically adjacent run of suites. New suites are
-// picked up automatically.
+// directories are ordered with all docker-requiring suites first (alphabetical
+// among themselves) followed by all docker-free suites (alphabetical among
+// themselves), then split into contiguous chunks of at most SHARD_SIZE suites;
+// the number of shards is derived from that. Clustering the docker-requiring
+// suites into the earliest shards means the later shards are entirely
+// docker-free and skip the Docker startup step. New suites are picked up
+// automatically.
 //
 // Outputs three values, written to `$GITHUB_OUTPUT` when present (otherwise
 // stdout for local inspection):
@@ -92,11 +95,31 @@ function readServices(dir, known) {
   return services
 }
 
+// Orders suites so every docker-requiring suite comes before every docker-free
+// suite, with each group sorted alphabetically. Chunking this list clusters the
+// docker-requiring suites into the earliest shards, leaving the later shards
+// docker-free. `getServices` maps a suite dir to its service list (injectable
+// for testing).
+function orderSuites(suites, getServices) {
+  const withDocker = []
+  const withoutDocker = []
+  for (const suite of suites) {
+    if (getServices(suite).length > 0) {
+      withDocker.push(suite)
+    } else {
+      withoutDocker.push(suite)
+    }
+  }
+  withDocker.sort()
+  withoutDocker.sort()
+  return [...withDocker, ...withoutDocker]
+}
+
 function planShards(suites, shardSize) {
   const dirmap = {}
 
-  // Split the alphabetically sorted list into contiguous chunks of at most
-  // `shardSize` suites. The number of shards falls out of the suite count.
+  // Split the ordered list into contiguous chunks of at most `shardSize`
+  // suites. The number of shards falls out of the suite count.
   for (let i = 0; i < suites.length; i += shardSize) {
     const shard = String(i / shardSize)
     dirmap[shard] = suites.slice(i, i + shardSize)
@@ -146,8 +169,10 @@ function main() {
   }
 
   const known = knownServices()
-  const dirmap = planShards(suites, SHARD_SIZE)
-  const servicemap = planServices(dirmap, (dir) => readServices(dir, known))
+  const getServices = (dir) => readServices(dir, known)
+  const ordered = orderSuites(suites, getServices)
+  const dirmap = planShards(ordered, SHARD_SIZE)
+  const servicemap = planServices(dirmap, getServices)
   const shards = Object.keys(dirmap)
 
   const dirmapOut = {}
@@ -177,6 +202,7 @@ module.exports = {
   knownServices,
   listSuites,
   readServices,
+  orderSuites,
   planShards,
   planServices,
   main

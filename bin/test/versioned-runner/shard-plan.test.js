@@ -31,6 +31,42 @@ test('planShards', async (t) => {
   })
 })
 
+test('orderSuites', async (t) => {
+  const services = {
+    zebra: ['redis'],
+    apple: [],
+    mango: ['mysql'],
+    banana: [],
+    cherry: ['pg']
+  }
+  const getServices = (dir) => services[dir]
+
+  await t.test('puts docker-requiring suites first, each group alphabetical', () => {
+    const ordered = shardPlan.orderSuites(Object.keys(services), getServices)
+    assert.deepEqual(ordered, [
+      // docker-requiring, alphabetical
+      'cherry',
+      'mango',
+      'zebra',
+      // docker-free, alphabetical
+      'apple',
+      'banana'
+    ])
+  })
+
+  await t.test('preserves every suite exactly once', () => {
+    const suites = Object.keys(services)
+    const ordered = shardPlan.orderSuites(suites, getServices)
+    assert.equal(ordered.length, suites.length)
+    assert.deepEqual([...ordered].sort(), [...suites].sort())
+  })
+
+  await t.test('handles all-docker and all-docker-free inputs', () => {
+    assert.deepEqual(shardPlan.orderSuites(['b', 'a'], () => []), ['a', 'b'])
+    assert.deepEqual(shardPlan.orderSuites(['b', 'a'], () => ['redis']), ['a', 'b'])
+  })
+})
+
 test('planServices', async (t) => {
   const dirmap = {
     0: ['redis', 'disabled-instrumentation'],
