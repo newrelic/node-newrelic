@@ -1,6 +1,11 @@
 {
   "name": "kafka-tests",
-  "targets": [{"name":"kafkajs","minAgentVersion":"11.19.0"}],
+  "targets": [
+    {
+      "name": "kafkajs",
+      "minAgentVersion": "11.19.0"
+    }
+  ],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -15,5 +20,8 @@
         "kafka.test.js"
       ]
     }
-  ]
+  ],
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  }
 }
