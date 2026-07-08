@@ -9,7 +9,10 @@
         "node": ">=22"
       },
       "dependencies": {
-        "next": ">=14.0.0 <16"
+        "next": {
+          "versions": ">=14.0.0 <16",
+          "samples": 2
+        }
       },
       "files": [
         "app-dir.test.js",
