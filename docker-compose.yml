@@ -198,6 +198,11 @@ services:
     # file with a static value and correct owner/mode *before* the server starts
     # so the read never races, then hand off to the normal entrypoint. The value
     # is arbitrary -- these are single-node test brokers that never cluster.
+    #
+    # Note: we are able to pre-create this file because, according to
+    # https://web.archive.org/web/20260620031421/https://www.erlang.org/doc/system/distributed.html#security,
+    # the contents are not necessarily unique to the running instance. It will
+    # use an existing cookie if one exists, or create one if not.
     command:
       - bash
       - -c
