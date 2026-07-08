@@ -192,11 +192,22 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    environment:
-      # Provide the Erlang cookie via the environment so the node never reads
-      # the on-disk .erlang.cookie, which the image writes with a permission
-      # race that intermittently crashes boot with "eacces".
-      RABBITMQ_ERLANG_COOKIE: "nr-node-test-cookie"
+    # The Erlang VM auto-generates /var/lib/rabbitmq/.erlang.cookie on boot and
+    # chmods it; on a loaded runner the distribution layer occasionally reads it
+    # mid-write and crashes with "eacces" (BOOT FAILED). Pre-create the cookie
+    # file with a static value and correct owner/mode *before* the server starts
+    # so the read never races, then hand off to the normal entrypoint. The value
+    # is arbitrary -- these are single-node test brokers that never cluster.
+    command:
+      - bash
+      - -c
+      - >
+        install -o rabbitmq -g rabbitmq -m 0400
+        <(printf %s nr-node-test-cookie) /var/lib/rabbitmq/.erlang.cookie
+        && exec docker-entrypoint.sh rabbitmq-server
+    # Backstop: if a boot still fails transiently, restart rather than failing
+    # the whole shard; the healthcheck retries below give it time to come up.
+    restart: on-failure:3
     healthcheck:
       # `ping` only confirms the node is up; `check_port_connectivity` gates on
       # the AMQP listener actually accepting connections, which is what tests
