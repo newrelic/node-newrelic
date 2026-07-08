@@ -57,68 +57,76 @@ describe('constructor', () => {
 })
 
 describe('register', () => {
-  test('should be a no-op by default', async (t) => {
+  test('should be a no-op by default', (t) => {
     const { profilingManager } = t.nr
-    await profilingManager.register()
+    profilingManager.register()
 
     assert.strictEqual(profilingManager.profilers.size, 0, 'should not add any profilers')
   })
 
-  test('should register the heap and cpu profilers only once', async (t) => {
+  test('should register the heap and cpu profilers only once', (t) => {
     const { profilingManager } = t.nr
     profilingManager.config.include = ['heap']
 
-    await profilingManager.register()
+    profilingManager.register()
     assert.strictEqual(profilingManager.profilers.size, 1, 'should only add heap profiler')
-    await profilingManager.register()
+    profilingManager.register()
     assert.strictEqual(profilingManager.profilers.size, 1, 'should be a no-op')
     profilingManager.config.include = ['heap', 'cpu']
-    await profilingManager.register()
+    profilingManager.register()
     assert.strictEqual(profilingManager.profilers.size, 2, 'should only add cpu to the already registered profilers: heap')
-    await profilingManager.register()
+    profilingManager.register()
     assert.strictEqual(profilingManager.profilers.size, 2, 'should be a no-op')
+  })
+
+  test('registers the cpu profiler with the cached source mapper', (t) => {
+    const { profilingManager } = t.nr
+    profilingManager.sourceMapper = { infoMap: new Map() }
+    profilingManager.config.include = ['cpu']
+
+    profilingManager.register()
+
+    assert.ok(profilingManager.profilers.get('CpuProfiler'), 'should register the cpu profiler')
   })
 })
 
-describe('register source mapping', () => {
-  test('builds the SourceMapper from the app root when enabled', async (t) => {
+describe('buildSourceMapper', () => {
+  test('builds and caches the mapper from the app root when enabled', async (t) => {
     const { profilingManager, sandbox } = t.nr
     const { SourceMapper } = require('@datadog/pprof')
-    const create = sandbox.stub(SourceMapper, 'create').resolves({ infoMap: new Map() })
-    profilingManager.config.include = ['cpu']
+    const mapper = { infoMap: new Map() }
+    const create = sandbox.stub(SourceMapper, 'create').resolves(mapper)
     profilingManager.config.source_mapping = { enabled: true }
 
-    await profilingManager.register()
+    await profilingManager.buildSourceMapper()
 
+    assert.strictEqual(profilingManager.sourceMapper, mapper, 'should cache the built mapper')
     assert.equal(create.callCount, 1, 'should build the mapper once')
     assert.deepStrictEqual(create.firstCall.args[0], [process.cwd()], 'should scan the application root')
-    assert.ok(profilingManager.profilers.get('CpuProfiler'), 'should register the cpu profiler')
   })
 
-  test('does not build a SourceMapper when disabled', async (t) => {
+  test('is a no-op when source mapping is disabled', async (t) => {
     const { profilingManager, sandbox } = t.nr
     const { SourceMapper } = require('@datadog/pprof')
     const create = sandbox.stub(SourceMapper, 'create')
-    profilingManager.config.include = ['cpu']
     profilingManager.config.source_mapping = { enabled: false }
 
-    await profilingManager.register()
+    await profilingManager.buildSourceMapper()
 
+    assert.strictEqual(profilingManager.sourceMapper, null, 'should leave the mapper null')
     assert.equal(create.callCount, 0, 'should not scan for source maps')
-    assert.ok(profilingManager.profilers.get('CpuProfiler'), 'should still register the cpu profiler')
   })
 
-  test('still registers the cpu profiler when the SourceMapper build fails', async (t) => {
+  test('leaves the mapper null and logs when the build fails', async (t) => {
     const { profilingManager, logger, sandbox } = t.nr
     const { SourceMapper } = require('@datadog/pprof')
     sandbox.stub(SourceMapper, 'create').rejects(new Error('scan failed'))
-    profilingManager.config.include = ['cpu']
     profilingManager.config.source_mapping = { enabled: true }
 
-    await profilingManager.register()
+    await profilingManager.buildSourceMapper()
 
+    assert.strictEqual(profilingManager.sourceMapper, null, 'should fall back to compiled file/line')
     assert.equal(logger.error.callCount, 1, 'should log the build failure')
-    assert.ok(profilingManager.profilers.get('CpuProfiler'), 'should register the cpu profiler despite the failure')
   })
 })
 

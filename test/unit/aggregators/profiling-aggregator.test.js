@@ -83,15 +83,17 @@ test('should not send any data if there are no profilers registered', async (t) 
   })
 })
 
-test('should not crash if profilers are started more than once', async (t) => {
+test('should not crash if profilers are started more than once', (t) => {
   const { profilingAggregator } = t.nr
-  await profilingAggregator.start()
-  await assert.doesNotReject(profilingAggregator.start())
+  profilingAggregator.start()
+  assert.doesNotThrow(() => {
+    profilingAggregator.start()
+  })
 })
 
-test('should stop ProfilingManager when aggregator is stopped', async (t) => {
+test('should stop ProfilingManager when aggregator is stopped', (t) => {
   const { profilingAggregator, sandbox } = t.nr
-  await profilingAggregator.start()
+  profilingAggregator.start()
   assert.ok(profilingAggregator.sendTimer)
   sandbox.spy(profilingAggregator.profilingManager.profilers.get('HeapProfiler'), 'stop')
   sandbox.spy(profilingAggregator.profilingManager.profilers.get('CpuProfiler'), 'stop')
@@ -105,11 +107,35 @@ test('should stop ProfilingManager when aggregator is stopped', async (t) => {
   }
 })
 
-test('should not crash if profilers are stopped more than once', async (t) => {
+test('should not crash if profilers are stopped more than once', (t) => {
   const { profilingAggregator } = t.nr
-  await profilingAggregator.start()
+  profilingAggregator.start()
   profilingAggregator.stop()
   assert.doesNotThrow(() => {
     profilingAggregator.stop()
   })
+})
+
+test('initSourceMapper caches the built mapper on the manager when enabled', async (t) => {
+  const { profilingAggregator, agent, sandbox } = t.nr
+  const mapper = { infoMap: new Map() }
+  const { SourceMapper } = require('@datadog/pprof')
+  sandbox.stub(SourceMapper, 'create').resolves(mapper)
+  agent.config.profiling.source_mapping = { enabled: true }
+
+  await profilingAggregator.initSourceMapper()
+
+  assert.strictEqual(profilingAggregator.profilingManager.sourceMapper, mapper)
+})
+
+test('initSourceMapper leaves the mapper null when source mapping is disabled', async (t) => {
+  const { profilingAggregator, agent, sandbox } = t.nr
+  const { SourceMapper } = require('@datadog/pprof')
+  const create = sandbox.stub(SourceMapper, 'create')
+  agent.config.profiling.source_mapping = { enabled: false }
+
+  await profilingAggregator.initSourceMapper()
+
+  assert.strictEqual(profilingAggregator.profilingManager.sourceMapper, null)
+  assert.equal(create.callCount, 0, 'should not scan for source maps')
 })

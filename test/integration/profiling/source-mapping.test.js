@@ -11,15 +11,12 @@ const zlib = require('node:zlib')
 const path = require('node:path')
 
 const helper = require('../../lib/agent_helper')
-const ProfilingManager = require('../../../lib/profiling/index')
 const { Profile } = require('pprof-format')
 
-// Transpiled fixture: require loads hot.js; FIXTURE_DIR holds its .js.map.
+// require loads the compiled hot.js; FIXTURE_DIR holds its .js.map.
 const { burnMappedCpu, burnUnmappedCpu } = require('./fixtures/transpiled/hot')
 const FIXTURE_DIR = path.join(__dirname, 'fixtures', 'transpiled')
 const ORIGINAL_CWD = process.cwd()
-
-const logger = { trace() {}, debug() {}, error() {} }
 
 /**
  * Decodes the gzipped pprof buffer into `{ name, file }` for every function frame.
@@ -33,11 +30,8 @@ function decodeFrames(encoded) {
   return (profile.function || []).map((fn) => { return { name: str(fn.name), file: str(fn.filename) } })
 }
 
-// Drives the full config path: an agent configured with source_mapping, through
-// ProfilingManager.register() (which builds the mapper from cwd) and start/collect.
-// Each test uses a *different* hot function on purpose — a function is only reliably
-// captured as a named frame the first time it is profiled, so reusing one across the
-// two sessions in this file would leave the second under-sampled.
+// Each test uses a different hot function: a function is only reliably captured as a
+// named frame the first time it is profiled in a process.
 describe('CpuProfiler source mapping', () => {
   let agent
   let manager
@@ -55,9 +49,10 @@ describe('CpuProfiler source mapping', () => {
     })
     // Point the mapper's app-root scan at the fixture rather than the whole repo.
     process.chdir(FIXTURE_DIR)
-    manager = new ProfilingManager({ agent, samplingInterval: 60_000 }, { logger })
 
-    await manager.register()
+    await agent.profilingData.initSourceMapper()
+    manager = agent.profilingData.profilingManager
+    manager.register()
     manager.start()
     burnMappedCpu(500)
     const [cpuData] = await manager.collect()
@@ -74,9 +69,10 @@ describe('CpuProfiler source mapping', () => {
     agent = helper.instrumentMockedAgent({
       profiling: { enabled: true, include: ['cpu'], source_mapping: { enabled: false } }
     })
-    manager = new ProfilingManager({ agent, samplingInterval: 60_000 }, { logger })
 
-    await manager.register()
+    await agent.profilingData.initSourceMapper()
+    manager = agent.profilingData.profilingManager
+    manager.register()
     manager.start()
     burnUnmappedCpu(500)
     const [cpuData] = await manager.collect()
