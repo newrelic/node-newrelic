@@ -9,8 +9,23 @@ const path = require('node:path')
 
 const util = module.exports
 const metricsHelpers = require('../../lib/metrics_helper')
-const protoLoader = require('@grpc/proto-loader')
 const serverImpl = require('./grpc-server.cjs')
+
+// Resolve `@grpc/proto-loader` from the running suite's own `node_modules`
+// (the versioned runner sets cwd to the suite directory) rather than from this
+// file's location. This matters for the `grpc-esm` suite, which imports this
+// helper from the sibling `grpc/` directory: resolving relative to this file
+// would read `grpc/node_modules` while that sibling suite may still be
+// installing into it concurrently, intermittently failing with
+// "Cannot find module './writer'". Anchoring to cwd keeps each suite
+// self-contained. Falls back to normal resolution for non-runner contexts.
+function loadProtoLoader() {
+  try {
+    return require(require.resolve('@grpc/proto-loader', { paths: [process.cwd()] }))
+  } catch {
+    return require('@grpc/proto-loader')
+  }
+}
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 
@@ -125,6 +140,7 @@ util.assertMetricsNotExisting = function assertMetricsNotExisting(
  * @returns {object} helloworld protobuf pkg
  */
 function loadProtobufApi(grpc) {
+  const protoLoader = loadProtoLoader()
   const PROTO_PATH = path.join(__dirname, 'example.proto')
   const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     keepCase: true,
