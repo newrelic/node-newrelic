@@ -320,7 +320,7 @@ test('log forwarding enabled', async (t) => {
 
     const handleMessages = makeStreamTest(() => {
       const msgs = agent.logs.getEvents()
-      assert.equal(msgs.length, 1, 'should add error line to aggregator')
+      assert.equal(msgs.length, 1)
       const [msg] = msgs
       assert.equal(msg['error.message'], errorMsg, 'error.message should match')
       assert.equal(msg['error.class'], name, 'error.class should match')
@@ -333,22 +333,29 @@ test('log forwarding enabled', async (t) => {
     const err = new TestError(errorMsg)
 
     const assertFn = originalMsgAssertion.bind(null, { level: 'error' })
-    const jsonStream = concat(handleMessages(assertFn))
 
-    // Example Winston setup to test
-    winston.createLogger({
-      transports: [
-        // Log to a stream so we can test the output
-        new winston.transports.Stream({
-          level: 'info',
-          stream: jsonStream
-        })
-      ],
-      exitOnError: false
-    })
+    // Register multiple loggers, each with its own user transport, to mirror an
+    // app that creates a logger per request.
+    const streams = []
+    for (let i = 0; i < 5; i++) {
+      const jsonStream = concat(handleMessages(assertFn))
+      streams.push(jsonStream)
+
+      // Example Winston setup to test
+      winston.createLogger({
+        transports: [
+          // Log to a stream so we can test the output
+          new winston.transports.Stream({
+            level: 'info',
+            stream: jsonStream
+          })
+        ],
+        exitOnError: false
+      })
+    }
 
     process.emit('uncaughtException', err)
-    jsonStream.end()
+    streams.forEach((stream) => stream.end())
   })
 
   await t.test('should not double log nor instrument composed logger', (t, end) => {
@@ -378,6 +385,27 @@ test('log forwarding enabled', async (t) => {
     const subLogger = winston.createLogger(logger)
 
     logWithAggregator({ loggers: [logger, subLogger], stream: simpleStream, helper, agent })
+  })
+
+  // Winston's `Logger.add()` registers a per-logger `uncaughtException` process
+  // listener for every transport with `handleExceptions: true`. Since we attach
+  // an NrTransport to every logger, apps that create a logger per request would
+  // leak a listener (and the logger/transport graph it retains) per logger.
+  // Only the first NrTransport should carry exception handling.
+  await t.test('should only register one uncaughtException listener across many loggers', (t) => {
+    const { winston } = t.nr
+    const before = process.listenerCount('uncaughtException')
+
+    for (let i = 0; i < 25; i++) {
+      // Each logger has a user transport, so this mirrors a per-request logger
+      // (the transport-count carve-out does not apply).
+      winston.createLogger({
+        transports: [new winston.transports.Console({ silent: true })]
+      })
+    }
+
+    const added = process.listenerCount('uncaughtException') - before
+    assert.equal(added, 1, 'should add exactly one uncaughtException listener for 25 loggers')
   })
 
   // See: https://github.com/newrelic/node-newrelic/issues/1196
