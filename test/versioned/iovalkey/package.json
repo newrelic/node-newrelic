@@ -1,6 +1,7 @@
 {
   "name": "iovalkey-test",
   "targets": [{"name":"iovalkey","minAgentVersion":"13.9.0"}],
+  "dockerServices": ["redis"],
   "version": "0.0.0",
   "private": true,
   "tests": [

@@ -2,6 +2,7 @@
   "name": "pg-esm-tests",
   "targets": [{"name":"pg","minAgentVersion":"9.0.0"},{"name":"pg-native","minAgentVersion":"9.0.0"}],
   "type": "module",
+  "dockerServices": ["pg"],
   "version": "0.0.0",
   "private": true,
   "tests": [

@@ -38,7 +38,16 @@ fi
 
 set -f
 directories=()
-if [[ "$1" != '' ]];
+if [[ -n "${VERSIONED_DIRS}" ]];
+then
+  # VERSIONED_DIRS is a space separated list of suite subdir names, used by CI
+  # to run a shard (subset) of the versioned suites. Word splitting is safe here
+  # because `set -f` is enabled above and suite names are simple identifiers.
+  for d in ${VERSIONED_DIRS};
+  do
+    directories+=( "test/versioned/${d}" )
+  done
+elif [[ "$1" != '' ]];
 then
   directories=(
     "test/versioned/${1}"

@@ -1,6 +1,7 @@
 {
   "name": "elasticsearch-tests",
   "targets": [{"name":"@elastic/elasticsearch","minAgentVersion":"11.9.0"}],
+  "dockerServices": ["elasticsearch"],
   "version": "0.0.0",
   "private": true,
   "engines": {

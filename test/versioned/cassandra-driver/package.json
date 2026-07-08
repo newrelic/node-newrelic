@@ -1,6 +1,7 @@
 {
   "name": "cassandra-driver-tests",
   "targets": [{"name":"cassandra-driver","minAgentVersion": "1.7.1"}],
+  "dockerServices": ["cassandra"],
   "version": "0.0.0",
   "private": true,
   "tests": [

@@ -1,6 +1,7 @@
 {
   "name": "redis-tests",
   "targets": [{"name":"redis","minAgentVersion":"1.31.0"}],
+  "dockerServices": ["redis"],
   "version": "0.0.0",
   "private": true,
   "tests": [

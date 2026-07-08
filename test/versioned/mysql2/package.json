@@ -1,6 +1,7 @@
 {
   "name": "mysql2-tests",
   "targets": [{"name":"mysql2","minAgentVersion":"1.32.0"}],
+  "dockerServices": ["mysql"],
   "version": "0.0.0",
   "private": true,
   "tests": [

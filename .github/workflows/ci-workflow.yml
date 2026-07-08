@@ -7,7 +7,6 @@ on:
   push:
   pull_request:
     types:
-      - edited
       - opened
       - reopened
       - synchronize
@@ -175,18 +174,48 @@ jobs:
           name: integration-tests-esm-${{ matrix.node-version }}
           path: ./coverage/integration-esm/lcov.info
 
-  versioned:
+  # Partition the versioned test suites across shards so the matrix below can
+  # run them on separate runners in parallel. Emits a shard list, a
+  # shard-index -> suite-dirs map, and a shard-index -> docker-services map,
+  # all consumed by the `versioned` job matrix.
+  versioned-setup:
     needs:
       - should_run
     if: github.event_name == 'workflow_dispatch' ||
       (needs.should_run.outputs.javascript_changed == 'true' ||
       needs.should_run.outputs.deps_changed == 'true')
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.plan.outputs.shards }}
+      dirmap: ${{ steps.plan.outputs.dirmap }}
+      servicemap: ${{ steps.plan.outputs.servicemap }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Plan versioned shards
+        id: plan
+        run: node ./bin/versioned-runner/shard-plan.js
+        env:
+          # At most 5 suites per shard; the shard count derives from suite count.
+          SHARD_SIZE: 5
+
+  versioned:
+    needs:
+      - should_run
+      - versioned-setup
+    if: github.event_name == 'workflow_dispatch' ||
+      (needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true')
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
+
+    # A healthy shard completes well within this; a hung/looping test should fail
+    # its leg fast rather than burning the full GitHub-imposed job limit.
+    timeout-minutes: 8
 
     strategy:
       fail-fast: false
       matrix:
         node-version: [22.x, 24.x, 26.x]
+        shard: ${{ fromJSON(needs.versioned-setup.outputs.shards) }}
 
     steps:
       - uses: actions/checkout@v6
@@ -201,8 +230,13 @@ jobs:
         run: npm install -g npm@~11.10.0 && npm install -g npm@latest
       - name: Install Dependencies
         run: npm install
+      # Start only the docker services this shard's suites need. Shards whose
+      # suites need no services skip this step entirely (zero containers).
       - name: Run Docker Services
-        run: npm run services
+        if: ${{ fromJSON(needs.versioned-setup.outputs.servicemap)[matrix.shard] != '' }}
+        run: ./bin/start-services.sh $SERVICES
+        env:
+          SERVICES: ${{ fromJSON(needs.versioned-setup.outputs.servicemap)[matrix.shard] }}
       - name: Run Versioned Tests
         run: TEST_CHILD_TIMEOUT=600000 npm run versioned
         env:
@@ -210,28 +244,30 @@ jobs:
           # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
           JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
           C8_REPORTER: lcovonly
+          # Only run this shard's subset of the versioned suites.
+          VERSIONED_DIRS: ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
       - name: Archive Versioned Test Coverage
         uses: actions/upload-artifact@v7
         with:
-          name: versioned-tests-${{ matrix.node-version }}
+          name: versioned-tests-${{ matrix.node-version }}-shard-${{ matrix.shard }}
           path: ./coverage/versioned/lcov.info
       - name: Collect docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e
         with:
-          dest: ./logs-${{ matrix.node-version }}
+          dest: ./logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}
       - name: Tar logs
         if: failure()
-        run: tar cvzf ./logs-${{ matrix.node-version }}.tgz ./logs-${{ matrix.node-version }}
+        run: tar cvzf ./logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}.tgz ./logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}
       - name: Upload logs to GitHub
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: logs-${{ matrix.node-version }}.tgz
-          path: ./logs-${{ matrix.node-version }}.tgz
+          name: logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}.tgz
+          path: ./logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}.tgz
 
   codecov:
-    needs: [unit, integration, versioned]
+    needs: [unit, integration, versioned, versioned-setup]
     runs-on: ubuntu-latest
 
     strategy:
@@ -246,6 +282,21 @@ jobs:
           check-latest: true
       - name: Download artifacts
         uses: actions/download-artifact@v8
+      # Versioned coverage is split across one artifact per shard. Build the
+      # comma separated lcov file list for this node-version from the shard list
+      # so codecov can merge them under a single flag.
+      - name: Build versioned coverage file list
+        id: versioned-coverage
+        env:
+          SHARDS: ${{ needs.versioned-setup.outputs.shards }}
+          NODE_VERSION: ${{ matrix.node-version }}
+        run: |
+          files=$(echo "$SHARDS" | node -e '
+            const shards = JSON.parse(require("fs").readFileSync(0, "utf8"))
+            const node = process.env.NODE_VERSION
+            console.log(shards.map((s) => `./versioned-tests-${node}-shard-${s}/lcov.info`).join(","))
+          ')
+          echo "files=${files}" >> "$GITHUB_OUTPUT"
       - name: Post Unit Test Coverage
         # v7.0.0
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
@@ -276,7 +327,7 @@ jobs:
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: versioned-tests-${{ matrix.node-version }}
+          files: ${{ steps.versioned-coverage.outputs.files }}
           flags: versioned-tests-${{ matrix.node-version }}
 
   all-clear:
@@ -287,6 +338,7 @@ jobs:
       - ci
       - unit
       - integration
+      - versioned-setup
       - versioned
     steps:
       - name: All checks passed

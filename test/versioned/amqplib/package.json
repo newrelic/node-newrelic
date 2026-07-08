@@ -1,6 +1,7 @@
 {
   "name": "ampqlib-tests",
   "targets": [{ "name": "amqplib", "minAgentVersion": "2.0.0" }],
+  "dockerServices": ["rmq"],
   "version": "0.0.0",
   "private": true,
   "tests": [

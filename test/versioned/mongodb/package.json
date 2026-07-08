@@ -7,6 +7,7 @@
       "minAgentVersion": "1.32.0"
     }
   ],
+  "dockerServices": ["mongodb_5"],
   "version": "0.0.0",
   "private": true,
   "tests": [

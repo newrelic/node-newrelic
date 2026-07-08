@@ -1,6 +1,7 @@
 {
   "name": "memcached-test",
   "targets": [{"name":"memcached","minAgentVersion":"1.26.2"}],
+  "dockerServices": ["memcached"],
   "version": "0.0.0",
   "private": true,
   "tests": [

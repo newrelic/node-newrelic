@@ -1,6 +1,7 @@
 {
   "name": "opensearch-tests",
   "targets": [{"name":"@opensearch-project/opensearch","minAgentVersion":"12.10.0"}],
+  "dockerServices": ["opensearch"],
   "version": "0.0.0",
   "private": true,
   "engines": {

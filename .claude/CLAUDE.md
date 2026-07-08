@@ -18,6 +18,7 @@ specific functionality
 - After running a specific versioned test suite at least once, individual
 test files in the suite may be run directly as
 `node --test test/versioned/<suite>/<test_file>`
+- When opening Pull Requests, always open them in draft mode
 
 ## Commands
 npm run services:start # start Docker services

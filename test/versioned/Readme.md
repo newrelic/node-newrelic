@@ -11,6 +11,9 @@ a version for each minor between `0` and `10`, then our versioned test runner
 will run the test suite across a sampling of versions in that range, e.g.
 versions `1.0.0`, `1.3.0`, and `1.10.0`.
 
+Important: do not nest suites. For example, do not create `foo/one`, `foo/two`.
+Instead, create `foo-one/` and `foo-two/`.
+
 ## Versioned Tests `npm-env.json`
 We have a few npm config options in `node-newrelic/.npmrc`. These options are intended
 to harden our security posture, however they may conflict with how our versioned test runner
@@ -72,6 +75,21 @@ that are specific to our versioned test runner. The following is a
     }
   ],
   
+  // `dockerServices` lists the docker-compose services (by their service name
+  // in the repo-root `docker-compose.yml`) that this suite needs in order to
+  // run. CI uses this to start only the required services for a given batch of
+  // suites, and to skip starting docker entirely for suites that need none.
+  //
+  // Omit this property (or use an empty array) when the suite needs no backing
+  // service -- e.g. pure HTTP frameworks, or SDKs whose backend is mocked.
+  // List every service the suite connects to, including ones reached through a
+  // helper imported from a sibling suite. Under-declaring will cause the suite
+  // to fail in CI because the service it expects will not be running; an
+  // unknown service name fails the shard-planning step. Some examples:
+  //   - `kafkajs` needs both `kafka` and `zookeeper`.
+  //   - `prisma` needs `pg_prisma` (a dedicated postgres), not `pg`.
+  "dockerServices": ["service-name"],
+
   // `version` is ignored.
   "version": "0.0.0",
   
