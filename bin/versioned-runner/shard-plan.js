@@ -27,16 +27,22 @@
 // A suite declares its docker service needs via a top-level `dockerServices`
 // array in its package.json; absence means the suite needs no services.
 
-const fs = require('fs')
-const path = require('path')
+const fs = require('node:fs')
+const path = require('node:path')
 
 const VERSIONED_DIR = path.join(process.cwd(), 'test', 'versioned')
 const COMPOSE_FILE = path.join(process.cwd(), 'docker-compose.yml')
 const SHARD_SIZE = parseInt(process.env.SHARD_SIZE, 10) || 5
 
-// The set of valid docker service names, read from docker-compose.yml so the
-// allowlist can never drift from what actually exists. Service names are the
-// keys directly under the top-level `services:` block.
+/**
+ * Parses a `docker-compose.yml` to build an allow list of available Docker
+ * services. Services are defined by the key name for each service defined
+ * in the `services:` block.
+ *
+ * @param {string} composeFile File system path to the file to parse.
+ *
+ * @returns {Set<string>} List of discovered service names.
+ */
 function knownServices(composeFile = COMPOSE_FILE) {
   const lines = fs.readFileSync(composeFile, 'utf8').split('\n')
   const services = new Set()
@@ -62,6 +68,13 @@ function knownServices(composeFile = COMPOSE_FILE) {
   return services
 }
 
+/**
+ * Reads the VERSIONED_DIR directory to discover the available test suites.
+ * A test suite is a directory that contains a `package.json` manifest as
+ * documented in `test/versioned/Readme.md`.
+ *
+ * @returns {string[]} List of test suites.
+ */
 function listSuites() {
   return fs
     .readdirSync(VERSIONED_DIR, { withFileTypes: true })
@@ -75,11 +88,23 @@ function listSuites() {
     .sort()
 }
 
-// Reads a suite's declared docker service dependencies, validating each against
-// the known service set to catch typos (an unknown name would silently never
-// start, hanging the suite). Absent `dockerServices` means no services.
+/**
+ * Reads the defined `dockerServices` in a test suite's manifest.
+ *
+ * @param {string} dir Path to the test suite.
+ * @param {Set<string>} known List of known Docker services as provided
+ * by `knownServices`.
+ *
+ * @returns {string[]} List of Docker services the suite requires.
+ * @throws Error When an unknown Docker service is encountered.
+ */
 function readServices(dir, known) {
-  const pkg = JSON.parse(fs.readFileSync(path.join(VERSIONED_DIR, dir, 'package.json'), 'utf8'))
+  const pkg = JSON.parse(
+    fs.readFileSync(
+      path.join(VERSIONED_DIR, dir, 'package.json'),
+      'utf8'
+    )
+  )
   const services = pkg.dockerServices ?? []
   for (const service of services) {
     if (!known.has(service)) {
@@ -92,6 +117,25 @@ function readServices(dir, known) {
   return services
 }
 
+/**
+ * The `suites` property is really a repeated key-value pair like
+ * `0: ['a', 'b', 'c']`.
+ *
+ * @typedef {object} Shard
+ * @property {string[]} suites List of suites.
+ */
+
+/**
+ * Builds a mapping of shard number to suites in the shard.
+ *
+ * @param {string[]} suites List of available test suites as returned by
+ * `listSuites`.
+ * @param {number} shardSize The maximum number of suites to include in
+ * each shard.
+ *
+ * @returns {Shard} Built shards map.
+ * @throws Error When a suite has not been assigned to any shards.
+ */
 function planShards(suites, shardSize) {
   const dirmap = {}
 
@@ -122,9 +166,24 @@ function planShards(suites, shardSize) {
   return dirmap
 }
 
-// For each shard, computes the deduped, sorted union of docker services its
-// suites need. `getServices` maps a suite dir to its service list (injectable
-// for testing); it defaults to reading each suite's package.json.
+/**
+ * The `serivces` property is really a repeated key-value pair that looks like
+ * `0: ['svc1', 'svc2', 'svc3']`.
+ *
+ * @typedef {object} ServiceMap
+ * @property {string[]} services List of services for the shard.
+ */
+
+/**
+ * Iterates the shards and suites to build a mapping that indicates which
+ * shards needs which Docker services running in order to function correctly.
+ *
+ * @param {Shard} dirmap Shard as planned by `planShards`.
+ * @param {Function} getServices Function the returns the list of services
+ * required by the provided suite. Accepts a string suite name.
+ *
+ * @returns {ServiceMap} The list of services mapped to shards.
+ */
 function planServices(dirmap, getServices) {
   const servicemap = {}
   for (const [shard, suites] of Object.entries(dirmap)) {
