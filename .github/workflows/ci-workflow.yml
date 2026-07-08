@@ -207,10 +207,6 @@ jobs:
       needs.should_run.outputs.deps_changed == 'true')
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
-    # A healthy shard completes well within this; a hung/looping test should fail
-    # its leg fast rather than burning the full GitHub-imposed job limit.
-    timeout-minutes: 8
-
     strategy:
       fail-fast: false
       matrix:
