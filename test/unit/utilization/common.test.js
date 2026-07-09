@@ -86,9 +86,9 @@ test('Utilization Common Components', async function (t) {
       nock.disableNetConnect()
       // We use separate paths, each with a delay that is decisively on one side
       // of its request timeout, so the outcome does not depend on fragile
-      // millisecond margins. The original single interceptor used delay(150)
-      // against timeouts of 150-200ms, which is reliable on a developer machine
-      // but flaky on a contended runner like GitHub Actions.
+      // millisecond margins. Short timeouts of 150-200ms, which is reliable on
+      // a developer machine, are flaky on a contended runner like GitHub
+      // Actions.
 
       // `/success` responds slowly (500ms) but well within its 2000ms request
       // timeout. This still exercises the "slow response" behavior the success
@@ -141,7 +141,7 @@ test('Utilization Common Components', async function (t) {
       // Verify well after the slow response has arrived (>500ms) so a stray
       // second invocation would be observed before we assert. The margins are
       // wide enough (500ms response, 2000ms timeout, 1000ms observation) that
-      // event-loop contention cannot flip the outcome.
+      // event-loop contention does not invalidate the test.
       setTimeout(verifyInvocations, 1000)
 
       function verifyInvocations() {
