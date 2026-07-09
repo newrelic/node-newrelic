@@ -236,7 +236,10 @@ jobs:
       # The suite names for this shard are passed as positional arguments so the
       # runner only executes this shard's subset of the versioned suites.
       - name: Run Versioned Tests
-        run: TEST_CHILD_TIMEOUT=600000 npm run versioned ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
+        run: |
+          TEST_CHILD_TIMEOUT=600000 \
+          npm run versioned \
+          ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
         env:
           VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
           # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
