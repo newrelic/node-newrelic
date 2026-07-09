@@ -14,8 +14,12 @@ const { removeMatchedModules } = require('../../lib/cache-buster')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const getPackageVersion = require('../../lib/get-package-version')
 const metrics = require('../../lib/metrics_helper')
-const { assertPackageMetrics, assertMetrics, assertSegments } = require('./../../lib/custom-assertions')
-const assertSegmentDuration = require('../../lib/custom-assertions/assert-segment-duration')
+const {
+  assertPackageMetrics,
+  assertMetrics,
+  assertSegmentDuration,
+  assertSegments
+} = require('./../../lib/custom-assertions')
 const PROMISE_WAIT = 100
 
 const version = getPackageVersion({ pkgName: 'amqplib', baseDir: __dirname })
