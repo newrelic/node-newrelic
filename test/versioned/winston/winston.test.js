@@ -408,6 +408,56 @@ test('log forwarding enabled', async (t) => {
     assert.equal(added, 1, 'should add exactly one uncaughtException listener for 25 loggers')
   })
 
+  await t.test('should forward logs from a logger created via `new winston.Logger`', (t, end) => {
+    const { agent, winston } = t.nr
+    const handleMessages = makeStreamTest(() => {
+      const msgs = agent.logs.getEvents()
+      assert.equal(msgs.length, 2)
+      msgs.forEach((msg) => {
+        logForwardingMsgAssertion(msg, agent)
+      })
+      end()
+    })
+
+    const assertFn = originalMsgAssertion.bind(null, {})
+    const jsonStream = concat(handleMessages(assertFn))
+
+    const logger = new winston.Logger({
+      transports: [new winston.transports.Stream({ level: 'info', stream: jsonStream })]
+    })
+
+    // base `Logger` lacks the level convenience methods, so use `.log`
+    // instead of the helper `logWithAggregator`
+    logger.log('info', 'out of trans')
+    helper.runInTransaction(agent, 'test', (tx) => {
+      logger.log('info', 'in trans')
+      tx.end()
+    })
+    jsonStream.end()
+  })
+
+  await t.test('should forward logs from a caller-created `winston.Container`', (t, end) => {
+    const { agent, winston } = t.nr
+    const handleMessages = makeStreamTest(() => {
+      const msgs = agent.logs.getEvents()
+      assert.equal(msgs.length, 2)
+      msgs.forEach((msg) => {
+        logForwardingMsgAssertion(msg, agent)
+      })
+      end()
+    })
+
+    const assertFn = originalMsgAssertion.bind(null, {})
+    const jsonStream = concat(handleMessages(assertFn))
+
+    const container = new winston.Container()
+    const logger = container.add('per-request', {
+      transports: [new winston.transports.Stream({ level: 'info', stream: jsonStream })]
+    })
+
+    logWithAggregator({ loggers: [logger], stream: jsonStream, helper, agent })
+  })
+
   // See: https://github.com/newrelic/node-newrelic/issues/1196
   // This test adds a printf formatter and then asserts that both the log lines
   // in aggregator have keys added in other formatters and that the log line being built
