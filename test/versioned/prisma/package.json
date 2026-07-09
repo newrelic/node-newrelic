@@ -18,6 +18,7 @@
         "node": ">=22"
       },
       "groupedDependencies": {
+        "samples": 2,
         "version": ">=5.0.0 <5.9.0 || >=5.9.1 <7.0.0",
         "packages": ["prisma", "@prisma/client"]
       },
@@ -30,6 +31,7 @@
         "node": ">=22"
       },
       "groupedDependencies": {
+        "samples": 5,
         "version": ">=7.0.0",
         "packages": ["prisma", "@prisma/client", "@prisma/adapter-pg"]
       },
