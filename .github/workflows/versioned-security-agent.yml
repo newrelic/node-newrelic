@@ -57,8 +57,32 @@ jobs:
           current-sha: ${{ github.sha }}
           package-name: '@newrelic/security-agent'
 
-  security-agent-tests:
+  # Partition the versioned test suites across shards so the matrix below can
+  # run them on separate runners in parallel. Emits a shard list, a
+  # shard-index -> suite-dirs map, and a shard-index -> docker-services map,
+  # all consumed by the `security-agent-tests` job matrix.
+  versioned-setup:
     needs: [should_run]
+    if: github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
+      github.event.label.name == 'force-security' ||
+      needs.should_run.outputs.sec_agent_did_change == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.plan.outputs.shards }}
+      dirmap: ${{ steps.plan.outputs.dirmap }}
+      servicemap: ${{ steps.plan.outputs.servicemap }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Plan versioned shards
+        id: plan
+        run: node ./bin/versioned-runner/shard-plan.js
+        env:
+          # At most 5 suites per shard; the shard count derives from suite count.
+          SHARD_SIZE: 5
+
+  security-agent-tests:
+    needs: [should_run, versioned-setup]
     if: github.event_name == 'workflow_dispatch' ||
       github.event_name == 'schedule' ||
       github.event.label.name == 'force-security' ||
@@ -70,6 +94,7 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [22.x, 24.x, 26.x]
+        shard: ${{ fromJSON(needs.versioned-setup.outputs.shards) }}
 
     steps:
     - uses: actions/checkout@v6
@@ -87,10 +112,20 @@ jobs:
     - name: Install Version ${{ inputs.version }} of security agent
       if: ${{ inputs.version }}
       run: npm install @newrelic/security-agent@${{ inputs.version }}
+    # Start only the docker services this shard's suites need. Shards whose
+    # suites need no services skip this step entirely (zero containers).
     - name: Run Docker Services
-      run: npm run services
+      if: ${{ fromJSON(needs.versioned-setup.outputs.servicemap)[matrix.shard] != '' }}
+      run: ./bin/start-services.sh $SERVICES
+      env:
+        SERVICES: ${{ fromJSON(needs.versioned-setup.outputs.servicemap)[matrix.shard] }}
+    # The suite names for this shard are passed as positional arguments so the
+    # runner only executes this shard's subset of the versioned suites.
     - name: Versioned Tests w/ Security Agent
-      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:security
+      run: |
+        TEST_CHILD_TIMEOUT=600000 \
+        npm run versioned:security \
+        ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
       env:
         VERSIONED_MODE: --${{ inputs.mode || 'major' }}
         # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
