@@ -8,27 +8,14 @@
 const { describe, test, beforeEach, afterEach } = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
-const { AsyncLocalStorage } = require('async_hooks')
 const CpuProfiler = require('#agentlib/profiling/profilers/cpu.js')
 const pprof = require('@datadog/pprof')
-
-/**
- * Minimal tracer stand-in: `CpuProfiler` only needs an AsyncLocalStorage to wrap
- * and an agent to read linking metadata from.
- *
- * @returns {object} a fake tracer
- */
-function createTracer() {
-  return {
-    _contextManager: { _asyncLocalStorage: new AsyncLocalStorage() },
-    agent: { getLinkingMetadata: () => { return {} } },
-    getSegment: () => null
-  }
-}
+const helper = require('#testlib/agent_helper.js')
 
 beforeEach((ctx) => {
   const sandbox = sinon.createSandbox()
   const logger = require('../../../mocks/logger')(sandbox)
+  const agent = helper.loadMockedAgent()
 
   // Track started state so `stop` tears down what `start` installed, keeping
   // tests isolated without running the native sampler.
@@ -43,11 +30,12 @@ beforeEach((ctx) => {
   sandbox.stub(pprof.time, 'getState').returns({})
   sandbox.stub(pprof.time, 'setContext')
 
-  ctx.nr = { sandbox, logger, tracer: createTracer(), profiler: null }
+  ctx.nr = { sandbox, logger, agent, tracer: agent.tracer, profiler: null }
 })
 
 afterEach((ctx) => {
   ctx.nr.profiler?.stop()
+  helper.unloadAgent(ctx.nr.agent)
   ctx.nr.sandbox.restore()
 })
 

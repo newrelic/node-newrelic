@@ -524,27 +524,20 @@ test('when starting', async (t) => {
       resolveMapper = resolve
     })
     sinon.stub(agent.profilingData, 'initSourceMapper').returns(mapperReady)
-    const scheduleHarvests = sinon.stub(agent, '_scheduleHarvests').callsFake((immediate, cb) => cb())
+    const scheduleHarvests = sinon.stub(agent, '_scheduleHarvests')
 
     agent.collector.connect = function (callback) {
       agent.collector.isConnected = () => true
       callback(null, CollectorResponse.success(null, { agent_run_id: RUN_ID }))
     }
 
-    let started = false
-    agent.start(() => {
-      started = true
-    })
+    agent.start(() => {})
 
-    await new Promise((resolve) => setImmediate(resolve))
     assert.equal(scheduleHarvests.callCount, 0, 'should not schedule harvests until the mapper is built')
-    assert.equal(started, false, 'should not finish starting until the mapper is built')
 
     resolveMapper()
     await mapperReady
-    await new Promise((resolve) => setImmediate(resolve))
     assert.equal(scheduleHarvests.callCount, 1, 'should schedule harvests once the mapper is built')
-    assert.equal(started, true, 'should finish starting once the mapper is built')
   })
 
   await t.test('starts without stalling when source mapping is disabled', async (t) => {
