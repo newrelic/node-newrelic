@@ -58,6 +58,18 @@ async function installPackages() {
         '--no-fund', // skip funding output
         '--min-release-age=0' // skip publish date checks
       ]
+
+      // The agent's `.npmrc` sets `ignore-scripts=true` for security. A suite
+      // with native dependencies (e.g. `pg-native`/`libpq`) opts back in via its
+      // `npm-env.json` (`NPM_CONFIG_IGNORE_SCRIPTS=false`). Pass that as an
+      // explicit CLI flag rather than relying on the env var alone: a CLI flag
+      // is npm's highest-precedence config source, so it cannot be silently
+      // overridden by a user/global `.npmrc` or stray env config on a CI runner,
+      // which otherwise leaves the native addon unbuilt (bindings not found).
+      if (process.env.NPM_CONFIG_IGNORE_SCRIPTS === 'false') {
+        args.push('--ignore-scripts=false')
+      }
+
       args = args.concat(packages)
       try {
         await spawn('npm', args)
