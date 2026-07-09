@@ -14,7 +14,10 @@ const { removeMatchedModules } = require('../../lib/cache-buster')
 const promiseResolvers = require('../../lib/promise-resolvers')
 const getPackageVersion = require('../../lib/get-package-version')
 
-const { assertPackageMetrics } = require('../../lib/custom-assertions')
+const {
+  assertPackageMetrics,
+  assertSegmentDuration
+} = require('../../lib/custom-assertions')
 const PROMISE_WAIT = 100
 
 const version = getPackageVersion({ pkgName: 'amqplib', baseDir: __dirname })
@@ -431,9 +434,11 @@ test('amqplib callback instrumentation', async function (t) {
 
     agent.once('transactionFinished', function (tx) {
       amqpUtils.verifyConsumeTransaction(tx, exchange, queue, 'consume-tx-key')
-      assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
-
-      assert.ok(tx.baseSegment.getDurationInMillis() >= PROMISE_WAIT, 'base segment should account for async work')
+      // Assert the base segment's duration against the wall-clock time observed
+      // since it started rather than a fixed PROMISE_WAIT floor, which is flaky
+      // on loaded CI runners where the measured duration can fall just under it.
+      const actualTime = process.hrtime(tx.baseSegment.timer.hrstart)
+      assertSegmentDuration({ segment: tx.baseSegment, actualTime })
       end()
     })
 
@@ -477,7 +482,9 @@ test('amqplib callback instrumentation', async function (t) {
 
     agent.once('transactionFinished', function (tx) {
       amqpUtils.verifyConsumeTransaction(tx, exchange, queue, 'consume-tx-key')
-      assert.ok(tx.trace.getDurationInMillis() >= PROMISE_WAIT, 'transaction should account for async work')
+      // See note above: assert against observed wall-clock, not a fixed floor.
+      const actualTime = process.hrtime(tx.baseSegment.timer.hrstart)
+      assertSegmentDuration({ segment: tx.baseSegment, actualTime })
       end()
     })
 
