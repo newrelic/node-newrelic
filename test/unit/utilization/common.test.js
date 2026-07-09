@@ -84,12 +84,16 @@ test('Utilization Common Components', async function (t) {
   await t.test('common.request', async (t) => {
     t.before(() => {
       nock.disableNetConnect()
-      // Two decisive interceptors instead of one delay that races the request
-      // timeout. `/success` replies immediately so the success path never times
-      // out; `/timeout` delays far longer than any request timeout so the socket
-      // timeout always fires first. This keeps both outcomes independent of CI
-      // event-loop jitter (see NR-588003 / #4106).
+      // We need separate paths for success and failure so that we do not
+      // have to rely on fragile millisecond based timings. While timings of
+      // 100 - 150ms works reliably on individual developer systems, they are
+      // too tight on contendend systems like GitHub Actions.
+
+      // `/success` replies immediately so the success path never times out
       nock('http://fakedomain').persist().get('/success').reply(200, 'woohoo')
+
+      // `/timeout` delays far longer than any request timeout so the socket
+      // timeout always fires first.
       nock('http://fakedomain').persist().get('/timeout').delay(10000).reply(200, 'woohoo')
     })
 
@@ -115,6 +119,8 @@ test('Utilization Common Components', async function (t) {
         {
           method: 'GET',
           host: 'fakedomain',
+          // We set a high timeout here in order to give the request time to
+          // complete on contended systems like GitHub Actions.
           timeout: 1000,
           path: '/success'
         },
