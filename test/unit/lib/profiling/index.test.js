@@ -81,12 +81,28 @@ describe('register', () => {
 
   test('registers the cpu profiler with the cached source mapper', (t) => {
     const { profilingManager } = t.nr
-    profilingManager.sourceMapper = { infoMap: new Map() }
+    const mapper = { infoMap: new Map() }
+    profilingManager.sourceMapper = mapper
     profilingManager.config.include = ['cpu']
 
     profilingManager.register()
 
-    assert.ok(profilingManager.profilers.get('CpuProfiler'), 'should register the cpu profiler')
+    const cpuProfiler = profilingManager.profilers.get('CpuProfiler')
+    assert.ok(cpuProfiler, 'should register the cpu profiler')
+    assert.strictEqual(cpuProfiler.sourceMapper, mapper, 'should forward the cached mapper')
+  })
+
+  test('registers the heap profiler with the cached source mapper', (t) => {
+    const { profilingManager } = t.nr
+    const mapper = { infoMap: new Map() }
+    profilingManager.sourceMapper = mapper
+    profilingManager.config.include = ['heap']
+
+    profilingManager.register()
+
+    const heapProfiler = profilingManager.profilers.get('HeapProfiler')
+    assert.ok(heapProfiler, 'should register the heap profiler')
+    assert.strictEqual(heapProfiler.sourceMapper, mapper, 'should forward the cached mapper')
   })
 })
 
