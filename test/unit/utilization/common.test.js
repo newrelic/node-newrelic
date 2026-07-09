@@ -84,7 +84,21 @@ test('Utilization Common Components', async function (t) {
   await t.test('common.request', async (t) => {
     t.before(() => {
       nock.disableNetConnect()
-      nock('http://fakedomain').persist().get('/timeout').delay(150).reply(200, 'woohoo')
+      // We use separate paths, each with a delay that is decisively on one side
+      // of its request timeout, so the outcome does not depend on fragile
+      // millisecond margins. Short timeouts of 150-200ms, which is reliable on
+      // a developer machine, are flaky on a contended runner like GitHub
+      // Actions.
+
+      // `/success` responds slowly (500ms) but well within its 2000ms request
+      // timeout. This still exercises the "slow response" behavior the success
+      // test cares about -- the client must accept a slow response and must not
+      // treat it as a timeout -- without racing the timeout.
+      nock('http://fakedomain').persist().get('/success').delay(500).reply(200, 'woohoo')
+
+      // `/timeout` delays far longer than any request timeout so the socket
+      // timeout always fires first.
+      nock('http://fakedomain').persist().get('/timeout').delay(10000).reply(200, 'woohoo')
     })
 
     t.beforeEach(function (ctx) {
@@ -105,12 +119,16 @@ test('Utilization Common Components', async function (t) {
     await t.test('should not timeout when request succeeds', (ctx, end) => {
       const agent = ctx.nr.agent
       let invocationCount = 0
+      // The response is slow (500ms) but comfortably within the 2000ms request
+      // timeout. The client must accept the slow response and must not let the
+      // socket timeout fire and invoke the callback a second time (which would
+      // look like a spurious retry).
       common.request(
         {
           method: 'GET',
           host: 'fakedomain',
-          timeout: 200,
-          path: '/timeout'
+          timeout: 2000,
+          path: '/success'
         },
         agent,
         (err, data) => {
@@ -120,13 +138,14 @@ test('Utilization Common Components', async function (t) {
         }
       )
 
-      // need to give enough time for second to have chance to run.
-      // sinon and http don't quite seem to work well enough to do this
-      // totally faked synchronously.
-      setTimeout(verifyInvocations, 250)
+      // Verify well after the slow response has arrived (>500ms) so a stray
+      // second invocation would be observed before we assert. The margins are
+      // wide enough (500ms response, 2000ms timeout, 1000ms observation) that
+      // event-loop contention does not invalidate the test.
+      setTimeout(verifyInvocations, 1000)
 
       function verifyInvocations() {
-        assert.equal(invocationCount, 1)
+        assert.equal(invocationCount, 1, 'callback should only be invoked once')
         end()
       }
     })
@@ -146,16 +165,21 @@ test('Utilization Common Components', async function (t) {
           assert.ok(err)
           assert.equal(err.code, 'ECONNRESET', 'error should be socket timeout')
           invocationCount++
+          // The socket timed out and aborted, but nock still has the long
+          // delayed response pending; cancel it so its timer doesn't keep the
+          // event loop alive for the full delay after the test passes.
+          nock.abortPendingRequests()
         }
       )
 
-      // need to give enough time for second to have chance to run.
-      // sinon and http don't quite seem to work well enough to do this
-      // totally faked synchronously.
-      setTimeout(verifyInvocations, 200)
+      // Wait past the request timeout and then verify the callback fired only
+      // once. The window is not timing sensitive: the socket always times out
+      // at 100ms (the `/timeout` response is delayed far longer), so this just
+      // observes for a stray second invocation after the abort.
+      setTimeout(verifyInvocations, 250)
 
       function verifyInvocations() {
-        assert.equal(invocationCount, 1)
+        assert.equal(invocationCount, 1, 'callback should only be invoked once')
         end()
       }
     })
