@@ -12,6 +12,7 @@ const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require(
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
 const AnthropicMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
+const { findSegment } = require('../../lib/metrics_helper')
 
 const {
   AI: { ANTHROPIC }
@@ -411,6 +412,99 @@ test('should not create llm events when streaming is enabled but ai_monitoring i
     assert.equal(activeSeg.name, 'ROOT')
     const children = tx.trace.getChildren(activeSeg.id)
     assert.notEqual(children?.[0]?.name, ANTHROPIC.COMPLETION)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should create segment and llm events when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+  const { host, port } = t.nr
+  // tear down the enabled agent/module set up in `beforeEach`
+  helper.unloadAgent(t.nr.agent)
+  removeModules('@anthropic-ai/sdk')
+
+  // set up the agent instance with ai_monitoring disabled
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: false,
+      streaming: {
+        enabled: true
+      }
+    }
+  })
+  t.nr.agent = agent
+  const Anthropic = require('@anthropic-ai/sdk')
+  const client = new Anthropic({
+    apiKey: 'fake-versioned-test-key',
+    baseURL: `http://${host}:${port}`
+  })
+  t.nr.client = client
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+  helper.runInTransaction(agent, async (tx) => {
+    await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 100,
+      messages: [{ role: 'user', content: 'You are a mathematician.' }]
+    })
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+    assert.ok(findSegment(tx.trace, tx.trace.root, ANTHROPIC.COMPLETION))
+
+    tx.end()
+    end()
+  })
+})
+
+test('should create segment and llm events in stream when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+  const { host, port } = t.nr
+  // tear down the enabled agent/module set up in `beforeEach`
+  helper.unloadAgent(t.nr.agent)
+  removeModules('@anthropic-ai/sdk')
+
+  // set up the agent instance with ai_monitoring disabled
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: false,
+      streaming: {
+        enabled: true
+      }
+    }
+  })
+  t.nr.agent = agent
+  const Anthropic = require('@anthropic-ai/sdk')
+  const client = new Anthropic({
+    apiKey: 'fake-versioned-test-key',
+    baseURL: `http://${host}:${port}`
+  })
+  t.nr.client = client
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+  helper.runInTransaction(agent, async (tx) => {
+    const content = 'Streamed response'
+    const stream = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 100,
+      temperature: 0.5,
+      stream: true,
+      messages: [{ role: 'user', content }]
+    })
+
+    let res = ''
+    for await (const event of stream) {
+      if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+        res += event.delta.text
+      }
+    }
+    assert.ok(res)
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+    assert.ok(findSegment(tx.trace, tx.trace.root, ANTHROPIC.COMPLETION))
 
     tx.end()
     end()

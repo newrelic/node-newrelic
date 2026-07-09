@@ -523,6 +523,53 @@ test('chat.completions.create', async (t) => {
         end()
       })
     })
+
+    await t.test('should create segment and llm events in stream when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+      const { host, port } = t.nr
+      // tear down the enabled agent/module set up in `beforeEach`
+      helper.unloadAgent(t.nr.agent)
+      removeModules('openai')
+
+      // set up the agent instance with ai_monitoring disabled
+      const agent = helper.instrumentMockedAgent({
+        ai_monitoring: {
+          enabled: false,
+          streaming: {
+            enabled: true
+          }
+        }
+      })
+      t.nr.agent = agent
+      const OpenAI = require('openai')
+      const client = new OpenAI({
+        apiKey: 'fake-versioned-test-key',
+        baseURL: `http://${host}:${port}`
+      })
+      t.nr.client = client
+
+      // enable ai_monitoring before making the call
+      agent.config.ai_monitoring.enabled = true
+      helper.runInTransaction(agent, async (tx) => {
+        const content = 'Streamed response'
+        const stream = await client.chat.completions.create({
+          stream: true,
+          messages: [{ role: 'user', content }]
+        })
+
+        let res = ''
+        for await (const chunk of stream) {
+          res += chunk.choices[0]?.delta?.content
+        }
+        assert.ok(res)
+
+        const events = agent.customEventAggregator.events.toArray()
+        assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+        assert.ok(findSegment(tx.trace, tx.trace.root, OPENAI.COMPLETION))
+
+        tx.end()
+        end()
+      })
+    })
   } else {
     await t.test('should not instrument streams when openai < 4.12.2', (t, end) => {
       const { client, agent, host, port } = t.nr
@@ -578,6 +625,45 @@ test('chat.completions.create', async (t) => {
       assert.equal(events.length, 0, 'should not create llm events when ai_monitoring is disabled')
 
       assert.ok(!findSegment(tx.trace, tx.trace.root, OPENAI.COMPLETION))
+
+      tx.end()
+      end()
+    })
+  })
+
+  await t.test('should create segment and llm events when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+    const { host, port } = t.nr
+    // tear down the enabled agent/module set up in `beforeEach`
+    helper.unloadAgent(t.nr.agent)
+    removeModules('openai')
+
+    // set up the agent instance with ai_monitoring disabled
+    const agent = helper.instrumentMockedAgent({
+      ai_monitoring: {
+        enabled: false,
+        streaming: {
+          enabled: true
+        }
+      }
+    })
+    t.nr.agent = agent
+    const OpenAI = require('openai')
+    const client = new OpenAI({
+      apiKey: 'fake-versioned-test-key',
+      baseURL: `http://${host}:${port}`
+    })
+    t.nr.client = client
+
+    // enable ai_monitoring before making the call
+    agent.config.ai_monitoring.enabled = true
+    helper.runInTransaction(agent, async (tx) => {
+      await client.chat.completions.create({
+        messages: [{ role: 'user', content: 'You are a mathematician.' }]
+      })
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+      assert.ok(findSegment(tx.trace, tx.trace.root, OPENAI.COMPLETION))
 
       tx.end()
       end()

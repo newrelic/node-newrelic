@@ -566,4 +566,91 @@ test('responses.create', { skip: semver.lte(pkgVersion, '4.87.0') }, async (t) =
       end()
     })
   })
+
+  await t.test('should create segment and llm events when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+    const { host, port } = t.nr
+    // tear down the enabled agent/module set up in `beforeEach`
+    helper.unloadAgent(t.nr.agent)
+    removeModules('openai')
+
+    // set up the agent instance with ai_monitoring disabled
+    const agent = helper.instrumentMockedAgent({
+      ai_monitoring: {
+        enabled: false
+      },
+      streaming: {
+        enabled: true
+      }
+    })
+    t.nr.agent = agent
+    const OpenAI = require('openai')
+    const client = new OpenAI({
+      apiKey: 'fake-versioned-test-key',
+      baseURL: `http://${host}:${port}`
+    })
+    t.nr.client = client
+
+    // enable ai_monitoring before making the call
+    agent.config.ai_monitoring.enabled = true
+    helper.runInTransaction(agent, async (tx) => {
+      await client.responses.create({
+        input: [{ role: 'user', content: 'You are a mathematician.' }]
+      })
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+      assert.ok(findSegment(tx.trace, tx.trace.root, OPENAI.COMPLETION))
+
+      tx.end()
+      end()
+    })
+  })
+
+  await t.test('should create segment and llm events in stream when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+    const { host, port } = t.nr
+    // tear down the enabled agent/module set up in `beforeEach`
+    helper.unloadAgent(t.nr.agent)
+    removeModules('openai')
+
+    // set up the agent instance with ai_monitoring disabled
+    const agent = helper.instrumentMockedAgent({
+      ai_monitoring: {
+        enabled: false
+      },
+      streaming: {
+        enabled: true
+      }
+    })
+    t.nr.agent = agent
+    const OpenAI = require('openai')
+    const client = new OpenAI({
+      apiKey: 'fake-versioned-test-key',
+      baseURL: `http://${host}:${port}`
+    })
+    t.nr.client = client
+
+    // enable ai_monitoring before making the call
+    agent.config.ai_monitoring.enabled = true
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const stream = await client.responses.create({
+        stream: true,
+        input: content,
+        model: 'gpt-4'
+      })
+
+      let chunk = {}
+      for await (chunk of stream) {
+        continue
+      }
+      assert.ok(chunk.response?.output?.[0]?.content?.[0]?.text)
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+      assert.ok(findSegment(tx.trace, tx.trace.root, OPENAI.COMPLETION))
+
+      tx.end()
+      end()
+    })
+  })
 })

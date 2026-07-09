@@ -11,6 +11,7 @@ const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const GoogleGenAIMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
+const { findSegment } = require('../../lib/metrics_helper')
 
 const {
   AI: { GEMINI }
@@ -195,6 +196,52 @@ test('should not create llm events when ai_monitoring is disabled', (t, end) => 
     assert.equal(activeSeg.name, 'ROOT')
     const children = tx.trace.getChildren(activeSeg.id)
     assert.notEqual(children?.[0]?.name, GEMINI.EMBEDDING)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should create segment and llm events when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+  const { host, port } = t.nr
+  // tear down the enabled agent/module set up in `beforeEach`
+  helper.unloadAgent(t.nr.agent)
+  removeModules('@google/genai')
+
+  // set up the agent instance with ai_monitoring disabled
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: false,
+      streaming: {
+        enabled: true
+      }
+    }
+  })
+  t.nr.agent = agent
+  const { GoogleGenAI } = require('@google/genai')
+  const client = new GoogleGenAI({
+    apiKey: 'fake-versioned-test-key',
+    vertexai: false,
+    httpOptions: {
+      baseUrl: `http://${host}:${port}/`,
+    },
+    httpMethod: 'GET'
+  })
+  t.nr.client = client
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+  helper.runInTransaction(agent, async (tx) => {
+    await client.models.embedContent({
+      contents: 'This is an embedding test.',
+      model: 'text-embedding-004'
+    })
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+    const embedding = events.find((e) => e[0].type === 'LlmEmbedding')
+    assert.ok(embedding, 'should create an LlmEmbedding event')
+    assert.ok(findSegment(tx.trace, tx.trace.root, GEMINI.EMBEDDING))
 
     tx.end()
     end()
