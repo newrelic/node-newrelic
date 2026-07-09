@@ -5,6 +5,8 @@
 
 'use strict'
 
+// TEMPORARY: trigger full CI (should_run javascript filter). Revert before merge.
+
 const HealthReporter = require('./lib/health-reporter.js')
 
 // Record opening times before loading any other files.
