@@ -84,7 +84,13 @@ test('Utilization Common Components', async function (t) {
   await t.test('common.request', async (t) => {
     t.before(() => {
       nock.disableNetConnect()
-      nock('http://fakedomain').persist().get('/timeout').delay(150).reply(200, 'woohoo')
+      // Two decisive interceptors instead of one delay that races the request
+      // timeout. `/success` replies immediately so the success path never times
+      // out; `/timeout` delays far longer than any request timeout so the socket
+      // timeout always fires first. This keeps both outcomes independent of CI
+      // event-loop jitter (see NR-588003 / #4106).
+      nock('http://fakedomain').persist().get('/success').reply(200, 'woohoo')
+      nock('http://fakedomain').persist().get('/timeout').delay(10000).reply(200, 'woohoo')
     })
 
     t.beforeEach(function (ctx) {
@@ -109,26 +115,20 @@ test('Utilization Common Components', async function (t) {
         {
           method: 'GET',
           host: 'fakedomain',
-          timeout: 200,
-          path: '/timeout'
+          timeout: 1000,
+          path: '/success'
         },
         agent,
         (err, data) => {
+          invocationCount++
           assert.ifError(err)
           assert.equal(data, 'woohoo')
-          invocationCount++
+          assert.equal(invocationCount, 1, 'callback should only be invoked once')
+          // Defer end() by a tick so a stray second invocation would trip the
+          // assertion above rather than being missed by ending immediately.
+          setImmediate(end)
         }
       )
-
-      // need to give enough time for second to have chance to run.
-      // sinon and http don't quite seem to work well enough to do this
-      // totally faked synchronously.
-      setTimeout(verifyInvocations, 250)
-
-      function verifyInvocations() {
-        assert.equal(invocationCount, 1)
-        end()
-      }
     })
 
     await t.test('should not invoke callback multiple times on timeout', (ctx, end) => {
@@ -143,21 +143,17 @@ test('Utilization Common Components', async function (t) {
         },
         agent,
         (err) => {
+          invocationCount++
           assert.ok(err)
           assert.equal(err.code, 'ECONNRESET', 'error should be socket timeout')
-          invocationCount++
+          assert.equal(invocationCount, 1, 'callback should only be invoked once')
+          // The socket timed out and aborted, but nock still has the long
+          // delayed response pending; cancel it so its timer doesn't keep the
+          // event loop alive for the full delay after the test passes.
+          nock.abortPendingRequests()
+          setImmediate(end)
         }
       )
-
-      // need to give enough time for second to have chance to run.
-      // sinon and http don't quite seem to work well enough to do this
-      // totally faked synchronously.
-      setTimeout(verifyInvocations, 200)
-
-      function verifyInvocations() {
-        assert.equal(invocationCount, 1)
-        end()
-      }
     })
   })
 })
