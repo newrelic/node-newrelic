@@ -84,13 +84,17 @@ test('Utilization Common Components', async function (t) {
   await t.test('common.request', async (t) => {
     t.before(() => {
       nock.disableNetConnect()
-      // We need separate paths for success and failure so that we do not
-      // have to rely on fragile millisecond based timings. While timings of
-      // 100 - 150ms works reliably on individual developer systems, they are
-      // too tight on contendend systems like GitHub Actions.
+      // We use separate paths, each with a delay that is decisively on one side
+      // of its request timeout, so the outcome does not depend on fragile
+      // millisecond margins. The original single interceptor used delay(150)
+      // against timeouts of 150-200ms, which is reliable on a developer machine
+      // but flaky on a contended runner like GitHub Actions.
 
-      // `/success` replies immediately so the success path never times out
-      nock('http://fakedomain').persist().get('/success').reply(200, 'woohoo')
+      // `/success` responds slowly (500ms) but well within its 2000ms request
+      // timeout. This still exercises the "slow response" behavior the success
+      // test cares about -- the client must accept a slow response and must not
+      // treat it as a timeout -- without racing the timeout.
+      nock('http://fakedomain').persist().get('/success').delay(500).reply(200, 'woohoo')
 
       // `/timeout` delays far longer than any request timeout so the socket
       // timeout always fires first.
@@ -115,13 +119,15 @@ test('Utilization Common Components', async function (t) {
     await t.test('should not timeout when request succeeds', (ctx, end) => {
       const agent = ctx.nr.agent
       let invocationCount = 0
+      // The response is slow (500ms) but comfortably within the 2000ms request
+      // timeout. The client must accept the slow response and must not let the
+      // socket timeout fire and invoke the callback a second time (which would
+      // look like a spurious retry).
       common.request(
         {
           method: 'GET',
           host: 'fakedomain',
-          // We set a high timeout here in order to give the request time to
-          // complete on contended systems like GitHub Actions.
-          timeout: 1000,
+          timeout: 2000,
           path: '/success'
         },
         agent,
@@ -132,13 +138,11 @@ test('Utilization Common Components', async function (t) {
         }
       )
 
-      // `common.request` leaves its `timeout`/`error` socket listeners attached
-      // after a successful response, so a late socket event could invoke the
-      // callback a second time. Wait after the request has completed and then
-      // verify it was only invoked once. This window no longer races the
-      // request itself -- `/success` replies immediately -- so it is not timing
-      // sensitive; it is purely an observation period for a stray second call.
-      setTimeout(verifyInvocations, 250)
+      // Verify well after the slow response has arrived (>500ms) so a stray
+      // second invocation would be observed before we assert. The margins are
+      // wide enough (500ms response, 2000ms timeout, 1000ms observation) that
+      // event-loop contention cannot flip the outcome.
+      setTimeout(verifyInvocations, 1000)
 
       function verifyInvocations() {
         assert.equal(invocationCount, 1, 'callback should only be invoked once')
