@@ -115,3 +115,27 @@ test('should not crash if profilers are stopped more than once', (t) => {
     profilingAggregator.stop()
   })
 })
+
+test('initSourceMapper caches the built mapper on the manager when enabled', async (t) => {
+  const { profilingAggregator, agent, sandbox } = t.nr
+  const mapper = { infoMap: new Map() }
+  const { SourceMapper } = require('@datadog/pprof')
+  sandbox.stub(SourceMapper, 'create').resolves(mapper)
+  agent.config.profiling.source_mapping = { enabled: true }
+
+  await profilingAggregator.initSourceMapper()
+
+  assert.strictEqual(profilingAggregator.profilingManager.sourceMapper, mapper)
+})
+
+test('initSourceMapper leaves the mapper null when source mapping is disabled', async (t) => {
+  const { profilingAggregator, agent, sandbox } = t.nr
+  const { SourceMapper } = require('@datadog/pprof')
+  const create = sandbox.stub(SourceMapper, 'create')
+  agent.config.profiling.source_mapping = { enabled: false }
+
+  await profilingAggregator.initSourceMapper()
+
+  assert.strictEqual(profilingAggregator.profilingManager.sourceMapper, null)
+  assert.equal(create.callCount, 0, 'should not scan for source maps')
+})
