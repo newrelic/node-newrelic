@@ -126,15 +126,24 @@ test('Utilization Common Components', async function (t) {
         },
         agent,
         (err, data) => {
-          invocationCount++
           assert.ifError(err)
           assert.equal(data, 'woohoo')
-          assert.equal(invocationCount, 1, 'callback should only be invoked once')
-          // Defer end() by a tick so a stray second invocation would trip the
-          // assertion above rather than being missed by ending immediately.
-          setImmediate(end)
+          invocationCount++
         }
       )
+
+      // `common.request` leaves its `timeout`/`error` socket listeners attached
+      // after a successful response, so a late socket event could invoke the
+      // callback a second time. Wait after the request has completed and then
+      // verify it was only invoked once. This window no longer races the
+      // request itself -- `/success` replies immediately -- so it is not timing
+      // sensitive; it is purely an observation period for a stray second call.
+      setTimeout(verifyInvocations, 250)
+
+      function verifyInvocations() {
+        assert.equal(invocationCount, 1, 'callback should only be invoked once')
+        end()
+      }
     })
 
     await t.test('should not invoke callback multiple times on timeout', (ctx, end) => {
@@ -149,17 +158,26 @@ test('Utilization Common Components', async function (t) {
         },
         agent,
         (err) => {
-          invocationCount++
           assert.ok(err)
           assert.equal(err.code, 'ECONNRESET', 'error should be socket timeout')
-          assert.equal(invocationCount, 1, 'callback should only be invoked once')
+          invocationCount++
           // The socket timed out and aborted, but nock still has the long
           // delayed response pending; cancel it so its timer doesn't keep the
           // event loop alive for the full delay after the test passes.
           nock.abortPendingRequests()
-          setImmediate(end)
         }
       )
+
+      // Wait past the request timeout and then verify the callback fired only
+      // once. The window is not timing sensitive: the socket always times out
+      // at 100ms (the `/timeout` response is delayed far longer), so this just
+      // observes for a stray second invocation after the abort.
+      setTimeout(verifyInvocations, 250)
+
+      function verifyInvocations() {
+        assert.equal(invocationCount, 1, 'callback should only be invoked once')
+        end()
+      }
     })
   })
 })
