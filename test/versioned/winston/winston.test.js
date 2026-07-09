@@ -10,9 +10,9 @@ const assert = require('node:assert')
 const semver = require('semver')
 const { Writable } = require('node:stream')
 
-const { version: pkgVersion } = require('winston/package')
-
 const helper = require('../../lib/agent_helper')
+const pkgVersion = helper.readPackageVersion(__dirname, 'winston')
+
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const {
