@@ -1,3 +1,29 @@
+### v14.2.1 (2026-07-09)
+
+#### Bug fixes
+
+* Pin CI npm to 11 so native versioned suites build on Node 22 ([#4114](https://github.com/newrelic/node-newrelic/pull/4114)) ([b844e94](https://github.com/newrelic/node-newrelic/commit/b844e94317e573410d96f8971308b2d1535570ca))
+    * Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+* Resolve grpc proto-loader from the running suite's node_modules ([#4110](https://github.com/newrelic/node-newrelic/pull/4110)) ([5b5a9f8](https://github.com/newrelic/node-newrelic/commit/5b5a9f8d8e0f17557b9f202b0098e2ec84c9e028))
+    * Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+* Updated `winston` instrumenting to assign `handleExceptions` to the first NrTransport to avoid registering duplicate `uncaughtException` handlers ([#4108](https://github.com/newrelic/node-newrelic/pull/4108)) ([d60a48d](https://github.com/newrelic/node-newrelic/commit/d60a48d3b9399d3a084c64cf53c3a62c7a4cab0b))
+
+#### Documentation
+
+* Updated compatibility report ([#4099](https://github.com/newrelic/node-newrelic/pull/4099)) ([058fde6](https://github.com/newrelic/node-newrelic/commit/058fde6d64e3606b82875380ba51f9bc44a4b994))
+
+#### Miscellaneous chores
+
+* Attempted to fix memcached CI issue again ([#4098](https://github.com/newrelic/node-newrelic/pull/4098)) ([f67fef5](https://github.com/newrelic/node-newrelic/commit/f67fef5febe71ffab853164aba06c76cd2c6c26d))
+* Remove the 8 minute versioned shard timeout ([#4111](https://github.com/newrelic/node-newrelic/pull/4111)) ([0ef6374](https://github.com/newrelic/node-newrelic/commit/0ef63749b2739d7c7446a6b7c6d3ee80d2d360e5))
+    * Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+* Shard versioned tests across CI runners ([#4101](https://github.com/newrelic/node-newrelic/pull/4101)) ([1471734](https://github.com/newrelic/node-newrelic/commit/14717345d87ec46a4eba18c513e10e3caed40f7c))
+    * Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+#### Tests
+
+* Added `samples` to prisma and next to cut down on versions under test on packages we recommend using hybrid ageninstrumentation ([#4112](https://github.com/newrelic/node-newrelic/pull/4112)) ([7d8bd7c](https://github.com/newrelic/node-newrelic/commit/7d8bd7cd2e3076d17ad25b75628956d1158fc23a))
+
 ### v14.2.0 (2026-07-07)
 
 #### Features
