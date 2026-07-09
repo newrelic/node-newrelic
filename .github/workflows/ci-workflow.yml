@@ -119,7 +119,7 @@ jobs:
       # This step can be removed when we drop support for Node 22
       - name: Upgrade npm
         if: matrix.node-version == '22.x'
-        run: npm install -g npm@~11.10.0 && npm install -g npm@latest
+        run: npm install -g npm@11
       - name: Install Dependencies
         run: npm install
       - name: Run Unit Tests
@@ -156,7 +156,7 @@ jobs:
       # This step can be removed when we drop support for Node 22
       - name: Upgrade npm
         if: matrix.node-version == '22.x'
-        run: npm install -g npm@~11.10.0 && npm install -g npm@latest
+        run: npm install -g npm@11
       - name: Install Dependencies
         run: npm install
       - name: Run Integration Tests
@@ -223,7 +223,7 @@ jobs:
       # This step can be removed when we drop support for Node 22
       - name: Upgrade npm
         if: matrix.node-version == '22.x'
-        run: npm install -g npm@~11.10.0 && npm install -g npm@latest
+        run: npm install -g npm@11
       - name: Install Dependencies
         run: npm install
       # Start only the docker services this shard's suites need. Shards whose
