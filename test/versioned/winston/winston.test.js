@@ -7,9 +7,12 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const semver = require('semver')
 const { Writable } = require('node:stream')
 
 const helper = require('../../lib/agent_helper')
+const pkgVersion = helper.readPackageVersion(__dirname, 'winston')
+
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const {
@@ -408,7 +411,11 @@ test('log forwarding enabled', async (t) => {
     assert.equal(added, 1, 'should add exactly one uncaughtException listener for 25 loggers')
   })
 
-  await t.test('should forward logs from a logger created via `new winston.Logger`', (t, end) => {
+  // The `winston.Logger` constructor was removed in winston@3.0.0 and
+  // reintroduced in winston@3.10.0
+  await t.test('should forward logs from a logger created via `new winston.Logger`', {
+    skip: semver.lt(pkgVersion, '3.10.0')
+  }, (t, end) => {
     const { agent, winston } = t.nr
     const handleMessages = makeStreamTest(() => {
       const msgs = agent.logs.getEvents()
