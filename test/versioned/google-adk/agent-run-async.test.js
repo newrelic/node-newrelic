@@ -294,3 +294,46 @@ test('should not create segment or events when ai_monitoring.enabled is false', 
     tx.end()
   })
 })
+
+test('should create segment and events when ai_monitoring is disabled at instrumentation but enabled before the call', async (t) => {
+  t.plan(2)
+  const assert = t.assert
+
+  // tear down the enabled agent/module set up in `beforeEach`
+  helper.unloadAgent(t.nr.agent)
+  removeModules(['@google/adk'])
+
+  // set up the agent instance with ai_monitoring disabled
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: false,
+      streaming: {
+        enabled: true
+      }
+    }
+  })
+  t.nr.agent = agent
+  const { BaseAgent } = require('@google/adk')
+
+  const testAgent = createTestAgent(BaseAgent, {
+    name: 'enabled_before_agent',
+    events: [{ id: 'evt-1', author: 'enabled_before_agent', content: { parts: [{ text: 'hello' }] } }]
+  })
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+
+  await helper.runInTransaction(agent, async (tx) => {
+    await consumeGenerator(testAgent.runAsync({}))
+
+    const segments = tx.trace.getChildren(tx.trace.root.id)
+    const adkSegments = segments.filter((s) => s.name.includes('Llm/agent/GoogleADK'))
+    assert.ok(adkSegments.length > 0, 'should create GoogleADK segments')
+
+    const events = agent.customEventAggregator.events.toArray()
+    const agentEvents = events.filter((e) => e[0].type === 'LlmAgent')
+    assert.ok(agentEvents.length > 0, 'should create LlmAgent events when ai_monitoring is enabled before the call')
+
+    tx.end()
+  })
+})

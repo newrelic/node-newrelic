@@ -12,6 +12,7 @@ const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require(
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
 const GoogleGenAIMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
+const { findSegment } = require('../../lib/metrics_helper')
 
 const {
   AI: { GEMINI }
@@ -463,6 +464,105 @@ test('should not create llm events when streaming is enabled but ai_monitoring i
     assert.equal(activeSeg.name, 'ROOT')
     const children = tx.trace.getChildren(activeSeg.id)
     assert.notEqual(children?.[0]?.name, GEMINI.COMPLETION)
+
+    tx.end()
+    end()
+  })
+})
+
+test('should create segment and llm events when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+  const { host, port } = t.nr
+  // tear down the enabled agent/module set up in `beforeEach`
+  helper.unloadAgent(t.nr.agent)
+  removeModules('@google/genai')
+
+  // set up the agent instance with ai_monitoring disabled
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: false,
+      streaming: {
+        enabled: true
+      }
+    }
+  })
+  t.nr.agent = agent
+  const { GoogleGenAI } = require('@google/genai')
+  const client = new GoogleGenAI({
+    apiKey: 'fake-versioned-test-key',
+    vertexai: false,
+    httpOptions: {
+      baseUrl: `http://${host}:${port}/`,
+    },
+    httpMethod: 'GET'
+  })
+  t.nr.client = client
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+  helper.runInTransaction(agent, async (tx) => {
+    await client.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'You are a mathematician.'
+    })
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+    assert.ok(findSegment(tx.trace, tx.trace.root, GEMINI.COMPLETION))
+
+    tx.end()
+    end()
+  })
+})
+
+test('should create segment and llm events in stream when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+  const { host, port } = t.nr
+  // tear down the enabled agent/module set up in `beforeEach`
+  helper.unloadAgent(t.nr.agent)
+  removeModules('@google/genai')
+
+  // set up the agent instance with ai_monitoring disabled
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: false,
+      streaming: {
+        enabled: true
+      }
+    }
+  })
+  t.nr.agent = agent
+  const { GoogleGenAI } = require('@google/genai')
+  const client = new GoogleGenAI({
+    apiKey: 'fake-versioned-test-key',
+    vertexai: false,
+    httpOptions: {
+      baseUrl: `http://${host}:${port}/`,
+    },
+    httpMethod: 'GET'
+  })
+  t.nr.client = client
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+  helper.runInTransaction(agent, async (tx) => {
+    const content = 'Streamed response'
+    const stream = await client.models.generateContentStream({
+      config: {
+        maxOutputTokens: 100,
+        temperature: 0.5
+      },
+      model: 'gemini-2.0-flash',
+      contents: content
+    })
+
+    let res = ''
+    for await (const chunk of stream) {
+      res += chunk.text
+    }
+    assert.ok(res)
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+    assert.ok(findSegment(tx.trace, tx.trace.root, GEMINI.COMPLETION))
 
     tx.end()
     end()

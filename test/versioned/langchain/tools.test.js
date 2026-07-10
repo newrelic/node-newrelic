@@ -228,6 +228,37 @@ test('should not create segment when ai_monitoring is disabled', (t, end) => {
   })
 })
 
+test('should create segment and llm events when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+  const { input } = t.nr
+  // tear down the enabled agent/module set up in `beforeEach`
+  helper.unloadAgent(t.nr.agent)
+  removeModules(['@langchain/core'])
+  removeMatchedModules(/custom-tool\.js$/)
+
+  // set up the agent instance with ai_monitoring disabled
+  const agent = helper.instrumentMockedAgent({ ai_monitoring: { enabled: false } })
+  t.nr.agent = agent
+  const TestTool = require('./custom-tool')
+  const tool = new TestTool({ baseUrl })
+  t.nr.tool = tool
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+  helper.runInTransaction(agent, async (tx) => {
+    await tool.call(input)
+
+    const events = agent.customEventAggregator.events.toArray()
+    assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+
+    assertSegments(tx.trace, tx.trace.root, ['Llm/tool/LangChain/node-agent-test-tool'], {
+      exact: false
+    })
+
+    tx.end()
+    end()
+  })
+})
+
 test('should properly merge metadata from instance and params', (t, end) => {
   const { agent, tool, input } = t.nr
   helper.runInTransaction(agent, async (tx) => {

@@ -155,3 +155,65 @@ test('should not create segment or events when ai_monitoring.enabled is false', 
     tx.end()
   })
 })
+
+test('should create segment and events when ai_monitoring is disabled at instrumentation but enabled before the call', async (t) => {
+  // reuse the still-open mock server from `beforeEach`
+  const { address: host, port } = t.nr.server.address()
+
+  // tear down the enabled agent/modules set up in `beforeEach`
+  helper.unloadAgent(t.nr.agent)
+  removeModules(['@langchain/langgraph', '@langchain/core', '@langchain/openai'])
+
+  // set up the agent instance with ai_monitoring disabled
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: false,
+      streaming: {
+        enabled: true
+      }
+    }
+  })
+  t.nr.agent = agent
+
+  const { createReactAgent } = require('@langchain/langgraph/prebuilt')
+  const { ChatOpenAI } = require('@langchain/openai')
+
+  const mockLLM = new ChatOpenAI({
+    modelName: 'gpt-4',
+    temperature: 0,
+    apiKey: 'fake-key',
+    maxRetries: 0,
+    configuration: {
+      baseURL: `http://${host}:${port}`
+    }
+  })
+
+  const langgraphAgent = createReactAgent({
+    llm: mockLLM,
+    tools: [],
+    name: 'LangGraphReactAgent'
+  })
+  t.nr.langgraphAgent = langgraphAgent
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+
+  await helper.runInTransaction(agent, async (tx) => {
+    const result = await langgraphAgent.invoke(
+      { messages: [{ role: 'user', content: 'You are a scientist.' }] }
+    )
+    assert.ok(result?.messages?.[1]?.content)
+
+    // Should create LangGraph segment
+    const segments = tx.trace.getChildren(tx.trace.root.id)
+    const langgraphSegments = segments.filter((s) => s.name.includes('Llm/agent/LangGraph'))
+    assert.ok(langgraphSegments.length > 0, 'should create LangGraph segments')
+
+    // Should create LlmAgent events
+    const events = agent.customEventAggregator.events.toArray()
+    const agentEvents = events.filter((e) => e[0].type === 'LlmAgent')
+    assert.ok(agentEvents.length > 0, 'should create LlmAgent events when ai_monitoring is enabled before the call')
+
+    tx.end()
+  })
+})

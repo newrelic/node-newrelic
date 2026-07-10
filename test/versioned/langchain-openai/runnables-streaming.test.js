@@ -10,6 +10,7 @@ const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
 const { match } = require('../../lib/custom-assertions')
+const { findSegment } = require('../../lib/metrics_helper')
 const {
   runStreamingEnabledTests,
   runStreamingDisabledTest,
@@ -32,6 +33,8 @@ async function beforeEach({ enabled, ctx }) {
   ctx.nr = {}
   const { host, port, server } = await createOpenAIMockServer()
   ctx.nr.server = server
+  ctx.nr.host = host
+  ctx.nr.port = port
   ctx.nr.agent = helper.instrumentMockedAgent(config)
   ctx.nr.agent.config.ai_monitoring.streaming.enabled = enabled
 
@@ -117,4 +120,68 @@ test('ai_monitoring disabled', async (t) => {
     inputData: { topic: 'Streamed' },
     expectedContent: () => mockResponses.get('Streamed response').streamData
   })(t)
+})
+
+test('should create segment and llm events in stream when ai_monitoring is disabled at instrumentation but enabled before the call', async (t) => {
+  // set up an enabled agent + mock server so we can reuse the still-open server
+  await beforeEach({ enabled: true, ctx: t })
+  t.after((ctx) => afterEach(ctx))
+
+  const { host, port } = t.nr
+  // tear down the enabled agent/module set up above
+  helper.unloadAgent(t.nr.agent)
+  removeModules(['@langchain/core', 'openai'])
+
+  // set up the agent instance with ai_monitoring disabled but streaming enabled
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: false,
+      streaming: {
+        enabled: true
+      }
+    }
+  })
+  t.nr.agent = agent
+
+  const { ChatPromptTemplate } = require('@langchain/core/prompts')
+  const { StringOutputParser } = require('@langchain/core/output_parsers')
+  const { ChatOpenAI } = require('@langchain/openai')
+  const prompt = ChatPromptTemplate.fromMessages([['assistant', '{topic} response']])
+  const model = new ChatOpenAI({
+    streaming: true,
+    apiKey: 'fake-key',
+    maxRetries: 0,
+    configuration: {
+      baseURL: `http://${host}:${port}`
+    }
+  })
+  const outputParser = new StringOutputParser()
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+  await new Promise((resolve) => {
+    helper.runInTransaction(agent, async (tx) => {
+      const chain = prompt.pipe(model).pipe(outputParser)
+      const stream = await chain.stream({ topic: 'Streamed' })
+      let content = ''
+      for await (const chunk of stream) {
+        content += chunk
+      }
+      assert.ok(content.length > 0, 'should receive streamed content')
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+
+      const langchainEvents = events.filter((event) => {
+        const [, chainEvent] = event
+        return chainEvent.vendor === 'langchain'
+      })
+      assert.ok(langchainEvents.length > 0, 'should create langchain events when ai_monitoring is enabled before the call')
+
+      assert.ok(findSegment(tx.trace, tx.trace.root, 'Llm/chain/LangChain/stream'), 'should create the stream segment')
+
+      tx.end()
+      resolve()
+    })
+  })
 })

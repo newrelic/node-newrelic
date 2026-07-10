@@ -7,6 +7,7 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
+const { findSegment } = require('../../lib/metrics_helper')
 const { assertSegments, match } = require('../../lib/custom-assertions')
 const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
@@ -253,6 +254,73 @@ test('Embeddings', async (t) => {
         const msg = events[0][1]
         assert.equal(msg['llm.foo'], 'bar')
 
+        tx.end()
+      })
+    })
+
+    await t.test(`${modelId}: should not create segment or llm events when ai_monitoring.enabled is false`, async (t) => {
+      const { agent, bedrock, client, expectedExternalPath } = t.nr
+      agent.config.ai_monitoring.enabled = false
+      const prompt = `embed text ${resKey} success`
+      const input = requests[resKey](prompt, modelId)
+      const command = new bedrock.InvokeModelCommand(input)
+
+      await helper.runInTransaction(agent, async (tx) => {
+        await client.send(command)
+        const events = agent.customEventAggregator.events.toArray()
+        assert.equal(events.length, 0, 'should not create llm events when ai_monitoring is disabled')
+        assert.ok(
+          !findSegment(tx.trace, tx.trace.root, 'Llm/embedding/Bedrock/InvokeModelCommand'),
+          'should not create Llm embedding segment when ai_monitoring is disabled'
+        )
+        // the external call should still happen, just without the Llm wrapper segment
+        assert.ok(findSegment(tx.trace, tx.trace.root, expectedExternalPath(modelId)))
+        tx.end()
+      })
+    })
+
+    await t.test(`${modelId}: should create segment and LlmEmbedding event when ai_monitoring is disabled at instrumentation but enabled before the call`, async (t) => {
+      // tear down the enabled agent/module set up in `beforeEach`
+      t.nr.server.destroy()
+      helper.unloadAgent(t.nr.agent)
+      Object.keys(require.cache).forEach((key) => {
+        if (key.includes('@aws-sdk') || key.includes('@smithy')) {
+          delete require.cache[key]
+        }
+      })
+
+      // set up the agent instance with ai_monitoring disabled
+      const agent = helper.instrumentMockedAgent({
+        ai_monitoring: {
+          enabled: false
+        }
+      })
+      t.nr.agent = agent
+      const bedrock = require('@aws-sdk/client-bedrock-runtime')
+      const { server, baseUrl } = await createAiResponseServer()
+      t.nr.server = server
+      const client = new bedrock.BedrockRuntimeClient({
+        region: 'us-east-1',
+        credentials: FAKE_CREDENTIALS,
+        endpoint: baseUrl
+      })
+
+      const prompt = `embed text ${resKey} success`
+      const input = requests[resKey](prompt, modelId)
+      const command = new bedrock.InvokeModelCommand(input)
+
+      // enable ai_monitoring before making the first `.send()` call
+      agent.config.ai_monitoring.enabled = true
+      await helper.runInTransaction(agent, async (tx) => {
+        await client.send(command)
+        const events = agent.customEventAggregator.events.toArray()
+        assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+        const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
+        assert.equal(embedding[0].type, 'LlmEmbedding')
+        assert.ok(
+          findSegment(tx.trace, tx.trace.root, 'Llm/embedding/Bedrock/InvokeModelCommand'),
+          'should create Llm embedding segment when ai_monitoring is enabled before the call'
+        )
         tx.end()
       })
     })

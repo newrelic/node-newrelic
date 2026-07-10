@@ -311,3 +311,47 @@ test('should record LLM custom attributes on tool events', async (t) => {
     tx.end()
   })
 })
+
+test('should create events when ai_monitoring is disabled at instrumentation but enabled before the call', async (t) => {
+  t.plan(2)
+  const assert = t.assert
+
+  // tear down the enabled agent/module set up in `beforeEach`
+  helper.unloadAgent(t.nr.agent)
+  removeModules(['@google/adk'])
+
+  // set up the agent instance with ai_monitoring disabled
+  const agent = helper.instrumentMockedAgent({
+    ai_monitoring: {
+      enabled: false
+    }
+  })
+  t.nr.agent = agent
+  const { FunctionTool } = require('@google/adk')
+
+  const tool = new FunctionTool({
+    name: 'enabled_before_tool',
+    description: 'A tool enabled before the call',
+    execute: async () => 'done'
+  })
+
+  // enable ai_monitoring before making the call
+  agent.config.ai_monitoring.enabled = true
+
+  await helper.runInTransaction(agent, async (tx) => {
+    await tool.runAsync({
+      args: {},
+      toolContext: { actions: {}, state: { toRecord: () => { return {} } } }
+    })
+
+    const segments = tx.trace.getChildren(tx.trace.root.id)
+    const adkSegments = segments.filter((s) => s.name.includes('Llm/tool/GoogleADK'))
+    assert.ok(adkSegments.length > 0, 'should create GoogleADK tool segments')
+
+    const events = agent.customEventAggregator.events.toArray()
+    const toolEvents = events.filter((e) => e[0].type === 'LlmTool')
+    assert.ok(toolEvents.length > 0, 'should create LlmTool events when ai_monitoring is enabled before the call')
+
+    tx.end()
+  })
+})

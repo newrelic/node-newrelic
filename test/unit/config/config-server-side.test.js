@@ -150,14 +150,6 @@ describe('when receiving server-side configuration', () => {
     assert.equal(config.high_security, false)
   })
 
-  test('should disable ai monitoring', (t) => {
-    const { config } = t.nr
-    config.ai_monitoring.enabled = true
-    assert.equal(config.ai_monitoring.enabled, true)
-    config.onConnect({ collect_ai: false })
-    assert.equal(config.ai_monitoring.enabled, false)
-  })
-
   test('should load named transaction apdexes', (t) => {
     const { config } = t.nr
     const apdexes = { 'WebTransaction/Custom/UrlGenerator/en/betting/Football': 7.0 }
@@ -664,6 +656,90 @@ describe('when receiving server-side configuration', () => {
     })
   })
 
+  describe('ai_monitoring SSC scenarios', () => {
+    test('should disable ai monitoring when only collect_ai is false', (t) => {
+      const { config } = t.nr
+      config.ai_monitoring.enabled = true
+      assert.equal(config.ai_monitoring.enabled, true)
+      config.onConnect({ collect_ai: false })
+      assert.equal(config.ai_monitoring.enabled, false)
+    })
+
+    test('should not change ai monitoring when only collect_ai is true', (t) => {
+      const { config } = t.nr
+      config.ai_monitoring.enabled = false
+      config.onConnect({ collect_ai: true })
+      // collect_ai can only disable, never enable
+      assert.equal(config.ai_monitoring.enabled, false)
+    })
+
+    test('should let `ai_monitoring.enabled` take precedence and enable when collect_ai is false', (t) => {
+      const { config } = t.nr
+      config.ai_monitoring.enabled = false
+      config.onConnect({ collect_ai: false, agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.ai_monitoring.enabled, true)
+    })
+
+    test('should let `ai_monitoring.enabled` take precedence and disable when collect_ai is true', (t) => {
+      const { config } = t.nr
+      config.ai_monitoring.enabled = true
+      config.onConnect({ collect_ai: true, agent_config: { 'ai_monitoring.enabled': false } })
+      assert.equal(config.ai_monitoring.enabled, false)
+    })
+
+    test('should stay disabled when both collect_ai and ai_monitoring.enabled are false', (t) => {
+      const { config } = t.nr
+      config.ai_monitoring.enabled = true
+      config.onConnect({ collect_ai: false, agent_config: { 'ai_monitoring.enabled': false } })
+      assert.equal(config.ai_monitoring.enabled, false)
+    })
+
+    test('should enable ai monitoring when only ai_monitoring.enabled is sent', (t) => {
+      const { config } = t.nr
+      config.ai_monitoring.enabled = false
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.ai_monitoring.enabled, true)
+    })
+
+    test('should not enable ai monitoring via server side config when high security mode is on', (t) => {
+      const config = new Config({ high_security: true, ai_monitoring: { enabled: true } })
+      // HSM forces ai_monitoring off at construction
+      assert.equal(config.ai_monitoring.enabled, false)
+      config.onConnect({ high_security: true, collect_ai: false, agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.ai_monitoring.enabled, false)
+    })
+
+    test('should change values via server side config for ai_monitoring', (t) => {
+      t.plan(6)
+      const { config } = t.nr
+      config.ai_monitoring = {
+        enabled: false,
+        streaming: {
+          enabled: true
+        },
+        record_content: {
+          enabled: true
+        }
+      }
+      config.on('ai_monitoring.enabled', (value) => {
+        t.assert.equal(value, true)
+      })
+
+      config.on('ai_monitoring.streaming.enabled', (value) => {
+        t.assert.equal(value, false)
+      })
+
+      config.on('ai_monitoring.record_content.enabled', (value) => {
+        t.assert.equal(value, false)
+      })
+
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true, 'ai_monitoring.record_content.enabled': false, 'ai_monitoring.streaming.enabled': false } })
+      t.assert.equal(config.ai_monitoring.enabled, true)
+      t.assert.equal(config.ai_monitoring.streaming.enabled, false)
+      t.assert.equal(config.ai_monitoring.record_content.enabled, false)
+    })
+  })
+
   describe('when handling profiling.enabled', () => {
     test('should enable profiling when server passes `profiling.enabled` to true', (t) => {
       t.plan(2)
@@ -672,7 +748,7 @@ describe('when receiving server-side configuration', () => {
         t.assert.equal(value, true)
       })
       config.profiling.enabled = false
-      config.onConnect({ 'profiling.enabled': true })
+      config.onConnect({ agent_config: { 'profiling.enabled': true } })
       t.assert.equal(config.profiling.enabled, true)
     })
 
@@ -683,7 +759,7 @@ describe('when receiving server-side configuration', () => {
         t.assert.equal(value, false)
       })
       config.profiling.enabled = true
-      config.onConnect({ 'profiling.enabled': false })
+      config.onConnect({ agent_config: { 'profiling.enabled': false } })
       t.assert.equal(config.profiling.enabled, false)
     })
 
@@ -694,7 +770,7 @@ describe('when receiving server-side configuration', () => {
         throw new Error('should not update dynamically')
       })
       config.profiling.enabled = false
-      config.onConnect({ 'profiling.enabled': false })
+      config.onConnect({ agent_config: { 'profiling.enabled': false } })
       t.assert.equal(config.profiling.enabled, false)
     })
 
@@ -705,7 +781,7 @@ describe('when receiving server-side configuration', () => {
         throw new Error('should not update dynamically')
       })
       config.profiling.enabled = true
-      config.onConnect({ 'profiling.enabled': true })
+      config.onConnect({ agent_config: { 'profiling.enabled': true } })
       t.assert.equal(config.profiling.enabled, true)
     })
   })

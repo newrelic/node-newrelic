@@ -782,6 +782,107 @@ test('Chat completions', async (t) => {
     })
   })
 
+  await t.test('should create segment and llm events when ai_monitoring is disabled at instrumentation but enabled before the call', async (t) => {
+    // tear down the enabled agent/module set up in `beforeEach`
+    t.nr.server.destroy()
+    helper.unloadAgent(t.nr.agent)
+    Object.keys(require.cache).forEach((key) => {
+      if (key.includes('@aws-sdk') || key.includes('@smithy')) {
+        delete require.cache[key]
+      }
+    })
+
+    // set up the agent instance with ai_monitoring disabled
+    const agent = helper.instrumentMockedAgent({
+      ai_monitoring: {
+        enabled: false
+      }
+    })
+    t.nr.agent = agent
+    const bedrock = require('@aws-sdk/client-bedrock-runtime')
+    const { server, baseUrl } = await createAiResponseServer()
+    t.nr.server = server
+    const client = new bedrock.BedrockRuntimeClient({
+      region: 'us-east-1',
+      credentials: FAKE_CREDENTIALS,
+      endpoint: baseUrl,
+      maxAttempts: 1
+    })
+
+    const modelId = 'amazon.titan-text-express-v1'
+    const prompt = 'text amazon ultimate question'
+    const input = requests.amazon(prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
+
+    // enable ai_monitoring before making the first `.send()` call
+    agent.config.ai_monitoring.enabled = true
+    await helper.runInTransaction(agent, async (tx) => {
+      await client.send(command)
+      const events = agent.customEventAggregator.events.toArray()
+      assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+      assertSegments(
+        tx.trace,
+        tx.trace.root,
+        ['Llm/completion/Bedrock/InvokeModelCommand'],
+        { exact: false }
+      )
+      tx.end()
+    })
+  })
+
+  await t.test('should create segment and llm events in stream when ai_monitoring is disabled at instrumentation but enabled before the call', async (t) => {
+    // tear down the enabled agent/module set up in `beforeEach`
+    t.nr.server.destroy()
+    helper.unloadAgent(t.nr.agent)
+    Object.keys(require.cache).forEach((key) => {
+      if (key.includes('@aws-sdk') || key.includes('@smithy')) {
+        delete require.cache[key]
+      }
+    })
+
+    // set up the agent instance with ai_monitoring disabled
+    const agent = helper.instrumentMockedAgent({
+      ai_monitoring: {
+        enabled: false
+      }
+    })
+    t.nr.agent = agent
+    const bedrock = require('@aws-sdk/client-bedrock-runtime')
+    const { server, baseUrl } = await createAiResponseServer()
+    t.nr.server = server
+    const client = new bedrock.BedrockRuntimeClient({
+      region: 'us-east-1',
+      credentials: FAKE_CREDENTIALS,
+      endpoint: baseUrl,
+      maxAttempts: 1
+    })
+
+    const modelId = 'amazon.titan-text-express-v1'
+    const prompt = 'text amazon ultimate question streamed'
+    const input = requests.amazon(prompt, modelId)
+    const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
+
+    // enable ai_monitoring before making the first `.send()` call
+    agent.config.ai_monitoring.enabled = true
+    await helper.runInTransaction(agent, async (tx) => {
+      const response = await client.send(command)
+      for await (const event of response.body) {
+        // no-op iteration over the stream in order to exercise the instrumentation
+        consumeStreamChunk(event)
+      }
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+      assertSegments(
+        tx.trace,
+        tx.trace.root,
+        ['Llm/completion/Bedrock/InvokeModelWithResponseStreamCommand'],
+        { exact: false }
+      )
+      tx.end()
+    })
+  })
+
   await t.test('should utilize tokenCountCallback when set', async (t) => {
     const { agent, bedrock, client } = t.nr
     const plan = tspl(t, { plan: 13 })
