@@ -676,28 +676,28 @@ describe('when receiving server-side configuration', () => {
     test('should let `ai_monitoring.enabled` take precedence and enable when collect_ai is false', (t) => {
       const { config } = t.nr
       config.ai_monitoring.enabled = false
-      config.onConnect({ collect_ai: false, 'ai_monitoring.enabled': true })
+      config.onConnect({ collect_ai: false, agent_config: { 'ai_monitoring.enabled': true } })
       assert.equal(config.ai_monitoring.enabled, true)
     })
 
     test('should let `ai_monitoring.enabled` take precedence and disable when collect_ai is true', (t) => {
       const { config } = t.nr
       config.ai_monitoring.enabled = true
-      config.onConnect({ collect_ai: true, 'ai_monitoring.enabled': false })
+      config.onConnect({ collect_ai: true, agent_config: { 'ai_monitoring.enabled': false } })
       assert.equal(config.ai_monitoring.enabled, false)
     })
 
     test('should stay disabled when both collect_ai and ai_monitoring.enabled are false', (t) => {
       const { config } = t.nr
       config.ai_monitoring.enabled = true
-      config.onConnect({ collect_ai: false, 'ai_monitoring.enabled': false })
+      config.onConnect({ collect_ai: false, agent_config: { 'ai_monitoring.enabled': false } })
       assert.equal(config.ai_monitoring.enabled, false)
     })
 
     test('should enable ai monitoring when only ai_monitoring.enabled is sent', (t) => {
       const { config } = t.nr
       config.ai_monitoring.enabled = false
-      config.onConnect({ 'ai_monitoring.enabled': true })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
       assert.equal(config.ai_monitoring.enabled, true)
     })
 
@@ -705,7 +705,7 @@ describe('when receiving server-side configuration', () => {
       const config = new Config({ high_security: true, ai_monitoring: { enabled: true } })
       // HSM forces ai_monitoring off at construction
       assert.equal(config.ai_monitoring.enabled, false)
-      config.onConnect({ high_security: true, collect_ai: false, 'ai_monitoring.enabled': true })
+      config.onConnect({ high_security: true, collect_ai: false, agent_config: { 'ai_monitoring.enabled': true } })
       assert.equal(config.ai_monitoring.enabled, false)
     })
 
@@ -733,7 +733,7 @@ describe('when receiving server-side configuration', () => {
         t.assert.equal(value, false)
       })
 
-      config.onConnect({ 'ai_monitoring.enabled': true, 'ai_monitoring.record_content.enabled': false, 'ai_monitoring.streaming.enabled': false })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true, 'ai_monitoring.record_content.enabled': false, 'ai_monitoring.streaming.enabled': false } })
       t.assert.equal(config.ai_monitoring.enabled, true)
       t.assert.equal(config.ai_monitoring.streaming.enabled, false)
       t.assert.equal(config.ai_monitoring.record_content.enabled, false)
@@ -748,7 +748,7 @@ describe('when receiving server-side configuration', () => {
         t.assert.equal(value, true)
       })
       config.profiling.enabled = false
-      config.onConnect({ 'profiling.enabled': true })
+      config.onConnect({ agent_config: { 'profiling.enabled': true } })
       t.assert.equal(config.profiling.enabled, true)
     })
 
@@ -759,7 +759,7 @@ describe('when receiving server-side configuration', () => {
         t.assert.equal(value, false)
       })
       config.profiling.enabled = true
-      config.onConnect({ 'profiling.enabled': false })
+      config.onConnect({ agent_config: { 'profiling.enabled': false } })
       t.assert.equal(config.profiling.enabled, false)
     })
 
@@ -770,7 +770,7 @@ describe('when receiving server-side configuration', () => {
         throw new Error('should not update dynamically')
       })
       config.profiling.enabled = false
-      config.onConnect({ 'profiling.enabled': false })
+      config.onConnect({ agent_config: { 'profiling.enabled': false } })
       t.assert.equal(config.profiling.enabled, false)
     })
 
@@ -781,7 +781,7 @@ describe('when receiving server-side configuration', () => {
         throw new Error('should not update dynamically')
       })
       config.profiling.enabled = true
-      config.onConnect({ 'profiling.enabled': true })
+      config.onConnect({ agent_config: { 'profiling.enabled': true } })
       t.assert.equal(config.profiling.enabled, true)
     })
   })
