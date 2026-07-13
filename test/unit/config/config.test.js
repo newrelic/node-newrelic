@@ -32,11 +32,11 @@ test('when loading invalid configuration file', async (t) => {
   })
 
   await t.test('should continue agent startup with config.newrelic_home property removed', () => {
-    const Cornfig = require('../../../lib/config')
+    const LocalConfig = require('../../../lib/config')
     let configuration
 
     assert.doesNotThrow(function envTest() {
-      configuration = Cornfig.initialize()
+      configuration = LocalConfig.initialize()
     })
 
     assert.ok(!configuration.newrelic_home)
@@ -619,4 +619,9 @@ test('redacted_license_key', async (t) => {
     const config = new Config({ license_key: '' })
     assert.equal(config.redacted_license_key, '', 'should return empty string for empty license')
   })
+})
+
+test('otlp_resource_attributes', () => {
+  const config = Config.initialize()
+  assert.deepEqual(config.otlp_resource_attributes, {})
 })
