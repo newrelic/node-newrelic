@@ -19,7 +19,6 @@ test.beforeEach((ctx) => {
     get [Symbol.toStringTag]() { return 'Agent' },
     config: {
       otlp_resource_attributes: {
-        'entity.guid': guid,
         licenseKey,
         appName: 'test-app',
         'tags.accountId': '1',
