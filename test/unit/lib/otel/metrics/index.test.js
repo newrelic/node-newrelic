@@ -12,12 +12,20 @@ const SetupMetrics = require('#agentlib/otel/metrics/index.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
+  const guid = 'guid-123456'
+  const licenseKey = 'license-123456'
 
   const agent = {
     get [Symbol.toStringTag]() { return 'Agent' },
     config: {
-      entity_guid: 'guid-123456',
-      license_key: 'license-123456',
+      otlp_resource_attributes: {
+        licenseKey,
+        appName: 'test-app',
+        'tags.accountId': '1',
+        'tags.account': 'Test Account'
+      },
+      entity_guid: guid,
+      license_key: licenseKey,
       host: 'example.com',
       port: 443,
       opentelemetry: {
@@ -64,7 +72,13 @@ test('configures global provider after agent start', async (t) => {
 
   await once(agent, 'otelMetricsBootstrapped')
   const provider = require('@opentelemetry/api').metrics.getMeterProvider()
-  t.assert.deepEqual(provider._sharedState.resource.attributes, { 'entity.guid': 'guid-123456' })
+  t.assert.deepEqual(provider._sharedState.resource.attributes, {
+    'entity.guid': 'guid-123456',
+    'tags.accountId': '1',
+    'tags.account': 'Test Account',
+    appName: 'test-app',
+    licenseKey: 'license-123456'
+  })
 })
 
 test('logs warning and uses defaults when export_interval <= export_timeout', async (t) => {

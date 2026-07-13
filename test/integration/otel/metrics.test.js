@@ -23,8 +23,13 @@ test.beforeEach(async (ctx) => {
       }
     }
   })
-  ctx.nr.agent.config.entity_guid = 'guid-123456'
-  ctx.nr.agent.config.license_key = 'license-123456'
+  const guid = 'guid-123456'
+  const licenseKey = 'license-123456'
+  ctx.nr.agent.config.entity_guid = guid
+  ctx.nr.agent.config.license_key = licenseKey
+  ctx.nr.agent.config.otlp_resource_attributes = {
+    licenseKey
+  }
 
   ctx.nr.data = {}
   const otelServer = await createOtelMetricsServer(ctx.nr.data)
@@ -70,6 +75,8 @@ test('sends metrics', { timeout: 5_000 }, async (t) => {
   let resource = payload.resourceMetrics[0].resource
   assert.equal(resource.attributes[0].key, 'entity.guid')
   assert.deepEqual(resource.attributes[0].value, { stringValue: 'guid-123456' })
+  assert.equal(resource.attributes[1].key, 'licenseKey')
+  assert.deepEqual(resource.attributes[1].value, { stringValue: 'license-123456' })
 
   const found = payload.resourceMetrics[0].scopeMetrics[0].metrics
   assert.equal(Array.isArray(found), true)

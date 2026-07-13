@@ -785,4 +785,40 @@ describe('when receiving server-side configuration', () => {
       t.assert.equal(config.profiling.enabled, true)
     })
   })
+
+  describe('Hybrid Agent OTLP Resource Attributes', () => {
+    test('should assign `otlp_resource_attributes` from server side config', (t) => {
+      const { config } = t.nr
+      const payload = {
+        licenseKey: 'fake-key',
+        'tags.account': 'Test Account',
+        instanceName: 'host nodejs:test-app',
+        'tags.accountId': '1',
+        appName: 'test-app',
+        host: 'host',
+        'entity.guid': 'guid',
+        'host.displayName': 'host',
+        'agent.version': '1.1.1',
+        realAgentId: '11111111',
+        'tags.trustedAccountId': '1'
+      }
+      config.otlp_resource_attributes = {}
+      config.onConnect({ otlp_resource_attributes: payload })
+      assert.deepEqual(config.otlp_resource_attributes, payload)
+    })
+
+    test('should set to empty object if `otlp_resource_attributes` is null', (t) => {
+      const { config } = t.nr
+      config.otlp_resource_attributes = {}
+      config.onConnect({ otlp_resource_attributes: null })
+      assert.deepEqual(config.otlp_resource_attributes, {})
+    })
+
+    test('should set to empty object if `otlp_resource_attributes` is undefined', (t) => {
+      const { config } = t.nr
+      config.otlp_resource_attributes = {}
+      config.onConnect({ otlp_resource_attributes: undefined })
+      assert.deepEqual(config.otlp_resource_attributes, {})
+    })
+  })
 })

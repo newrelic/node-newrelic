@@ -38,8 +38,13 @@ async function buildServers(secure = false) {
   agentConfig.proxy = proxyServer.proxyUrl
 
   const agent = helper.instrumentMockedAgent(agentConfig)
-  agent.config.entity_guid = 'guid-123456'
-  agent.config.license_key = 'license-123456'
+  const guid = 'guid-123456'
+  const licenseKey = 'license-123456'
+  agent.config.entity_guid = guid
+  agent.config.license_key = licenseKey
+  agent.config.otlp_resource_attributes = {
+    licenseKey
+  }
   const dataTracker = {}
   const {
     server: otelServer,
@@ -64,7 +69,7 @@ test.afterEach(() => {
 })
 
 test('sends metrics through HTTP proxy', { timeout: 5_000 }, async (t) => {
-  t.plan(24)
+  t.plan(26)
 
   const { agent, dataTracker, otelServer, proxyServer } = await buildServers()
   t.after(async () => {
@@ -115,6 +120,8 @@ test('sends metrics through HTTP proxy', { timeout: 5_000 }, async (t) => {
   let resource = payload.resourceMetrics[0].resource
   t.assert.equal(resource.attributes[0].key, 'entity.guid')
   t.assert.deepEqual(resource.attributes[0].value, { stringValue: 'guid-123456' })
+  t.assert.equal(resource.attributes[1].key, 'licenseKey')
+  t.assert.deepEqual(resource.attributes[1].value, { stringValue: 'license-123456' })
 
   const found = payload.resourceMetrics[0].scopeMetrics[0].metrics
   t.assert.equal(Array.isArray(found), true)
