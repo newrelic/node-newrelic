@@ -6,9 +6,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.burnMappedCpu = burnMappedCpu;
 exports.burnUnmappedCpu = burnUnmappedCpu;
-// CPU-heavy fixture for the source-mapping integration test, compiled
-// (tsc --sourceMap) to hot.js + hot.js.map so frames can be checked for
-// resolution back to this .ts. Two functions: one per test (see the test).
+exports.allocateMapped = allocateMapped;
+exports.allocateUnmapped = allocateUnmapped;
+// Fixture for the source-mapping integration tests, compiled (tsc --sourceMap)
+// to hot.js + hot.js.map so frames can be checked for resolution back to this
+// .ts. Two cpu-burn functions feed the CpuProfiler tests and two allocation
+// functions feed the HeapProfiler tests — one function per test (see the test),
+// because a function is only reliably captured as a named frame the first time
+// it is profiled in a process.
 function burnMappedCpu(durationMs) {
     const end = Date.now() + durationMs;
     let acc = 0;
@@ -28,5 +33,22 @@ function burnUnmappedCpu(durationMs) {
         }
     }
     return acc;
+}
+// Allocate `count` retained arrays (~8 KB each on the V8 heap, not external) so the
+// heap sampler captures allocation frames here. The caller must hold the return value
+// until after collect(): the sampling profiler reports only live allocations.
+function allocateMapped(count) {
+    const retained = [];
+    for (let i = 0; i < count; i++) {
+        retained.push(new Array(1024).fill(i));
+    }
+    return retained;
+}
+function allocateUnmapped(count) {
+    const retained = [];
+    for (let i = 0; i < count; i++) {
+        retained.push(new Array(1024).fill(i + 1));
+    }
+    return retained;
 }
 //# sourceMappingURL=hot.js.map
