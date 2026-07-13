@@ -23,8 +23,14 @@ test.beforeEach(async (ctx) => {
       }
     }
   })
-  ctx.nr.agent.config.entity_guid = 'guid-123456'
-  ctx.nr.agent.config.license_key = 'license-123456'
+  const guid = 'guid-123456'
+  const licenseKey = 'license-123456'
+  ctx.nr.agent.config.entity_guid = guid
+  ctx.nr.agent.config.license_key = licenseKey
+  ctx.nr.agent.config.otlp_resource_attributes = {
+    'entity.guid': guid,
+    licenseKey
+  }
 
   ctx.nr.data = {}
   const otelServer = await createOtelMetricsServer(ctx.nr.data)

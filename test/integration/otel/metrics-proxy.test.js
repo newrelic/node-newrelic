@@ -38,8 +38,14 @@ async function buildServers(secure = false) {
   agentConfig.proxy = proxyServer.proxyUrl
 
   const agent = helper.instrumentMockedAgent(agentConfig)
-  agent.config.entity_guid = 'guid-123456'
-  agent.config.license_key = 'license-123456'
+  const guid = 'guid-123456'
+  const licenseKey = 'license-123456'
+  agent.config.entity_guid = guid
+  agent.config.license_key = licenseKey
+  agent.config.otlp_resource_attributes = {
+    'entity.guid': guid,
+    licenseKey
+  }
   const dataTracker = {}
   const {
     server: otelServer,
