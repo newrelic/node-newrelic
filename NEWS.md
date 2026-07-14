@@ -1,3 +1,37 @@
+### v14.3.0 (2026-07-14)
+
+#### Features
+
+* Added source mapping support to heap profiler ([#4122](https://github.com/newrelic/node-newrelic/pull/4122)) ([dcee39f](https://github.com/newrelic/node-newrelic/commit/dcee39fa76a102389f9dd7c186461346ef4fa265))
+* Added source mapping support to CPU (wall time) profiler ([#4095](https://github.com/newrelic/node-newrelic/pull/4095)) ([f6123bc](https://github.com/newrelic/node-newrelic/commit/f6123bc939afc0122443fda3eab7d9e842dcbfef))
+* Added `otlp_resource_attributes` to all outgoing OpenTelemetry metrics calls ([#4128](https://github.com/newrelic/node-newrelic/pull/4128)) ([a0c1c5b](https://github.com/newrelic/node-newrelic/commit/a0c1c5b0f314b7ca35b84f0c6cf8229395c4aa52))
+* Added support for `ai_monitoring.enabled`,`ai_monitoring.streaming.enabled`, and `ai_monitoring.record_content.enabled` to be assigned via server-side config ([#4123](https://github.com/newrelic/node-newrelic/pull/4123)) ([c4d8032](https://github.com/newrelic/node-newrelic/commit/c4d8032bb2fcc7e346854b6ae818bea9e17f7f9f))
+
+#### Bug fixes
+
+* Fixed `bunyan` log forwarding multiple duplicate lines ([#4132](https://github.com/newrelic/node-newrelic/pull/4132)) ([b0f4242](https://github.com/newrelic/node-newrelic/commit/b0f4242098ffe8a63566519707987b588b22f6aa))
+* Fixed OTEL crash when adding exceptions to spans ([#4130](https://github.com/newrelic/node-newrelic/pull/4130)) ([508542e](https://github.com/newrelic/node-newrelic/commit/508542e7cb8f2ad11952171a4e44dc71b2d23f07))
+
+#### Documentation
+
+* Updated compatibility report ([#4125](https://github.com/newrelic/node-newrelic/pull/4125)) ([405b59b](https://github.com/newrelic/node-newrelic/commit/405b59b20ed811b31eadc4a85bf8ff6a64c12edd)) ([#4107](https://github.com/newrelic/node-newrelic/pull/4107)) ([267a964](https://github.com/newrelic/node-newrelic/commit/267a964cffdab4373a9292e035cc877b814f8529))
+
+#### Miscellaneous chores
+
+* Changed `notify-release.yml` schedule with our bot user ([#4135](https://github.com/newrelic/node-newrelic/pull/4135)) ([a9318ae](https://github.com/newrelic/node-newrelic/commit/a9318aec1ff32fd8930431b20df7123f76ced513))
+* Changed `versioned-security-agent.yml` schedule with our bot user ([#4134](https://github.com/newrelic/node-newrelic/pull/4134)) ([d7c6f64](https://github.com/newrelic/node-newrelic/commit/d7c6f64af2747a392ac905a1775aa70642a9f9b6))
+* Changed smoke-test schedule with our bot user ([#4133](https://github.com/newrelic/node-newrelic/pull/4133)) ([400268e](https://github.com/newrelic/node-newrelic/commit/400268e98b9d559c1b46726a91f555aeff706bbe))
+* Sharded the versioned tests w/ security agent workflow ([#4119](https://github.com/newrelic/node-newrelic/pull/4119)) ([fe200c4](https://github.com/newrelic/node-newrelic/commit/fe200c4fc1996ce7b115a7ab76e4b84659758d01))
+* Updated test runner to accept suites as positional parameters ([#4117](https://github.com/newrelic/node-newrelic/pull/4117)) ([ac0985d](https://github.com/newrelic/node-newrelic/commit/ac0985d65291eb24637c90e4d96b0e3aff56ecfc))
+
+#### Tests
+
+* Added more scenarios to winston for constructing loggers ([#4120](https://github.com/newrelic/node-newrelic/pull/4120)) ([ea90fc3](https://github.com/newrelic/node-newrelic/commit/ea90fc30719824c8cdd7de67a9af88257ab97805))
+* Added skip for winston test for ranges that do not support it ([#4121](https://github.com/newrelic/node-newrelic/pull/4121)) ([e75e15e](https://github.com/newrelic/node-newrelic/commit/e75e15e3ca3eb7344f9a9697efe9b49fef96f3af))
+* Applied sampling to `pg-native` tests to reduce the matrix under test ([#4124](https://github.com/newrelic/node-newrelic/pull/4124)) ([b1ad2da](https://github.com/newrelic/node-newrelic/commit/b1ad2da853ee55ebe7477ff6a172e454a76d13bd))
+* Fixed flaky amqplib async-work duration assertions ([#4118](https://github.com/newrelic/node-newrelic/pull/4118)) ([3544237](https://github.com/newrelic/node-newrelic/commit/3544237c908f908aad17cf4d6b713015f186be6e))
+* Removed timing race from common.request unit tests ([#4113](https://github.com/newrelic/node-newrelic/pull/4113)) ([b22c25b](https://github.com/newrelic/node-newrelic/commit/b22c25b56f73b9821710e22988a4cdcbfb06d907))
+
 ### v14.2.1 (2026-07-09)
 
 #### Bug fixes
