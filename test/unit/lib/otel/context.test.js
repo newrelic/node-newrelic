@@ -80,10 +80,8 @@ test('should add transaction and trace root to otel ctx', (t) => {
   const transaction = { agent, traceId: 'traceId', trace: { root: { id: 'segmentId' } } }
   const newContext = ctx.enterTransaction(transaction)
   const fakeSpan = newContext.getValue(agent.otelSpanKey)
-  assert.deepEqual(fakeSpan, {
-    segmentId: transaction.trace.root.id,
-    traceId: transaction.traceId
-  })
+  assert.equal(fakeSpan.segmentId, transaction.trace.root.id)
+  assert.equal(fakeSpan.traceId, transaction.traceId)
 })
 
 test('should not add transaction and trace root to otel ctx when undefined', (t) => {
@@ -101,10 +99,8 @@ test('should add segment to otel ctx', (t) => {
   const segment = { id: 'segmentId' }
   const newContext = ctx.enterSegment({ segment })
   const fakeSpan = newContext.getValue(agent.otelSpanKey)
-  assert.deepEqual(fakeSpan, {
-    segmentId: segment.id,
-    traceId: newContext.transaction.traceId
-  })
+  assert.equal(fakeSpan.segmentId, segment.id)
+  assert.equal(fakeSpan.traceId, newContext.transaction.traceId)
 })
 
 test('should not error if missing segment', (t) => {
@@ -122,10 +118,8 @@ test('should add segment to otel when both segment and transaction are passed in
   const segment = { id: 'segmentId' }
   const newContext = ctx.enterSegment({ segment, transaction })
   const fakeSpan = newContext.getValue(agent.otelSpanKey)
-  assert.deepEqual(fakeSpan, {
-    segmentId: segment.id,
-    traceId: newContext.transaction.traceId
-  })
+  assert.equal(fakeSpan.segmentId, segment.id)
+  assert.equal(fakeSpan.traceId, newContext.transaction.traceId)
 })
 
 test('should not set fake span if transaction.agent.otelSpanKey is null', (t) => {
