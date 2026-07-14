@@ -61,3 +61,15 @@ describe('CpuProfiler source mapping', () => {
     assert.strictEqual(pprof.time.start.firstCall.args[0].sourceMapper, undefined, 'should start without a mapper')
   })
 })
+
+describe('CpuProfiler cpu time', () => {
+  test('always asks pprof to collect cpu time alongside wall', (t) => {
+    const { logger, tracer } = t.nr
+    const profiler = t.nr.profiler = new CpuProfiler({ logger, samplingInterval: 60_000, tracer })
+
+    profiler.start()
+
+    assert.equal(pprof.time.start.callCount, 1)
+    assert.strictEqual(pprof.time.start.firstCall.args[0].collectCpuTime, true, 'should ask pprof to collect cpu time')
+  })
+})
