@@ -7,7 +7,7 @@ permissions:
 on:
   workflow_dispatch:
   schedule:
-    # Runs on Mondays at 8AM PST (15 UTC)
+    # Runs on Mondays at 7 AM PST (14 UTC)
     - cron: '0 14 * * 1'
 
 jobs:
