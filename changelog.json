@@ -10,9 +10,9 @@
           "Fixed `bunyan` log forwarding multiple duplicate lines"
         ],
         "features": [
-          "Added `otlp_resource_attributes` to all outgoing opentelemetry metrics calls",
           "Added source mapping support to heap profiler",
           "Added source mapping support to CPU (wall time) profiler",
+          "Added `otlp_resource_attributes` to all outgoing OpenTelemetry metrics calls",
           "Added support for `ai_monitoring.enabled`,`ai_monitoring.streaming.enabled`, and `ai_monitoring.record_content.enabled` to be assigned via server-side config"
         ]
       }
