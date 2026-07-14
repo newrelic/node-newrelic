@@ -2,9 +2,9 @@
 
 #### Features
 
-* Add source mapping support to `HeapProfiler` ([#4122](https://github.com/newrelic/node-newrelic/pull/4122)) ([dcee39f](https://github.com/newrelic/node-newrelic/commit/dcee39fa76a102389f9dd7c186461346ef4fa265))
-* Add source mapping to CPU (wall time) profiler ([#4095](https://github.com/newrelic/node-newrelic/pull/4095)) ([f6123bc](https://github.com/newrelic/node-newrelic/commit/f6123bc939afc0122443fda3eab7d9e842dcbfef))
-* Added `otlp_resource_attributes` to all outgoing opentelemetry metrics calls ([#4128](https://github.com/newrelic/node-newrelic/pull/4128)) ([a0c1c5b](https://github.com/newrelic/node-newrelic/commit/a0c1c5b0f314b7ca35b84f0c6cf8229395c4aa52))
+* Added source mapping support to heap profiler ([#4122](https://github.com/newrelic/node-newrelic/pull/4122)) ([dcee39f](https://github.com/newrelic/node-newrelic/commit/dcee39fa76a102389f9dd7c186461346ef4fa265))
+* Added source mapping support to CPU (wall time) profiler ([#4095](https://github.com/newrelic/node-newrelic/pull/4095)) ([f6123bc](https://github.com/newrelic/node-newrelic/commit/f6123bc939afc0122443fda3eab7d9e842dcbfef))
+* Added `otlp_resource_attributes` to all outgoing OpenTelemetry metrics calls ([#4128](https://github.com/newrelic/node-newrelic/pull/4128)) ([a0c1c5b](https://github.com/newrelic/node-newrelic/commit/a0c1c5b0f314b7ca35b84f0c6cf8229395c4aa52))
 * Added support for `ai_monitoring.enabled`,`ai_monitoring.streaming.enabled`, and `ai_monitoring.record_content.enabled` to be assigned via server-side config ([#4123](https://github.com/newrelic/node-newrelic/pull/4123)) ([c4d8032](https://github.com/newrelic/node-newrelic/commit/c4d8032bb2fcc7e346854b6ae818bea9e17f7f9f))
 
 #### Bug fixes
@@ -14,8 +14,7 @@
 
 #### Documentation
 
-* Updated compatibility report ([#4125](https://github.com/newrelic/node-newrelic/pull/4125)) ([405b59b](https://github.com/newrelic/node-newrelic/commit/405b59b20ed811b31eadc4a85bf8ff6a64c12edd))
-* Updated compatibility report ([#4107](https://github.com/newrelic/node-newrelic/pull/4107)) ([267a964](https://github.com/newrelic/node-newrelic/commit/267a964cffdab4373a9292e035cc877b814f8529))
+* Updated compatibility report ([#4125](https://github.com/newrelic/node-newrelic/pull/4125)) ([405b59b](https://github.com/newrelic/node-newrelic/commit/405b59b20ed811b31eadc4a85bf8ff6a64c12edd)) ([#4107](https://github.com/newrelic/node-newrelic/pull/4107)) ([267a964](https://github.com/newrelic/node-newrelic/commit/267a964cffdab4373a9292e035cc877b814f8529))
 
 #### Miscellaneous chores
 
@@ -23,7 +22,6 @@
 * Changed `versioned-security-agent.yml` schedule with our bot user ([#4134](https://github.com/newrelic/node-newrelic/pull/4134)) ([d7c6f64](https://github.com/newrelic/node-newrelic/commit/d7c6f64af2747a392ac905a1775aa70642a9f9b6))
 * Changed smoke-test schedule with our bot user ([#4133](https://github.com/newrelic/node-newrelic/pull/4133)) ([400268e](https://github.com/newrelic/node-newrelic/commit/400268e98b9d559c1b46726a91f555aeff706bbe))
 * Sharded the versioned tests w/ security agent workflow ([#4119](https://github.com/newrelic/node-newrelic/pull/4119)) ([fe200c4](https://github.com/newrelic/node-newrelic/commit/fe200c4fc1996ce7b115a7ab76e4b84659758d01))
-    * Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 * Updated test runner to accept suites as positional parameters ([#4117](https://github.com/newrelic/node-newrelic/pull/4117)) ([ac0985d](https://github.com/newrelic/node-newrelic/commit/ac0985d65291eb24637c90e4d96b0e3aff56ecfc))
 
 #### Tests
