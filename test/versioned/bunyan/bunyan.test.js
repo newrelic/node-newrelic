@@ -198,6 +198,52 @@ test('log forwarding enabled', async (t) => {
     })
   })
 
+  await t.test('should forward a child logger log line only once', (t) => {
+    const { agent, bunyan } = t.nr
+    const stream = makeSink()
+    const logger = bunyan.createLogger({ name: 'test-logger', stream })
+    const child = logger.child({ component: 'child' })
+
+    child.info('incoming_http_request')
+
+    assert.equal(stream.logs.length, 1, 'should write one line to the stream sink')
+    const msgs = agent.logs.getEvents()
+    assert.equal(
+      msgs.length,
+      1,
+      'should forward the child log line to the aggregator exactly once'
+    )
+  })
+
+  await t.test(
+    'should not duplicate forwarded logs as child loggers are created per request',
+    (t) => {
+      const { agent, bunyan } = t.nr
+      const stream = makeSink()
+      const logger = bunyan.createLogger({ name: 'test-logger', stream })
+
+      // Simulate a service that creates a per-request child logger and logs a
+      // single line (e.g. `logger.child({ req_id })`). Each request should
+      // forward exactly one log line. bunyan's "simple" child shares the
+      // parent's `streams` array by reference, so re-attaching the
+      // NRLogForwarder stream on every Logger construction accumulates
+      // forwarders and duplicates a single log line N times on request N.
+      const requests = 5
+      for (let i = 0; i < requests; i++) {
+        const requestLogger = logger.child({ req_id: i }, true)
+        requestLogger.info('incoming_http_request')
+      }
+
+      assert.equal(stream.logs.length, requests, 'stream sink should have one line per request')
+      const msgs = agent.logs.getEvents()
+      assert.equal(
+        msgs.length,
+        requests,
+        'should forward exactly one log line per request (no duplicates from accumulated forwarders)'
+      )
+    }
+  )
+
   await t.test('should properly reformat errors on msgs to log aggregator', (t) => {
     const { agent, bunyan } = t.nr
     const name = 'TestError'
