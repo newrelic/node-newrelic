@@ -177,6 +177,12 @@ test('when loaded with defaults', async (t) => {
     const { agent } = t.nr
     assert.throws(() => agent.setState('bogus'), /Invalid state bogus/)
   })
+
+  await t.test('defines serverlessMode getter', (t) => {
+    const { agent } = t.nr
+    assert.equal(typeof agent.serverlessMode, 'boolean')
+    assert.equal(agent.serverlessMode, false)
+  })
 })
 
 test('should load naming rules when configured', () => {
