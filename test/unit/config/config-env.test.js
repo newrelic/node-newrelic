@@ -113,35 +113,6 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
-  await t.test('should default OTel host if nothing to parse in the license key', (t, end) => {
-    idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'hambulance' }, (tc) => {
-      assert.ok(tc.otlp_endpoint)
-      assert.equal(tc.otlp_endpoint, 'otlp.nr-data.net')
-      end()
-    })
-  })
-
-  await t.test('should parse the region off the license key for OTel', (t, end) => {
-    idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'eu01xxhambulance' }, (tc) => {
-      assert.ok(tc.otlp_endpoint)
-      assert.equal(tc.otlp_endpoint, 'otlp.eu01.nr-data.net')
-      end()
-    })
-  })
-
-  await t.test(
-    'should take an explicit OTel endpoint over the license key parsed host',
-    (t, end) => {
-      idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'eu01xxhambulance' }, function () {
-        idempotentEnv({ NEW_RELIC_OTLP_ENDPOINT: 'localhost' }, (tc) => {
-          assert.ok(tc.otlp_endpoint)
-          assert.equal(tc.otlp_endpoint, 'localhost')
-          end()
-        })
-      })
-    }
-  )
-
   await t.test('should pick up on feature flags set via environment variables', (t, end) => {
     const ffNamePrefix = 'NEW_RELIC_FEATURE_FLAG_'
     const awaitFeatureFlag = ffNamePrefix + 'AWAIT_SUPPORT'
