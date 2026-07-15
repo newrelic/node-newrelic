@@ -23,7 +23,8 @@ on:
         description: Version of security agent to test
         required: false
   schedule:
-    - cron:  '0 8 * * 1-5'
+    # Run once a day at 2AM PDT (9 UTC) on mon-fri 
+    - cron:  '0 9 * * 1-5'
   pull_request:
     branches:
       - main

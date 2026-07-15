@@ -10,10 +10,10 @@ on:
   # Run on pushes to any branch. Not triggered for forked repo PRs.
   push:
   schedule:
-    # Run once a day at 8AM PDT (15 UTC) on week days (1-5).
+    # Run once a day at 9AM PDT (16 UTC) on mon-fri 
     # Last commit on default branch.
     # https://help.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events-schedule
-    - cron:  '0 15 * * 1-5'
+    - cron:  '0 16 * * 1-5'
   workflow_dispatch:
 
 jobs:
