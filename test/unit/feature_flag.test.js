@@ -42,7 +42,8 @@ const used = [
   'aws_bedrock_instrumentation',
   'langchain_instrumentation',
   'kafkajs_instrumentation',
-  'undici_error_tracking'
+  'undici_error_tracking',
+  'collect_cpu_time'
 ]
 
 test.beforeEach((ctx) => {
