@@ -1038,6 +1038,37 @@ test('Query Trace Aggregator', async (t) => {
       assert.ok(queries.samples.has('droptableusers'))
       end()
     })
+
+    await t.test('should not limit to max_samples when in serverless mode', (t, end) => {
+      const opts = {
+        config: new Config({
+          slow_sql: { enabled: true, max_samples: 2 },
+          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+        }),
+        method: 'sql_trace_data',
+        serverlessMode: true
+      }
+      const harvester = { add: sinon.stub() }
+      const logger = { trace: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester, { logger })
+      const removeShortest = sinon.spy(queries, 'removeShortest')
+
+      addQuery(queries, 600, null)
+      addQuery(queries, 550, null, 'create table users')
+      addQuery(queries, 650, null, 'drop table users')
+
+      assert.ok('size' in queries.samples)
+      assert.equal(queries.samples.size, 3)
+      assert.ok(queries.samples.has('select*fromfoowherea=?'))
+      assert.ok(queries.samples.has('createtableusers'))
+      assert.ok(queries.samples.has('droptableusers'))
+      assert.ok(
+        logger.trace.calledWith('Keeping shortest sample due to serverless mode being on.'),
+        'should log that the shortest sample is kept'
+      )
+      assert.equal(removeShortest.callCount, 0, 'should not invoke removeShortest')
+      end()
+    })
   })
 
   await t.test('merging query tracers', async (t) => {
