@@ -284,4 +284,33 @@ test('NormalizerRule', async function (t) {
       assert.equal(re.global, true)
     })
   })
+
+  await t.test('should return entire string if `replacement` is not present', () => {
+    const rule = new Rule({
+      each_segment: false,
+      eval_order: -1,
+      ignore: false,
+      match_expression: '^MyMetric/.*$',
+      replace_all: false,
+      terminate_chain: true
+    })
+    const metric = 'MyMetric/Is/A/Sample/Name'
+    const result = rule.apply(metric)
+    assert.equal(result, metric)
+  })
+
+  await t.test('should return entire string if replacement is `$0`', () => {
+    const rule = new Rule({
+      each_segment: false,
+      eval_order: -1,
+      ignore: false,
+      match_expression: '^MyMetric/.*$',
+      replace_all: false,
+      replacement: '$0',
+      terminate_chain: true
+    })
+    const metric = 'MyMetric/Is/A/Sample/Name'
+    const result = rule.apply(metric)
+    assert.equal(result, metric)
+  })
 })
