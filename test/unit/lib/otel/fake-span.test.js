@@ -67,13 +67,7 @@ test('should add attributes to the segment', () => {
   assert.equal(instance, span)
 })
 
-test('addEvent should log warning', () => {
-  const logs = []
-  const logger = {
-    warn(msg, name) {
-      logs.push([msg, name])
-    }
-  }
+test('addEvent should add a timed event to the segment', () => {
   const segment = new TraceSegment({
     id: 'id',
     config: { attributes: {} },
@@ -81,16 +75,38 @@ test('addEvent should log warning', () => {
     parentId: 1,
     collect: true
   })
-  segment.logger = logger
   const tx = { traceId: 'traceId' }
   const span = new FakeSpan(segment, tx)
 
-  const instance = span.addEvent('foo')
+  const instance = span.addEvent('foo', { bar: 'baz' })
   assert.equal(instance, span)
-  assert.deepEqual(logs, [[
-    'addEvent is not implemented. Not adding event: %s.',
-    'foo'
-  ]])
+  assert.equal(segment.timedEvents.length, 1)
+
+  const [intrinsics, userAttrs, agentAttrs] = segment.timedEvents[0].toJSON()
+  assert.equal(intrinsics.name, 'foo')
+  assert.equal(intrinsics.type, 'SpanEvent')
+  assert.equal(intrinsics['span.id'], 'id')
+  assert.equal(intrinsics['trace.id'], 'traceId')
+  assert.equal(typeof intrinsics.timestamp, 'number')
+  assert.deepEqual(userAttrs, {})
+  assert.deepEqual(agentAttrs, { bar: 'baz' })
+})
+
+test('addEvent should add a timed event with no attributes given', () => {
+  const segment = new TraceSegment({
+    id: 'id',
+    config: { attributes: {} },
+    name: 'test-segment',
+    parentId: 1,
+    collect: true
+  })
+  const tx = { traceId: 'traceId' }
+  const span = new FakeSpan(segment, tx)
+
+  span.addEvent('foo')
+  assert.equal(segment.timedEvents.length, 1)
+  const [, , agentAttrs] = segment.timedEvents[0].toJSON()
+  assert.deepEqual(agentAttrs, {})
 })
 
 test('should add links to spans', () => {
@@ -216,7 +232,49 @@ test('recording returns true', () => {
   assert.deepEqual(span.isRecording(), true)
 })
 
-test('recordException should log warning', () => {
+test('recordException should add a timed event from a string exception', () => {
+  const segment = new TraceSegment({
+    id: 'id',
+    config: { attributes: {} },
+    name: 'test-segment',
+    parentId: 1,
+    collect: true
+  })
+  const tx = { traceId: 'traceId' }
+  const span = new FakeSpan(segment, tx)
+
+  const instance = span.recordException('a message')
+  assert.equal(instance, undefined)
+  assert.equal(segment.timedEvents.length, 1)
+
+  const [intrinsics, , agentAttrs] = segment.timedEvents[0].toJSON()
+  assert.equal(intrinsics.name, 'exception')
+  assert.deepEqual(agentAttrs, { 'exception.message': 'a message' })
+})
+
+test('recordException should add a timed event from an Error exception', () => {
+  const segment = new TraceSegment({
+    id: 'id',
+    config: { attributes: {} },
+    name: 'test-segment',
+    parentId: 1,
+    collect: true
+  })
+  const tx = { traceId: 'traceId' }
+  const span = new FakeSpan(segment, tx)
+  const error = new Error('boom')
+
+  span.recordException(error)
+  assert.equal(segment.timedEvents.length, 1)
+
+  const [, , agentAttrs] = segment.timedEvents[0].toJSON()
+  assert.equal(agentAttrs['exception.type'], 'Error')
+  assert.equal(agentAttrs['exception.message'], 'boom')
+  assert.equal(typeof agentAttrs['exception.stacktrace'], 'string')
+  assert.ok(error.stack.startsWith(agentAttrs['exception.stacktrace']))
+})
+
+test('recordException should log a warning when the exception has no usable information', () => {
   const logs = []
   const logger = {
     warn(msg, name) {
@@ -234,10 +292,10 @@ test('recordException should log warning', () => {
   const tx = { traceId: 'traceId' }
   const span = new FakeSpan(segment, tx)
 
-  const instance = span.recordException('foo', 'whatever')
-  assert.equal(instance, undefined)
+  span.recordException({})
+  assert.equal(segment.timedEvents.length, 0)
   assert.deepEqual(logs, [[
-    'addEvent is not implemented. Not adding event: %s.',
-    'foo'
+    'Failed to record exception: %s.',
+    {}
   ]])
 })
