@@ -1,3 +1,24 @@
+### v14.3.1 (2026-07-20)
+
+#### Bug fixes
+
+* Handled `$0` as a replacment in a metric normalization rule to return the matched string in its entirety ([#4150](https://github.com/newrelic/node-newrelic/pull/4150)) ([b57fcc8](https://github.com/newrelic/node-newrelic/commit/b57fcc87d741122e87285f73b1c68f566ec9f1db))
+
+#### Documentation
+
+* Fix jsdoc parse errors and OOM in docs script ([#4148](https://github.com/newrelic/node-newrelic/pull/4148)) ([39bf899](https://github.com/newrelic/node-newrelic/commit/39bf89981de9e29183ae911ce06f0afbc462ff32))
+* Updated compatibility report ([#4137](https://github.com/newrelic/node-newrelic/pull/4137)) ([3c1a2b3](https://github.com/newrelic/node-newrelic/commit/3c1a2b3a8b9ee2157c4bc774873a48ed6079334e))
+    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
+
+#### Miscellaneous chores
+
+* Attached serverless mode config to agent instance ([#4140](https://github.com/newrelic/node-newrelic/pull/4140)) ([7a3592f](https://github.com/newrelic/node-newrelic/commit/7a3592f58354a824cf7d148173cb38e64bd8beed))
+* Remove dead `otlp_endpoint` config option ([#4142](https://github.com/newrelic/node-newrelic/pull/4142)) ([05b072f](https://github.com/newrelic/node-newrelic/commit/05b072f8b5c7b4ec18b36c0aa4267a86f5966b9c))
+
+#### Continuous integration
+
+* Revert CI schedules to previous schedules ([#4139](https://github.com/newrelic/node-newrelic/pull/4139)) ([b6f8708](https://github.com/newrelic/node-newrelic/commit/b6f8708530574d600371cc639a26ab655322e47f))
+
 ### v14.3.0 (2026-07-14)
 
 #### Features
