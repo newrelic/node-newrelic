@@ -109,6 +109,27 @@ test('addEvent should add a timed event with no attributes given', () => {
   assert.deepEqual(agentAttrs, {})
 })
 
+test('addEvent handles (string, number) passed in', () => {
+  const segment = new TraceSegment({
+    id: 'id',
+    config: { attributes: {} },
+    name: 'test-segment',
+    parentId: 1,
+    collect: true
+  })
+  const tx = { traceId: 'traceId' }
+  const span = new FakeSpan(segment, tx)
+
+  const someTime = 1784564100000
+  span.addEvent('my-exception', someTime)
+  assert.equal(segment.timedEvents.length, 1)
+
+  const [intrinsics, , agentAttrs] = segment.timedEvents[0].toJSON()
+  assert.equal(intrinsics.name, 'my-exception')
+  assert.notEqual(intrinsics.timestamp, someTime, `${someTime} is not treated as a timestamp`)
+  assert.deepEqual(agentAttrs, {})
+})
+
 test('should add links to spans', () => {
   const segment = new TraceSegment({
     id: 'id',
