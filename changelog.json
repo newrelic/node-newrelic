@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.3.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Handled `$0` as a replacment in a metric normalization rule to return the matched string in its entirety"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "14.3.0",
       "changes": {
         "security": [],
