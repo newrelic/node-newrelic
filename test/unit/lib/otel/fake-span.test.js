@@ -274,6 +274,27 @@ test('recordException should add a timed event from an Error exception', () => {
   assert.ok(error.stack.startsWith(agentAttrs['exception.stacktrace']))
 })
 
+test('recordException should prefer exception.code over exception.name for the exception type', () => {
+  const segment = new TraceSegment({
+    id: 'id',
+    config: { attributes: {} },
+    name: 'test-segment',
+    parentId: 1,
+    collect: true
+  })
+  const tx = { traceId: 'traceId' }
+  const span = new FakeSpan(segment, tx)
+  const error = new Error('file not found')
+  error.code = 'ENOENT'
+
+  span.recordException(error)
+  assert.equal(segment.timedEvents.length, 1)
+
+  const [, , agentAttrs] = segment.timedEvents[0].toJSON()
+  assert.equal(agentAttrs['exception.type'], 'ENOENT')
+  assert.equal(agentAttrs['exception.message'], 'file not found')
+})
+
 test('recordException should log a warning when the exception has no usable information', () => {
   const logs = []
   const logger = {
