@@ -6,8 +6,8 @@
 
 #### Documentation
 
-* Fix jsdoc parse errors and OOM in docs script ([#4148](https://github.com/newrelic/node-newrelic/pull/4148)) ([39bf899](https://github.com/newrelic/node-newrelic/commit/39bf89981de9e29183ae911ce06f0afbc462ff32))
 * Updated compatibility report ([#4137](https://github.com/newrelic/node-newrelic/pull/4137)) ([3c1a2b3](https://github.com/newrelic/node-newrelic/commit/3c1a2b3a8b9ee2157c4bc774873a48ed6079334e))
+
 
 #### Miscellaneous chores
 
