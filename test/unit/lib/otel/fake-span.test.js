@@ -126,7 +126,7 @@ test('addEvent handles (string, number) passed in', () => {
 
   const [intrinsics, , agentAttrs] = segment.timedEvents[0].toJSON()
   assert.equal(intrinsics.name, 'my-exception')
-  assert.notEqual(intrinsics.timestamp, someTime, `${someTime} is not treated as a timestamp`)
+  assert.equal(intrinsics.timestamp, someTime, `${someTime} is treated as a timestamp`)
   assert.deepEqual(agentAttrs, {})
 })
 
