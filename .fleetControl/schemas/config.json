@@ -1,0 +1,1448 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "New Relic Node.js Agent Configuration",
+  "description": "Configuration accepted by the New Relic Node.js agent's config file (newrelic.js, newrelic.cjs, or newrelic.mjs), and by the equivalent NEW_RELIC_* environment variables. Generated from lib/config/default.js; regenerate with `node .fleetControl/schemaGeneration/generate-schema.js` after changing that file.",
+  "type": "object",
+  "properties": {
+    "newrelic_home": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "app_name": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "default": [],
+      "description": "Array of application names."
+    },
+    "license_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The user's license key. Must be set by per-app configuration file."
+    },
+    "host": {
+      "type": "string",
+      "default": "",
+      "description": "Hostname for the New Relic collector proxy. You shouldn't need to change this."
+    },
+    "port": {
+      "type": "integer",
+      "default": 443,
+      "description": "The port on which the collector proxy will be listening. You shouldn't need to change this."
+    },
+    "proxy": {
+      "type": "string",
+      "default": "",
+      "description": "Proxy url A proxy url can be used in place of setting proxy_host, proxy_port, proxy_user, and proxy_pass. e.g. http://user:pass@host:port/ Setting proxy will override other proxy settings."
+    },
+    "proxy_host": {
+      "type": "string",
+      "default": "",
+      "description": "Proxy host to use to connect to the internet."
+    },
+    "proxy_port": {
+      "type": "string",
+      "default": "",
+      "description": "Proxy port to use to connect to the internet."
+    },
+    "proxy_user": {
+      "type": "string",
+      "default": "",
+      "description": "Proxy user name when required."
+    },
+    "proxy_pass": {
+      "type": "string",
+      "default": "",
+      "description": "Proxy password when required."
+    },
+    "trusted_account_key": {
+      "type": [
+        "string",
+        "number",
+        "null"
+      ],
+      "default": null
+    },
+    "primary_application_id": {
+      "type": [
+        "string",
+        "number",
+        "null"
+      ],
+      "default": null
+    },
+    "account_id": {
+      "type": [
+        "string",
+        "number",
+        "null"
+      ],
+      "default": null
+    },
+    "certificates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Custom SSL certificates If your proxy uses a custom SSL certificate, you can add the CA text to this array, one entry per certificate. The easiest way to do this is with `fs.readFileSync` e.g. certificates: [ require('fs').readFileSync('custom.crt', 'utf8') // don't forget the utf8 ]"
+    },
+    "agent_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the module is enabled."
+    },
+    "apdex_t": {
+      "type": "number",
+      "default": 0.1,
+      "description": "The default Apdex tolerating / threshold value for applications, in seconds. The default for Node is apdexT to 100 milliseconds, which is lower than New Relic standard, but Node.js applications tend to be more latency-sensitive than most. NOTE: This setting can not be modified locally. Use server-side configuration to change your application's apdex."
+    },
+    "allow_all_headers": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, all request headers except for those listed in attributes.exclude will be captured for all traces, unless otherwise specified in a destination's attributes include/exclude lists."
+    },
+    "compressed_content_encoding": {
+      "type": "string",
+      "default": "gzip",
+      "description": "If the data compression threshold is reached in the payload, the agent compresses data, using gzip compression by default. The config option `compressed_content_encoding` can be set to 'deflate' to use deflate compression."
+    },
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "If `true`, enables capture of attributes for all destinations. If there are specific parameters you want ignored, use `attributes.exclude`."
+        },
+        "value_size_limit": {
+          "type": "integer",
+          "default": 256,
+          "maximum": 4096,
+          "description": "Defines the number of characters allowed for each individual attribute's value. The default is 256 characters, with a maximum of 4,096."
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Prefix of attributes to exclude from all destinations. Allows * as wildcard at end. NOTE: If excluding headers, they must be in camelCase form to be filtered."
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Prefix of attributes to include in all destinations. Allows * as wildcard at end. NOTE: If including headers, they must be in camelCase form to be filtered."
+        },
+        "include_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "If `true`, patterns may be added to the `attributes.include` list."
+        },
+        "filter_cache_limit": {
+          "type": "integer",
+          "default": 1000,
+          "description": "Controls how many attribute include/exclude rule results are cached by the filter. Increasing this limit will cause greater memory usage and is only necessary if you have an extremely high variety of attributes."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Attributes are key-value pairs containing information that determines the properties of an event or transaction."
+    },
+    "logging": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "default": "info",
+          "description": "Verbosity of the module's logging. This module uses bunyan (https://github.com/trentm/node-bunyan) for its logging, and as such the valid logging levels are 'fatal', 'error', 'warn', 'info', 'debug' and 'trace'. Logging at levels 'info' and higher is very terse. For support requests, attaching logs captured at 'trace' level are extremely helpful in chasing down bugs."
+        },
+        "filepath": {
+          "type": "string",
+          "description": "Where to put the log file -- by default just uses process.cwd + 'newrelic_agent.log'. A special case is a filepath of 'stdout', in which case all logging will go to stdout, or 'stderr', in which case all logging will go to stderr."
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to write to a log file at all"
+        }
+      },
+      "additionalProperties": true
+    },
+    "audit_log": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enables logging of out bound traffic from the Agent to the Collector. This field is ignored if trace level logging is enabled. With trace logging, all traffic is logged."
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Specify which methods are logged. Used in conjunction with the audit_log flag If audit_log is enabled and this property is empty, all methods will be logged Otherwise, if the audit log is enabled, only the methods specified in the filter will be logged Methods include: error_data, metric_data, and analytic_event_data"
+        }
+      },
+      "additionalProperties": true
+    },
+    "error_collector": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "If `true`, the agent captures attributes from error collection."
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to exclude from error collection. Allows * as wildcard at end."
+            },
+            "include": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to include in error collection. Allows * as wildcard at end."
+            }
+          },
+          "additionalProperties": true
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Disabling the error tracer just means that errors aren't collected and sent to New Relic -- it DOES NOT remove any instrumentation."
+        },
+        "ignore_status_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            404
+          ],
+          "description": "List of HTTP error status codes the error tracer should disregard. Ignoring a status code means that the transaction is not renamed to match the code, and the request is not treated as an error by the error collector. NOTE: This configuration value has no effect on errors recorded using `noticeError()`. Defaults to 404 NOT FOUND."
+        },
+        "capture_events": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether error events are collected."
+        },
+        "max_event_samples_stored": {
+          "type": "integer",
+          "default": 100,
+          "description": "The agent will collect all error events up to this number per minute. If there are more than that, a statistical sampling will be collected. Currently this uses a priority sampling algorithm. By increasing this setting you are both increasing the memory requirements of the agent as well as increasing the payload to the New Relic servers. The memory concerns are something you should consider for your own server's sake. The payload of events is compressed, but if it grows too large the New Relic servers may reject it."
+        },
+        "expected_classes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "expected_messages": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {}
+        },
+        "expected_status_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "ignore_classes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "ignore_messages": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {}
+        }
+      },
+      "additionalProperties": true,
+      "description": "Whether to collect & submit error traces to New Relic."
+    },
+    "strip_exception_messages": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "When `true`, the agent will redact the messages of captured errors."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Error message redaction Options regarding how the agent handles the redaction of error messages."
+    },
+    "cloud": {
+      "type": "object",
+      "properties": {
+        "aws": {
+          "type": "object",
+          "properties": {
+            "account_id": {
+              "type": "integer",
+              "default": null,
+              "description": "The AWS account ID for the AWS account associated with this app."
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "utilization": {
+      "type": "object",
+      "properties": {
+        "detect_aws": {
+          "type": "boolean",
+          "default": true,
+          "description": "This flag dictates whether the agent attempts to reach out to AWS to get info about the vm the process is running on."
+        },
+        "detect_pcf": {
+          "type": "boolean",
+          "default": true,
+          "description": "This flag dictates whether the agent attempts to detect if the the process is running on Pivotal Cloud Foundry."
+        },
+        "detect_azure": {
+          "type": "boolean",
+          "default": true,
+          "description": "This flag dictates whether the agent attempts to reach out to Azure to get info about the vm the process is running on."
+        },
+        "detect_azurefunction": {
+          "type": "boolean",
+          "default": true,
+          "description": "This flag dictates whether the agent attempts to read environment variables and invocation context to get info about the Azure Function called."
+        },
+        "detect_docker": {
+          "type": "boolean",
+          "default": true,
+          "description": "This flag dictates whether the agent attempts to read files to get info about the container the process is running in. env NEW_RELIC_UTILIZATION_DETECT_DOCKER"
+        },
+        "detect_gcp": {
+          "type": "boolean",
+          "default": true,
+          "description": "This flag dictates whether the agent attempts to reach out to GCP to get info about the vm the process is running on."
+        },
+        "detect_kubernetes": {
+          "type": "boolean",
+          "default": true,
+          "description": "This flag dictates whether the agent attempts to reach out to Kubernetes to get info about the container the process is running on."
+        },
+        "logical_processors": {
+          "type": "number",
+          "default": null
+        },
+        "billing_hostname": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "total_ram_mib": {
+          "type": "integer",
+          "default": null
+        },
+        "gcp_use_instance_as_host": {
+          "type": "boolean",
+          "default": true,
+          "description": "When enabled, it will use GCP metadata id to set the hostname of the running application."
+        },
+        "gcp_cloud_run": {
+          "type": "object",
+          "properties": {
+            "include_revision_in_host": {
+              "type": "boolean",
+              "default": false,
+              "description": "When enabled, and `gcp_use_instance_as_host` is also enabled, the GCP Cloud Run revision (`K_REVISION`) will be prepended to the instance id when setting the hostname of the running application, resulting in a hostname of `${K_REVISION}-${instance_id}`."
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Options regarding collecting system information. Used for system utilization based pricing scheme."
+    },
+    "transaction_tracer": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "If `true`, the agent captures attributes from transaction traces."
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to exclude from transaction traces. Allows * as wildcard at end."
+            },
+            "include": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to include in transaction traces. Allows * as wildcard at end."
+            }
+          },
+          "additionalProperties": true
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to collect & submit slow transaction traces to New Relic. The instrumentation is loaded regardless of this setting, as it's necessary to gather metrics. Disable the agent to prevent the instrumentation from loading."
+        },
+        "transaction_threshold": {
+          "type": "number",
+          "default": "apdex_f",
+          "description": "Sets the time, in seconds, for a transaction to be considered slow. When a transaction exceeds this threshold, a transaction trace will be recorded. When set to 'apdex_f', the threshold will be set to 4 * apdex_t, which with a default apdex_t value of 500 milliseconds will be 2 seconds. If a number is provided, it is set in seconds."
+        },
+        "top_n": {
+          "type": "integer",
+          "default": 20,
+          "description": "Increase this parameter to increase the diversity of the slow transaction traces recorded by your application over time. Confused? Read on. Transactions are named based on the request (see the README for the details of how requests are mapped to transactions), and top_n refers to the \"top n slowest transactions\" grouped by these names. The module will only replace a recorded trace with a new trace if the new trace is slower than the previous slowest trace of that name. The default value for this setting is 20, as the transaction trace view page also defaults to showing the 20 slowest transactions. If you want to record the absolute slowest transaction over the last minute, set top_n to 0 or 1. This used to be the default, and has a problem in that it will allow one very slow route to dominate your slow transaction traces. The module will always record at least 5 different slow transactions in the reporting periods after it starts up, and will reset its internal slow trace aggregator if no slow transactions have been recorded for the last 5 harvest cycles, restarting the aggregation process. env NEW_RELIC_TRACER_TOP_N"
+        },
+        "record_sql": {
+          "type": "string",
+          "enum": [
+            "off",
+            "obfuscated",
+            "raw"
+          ],
+          "default": "obfuscated",
+          "description": "This option affects both slow-queries and record_sql for transaction traces. It can have one of 3 values: 'off', 'obfuscated' or 'raw' When it is 'off' no slow queries will be captured, and backtraces and sql will not be included in transaction traces. If it is 'raw' or 'obfuscated' and other criteria (slow_sql.enabled etc) are met for a query. The raw or obfuscated sql will be included in the transaction trace and a slow query sample will be collected."
+        },
+        "explain_threshold": {
+          "type": "integer",
+          "default": 500,
+          "description": "This option affects both slow-queries and record_sql for transaction traces. This is the minimum duration a query must take (in ms) for it to be considered for for slow query and inclusion in transaction traces."
+        }
+      },
+      "additionalProperties": true
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "array",
+          "items": {},
+          "default": [],
+          "description": "A list of rules of the format {pattern: 'pattern', name: 'name'} for matching incoming request URLs and naming the associated New Relic transactions. Both pattern and name are required. Additional attributes are ignored. Patterns may have capture groups (following JavaScript conventions), and names will use $1-style replacement strings. See the documentation for addNamingRule for important caveats."
+        },
+        "ignore": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "^/socket.io/.*/xhr-polling/"
+          ],
+          "description": "A list of patterns for matching incoming request URLs to be ignored by the agent. Patterns may be strings or regular expressions. By default, socket.io long-polling is ignored. env NEW_RELIC_IGNORING_RULES"
+        }
+      },
+      "additionalProperties": true,
+      "description": "Rules for naming or ignoring transactions."
+    },
+    "enforce_backstop": {
+      "type": "boolean",
+      "default": true,
+      "description": "By default, any transactions that are not affected by other bits of naming logic (the API, rules, or metric normalization rules) will have their names set to 'NormalizedUri/*'. Setting this value to false will set them instead to Uri/path/to/resource. Don't change this setting unless you understand the implications of New Relic's metric grouping issues and are confident your application isn't going to run afoul of them. Your application could end up getting blocked! Nobody wants that."
+    },
+    "browser_monitoring": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "If `true`, the agent captures attributes from browser monitoring."
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to exclude from browser monitoring. Allows * as wildcard at end."
+            },
+            "include": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to include in browser monitoring. Allows * as wildcard at end."
+            }
+          },
+          "additionalProperties": true
+        },
+        "enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable browser monitoring header generation. This does not auto-instrument, rather it enables the agent to generate headers. The newrelic module can generate the appropriate <script> header, but you must inject the header yourself, or use a module that does so. Usage: var newrelic = require('newrelic'); router.get('/', function (req, res) { var header = newrelic.getBrowserTimingHeader(); res.write(header) // write the rest of the page }); This generates the <script>...</script> header necessary for Browser Monitoring This script must be manually injected into your templates, as high as possible in the header, but _after_ any X-UA-COMPATIBLE HTTP-EQUIV meta tags. Otherwise you may hurt IE! This method must be called _during_ a transaction, and must be called every time you want to generate the headers. Do *not* reuse the headers between users, or even between requests."
+        },
+        "debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Request un-minified sources from the server."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Browser Monitoring Browser monitoring lets you correlate transactions between the server and browser giving you accurate data on how long a page request takes, from request, through the server response, up until the actual page render completes."
+    },
+    "api": {
+      "type": "object",
+      "properties": {
+        "custom_attributes_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Controls for the `API.addCustomAttribute` method."
+        },
+        "custom_events_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Controls for the `API.recordCustomEvent` method."
+        },
+        "notice_error_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Controls for the `API.noticeError` method."
+        }
+      },
+      "additionalProperties": true,
+      "description": "API Configuration Some API end points can be turned off via configuration settings to allow for more flexible security options. All API configuration options are disabled when high-security mode is enabled."
+    },
+    "transaction_events": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "If `true`, the agent captures attributes from transaction events."
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to exclude in transaction events. Allows * as wildcard at end. env NEW_RELIC_TRANSACTION_EVENTS_ATTRIBUTES_EXCLUDE"
+            },
+            "include": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to include in transaction events. Allows * as wildcard at end. env NEW_RELIC_TRANSACTION_EVENTS_ATTRIBUTES_INCLUDE"
+            }
+          },
+          "additionalProperties": true
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "If this is disabled, the agent does not collect, nor try to send, analytic data."
+        },
+        "max_samples_stored": {
+          "type": "integer",
+          "default": 10000,
+          "description": "The agent will collect all events up to this number per minute. If there are more than that, a statistical sampling will be collected."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Transaction Events Transaction events are sent to New Relic Insights. This event data includes transaction timing, transaction name, and any custom parameters. Read more here: http://newrelic.com/insights"
+    },
+    "custom_insights_events": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "If this is disabled, the agent does not collect, nor try to send, custom event data."
+        },
+        "max_samples_stored": {
+          "type": "integer",
+          "default": 3000,
+          "description": "The agent will collect all events up to this number per minute. If there are more than that, a statistical sampling will be collected. Currently this uses a priority sampling algorithm. By increasing this setting you are both increasing the memory requirements of the agent as well as increasing the payload to the New Relic servers. The memory concerns are something you should consider for your own server's sake. The payload of events is compressed, but if it grows too large the New Relic servers may reject it."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Custom Insights Events Custom insights events are JSON object that are sent to New Relic Insights. You can tell the agent to send your custom events via the `newrelic.recordCustomEvent()` API. These events are sampled once the max queue size is reached. You can tune this setting below. Read more here: http://newrelic.com/insights"
+    },
+    "process_host": {
+      "type": "object",
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "default": "",
+          "description": "Configurable display name for hosts"
+        },
+        "ipv_preference": {
+          "type": "string",
+          "enum": [
+            "4",
+            "6"
+          ],
+          "default": "4",
+          "description": "ip address preference when creating hostnames"
+        }
+      },
+      "additionalProperties": true,
+      "description": "This is used to configure properties about the user's host name."
+    },
+    "high_security": {
+      "type": "boolean",
+      "default": false,
+      "description": "High Security High security mode (v2) is a setting which prevents any sensitive data from being sent to New Relic. The local setting must match the server setting. If there is a mismatch the agent will log a message and act as if it is disabled. Attributes of high security mode (when enabled): requires SSL does not allow capturing of http params does not allow custom params To read more see: https://docs.newrelic.com/docs/subscriptions/high-security"
+    },
+    "labels": {
+      "type": "object",
+      "propertyNames": {
+        "maxLength": 255
+      },
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 255
+      },
+      "maxProperties": 64,
+      "default": {},
+      "description": "Labels An object of label names and values that will be applied to the data sent from this agent. Both label names and label values have a maximum length of 255 characters. This object should contain at most 64 labels."
+    },
+    "slow_sql": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enables and disables `slow_sql` recording."
+        },
+        "max_samples": {
+          "type": "integer",
+          "default": 10,
+          "description": "Sets the maximum number of slow query samples that will be collected in a single harvest cycle. env NEW_RELIC_MAX_SQL_SAMPLES"
+        }
+      },
+      "additionalProperties": true,
+      "description": "These options control behavior for slow queries, but do not affect sql nodes in transaction traces."
+    },
+    "datastore_tracer": {
+      "type": "object",
+      "properties": {
+        "instance_reporting": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "database_name_reporting": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Controls behavior of datastore instance metrics. Enables reporting the host and port/path/id of database servers. Default is `true`. Enables reporting of database/schema names. Default is `true`."
+    },
+    "grpc": {
+      "type": "object",
+      "properties": {
+        "record_errors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enables recording of non-zero gRPC status codes. Default is `true`."
+        },
+        "ignore_status_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "List of gRPC error status codes the error tracer should disregard. Ignoring a status code means that the transaction is not renamed to match the code, and the request is not treated as an error by the error collector. NOTE: This configuration value has no effect on errors recorded using `noticeError()`. Defaults to no codes ignored."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Controls behavior of gRPC server instrumentation."
+    },
+    "span_events": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enables/disables span event generation"
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "If `true`, the agent captures attributes from span events."
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to exclude in span events. Allows * as wildcard at end."
+            },
+            "include": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to include in span events. Allows * as wildcard at end."
+            }
+          },
+          "additionalProperties": true
+        },
+        "max_samples_stored": {
+          "type": "integer",
+          "default": 2000,
+          "description": "The agent will collect all events up to this number per minute. If there are more than that, a statistical sampling will be collected."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Controls the behavior of span events produced by the agent."
+    },
+    "transaction_segments": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "If `true`, the agent captures attributes from transaction segments."
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to exclude in transaction segments. Allows * as wildcard at end."
+            },
+            "include": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Prefix of attributes to include in transaction segments. Allows * as wildcard at end."
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Controls the behavior of transaction segments produced by the agent."
+    },
+    "distributed_tracing": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enables/disables distributed tracing."
+        },
+        "exclude_newrelic_header": {
+          "type": "boolean",
+          "default": true,
+          "description": "Excludes New Relic format distributed tracing header (`newrelic`) on outbound requests when set to `true`. By default (when false) both W3C TraceContext (`traceparent`, `tracecontext`) and New Relic formats will be sent."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Controls the method of cross agent tracing in the agent. Distributed tracing lets you see the path that a request takes through your distributed system. Enabling distributed tracing changes the behavior of some New Relic features, so carefully consult the transition guide before you enable this feature: https://docs.newrelic.com/docs/transition-guide-distributed-tracing Default is true."
+    },
+    "message_tracer": {
+      "type": "object",
+      "properties": {
+        "segment_parameters": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Controls behavior of message broker tracing. Enables reporting parameters on message broker segments."
+    },
+    "infinite_tracing": {
+      "type": "object",
+      "properties": {
+        "trace_observer": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "string",
+              "default": "",
+              "description": "The URI HOST of the observer. Setting this enables infinite tracing."
+            },
+            "port": {
+              "type": "integer",
+              "default": 443,
+              "description": "The URI PORT of the observer."
+            }
+          },
+          "additionalProperties": true
+        },
+        "span_events": {
+          "type": "object",
+          "properties": {
+            "queue_size": {
+              "type": "integer",
+              "default": 10000,
+              "description": "The amount of spans to hold onto before dropping them"
+            },
+            "batch_size": {
+              "type": "integer",
+              "default": 750,
+              "description": "Size of batches to post to 8T server"
+            }
+          },
+          "additionalProperties": true
+        },
+        "batching": {
+          "type": "boolean",
+          "default": true
+        },
+        "compression": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Controls the use of infinite tracing."
+    },
+    "profiling": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "cpu",
+            "heap"
+          ],
+          "description": "List of profile type names to enable. Only cpu and heap profiles are currently supported"
+        },
+        "delay": {
+          "type": "integer",
+          "default": 0,
+          "description": "Delay in milliseconds before starting profiler."
+        },
+        "duration": {
+          "type": "integer",
+          "default": 0,
+          "description": "If >0, stop profiler after this many milliseconds of operation."
+        },
+        "source_mapping": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "When set to `true`, resolves profiler frames to their original source files/lines using source maps, instead of the compiled output."
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Controls the behavior of the profiler."
+    },
+    "apm_lambda_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "When `true`, the AWS Lambda instrumentation will add the necessary data to support the new (as of 2025) unified APM UI."
+    },
+    "serverless_mode": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Specifies whether the agent will be used to monitor serverless functions (e.g. AWS Lambda). Defaults to true when the AWS_LAMBDA_FUNCTION_NAME environment variable is present, false otherwise."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Specifies whether the agent will be used to monitor serverless functions. For example: AWS Lambda"
+    },
+    "plugins": {
+      "type": "object",
+      "properties": {
+        "native_metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": true,
+          "description": "Controls usage of the native metrics module which samples VM and event loop data."
+        }
+      },
+      "additionalProperties": true
+    },
+    "application_logging": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Toggles the ability for all application logging features to be enabled."
+        },
+        "forwarding": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Toggles whether the agent gathers log records for sending to New Relic."
+            },
+            "max_samples_stored": {
+              "type": "integer",
+              "default": 10000,
+              "description": "Number of log records to send per minute to New Relic."
+            },
+            "labels": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "If `true`, the agent attaches labels to log records."
+                },
+                "exclude": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [],
+                  "description": "A case-insensitive array containing the labels to exclude from log records."
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Toggles whether the agent gathers logging metrics."
+            }
+          },
+          "additionalProperties": true
+        },
+        "local_decorating": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Toggles whether the agent performs log decoration on standard log output."
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Controls the behavior of Logs in Context within agent"
+    },
+    "ignore_server_configuration": {
+      "type": "boolean",
+      "default": false,
+      "description": "You may want more control over how your agent is configured and want to disallow the use of New Relic's server-side configuration for agents. To do so, set this to true. env NEW_RELIC_IGNORE_SERVER_SIDE_CONFIG"
+    },
+    "code_level_metrics": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Toggles whether to capture code.* attributes on spans"
+    },
+    "url_obfuscation": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Toggles whether to obfuscate URL parameters"
+        },
+        "regex": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Must be a valid regular expression.",
+              "default": null
+            },
+            "flags": {
+              "type": "string",
+              "default": "",
+              "description": "A string containing RegEx flags to use when matching URL parameters"
+            },
+            "replacement": {
+              "type": "string",
+              "default": "",
+              "description": "A string containing a replacement value for URL parameters can contain references to capture groups in the pattern"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Obfuscates URL parameters for outgoing and incoming requests for distributed tracing attributes - both transaction and span attributes for transaction trace transaction details"
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Toggles the generation of security events by the security agent."
+        },
+        "agent": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": true,
+          "description": "Flag to tell the Node.js agent to load the security agent. This property is read only once at application start."
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "IAST",
+            "RASP"
+          ],
+          "default": "IAST",
+          "description": "Security agent provides two modes: IAST and RASP. Default is IAST."
+        },
+        "validator_service_url": {
+          "type": "string",
+          "default": "wss://csec.nr-data.net",
+          "description": "Security agent validator URL. Must be prefixed with wss://."
+        },
+        "detection": {
+          "type": "object",
+          "properties": {
+            "rci": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": true
+            },
+            "rxss": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": true
+            },
+            "deserialization": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true,
+          "description": "Provide ability to toggle sending security events for the following rules."
+        },
+        "iast_test_identifier": {
+          "type": "string",
+          "default": "",
+          "description": "Unique test identifier when running IAST with CI/CD"
+        },
+        "scan_controllers": {
+          "type": "object",
+          "properties": {
+            "iast_scan_request_rate_limit": {
+              "type": "integer",
+              "default": 3600,
+              "description": "The maximum number of analysis probes or requests that can be sent to the application in one minute."
+            },
+            "scan_instance_count": {
+              "type": "integer",
+              "default": 0,
+              "description": "The number of application instances for a specific entity where IAST analysis is performed. Values are 0 or 1, 0 signifies run on all application instances"
+            }
+          },
+          "additionalProperties": true,
+          "description": "IAST scan controllers to get more control over IAST analysis"
+        },
+        "scan_schedule": {
+          "type": "object",
+          "properties": {
+            "delay": {
+              "type": "integer",
+              "default": 0,
+              "description": "The delay field specifies the time in minutes before an IAST scan begins after the application starts"
+            },
+            "duration": {
+              "type": "integer",
+              "default": 0,
+              "description": "The duration field specifies the amount of time in minutes that the IAST scan will run"
+            },
+            "schedule": {
+              "type": "string",
+              "default": "",
+              "description": "The schedule field specifies a unix cron expression that defines when the IAST scan should run. By default, schedule is disabled"
+            },
+            "always_sample_traces": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allows IAST to actively collect trace data in the background and the security agent will use this collected data to perform an IAST scan at the scheduled time"
+            }
+          },
+          "additionalProperties": true,
+          "description": "Schedule start and stop of IAST scan"
+        },
+        "exclude_from_iast_scan": {
+          "type": "object",
+          "properties": {
+            "api": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Ignore specific APIs from IAST analysis. The regex pattern should provide a full match for the URL without the endpoint."
+            },
+            "http_request_parameters": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "query": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "body": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                }
+              },
+              "additionalProperties": true,
+              "description": "Ignore specific HTTP request parameters from IAST analysis."
+            },
+            "iast_detection_category": {
+              "type": "object",
+              "properties": {
+                "insecure_settings": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "invalid_file_access": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "sql_injection": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "nosql_injection": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "ldap_injection": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "javascript_injection": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "command_injection": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "xpath_injection": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "ssrf": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "rxss": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "additionalProperties": true,
+              "description": "Allows users to specify categories of vulnerabilities for which IAST analysis will be applied or ignored."
+            }
+          },
+          "additionalProperties": true,
+          "description": "The exclude from IAST scan setting allows to exclude specific APIs, vulnerability categories, and parameters from IAST analysis."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Security agent configurations"
+    },
+    "heroku": {
+      "type": "object",
+      "properties": {
+        "use_dyno_names": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "When enabled, it will use `process.env.DYNO` to set the hostname of the running application"
+    },
+    "worker_threads": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": true,
+      "description": "When enabled, it will allow loading of the agent in worker threads. In 11.0.0 we added code to prevent loading in worker threads to cut down on unnecessary overhead of the agent. We have found in testing that traces and spans were useless unless work was completely self contained in the worker thread."
+    },
+    "ai_monitoring": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Toggles the generation of AI monitoring events by the agent."
+        },
+        "record_content": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": true,
+          "description": "When enabled, the content of LLM messages will be included in the recorded spans (i.e. delivered to the New Relic collector). This is enabled by default."
+        },
+        "streaming": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": true,
+          "description": "Toggles the capturing of Llm events when using streaming based methods in AIM supported libraries(i.e.- openai, AWS bedrock, langchain)"
+        }
+      },
+      "additionalProperties": true,
+      "description": "When enabled, instrumentation of supported AI libraries will be in effect."
+    },
+    "instrumentation": {
+      "type": "object",
+      "description": "Stanza that contains all keys to disable core & 3rd party package instrumentation(i.e. dns, http, mongodb, pg, redis, etc) **Note**: Disabling a given library may affect the instrumentation of libraries used after the disabled library. Use at your own risk.",
+      "properties": {},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether instrumentation for this module is active."
+          }
+        }
+      }
+    },
+    "opentelemetry": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Global switch for the whole OpenTelemetry feature. If it is set to `false`, any other sub-feature, e.g. `traces`, will not be enabled regardless of that specific sub-feature setting."
+        },
+        "traces": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": true,
+          "description": "`traces` are instrumentations, e.g. `@fastify/otel`. Enabling `traces` enables bridging OpenTelemetry instrumentations into the New Relic agent."
+        },
+        "logs": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": true,
+          "description": "`logs` governs automatic configuration of the OpenTelemetry logs API. When true, the agent will automatically configure the logs API to send logs emitted through the OTEL specific API to New Relic. This feature is dependent on application logs forwarding. Thus, application logs forwarding must be enabled as well."
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "export_interval": {
+              "type": "integer",
+              "default": 60000,
+              "description": "`export_interval` defines the number of milliseconds between each attempt to ship metrics to New Relic. This value must be equal to or greater than the value of `export_timeout`."
+            },
+            "export_timeout": {
+              "type": "integer",
+              "default": 10000,
+              "description": "`export_timeout` defines the number of milliseconds an export operation is allowed in order to successfully complete. If the timeout is exceeded, it will be reported via the OpenTelemetry diagnostics API."
+            }
+          },
+          "additionalProperties": true,
+          "description": "`metrics` governs automatic configuration of the OpenTelemetry metrics API. When `true`, the agent will automatically configure the metrics API to send metrics to New Relic and attach them to the application entity that is instrumented by the New Relic agent."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Governs the various OpenTelemetry based features provided by the agent. NOTICE: this configuration is subject to change while the OTEL feature set is in development."
+    },
+    "apollo_server": {
+      "type": "object",
+      "properties": {
+        "scalars": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable capture of timing of fields resolved with the GraphQLScalarType return type. This may be desired when performing time intensive calculations to return a scalar value. This is not recommended for queries that return a large number of pre-calculated scalar fields. NOTE: query/mutation resolvers will always be captured even if returning a scalar type."
+        },
+        "introspection_queries": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable capture of timings for an [IntrospectionQuery](https://www.graphql-js.org/api-v16/utilities/#introspectionquery)"
+        },
+        "service_definition_queries": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable capture of timings for a [Service Definition query](https://www.apollographql.com/docs/federation/federation-spec/#fetch-service-capabilities) received from an Apollo Federated Gateway Server."
+        },
+        "health_check_queries": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable capture of timings for a [Health Check query](https://www.apollographql.com/docs/federation/api/apollo-gateway/#servicehealthcheck) received from an Apollo Federated Gateway Server."
+        },
+        "field_metrics": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable capture of metrics for every field and resolver argument seen for an Apollo query. This is intended to be used to check for any unused fields in your graphql schema."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Stanza for customizing behavior for apollo server instrumentation"
+    }
+  },
+  "required": [
+    "app_name",
+    "license_key"
+  ],
+  "additionalProperties": true
+}
