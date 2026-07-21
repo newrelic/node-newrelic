@@ -55,6 +55,8 @@ test.beforeEach((ctx) => {
     resolve: dns.promises.resolve,
     resolveSrv: dns.promises.resolveSrv,
     resolveTxt: dns.promises.resolveTxt,
+    resolveSrvCb: dns.resolveSrv,
+    resolveTxtCb: dns.resolveTxt,
     lookup: dns.lookup
   }
 
@@ -62,26 +64,38 @@ test.beforeEach((ctx) => {
   const srvRecords = [
     { name: SRV_TARGET, port: Number(params.mongodb_port), weight: 0, priority: 0 }
   ]
-  const noTxtRecord = () => {
+  // A driver treats a missing TXT record as "no extra options"; the SRV records
+  // alone are enough to connect. Must be constructed fresh each call — some
+  // driver versions read `error.code` off the rejection.
+  const noTxtRecordError = () => {
     const error = new Error('no TXT record')
     error.code = 'ENODATA'
-    throw error
+    return error
   }
 
-  // Different driver versions resolve SRV/TXT differently: mongodb@4–6 call the
-  // dedicated `dns.promises.resolveSrv` / `resolveTxt`, while mongodb@7+ calls
-  // `dns.promises.resolve(address, rrtype)`. Patch all of them.
+  // Different driver versions resolve SRV/TXT differently:
+  //   * mongodb@4.1–4.7 use the callback-based `dns.resolveSrv` / `resolveTxt`
+  //   * mongodb@4.13–6 use the promise-based `dns.promises.resolveSrv` / `resolveTxt`
+  //   * mongodb@7+ uses `dns.promises.resolve(address, rrtype)`
+  // Patch all of them. The promise-based stubs must *reject* (return a rejected
+  // promise) rather than throw synchronously: some versions (e.g. mongodb@6.9)
+  // call `dns.promises.resolveTxt(...)` and attach the rejection handler on the
+  // returned promise, so a synchronous throw escapes that handler.
   dns.promises.resolveSrv = async () => srvRecords
-  dns.promises.resolveTxt = noTxtRecord
+  dns.promises.resolveTxt = async () => {
+    throw noTxtRecordError()
+  }
   dns.promises.resolve = async (address, rrtype) => {
     if (rrtype === 'SRV') {
       return srvRecords
     }
     if (rrtype === 'TXT') {
-      return noTxtRecord()
+      throw noTxtRecordError()
     }
     return ctx.nr.dns.resolve(address, rrtype)
   }
+  dns.resolveSrv = (name, callback) => process.nextTick(callback, null, srvRecords)
+  dns.resolveTxt = (name, callback) => process.nextTick(callback, noTxtRecordError())
   dns.lookup = (hostname, options, callback) => {
     if (typeof options === 'function') {
       callback = options
@@ -103,6 +117,8 @@ test.afterEach(async (ctx) => {
   dns.promises.resolve = ctx.nr.dns.resolve
   dns.promises.resolveSrv = ctx.nr.dns.resolveSrv
   dns.promises.resolveTxt = ctx.nr.dns.resolveTxt
+  dns.resolveSrv = ctx.nr.dns.resolveSrvCb
+  dns.resolveTxt = ctx.nr.dns.resolveTxtCb
   dns.lookup = ctx.nr.dns.lookup
 
   if (ctx.nr.client) {
@@ -201,10 +217,13 @@ test('an operation issued before SRV resolution degrades gracefully', async (t) 
   // path throws a `TypeError` from the subscriber; with it, instrumentation
   // records the segment with host/port omitted and lets the driver's own
   // connection error surface.
-  const srvError = () => {
+  const makeSrvError = () => {
     const error = new Error('SRV resolution failed')
     error.code = 'ENOTFOUND'
-    throw error
+    return error
+  }
+  const srvError = () => {
+    throw makeSrvError()
   }
   dns.promises.resolveSrv = srvError
   dns.promises.resolve = async (address, rrtype) => {
@@ -213,6 +232,8 @@ test('an operation issued before SRV resolution degrades gracefully', async (t) 
     }
     return t.nr.dns.resolve(address, rrtype)
   }
+  // mongodb@4.1–4.7 use the callback-based API.
+  dns.resolveSrv = (name, callback) => process.nextTick(callback, makeSrvError())
 
   const client = new mongodb.MongoClient(SRV_URI)
   t.nr.client = client
@@ -221,20 +242,34 @@ test('an operation issued before SRV resolution degrades gracefully', async (t) 
 
   await helper.runInTransaction(agent, async (transaction) => {
     transaction.name = common.TRANSACTION_NAME
+    // The operation must fail with the driver's own error. Capture it whether
+    // it surfaces as a rejected promise or a synchronous throw: mongodb@4.13+
+    // triggers implicit connection and rejects asynchronously with the SRV
+    // `ENOTFOUND`, while mongodb@4.1–4.7 require an already-connected client and
+    // throw `MongoNotConnectedError` synchronously out of `findOne` before SRV
+    // resolution is ever attempted.
+    //
     // `serverSelectionTimeoutMS` only matters as a fail-fast guard: SRV
     // resolution fails first (above), so we never reach server selection. But
     // if the SRV stub ever regresses and resolution succeeds, this keeps the
     // test from hanging on the driver's 30s default before rejecting.
-    await assert.rejects(
-      collection.findOne({ i: 0 }, { serverSelectionTimeoutMS: 100 }),
-      (err) => {
-        // Must be a driver resolution error, not a `TypeError` leaking from the
-        // subscriber's host-details lookup.
-        assert.notEqual(err.name, 'TypeError', 'instrumentation should not throw a TypeError')
-        assert.equal(err.code, 'ENOTFOUND')
-        assert.equal(err.message, 'SRV resolution failed')
-        return true
-      }
+    let err
+    try {
+      await collection.findOne({ i: 0 }, { serverSelectionTimeoutMS: 100 })
+    } catch (caught) {
+      err = caught
+    }
+    assert.ok(err, 'the operation should fail while hosts is empty')
+
+    // The point of this test is that the instrumentation guard does not throw a
+    // `TypeError` from its host-details lookup when `hosts` is empty — the
+    // driver's own error must surface instead.
+    assert.notEqual(err.name, 'TypeError', 'instrumentation should not throw a TypeError')
+    const surfacedSrvError = err.code === 'ENOTFOUND' && err.message === 'SRV resolution failed'
+    const surfacedNotConnected = err.name === 'MongoNotConnectedError'
+    assert.ok(
+      surfacedSrvError || surfacedNotConnected,
+      `expected a driver resolution/connection error, got ${err.name}: ${err.message}`
     )
 
     const children = transaction.trace.getChildren(transaction.trace.root.id)
