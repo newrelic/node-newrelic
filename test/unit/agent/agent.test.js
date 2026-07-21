@@ -183,6 +183,14 @@ test('when loaded with defaults', async (t) => {
     assert.equal(typeof agent.serverlessMode, 'boolean')
     assert.equal(agent.serverlessMode, false)
   })
+
+  await t.test('defines otel getter/setter', (t) => {
+    const { agent } = t.nr
+    assert.equal(agent.otel, undefined)
+    const api = { logs: {}, metrics: {}, traces: {} }
+    agent.otel = api
+    assert.equal(agent.otel, api)
+  })
 })
 
 test('should load naming rules when configured', () => {
