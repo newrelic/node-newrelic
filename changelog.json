@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.3.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Resolved mongodb host details at operation time to support `mongodb+srv://` clients"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "14.3.1",
       "changes": {
         "security": [],
