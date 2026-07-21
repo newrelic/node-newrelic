@@ -3,17 +3,14 @@
 #### Bug fixes
 
 * Resolved mongodb host details at operation time to support `mongodb+srv://` clients ([#4155](https://github.com/newrelic/node-newrelic/pull/4155)) ([7fd4443](https://github.com/newrelic/node-newrelic/commit/7fd444346285779a55c2a3147ca9c86f71b29cd2))
-    * Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 
 #### Documentation
 
-* Updated compatibility report ([#4156](https://github.com/newrelic/node-newrelic/pull/4156)) ([6058cf7](https://github.com/newrelic/node-newrelic/commit/6058cf77551b5e728bb75bbe0d2e2239f545e778))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
-* Updated compatibility report ([#4153](https://github.com/newrelic/node-newrelic/pull/4153)) ([136f65a](https://github.com/newrelic/node-newrelic/commit/136f65adccd558616cf812efd24d9376ade546d6))
+* Updated compatibility report ([#4156](https://github.com/newrelic/node-newrelic/pull/4156)) ([6058cf7](https://github.com/newrelic/node-newrelic/commit/6058cf77551b5e728bb75bbe0d2e2239f545e778)) ([#4153](https://github.com/newrelic/node-newrelic/pull/4153)) ([136f65a](https://github.com/newrelic/node-newrelic/commit/136f65adccd558616cf812efd24d9376ade546d6))
 
 #### Miscellaneous chores
 
-* Translate OTel exception into timed event ([#4151](https://github.com/newrelic/node-newrelic/pull/4151)) ([36daebe](https://github.com/newrelic/node-newrelic/commit/36daebe14ad7b7426456d7bee529087389511459))
+* Translated OTel exception into timed event ([#4151](https://github.com/newrelic/node-newrelic/pull/4151)) ([36daebe](https://github.com/newrelic/node-newrelic/commit/36daebe14ad7b7426456d7bee529087389511459))
 
 ### v14.3.1 (2026-07-20)
 
