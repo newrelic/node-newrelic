@@ -26,7 +26,8 @@
         "collection-misc.test.js",
         "collection-update.test.js",
         "cursor.test.js",
-        "db.test.js"
+        "db.test.js",
+        "srv-connect.test.js"
       ]
     }
   ],
