@@ -18,6 +18,7 @@ const {
   makeProperty,
   isExcluded,
   instrumentationSchema,
+  mergeSamplerDescriptions,
   walk,
   generateSchema,
   validateMetaSchema
@@ -432,6 +433,47 @@ test('instrumentationSchema', () => {
   })
 })
 
+test('mergeSamplerDescriptions', async (t) => {
+  await t.test('reindexes the three sampler fields under their dotted path, at both nesting levels', () => {
+    const commentIndex = new Map()
+    const samplerCommentIndex = new Map([
+      ['root', { description: 'root doc', block: '' }],
+      ['remote_parent_sampled', { description: 'sampled doc', block: '' }],
+      ['remote_parent_not_sampled', { description: 'not sampled doc', block: '' }]
+    ])
+    mergeSamplerDescriptions(commentIndex, samplerCommentIndex)
+    assert.strictEqual(commentIndex.get('distributed_tracing.sampler.root').description, 'root doc')
+    assert.strictEqual(
+      commentIndex.get('distributed_tracing.sampler.remote_parent_sampled').description,
+      'sampled doc'
+    )
+    assert.strictEqual(
+      commentIndex.get('distributed_tracing.sampler.remote_parent_not_sampled').description,
+      'not sampled doc'
+    )
+    // The same three fields are spread in a second time under partial_granularity.
+    assert.strictEqual(
+      commentIndex.get('distributed_tracing.sampler.partial_granularity.root').description,
+      'root doc'
+    )
+    assert.strictEqual(
+      commentIndex.get('distributed_tracing.sampler.partial_granularity.remote_parent_sampled').description,
+      'sampled doc'
+    )
+    assert.strictEqual(
+      commentIndex.get('distributed_tracing.sampler.partial_granularity.remote_parent_not_sampled').description,
+      'not sampled doc'
+    )
+  })
+
+  await t.test('leaves other entries in commentIndex untouched', () => {
+    const commentIndex = new Map([['app_name', { description: 'existing', block: '' }]])
+    mergeSamplerDescriptions(commentIndex, new Map())
+    assert.strictEqual(commentIndex.get('app_name').description, 'existing')
+    assert.strictEqual(commentIndex.size, 1)
+  })
+})
+
 test('generateSchema (integration, synthetic fixture)', async (t) => {
   const definition = {
     app_name: { formatter: () => {}, default: [] },
@@ -527,11 +569,43 @@ test('generateSchema (integration, real agent config)', async (t) => {
 
   await t.test('excluded stanzas are absent', () => {
     assert.ok(!('agent_control' in schema.properties))
-    assert.ok(!('sampler' in schema.properties.distributed_tracing.properties))
     assert.ok(!('diagnostics' in schema.properties.logging.properties))
     assert.ok(!('insecure' in schema.properties.infinite_tracing.properties.trace_observer.properties))
     assert.ok(!('feature_flag' in schema.properties))
     assert.ok(!('ssl' in schema.properties))
+  })
+
+  await t.test('distributed_tracing.sampler exposes its plain enum fields', () => {
+    const sampler = schema.properties.distributed_tracing.properties.sampler.properties
+    for (const key of ['root', 'remote_parent_sampled', 'remote_parent_not_sampled']) {
+      assert.deepStrictEqual(sampler[key].enum, ['trace_id_ratio_based', 'adaptive', 'always_on', 'always_off'])
+      assert.strictEqual(sampler[key].default, 'adaptive')
+      assert.ok(sampler[key].description.length > 0)
+    }
+  })
+
+  await t.test('distributed_tracing.sampler.adaptive_sampling_target enforces the range its own description states', () => {
+    const target = schema.properties.distributed_tracing.properties.sampler.properties.adaptive_sampling_target
+    assert.strictEqual(target.type, 'integer')
+    assert.strictEqual(target.default, 10)
+    assert.strictEqual(target.minimum, 1)
+    assert.strictEqual(target.maximum, 120)
+  })
+
+  await t.test('distributed_tracing.sampler.full_granularity is modeled', () => {
+    const enabled = schema.properties.distributed_tracing.properties.sampler.properties.full_granularity.properties.enabled
+    assert.strictEqual(enabled.type, 'boolean')
+    assert.strictEqual(enabled.default, true)
+  })
+
+  await t.test('distributed_tracing.sampler.partial_granularity is fully modeled, including its own copy of the enum fields', () => {
+    const partial = schema.properties.distributed_tracing.properties.sampler.properties.partial_granularity.properties
+    assert.strictEqual(partial.enabled.default, false)
+    assert.deepStrictEqual(partial.type.enum, ['compact', 'essential', 'reduced'])
+    for (const key of ['root', 'remote_parent_sampled', 'remote_parent_not_sampled']) {
+      assert.deepStrictEqual(partial[key].enum, ['trace_id_ratio_based', 'adaptive', 'always_on', 'always_off'])
+      assert.ok(partial[key].description.length > 0)
+    }
   })
 
   await t.test('the dynamic instrumentation map is present', () => {

@@ -16,6 +16,7 @@ const formatters = require('../../lib/config/formatters')
 
 const REPO_ROOT = path.join(__dirname, '..', '..')
 const DEFAULT_CONFIG_SOURCE = path.join(REPO_ROOT, 'lib', 'config', 'default.js')
+const SAMPLERS_SOURCE = path.join(REPO_ROOT, 'lib', 'config', 'samplers.js')
 const SCHEMA_PATH = path.join(__dirname, '..', 'schemas', 'config.json')
 
 // Replaces a leaf's schema outright, for shapes formatter/default can't reveal.
@@ -51,7 +52,9 @@ const TYPE_OVERRIDES = {
     default: {}
   },
   // Source comment states an explicit maximum of 4,096; formatter/default alone don't reveal it.
-  'attributes.value_size_limit': { type: 'integer', default: 256, maximum: 4096 }
+  'attributes.value_size_limit': { type: 'integer', default: 256, maximum: 4096 },
+  // Source comment states an explicit range; formatter/default alone don't reveal it.
+  'distributed_tracing.sampler.adaptive_sampling_target': { type: 'integer', default: 10, minimum: 1, maximum: 120 }
 }
 
 // Most enums come from the `allowList` formatter automatically; this covers the rest.
@@ -61,7 +64,6 @@ const ENUM_OVERRIDES = {}
 // config only — settings a user is meant to set - this excludes the rest.
 const EXCLUDE_KEYS = new Set([
   'agent_control', // Fleet Control sets this itself.
-  'distributed_tracing.sampler', // mixed string/object shape, not modeled yet.
   'logging.diagnostics',
   'infinite_tracing.trace_observer.insecure',
   'ssl' // no-op: the formatter always forces true regardless of input.
@@ -371,16 +373,37 @@ function walk(value, pathParts, ctx) {
   return withDescription(group, sourceEntry, ctx, pathStr)
 }
 
+// root/remote_parent_sampled/remote_parent_not_sampled are spread into
+// distributed_tracing.sampler rather than written there directly, so their
+// comments live under their own bare names in a different file — reindex
+// them under the dotted path `walk` actually looks them up by.
+function mergeSamplerDescriptions(commentIndex, samplerCommentIndex) {
+  const prefixes = ['distributed_tracing.sampler', 'distributed_tracing.sampler.partial_granularity']
+  for (const key of ['root', 'remote_parent_sampled', 'remote_parent_not_sampled']) {
+    const entry = samplerCommentIndex.get(key)
+    if (!entry) {
+      continue
+    }
+    for (const prefix of prefixes) {
+      commentIndex.set(`${prefix}.${key}`, entry)
+    }
+  }
+}
+
 // Every input defaults to the real thing, so tests can pass synthetic ones instead.
 function generateSchema({
   definition = defaultConfig.definition(),
   defaultConfigSourceText = fs.readFileSync(DEFAULT_CONFIG_SOURCE, 'utf8'),
+  samplersSourceText = fs.readFileSync(SAMPLERS_SOURCE, 'utf8'),
   excludeKeys = EXCLUDE_KEYS,
   typeOverrides = TYPE_OVERRIDES,
   enumOverrides = ENUM_OVERRIDES
 } = {}) {
+  const commentIndex = indexJSDocComments(defaultConfigSourceText)
+  mergeSamplerDescriptions(commentIndex, indexJSDocComments(samplersSourceText))
+
   const ctx = {
-    commentIndex: indexJSDocComments(defaultConfigSourceText),
+    commentIndex,
     missingDescriptions: [],
     suspiciousDefaults: [],
     excludeKeys,
@@ -494,6 +517,7 @@ module.exports = {
   withDescription,
   isExcluded,
   instrumentationSchema,
+  mergeSamplerDescriptions,
   walk,
   generateSchema,
   validateMetaSchema,
