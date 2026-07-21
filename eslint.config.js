@@ -22,7 +22,8 @@ const testFiles = [
   'test/unit/**',
   'test/smoke/**',
   'test/versioned/**',
-  'bin/test/**'
+  'bin/test/**',
+  '.fleetControl/schemaGeneration/tests/**'
 ]
 
 // See https://eslint.org/docs/latest/use/configure/ignore#ignoring-files
