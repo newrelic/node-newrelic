@@ -35,15 +35,22 @@ function burnCpu(ms) {
 
 /**
  * Decodes the gzipped pprof buffer returned by the profiler and collects, per
- * sample, the `span_id` and `trace_id` label values. Node only ever has one
- * span per sample, so each appears at most once.
+ * sample, the `span_id` and `trace_id` label values plus the numeric value
+ * vector, along with the profile's value types. Node only ever has one span per
+ * sample, so each label appears at most once.
  *
  * @param {Buffer} encoded gzipped, protobuf-encoded pprof profile
- * @returns {object} the per-sample span and trace ids
+ * @returns {object} the value types and, per sample, span/trace ids and values
  */
 function decodeSamples(encoded) {
   const profile = Profile.decode(zlib.gunzipSync(encoded))
   const str = (i) => profile.stringTable.strings[i]
+
+  // e.g. [{ type: 'sample', unit: 'count' }, { type: 'wall', unit: 'nanoseconds' }, ...]
+  const valueTypes = profile.sampleType.map((vt) => {
+    return { type: str(vt.type), unit: str(vt.unit) }
+  })
+  const valueIndex = (type) => valueTypes.findIndex((vt) => vt.type === type)
 
   const samples = profile.sample.map((sample) => {
     const spanIds = []
@@ -57,10 +64,12 @@ function decodeSamples(encoded) {
       }
     }
 
-    return { spanIds, traceIds }
+    // pprof-format stores sample values as BigInt; coerce to Number for arithmetic.
+    const values = (sample.value || []).map(Number)
+    return { spanIds, traceIds, values }
   })
 
-  return { samples }
+  return { valueTypes, valueIndex, samples }
 }
 
 // CpuProfiler picks its context-tracking strategy from the runtime: CPED on
@@ -287,5 +296,72 @@ describe('CpuProfiler span labels', () => {
     }
 
     assert.equal(seen.size, 2, 'samples from both transactions should be present with distinct trace ids')
+  })
+})
+
+describe('CpuProfiler cpu time', () => {
+  let agent
+  let profiler
+
+  beforeEach(() => {
+    agent = helper.instrumentMockedAgent({
+      distributed_tracing: { enabled: true },
+      profiling: { enabled: true, include: ['cpu'] }
+    })
+    profiler = new CpuProfiler({
+      logger,
+      samplingInterval: 60_000,
+      tracer: agent.tracer
+    })
+  })
+
+  afterEach(() => {
+    profiler?.stop()
+    helper.unloadAgent(agent)
+  })
+
+  test('reports a cpu value type appended after wall, without disturbing wall at index 1', async () => {
+    profiler.start()
+    await helper.runInTransaction(agent, 'test', async () => {
+      burnCpu(500)
+    })
+
+    const { valueTypes } = decodeSamples(await profiler.collect())
+
+    // `cpu` is additive: it is appended last, so `wall` stays at its fixed index
+    // and consumers reading value[1] for wall are unaffected.
+    assert.deepEqual(valueTypes, [
+      { type: 'sample', unit: 'count' },
+      { type: 'wall', unit: 'nanoseconds' },
+      { type: 'cpu', unit: 'nanoseconds' }
+    ], 'sampleType should be [sample, wall, cpu] in that order')
+  })
+
+  test('includes measured cpu time that never exceeds wall time in aggregate', async () => {
+    profiler.start()
+    await helper.runInTransaction(agent, 'test', async () => {
+      burnCpu(500)
+    })
+
+    const { valueIndex, samples } = decodeSamples(await profiler.collect())
+    const wallIdx = valueIndex('wall')
+    const cpuIdx = valueIndex('cpu')
+
+    assert.ok(samples.length > 0, 'should have collected samples')
+    assert.ok(cpuIdx > -1, 'profile should carry a cpu value type')
+
+    let totalWall = 0
+    let totalCpu = 0
+    for (const sample of samples) {
+      const cpu = sample.values[cpuIdx]
+      assert.ok(cpu >= 0, 'per-sample cpu time should never be negative')
+      totalWall += sample.values[wallIdx]
+      totalCpu += cpu
+    }
+
+    // A CPU burn must produce real on-CPU time...
+    assert.ok(totalCpu > 0, 'cpu time should be collected and non-zero after burning cpu')
+    // ...and cpu excludes off-CPU wait time, so it cannot exceed wall overall.
+    assert.ok(totalCpu <= totalWall, `total cpu (${totalCpu}) should not exceed total wall (${totalWall})`)
   })
 })
