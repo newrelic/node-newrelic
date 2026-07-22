@@ -456,7 +456,7 @@ function main() {
   const { schema, missingDescriptions, suspiciousDefaults } = generateSchema()
 
   if (!validateMetaSchema(schema)) {
-    process.exitCode = 2
+    process.exitCode = 1
     return
   }
 
@@ -491,13 +491,10 @@ function main() {
 
   if (previous === null) {
     console.log('\nFirst run — schema created.')
-    process.exitCode = 0
   } else if (previous !== next) {
     console.log('\nSchema changed.')
-    process.exitCode = 1
   } else {
     console.log('\nNo schema changes.')
-    process.exitCode = 0
   }
 }
 
