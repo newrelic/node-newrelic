@@ -243,7 +243,7 @@
     "c8": "^8.0.1",
     "clean-jsdoc-theme": "^4.2.18",
     "colors": "^1.4.0",
-    "commander": "^14.0.3",
+    "commander": "^15.0.0",
     "conventional-changelog-conventionalcommits": "^5.0.0",
     "conventional-changelog-writer": "^5.0.1",
     "conventional-commits-parser": "^3.2.4",
