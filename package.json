@@ -160,6 +160,7 @@
   "scripts": {
     "addhook:precommit": "git config --local core.hooksPath .githooks",
     "bench": "node ./bin/run-bench.js",
+    "bump:config-schema": "node ./.fleetControl/schemaGeneration/bump-schema-version.js",
     "docker-env": "./bin/docker-env-vars.sh",
     "docs": "rm -rf ./out && jsdoc -c ./jsdoc-conf.jsonc --private",
     "generate:config-schema": "node ./.fleetControl/schemaGeneration/generate-schema.js",
@@ -255,6 +256,7 @@
     "express": "*",
     "git-raw-commits": "^2.0.11",
     "got": "^15.0.5",
+    "js-yaml": "^4.3.0",
     "jsdoc": "^4.0.0",
     "lint-staged": "^11.0.0",
     "lockfile-lint": "^4.9.6",
