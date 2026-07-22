@@ -4,4 +4,4 @@ configurationDefinitions:
     type: agent-config
     version: 1.0.0
     schema: ./schemas/config.json
-    format: yml
+    format: js
