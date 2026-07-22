@@ -114,3 +114,56 @@ test('does not log when audit logging is disabled', async (t) => {
   assert.equal(Buffer.compare(found, expected), 0)
   assert.deepEqual(t.nr.logs, [])
 })
+
+test('caches the last serialization and purges it on read', async (t) => {
+  const { meterProvider, reader, serializer } = t.nr
+  const meter = meterProvider.getMeter('test-meter')
+  const counter = meter.createCounter('test-counter')
+  counter.add(1, { foo: 'bar' })
+
+  const collected = await reader.collect()
+  const input = collected.resourceMetrics
+  const found = serializer.serializeRequest(input)
+
+  const expected = Buffer.from(found).toString('base64')
+  assert.equal(serializer.lastSerialization, expected)
+  // The getter purges the cache so subsequent harvests can't re-flush stale
+  // data.
+  assert.equal(serializer.lastSerialization, '')
+})
+
+test('caches the serialization in aws lambda mode even when audit is disabled', async (t) => {
+  const { meterProvider, reader } = t.nr
+  // Audit logging is off. Without lambda mode this would skip caching entirely
+  // (see the test below); lambda mode forces the buffer to be produced so the
+  // harvest can retrieve it.
+  t.nr.logger.auditEnabled = () => false
+  const serializer = new NRProxyingSerializer({
+    destinationUrl: 'http://example.com:1234/v1/metrics',
+    logger: t.nr.logger,
+    awsLambdaMode: true
+  })
+
+  const meter = meterProvider.getMeter('test-meter')
+  const counter = meter.createCounter('test-counter')
+  counter.add(1, { foo: 'bar' })
+
+  const collected = await reader.collect()
+  const input = collected.resourceMetrics
+  const found = serializer.serializeRequest(input)
+
+  assert.equal(serializer.lastSerialization, Buffer.from(found).toString('base64'))
+})
+
+test('does not cache the serialization when neither audit nor lambda mode is active', async (t) => {
+  const { meterProvider, reader, serializer } = t.nr
+  t.nr.logger.auditEnabled = () => false
+  const meter = meterProvider.getMeter('test-meter')
+  const counter = meter.createCounter('test-counter')
+  counter.add(1, { foo: 'bar' })
+
+  const collected = await reader.collect()
+  serializer.serializeRequest(collected.resourceMetrics)
+
+  assert.equal(serializer.lastSerialization, '')
+})

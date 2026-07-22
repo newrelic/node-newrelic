@@ -17,6 +17,9 @@ test.beforeEach((ctx) => {
 
   const agent = {
     get [Symbol.toStringTag]() { return 'Agent' },
+    // SetupMetrics branches on this: `false` takes the standard `started`-event
+    // path, `true` takes the serverless eager-exporter path.
+    serverlessMode: false,
     config: {
       otlp_resource_attributes: {
         licenseKey,
@@ -103,3 +106,20 @@ test('logs warning and uses defaults when export_interval <= export_timeout', as
   t.assert.ok(signal)
   t.assert.ok(warnMessage !== null, 'warning should have been logged')
 })
+
+test('serverless mode does not wait for the started event', (t) => {
+  const { agent } = t.nr
+  agent.serverlessMode = true
+
+  const signal = new SetupMetrics({ agent })
+  t.assert.ok(signal)
+
+  // In serverless mode the exporter is finalized eagerly in the constructor,
+  // so there is nothing to defer to the `started` event.
+  t.assert.equal(agent.listenerCount('started'), 0)
+})
+
+// `flushToString` drives a real collect -> export -> serialize cycle, which
+// registers a global meter provider and reaches the network. To keep that off
+// the shared global state exercised by the tests above, it lives in its own
+// file: metrics-flush-to-string.test.js.
