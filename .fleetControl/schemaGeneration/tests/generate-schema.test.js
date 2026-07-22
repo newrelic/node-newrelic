@@ -592,6 +592,13 @@ test('generateSchema (integration, real agent config)', async (t) => {
     assert.strictEqual(target.maximum, 120)
   })
 
+  await t.test('transaction_tracer.transaction_threshold accepts either a number or the apdex_f sentinel', () => {
+    const threshold = schema.properties.transaction_tracer.properties.transaction_threshold
+    assert.deepStrictEqual(threshold.type, ['number', 'string'])
+    assert.strictEqual(threshold.default, 'apdex_f')
+    assert.ok(threshold.description.length > 0)
+  })
+
   await t.test('distributed_tracing.sampler.full_granularity is modeled', () => {
     const enabled = schema.properties.distributed_tracing.properties.sampler.properties.full_granularity.properties.enabled
     assert.strictEqual(enabled.type, 'boolean')

@@ -54,7 +54,8 @@ const TYPE_OVERRIDES = {
   // Source comment states an explicit maximum of 4,096; formatter/default alone don't reveal it.
   'attributes.value_size_limit': { type: 'integer', default: 256, maximum: 4096 },
   // Source comment states an explicit range; formatter/default alone don't reveal it.
-  'distributed_tracing.sampler.adaptive_sampling_target': { type: 'integer', default: 10, minimum: 1, maximum: 120 }
+  'distributed_tracing.sampler.adaptive_sampling_target': { type: 'integer', default: 10, minimum: 1, maximum: 120 },
+  'transaction_tracer.transaction_threshold': { type: ['number', 'string'], default: 'apdex_f' }
 }
 
 // Most enums come from the `allowList` formatter automatically; this covers the rest.
