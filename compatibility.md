@@ -11,21 +11,21 @@ supported by the agent.
 
 | Package name | Minimum supported version | Latest published version | Introduced in* |
 | --- | --- | --- | --- |
-| `@anthropic-ai/sdk` | 0.33.0 | 0.112.4 | 13.19.0 |
+| `@anthropic-ai/sdk` | 0.33.0 | 0.112.5 | 13.19.0 |
 | `@apollo/gateway` | 2.3.0 | 2.14.2 | 14.0.0 |
 | `@apollo/server` | 4.0.0 | 5.5.1 | 14.0.0 |
-| `@aws-sdk/client-bedrock-runtime` | 3.377.0 | 3.1091.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.377.0 | 3.1091.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.377.0 | 3.1091.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.377.0 | 3.1091.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.1091.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.377.0 | 3.1092.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.377.0 | 3.1092.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.377.0 | 3.1092.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.377.0 | 3.1092.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.1092.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.16.2 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.4.2 | 11.9.0 |
 | `@google/adk` | 1.1.0 | 1.4.0 | 13.20.0 |
-| `@google/genai` | 1.1.0 | 2.12.0 | 12.21.0 |
+| `@google/genai` | 1.1.0 | 2.13.0 | 12.21.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.14.4 | 8.17.0 |
-| `@hapi/hapi` | 20.1.2 | 21.4.9 | 9.0.0 |
+| `@hapi/hapi` | 20.1.2 | 21.4.10 | 9.0.0 |
 | `@hapi/vision` | 5.0.0 | 7.0.3 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 15.7.0 | 3.2.0 |
 | `@langchain/aws` | 0.1.3 | 1.4.3 | 13.8.0 |
@@ -36,7 +36,7 @@ supported by the agent.
 | `@nestjs/core` | 10.0.0 | 11.1.28 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.6.0 | 12.10.0 |
 | `@prisma/client` | 5.0.0 | 7.9.0 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 4.14.11 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 4.14.12 | 11.0.0 |
 | `amqplib` | 0.5.0 | 2.0.1 | 2.0.0 |
 | `aws-sdk` | 2.2.48 | 2.1693.0 | 6.2.0 |
 | `bluebird` | 3.0.0 | 3.7.2 | 1.27.0 |
