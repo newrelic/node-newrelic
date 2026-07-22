@@ -52,14 +52,19 @@ function runStreamingEnabledTests(config) {
     await t.test('should log tracking metrics', function(t, end) {
       t.plan(5)
       const { agent, langchainCoreVersion, prompt, model } = t.nr
-      helper.runInTransaction(agent, async () => {
-        await prompt.pipe(model).stream(inputData)
+      helper.runInTransaction(agent, async (tx) => {
+        const chain = prompt.pipe(model)
+        const stream = await chain.stream(inputData)
+        for await (const chunk of stream) {
+          consumeStreamChunk(chunk)
+        }
         assertPackageMetrics({
           agent,
           pkg: '@langchain/core',
           version: langchainCoreVersion,
           subscriberType: true
         }, { assert: t.assert })
+        tx.end()
         end()
       })
     })
