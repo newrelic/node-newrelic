@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.3.3",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Avoid unconditional @opentelemetry/core require on agent startup"
+        ],
+        "features": [
+          "Collect on-CPU time alongside wall time in `CpuProfiler`",
+          "Add internal OTEL API to agent"
+        ]
+      }
+    },
+    {
       "version": "14.3.2",
       "changes": {
         "security": [],
