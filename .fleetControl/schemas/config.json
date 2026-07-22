@@ -429,7 +429,10 @@
           "description": "Whether to collect & submit slow transaction traces to New Relic. The instrumentation is loaded regardless of this setting, as it's necessary to gather metrics. Disable the agent to prevent the instrumentation from loading."
         },
         "transaction_threshold": {
-          "type": "number",
+          "type": [
+            "number",
+            "string"
+          ],
           "default": "apdex_f",
           "description": "Sets the time, in seconds, for a transaction to be considered slow. When a transaction exceeds this threshold, a transaction trace will be recorded. When set to 'apdex_f', the threshold will be set to 4 * apdex_t, which with a default apdex_t value of 500 milliseconds will be 2 seconds. If a number is provided, it is set in seconds."
         },
