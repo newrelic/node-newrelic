@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Jul 06 2026 10:50:42 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed Jul 22 2026 16:17:29 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -56,15 +56,15 @@
   },
   "includeDev": true,
   "dependencies": {
-    "@apm-js-collab/tracing-hooks@0.9.1": {
+    "@apm-js-collab/tracing-hooks@0.13.0": {
       "name": "@apm-js-collab/tracing-hooks",
-      "version": "0.9.1",
-      "range": "^0.9.1",
+      "version": "0.13.0",
+      "range": "^0.13.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/apm-js-collab/tracing-hooks",
-      "versionedRepoUrl": "https://github.com/apm-js-collab/tracing-hooks/tree/v0.9.1",
+      "versionedRepoUrl": "https://github.com/apm-js-collab/tracing-hooks/tree/v0.13.0",
       "licenseFile": "node_modules/@apm-js-collab/tracing-hooks/LICENSE",
-      "licenseUrl": "https://github.com/apm-js-collab/tracing-hooks/blob/v0.9.1/LICENSE",
+      "licenseUrl": "https://github.com/apm-js-collab/tracing-hooks/blob/v0.13.0/LICENSE",
       "licenseTextSource": "file"
     },
     "@grpc/grpc-js@1.14.4": {
@@ -263,15 +263,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@3.2.0": {
+    "import-in-the-middle@3.3.0": {
       "name": "import-in-the-middle",
-      "version": "3.2.0",
+      "version": "3.3.0",
       "range": "^3.0.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/nodejs/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v3.2.0",
+      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v3.3.0",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v3.2.0/LICENSE",
+      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v3.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
