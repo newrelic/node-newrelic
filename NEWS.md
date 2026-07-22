@@ -1,3 +1,18 @@
+### v14.3.3 (2026-07-22)
+
+#### Features
+
+* Add internal OTEL API to agent ([#4147](https://github.com/newrelic/node-newrelic/pull/4147)) ([b014f82](https://github.com/newrelic/node-newrelic/commit/b014f82c83a34b73ab65e7d5144b464dcf3e56ea))
+* Collect on-CPU time alongside wall time in `CpuProfiler` ([#4146](https://github.com/newrelic/node-newrelic/pull/4146)) ([3b440f3](https://github.com/newrelic/node-newrelic/commit/3b440f354e8e142c84565e8a55f181aaef2df77c))
+
+#### Bug fixes
+
+* Avoid unconditional @opentelemetry/core require on agent startup ([#4163](https://github.com/newrelic/node-newrelic/pull/4163)) ([f31bbe4](https://github.com/newrelic/node-newrelic/commit/f31bbe4636901fe517a81b675788ed390781ae91))
+
+#### Documentation
+
+* Updated compatibility report ([#4160](https://github.com/newrelic/node-newrelic/pull/4160)) ([8ba64fb](https://github.com/newrelic/node-newrelic/commit/8ba64fbd6f0602e9f3b8e499dc1e7de6d93edd1e))
+
 ### v14.3.2 (2026-07-21)
 
 #### Bug fixes
