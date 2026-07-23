@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const { once, EventEmitter } = require('node:events')
+const otelApi = require('@opentelemetry/api')
 
 const SetupMetrics = require('#agentlib/otel/metrics/index.js')
 
@@ -68,7 +69,9 @@ test.beforeEach((ctx) => {
         const validMetrics = [
           'Supportability/Metrics/Nodejs/OpenTelemetryBridge/enabled',
           'Supportability/Metrics/Nodejs/OpenTelemetryBridge/export/success',
-          'Supportability/Metrics/Nodejs/OpenTelemetryBridge/export/failure'
+          'Supportability/Metrics/Nodejs/OpenTelemetryBridge/export/failure',
+          'Supportability/Metrics/Nodejs/OpenTelemetryBridge/getMeter',
+          'Supportability/Metrics/Nodejs/OpenTelemetryBridge/meter/createCounter'
         ]
         ctx.assert.ok(validMetrics.includes(name), `Unexpected metric: ${name}`)
         return this
@@ -81,6 +84,12 @@ test.beforeEach((ctx) => {
   Object.setPrototypeOf(agent, EventEmitter.prototype)
 
   ctx.nr.agent = agent
+})
+
+test.afterEach(() => {
+  // Reset the global meter provider so the next test's SetupMetrics wins the
+  // first-come global registration.
+  otelApi.metrics.disable()
 })
 
 test('configures global provider after agent start', async (t) => {
@@ -149,6 +158,12 @@ test('serverless mode does not wait for the started event', (t) => {
   const { agent } = t.nr
   agent.serverlessMode = true
 
+  // The serverless branch finalizes the exporter and emits the bootstrap event
+  // during construction, rather than deferring to `started`. Subscribe first so
+  // the synchronous emit is observed.
+  let bootstrapped = false
+  agent.on('otelMetricsBootstrapped', () => { bootstrapped = true })
+
   const logger = captureLogger()
   const { debugMessages } = logger
 
@@ -160,20 +175,26 @@ test('serverless mode does not wait for the started event', (t) => {
     debugMessages.includes('Finalizing OTEL metrics in serverless mode.'),
     'should log that metrics are finalized eagerly in serverless mode'
   )
+  t.assert.ok(bootstrapped, 'should emit otelMetricsBootstrapped from the constructor')
 })
 
-test('serverless mode bootstraps metrics synchronously in the constructor', (t) => {
+test('flushToString collects, exports, and returns the base64 OTLP payload', async (t) => {
   const { agent } = t.nr
   agent.serverlessMode = true
 
-  // The serverless branch finalizes the exporter and emits the bootstrap event
-  // during construction, rather than deferring to `started`. Subscribe first so
-  // the synchronous emit is observed.
-  let bootstrapped = false
-  agent.on('otelMetricsBootstrapped', () => { bootstrapped = true })
+  const signal = new SetupMetrics({ agent })
+  const provider = otelApi.metrics.getMeterProvider()
+  provider.getMeter('test-meter').createCounter('test-counter').add(1, { foo: 'bar' })
 
-  // eslint-disable-next-line no-new
-  new SetupMetrics({ agent, logger: captureLogger() })
+  const found = await signal.flushToString()
+  t.assert.equal(typeof found, 'string')
+  t.assert.ok(found.length > 0, 'should return a non-empty payload')
 
-  t.assert.ok(bootstrapped, 'should emit otelMetricsBootstrapped from the constructor')
+  // The payload is base64-encoded OTLP protobuf. Protobuf encodes string fields
+  // (metric names, attribute keys) as literal UTF-8, so the recorded counter and
+  // its attribute survive into the decoded bytes -- confirming real metrics were
+  // serialized rather than an empty envelope.
+  const decoded = Buffer.from(found, 'base64').toString('utf8')
+  t.assert.match(decoded, /test-counter/, 'payload should carry the recorded counter name')
+  t.assert.match(decoded, /foo/, 'payload should carry the recorded attribute key')
 })
