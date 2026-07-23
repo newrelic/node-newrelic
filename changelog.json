@@ -29,7 +29,7 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Handled `$0` as a replacment in a metric normalization rule to return the matched string in its entirety"
+          "Handled `$0` as a replacement in a metric normalization rule to return the matched string in its entirety"
         ],
         "features": []
       }
