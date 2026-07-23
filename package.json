@@ -256,7 +256,7 @@
     "eslint-plugin-jsdoc": "^63.2.0",
     "express": "*",
     "got": "^15.0.5",
-    "js-yaml": "^4.3.0",
+    "js-yaml": "^5.2.1",
     "jsdoc": "^4.0.0",
     "lint-staged": "^17.1.0",
     "log-update": "^8.0.0",
