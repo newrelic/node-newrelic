@@ -92,7 +92,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @apm-js-collab/tracing-hooks
 
-This product includes source derived from [@apm-js-collab/tracing-hooks](https://github.com/apm-js-collab/tracing-hooks) ([v0.9.1](https://github.com/apm-js-collab/tracing-hooks/tree/v0.9.1)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/tracing-hooks/blob/v0.9.1/LICENSE):
+This product includes source derived from [@apm-js-collab/tracing-hooks](https://github.com/apm-js-collab/tracing-hooks) ([v0.13.0](https://github.com/apm-js-collab/tracing-hooks/tree/v0.13.0)), distributed under the [Apache-2.0 License](https://github.com/apm-js-collab/tracing-hooks/blob/v0.13.0/LICENSE):
 
 ```
 
@@ -2945,7 +2945,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v3.2.0](https://github.com/nodejs/import-in-the-middle/tree/v3.2.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v3.2.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v3.3.0](https://github.com/nodejs/import-in-the-middle/tree/v3.3.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v3.3.0/LICENSE):
 
 ```
                                  Apache License
