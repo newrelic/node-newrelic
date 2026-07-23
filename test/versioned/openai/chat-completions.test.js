@@ -54,21 +54,15 @@ test('chat.completions.create', async (t) => {
     removeModules('openai')
   })
 
-  // Note: I cannot figure out how to get the mock server to do the right thing,
-  // but this was failing with a different issue before
   await t.test('should not crash when you call `completions.parse`', { skip: semver.lt(pkgVersion, '5.0.0') }, async (t) => {
     const plan = tspl(t, { plan: 1 })
     const { client, agent } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
-      try {
-        await client.chat.completions.parse({
-          messages: [{ role: 'user', content: 'You are a mathematician.' }]
-        })
-      } catch (err) {
-        plan.match(err.message, /.*Body is unusable.*/)
-      } finally {
-        tx.end()
-      }
+      const result = await client.chat.completions.parse({
+        messages: [{ role: 'user', content: 'You are a mathematician.' }]
+      })
+      plan.equal(result.choices[0].message.content, '1 plus 2 is 3.')
+      tx.end()
     })
 
     await plan.completed

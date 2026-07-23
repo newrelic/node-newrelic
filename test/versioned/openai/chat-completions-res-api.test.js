@@ -26,7 +26,7 @@ const TRACKING_METRIC = `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
 const responses = require('./mock-responses-api-responses')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common-responses-api')
 
-test('responses.create', { skip: semver.lte(pkgVersion, '4.87.0') }, async (t) => {
+test('responses.create', { skip: semver.lt(pkgVersion, '4.87.0') }, async (t) => {
   t.beforeEach(async (ctx) => {
     ctx.nr = {}
     const { host, port, server } = await createOpenAIMockServer(responses)
@@ -54,21 +54,15 @@ test('responses.create', { skip: semver.lte(pkgVersion, '4.87.0') }, async (t) =
     removeModules('openai')
   })
 
-  // Note: I cannot figure out how to get the mock server to do the right thing,
-  // but this was failing with a different issue before
   await t.test('should not crash when you call `responses.parse`', async (t) => {
     const plan = tspl(t, { plan: 1 })
     const { client, agent } = t.nr
     await helper.runInTransaction(agent, async (tx) => {
-      try {
-        await client.responses.parse({
-          input: [{ role: 'user', content: 'You are a mathematician.' }]
-        })
-      } catch (err) {
-        plan.match(err.message, /Body is unusable|body used already for/)
-      } finally {
-        tx.end()
-      }
+      const result = await client.responses.parse({
+        input: [{ role: 'user', content: 'You are a mathematician.' }]
+      })
+      plan.equal(result.output_text, '1 plus 2 is 3.')
+      tx.end()
     })
 
     await plan.completed
