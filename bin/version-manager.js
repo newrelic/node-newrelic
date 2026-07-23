@@ -198,4 +198,3 @@ async function run(files, patterns, cmd) {
     console.log('PASS'.bold.green)
   }
 }
-
