@@ -161,3 +161,19 @@ test('serverless mode does not wait for the started event', (t) => {
     'should log that metrics are finalized eagerly in serverless mode'
   )
 })
+
+test('serverless mode bootstraps metrics synchronously in the constructor', (t) => {
+  const { agent } = t.nr
+  agent.serverlessMode = true
+
+  // The serverless branch finalizes the exporter and emits the bootstrap event
+  // during construction, rather than deferring to `started`. Subscribe first so
+  // the synchronous emit is observed.
+  let bootstrapped = false
+  agent.on('otelMetricsBootstrapped', () => { bootstrapped = true })
+
+  // eslint-disable-next-line no-new
+  new SetupMetrics({ agent, logger: captureLogger() })
+
+  t.assert.ok(bootstrapped, 'should emit otelMetricsBootstrapped from the constructor')
+})

@@ -7,24 +7,18 @@
 
 const test = require('node:test')
 const { EventEmitter } = require('node:events')
-const nock = require('nock')
 const otelApi = require('@opentelemetry/api')
 
 const SetupMetrics = require('#agentlib/otel/metrics/index.js')
 
 // This lives in its own file because `flushToString` registers a global
-// (process-wide, first-wins) meter provider and its exporter reaches out over
-// the network. Isolating it keeps that global/network state from colliding with
-// the standard bootstrap flow exercised in index.test.js.
+// (process-wide, first-wins) meter provider. Isolating it keeps that global
+// state from colliding with the standard bootstrap flow exercised in
+// index.test.js. In serverless mode the exporter is the in-memory
+// NRCapturingExporter, so no network access is involved.
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-
-  // In serverless mode the exporter is built without a URL, so it targets the
-  // OTLP HTTP default. Intercept it so `export` resolves instantly instead of
-  // waiting on a real (failing) network attempt.
-  nock.disableNetConnect()
-  nock('http://localhost:4318').post('/v1/metrics').reply(200, Buffer.from([])).persist()
 
   const agent = {
     get [Symbol.toStringTag]() { return 'Agent' },
@@ -53,8 +47,6 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach(() => {
-  nock.cleanAll()
-  nock.enableNetConnect()
   // Reset the global meter provider so the next test's SetupMetrics wins the
   // first-come global registration.
   otelApi.metrics.disable()
