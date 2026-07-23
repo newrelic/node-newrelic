@@ -1,0 +1,61 @@
+name: Agent Config Schema
+
+permissions:
+  contents: read
+
+# Regenerates .fleetControl/schemas/config.json whenever a push touches the
+# agent's config definition or the generator itself, then commits the
+# result back to the pushed branch.
+#
+# The paths filter deliberately excludes .fleetControl/schemas/** (the
+# generated file) — the commit step below only touches that path, so its
+# own push does not re-trigger this workflow.
+#
+# Skips main; this only runs on feature branches.
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - 'lib/config/default.js'
+      - 'lib/config/samplers.js'
+      - '.fleetControl/schemaGeneration/**'
+
+concurrency:
+  group: agent-config-schema-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate:
+    name: Regenerate config schema
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Regenerate schema
+        run: node .fleetControl/schemaGeneration/generate-schema.js
+
+      - name: Commit and push regenerated schema
+        run: |
+          if [ -z "$(git status --porcelain .fleetControl/schemas/config.json)" ]; then
+            echo "No schema changes — nothing to commit."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .fleetControl/schemas/config.json
+          git commit -m "chore: regenerate agent config schema"
+          git push

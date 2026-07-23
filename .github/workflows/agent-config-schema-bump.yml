@@ -1,0 +1,103 @@
+name: Agent Config Schema Bump
+
+permissions:
+  contents: read
+
+# Release-prep workflow: opens a PR that bumps the `version:` field in
+# .fleetControl/configurationDefinitions.yml, based on the cumulative schema
+# diff since the previous release tag.
+#
+# Triggered manually before a release tag is cut, so the bumped version can
+# be merged to main and included in the release.
+#
+# Release ordering:
+#   1. Run this workflow (workflow_dispatch).
+#   2. Wait for the PR to open (or for the workflow to report no bump needed).
+#   3. Review and merge the bump PR if one was opened.
+#   4. Cut the release from the post-merge main.
+#
+# Bootstrap: if the resolved ref predates the schema (or its
+# configurationDefinitions.yml doesn't have a version yet), the script exits
+# cleanly with a bootstrap message and no PR is opened.
+on:
+  workflow_dispatch:
+    inputs:
+      since_ref:
+        description: >-
+          Git ref (tag or commit) to compare against. Defaults to the latest
+          v* release tag on main.
+        required: false
+        default: ''
+
+jobs:
+  bump:
+    name: Open agent config schema bump PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Resolve --since ref
+        id: ref
+        env:
+          INPUT_REF: ${{ github.event.inputs.since_ref }}
+        run: |
+          if [ -n "$INPUT_REF" ]; then
+            ref="$INPUT_REF"
+            echo "Using user-supplied ref: $ref"
+          else
+            ref=$(git describe --tags --abbrev=0 --match='v*' main 2>/dev/null || true)
+            if [ -z "$ref" ]; then
+              echo "::error::No release tag (v*) found on main and no since_ref supplied."
+              exit 1
+            fi
+            echo "Auto-discovered latest tag: $ref"
+          fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Compute and apply bump
+        run: node .fleetControl/schemaGeneration/bump-schema-version.js --since="${{ steps.ref.outputs.ref }}" --write
+
+      - name: Open bump PR
+        id: create-pr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
+        with:
+          token: ${{ secrets.NODE_AGENT_GH_TOKEN || secrets.GITHUB_TOKEN }}
+          add-paths: .fleetControl/configurationDefinitions.yml
+          branch: bump-agent-config-schema-version-${{ github.run_id }}
+          delete-branch: true
+          base: main
+          title: 'chore: bump agent config schema version'
+          commit-message: 'chore: bump agent config schema version'
+          body: |
+            Auto-generated bump PR.
+
+            Bump computed from the schema diff since `${{ steps.ref.outputs.ref }}`.
+
+            ## Release ordering
+
+            **Merge this PR before cutting the release.** If the release is
+            cut first, its `configurationDefinitions.yml` will still reflect
+            the pre-bump version even though the schema itself reflects the
+            new keys — consumers would see a mismatch.
+
+      - name: Summary
+        if: steps.create-pr.outputs.pull-request-number
+        run: |
+          echo "Submitted PR #${{ steps.create-pr.outputs.pull-request-number }} to bump the agent config schema version."
+          echo "Review and merge before cutting the release."
+          echo "${{ steps.create-pr.outputs.pull-request-url }}"
