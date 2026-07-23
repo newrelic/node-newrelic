@@ -155,16 +155,9 @@ test('serverless mode does not wait for the started event', (t) => {
   const signal = new SetupMetrics({ agent, logger })
   t.assert.ok(signal)
 
-  // In serverless mode the exporter is finalized eagerly in the constructor,
-  // so there is nothing to defer to the `started` event.
   t.assert.equal(agent.listenerCount('started'), 0)
   t.assert.ok(
     debugMessages.includes('Finalizing OTEL metrics in serverless mode.'),
     'should log that metrics are finalized eagerly in serverless mode'
   )
 })
-
-// `flushToString` drives a real collect -> export -> serialize cycle, which
-// registers a global meter provider and reaches the network. To keep that off
-// the shared global state exercised by the tests above, it lives in its own
-// file: metrics-flush-to-string.test.js.
