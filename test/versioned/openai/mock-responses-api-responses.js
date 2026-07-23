@@ -58,7 +58,9 @@ responses.set('You are a mathematician.', {
   body: {
     output: [
       {
+        type: 'message',
         content: [{
+          type: 'output_text',
           text: '1 plus 2 is 3.',
         }],
         role: 'assistant',
