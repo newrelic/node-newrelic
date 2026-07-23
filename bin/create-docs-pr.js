@@ -7,7 +7,9 @@
 
 const fs = require('fs')
 const path = require('path')
-const { program } = require('commander')
+const { Command } = require('commander')
+
+const program = new Command()
 
 const Github = require('./github')
 const git = require('./git-commands')

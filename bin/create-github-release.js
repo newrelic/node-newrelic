@@ -6,9 +6,11 @@
 'use strict'
 
 const fs = require('fs')
-const { program } = require('commander')
+const { Command } = require('commander')
 
 const Github = require('./github')
+
+const program = new Command()
 
 const DEFAULT_FILE_NAME = 'NEWS.md'
 /** e.g. v7.2.1 */
@@ -124,4 +126,10 @@ function logStep(step) {
   console.log(`\n ----- [Step]: ${step} -----\n`)
 }
 
-createRelease()
+if (require.main === module) {
+  createRelease()
+} else {
+  module.exports = {
+    getReleaseNotes
+  }
+}

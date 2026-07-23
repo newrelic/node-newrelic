@@ -12,7 +12,8 @@ const channel = process.env.SLACK_CHANNEL
 const token = process.env.SLACK_TOKEN
 const signingSecret = process.env.SLACK_SECRET
 let missingEnvVars = []
-const { program } = require('commander')
+const { Command } = require('commander')
+const program = new Command()
 program.requiredOption(
   '--repos <repos>',
   'Comma-delimited list of repos in newrelic org to check for unreleased PRs'
@@ -162,4 +163,12 @@ async function findMergedPRs(repo, ignoredLabels) {
   }
 }
 
-unreleasedPRs()
+if (require.main === module) {
+  unreleasedPRs()
+} else {
+  module.exports = {
+    areEnvVarsSet,
+    createSlackMessage,
+    findMergedPRs
+  }
+}

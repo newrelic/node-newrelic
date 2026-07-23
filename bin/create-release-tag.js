@@ -5,10 +5,11 @@
 
 'use strict'
 
-const { program } = require('commander')
-
+const { Command } = require('commander')
 const checkWorkflowRun = require('./check-workflow-run')
 const git = require('./git-commands')
+
+const program = new Command()
 
 // Add command line options
 program.option('-b, --branch <branch>', 'release branch', 'main')
@@ -107,4 +108,11 @@ async function validateCurrentBranch(branch) {
   }
 }
 
-createReleaseTag()
+if (require.main === module) {
+  createReleaseTag()
+} else {
+  module.exports = {
+    validateLocalChanges,
+    validateCurrentBranch
+  }
+}

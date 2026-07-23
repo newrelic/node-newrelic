@@ -9,13 +9,15 @@
 
 require('colors')
 
-const { program } = require('commander')
+const { Command } = require('commander')
 const path = require('path')
 const os = require('os')
 
 const printers = require('./versioned-runner/printers')
 const Suite = require('./versioned-runner/suite')
 const { buildGlobs, resolveGlobs } = require('./versioned-runner/globber')
+
+const program = new Command()
 
 program
   .arguments('[test-globs...]')
@@ -53,7 +55,11 @@ program
     }
   })
 
-program.parse(process.argv) // runs the action handler
+if (require.main === module) {
+  program.parse(process.argv) // runs the action handler
+} else {
+  module.exports = { int, printMode, run }
+}
 
 function int(val) {
   return parseInt(val, 10)
