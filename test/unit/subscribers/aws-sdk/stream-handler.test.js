@@ -31,7 +31,6 @@ test.beforeEach((ctx) => {
     response: ctx.nr.response,
     segment: {
       touch() {
-        assert.ok(true)
       }
     },
     bedrockCommand: {

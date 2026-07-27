@@ -141,8 +141,8 @@ test('should bootstrap metrics', async (t) => {
   agent.config.opentelemetry.metrics.enabled = true
   setupOtel(agent, loggerMock)
 
-  assert.equal(1, agent.listenerCount('started'))
+  assert.equal(agent.listenerCount('started'), 1)
   process.nextTick(() => agent.emit('started'))
   await once(agent, 'started')
-  assert.equal(0, agent.listenerCount('started'))
+  assert.equal(agent.listenerCount('started'), 0)
 })

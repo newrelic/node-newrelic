@@ -124,7 +124,6 @@ function execAsPromise(command) {
   return new Promise((resolve, reject) => {
     console.log(`Executing: '${command}'`)
 
-    // eslint-disable-next-line sonarjs/os-command
     exec(command, (err, stdout) => {
       if (err) {
         reject(err)

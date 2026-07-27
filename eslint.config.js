@@ -125,7 +125,13 @@ module.exports = [
 
   sharedConfig.plugins.sonarjs.configs.recommended,
   {
-    ...sharedConfig.configs.sonarjsTestsOverrides,
+    rules: {
+      ...sharedConfig.configs.sonarjsTestsOverrides.rules,
+      // sonar cannot distinguish plan based testing, so turn off
+      'sonarjs/assertions-in-tests': 'off',
+      // who cares about regex in tests
+      'sonarjs/super-linear-regex': 'off'
+    },
     files: testFiles
   },
   sharedConfig.configs.sonarjsBaselineOverrides,

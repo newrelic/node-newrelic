@@ -81,7 +81,7 @@ test('should set error to true', (ctx, end) => {
         response: {},
         error: true
       })
-      assert.equal(true, chatSummaryEvent.error)
+      assert.equal(chatSummaryEvent.error, true)
       end()
     })
   })

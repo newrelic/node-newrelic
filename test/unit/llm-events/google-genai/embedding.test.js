@@ -105,7 +105,7 @@ test('should set error to true', (t, end) => {
         response: res,
         error: true
       })
-      assert.equal(true, embeddingEvent.error)
+      assert.equal(embeddingEvent.error, true)
       end()
     })
   })

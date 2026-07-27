@@ -169,7 +169,6 @@ test('setStatus and stop do nothing if reporter disabled', (t, end) => {
   const reporter = new HealthReporter(t.nr)
   reporter.setStatus(HealthReporter.STATUS_AGENT_SHUTDOWN)
   reporter.stop(() => {
-    assert.ok('stopped')
     end()
   })
 })

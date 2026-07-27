@@ -304,8 +304,8 @@ test('remote_parent_sampled: adaptive, remote_parent_not_sampled: adaptive (flag
  */
 async function beforeEach(
   ctx,
-  agentConfig = defaultAgentConfig,
-  validator = () => assert.ok(true)
+  agentConfig,
+  validator
 ) {
   ctx.agent = helper.instrumentMockedAgent(agentConfig)
   ctx.http = require('node:http')

@@ -20,6 +20,7 @@ test('export fires callback', (t, end) => {
 
 test('shutdown returns a success promise', async () => {
   const exporter = new NoOpExporter()
-  await exporter.shutdown()
-  assert.ok(true)
+  await assert.doesNotReject(async () => {
+    await exporter.shutdown()
+  })
 })

@@ -126,7 +126,7 @@ test('resolve6', function (t, end) {
     dns.resolve6('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
-      assert.equal('::1', ips[0])
+      assert.equal(ips[0], '::1')
       verifySegments({ agent, end, name: 'dns.resolve6' })
     })
   })
