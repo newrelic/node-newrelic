@@ -1,2 +1,2 @@
 #!/bin/sh
-./bin/update-third-party-notices.sh && npx lint-staged
+./bin/update-third-party-notices.sh && ./bin/update-config-schema.sh && npx lint-staged
