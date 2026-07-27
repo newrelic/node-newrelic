@@ -125,25 +125,76 @@ test('ServerlessCollector API', async (t) => {
   }
 
   await t.test('#flushPayloadSync', async (t) => {
-    t.beforeEach(beforeEach)
-    t.afterEach(afterEach)
+    t.beforeEach(async (ctx) => {
+      await beforeEach(ctx)
+
+      ctx.nr.writeSync = fs.writeFileSync
+      ctx.nr.outFile = null
+      ctx.nr.outData = null
+      // Resolves the first time the collector writes its flushed payload, so
+      // tests can await the write even when flushPayloadSync finishes the work
+      // out-of-band (the OTEL metrics branch).
+      ctx.nr.written = new Promise((resolve) => {
+        fs.writeFileSync = (dest, payload) => {
+          ctx.nr.outFile = dest
+          ctx.nr.outData = JSON.parse(payload)
+          ctx.nr.writeSync(dest, payload)
+          resolve()
+        }
+      })
+    })
+    t.afterEach((ctx) => {
+      afterEach(ctx)
+      fs.writeFileSync = ctx.nr.writeSync
+    })
 
     await t.test('should base64 encode the gzipped payload synchronously', (t) => {
       const { api } = t.nr
       const testPayload = { someKey: 'someValue', buyOne: 'getOne' }
       api.payload = testPayload
 
-      let flushed = false
-      api._doFlush = function testFlush(data) {
-        const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(data, 'base64')))
-        assert.notEqual(decoded.metadata, undefined)
-        assert.notEqual(decoded.data, undefined)
-        assert.deepStrictEqual(decoded.data, testPayload)
-        flushed = true
-      }
       api.flushPayloadSync()
+
+      const { outData } = t.nr
+      assert.equal(Array.isArray(outData), true)
+      assert.equal(outData[0], 1)
+      assert.equal(outData[1], 'NR_LAMBDA_MONITORING')
+      const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(outData[2], 'base64')))
+      assert.notEqual(decoded.metadata, undefined)
+      assert.deepStrictEqual(decoded.data, testPayload)
       assert.equal(Object.keys(api.payload).length, 0)
-      assert.equal(flushed, true)
+    })
+
+    await t.test('includes OTEL metrics as otlp_payload when the metrics API is present', async (t) => {
+      const { api, agent } = t.nr
+      // Stand in for the OTEL metrics signal attached by lib/otel/setup.js.
+      agent.otel = {
+        metrics: {
+          flushToString: async () => 'BASE64_OTLP'
+        }
+      }
+      api.payload = { metric_data: [1, 2, 3] }
+
+      api.flushPayloadSync()
+      // The metrics flush is a promise, so the write happens out-of-band.
+      await t.nr.written
+
+      const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(t.nr.outData[2], 'base64')))
+      assert.equal(decoded.data.otlp_payload, 'BASE64_OTLP')
+      assert.deepStrictEqual(decoded.data.metric_data, [1, 2, 3])
+    })
+
+    await t.test('does not add otlp_payload when the OTEL metrics API is absent', (t) => {
+      const { api, agent } = t.nr
+      // No `agent.otel` (OTEL disabled) -> synchronous finalize, no otlp_payload.
+      agent.otel = undefined
+      api.payload = { metric_data: [1, 2, 3] }
+
+      api.flushPayloadSync()
+
+      const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(t.nr.outData[2], 'base64')))
+      assert.equal(decoded.data.otlp_payload, undefined)
+      assert.deepStrictEqual(decoded.data.metric_data, [1, 2, 3])
     })
   })
 
