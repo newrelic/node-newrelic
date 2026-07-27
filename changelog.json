@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.3.4",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `openai` instrumentation to cache the results of `responses.parse` chain on openai custom promises"
+        ],
+        "features": [
+          "Collect OTEL metrics in AWS Lambda"
+        ]
+      }
+    },
+    {
       "version": "14.3.3",
       "changes": {
         "security": [],

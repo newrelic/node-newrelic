@@ -1,3 +1,29 @@
+### v14.3.4 (2026-07-27)
+
+#### Features
+
+* Collect OTEL metrics in AWS Lambda ([#4166](https://github.com/newrelic/node-newrelic/pull/4166)) ([204c166](https://github.com/newrelic/node-newrelic/commit/204c16626ec346e7c5b995863305e8d4f6bc6e6f))
+    * Feature not generally available as of 2026-07-27. A future release will enable the necessary plumbing for full functionality.
+
+#### Bug fixes
+
+* Updated `openai` instrumentation to cache the results of `responses.parse` chain on openai custom promises ([#4173](https://github.com/newrelic/node-newrelic/pull/4173)) ([35dce3c](https://github.com/newrelic/node-newrelic/commit/35dce3cf06740c33333ed5998df546e59f822dc8))
+
+#### Documentation
+
+* Fixed typos in 14.3.1 release ([#4170](https://github.com/newrelic/node-newrelic/pull/4170)) ([dd84830](https://github.com/newrelic/node-newrelic/commit/dd848300f754650a0e1f7a1a500d5f836b7dfb8b))
+* Updated compatibility report ([#4165](https://github.com/newrelic/node-newrelic/pull/4165)) ([33eceac](https://github.com/newrelic/node-newrelic/commit/33eceacf0f7a5ec8bae957da21d978814bca81bb))
+
+#### Miscellaneous chores
+
+* Updated `@apm-js-collab/tracing-hooks` to `0.13.0` ([#4167](https://github.com/newrelic/node-newrelic/pull/4167)) ([153acec](https://github.com/newrelic/node-newrelic/commit/153acecc4ea7c7dc786c08020a57fb88efb2a8de))
+* Updated `@octokit/rest` to `22.x` ([#4172](https://github.com/newrelic/node-newrelic/pull/4172)) ([55d90c2](https://github.com/newrelic/node-newrelic/commit/55d90c2ac6f7657626b56754ff96f522229fd5fb))
+* Updated `commander` to v15 and added unit tests for scripts that use it ([#4168](https://github.com/newrelic/node-newrelic/pull/4168)) ([e409204](https://github.com/newrelic/node-newrelic/commit/e409204b29be52620ab09ba9a5fe55125329b44c))
+
+#### Tests
+
+* Updated `runnables-streaming.js` to consume the stream on the tracking metrics tests to avoid test time outs ([#4169](https://github.com/newrelic/node-newrelic/pull/4169)) ([1a132bf](https://github.com/newrelic/node-newrelic/commit/1a132bf489a453903f1e6b95204a591b88812e4b))
+
 ### v14.3.3 (2026-07-22)
 
 #### Features
