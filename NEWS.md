@@ -13,7 +13,6 @@
 
 * Fixed typos in 14.3.1 release ([#4170](https://github.com/newrelic/node-newrelic/pull/4170)) ([dd84830](https://github.com/newrelic/node-newrelic/commit/dd848300f754650a0e1f7a1a500d5f836b7dfb8b))
 * Updated compatibility report ([#4165](https://github.com/newrelic/node-newrelic/pull/4165)) ([33eceac](https://github.com/newrelic/node-newrelic/commit/33eceacf0f7a5ec8bae957da21d978814bca81bb))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 
 #### Miscellaneous chores
 
