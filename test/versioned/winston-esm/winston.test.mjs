@@ -66,7 +66,7 @@ test('named import issues logs correctly', async (t) => {
   )
 
   const metric = agent.metrics.getMetric(LOGGING.LIBS.WINSTON)
-  assert.equal(1, metric.callCount, 'winston log metric is recorded')
+  assert.equal(metric.callCount, 1, 'winston log metric is recorded')
 })
 
 test(
@@ -79,26 +79,26 @@ test(
 
     const { doLog } = await import('./fixtures/star-import.mjs?test=' + testId)
     doLog(sink)
-    assert.equal(1, sink.loggedLines.length, 'log is written to the transport')
+    assert.equal(sink.loggedLines.length, 1, 'log is written to the transport')
 
     const log = sink.loggedLines[0]
     const symbols = Object.getOwnPropertySymbols(log)
     // Instrumented logs should still be decorated internally by Winston with
     // a message symbol.
     assert.equal(
-      true,
       symbols.some((s) => s.toString() === 'Symbol(message)'),
+      true,
       'log object has winston internal symbol'
     )
 
     const agentLogs = agent.logs.getEvents()
     assert.equal(
-      true,
       agentLogs.some((l) => l?.message === 'import * as winston from winston'),
+      true,
       'log gets added to agent logs'
     )
 
     const metric = agent.metrics.getMetric(LOGGING.LIBS.WINSTON)
-    assert.equal(1, metric.callCount, 'winston log metric is recorded')
+    assert.equal(metric.callCount, 1, 'winston log metric is recorded')
   }
 )

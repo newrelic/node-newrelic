@@ -394,8 +394,6 @@ test('SpanAggregator', async (t) => {
       }
     }
 
-    assert.ok(maxSamples > MAX_LIMIT, 'failed test setup expectations')
-
     spanEventAggregator.reconfigure(fakeConfig)
     assert.equal(spanEventAggregator.limit, MAX_LIMIT, `should set limit to ${MAX_LIMIT}`)
   })

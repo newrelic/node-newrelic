@@ -646,7 +646,6 @@ helper.getShim = function getShim(pkg) {
  */
 helper.execSync = function execSync({ cwd, script }) {
   try {
-    // eslint-disable-next-line sonarjs/os-command
     cp.execSync(`node ./${script}`, {
       stdio: 'pipe',
       encoding: 'utf8',
