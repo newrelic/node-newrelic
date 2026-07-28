@@ -3,16 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-'use strict'
-
-const conventionalCommitsParser = require('conventional-commits-parser')
-const conventionalChangelogWriter = require('conventional-changelog-writer')
-const getChangelogConfig = require('conventional-changelog-conventionalcommits')
-const gitRawCommits = require('git-raw-commits')
-const path = require('node:path')
-const stream = require('node:stream')
-const { readFile, writeFile } = require('node:fs/promises')
-const Github = require('./github')
+import { readFile, writeFile } from 'node:fs/promises'
+import Github from './github.js'
+import { CommitParser } from 'conventional-commits-parser'
+import { writeChangelogString } from 'conventional-changelog-writer'
+import createPreset from 'conventional-changelog-conventionalcommits'
+import { GitClient } from '@conventional-changelog/git-client'
+import { changelogCommitPartial, changelogHeaderPartial, changelogTemplate } from './changelog-utils.js'
 
 // TODO: for reviewers: decide if we want to show all of these, or if there are some that should always be hidden
 const RELEASE_NOTE_TYPES = [
@@ -32,13 +29,14 @@ const RELEASE_NOTE_TYPES = [
 const RELEASEABLE_PREFIXES = RELEASE_NOTE_TYPES.map((type) => type.type)
 const ORDERED_TAGS = RELEASE_NOTE_TYPES.sort((a, b) => a.rank - b.rank).map((type) => type.section)
 
-class ConventionalChangelog {
-  constructor({ newVersion, previousVersion, org = 'newrelic', repo = 'node-newrelic' }) {
+export class ConventionalChangelog {
+  constructor({ newVersion, previousVersion, org = 'newrelic', repo = 'node-newrelic', gitClient, github }) {
     this.org = org
     this.repo = repo
-    this.github = new Github(this.org, this.repo)
+    this.github = github ?? new Github(this.org, this.repo)
     this.newVersion = newVersion
     this.previousVersion = previousVersion
+    this.gitClient = gitClient ?? new GitClient(process.cwd())
   }
 
   /**
@@ -60,53 +58,33 @@ class ConventionalChangelog {
    * and converting into JSON structure
    *
    * Parsing is done with https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-commits-parser
-   * Git entries are generated with https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/git-raw-commits
+   * Git entries are generated with https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/git-client
    *
    * @returns {object[]} the list of parsed conventional commits from the previous version
    */
   async getFormattedCommits() {
-    const self = this
-    const config = await getChangelogConfig({ types: RELEASE_NOTE_TYPES })
+    const config = createPreset({ types: RELEASE_NOTE_TYPES })
+    const parser = new CommitParser(config.parser)
     const commits = []
 
-    return new Promise((resolve, reject) => {
-      const conventionalCommitsStream = gitRawCommits({
-        format: '%B%n-hash-%n%H',
-        from: `v${this.previousVersion}`
-      })
-        .pipe(
-          new stream.Transform({
-            objectMode: true,
-            transform(chunk, encoding, callback) {
-              const commit = chunk.toString().split('\n')
-              commit[0] = self.removePrLinks(commit[0])
-              this.push(commit.join('\n'))
-              callback()
-            }
-          })
-        )
-        .pipe(conventionalCommitsParser(config.parserOpts))
-
-      conventionalCommitsStream.on('data', function onData(data) {
-        if (RELEASEABLE_PREFIXES.includes(data.type)) {
-          if (data.body) {
-            // newlines mess with our indentation formatting, so remove them
-            data.body = data.body.replace(/\n/g, ' ')
-          }
-
-          commits.push(data)
+    for await (const rawCommit of this.gitClient.getRawCommits({
+      format: '%B%n-hash-%n%H',
+      from: `v${this.previousVersion}`
+    })) {
+      const lines = rawCommit.split('\n')
+      lines[0] = this.removePrLinks(lines[0])
+      const data = parser.parse(lines.join('\n'))
+      if (RELEASEABLE_PREFIXES.includes(data.type)) {
+        if (data.body) {
+          // newlines mess with our indentation formatting, so remove them
+          data.body = data.body.replace(/\n/g, ' ')
         }
-      })
+        commits.push(data)
+      }
+    }
 
-      conventionalCommitsStream.on('error', function onError(err) {
-        reject(err)
-      })
-
-      conventionalCommitsStream.on('end', async function onEnd() {
-        await self.addPullRequestMetadata(commits)
-        resolve(commits)
-      })
-    })
+    await this.addPullRequestMetadata(commits)
+    return commits
   }
 
   /**
@@ -177,60 +155,30 @@ class ConventionalChangelog {
 
   /**
    * Function for generating our release notes in a human readable format
-   * Templating is done via Handlebars with https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-writer
+   * Templating is done via https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-writer
    * Templates were "borrowed" from https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-conventionalcommits/templates
    *
    * @param {object[]} commits list of conventional commits
    * @returns {string} markdown formatted release notes to be added to the changelog
    */
   async generateMarkdownChangelog(commits) {
-    const self = this
-    const config = await getChangelogConfig({ types: RELEASE_NOTE_TYPES })
-    const [mainTemplate, headerTemplate, commitTemplate] = await Promise.all([
-      readFile(path.resolve(__dirname, './templates/template.hbs'), 'utf-8'),
-      readFile(path.resolve(__dirname, './templates/header.hbs'), 'utf-8'),
-      readFile(path.resolve(__dirname, './templates/commit.hbs'), 'utf-8')
-    ])
+    const config = createPreset({ types: RELEASE_NOTE_TYPES })
 
-    return new Promise((resolve, reject) => {
-      const commitsStream = new stream.Readable({
-        objectMode: true
-      })
+    const context = {
+      host: 'https://github.com',
+      owner: this.org,
+      repository: this.repo,
+      isPatch: false,
+      version: this.newVersion,
+      includeSemverCopy: this.repo === 'node-newrelic'
+    }
 
-      commits.forEach((commit) => commitsStream.push(commit))
-      // mark the end of the stream
-      commitsStream.push(null)
-
-      const context = {
-        host: 'https://github.com',
-        owner: self.org,
-        repository: self.repo,
-        isPatch: false,
-        version: self.newVersion,
-        includeSemverCopy: self.repo === 'node-newrelic'
-      }
-
-      const markdownFormatter = conventionalChangelogWriter(context, {
-        ...config.writerOpts,
-        mainTemplate,
-        headerPartial: headerTemplate,
-        commitPartial: commitTemplate,
-        commitGroupsSort: self.rankedGroupSort
-      })
-      const changelogStream = commitsStream.pipe(markdownFormatter)
-
-      let content = ''
-      changelogStream.on('data', function onData(buffer) {
-        content += buffer.toString()
-      })
-
-      changelogStream.on('error', function onError(err) {
-        reject(err)
-      })
-
-      changelogStream.on('end', function onEnd() {
-        resolve(content)
-      })
+    return writeChangelogString(commits, context, {
+      ...config.writer,
+      headerPartial: changelogHeaderPartial,
+      template: changelogTemplate,
+      commitPartial: changelogCommitPartial,
+      commitGroupsSort: (a, b) => this.rankedGroupSort(a, b)
     })
   }
 
@@ -277,5 +225,3 @@ class ConventionalChangelog {
     await writeFile(jsonFile, JSON.stringify(changelog, null, 2), 'utf-8')
   }
 }
-
-module.exports = ConventionalChangelog

@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Thu Jul 23 2026 16:28:46 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Jul 28 2026 17:45:54 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
-    "@datadog/pprof@5.16.0": {
+    "@datadog/pprof@5.17.0": {
       "name": "@datadog/pprof",
-      "version": "5.16.0",
-      "range": "^5.13.3",
+      "version": "5.17.0",
+      "range": "^5.14.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/DataDog/pprof-nodejs",
-      "versionedRepoUrl": "https://github.com/DataDog/pprof-nodejs/tree/v5.16.0",
+      "versionedRepoUrl": "https://github.com/DataDog/pprof-nodejs/tree/v5.17.0",
       "licenseFile": "node_modules/@datadog/pprof/LICENSE",
-      "licenseUrl": "https://github.com/DataDog/pprof-nodejs/blob/v5.16.0/LICENSE",
+      "licenseUrl": "https://github.com/DataDog/pprof-nodejs/blob/v5.17.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -127,15 +127,15 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@opentelemetry/core@2.9.0": {
+    "@opentelemetry/core@2.10.0": {
       "name": "@opentelemetry/core",
-      "version": "2.9.0",
+      "version": "2.10.0",
       "range": "^2.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.10.0",
       "licenseFile": "node_modules/@opentelemetry/core/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.10.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
@@ -175,15 +175,15 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@opentelemetry/resources@2.9.0": {
+    "@opentelemetry/resources@2.10.0": {
       "name": "@opentelemetry/resources",
-      "version": "2.9.0",
+      "version": "2.10.0",
       "range": "^2.0.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.10.0",
       "licenseFile": "node_modules/@opentelemetry/resources/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.10.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
@@ -199,27 +199,27 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@opentelemetry/sdk-metrics@2.9.0": {
+    "@opentelemetry/sdk-metrics@2.10.0": {
       "name": "@opentelemetry/sdk-metrics",
-      "version": "2.9.0",
+      "version": "2.10.0",
       "range": "^2.0.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.10.0",
       "licenseFile": "node_modules/@opentelemetry/sdk-metrics/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.10.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@opentelemetry/sdk-trace-base@2.9.0": {
+    "@opentelemetry/sdk-trace-base@2.10.0": {
       "name": "@opentelemetry/sdk-trace-base",
-      "version": "2.9.0",
+      "version": "2.10.0",
       "range": "^2.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.10.0",
       "licenseFile": "node_modules/@opentelemetry/sdk-trace-base/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.10.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
@@ -263,15 +263,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@3.3.1": {
+    "import-in-the-middle@3.3.2": {
       "name": "import-in-the-middle",
-      "version": "3.3.1",
+      "version": "3.3.2",
       "range": "^3.0.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/nodejs/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v3.3.1",
+      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v3.3.2",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v3.3.1/LICENSE",
+      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v3.3.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
@@ -358,31 +358,45 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.1091.0": {
+    "@aws-sdk/client-s3@3.1095.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.1091.0",
+      "version": "3.1095.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1091.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1095.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1091.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1095.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.1091.0": {
+    "@aws-sdk/s3-request-presigner@3.1095.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.1091.0",
+      "version": "3.1095.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1091.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1095.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1091.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1095.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
+    },
+    "@conventional-changelog/git-client@3.1.0": {
+      "name": "@conventional-changelog/git-client",
+      "version": "3.1.0",
+      "range": "^3.1.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/conventional-changelog/conventional-changelog",
+      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v3.1.0",
+      "licenseFile": "node_modules/@conventional-changelog/git-client/LICENSE.md",
+      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v3.1.0/LICENSE.md",
+      "licenseTextSource": "file",
+      "publisher": "Dan Onoshko",
+      "email": "danon0404@gmail.com",
+      "url": "https://github.com/dangreen"
     },
     "@matteo.collina/tspl@0.2.0": {
       "name": "@matteo.collina/tspl",
@@ -459,28 +473,28 @@
       "licenseTextSource": "file",
       "publisher": "Slack Technologies, LLC"
     },
-    "@smithy/eventstream-codec@4.4.11": {
+    "@smithy/eventstream-codec@4.4.14": {
       "name": "@smithy/eventstream-codec",
-      "version": "4.4.11",
+      "version": "4.4.14",
       "range": "^4.3.3",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/smithy-lang/smithy-typescript",
-      "versionedRepoUrl": "https://github.com/smithy-lang/smithy-typescript/tree/v4.4.11",
+      "versionedRepoUrl": "https://github.com/smithy-lang/smithy-typescript/tree/v4.4.14",
       "licenseFile": "node_modules/@smithy/eventstream-codec/LICENSE",
-      "licenseUrl": "https://github.com/smithy-lang/smithy-typescript/blob/v4.4.11/LICENSE",
+      "licenseUrl": "https://github.com/smithy-lang/smithy-typescript/blob/v4.4.14/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
     },
-    "@smithy/util-utf8@4.4.11": {
+    "@smithy/util-utf8@4.4.14": {
       "name": "@smithy/util-utf8",
-      "version": "4.4.11",
+      "version": "4.4.14",
       "range": "^4.3.3",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/smithy-lang/smithy-typescript",
-      "versionedRepoUrl": "https://github.com/smithy-lang/smithy-typescript/tree/v4.4.11",
+      "versionedRepoUrl": "https://github.com/smithy-lang/smithy-typescript/tree/v4.4.14",
       "licenseFile": "node_modules/@smithy/util-utf8/LICENSE",
-      "licenseUrl": "https://github.com/smithy-lang/smithy-typescript/blob/v4.4.11/LICENSE",
+      "licenseUrl": "https://github.com/smithy-lang/smithy-typescript/blob/v4.4.14/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
@@ -511,15 +525,15 @@
       "publisher": "Ben Coe",
       "email": "ben@npmjs.com"
     },
-    "clean-jsdoc-theme@5.0.8": {
+    "clean-jsdoc-theme@5.1.0": {
       "name": "clean-jsdoc-theme",
-      "version": "5.0.8",
+      "version": "5.1.0",
       "range": "^5.0.8",
       "licenses": "MIT",
       "repoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme",
-      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v5.0.8",
+      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v5.1.0",
       "licenseFile": "node_modules/clean-jsdoc-theme/LICENSE",
-      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v5.0.8/LICENSE",
+      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v5.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Ankit Kumar",
       "url": "hello@ankdev.me"
@@ -549,55 +563,55 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
-    "conventional-changelog-conventionalcommits@5.0.0": {
+    "conventional-changelog-conventionalcommits@10.2.1": {
       "name": "conventional-changelog-conventionalcommits",
-      "version": "5.0.0",
-      "range": "^5.0.0",
+      "version": "10.2.1",
+      "range": "^10.2.1",
       "licenses": "ISC",
       "repoUrl": "https://github.com/conventional-changelog/conventional-changelog",
-      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v5.0.0",
+      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v10.2.1",
       "licenseFile": "node_modules/conventional-changelog-conventionalcommits/LICENSE.md",
-      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v5.0.0/LICENSE.md",
+      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v10.2.1/LICENSE.md",
       "licenseTextSource": "file",
       "publisher": "Ben Coe"
     },
-    "conventional-changelog-writer@5.0.1": {
+    "conventional-changelog-writer@9.2.0": {
       "name": "conventional-changelog-writer",
-      "version": "5.0.1",
-      "range": "^5.0.1",
+      "version": "9.2.0",
+      "range": "^9.2.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/conventional-changelog/conventional-changelog",
-      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v5.0.1",
+      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v9.2.0",
       "licenseFile": "node_modules/conventional-changelog-writer/LICENSE.md",
-      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v5.0.1/LICENSE.md",
+      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v9.2.0/LICENSE.md",
       "licenseTextSource": "file",
       "publisher": "Steve Mao",
       "email": "maochenyan@gmail.com",
       "url": "https://github.com/stevemao"
     },
-    "conventional-commits-parser@3.2.4": {
+    "conventional-commits-parser@7.1.0": {
       "name": "conventional-commits-parser",
-      "version": "3.2.4",
-      "range": "^3.2.4",
+      "version": "7.1.0",
+      "range": "^7.1.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/conventional-changelog/conventional-changelog",
-      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v3.2.4",
+      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v7.1.0",
       "licenseFile": "node_modules/conventional-commits-parser/LICENSE.md",
-      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v3.2.4/LICENSE.md",
+      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v7.1.0/LICENSE.md",
       "licenseTextSource": "file",
       "publisher": "Steve Mao",
       "email": "maochenyan@gmail.com",
       "url": "https://github.com/stevemao"
     },
-    "eslint-plugin-jsdoc@63.2.0": {
+    "eslint-plugin-jsdoc@63.2.2": {
       "name": "eslint-plugin-jsdoc",
-      "version": "63.2.0",
+      "version": "63.2.2",
       "range": "^63.2.0",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v63.2.0",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v63.2.2",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v63.2.0/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v63.2.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
@@ -629,20 +643,6 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
-    "git-raw-commits@2.0.11": {
-      "name": "git-raw-commits",
-      "version": "2.0.11",
-      "range": "^2.0.11",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/conventional-changelog/conventional-changelog",
-      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v2.0.11",
-      "licenseFile": "node_modules/git-raw-commits/LICENSE.md",
-      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v2.0.11/LICENSE.md",
-      "licenseTextSource": "file",
-      "publisher": "Steve Mao",
-      "email": "maochenyan@gmail.com",
-      "url": "https://github.com/stevemao"
-    },
     "got@15.1.0": {
       "name": "got",
       "version": "15.1.0",
@@ -667,15 +667,15 @@
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
     },
-    "lint-staged@17.1.0": {
+    "lint-staged@17.2.0": {
       "name": "lint-staged",
-      "version": "17.1.0",
+      "version": "17.2.0",
       "range": "^17.1.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/lint-staged/lint-staged",
-      "versionedRepoUrl": "https://github.com/lint-staged/lint-staged/tree/v17.1.0",
+      "versionedRepoUrl": "https://github.com/lint-staged/lint-staged/tree/v17.2.0",
       "licenseFile": "node_modules/lint-staged/LICENSE",
-      "licenseUrl": "https://github.com/lint-staged/lint-staged/blob/v17.1.0/LICENSE",
+      "licenseUrl": "https://github.com/lint-staged/lint-staged/blob/v17.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
