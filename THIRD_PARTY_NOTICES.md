@@ -765,7 +765,7 @@ This license terminates when the Software stops being provided by New Relic or w
 
 ### @opentelemetry/api-logs
 
-This product includes source derived from [@opentelemetry/api-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.219.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.219.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.219.0/LICENSE):
+This product includes source derived from [@opentelemetry/api-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.221.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.221.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.221.0/LICENSE):
 
 ```
                                  Apache License
@@ -1392,7 +1392,7 @@ This product includes source derived from [@opentelemetry/core](https://github.c
 
 ### @opentelemetry/exporter-metrics-otlp-http
 
-This product includes source derived from [@opentelemetry/exporter-metrics-otlp-http](https://github.com/open-telemetry/opentelemetry-js) ([v0.219.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.219.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.219.0/LICENSE):
+This product includes source derived from [@opentelemetry/exporter-metrics-otlp-http](https://github.com/open-telemetry/opentelemetry-js) ([v0.221.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.221.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.221.0/LICENSE):
 
 ```
                                  Apache License
@@ -1601,7 +1601,7 @@ This product includes source derived from [@opentelemetry/exporter-metrics-otlp-
 
 ### @opentelemetry/otlp-exporter-base
 
-This product includes source derived from [@opentelemetry/otlp-exporter-base](https://github.com/open-telemetry/opentelemetry-js) ([v0.219.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.219.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.219.0/LICENSE):
+This product includes source derived from [@opentelemetry/otlp-exporter-base](https://github.com/open-telemetry/opentelemetry-js) ([v0.221.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.221.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.221.0/LICENSE):
 
 ```
                                  Apache License
@@ -1810,7 +1810,7 @@ This product includes source derived from [@opentelemetry/otlp-exporter-base](ht
 
 ### @opentelemetry/otlp-transformer
 
-This product includes source derived from [@opentelemetry/otlp-transformer](https://github.com/open-telemetry/opentelemetry-js) ([v0.219.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.219.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.219.0/LICENSE):
+This product includes source derived from [@opentelemetry/otlp-transformer](https://github.com/open-telemetry/opentelemetry-js) ([v0.221.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.221.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.221.0/LICENSE):
 
 ```
                                  Apache License
@@ -2228,7 +2228,7 @@ This product includes source derived from [@opentelemetry/resources](https://git
 
 ### @opentelemetry/sdk-logs
 
-This product includes source derived from [@opentelemetry/sdk-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.219.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.219.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.219.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-logs](https://github.com/open-telemetry/opentelemetry-js) ([v0.221.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.221.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.221.0/LICENSE):
 
 ```
                                  Apache License
@@ -4243,7 +4243,7 @@ THE SOFTWARE.
 
 ### @opentelemetry/exporter-metrics-otlp-proto
 
-This product includes source derived from [@opentelemetry/exporter-metrics-otlp-proto](https://github.com/open-telemetry/opentelemetry-js) ([v0.219.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.219.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.219.0/LICENSE):
+This product includes source derived from [@opentelemetry/exporter-metrics-otlp-proto](https://github.com/open-telemetry/opentelemetry-js) ([v0.221.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.221.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.221.0/LICENSE):
 
 ```
                                  Apache License
