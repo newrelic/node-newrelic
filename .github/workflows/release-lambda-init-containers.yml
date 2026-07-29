@@ -7,7 +7,7 @@ permissions:
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Create Release"]
+    workflows: ["Poll NPM for Release Availability"]
     types:
       - completed
 

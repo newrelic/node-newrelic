@@ -6,7 +6,7 @@ permissions:
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Create Release"]
+    workflows: ["Poll NPM for Release Availability"]
     types:
       - completed
 
@@ -45,42 +45,11 @@ jobs:
           check-latest: true
           architecture: ${{ matrix.arch }}
 
-      - name: Get local agent version 
+      - name: Get agent version from package.json
+        id: get_version
         run: |
-          $env:local_agent_version = node -p "require('./package.json').version"
-          echo "AGENT_VERSION=$env:local_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-      - name: Find agent version at npm 
-        run: |
-          $env:npm_agent_version = npm view newrelic version 
-          echo "NPM_AGENT_VERSION=$env:npm_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
-          
-      - name: Check NPM availability
-        if: ${{ env.NPM_AGENT_VERSION != env.AGENT_VERSION }}
-        run: |
-          $count = 0
-          $seconds = 30
-          while($count -lt 10) {
-            $seconds = ($seconds * $count)
-            echo "Sleeping $seconds ($count)"
-            Start-Sleep -s $seconds
-            $npmversion = npm view newrelic version
-            echo "Checking npm version ($count): $npmversion"
-            $test = [Version]$npmversion -match [Version]${{ env.AGENT_VERSION }}
-            if ([Version]$npmversion -match [Version]${{ env.AGENT_VERSION }}) {
-              break;
-            }
-            $count++
-          }
-          $env:npm_agent_version = npm view newrelic version 
-          echo "Done with delayed check. Published version: $env:npm_agent_version Local version: ${{env.AGENT_VERSION}}"
-          echo "NPM_AGENT_VERSION=$env:npm_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-      - name: Has the new agent been published?
-        if: ${{ env.NPM_AGENT_VERSION != env.AGENT_VERSION }}
-        run: |
-          echo "Published agent version (${{env.NPM_AGENT_VERSION }}) is behind local agent version (${{env.AGENT_VERSION}}); exiting."
-          exit 1;
+          $version = node -p "require('./package.json').version"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Set package filename
         run: |
@@ -88,19 +57,19 @@ jobs:
 
       - name: Verify environment vars # because we can't access GH env vars until the next step
         run: |
-          echo "Agent version: ${{ env.AGENT_VERSION }}"
+          echo "Agent version: ${{ steps.get_version.outputs.version }}"
           echo "Package filename: ${{ env.PACKAGE_FILENAME }}"
 
       - name: Install agent
         working-directory: cloud-tooling/azure-site-extension/Content
         run: |
-          npm i --prefix . newrelic@${{ env.AGENT_VERSION }}
+          npm i --prefix . newrelic@${{ steps.get_version.outputs.version }}
           echo "Agent installed"
 
       - name: Configure package files
         working-directory: cloud-tooling/azure-site-extension
         run: |
-          (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ env.AGENT_VERSION }}") | Set-Content ${{ env.PACKAGE_FILENAME }}.nuspec
+          (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ steps.get_version.outputs.version }}") | Set-Content ${{ env.PACKAGE_FILENAME }}.nuspec
 
       - name: Create bundle
         working-directory: cloud-tooling/azure-site-extension

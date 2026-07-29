@@ -1,0 +1,51 @@
+name: Poll NPM for Release Availability
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Create Release"]
+    types:
+      - completed
+
+jobs:
+  poll-npm:
+    runs-on: ubuntu-latest
+    if:
+      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch')
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get agent version from package.json
+        id: get_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Poll npm registry until version is available
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          MAX_ATTEMPTS="${{ vars.NPM_POLL_MAX_ATTEMPTS || 20 }}"
+          INTERVAL=30
+
+          echo "Polling npm for newrelic@${VERSION}..."
+
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            NPM_VERSION=$(npm view "newrelic@${VERSION}" --prefer-online version 2>/dev/null || echo "")
+            echo "Attempt ${i}/${MAX_ATTEMPTS}: registry returned '${NPM_VERSION}'"
+
+            if [ "${NPM_VERSION}" = "${VERSION}" ]; then
+              echo "newrelic@${VERSION} is available on npm."
+              exit 0
+            fi
+
+            if [ "$i" -lt "$MAX_ATTEMPTS" ]; then
+              echo "Not yet available, sleeping ${INTERVAL}s..."
+              sleep $INTERVAL
+            fi
+          done
+
+          echo "ERROR: newrelic@${VERSION} did not appear on npm after $((MAX_ATTEMPTS * INTERVAL))s."
+          exit 1
