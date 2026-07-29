@@ -6,10 +6,15 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
-const proxyquire = require('proxyquire')
 const sinon = require('sinon')
-const stream = require('node:stream')
-const CHANGELOG_PATH = '../conventional-changelog.js'
+const os = require('node:os')
+const path = require('node:path')
+const fs = require('node:fs')
+const { ConventionalChangelog } = require('../conventional-changelog.mjs')
+
+async function * asyncGenerator(items) {
+  for (const item of items) yield item
+}
 
 const exampleJson = {
   version: '1.0.0',
@@ -84,22 +89,19 @@ test('Conventional Changelog Class', async (t) => {
       toFake: ['Date']
     })
     const mockGetPrByCommit = sinon.stub()
-    const MockGithubSdk = sinon.stub().returns({
-      getPullRequestByCommit: mockGetPrByCommit
-    })
+    const mockGithub = { getPullRequestByCommit: mockGetPrByCommit }
 
-    const mockGitLog = new stream.Readable({ objectMode: true })
+    const mockRawCommits = []
+    const mockGitClient = {
+      getRawCommits: (opts) => asyncGenerator(mockRawCommits)
+    }
 
-    const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
-      './github': MockGithubSdk,
-      'git-raw-commits': sinon.stub().returns(mockGitLog)
-    })
     ctx.nr = {
       clock,
       mockGetPrByCommit,
-      mockGitLog,
-      MockGithubSdk,
-      ConventionalChangelog
+      mockGithub,
+      mockRawCommits,
+      mockGitClient
     }
   })
 
@@ -108,7 +110,6 @@ test('Conventional Changelog Class', async (t) => {
   })
 
   await t.test('rankedGroupSort - should order a list of groupings based on rank', (t) => {
-    const { ConventionalChangelog } = t.nr
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
 
     const groupedCommits = [
@@ -143,22 +144,21 @@ test('Conventional Changelog Class', async (t) => {
   })
 
   await t.test('getFormattedCommits - should get a list of commits', async (t) => {
-    const { ConventionalChangelog, mockGetPrByCommit, mockGitLog } = t.nr
+    const { mockGetPrByCommit, mockGithub, mockRawCommits, mockGitClient } = t.nr
     mockGetPrByCommit.resolves({
       html_url: 'https://github.com/newrelic/node-newrelic/pull/123',
       number: 123
     })
-    mockGitLog.push(
+    mockRawCommits.push(
       [
         'fix(thing)!: updated Thing to prevent modifications to inputs (#123)',
         'Thing no longer mutates provided inputs, but instead clones inputs before performing modifications. Thing will now always return an entirely new output',
         'Fixes #1234, contributed by @someone'
       ].join('\n')
     )
-    mockGitLog.push('this is a non-conventional commit that should be dropped')
-    mockGitLog.push(null)
+    mockRawCommits.push('this is a non-conventional commit that should be dropped')
 
-    const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
+    const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0', github: mockGithub, gitClient: mockGitClient })
     const commits = await changelog.getFormattedCommits()
 
     assert.equal(commits.length, 1)
@@ -168,7 +168,7 @@ test('Conventional Changelog Class', async (t) => {
   })
 
   await t.test('addPullRequestMetadata - should add pr info if available', async (t) => {
-    const { mockGetPrByCommit, ConventionalChangelog } = t.nr
+    const { mockGetPrByCommit, mockGithub } = t.nr
     mockGetPrByCommit
       .onCall(0)
       .resolves({
@@ -186,7 +186,7 @@ test('Conventional Changelog Class', async (t) => {
       }
     ]
 
-    const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
+    const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0', github: mockGithub })
     await changelog.addPullRequestMetadata(commits)
 
     assert.deepEqual(commits[0].pr, {
@@ -197,7 +197,6 @@ test('Conventional Changelog Class', async (t) => {
   })
 
   await t.test('generateJsonChangelog - should create the new JSON changelog entry', (t) => {
-    const { ConventionalChangelog } = t.nr
     const commits = [
       { type: 'fix', subject: 'Fixed issue one' },
       { type: 'fix', subject: 'Fixed issue two' },
@@ -213,7 +212,6 @@ test('Conventional Changelog Class', async (t) => {
   await t.test(
     'generateMarkdownChangelog - should create the new Markdown changelog entry',
     async (t) => {
-      const { ConventionalChangelog } = t.nr
       const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
       const markdown = await changelog.generateMarkdownChangelog([exampleCommit])
       assert.equal(markdown, exampleMarkdown)
@@ -223,7 +221,6 @@ test('Conventional Changelog Class', async (t) => {
   await t.test(
     'generateMarkdownChangelog - should create the new Markdown changelog entry, skip semver major copy',
     async (t) => {
-      const { ConventionalChangelog } = t.nr
       const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0', repo: 'testRepo' })
       const markdown = await changelog.generateMarkdownChangelog([exampleCommit])
       assert.equal(markdown, exampleMarkdownNoSemverMajorCopy)
@@ -233,93 +230,56 @@ test('Conventional Changelog Class', async (t) => {
   await t.test(
     'writeMarkdownChangelog - should not update the markdown file if notes already exist',
     async (t) => {
-      const { MockGithubSdk, mockGitLog } = t.nr
-      const mockReadFile = sinon.stub().resolves('### v1.0.0')
-      const mockWriteFile = sinon.stub()
+      const tmpFile = path.join(os.tmpdir(), `cc-test-${process.hrtime.bigint()}.md`)
+      fs.writeFileSync(tmpFile, '### v1.0.0')
+      t.after(() => fs.rmSync(tmpFile, { force: true }))
 
-      const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
-        './github': MockGithubSdk,
-        'git-raw-commits': sinon.stub().returns(mockGitLog),
-        'node:fs/promises': {
-          readFile: mockReadFile,
-          writeFile: mockWriteFile
-        }
-      })
       const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
-      await changelog.writeMarkdownChangelog(exampleMarkdown)
+      await changelog.writeMarkdownChangelog(exampleMarkdown, tmpFile)
 
-      assert.equal(mockWriteFile.callCount, 0)
+      assert.equal(fs.readFileSync(tmpFile, 'utf-8'), '### v1.0.0')
     }
   )
 
   await t.test('writeMarkdownChangelog - should update the markdown file', async (t) => {
-    const { MockGithubSdk, mockGitLog } = t.nr
-    const mockReadFile = sinon.stub().resolves('### v0.9.0')
-    const mockWriteFile = sinon.stub().resolves()
+    const tmpFile = path.join(os.tmpdir(), `cc-test-${process.hrtime.bigint()}.md`)
+    fs.writeFileSync(tmpFile, '### v0.9.0')
+    t.after(() => fs.rmSync(tmpFile, { force: true }))
 
-    const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
-      './github': MockGithubSdk,
-      'git-raw-commits': sinon.stub().returns(mockGitLog),
-      'node:fs/promises': {
-        readFile: mockReadFile,
-        writeFile: mockWriteFile
-      }
-    })
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
-    await changelog.writeMarkdownChangelog(exampleMarkdown)
+    await changelog.writeMarkdownChangelog(exampleMarkdown, tmpFile)
 
-    assert.equal(mockWriteFile.callCount, 1)
-    assert.match(mockWriteFile.args[0][0], /NEWS\.md/)
-    assert.equal(mockWriteFile.args[0][1], `${exampleMarkdown}\n### v0.9.0`)
-    assert.equal(mockWriteFile.args[0][2], 'utf-8')
+    assert.equal(fs.readFileSync(tmpFile, 'utf-8'), `${exampleMarkdown}\n### v0.9.0`)
   })
 
   await t.test(
     'writeJsonChangelog - should not update the json file if notes already exist',
     async (t) => {
-      const { MockGithubSdk, mockGitLog } = t.nr
-      const mockReadFile = sinon
-        .stub()
-        .resolves(JSON.stringify({ entries: [{ version: '1.0.0' }] }))
-      const mockWriteFile = sinon.stub()
+      const tmpFile = path.join(os.tmpdir(), `cc-test-${process.hrtime.bigint()}.json`)
+      fs.writeFileSync(tmpFile, JSON.stringify({ entries: [{ version: '1.0.0' }] }))
+      t.after(() => fs.rmSync(tmpFile, { force: true }))
 
-      const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
-        './github': MockGithubSdk,
-        'git-raw-commits': sinon.stub().returns(mockGitLog),
-        'node:fs/promises': {
-          readFile: mockReadFile,
-          writeFile: mockWriteFile
-        }
-      })
       const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
-      await changelog.writeJsonChangelog(exampleJson)
+      await changelog.writeJsonChangelog(exampleJson, tmpFile)
 
-      assert.equal(mockWriteFile.callCount, 0)
+      assert.deepEqual(
+        JSON.parse(fs.readFileSync(tmpFile, 'utf-8')),
+        { entries: [{ version: '1.0.0' }] }
+      )
     }
   )
 
   await t.test('writeJsonChangelog - should update the json file', async (t) => {
-    const { MockGithubSdk, mockGitLog } = t.nr
-    const mockReadFile = sinon.stub().resolves(JSON.stringify({ entries: [{ version: '0.9.0' }] }))
-    const mockWriteFile = sinon.stub().resolves()
+    const tmpFile = path.join(os.tmpdir(), `cc-test-${process.hrtime.bigint()}.json`)
+    fs.writeFileSync(tmpFile, JSON.stringify({ entries: [{ version: '0.9.0' }] }))
+    t.after(() => fs.rmSync(tmpFile, { force: true }))
 
-    const ConventionalChangelog = proxyquire(CHANGELOG_PATH, {
-      './github': MockGithubSdk,
-      'git-raw-commits': sinon.stub().returns(mockGitLog),
-      'node:fs/promises': {
-        readFile: mockReadFile,
-        writeFile: mockWriteFile
-      }
-    })
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
-    await changelog.writeJsonChangelog(exampleJson)
+    await changelog.writeJsonChangelog(exampleJson, tmpFile)
 
-    assert.equal(mockWriteFile.callCount, 1)
-    assert.match(mockWriteFile.args[0][0], /changelog\.json/)
     assert.equal(
-      mockWriteFile.args[0][1],
+      fs.readFileSync(tmpFile, 'utf-8'),
       JSON.stringify({ entries: [{ ...exampleJson }, { version: '0.9.0' }] }, null, 2)
     )
-    assert.equal(mockWriteFile.args[0][2], 'utf-8')
   })
 })

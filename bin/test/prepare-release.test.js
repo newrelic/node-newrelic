@@ -33,7 +33,7 @@ test('Prepare Release script', async (t) => {
 
       const script = proxyquire('../prepare-release', {
         './github': MockGithubSdk,
-        './conventional-changelog': MockConventionalChangelog
+        './conventional-changelog.mjs': { ConventionalChangelog: MockConventionalChangelog }
       })
       ctx.nr = {
         mockConventionalCommands,

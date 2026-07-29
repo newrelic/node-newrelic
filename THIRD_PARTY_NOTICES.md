@@ -43,6 +43,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 * [@aws-sdk/client-s3](#aws-sdkclient-s3)
 * [@aws-sdk/s3-request-presigner](#aws-sdks3-request-presigner)
+* [@conventional-changelog/git-client](#conventional-changeloggit-client)
 * [@matteo.collina/tspl](#matteocollinatspl)
 * [@newrelic/eslint-config](#newreliceslint-config)
 * [@newrelic/newrelic-oss-cli](#newrelicnewrelic-oss-cli)
@@ -62,7 +63,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [eslint-plugin-jsdoc](#eslint-plugin-jsdoc)
 * [eslint](#eslint)
 * [express](#express)
-* [git-raw-commits](#git-raw-commits)
 * [got](#got)
 * [jsdoc](#jsdoc)
 * [lint-staged](#lint-staged)
@@ -1183,7 +1183,7 @@ This product includes source derived from [@opentelemetry/api](https://github.co
 
 ### @opentelemetry/core
 
-This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.9.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE):
+This product includes source derived from [@opentelemetry/core](https://github.com/open-telemetry/opentelemetry-js) ([v2.10.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.10.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.10.0/LICENSE):
 
 ```
                                  Apache License
@@ -2019,7 +2019,7 @@ This product includes source derived from [@opentelemetry/otlp-transformer](http
 
 ### @opentelemetry/resources
 
-This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.9.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE):
+This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.10.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.10.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.10.0/LICENSE):
 
 ```
                                  Apache License
@@ -2437,7 +2437,7 @@ This product includes source derived from [@opentelemetry/sdk-logs](https://gith
 
 ### @opentelemetry/sdk-metrics
 
-This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.9.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.10.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.10.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.10.0/LICENSE):
 
 ```
                                  Apache License
@@ -2646,7 +2646,7 @@ This product includes source derived from [@opentelemetry/sdk-metrics](https://g
 
 ### @opentelemetry/sdk-trace-base
 
-This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.9.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.9.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.9.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-trace-base](https://github.com/open-telemetry/opentelemetry-js) ([v2.10.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.10.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.10.0/LICENSE):
 
 ```
                                  Apache License
@@ -2944,7 +2944,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v3.3.1](https://github.com/nodejs/import-in-the-middle/tree/v3.3.1)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v3.3.1/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v3.3.2](https://github.com/nodejs/import-in-the-middle/tree/v3.3.2)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v3.3.2/LICENSE):
 
 ```
                                  Apache License
@@ -3320,7 +3320,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1091.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1091.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1091.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1095.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1095.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1095.0/LICENSE):
 
 ```
                                 Apache License
@@ -3529,7 +3529,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1091.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1091.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1091.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1095.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1095.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1095.0/LICENSE):
 
 ```
                                 Apache License
@@ -3733,6 +3733,35 @@ This product includes source derived from [@aws-sdk/s3-request-presigner](https:
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+```
+
+### @conventional-changelog/git-client
+
+This product includes source derived from [@conventional-changelog/git-client](https://github.com/conventional-changelog/conventional-changelog) ([v3.1.0](https://github.com/conventional-changelog/conventional-changelog/tree/v3.1.0)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v3.1.0/LICENSE.md):
+
+```
+### MIT License
+
+Copyright © [conventional-changelog team](https://github.com/conventional-changelog)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ```
 
@@ -4453,7 +4482,7 @@ SOFTWARE.
 
 ### @smithy/eventstream-codec
 
-This product includes source derived from [@smithy/eventstream-codec](https://github.com/smithy-lang/smithy-typescript) ([v4.4.11](https://github.com/smithy-lang/smithy-typescript/tree/v4.4.11)), distributed under the [Apache-2.0 License](https://github.com/smithy-lang/smithy-typescript/blob/v4.4.11/LICENSE):
+This product includes source derived from [@smithy/eventstream-codec](https://github.com/smithy-lang/smithy-typescript) ([v4.4.14](https://github.com/smithy-lang/smithy-typescript/tree/v4.4.14)), distributed under the [Apache-2.0 License](https://github.com/smithy-lang/smithy-typescript/blob/v4.4.14/LICENSE):
 
 ```
                                 Apache License
@@ -4662,7 +4691,7 @@ This product includes source derived from [@smithy/eventstream-codec](https://gi
 
 ### @smithy/util-utf8
 
-This product includes source derived from [@smithy/util-utf8](https://github.com/smithy-lang/smithy-typescript) ([v4.4.11](https://github.com/smithy-lang/smithy-typescript/tree/v4.4.11)), distributed under the [Apache-2.0 License](https://github.com/smithy-lang/smithy-typescript/blob/v4.4.11/LICENSE):
+This product includes source derived from [@smithy/util-utf8](https://github.com/smithy-lang/smithy-typescript) ([v4.4.14](https://github.com/smithy-lang/smithy-typescript/tree/v4.4.14)), distributed under the [Apache-2.0 License](https://github.com/smithy-lang/smithy-typescript/blob/v4.4.14/LICENSE):
 
 ```
 Apache License
@@ -4921,7 +4950,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### clean-jsdoc-theme
 
-This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v5.0.8](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v5.0.8)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v5.0.8/LICENSE):
+This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v5.1.0](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v5.1.0)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v5.1.0/LICENSE):
 
 ```
 MIT License
@@ -5013,7 +5042,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### conventional-changelog-conventionalcommits
 
-This product includes source derived from [conventional-changelog-conventionalcommits](https://github.com/conventional-changelog/conventional-changelog) ([v5.0.0](https://github.com/conventional-changelog/conventional-changelog/tree/v5.0.0)), distributed under the [ISC License](https://github.com/conventional-changelog/conventional-changelog/blob/v5.0.0/LICENSE.md):
+This product includes source derived from [conventional-changelog-conventionalcommits](https://github.com/conventional-changelog/conventional-changelog) ([v10.2.1](https://github.com/conventional-changelog/conventional-changelog/tree/v10.2.1)), distributed under the [ISC License](https://github.com/conventional-changelog/conventional-changelog/blob/v10.2.1/LICENSE.md):
 
 ```
 ### ISC License
@@ -5036,7 +5065,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ### conventional-changelog-writer
 
-This product includes source derived from [conventional-changelog-writer](https://github.com/conventional-changelog/conventional-changelog) ([v5.0.1](https://github.com/conventional-changelog/conventional-changelog/tree/v5.0.1)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v5.0.1/LICENSE.md):
+This product includes source derived from [conventional-changelog-writer](https://github.com/conventional-changelog/conventional-changelog) ([v9.2.0](https://github.com/conventional-changelog/conventional-changelog/tree/v9.2.0)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v9.2.0/LICENSE.md):
 
 ```
 ### MIT License
@@ -5065,7 +5094,7 @@ SOFTWARE.
 
 ### conventional-commits-parser
 
-This product includes source derived from [conventional-commits-parser](https://github.com/conventional-changelog/conventional-changelog) ([v3.2.4](https://github.com/conventional-changelog/conventional-changelog/tree/v3.2.4)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v3.2.4/LICENSE.md):
+This product includes source derived from [conventional-commits-parser](https://github.com/conventional-changelog/conventional-changelog) ([v7.1.0](https://github.com/conventional-changelog/conventional-changelog/tree/v7.1.0)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v7.1.0/LICENSE.md):
 
 ```
 ### MIT License
@@ -5094,7 +5123,7 @@ SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v63.2.0](https://github.com/gajus/eslint-plugin-jsdoc/tree/v63.2.0)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v63.2.0/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v63.2.2](https://github.com/gajus/eslint-plugin-jsdoc/tree/v63.2.2)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v63.2.2/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -5180,35 +5209,6 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-```
-
-### git-raw-commits
-
-This product includes source derived from [git-raw-commits](https://github.com/conventional-changelog/conventional-changelog) ([v2.0.11](https://github.com/conventional-changelog/conventional-changelog/tree/v2.0.11)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v2.0.11/LICENSE.md):
-
-```
-### MIT License
-
-Copyright © [conventional-changelog team](https://github.com/conventional-changelog)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 
 ```
 
@@ -5341,7 +5341,7 @@ https://github.com/jmblog/color-themes-for-google-code-prettify
 
 ### lint-staged
 
-This product includes source derived from [lint-staged](https://github.com/lint-staged/lint-staged) ([v17.1.0](https://github.com/lint-staged/lint-staged/tree/v17.1.0)), distributed under the [MIT License](https://github.com/lint-staged/lint-staged/blob/v17.1.0/LICENSE):
+This product includes source derived from [lint-staged](https://github.com/lint-staged/lint-staged) ([v17.2.0](https://github.com/lint-staged/lint-staged/tree/v17.2.0)), distributed under the [MIT License](https://github.com/lint-staged/lint-staged/blob/v17.2.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -5593,7 +5593,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### @datadog/pprof
 
-This product includes source derived from [@datadog/pprof](https://github.com/DataDog/pprof-nodejs) ([v5.16.0](https://github.com/DataDog/pprof-nodejs/tree/v5.16.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/pprof-nodejs/blob/v5.16.0/LICENSE):
+This product includes source derived from [@datadog/pprof](https://github.com/DataDog/pprof-nodejs) ([v5.17.0](https://github.com/DataDog/pprof-nodejs/tree/v5.17.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/pprof-nodejs/blob/v5.17.0/LICENSE):
 
 ```
 
