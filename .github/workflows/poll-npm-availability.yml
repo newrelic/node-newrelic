@@ -22,7 +22,7 @@ jobs:
 
       - name: Get agent version from package.json
         id: get_version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        run: jq -r '"version=\(.version)"' ./package.json >> $GITHUB_OUTPUT
 
       - name: Poll npm registry until version is available
         run: |

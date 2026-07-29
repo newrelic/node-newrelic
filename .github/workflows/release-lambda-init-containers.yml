@@ -22,12 +22,12 @@ jobs:
         with:
           fetch-depth: 2
       - id: get_tag
-        run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
+        run: jq -r '"version=\(.version)"' ./package.json >> $GITHUB_OUTPUT
       - name: Create release tags for Lambda and K8s Init Containers
         run: |
-          RELEASE_TITLE="New Relic Node Agent v${{ steps.get_tag.outputs.latest_tag }}.0"
-          RELEASE_TAG="v${{ steps.get_tag.outputs.latest_tag }}.0_nodejs"
-          RELEASE_NOTES="Automated release for [Node Agent v${{ steps.get_tag.outputs.latest_tag }}](https://github.com/newrelic/node-newrelic/releases/tag/v${{ steps.get_tag.outputs.latest_tag }})"
+          RELEASE_TITLE="New Relic Node Agent v${{ steps.get_tag.outputs.version }}.0"
+          RELEASE_TAG="v${{ steps.get_tag.outputs.version }}.0_nodejs"
+          RELEASE_NOTES="Automated release for [Node Agent v${{ steps.get_tag.outputs.version }}](https://github.com/newrelic/node-newrelic/releases/tag/v${{ steps.get_tag.outputs.version }})"
           gh auth login --with-token <<< $GH_RELEASE_TOKEN
           echo "newrelic/newrelic-lambda-layers - Releasing \"${RELEASE_TITLE}\" with tag ${RELEASE_TAG}"
           gh release create "${RELEASE_TAG}" --title="${RELEASE_TITLE}" --repo=newrelic/newrelic-lambda-layers --notes="${RELEASE_NOTES}"

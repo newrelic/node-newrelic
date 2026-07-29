@@ -4,7 +4,7 @@ set -ex
 # Copyright 2020 New Relic Corporation. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-PACKAGE_VERSION=$(node -e 'console.log(require("./package").version)')
+PACKAGE_VERSION=$(jq -r '.version' ./package.json)
 
 git fetch origin gh-pages
 git checkout gh-pages
