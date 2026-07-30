@@ -48,8 +48,7 @@ jobs:
             echo "agent-type=${{ inputs.agent-type }}" >> $GITHUB_OUTPUT
             echo "use-cache=${{ inputs.use-cache }}" >> $GITHUB_OUTPUT
           else
-            VERSION=$(node -p "require('./package.json').version")
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            jq -r '"version=\(.version)"' ./package.json >> $GITHUB_OUTPUT
             echo "agent-type=NRNodeAgent" >> $GITHUB_OUTPUT
             echo "use-cache=true" >> $GITHUB_OUTPUT
           fi
