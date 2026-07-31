@@ -24,6 +24,27 @@ program.requiredOption(
 )
 program.option('--dry-run', 'Execute the logic but do not send slack message')
 
+// These options are simply for testing
+// It is worth noting at the time of testing this (07/31/2026)
+// it is not returning resolved secret scanning, only code scanning alerts
+program.option(
+  '--per-page [number]',
+  'Customize how many results come back on the call to Github',
+  '100'
+)
+program.option(
+  '--alert-state [string]',
+  'State of alerts',
+  'open',
+  (value) => {
+    const allowed = ['open', 'resolved']
+    if (!allowed.includes(value)) {
+      throw new Error(`--alert-state must be one of ${allowed.join(', ')}`)
+    }
+    return value
+  }
+)
+
 /**
  * Fetches all open secret scanning and code scanning alerts for each repo
  * and posts them to Slack.
@@ -34,7 +55,7 @@ program.option('--dry-run', 'Execute the logic but do not send slack message')
  * SLACK_TOKEN - token from bot
  * SLACK_SECRET - signing secret from bot
  *
- * `node ./bin/scan-github-security-alerts.js --repos <comma-delimited repo list>`
+ * `node ./bin/scan-github-security-alerts.js --repos <comma-delimited repo list> --per-page [100] --alert-state [open] [--dry-run]`
  */
 async function scanSecurityAlerts() {
   try {
@@ -54,8 +75,8 @@ async function scanSecurityAlerts() {
       console.log(`\nScanning ${ORG}/${repo}...`)
 
       await Promise.all([
-        scanSecretAlerts({ app, octokit, repo, isDryRun: opts.dryRun }),
-        scanCodeAlerts({ app, octokit, repo, isDryRun: opts.dryRun })
+        scanSecretAlerts({ app, octokit, repo, opts }),
+        scanCodeAlerts({ app, octokit, repo, opts })
       ])
     }
   } catch (err) {
@@ -71,8 +92,9 @@ function stopOnError(err) {
   process.exit(1)
 }
 
-async function scanSecretAlerts({ app, octokit, repo, isDryRun }) {
-  const secretAlerts = await fetchSecretScanningAlerts(octokit, repo)
+async function scanSecretAlerts({ app, octokit, repo, opts }) {
+  const { dryRun: isDryRun } = opts
+  const secretAlerts = await fetchSecretScanningAlerts(octokit, repo, opts)
   console.log(`${secretAlerts.length} secret scanning alert(s)`)
 
   for (const alert of secretAlerts) {
@@ -80,21 +102,22 @@ async function scanSecretAlerts({ app, octokit, repo, isDryRun }) {
     if (isDryRun) {
       console.log(`[DRY RUN] Secret alert #${alert.number}:`, JSON.stringify(blocks, null, 2))
     } else {
-      await app.client.chat.postMessage({ channel, blocks })
+      await app.client.chat.postMessage({ channel, text: `Secret scanning alert #${alert.number} in ${ORG}/${repo}`, blocks })
       console.log(`Posted secret alert #${alert.number} to ${channel}`)
     }
   }
 }
 
-async function scanCodeAlerts({ app, octokit, repo, isDryRun }) {
-  const codeAlerts = await fetchCodeScanningAlerts(octokit, repo)
+async function scanCodeAlerts({ app, octokit, repo, opts }) {
+  const { dryRun: isDryRun } = opts
+  const codeAlerts = await fetchCodeScanningAlerts(octokit, repo, opts)
   console.log(`${codeAlerts.length} code scanning alert(s)`)
   for (const alert of codeAlerts) {
     const blocks = buildCodeAlertBlocks(repo, alert)
     if (isDryRun) {
       console.log(`[DRY RUN] Code alert #${alert.number}:`, JSON.stringify(blocks, null, 2))
     } else {
-      await app.client.chat.postMessage({ channel, blocks })
+      await app.client.chat.postMessage({ channel, text: `Code scanning alert #${alert.number} in ${ORG}/${repo}`, blocks })
       console.log(`Posted code alert #${alert.number} to ${channel}`)
     }
   }
@@ -110,13 +133,16 @@ function areEnvVarsSet(dryRun) {
   return missingEnvVars.length === 0
 }
 
-async function fetchSecretScanningAlerts(octokit, repo) {
+async function fetchSecretScanningAlerts(octokit, repo, opts) {
+  const { perPage, alertState } = opts
   try {
+    // we haven't implemented paging, so this will return up to 100 max.
+    // If we have more than that, we've done something wrong
     const { data } = await octokit.request('GET /repos/{owner}/{repo}/secret-scanning/alerts', {
       owner: ORG,
       repo,
-      state: 'open',
-      per_page: 100
+      state: alertState,
+      per_page: perPage
     })
     return data
   } catch (err) {
@@ -128,13 +154,16 @@ async function fetchSecretScanningAlerts(octokit, repo) {
   }
 }
 
-async function fetchCodeScanningAlerts(octokit, repo) {
+async function fetchCodeScanningAlerts(octokit, repo, opts) {
+  const { perPage, alertState } = opts
   try {
+    // we haven't implemented paging, so this will return up to 100 max.
+    // If we have more than that, we've done something wrong
     const { data } = await octokit.request('GET /repos/{owner}/{repo}/code-scanning/alerts', {
       owner: ORG,
       repo,
-      state: 'open',
-      per_page: 100
+      state: alertState,
+      per_page: perPage
     })
     return data
   } catch (err) {

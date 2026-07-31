@@ -25,7 +25,8 @@ function beforeEach(ctx) {
     '@octokit/rest': MockOctokitRest,
     '@slack/bolt': MockSlackBolt
   })
-  ctx.nr = { script, sandox, octokit, slackApp }
+  const opts = { dryRun: false, alertState: 'open', perPage: '100' }
+  ctx.nr = { script, sandox, octokit, slackApp, opts }
 }
 
 function afterEach(ctx) {
@@ -110,7 +111,7 @@ test('scan-github-security-alerts', async (t) => {
         { number: 3, html_url: 'https://github.com/newrelic/node-newrelic/security/secret-scanning/3', secret_type: 'github_personal_access_token', secret_type_display_name: 'GitHub Personal Access Token' }
       ]
       octokit.request.resolves({ data: alerts })
-      const result = await script.fetchSecretScanningAlerts(octokit, 'node-newrelic')
+      const result = await script.fetchSecretScanningAlerts(octokit, 'node-newrelic', { alertState: 'open', perPage: '100' })
 
       assert.deepEqual(result, alerts)
       assert.equal(octokit.request.firstCall.args[0], 'GET /repos/{owner}/{repo}/secret-scanning/alerts')
@@ -122,7 +123,7 @@ test('scan-github-security-alerts', async (t) => {
       const { script, octokit } = t.nr
       octokit.request.rejects(Object.assign(new Error('Not Found'), { status: 404 }))
 
-      const result = await script.fetchSecretScanningAlerts(octokit, 'node-newrelic')
+      const result = await script.fetchSecretScanningAlerts(octokit, 'node-newrelic', { alertState: 'open', perPage: '100' })
 
       assert.deepEqual(result, [])
     })
@@ -132,7 +133,7 @@ test('scan-github-security-alerts', async (t) => {
       octokit.request.rejects(Object.assign(new Error('Server Error'), { status: 500 }))
 
       await assert.rejects(
-        () => script.fetchSecretScanningAlerts(octokit, 'node-newrelic'),
+        () => script.fetchSecretScanningAlerts(octokit, 'node-newrelic', { alertState: 'open', perPage: '100' }),
         /Server Error/
       )
     })
@@ -154,7 +155,7 @@ test('scan-github-security-alerts', async (t) => {
       ]
       octokit.request.resolves({ data: alerts })
 
-      const result = await script.fetchCodeScanningAlerts(octokit, 'node-newrelic')
+      const result = await script.fetchCodeScanningAlerts(octokit, 'node-newrelic', { alertState: 'open', perPage: '100' })
 
       assert.deepEqual(result, alerts)
       assert.equal(octokit.request.firstCall.args[0], 'GET /repos/{owner}/{repo}/code-scanning/alerts')
@@ -166,7 +167,7 @@ test('scan-github-security-alerts', async (t) => {
       const { script, octokit } = t.nr
       octokit.request.rejects(Object.assign(new Error('Not Found'), { status: 404 }))
 
-      const result = await script.fetchCodeScanningAlerts(octokit, 'node-newrelic')
+      const result = await script.fetchCodeScanningAlerts(octokit, 'node-newrelic', { alertState: 'open', perPage: '100' })
 
       assert.deepEqual(result, [])
     })
@@ -176,7 +177,7 @@ test('scan-github-security-alerts', async (t) => {
       octokit.request.rejects(Object.assign(new Error('Forbidden'), { status: 403 }))
 
       await assert.rejects(
-        () => script.fetchCodeScanningAlerts(octokit, 'node-newrelic'),
+        () => script.fetchCodeScanningAlerts(octokit, 'node-newrelic', { alertState: 'open', perPage: '100' }),
         /Forbidden/
       )
     })
@@ -340,14 +341,14 @@ test('scan-github-security-alerts', async (t) => {
     t.afterEach(afterEach)
 
     await t.test('should post to Slack for each open alert', async (t) => {
-      const { script, octokit, slackApp } = t.nr
+      const { script, octokit, slackApp, opts } = t.nr
       const alerts = [
         { number: 3, html_url: 'https://github.com/newrelic/node-newrelic/security/secret-scanning/3', secret_type: 'github_personal_access_token', secret_type_display_name: 'GitHub Personal Access Token' },
         { number: 4, html_url: 'https://github.com/newrelic/node-newrelic/security/secret-scanning/4', secret_type: 'npm_access_token', secret_type_display_name: 'npm Access Token' }
       ]
       octokit.request.resolves({ data: alerts })
 
-      await script.scanSecretAlerts({ app: slackApp, octokit, repo: 'node-newrelic', isDryRun: false })
+      await script.scanSecretAlerts({ app: slackApp, octokit, repo: 'node-newrelic', opts })
 
       assert.equal(slackApp.client.chat.postMessage.callCount, 2)
       const firstCall = slackApp.client.chat.postMessage.firstCall.args[0]
@@ -355,21 +356,22 @@ test('scan-github-security-alerts', async (t) => {
     })
 
     await t.test('should not post to Slack when dry-run is true', async (t) => {
-      const { script, octokit, slackApp } = t.nr
+      const { script, octokit, slackApp, opts } = t.nr
       octokit.request.resolves({ data: [
         { number: 3, html_url: 'https://example.com/3', secret_type: 'github_personal_access_token', secret_type_display_name: 'GitHub Personal Access Token' }
       ] })
 
-      await script.scanSecretAlerts({ app: slackApp, octokit, repo: 'node-newrelic', isDryRun: true })
+      const newOpts = { ...opts, dryRun: true }
+      await script.scanSecretAlerts({ app: slackApp, octokit, repo: 'node-newrelic', opts: newOpts })
 
       assert.equal(slackApp.client.chat.postMessage.callCount, 0)
     })
 
     await t.test('should not post to Slack when there are no open alerts', async (t) => {
-      const { script, octokit, slackApp } = t.nr
+      const { script, octokit, slackApp, opts } = t.nr
       octokit.request.resolves({ data: [] })
 
-      await script.scanSecretAlerts({ app: slackApp, octokit, repo: 'node-newrelic', isDryRun: false })
+      await script.scanSecretAlerts({ app: slackApp, octokit, repo: 'node-newrelic', opts })
 
       assert.equal(slackApp.client.chat.postMessage.callCount, 0)
     })
@@ -380,7 +382,7 @@ test('scan-github-security-alerts', async (t) => {
     t.afterEach(afterEach)
 
     await t.test('should post to Slack for each open alert', async (t) => {
-      const { script, octokit, slackApp } = t.nr
+      const { script, octokit, slackApp, opts } = t.nr
       const alerts = [
         {
           number: 75,
@@ -397,7 +399,7 @@ test('scan-github-security-alerts', async (t) => {
       ]
       octokit.request.resolves({ data: alerts })
 
-      await script.scanCodeAlerts({ app: slackApp, octokit, repo: 'node-newrelic', isDryRun: false })
+      await script.scanCodeAlerts({ app: slackApp, octokit, repo: 'node-newrelic', opts })
 
       assert.equal(slackApp.client.chat.postMessage.callCount, 2)
       const firstCall = slackApp.client.chat.postMessage.firstCall.args[0]
@@ -405,7 +407,7 @@ test('scan-github-security-alerts', async (t) => {
     })
 
     await t.test('should not post to Slack when dry-run is true', async (t) => {
-      const { script, octokit, slackApp } = t.nr
+      const { script, octokit, slackApp, opts } = t.nr
       octokit.request.resolves({ data: [
         {
           number: 75,
@@ -415,16 +417,17 @@ test('scan-github-security-alerts', async (t) => {
         }
       ] })
 
-      await script.scanCodeAlerts({ app: slackApp, octokit, repo: 'node-newrelic', isDryRun: true })
+      const newOpts = { ...opts, dryRun: true }
+      await script.scanCodeAlerts({ app: slackApp, octokit, repo: 'node-newrelic', opts: newOpts })
 
       assert.equal(slackApp.client.chat.postMessage.callCount, 0)
     })
 
     await t.test('should not post to Slack when there are no open alerts', async (t) => {
-      const { script, octokit, slackApp } = t.nr
+      const { script, octokit, slackApp, opts } = t.nr
       octokit.request.resolves({ data: [] })
 
-      await script.scanCodeAlerts({ app: slackApp, octokit, repo: 'node-newrelic', isDryRun: false })
+      await script.scanCodeAlerts({ app: slackApp, octokit, repo: 'node-newrelic', opts })
 
       assert.equal(slackApp.client.chat.postMessage.callCount, 0)
     })
