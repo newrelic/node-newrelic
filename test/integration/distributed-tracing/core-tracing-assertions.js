@@ -15,8 +15,8 @@ const assert = require('node:assert')
  */
 function assertMetrics({ agent, expectedMetrics = [] }) {
   for (const metric of expectedMetrics) {
-    // test case has Java in names, replace with Nodejs
-    const name = metric[0].replace('Java', 'Nodejs')
+    // test case has <LANG> placeholder in names, replace with Nodejs
+    const name = metric[0].replace('<LANG>', 'Nodejs')
     const expectedValue = metric[1]
     const value = agent.metrics._metrics.unscoped[name].callCount
     assert.equal(value, expectedValue, `metric ${name} should be ${expectedValue}, got ${value}`)

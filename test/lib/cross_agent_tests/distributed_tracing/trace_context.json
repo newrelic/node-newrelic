@@ -14,20 +14,20 @@
     "force_adaptive_sampled": false,
     "expected_priority_between": [ 0, 1 ],
     "inbound_headers": [
-      {
-        "traceparent": "00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01",
-        "newrelic": "{\"v\":[0,1],\"d\":{\"ty\":\"App\",\"ac\":\"33\",\"ap\":\"2827902\",\"id\":\"7d3efb1b173fecfa\",\"tr\":\"0af7651916cd43dd8448eb211c80319c\",\"pr\":1.234567,\"sa\":true,\"ti\":1518469636035,\"tx\":\"0af7651916cd43dd\"}}"
-      }
+    {
+      "traceparent": "00-0af7651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01",
+      "newrelic": "{\"v\":[0,1],\"d\":{\"ty\":\"App\",\"ac\":\"33\",\"ap\":\"2827902\",\"id\":\"7d3efb1b173fecfa\",\"tr\":\"0af7651916cd43dd8448eb211c80319c\",\"pr\":1.234567,\"sa\":true,\"ti\":1518469636035,\"tx\":\"0af7651916cd43dd\"}}"
+    }
     ],
     "intrinsics": {
-      "target_events": [ "Transaction" ],
-      "common": {
-        "exact": {
-          "traceId": "0af7651916cd43dd8448eb211c80319c",
-          "sampled": false
-        },
-        "expected": [ "guid" ]
-      }
+    "target_events": [ "Transaction" ],
+    "common": {
+      "exact": {
+        "traceId": "0af7651916cd43dd8448eb211c80319c",
+        "sampled": false
+      },
+      "expected": [ "guid" ]
+    }
     }
   },
   {
@@ -436,7 +436,7 @@
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "root": "trace_id_ratio_based",
-    "full_granularity_ratio": 0.00000001,
+    "full_granularity_ratio": 0.00000001, 
     "remote_parent_sampled": "trace_id_ratio_based",
     "remote_parent_not_sampled": "trace_id_ratio_based",
 
@@ -452,7 +452,7 @@
       "common": {
         "exact": {
           "traceId": "0af7651916cd43dd8448eb211c80319c",
-          "sampled": false
+          "sampled": false 
         },
         "expected": [ "guid" ]
       }
@@ -501,7 +501,7 @@
     "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "root": "trace_id_ratio_based",
-    "full_granularity_ratio": 0.00000001,
+    "full_granularity_ratio": 0.00000001, 
     "remote_parent_sampled": "trace_id_ratio_based",
     "remote_parent_not_sampled": "trace_id_ratio_based",
     "expected_priority_between": [ 0, 1 ],
@@ -516,7 +516,7 @@
       "common": {
         "exact": {
           "traceId": "0af7651916cd43dd8448eb211c80319c",
-          "sampled": false
+          "sampled": false 
         },
         "expected": [ "guid" ]
       }
@@ -626,7 +626,7 @@
       "common": {
         "exact": {
           "traceId": "0af7651916cd43dd8448eb211c80319c",
-          "sampled": true
+          "sampled": true 
         },
         "expected": [ "guid" ]
       }
@@ -664,7 +664,7 @@
       "common": {
         "exact": {
           "traceId": "0af7651916cd43dd8448eb211c80319c",
-          "sampled": false
+          "sampled": false 
         },
         "expected": [ "guid" ]
       }
@@ -3191,9 +3191,9 @@
   {
     "test_name": "inbound_payload_from_agent_in_serverless_mode",
     "comment": [
-      "Test a payload that originates from a serverless agent. The only",
-      "difference in the payload between a serverless and non-serverless agent",
-      "is the `appId` in the tracestate header will be 'Unknown'."
+        "Test a payload that originates from a serverless agent. The only",
+        "difference in the payload between a serverless and non-serverless agent",
+        "is the `appId` in the tracestate header will be 'Unknown'."
     ],
     "trusted_account_key": "33",
     "account_id": "33",
