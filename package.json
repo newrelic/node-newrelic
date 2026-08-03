@@ -244,7 +244,7 @@
     "@smithy/util-utf8": "^4.3.3",
     "borp": "^1.0.0",
     "c8": "^12.0.0",
-    "clean-jsdoc-theme": "^5.0.8",
+    "clean-jsdoc-theme": "^5.1.1",
     "colors": "^1.4.0",
     "commander": "^15.0.0",
     "conventional-changelog-conventionalcommits": "^10.2.1",

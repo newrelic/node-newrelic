@@ -2,9 +2,12 @@
   "opts": {
     "destination": "out/",
     "readme": "./README.md",
-    "template": "./node_modules/clean-jsdoc-theme",
+    "template": "node_modules/clean-jsdoc-theme/dist",
     "tutorials": "examples",
-    "recurse": true
+    "recurse": true,
+
+    // https://github.com/ankitskvmdam/clean-jsdoc-theme/issues/281#issuecomment-5114089607
+    "scrollbar": "native"
   },
   "source": {
     "exclude": ["node_modules", "test"],
