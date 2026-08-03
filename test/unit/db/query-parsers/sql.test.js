@@ -150,13 +150,17 @@ test('database query parser', async (t) => {
 
         assert.equal(ps.operation, cat.operation, `should parse the operation as ${cat.operation}`)
 
-        if (cat.table === '(subquery)') {
-          t.todo('should parse subquery collections as ' + cat.table)
-        } else if (/\w+\.\w+/.test(ps.collection)) {
-          t.todo('should strip database names from collection names as ' + cat.table)
-        } else {
-          assert.equal(ps.collection, cat.table, `should parse the collection as ${cat.table}`)
-        }
+        // Instead of stripping the schema/database prefix to match the cross-agent spec,
+        // our parser intentionally keeps it on the collection name (e.g. "database.foobar")
+        // for backward compatibility with existing metric names.
+        // @see comment lib/db/statement-matcher.js:28-32
+        // Also covers the '(subquery)' cases, since ps.database is null for those.
+        const expectedCollection = ps.database ? `${ps.database}.${cat.table}` : cat.table
+        assert.equal(
+          ps.collection,
+          expectedCollection,
+          `should parse the collection as ${expectedCollection}`
+        )
       })
     }
   })
