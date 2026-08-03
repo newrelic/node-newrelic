@@ -5,14 +5,14 @@
 
 'use strict'
 
-const { exec } = require('child_process')
+const { execFile } = require('child_process')
 // in CI we clone `node-newrelic` for reusable workflows
 // we do not want it to be part of `git status` nor adding via `git add .`
 const AGENT_SUB_REPO = 'agent-repo'
 const DOCS_SUB_REPO = 'docs-website'
 
 async function getPushRemotes() {
-  const stdout = await execAsPromise('git remote -v')
+  const stdout = await execAsPromise(['git', 'remote', '-v'])
 
   const remotes = stdout.split('\n')
   return remotes.reduce((remotePairs, currentRemote) => {
@@ -31,66 +31,62 @@ async function getPushRemotes() {
 }
 
 async function getLocalChanges() {
-  const stdout = await execAsPromise('git status --short --porcelain')
+  const stdout = await execAsPromise(['git', 'status', '--short', '--porcelain'])
   return stdout.split('\n').filter((line) => line.length > 0 && !line.includes(AGENT_SUB_REPO || DOCS_SUB_REPO))
 }
 
 async function getCurrentBranch() {
-  const stdout = await execAsPromise('git branch --show-current')
+  const stdout = await execAsPromise(['git', 'branch', '--show-current'])
   return stdout.trim()
 }
 
 async function checkoutNewBranch(name) {
-  const stdout = await execAsPromise(`git checkout -b ${name}`)
+  const stdout = await execAsPromise(['git', 'checkout', '-b', name])
   return stdout.trim()
 }
 
 async function addAllFiles() {
-  const stdout = await execAsPromise(`git add . ':!${AGENT_SUB_REPO}'`)
+  const stdout = await execAsPromise(['git', 'add', '.', `:!${AGENT_SUB_REPO}`])
   return stdout.trim()
 }
 
 async function addFiles(files) {
-  files = files.join(' ')
-  const stdout = await execAsPromise(`git add ${files}`)
+  const stdout = await execAsPromise(['git', 'add', ...files])
   return stdout.trim()
 }
 
 async function commit(message) {
-  const stdout = await execAsPromise(`git commit -m "${message}"`)
+  const stdout = await execAsPromise(['git', 'commit', '-m', message])
   return stdout.trim()
 }
 
 async function pushToRemote(remote, branchName) {
-  const stdout = await execAsPromise(`git push --set-upstream ${remote} ${branchName}`)
+  const stdout = await execAsPromise(['git', 'push', '--set-upstream', remote, branchName])
   return stdout.trim()
 }
 
 async function createAnnotatedTag(name, message) {
-  const stdout = await execAsPromise(`git tag -a ${name} -m ${message}`)
+  const stdout = await execAsPromise(['git', 'tag', '-a', name, '-m', message])
   return stdout.trim()
 }
 
 async function pushTags() {
-  const stdout = await execAsPromise('git push --tags')
+  const stdout = await execAsPromise(['git', 'push', '--tags'])
   return stdout.trim()
 }
 
 async function checkout(branchName) {
-  const stdout = await execAsPromise(`git checkout ${branchName}`)
+  const stdout = await execAsPromise(['git', 'checkout', branchName])
   return stdout.trim()
 }
 
 async function clone(url, name, args) {
-  const argsString = args.join(' ')
-  const stdout = await execAsPromise(`git clone ${argsString} ${url} ${name}`)
+  const stdout = await execAsPromise(['git', 'clone', ...args, url, name])
   return stdout.trim()
 }
 
 async function setSparseCheckoutFolders(folders) {
-  const foldersString = folders.join(' ')
-
-  const stdout = await execAsPromise(`git sparse-checkout set --no-cone ${foldersString}`)
+  const stdout = await execAsPromise(['git', 'sparse-checkout', 'set', '--no-cone', ...folders])
   return stdout.trim()
 }
 
@@ -115,16 +111,17 @@ async function sparseCloneRepo(repoInfo, checkoutFiles) {
 }
 
 async function setUser(name, email) {
-  const setName = await execAsPromise(`git config user.name ${name}`)
-  const setEmail = await execAsPromise(`git config user.email ${email}`)
+  const setName = await execAsPromise(['git', 'config', 'user.name', name])
+  const setEmail = await execAsPromise(['git', 'config', 'user.email', email])
   return [setName, setEmail].join(' ')
 }
 
 function execAsPromise(command) {
   return new Promise((resolve, reject) => {
-    console.log(`Executing: '${command}'`)
+    const [cmd, ...args] = command
+    console.log(`Executing: '${cmd} ${args.join(' ')}'`)
 
-    exec(command, (err, stdout) => {
+    execFile(cmd, args, (err, stdout) => {
       if (err) {
         reject(err)
       }
