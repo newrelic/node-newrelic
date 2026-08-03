@@ -1,3 +1,26 @@
+### v14.3.5 (2026-08-03)
+
+#### Bug fixes
+
+* Set `ignoreApdex` warning log to `trace`-level ([#4188](https://github.com/newrelic/node-newrelic/pull/4188)) ([79bac5e](https://github.com/newrelic/node-newrelic/commit/79bac5e830eca387eb617c2b2f60246c90dbad43))
+
+#### Documentation
+
+* Updated compatibility report ([#4176](https://github.com/newrelic/node-newrelic/pull/4176)) ([3886190](https://github.com/newrelic/node-newrelic/commit/38861907eef782fc8d4e521621d9f90c21e30b86))
+
+#### Miscellaneous chores
+
+* Removed `update-snyk-prs` workflow ([#4185](https://github.com/newrelic/node-newrelic/pull/4185)) ([ab7722c](https://github.com/newrelic/node-newrelic/commit/ab7722cc886054445cc31c87ff73d2e4c2fb4bfb))
+* Restored scrollbar on API docs ([#4181](https://github.com/newrelic/node-newrelic/pull/4181)) ([3ea46fb](https://github.com/newrelic/node-newrelic/commit/3ea46fbeb12c7600a8adf1d8472c71589d0a1969))
+* Updated all `@opentelemetry` deps from `0.219.0` to `0.221.0` ([#4179](https://github.com/newrelic/node-newrelic/pull/4179)) ([62c3779](https://github.com/newrelic/node-newrelic/commit/62c37799f264af591bbae4d7cfabb2ea6788ae64))
+* Updated conventional commit dev deps to latest ([#4178](https://github.com/newrelic/node-newrelic/pull/4178)) ([f4db525](https://github.com/newrelic/node-newrelic/commit/f4db525fb0465e8aa1869e2c3e167151883f2a4f))
+* Updated out of date dev deps: `@matteo.collina/tspl`, `@newrelic/eslint-config`, `@slack/bolt`, `borp`, `c8`, `clean-jsdoc-theme`, `lint-staged` and `proxyquire` ([#4175](https://github.com/newrelic/node-newrelic/pull/4175)) ([e978762](https://github.com/newrelic/node-newrelic/commit/e9787624ec4a2ce2823fec8652bfab02274cb94a))
+
+#### Continuous integration
+
+* Added a poll npm workflow to ensure new package version exists before executing any dependent workflows ([#4182](https://github.com/newrelic/node-newrelic/pull/4182)) ([224c4f9](https://github.com/newrelic/node-newrelic/commit/224c4f944f4445b962d87bb10db5805bd13725d5))
+* Normalized how we retrieve agent version from package.json ([#4183](https://github.com/newrelic/node-newrelic/pull/4183)) ([949e620](https://github.com/newrelic/node-newrelic/commit/949e620bd1e4ecb9268b0713fd6a53f98af53789))
+
 ### v14.3.4 (2026-07-27)
 
 #### Features
