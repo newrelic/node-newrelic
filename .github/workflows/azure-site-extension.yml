@@ -47,7 +47,7 @@ jobs:
 
       - name: Get agent version from package.json
         id: get_version
-        run: jq -r '"version=\(.version)"' ./package.json >> $env:$GITHUB_OUTPUT
+        run: jq -r '"version=\(.version)"' ./package.json >> $env:GITHUB_OUTPUT
 
       - name: Set package filename
         run: |
