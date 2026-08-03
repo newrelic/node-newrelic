@@ -1,0 +1,50 @@
+[
+  {
+    "description": "Nominal addition of metadata comment",
+    "entity_guid": "123abc",
+    "original_sql": "SELECT * FROM USERS WHERE ID = 1",
+    "modified_sql": "/*nr_service_guid=\"123abc\"*/SELECT * FROM USERS WHERE ID = 1"
+  },
+  {
+    "description": "Metadata comment already present on SQL statement",
+    "entity_guid": "123abc",
+    "original_sql": "/*nr_service_guid=\"789xyz\"*/SELECT * FROM USERS WHERE ID = 1",
+    "modified_sql": "/*nr_service_guid=\"789xyz\"*/SELECT * FROM USERS WHERE ID = 1"
+  },
+  {
+    "description": "SQL statement already has an unrelated comment at the beginning",
+    "entity_guid": "123abc",
+    "original_sql": "/*Another comment*/SELECT * FROM USERS WHERE ID = 1",
+    "modified_sql": "/*nr_service_guid=\"123abc\"*//*Another comment*/SELECT * FROM USERS WHERE ID = 1"
+  },
+  {
+    "description": "Entity GUID is null",
+    "entity_guid": null,
+    "original_sql": "SELECT * FROM USERS WHERE ID = 1",
+    "modified_sql": "SELECT * FROM USERS WHERE ID = 1"
+  },
+  {
+    "description": "Entity GUID is empty",
+    "entity_guid": "",
+    "original_sql": "SELECT * FROM USERS WHERE ID = 1",
+    "modified_sql": "SELECT * FROM USERS WHERE ID = 1"
+  },
+  {
+    "description": "Entity GUID contains the token '*/'",
+    "entity_guid": "123abc*/",
+    "original_sql": "SELECT * FROM USERS WHERE ID = 1",
+    "modified_sql": "SELECT * FROM USERS WHERE ID = 1"
+  },
+  {
+    "description": "SQL statement with leading whitespace",
+    "entity_guid": "123abc",
+    "original_sql": "  SELECT * FROM USERS",
+    "modified_sql": "/*nr_service_guid=\"123abc\"*/  SELECT * FROM USERS"
+  },
+  {
+    "description": "Multi-line SQL statement",
+    "entity_guid": "123abc",
+    "original_sql": "SELECT *\nFROM USERS\nWHERE ID = 1",
+    "modified_sql": "/*nr_service_guid=\"123abc\"*/SELECT *\nFROM USERS\nWHERE ID = 1"
+  }
+]

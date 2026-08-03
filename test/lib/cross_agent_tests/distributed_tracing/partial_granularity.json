@@ -271,12 +271,12 @@
     "test_name": "partial_granularity_compact_too_many_nrids",
     "comment": [ "Use transaction from tracer_info_compact_too_many.json, with partial granularity set to 'compact'",
       "We should group all the child spans together which should be too many to add all to nr.ids",
-      "This should produce a metric called Supportability/Java/PartialGranularity/NrIds/Dropped with the right value"
+      "This should produce a metric called Supportability/<LANG>/PartialGranularity/NrIds/Dropped with the right value"
     ],
     "tracer_info":"tracer_info_compact_too_many.json",
     "partial_granularity_type": "compact",
     "expected_metrics": [
-      ["Supportability/Java/PartialGranularity/NrIds/Dropped", 6]
+      ["Supportability/<LANG>/PartialGranularity/NrIds/Dropped", 6]
     ],
     "expected_spans": [
       {

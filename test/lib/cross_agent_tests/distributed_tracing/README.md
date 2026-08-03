@@ -34,6 +34,7 @@ the agent under test. Here's what the various fields in each test case mean:
 | `expected_metrics` | The expected metrics and associated counts as a result of the test. |
 | `span_events_enabled` | Whether span events are enabled in the agent or not. |
 | `transaction_events_enabled` | Whether transaction events are enabled in the agent or not. |
+| `exclude_newrelic_header` | Whether to send the newrelic header or not. |
 
 The samplers that can referenced in the `root`, `remote_parent_sampled`, and `remote_parent_not_sampled` fields are:
 
