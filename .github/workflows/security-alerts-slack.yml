@@ -1,0 +1,30 @@
+name: Security Alert Notifications
+
+on:
+  schedule:
+    - cron: '0 14 * * 1-5'  # 9am EST (UTC-5) weekdays
+  workflow_dispatch:
+
+permissions:
+  security-events: read
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          check-latest: true
+      - name: Install Dependencies
+        run: npm install 
+      - name: Check for secret or code scanning alerts
+        run: node ./bin/scan-github-security-alerts.js --repos $NR_REPOS 
+        env:
+          GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          SLACK_CHANNEL: ${{ vars.SLACK_CHANNEL }}
+          SLACK_SECRET: ${{ secrets.SLACK_SECRET }}
+          NR_REPOS: ${{ vars.NR_REPOS}}
