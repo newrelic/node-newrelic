@@ -4950,12 +4950,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### clean-jsdoc-theme
 
-This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v5.1.0](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v5.1.0)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v5.1.0/LICENSE):
+This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.3.3](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.3.3)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.3.3/LICENSE):
 
 ```
 MIT License
 
-Copyright (c) 2026 Ankit Kumar (अंकित कुमार)
+Copyright (c) 2019-2022 Ankit Kumar (अंकित कुमार)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

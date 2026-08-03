@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Jul 28 2026 17:45:54 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Aug 03 2026 14:05:44 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -525,18 +525,17 @@
       "publisher": "Ben Coe",
       "email": "ben@npmjs.com"
     },
-    "clean-jsdoc-theme@5.1.0": {
+    "clean-jsdoc-theme@4.3.3": {
       "name": "clean-jsdoc-theme",
-      "version": "5.1.0",
-      "range": "^5.0.8",
+      "version": "4.3.3",
+      "range": "^4.3.3",
       "licenses": "MIT",
       "repoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme",
-      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v5.1.0",
+      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.3.3",
       "licenseFile": "node_modules/clean-jsdoc-theme/LICENSE",
-      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v5.1.0/LICENSE",
+      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.3.3/LICENSE",
       "licenseTextSource": "file",
-      "publisher": "Ankit Kumar",
-      "url": "hello@ankdev.me"
+      "publisher": "Ank"
     },
     "colors@1.4.0": {
       "name": "colors",
