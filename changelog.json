@@ -5,7 +5,9 @@
       "version": "14.3.5",
       "changes": {
         "security": [],
-        "bugfixes": [],
+        "bugfixes": [
+          "Set `ignoreApdex` warning log to `trace`-level"
+        ],
         "features": []
       }
     },
