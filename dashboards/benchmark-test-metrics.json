@@ -41,7 +41,7 @@
                 "accountIds": [
                   1
                 ],
-                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'mean' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'mean' AND node_version LIKE '{{node_version_match}}' AND agent_version LIKE '{{agent_version_match}}' FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
               }
             ],
             "nullValues": {
@@ -100,7 +100,7 @@
                 "accountIds": [
                   1
                 ],
-                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'median' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'median' AND node_version LIKE '{{node_version_match}}' AND agent_version LIKE '{{agent_version_match}}' FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
               }
             ],
             "nullValues": {
@@ -159,7 +159,7 @@
                 "accountIds": [
                   1
                 ],
-                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = '95thPercentile' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = '95thPercentile' AND node_version LIKE '{{node_version_match}}' AND agent_version LIKE '{{agent_version_match}}' FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
               }
             ],
             "nullValues": {
@@ -218,7 +218,7 @@
                 "accountIds": [
                   1
                 ],
-                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'max' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'max' AND node_version LIKE '{{node_version_match}}' AND agent_version LIKE '{{agent_version_match}}' FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
               }
             ],
             "nullValues": {
@@ -277,7 +277,7 @@
                 "accountIds": [
                   1
                 ],
-                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'min' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = 'min' AND node_version LIKE '{{node_version_match}}' AND agent_version LIKE '{{agent_version_match}}' FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
               }
             ],
             "nullValues": {
@@ -336,7 +336,7 @@
                 "accountIds": [
                   1
                 ],
-                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = '5thPercentile' AND node_version LIKE {{node_version_match}} AND agent_version LIKE {{agent_version_match}} FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
+                "query": "SELECT latest(nodejs_benchmark.value) FROM Metric WHERE metric_type = '5thPercentile' AND node_version LIKE '{{node_version_match}}' AND agent_version LIKE '{{agent_version_match}}' FACET suite_name, case_name TIMESERIES SINCE 1 week ago LIMIT MAX"
               }
             ],
             "nullValues": {
