@@ -51,7 +51,7 @@ jobs:
 
       - name: Set package filename
         run: |
-          echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{steps.get_version.outputs.version}}" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Verify environment vars # because we can't access GH env vars until the next step
         run: |
