@@ -2,12 +2,13 @@
   "opts": {
     "destination": "out/",
     "readme": "./README.md",
-    "template": "node_modules/clean-jsdoc-theme/dist",
+    "template": "./node_modules/clean-jsdoc-theme",
+    "theme_opts": {
+      "search": false,
+      "shouldRemoveScrollbarStyle": true
+    },
     "tutorials": "examples",
-    "recurse": true,
-
-    // https://github.com/ankitskvmdam/clean-jsdoc-theme/issues/281#issuecomment-5114089607
-    "scrollbar": "native"
+    "recurse": true
   },
   "source": {
     "exclude": ["node_modules", "test"],
