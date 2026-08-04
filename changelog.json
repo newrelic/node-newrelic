@@ -6,7 +6,7 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Ensuring addAttribute only increases the count for new Attributes"
+          "Updated `addAttribute` to only increase the attributeCount for new attributes"
         ],
         "features": []
       }

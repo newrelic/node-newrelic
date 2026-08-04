@@ -2,7 +2,7 @@
 
 #### Bug fixes
 
-* Ensuring addAttribute only increases the count for new Attributes ([#4184](https://github.com/newrelic/node-newrelic/pull/4184)) ([f05df73](https://github.com/newrelic/node-newrelic/commit/f05df737a5dca6fd5d8e1f1e891d887f65205327))
+* Updated `addAttribute` to only increase the attributeCount for new attributes ([#4184](https://github.com/newrelic/node-newrelic/pull/4184)) ([f05df73](https://github.com/newrelic/node-newrelic/commit/f05df737a5dca6fd5d8e1f1e891d887f65205327))
 
 #### Documentation
 
