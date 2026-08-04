@@ -1,3 +1,29 @@
+### v14.3.6 (2026-08-04)
+
+#### Bug fixes
+
+* Ensuring addAttribute only increases the count for new Attributes ([#4184](https://github.com/newrelic/node-newrelic/pull/4184)) ([f05df73](https://github.com/newrelic/node-newrelic/commit/f05df737a5dca6fd5d8e1f1e891d887f65205327))
+
+#### Documentation
+
+* Updated compatibility report ([#4191](https://github.com/newrelic/node-newrelic/pull/4191)) ([5b5f8ce](https://github.com/newrelic/node-newrelic/commit/5b5f8cef8369e8b512d8495de62433e4941d3714))
+
+#### Miscellaneous chores
+
+* Fixed `Azure Site Extension` workflow job that retrieves the agent version ([#4193](https://github.com/newrelic/node-newrelic/pull/4193)) ([1b0b699](https://github.com/newrelic/node-newrelic/commit/1b0b699694306e2aba0dd350fcf4640b1a13ff0f))
+* Reverted `clean-jsdoc-theme` to 4.x ([#4192](https://github.com/newrelic/node-newrelic/pull/4192)) ([e7b3ddf](https://github.com/newrelic/node-newrelic/commit/e7b3ddfc9d50fef12532d07d9ccd994a3372e871))
+* Updated how we reference agent version in the site extension file name ([#4194](https://github.com/newrelic/node-newrelic/pull/4194)) ([9128223](https://github.com/newrelic/node-newrelic/commit/912822330938161d917270a05a7fd44c26da6e93))
+
+#### Tests
+
+* Added unit tests for `bin/git-commands.js` ([#4199](https://github.com/newrelic/node-newrelic/pull/4199)) ([a8bb311](https://github.com/newrelic/node-newrelic/commit/a8bb3116c2a3fde2dac318ed826e715e4a61af7f))
+* Sync cross agent tests and fix related DT assertions ([#4198](https://github.com/newrelic/node-newrelic/pull/4198)) ([44388c0](https://github.com/newrelic/node-newrelic/commit/44388c08c7b1eda6b3c2d752e6b054af3ece1675))
+
+#### Continuous integration
+
+* Added a workflow to scan repos for code and security scanning alerts ([#4186](https://github.com/newrelic/node-newrelic/pull/4186)) ([5612b71](https://github.com/newrelic/node-newrelic/commit/5612b715bc929c89c83185eca11887a1f0575f34))
+* Refactored obtaining both agent version and nuget filename into one job ([#4195](https://github.com/newrelic/node-newrelic/pull/4195)) ([884685b](https://github.com/newrelic/node-newrelic/commit/884685bde0e2b298f1f068bbd57c078994bfc816))
+
 ### v14.3.5 (2026-08-03)
 
 #### Bug fixes
