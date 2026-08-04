@@ -17,13 +17,6 @@
 * Added unit tests for `bin/git-commands.js` ([#4199](https://github.com/newrelic/node-newrelic/pull/4199)) ([a8bb311](https://github.com/newrelic/node-newrelic/commit/a8bb3116c2a3fde2dac318ed826e715e4a61af7f))
 * Sync cross agent tests and fix related DT assertions ([#4198](https://github.com/newrelic/node-newrelic/pull/4198)) ([44388c0](https://github.com/newrelic/node-newrelic/commit/44388c08c7b1eda6b3c2d752e6b054af3ece1675))
 
-#### Continuous integration
-
-* Added a workflow to scan repos for code and security scanning alerts ([#4186](https://github.com/newrelic/node-newrelic/pull/4186)) ([5612b71](https://github.com/newrelic/node-newrelic/commit/5612b715bc929c89c83185eca11887a1f0575f34))
-* Fixed `Azure Site Extension` workflow job that retrieves the agent version ([#4193](https://github.com/newrelic/node-newrelic/pull/4193)) ([1b0b699](https://github.com/newrelic/node-newrelic/commit/1b0b699694306e2aba0dd350fcf4640b1a13ff0f))
-* Refactored obtaining both agent version and nuget filename into one job ([#4195](https://github.com/newrelic/node-newrelic/pull/4195)) ([884685b](https://github.com/newrelic/node-newrelic/commit/884685bde0e2b298f1f068bbd57c078994bfc816))
-* Updated how we reference agent version in the site extension file name ([#4194](https://github.com/newrelic/node-newrelic/pull/4194)) ([9128223](https://github.com/newrelic/node-newrelic/commit/912822330938161d917270a05a7fd44c26da6e93))
-
 ### v14.3.5 (2026-08-03)
 
 #### Bug fixes
