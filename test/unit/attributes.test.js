@@ -102,6 +102,23 @@ test('#addAttributes', async (t) => {
 
     assert.equal(Object.keys(res).length, 1)
     assert.equal(res.Roboto, 99)
+    assert.equal(inst.attributeCount, 1)
+  })
+
+  await t.test('allows overwriting attributes when at limit', () => {
+    const inst = new Attributes({ scope: TRANSACTION_SCOPE, limit: 1 })
+    inst.addAttribute(0x01, 'Roboto', 1)
+    inst.addAttribute(0x01, 'Roboto', 99)
+    inst.addAttribute(0x01, 'Roboto', 123)
+    inst.addAttribute(0x01, 'OpenSans', 456)
+
+    const res = inst.get(0x01)
+    const hasAttribute = Object.hasOwnProperty.bind(res)
+
+    assert.equal(Object.keys(res).length, 1)
+    assert.equal(res.Roboto, 123)
+    assert.equal(hasAttribute('OpenSans'), false)
+    assert.equal(inst.attributeCount, 1)
   })
 })
 
