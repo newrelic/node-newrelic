@@ -10,9 +10,7 @@
 
 #### Miscellaneous chores
 
-* Fixed `Azure Site Extension` workflow job that retrieves the agent version ([#4193](https://github.com/newrelic/node-newrelic/pull/4193)) ([1b0b699](https://github.com/newrelic/node-newrelic/commit/1b0b699694306e2aba0dd350fcf4640b1a13ff0f))
 * Reverted `clean-jsdoc-theme` to 4.x ([#4192](https://github.com/newrelic/node-newrelic/pull/4192)) ([e7b3ddf](https://github.com/newrelic/node-newrelic/commit/e7b3ddfc9d50fef12532d07d9ccd994a3372e871))
-* Updated how we reference agent version in the site extension file name ([#4194](https://github.com/newrelic/node-newrelic/pull/4194)) ([9128223](https://github.com/newrelic/node-newrelic/commit/912822330938161d917270a05a7fd44c26da6e93))
 
 #### Tests
 
@@ -22,7 +20,9 @@
 #### Continuous integration
 
 * Added a workflow to scan repos for code and security scanning alerts ([#4186](https://github.com/newrelic/node-newrelic/pull/4186)) ([5612b71](https://github.com/newrelic/node-newrelic/commit/5612b715bc929c89c83185eca11887a1f0575f34))
+* Fixed `Azure Site Extension` workflow job that retrieves the agent version ([#4193](https://github.com/newrelic/node-newrelic/pull/4193)) ([1b0b699](https://github.com/newrelic/node-newrelic/commit/1b0b699694306e2aba0dd350fcf4640b1a13ff0f))
 * Refactored obtaining both agent version and nuget filename into one job ([#4195](https://github.com/newrelic/node-newrelic/pull/4195)) ([884685b](https://github.com/newrelic/node-newrelic/commit/884685bde0e2b298f1f068bbd57c078994bfc816))
+* Updated how we reference agent version in the site extension file name ([#4194](https://github.com/newrelic/node-newrelic/pull/4194)) ([9128223](https://github.com/newrelic/node-newrelic/commit/912822330938161d917270a05a7fd44c26da6e93))
 
 ### v14.3.5 (2026-08-03)
 
