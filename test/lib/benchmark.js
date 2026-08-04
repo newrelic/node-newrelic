@@ -51,7 +51,9 @@ class Benchmark {
    *   the anonymous for loop in `events`).
    * @param {Function} [opts.teardown] Executed after the tests run, typically to clean up resources or listeners.
    *   This could return a promise or function invocation. See `closeServer` in `http` for an example.
-   * @param {Function} [opts.before] Executed before each test run. This could return a value--for example, see
+   * @param {Function} [opts.before] Executed before each test run. May be synchronous or an async
+   *   function; if it returns a value (or resolves to one), that value is passed to the test `fn` as
+   *   a context object so per-run setup can be excluded from the measured work. For example, see
    *   the `shim/shared.js` function `getTest`, which is returned by the `before` properties in `shim/wrapped.bench.js`
    *   tests, after some pre-test configuration. In other cases, such as `shim/merged.bench.js`, `before` is used to fill
    *   queues shared by the tests, and there is no returned value--it's used only to produce side effects.
@@ -136,13 +138,15 @@ class Benchmark {
      * @param {Function} [executeCb] If the test is run in a transaction, `executeCb` is defined,
      *   and will run after any user-defined `after` function. If `executeCb` is defined, the result of
      *   that is the `after` function's return value.
+     * @param {*} [context] Value returned by the test's `before` function, passed to the test
+     *   function so that per-run setup is excluded from the measured work.
      * @returns {Function} an invocation of the `after` function
      */
-    const execute = async (test, next, executeCb) => {
+    const execute = async (test, next, executeCb, context) => {
       const prevCpu = process.cpuUsage()
       const testFn = test.fn
 
-      await testFn(agent)
+      await testFn(agent, context)
       return after(test, next, executeCb, prevCpu)
     }
 
@@ -160,8 +164,12 @@ class Benchmark {
         global.gc()
       }
 
+      // The `before` function may be synchronous or an async function. Its
+      // return value (if any) is passed to the test function as a context
+      // object so that per-run setup is excluded from the measured work.
+      let context
       if (typeof test.before === 'function') {
-        test.before(agent)
+        context = await test.before(agent)
       }
 
       if (agent && test.runInTransaction) {
@@ -170,13 +178,13 @@ class Benchmark {
             txn.end()
             return execCallback(txn)
           }
-          return execute(test, next, afterExecute)
+          return execute(test, next, afterExecute, context)
         }
 
         return helper.runInTransaction(agent, inTransaction)
       }
 
-      return execute(test, next)
+      return execute(test, next, undefined, context)
     }
 
     /**
