@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.3.6",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `addAttribute` to only increase the attributeCount for new attributes"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "14.3.5",
       "changes": {
         "security": [],

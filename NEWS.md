@@ -1,3 +1,22 @@
+### v14.3.6 (2026-08-04)
+
+#### Bug fixes
+
+* Updated `addAttribute` to only increase the attributeCount for new attributes ([#4184](https://github.com/newrelic/node-newrelic/pull/4184)) ([f05df73](https://github.com/newrelic/node-newrelic/commit/f05df737a5dca6fd5d8e1f1e891d887f65205327))
+
+#### Documentation
+
+* Updated compatibility report ([#4191](https://github.com/newrelic/node-newrelic/pull/4191)) ([5b5f8ce](https://github.com/newrelic/node-newrelic/commit/5b5f8cef8369e8b512d8495de62433e4941d3714))
+
+#### Miscellaneous chores
+
+* Reverted `clean-jsdoc-theme` to 4.x ([#4192](https://github.com/newrelic/node-newrelic/pull/4192)) ([e7b3ddf](https://github.com/newrelic/node-newrelic/commit/e7b3ddfc9d50fef12532d07d9ccd994a3372e871))
+
+#### Tests
+
+* Added unit tests for `bin/git-commands.js` ([#4199](https://github.com/newrelic/node-newrelic/pull/4199)) ([a8bb311](https://github.com/newrelic/node-newrelic/commit/a8bb3116c2a3fde2dac318ed826e715e4a61af7f))
+* Sync cross agent tests and fix related DT assertions ([#4198](https://github.com/newrelic/node-newrelic/pull/4198)) ([44388c0](https://github.com/newrelic/node-newrelic/commit/44388c08c7b1eda6b3c2d752e6b054af3ece1675))
+
 ### v14.3.5 (2026-08-03)
 
 #### Bug fixes
