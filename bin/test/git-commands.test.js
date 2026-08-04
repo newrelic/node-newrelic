@@ -17,7 +17,7 @@ test('git-commands', async (t) => {
     const sandbox = sinon.createSandbox()
     const execStub = sandbox.stub()
     const gitCommands = proxyquire(SCRIPT_PATH, {
-      child_process: { exec: execStub }
+      child_process: { execFile: execStub }
     })
     ctx.nr = { execStub, gitCommands, sandbox }
   })
@@ -81,7 +81,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.getPushRemotes()
 
-      assert.ok(execStub.calledWith('git remote -v'))
+      assert.ok(execStub.calledWith('git', ['remote', '-v']))
     })
 
     await t.test('rejects when exec returns an error', async (t) => {
@@ -146,7 +146,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.getLocalChanges()
 
-      assert.ok(execStub.calledWith('git status --short --porcelain'))
+      assert.ok(execStub.calledWith('git', ['status', '--short', '--porcelain']))
     })
   })
 
@@ -166,7 +166,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.getCurrentBranch()
 
-      assert.ok(execStub.calledWith('git branch --show-current'))
+      assert.ok(execStub.calledWith('git', ['branch', '--show-current']))
     })
 
     await t.test('rejects when exec returns an error', async (t) => {
@@ -184,7 +184,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.checkoutNewBranch('feature-x')
 
-      assert.ok(execStub.calledWith('git checkout -b feature-x'))
+      assert.ok(execStub.calledWith('git', ['checkout', '-b', 'feature-x']))
     })
 
     await t.test('returns trimmed output', async (t) => {
@@ -211,7 +211,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.addAllFiles()
 
-      assert.ok(execStub.calledWith("git add . ':!agent-repo'"))
+      assert.ok(execStub.calledWith('git', ['add', '.', ':!agent-repo']))
     })
 
     await t.test('returns trimmed output', async (t) => {
@@ -238,7 +238,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.addFiles(['lib/foo.js', 'lib/bar.js'])
 
-      assert.ok(execStub.calledWith('git add lib/foo.js lib/bar.js'))
+      assert.ok(execStub.calledWith('git', ['add', 'lib/foo.js', 'lib/bar.js']))
     })
 
     await t.test('returns trimmed output', async (t) => {
@@ -265,7 +265,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.commit('chore: update')
 
-      assert.ok(execStub.calledWith('git commit -m "chore: update"'))
+      assert.ok(execStub.calledWith('git', ['commit', '-m', 'chore: update']))
     })
 
     await t.test('returns trimmed output', async (t) => {
@@ -292,7 +292,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.pushToRemote('origin', 'feature-x')
 
-      assert.ok(execStub.calledWith('git push --set-upstream origin feature-x'))
+      assert.ok(execStub.calledWith('git', ['push', '--set-upstream', 'origin', 'feature-x']))
     })
 
     await t.test('returns trimmed output', async (t) => {
@@ -319,7 +319,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.createAnnotatedTag('v1.0.0', 'Release v1.0.0')
 
-      assert.ok(execStub.calledWith('git tag -a v1.0.0 -m Release v1.0.0'))
+      assert.ok(execStub.calledWith('git', ['tag', '-a', 'v1.0.0', '-m', 'Release v1.0.0']))
     })
 
     await t.test('returns trimmed output', async (t) => {
@@ -346,7 +346,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.pushTags()
 
-      assert.ok(execStub.calledWith('git push --tags'))
+      assert.ok(execStub.calledWith('git', ['push', '--tags']))
     })
 
     await t.test('returns trimmed output', async (t) => {
@@ -373,7 +373,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.checkout('main')
 
-      assert.ok(execStub.calledWith('git checkout main'))
+      assert.ok(execStub.calledWith('git', ['checkout', 'main']))
     })
 
     await t.test('returns trimmed output', async (t) => {
@@ -400,7 +400,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.clone('https://github.com/user/repo.git', 'my-repo', ['--depth=1', '--sparse'])
 
-      assert.ok(execStub.calledWith('git clone --depth=1 --sparse https://github.com/user/repo.git my-repo'))
+      assert.ok(execStub.calledWith('git', ['clone', '--depth=1', '--sparse', 'https://github.com/user/repo.git', 'my-repo']))
     })
 
     await t.test('returns trimmed output', async (t) => {
@@ -418,7 +418,7 @@ test('git-commands', async (t) => {
 
       await gitCommands.clone('https://example.com/repo.git', 'dest', [])
 
-      assert.ok(execStub.calledWith('git clone  https://example.com/repo.git dest'))
+      assert.ok(execStub.calledWith('git', ['clone', 'https://example.com/repo.git', 'dest']))
     })
 
     await t.test('rejects when exec returns an error', async (t) => {
@@ -447,21 +447,19 @@ test('git-commands', async (t) => {
 
       assert.equal(execStub.callCount, 3)
 
-      const cloneCmd = execStub.getCall(0).args[0]
-      assert.ok(cloneCmd.startsWith('git clone'), `expected clone, got: ${cloneCmd}`)
-      assert.ok(cloneCmd.includes('--filter=blob:none'))
-      assert.ok(cloneCmd.includes('--no-checkout'))
-      assert.ok(cloneCmd.includes('--depth 1'))
-      assert.ok(cloneCmd.includes('--sparse'))
-      assert.ok(cloneCmd.includes('--branch=main'))
-      assert.ok(cloneCmd.includes('https://example.com/repo.git'))
-      assert.ok(cloneCmd.includes('my-repo'))
+      assert.equal(execStub.getCall(0).args[0], 'git')
+      const cloneArgs = execStub.getCall(0).args[1]
+      assert.ok(cloneArgs.includes('clone'), `expected clone, got: ${cloneArgs}`)
+      assert.ok(cloneArgs.includes('--filter=blob:none'))
+      assert.ok(cloneArgs.includes('--no-checkout'))
+      assert.ok(cloneArgs.includes('--depth 1'))
+      assert.ok(cloneArgs.includes('--sparse'))
+      assert.ok(cloneArgs.includes('--branch=main'))
+      assert.ok(cloneArgs.includes('https://example.com/repo.git'))
+      assert.ok(cloneArgs.includes('my-repo'))
 
-      const sparseCmd = execStub.getCall(1).args[0]
-      assert.ok(sparseCmd.includes('git sparse-checkout set --no-cone src docs'), `unexpected sparse cmd: ${sparseCmd}`)
-
-      const checkoutCmd = execStub.getCall(2).args[0]
-      assert.ok(checkoutCmd.includes('git checkout main'), `unexpected checkout cmd: ${checkoutCmd}`)
+      assert.deepEqual(execStub.getCall(1).args[1], ['sparse-checkout', 'set', '--no-cone', 'src', 'docs'])
+      assert.deepEqual(execStub.getCall(2).args[1], ['checkout', 'main'])
     })
 
     await t.test('changes into the cloned repo directory and back out', async (t) => {
@@ -504,8 +502,8 @@ test('git-commands', async (t) => {
       await gitCommands.setUser('Test User', 'test@example.com')
 
       assert.equal(execStub.callCount, 2)
-      assert.ok(execStub.calledWith('git config user.name Test User'))
-      assert.ok(execStub.calledWith('git config user.email test@example.com'))
+      assert.ok(execStub.calledWith('git', ['config', 'user.name', 'Test User']))
+      assert.ok(execStub.calledWith('git', ['config', 'user.email', 'test@example.com']))
     })
 
     await t.test('returns the joined output of both config calls', async (t) => {
