@@ -47,13 +47,17 @@ test.beforeEach(async (ctx) => {
   await consumer.connect()
   ctx.nr.consumer = consumer
 
-  // The constructor hook fires fetchAndCacheClusterId async; poll until resolved.
-  const { kafkaCtx: kCtx } = require('../../../lib/symbols')
+  // The cluster reference is captured synchronously at producer() creation
+  // time, but kafkajs doesn't populate its metadata (and thus clusterId)
+  // until the client actually talks to a broker; poll briefly until it does.
+  const readClusterId = require('../../../lib/subscribers/kafkajs/utils/read-cluster-id.js')
   const pollDeadline = Date.now() + 3000
-  while (!producer[kCtx]?.clusterId && Date.now() < pollDeadline) {
+  let clusterId = readClusterId(producer)
+  while (!clusterId && Date.now() < pollDeadline) {
     await new Promise((resolve) => setTimeout(resolve, 50))
+    clusterId = readClusterId(producer)
   }
-  ctx.nr.clusterId = producer[kCtx]?.clusterId ?? null
+  ctx.nr.clusterId = clusterId ?? null
 })
 
 test.afterEach(async (ctx) => {
@@ -455,8 +459,8 @@ test('consume batch inside of a transaction', async (t) => {
 
 test('send records cluster-level produce metric', async (t) => {
   // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Produce is recorded
-  // for the single-message send() path. Uses the real cluster ID resolved by
-  // fetchAndCacheClusterId at constructor time (stored in ctx.nr.clusterId).
+  // for the single-message send() path. Uses the real cluster ID read off the
+  // producer's captured cluster reference in `beforeEach` (ctx.nr.clusterId).
   const plan = tspl(t, { plan: 1 })
   const { agent, producer, topic, clusterId } = t.nr
 
@@ -480,8 +484,9 @@ test('send records cluster-level produce metric', async (t) => {
 
 test('consume records cluster-level consume metric', async (t) => {
   // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Consume is recorded.
-  // Uses the real cluster ID resolved at constructor time (stored in ctx.nr.clusterId);
-  // recordDataMetrics reads kafkaCtx.clusterId which is set by the same async fetch.
+  // Asserts against the producer's cluster ID (ctx.nr.clusterId); the consumer
+  // reads its own captured cluster reference, but both point at the same
+  // physical broker cluster so the resolved ID is the same value.
   const plan = tspl(t, { plan: 1 })
   const { agent, consumer, producer, topic, clusterId } = t.nr
 

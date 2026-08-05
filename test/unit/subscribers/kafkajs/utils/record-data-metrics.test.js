@@ -43,9 +43,9 @@ test('records cluster consume metric when clusterId and agentMetrics are present
   const txMetrics = makeMetrics()
   const agentMetrics = makeMetrics()
   const tx = makeTx(txMetrics)
-  const kafkaCtx = { clusterId: 'cluster-xyz', clientId: 'client-1' }
+  const kafkaCtx = { clientId: 'client-1' }
 
-  recordDataMetrics({ data: makeData('my-topic'), kafkaCtx, tx, agentMetrics })
+  recordDataMetrics({ data: makeData('my-topic'), kafkaCtx, tx, clusterId: 'cluster-xyz', agentMetrics })
 
   const key = 'MessageBroker/Kafka/Cluster/cluster-xyz/Topic/my-topic/Consume'
   assert.ok(agentMetrics.store.has(key), `Expected metric '${key}' to be recorded`)
@@ -66,9 +66,9 @@ test('does not record cluster consume metric when clusterId is missing', () => {
 test('does not record cluster consume metric when agentMetrics is absent', () => {
   const txMetrics = makeMetrics()
   const tx = makeTx(txMetrics)
-  const kafkaCtx = { clusterId: 'cluster-xyz', clientId: 'client-1' }
+  const kafkaCtx = { clientId: 'client-1' }
 
-  assert.doesNotThrow(() => recordDataMetrics({ data: makeData('my-topic'), kafkaCtx, tx }))
+  assert.doesNotThrow(() => recordDataMetrics({ data: makeData('my-topic'), kafkaCtx, tx, clusterId: 'cluster-xyz' }))
 })
 
 test('returns early without recording anything when tx is falsy', () => {
