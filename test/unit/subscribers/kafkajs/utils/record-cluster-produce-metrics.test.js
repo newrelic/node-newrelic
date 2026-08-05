@@ -67,3 +67,32 @@ test('sendBatch(): handles empty topicMessages without throwing', () => {
   assert.doesNotThrow(() => recordClusterProduceMetrics(metrics, CLUSTER, true, { topicMessages: [] }))
   assert.strictEqual(metrics.store.size, 0)
 })
+
+// ── malformed input (called before kafkajs validates its own arguments) ─────
+
+test('send(): does not throw when messages is missing', () => {
+  const metrics = makeMetrics()
+  assert.doesNotThrow(() => recordClusterProduceMetrics(metrics, CLUSTER, false, { topic: 'my-topic' }))
+  assert.strictEqual(metrics.store.size, 0)
+})
+
+test('send(): does not throw when data is missing entirely', () => {
+  const metrics = makeMetrics()
+  assert.doesNotThrow(() => recordClusterProduceMetrics(metrics, CLUSTER, false, undefined))
+  assert.strictEqual(metrics.store.size, 0)
+})
+
+test('sendBatch(): does not throw when topicMessages is missing', () => {
+  const metrics = makeMetrics()
+  assert.doesNotThrow(() => recordClusterProduceMetrics(metrics, CLUSTER, true, {}))
+  assert.strictEqual(metrics.store.size, 0)
+})
+
+test('sendBatch(): skips entries with a missing messages array but still records well-formed ones', () => {
+  const metrics = makeMetrics()
+  recordClusterProduceMetrics(metrics, CLUSTER, true, {
+    topicMessages: [{ topic: 'malformed' }, { topic: 'topic-a', messages: [{ value: '1' }] }]
+  })
+  assert.strictEqual(metrics.store.has(`MessageBroker/Kafka/Cluster/${CLUSTER}/Topic/malformed/Produce`), false)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Topic/topic-a/Produce`).callCount, 1)
+})
