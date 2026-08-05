@@ -44,9 +44,10 @@ bumps live in the next section.
 ## How versioning works
 
 Schema regeneration runs **per commit and per push** on feature branches —
-locally via `.githooks/pre-commit`/`bin/update-config-schema.sh`, and in CI
-via `.github/workflows/agent-config-schema.yml`. It writes `config.json`
-and nothing else. Reviewers see schema diffs in PRs.
+locally via `lint-staged` (see `.lintstagedrc.json`) when a commit touches
+the config definition or the generator itself, and in CI via
+`.github/workflows/agent-config-schema.yml`. It writes `config.json` and
+nothing else. Reviewers see schema diffs in PRs.
 
 Version bumps run **manually before each release** via
 `.github/workflows/agent-config-schema-bump.yml`, which is
