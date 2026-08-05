@@ -31,6 +31,14 @@ const tests = [
     fn: selectStatement
   },
   {
+    name: 'plain-select-statement',
+    fn: plainSelectStatement
+  },
+  {
+    name: 'subquery-select-statement',
+    fn: subquerySelectStatement
+  },
+  {
     name: 'update-statement',
     fn: updateStatement
   },
@@ -67,6 +75,14 @@ function selectStatement() {
   parseSql(
     "with foobar (col1) as cte select * from foo as a join on cte using (col1) where a.bar = 'baz'"
   )
+}
+
+function plainSelectStatement() {
+  parseSql("select * from foo as a join bar as b on a.id = b.id where a.baz = 'qux'")
+}
+
+function subquerySelectStatement() {
+  parseSql('select * from (select * from foobar)')
 }
 
 function updateStatement() {
