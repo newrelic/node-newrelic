@@ -95,6 +95,8 @@ jobs:
         run: npm install
       - name: Run CI Script Unit Tests
         run: npm run unit:scripts
+      - name: Run Config Schema Unit Tests
+        run: npm run unit:config-schema
 
   unit:
     needs:
