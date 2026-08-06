@@ -155,6 +155,10 @@ test('should generate rum headers', { timeout: 1000 }, (t, end) => {
     handler: function (req, h) {
       const rum = api.getBrowserTimingHeader()
       assert.equal(rum.substring(0, 7), '<script')
+      // assert the `NREUM.info` exists and is correct
+      // not all are asserted because they are timer based
+      assert.ok(rum.includes('window.NREUM||(NREUM={});NREUM.info = {"licenseKey":"12345","applicationID":"12345","transactionName":"OwwBMRwSC1MKBg1JBwJGKwQeGkpnLjFWDxwJGhc="'))
+
       return h.view('index', { title: 'yo dawg', rum })
     }
   })

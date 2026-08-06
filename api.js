@@ -725,6 +725,10 @@ function validateBrowserMonitoring(config, transaction, allowTransactionlessInje
     return { isValidConfig: false, failureIdx: 1 }
   }
 
+  if (transaction && transaction.isIgnored()) {
+    return { isValidConfig: false, failureIdx: 1 }
+  }
+
   return { isValidConfig: true }
 }
 
@@ -754,11 +758,11 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options =
   )
   metric.incrementCallCount()
 
-  const trans = this.agent.getTransaction()
+  const transaction = this.agent.getTransaction()
 
   const { isValidConfig, failureIdx, quietMode } = validateBrowserMonitoring(
     this.agent.config,
-    trans,
+    transaction,
     options.allowTransactionlessInjection
   )
 
@@ -774,61 +778,12 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options =
     beacon: config.browser_monitoring.beacon,
     errorBeacon: config.browser_monitoring.error_beacon,
     licenseKey: config.browser_monitoring.browser_key,
-    applicationID: config.application_id,
-
-    // we don't use these parameters yet
-    agentToken: null
+    applicationID: config.application_id
   }
 
-  const hasActiveTransaction = trans !== null
-
-  if (hasActiveTransaction) {
-    // bail gracefully outside an ignored transaction
-    if (trans.isIgnored()) {
-      return _gracefail(1)
-    }
-
-    /* If we're in an unnamed transaction, add a friendly warning this is to
-     * avoid people going crazy, trying to figure out why browser monitoring is
-     * not working when they're missing a transaction name.
-     */
-    const name = trans.getFullName()
-    if (!name) {
-      return _gracefail(3)
-    }
-
-    const time = trans.timer.getDurationInMillis()
-    rumHash.applicationTime = time
-
-    /*
-     * Only the first 13 chars of the license should be used for hashing with
-     * the transaction name.
-     */
-    const key = config.license_key.substring(0, 13)
-    rumHash.transactionName = hashes.obfuscateNameUsingKey(name, key)
-
-    rumHash.queueTime = trans.queueTime
-    rumHash.ttGuid = trans.id
-
-    const attrs = Object.create(null)
-
-    const customAttrs = trans.trace.custom.get(ATTR_DEST.BROWSER_EVENT)
-    if (!properties.isEmpty(customAttrs)) {
-      attrs.u = customAttrs
-    }
-
-    const agentAttrs = trans.trace.attributes.get(ATTR_DEST.BROWSER_EVENT)
-    if (!properties.isEmpty(agentAttrs)) {
-      attrs.a = agentAttrs
-    }
-
-    if (!properties.isEmpty(attrs)) {
-      rumHash.atts = hashes.obfuscateNameUsingKey(JSON.stringify(attrs), key)
-    }
-  } else {
-    logger.debug(
-      'No transaction detected when generating RUM header, continuing without transaction info'
-    )
+  // attempt to include transaction specific intrinsics
+  if (!options.allowTransactionlessInjection) {
+    generateTransactionIntrinsics({ config, rumHash, transaction })
   }
 
   // if debugging, do pretty format of JSON
@@ -845,6 +800,58 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options =
   logger.trace('generating RUM header', out)
 
   return out
+}
+
+/**
+ * This attempts to add any intrinsics to the `NREUM.info` portion of the browser
+ * agent string.  The only required fields are: agent, beacon, errorBeacon, licenseKey,
+ * or applicationID
+ *
+ * @param {object} params to function
+ * @param {object} params.config agent configuration
+ * @param {object} params.rumHash the object that is serialized into the response as the browser agent string
+ * @param {Transaction} params.transaction active transaction
+ */
+function generateTransactionIntrinsics({ config, rumHash, transaction }) {
+  // We could get here if `options.allowTransactionlessInjection` is true
+  if (transaction === null) {
+    logger.debug('No transaction detected when generating RUM header, continuing without transaction info')
+    return
+  }
+
+  const key = config.license_key.substring(0, 13)
+  const name = transaction.getFullName()
+  // This could be falsey depending on how it is being called
+  // In traditional server side rendering frameworks that this would be called
+  // in, the transaction name should be populated but in full stack frameworks
+  // where the client loads server side components, the transaction name may
+  // not be finalized until after the browser agent is injected
+  if (name) {
+    /*
+     * Only the first 13 chars of the license should be used for hashing with
+     * the transaction name.
+     */
+    rumHash.transactionName = hashes.obfuscateNameUsingKey(name, key)
+  }
+
+  const time = transaction.timer.getDurationInMillis()
+  rumHash.applicationTime = time
+  rumHash.queueTime = transaction.queueTime
+  const attrs = Object.create(null)
+
+  const customAttrs = transaction.trace.custom.get(ATTR_DEST.BROWSER_EVENT)
+  if (!properties.isEmpty(customAttrs)) {
+    attrs.u = customAttrs
+  }
+
+  const agentAttrs = transaction.trace.attributes.get(ATTR_DEST.BROWSER_EVENT)
+  if (!properties.isEmpty(agentAttrs)) {
+    attrs.a = agentAttrs
+  }
+
+  if (!properties.isEmpty(attrs)) {
+    rumHash.atts = hashes.obfuscateNameUsingKey(JSON.stringify(attrs), key)
+  }
 }
 
 /**

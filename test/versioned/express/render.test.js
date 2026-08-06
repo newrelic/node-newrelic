@@ -192,7 +192,7 @@ test('agent instrumentation of Express', async function (t) {
   })
 
   await t.test('should generate rum headers', { timeout: 1000 }, async function (t) {
-    const plan = tsplan(t, { plan: 5 })
+    const plan = tsplan(t, { plan: 6 })
     const { app, agent, port } = t.nr
     const api = new API(agent)
 
@@ -207,6 +207,9 @@ test('agent instrumentation of Express', async function (t) {
     app.get(TEST_PATH, function (req, res) {
       const rum = api.getBrowserTimingHeader()
       plan.equal(rum.substring(0, 7), '<script')
+      // assert the `NREUM.info` exists and is correct
+      // not all are asserted because they are timer based
+      plan.ok(rum.includes('window.NREUM||(NREUM={});NREUM.info = {"licenseKey":"12345","applicationID":"12345","transactionName":"OwwBMRwSCywKBg0FBg1KKwsVLQ4WCgYaTCIrJ0pwHwAKGA=="'))
       res.render('index', { title: 'yo dawg', rum })
     })
 
