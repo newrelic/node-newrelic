@@ -64,6 +64,11 @@ const tests = [
     fn: get
   },
   {
+    name: 'get-repeated-harvest',
+    before: longValueInstance,
+    fn: getRepeatedHarvest
+  },
+  {
     name: 'has',
     before: populatedInstance,
     fn: has
@@ -109,6 +114,32 @@ function populatedInstance() {
   inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'one', '1')
   inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'two', '2')
   return { inst }
+}
+
+// The destinations a transaction's trace attributes are really harvested for;
+// the same instance is read once per destination.
+const HARVEST_DESTINATIONS = [
+  DESTINATIONS.TRANS_EVENT,
+  DESTINATIONS.TRANS_TRACE,
+  DESTINATIONS.ERROR_EVENT
+]
+
+// Seeds an instance with long, truncatable string values to model the case
+// where a single instance is harvested once per destination and each value
+// must be truncated (a byte-length scan plus binary search).
+function longValueInstance() {
+  const inst = new Attributes({ scope: TRANSACTION_SCOPE })
+  const longValue = 'x'.repeat(300)
+  for (let i = 0; i < MAXIMUM_CUSTOM_ATTRIBUTES; i++) {
+    inst.addAttribute(DESTINATIONS.TRANS_COMMON, `seed.${i}`, `${longValue}.${i}`)
+  }
+  return { inst }
+}
+
+function getRepeatedHarvest(agent, { inst }) {
+  for (const dest of HARVEST_DESTINATIONS) {
+    inst.get(dest)
+  }
 }
 
 function construct() {
