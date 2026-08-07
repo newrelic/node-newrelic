@@ -458,13 +458,13 @@ test('consume batch inside of a transaction', async (t) => {
 })
 
 test('send records cluster-level produce metric', async (t) => {
-  // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Produce is recorded
+  // Verifies MessageBroker/Kafka/Cluster/{id}/Produce/{topic} is recorded
   // for the single-message send() path. Uses the real cluster ID read off the
   // producer's captured cluster reference in `beforeEach` (ctx.nr.clusterId).
   const plan = tspl(t, { plan: 1 })
   const { agent, producer, topic, clusterId } = t.nr
 
-  const expectedMetricName = `MessageBroker/Kafka/Cluster/${clusterId}/Topic/${topic}/Produce`
+  const expectedMetricName = `MessageBroker/Kafka/Cluster/${clusterId}/Produce/${topic}`
 
   agent.on('transactionFinished', () => {})
   helper.runInTransaction(agent, async (tx) => {
@@ -483,14 +483,14 @@ test('send records cluster-level produce metric', async (t) => {
 })
 
 test('consume records cluster-level consume metric', async (t) => {
-  // Verifies MessageBroker/Kafka/Cluster/{id}/Topic/{topic}/Consume is recorded.
+  // Verifies MessageBroker/Kafka/Cluster/{id}/Consume/{topic} is recorded.
   // Asserts against the producer's cluster ID (ctx.nr.clusterId); the consumer
   // reads its own captured cluster reference, but both point at the same
   // physical broker cluster so the resolved ID is the same value.
   const plan = tspl(t, { plan: 1 })
   const { agent, consumer, producer, topic, clusterId } = t.nr
 
-  const expectedMetricName = `MessageBroker/Kafka/Cluster/${clusterId}/Topic/${topic}/Consume`
+  const expectedMetricName = `MessageBroker/Kafka/Cluster/${clusterId}/Consume/${topic}`
 
   const txPromise = new Promise((resolve) => {
     agent.on('transactionFinished', (tx) => {

@@ -47,7 +47,7 @@ test('records cluster consume metric when clusterId and agentMetrics are present
 
   recordDataMetrics({ data: makeData('my-topic'), kafkaCtx, tx, clusterId: 'cluster-xyz', agentMetrics })
 
-  const key = 'MessageBroker/Kafka/Cluster/cluster-xyz/Topic/my-topic/Consume'
+  const key = 'MessageBroker/Kafka/Cluster/cluster-xyz/Consume/my-topic'
   assert.ok(agentMetrics.store.has(key), `Expected metric '${key}' to be recorded`)
   assert.strictEqual(agentMetrics.store.get(key).callCount, 1)
 })

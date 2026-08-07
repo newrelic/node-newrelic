@@ -189,14 +189,14 @@ test('producer.send(): kafka_cluster_metrics off → no cluster produce metric',
   const { client, metrics } = setup({ kafka_cluster_metrics: false })
   const producer = client.producer()
   producer.send({ topic: 'orders', messages: [{ value: 'a' }] })
-  assert.strictEqual(metrics.store.has(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/orders/Produce`), false)
+  assert.strictEqual(metrics.store.has(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Produce/orders`), false)
 })
 
 test('producer.send(): cluster ID available → records produce metric', () => {
   const { client, metrics } = setup({ kafka_cluster_metrics: true })
   const producer = client.producer()
   producer.send({ topic: 'orders', messages: [{ value: 'a' }, { value: 'b' }] })
-  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/orders/Produce`)?.callCount, 2)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Produce/orders`)?.callCount, 2)
 })
 
 test('producer.sendBatch(): cluster ID available → records produce metric per topic', () => {
@@ -208,8 +208,8 @@ test('producer.sendBatch(): cluster ID available → records produce metric per 
       { topic: 'topic-b', messages: [{ value: '2' }, { value: '3' }] }
     ]
   })
-  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/topic-a/Produce`)?.callCount, 1)
-  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/topic-b/Produce`)?.callCount, 2)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Produce/topic-a`)?.callCount, 1)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Produce/topic-b`)?.callCount, 2)
 })
 
 test('producer.send(): no cluster ID captured → no metric recorded', () => {
@@ -218,7 +218,7 @@ test('producer.send(): no cluster ID captured → no metric recorded', () => {
   subscriber.end({ arguments: [{ brokers: BROKERS }], self: client }, {})
   const producer = client.producer()
   producer.send({ topic: 'events', messages: [{ value: 'x' }] })
-  assert.strictEqual(metrics.store.has(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/events/Produce`), false)
+  assert.strictEqual(metrics.store.has(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Produce/events`), false)
 })
 
 // ── eachBatch cluster consume metrics (active-transaction path) ───────────────
@@ -231,7 +231,7 @@ test('consumer.run({ eachBatch }): cluster ID available → records consume metr
   // After run(), runArgs[0].eachBatch is the wrapped nrWrappedEachBatch closure.
   runArgs[0].eachBatch({ batch: { topic: 'events', messages: [1, 2, 3] } })
   assert.strictEqual(
-    metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Topic/events/Consume`)?.callCount,
+    metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER_ID}/Consume/events`)?.callCount,
     3
   )
 })

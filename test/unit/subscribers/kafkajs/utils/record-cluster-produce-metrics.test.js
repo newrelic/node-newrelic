@@ -27,13 +27,13 @@ const CLUSTER = 'cluster-uuid-1'
 test('send(): records one produce metric for the topic', () => {
   const metrics = makeMetrics()
   recordClusterProduceMetrics(metrics, CLUSTER, false, { topic: 'my-topic', messages: [{ value: 'a' }, { value: 'b' }] })
-  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Topic/my-topic/Produce`).callCount, 2)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Produce/my-topic`).callCount, 2)
 })
 
 test('send(): callCount equals the number of messages', () => {
   const metrics = makeMetrics()
   recordClusterProduceMetrics(metrics, CLUSTER, false, { topic: 'events', messages: [{ value: '1' }] })
-  const metric = metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Topic/events/Produce`)
+  const metric = metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Produce/events`)
   assert.strictEqual(metric.callCount, 1)
 })
 
@@ -47,8 +47,8 @@ test('sendBatch(): records one metric per distinct topic', () => {
       { topic: 'topic-b', messages: [{ value: '3' }] }
     ]
   })
-  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Topic/topic-a/Produce`).callCount, 2)
-  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Topic/topic-b/Produce`).callCount, 1)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Produce/topic-a`).callCount, 2)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Produce/topic-b`).callCount, 1)
 })
 
 test('sendBatch(): accumulates across repeated calls for the same topic', () => {
@@ -59,7 +59,7 @@ test('sendBatch(): accumulates across repeated calls for the same topic', () => 
   recordClusterProduceMetrics(metrics, CLUSTER, true, {
     topicMessages: [{ topic: 'orders', messages: [{ value: 'y' }, { value: 'z' }] }]
   })
-  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Topic/orders/Produce`).callCount, 3)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Produce/orders`).callCount, 3)
 })
 
 test('sendBatch(): handles empty topicMessages without throwing', () => {
@@ -93,6 +93,6 @@ test('sendBatch(): skips entries with a missing messages array but still records
   recordClusterProduceMetrics(metrics, CLUSTER, true, {
     topicMessages: [{ topic: 'malformed' }, { topic: 'topic-a', messages: [{ value: '1' }] }]
   })
-  assert.strictEqual(metrics.store.has(`MessageBroker/Kafka/Cluster/${CLUSTER}/Topic/malformed/Produce`), false)
-  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Topic/topic-a/Produce`).callCount, 1)
+  assert.strictEqual(metrics.store.has(`MessageBroker/Kafka/Cluster/${CLUSTER}/Produce/malformed`), false)
+  assert.strictEqual(metrics.store.get(`MessageBroker/Kafka/Cluster/${CLUSTER}/Produce/topic-a`).callCount, 1)
 })
