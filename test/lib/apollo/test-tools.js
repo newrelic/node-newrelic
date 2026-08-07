@@ -32,7 +32,7 @@ async function afterEach({ t, testDir }) {
   unloadModules(testDir)
 }
 
-async function setupCoreTest({ t, testDir, agentConfig = {} } = {}) {
+async function setupCoreTest({ t, testDir, agentConfig = {}, contextValue } = {}) {
   agentConfig.instrumentation = { timers: { enabled: true } }
   const agent = helper.instrumentMockedAgent(agentConfig)
   const apolloServerPkg = requireApolloServer(testDir)
@@ -46,7 +46,18 @@ async function setupCoreTest({ t, testDir, agentConfig = {} } = {}) {
     allowBatchedHttpRequests: true
   })
 
-  const { url: serverUrl } = await startStandaloneServer(server, { listen: { port: 0 } })
+  // When a test supplies a `contextValue`, expose it to every resolver as the
+  // Apollo context (the resolver's third argument). It may be a plain value or
+  // a function of the loaded `agent` (useful when the value needs the agent's
+  // public API, which only exists after the agent is loaded). Resolvers that
+  // don't read the context are unaffected.
+  const listenOptions = { listen: { port: 0 } }
+  if (contextValue !== undefined) {
+    const resolved = typeof contextValue === 'function' ? contextValue(agent) : contextValue
+    listenOptions.context = async () => resolved
+  }
+
+  const { url: serverUrl } = await startStandaloneServer(server, listenOptions)
 
   t.nr = {
     agent,
