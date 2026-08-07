@@ -18,6 +18,17 @@
  * current `wrapResolve` still flattens the field path and the resolver args
  * before it reaches the scalar short-circuit — work that is then discarded.
  * Scalar leaf fields dominate real responses, so this is the hot case to watch.
+ *
+ * Even when the segment is skipped, `wrapResolve` does NOT skip the resolver: it
+ * still runs the original resolver through `tracer.runInContext` (resolve.js:69)
+ * so the resolver executes inside the correct async context. Most real resolvers
+ * do asynchronous work — querying a database — before returning, so the resolver
+ * is a promise that resolves on a later tick and the context must be restored
+ * across that `await`. The `*-db-query` cases below exercise exactly that path:
+ * the resolver simulates a database round-trip (via `fixtures.dbQueryResolve`),
+ * so we measure the subscriber's cost of wrapping an awaiting resolver in a
+ * context, not just its synchronous pre-work. The scalar `*-db-query` case is
+ * the skipped-segment-plus-database path called out for optimization.
  */
 
 const benchmark = require('#testlib/benchmark.js')
@@ -96,6 +107,37 @@ const tests = [
     fn: wrapResolve
   },
 
+  // ---- Resolvers that query a database (async): the resolver awaits I/O
+  //      before returning, so `wrapResolve` must invoke it through
+  //      `runInContext` and the context is restored across the await. ----
+  {
+    // Skipped-segment path (scalar leaf, default config) + a database query.
+    // This is the path called out for optimization: no segment is created, yet
+    // the resolver is still run inside a context while it awaits the "query".
+    name: 'wrapResolve/scalar-db-query (segment skipped)',
+    runInTransaction: true,
+    before: (agent) => {
+      return {
+        sub: makeSubscriber(agent),
+        args: fixtures.resolverArgs(fixtures.NO_ARGS, fixtures.scalarFieldInfo())
+      }
+    },
+    fn: wrapResolveDbQuery
+  },
+  {
+    // Kept-segment path (non-top-level object field) + a database query, for
+    // direct comparison against the skipped case above.
+    name: 'wrapResolve/object-db-query (segment kept)',
+    runInTransaction: true,
+    before: (agent) => {
+      return {
+        sub: makeSubscriber(agent),
+        args: fixtures.resolverArgs(fixtures.SIMPLE_ARGS, fixtures.objectFieldInfo())
+      }
+    },
+    fn: wrapResolveDbQuery
+  },
+
   // ---- Individual helpers, isolated (no transaction needed) ----
   {
     name: 'flattenToArray (deep path)',
@@ -145,4 +187,21 @@ suite.run()
  */
 function wrapResolve(agent, { sub, args }) {
   sub.wrapResolve(fixtures.origResolve, {}, args)
+}
+
+/**
+ * Drives `wrapResolve` with a resolver that queries a database. The resolver
+ * awaits simulated I/O, so `wrapResolve` returns the resolver's promise; we
+ * await it here so the benchmark's per-run timing includes the context
+ * enter/restore around the async resolver -- the work the subscriber does even
+ * when it skips creating a segment.
+ *
+ * @param {object} agent the mocked agent (unused; context comes from the tracer)
+ * @param {object} ctx the per-run context produced by `before`
+ * @param {object} ctx.sub the resolve subscriber under test
+ * @param {Array} ctx.args positional resolver args `[source, args, context, info]`
+ * @returns {Promise<Array>} resolves with the simulated database rows
+ */
+function wrapResolveDbQuery(agent, { sub, args }) {
+  return sub.wrapResolve(fixtures.dbQueryResolve, {}, args)
 }

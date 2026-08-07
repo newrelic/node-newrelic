@@ -133,6 +133,36 @@ function resolverArgs(resolverArgs, info) {
 // A trivial original resolver to stand in for the user's resolver.
 const origResolve = () => 'value'
 
+// A representative row set a resolver might get back from a database.
+const DB_ROWS = Object.freeze([
+  { id: 1, body: 'first comment' },
+  { id: 2, body: 'second comment' },
+  { id: 3, body: 'third comment' }
+])
+
+/**
+ * An original resolver that simulates fetching data from a database before
+ * returning it to the client. Real-world resolvers rarely return synchronously;
+ * they await I/O (a SQL query, a document lookup, an RPC). We model that with a
+ * `setImmediate`-backed promise -- the same async stand-in the datastore-shim
+ * benchmarks use. This is the important shape for the skipped-segment path:
+ * even when the subscriber creates no segment, it still invokes the resolver
+ * through `tracer.runInContext`, so the async context is entered on the way in
+ * and must be restored across the `await` boundary when the "query" resolves.
+ * A trivial synchronous resolver never crosses that boundary and so hides the
+ * real cost of wrapping an awaiting resolver in a context.
+ *
+ * @returns {Promise<Array>} rows "returned" from the simulated database
+ */
+function dbQueryResolve() {
+  return new Promise((resolve) => {
+    // Yield to the event loop to mimic waiting on database I/O.
+    setImmediate(() => {
+      resolve(DB_ROWS)
+    })
+  })
+}
+
 module.exports = {
   buildPath,
   scalarFieldInfo,
@@ -142,5 +172,6 @@ module.exports = {
   SIMPLE_ARGS,
   NESTED_ARGS,
   resolverArgs,
-  origResolve
+  origResolve,
+  dbQueryResolve
 }
