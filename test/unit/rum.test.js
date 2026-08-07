@@ -73,10 +73,14 @@ test('the RUM API', async function (t) {
     assert.equal(api.getBrowserTimingHeader(), '<!-- NREUM: (2) -->')
   })
 
-  await t.test('should issue a warning if transaction has no name', function (t, end) {
+  await t.test('should generate header if transaction name is missing', function (t, end) {
     const { agent, api } = t.nr
     helper.runInTransaction(agent, function () {
-      assert.equal(api.getBrowserTimingHeader(), '<!-- NREUM: (3) -->')
+      const timingHeader = api.getBrowserTimingHeader()
+      timingHeader.startsWith(
+        '<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,'
+      )
+      assert.ok(timingHeader.endsWith('}; function() {}</script>'))
       end()
     })
   })
@@ -171,6 +175,8 @@ test('the RUM API', async function (t) {
         )
       )
       assert.ok(timingHeader.endsWith('}; function() {}</script>'))
+      assert.ok(timingHeader.includes('"transactionName":"OwwBMRwSC1MKBg1JBwJGLQocHgRMAh8cRD0eAExP"'))
+      assert.ok(timingHeader.includes('"atts":"F0sCR1QIR1IOFAxFGxhHFhcHUV8CRA0cTAQDSx4Y"'))
       end()
     })
   })
@@ -182,10 +188,33 @@ test('the RUM API', async function (t) {
       const timingHeader = api.getBrowserTimingHeader({ allowTransactionlessInjection: true })
       assert.ok(
         timingHeader.startsWith(
-          '<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,'
+          '<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345'
         )
       )
       assert.ok(timingHeader.endsWith('}; function() {}</script>'))
+      assert.ok(!timingHeader.includes('applicationTime'))
+      assert.ok(!timingHeader.includes('queueTime'))
+      assert.ok(!timingHeader.includes('transactionName'))
+    }
+  )
+
+  await t.test(
+    'should get the browser agent script when allowTransactionlessInjection is true but not include any transaction related intrinsics',
+    function (t, end) {
+      const { api, agent } = t.nr
+      helper.runInTransaction(agent, function (tx) {
+        const timingHeader = api.getBrowserTimingHeader({ allowTransactionlessInjection: true })
+        assert.ok(
+          timingHeader.startsWith(
+            '<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345'
+          )
+        )
+        assert.ok(timingHeader.endsWith('}; function() {}</script>'))
+        assert.ok(!timingHeader.includes('applicationTime'))
+        assert.ok(!timingHeader.includes('queueTime'))
+        assert.ok(!timingHeader.includes('transactionName'))
+        end()
+      })
     }
   )
 
