@@ -5,21 +5,23 @@
 
 'use strict'
 
-const { exec } = require('child_process')
+const { execFile } = require('child_process')
 
 async function version(typeOrVersion, shouldCommitAndTag) {
-  let command = `npm version ${typeOrVersion}`
+  const args = ['version', typeOrVersion]
 
-  command += shouldCommitAndTag ? '' : ' --no-git-tag-version'
+  if (!shouldCommitAndTag) {
+    args.push('--no-git-tag-version')
+  }
 
-  await execAsPromise(command)
+  await execAsPromise(args)
 }
 
-function execAsPromise(command) {
+function execAsPromise(args) {
   return new Promise((resolve, reject) => {
-    console.log(`Executing: '${command}'`)
+    console.log(`Executing: 'npm ${args.join(' ')}'`)
 
-    exec(command, (err, stdout) => {
+    execFile('npm', args, (err, stdout) => {
       if (err) {
         return reject(err)
       }
