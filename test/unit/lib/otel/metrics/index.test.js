@@ -38,6 +38,7 @@ test.beforeEach((ctx) => {
   ctx.nr = {}
   const guid = 'guid-123456'
   const licenseKey = 'license-123456'
+  const metricCalls = new Map()
 
   const agent = {
     get [Symbol.toStringTag]() { return 'Agent' },
@@ -74,16 +75,19 @@ test.beforeEach((ctx) => {
           'Supportability/Metrics/Nodejs/OpenTelemetryBridge/meter/createCounter'
         ]
         ctx.assert.ok(validMetrics.includes(name), `Unexpected metric: ${name}`)
-        return this
-      },
-      incrementCallCount() {
-        ctx.assert.ok(true)
+        return {
+          incrementCallCount() {
+            ctx.assert.ok(true)
+            metricCalls.set(name, (metricCalls.get(name) ?? 0) + 1)
+          }
+        }
       }
     }
   }
   Object.setPrototypeOf(agent, EventEmitter.prototype)
 
   ctx.nr.agent = agent
+  ctx.nr.metricCalls = metricCalls
 })
 
 test.afterEach(() => {
@@ -176,6 +180,34 @@ test('serverless mode does not wait for the started event', (t) => {
     'should log that metrics are finalized eagerly in serverless mode'
   )
   t.assert.ok(bootstrapped, 'should emit otelMetricsBootstrapped from the constructor')
+})
+
+test('wraps methods on a cached meter only once', (t) => {
+  const { agent, metricCalls } = t.nr
+  agent.serverlessMode = true
+
+  const signal = new SetupMetrics({ agent, logger: captureLogger() })
+  t.assert.ok(signal)
+
+  const provider = otelApi.metrics.getMeterProvider()
+  const meter = provider.getMeter('cached-meter')
+  const createCounter = meter.createCounter
+
+  for (let i = 0; i < 5; i++) {
+    const cachedMeter = provider.getMeter('cached-meter')
+    t.assert.equal(cachedMeter, meter)
+    t.assert.equal(cachedMeter.createCounter, createCounter)
+  }
+
+  meter.createCounter('test-counter')
+  t.assert.equal(
+    metricCalls.get('Supportability/Metrics/Nodejs/OpenTelemetryBridge/getMeter'),
+    6
+  )
+  t.assert.equal(
+    metricCalls.get('Supportability/Metrics/Nodejs/OpenTelemetryBridge/meter/createCounter'),
+    1
+  )
 })
 
 test('flushToString collects, exports, and returns the base64 OTLP payload', async (t) => {
