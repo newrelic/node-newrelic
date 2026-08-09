@@ -21,6 +21,7 @@ function execAsPromise(args) {
   return new Promise((resolve, reject) => {
     console.log(`Executing: 'npm ${args.join(' ')}'`)
 
+    // eslint-disable-next-line sonarjs/no-os-command-from-path
     execFile('npm', args, (err, stdout) => {
       if (err) {
         return reject(err)
