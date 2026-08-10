@@ -178,6 +178,42 @@ test('serverless mode does not wait for the started event', (t) => {
   t.assert.ok(bootstrapped, 'should emit otelMetricsBootstrapped from the constructor')
 })
 
+test('getMeter called multiple times for the same scope does not re-wrap create* methods', async (t) => {
+  const { agent } = t.nr
+  const createCounterCounts = {}
+  agent.metrics.getOrCreateMetric = function (name) {
+    createCounterCounts[name] = (createCounterCounts[name] ?? 0) + 1
+    return this
+  }
+
+  // eslint-disable-next-line no-new
+  new SetupMetrics({ agent })
+  const provider = otelApi.metrics.getMeterProvider()
+
+  for (let i = 0; i < 5; i++) {
+    provider.getMeter('same-scope')
+  }
+  const meter = provider.getMeter('same-scope')
+  const counter = meter.createCounter('my-counter')
+  counter.add(1)
+
+  // getMeter was called 6 times total (5 + 1 above), so the getMeter
+  // supportability metric should be incremented 6 times.
+  t.assert.equal(
+    createCounterCounts['Supportability/Metrics/Nodejs/OpenTelemetryBridge/getMeter'],
+    6,
+    'getMeter supportability metric incremented once per getMeter call'
+  )
+
+  // createCounter was called once, so its supportability metric should be
+  // incremented exactly once – not once-per-getMeter-call.
+  t.assert.equal(
+    createCounterCounts['Supportability/Metrics/Nodejs/OpenTelemetryBridge/meter/createCounter'],
+    1,
+    'createCounter supportability metric incremented only once, not once per getMeter call'
+  )
+})
+
 test('flushToString collects, exports, and returns the base64 OTLP payload', async (t) => {
   const { agent } = t.nr
   agent.serverlessMode = true
