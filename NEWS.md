@@ -2,30 +2,17 @@
 
 #### Bug fixes
 
-* Correctly parse `subquery` collection names in SQL; assert previously-skipped cross agent test cases ([#4196](https://github.com/newrelic/node-newrelic/pull/4196)) ([34e477b](https://github.com/newrelic/node-newrelic/commit/34e477bb580fa16520133ff4aa5d7ad9b82fd823))
 * Fixed OTEL metrics wrapping meters too many times ([#4216](https://github.com/newrelic/node-newrelic/pull/4216)) ([6f917ad](https://github.com/newrelic/node-newrelic/commit/6f917adb92f325f4637bb94adbc02ee75720a7e7))
 * Improved Apollo server resolver instrumentation performance ([#4206](https://github.com/newrelic/node-newrelic/pull/4206)) ([2a394e8](https://github.com/newrelic/node-newrelic/commit/2a394e81b0bce7bd616bae31797f2e26f8676bf5))
 * Updated `getBrowserTimingHeader` to handle when a transaction may not be finalized and still return the browser agent string without transaction intrinsics ([#4209](https://github.com/newrelic/node-newrelic/pull/4209)) ([fbf636b](https://github.com/newrelic/node-newrelic/commit/fbf636b3fe64df466355cacfacdd9020e616eb15))
 
 #### Performance improvements
 
-* skip context wrapping for skipped Apollo resolver segments ([#4210](https://github.com/newrelic/node-newrelic/pull/4210)) ([6bf954b](https://github.com/newrelic/node-newrelic/commit/6bf954bc60f4dbc626a59451340a51a6210ab917))
-
-#### Reverts
-
-* Correctly parse `subquery` collection names in SQL; assert previously-skipped cross agent test cases ([#4217](https://github.com/newrelic/node-newrelic/pull/4217)) ([5fe5da2](https://github.com/newrelic/node-newrelic/commit/5fe5da2040d52d868181a22c0cc662ad084772cc))
+* Skipped context wrapping for skipped Apollo resolver segments ([#4210](https://github.com/newrelic/node-newrelic/pull/4210)) ([6bf954b](https://github.com/newrelic/node-newrelic/commit/6bf954bc60f4dbc626a59451340a51a6210ab917))
 
 #### Documentation
 
 * Updated compatibility report ([#4202](https://github.com/newrelic/node-newrelic/pull/4202)) ([8811cd2](https://github.com/newrelic/node-newrelic/commit/8811cd270c2a2f290f7c52a16052b839e7e06417))
-
-#### Tests
-
-* Add benchmarks for lib/attributes.js methods ([#4203](https://github.com/newrelic/node-newrelic/pull/4203)) ([2b6da01](https://github.com/newrelic/node-newrelic/commit/2b6da01491f62a188ceb59f69dc244010ea08585))
-
-#### Continuous integration
-
-* Updated `child_process.exec` calls to `child_process.execFile` in `bin/git-commands.js` ([#4197](https://github.com/newrelic/node-newrelic/pull/4197)) ([cdaaa2a](https://github.com/newrelic/node-newrelic/commit/cdaaa2a4fba7a9ecf53223c79cd64282b6a5734d))
 
 ### v14.3.6 (2026-08-04)
 
