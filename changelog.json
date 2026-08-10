@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.3.7",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed OTEL metrics wrapping meters too many times",
+          "Updated `getBrowserTimingHeader` to handle when a transaction may not be finalized and still return the browser agent string without transaction intrinsics",
+          "Improved Apollo server resolver instrumentation performance",
+          "Correctly parse `subquery` collection names in SQL; assert previously-skipped cross agent test cases"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "14.3.6",
       "changes": {
         "security": [],
