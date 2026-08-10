@@ -566,6 +566,45 @@ test('http2 outbound request', async (t) => {
       const attributes = segment.getAttributes()
       assert.ok(!attributes['request.parameters.a'])
       assert.ok(!attributes['request.parameters.b'])
+
+      const children = t.nr.transaction.trace.getChildren(t.nr.parentSegment.id)
+      assert.equal(children.length, 0, 'should not create a child segment under an opaque parent')
+      end()
+    }
+  })
+
+  await t.test('should not inject DT headers when parent segment is opaque', (t, end) => {
+    const { agent, http2, protocol, host, port } = t.nr
+    agent.config.distributed_tracing.enabled = true
+    agent.config.trusted_account_key = 190
+    agent.config.account_id = 190
+    agent.config.primary_application_id = '389103'
+    helper.runInTransaction(agent, function (transaction) {
+      t.nr.transaction = transaction
+      const parentSegment = agent.tracer.createSegment({
+        name: 'ParentSegment',
+        parent: transaction.trace.root,
+        transaction
+      })
+      parentSegment.opaque = true
+      agent.tracer.setSegment({ transaction, segment: parentSegment })
+      makeRequest(
+        http2,
+        {
+          protocol,
+          host,
+          port,
+          path: '/',
+          method: 'GET'
+        },
+        finish
+      )
+    })
+
+    function finish(err, responseHeaders) {
+      assert.ok(!err)
+      assert.ok(!responseHeaders.traceparent, 'should not inject traceparent header when parent segment is opaque')
+      assert.ok(!responseHeaders.newrelic, 'should not inject newrelic header when parent segment is opaque')
       end()
     }
   })

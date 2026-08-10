@@ -12,6 +12,7 @@
         "@grpc/grpc-js": ">=1.4.0"
       },
       "files": [
+        "client-opaque-parent.test.js",
         "client-unary.test.js",
         "client-streaming.test.js",
         "client-server-streaming.test.js",
