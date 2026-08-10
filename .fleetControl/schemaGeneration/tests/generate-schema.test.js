@@ -422,14 +422,32 @@ test('walk', async (t) => {
   })
 })
 
-test('instrumentationSchema', () => {
-  const schema = instrumentationSchema({ description: 'toggle stanza' })
-  assert.strictEqual(schema.type, 'object')
-  assert.strictEqual(schema.description, 'toggle stanza')
-  assert.deepStrictEqual(schema.additionalProperties.properties.enabled, {
-    type: 'boolean',
-    default: true,
-    description: 'Whether instrumentation for this module is active.'
+test('instrumentationSchema', async (t) => {
+  const pkgDefinitions = {
+    dns: { enabled: { formatter: formatters.boolean, default: true } },
+    timers: { enabled: { formatter: formatters.boolean, default: false } }
+  }
+
+  await t.test('enumerates each package with its own default', () => {
+    const schema = instrumentationSchema(pkgDefinitions, { description: 'toggle stanza' })
+    assert.strictEqual(schema.type, 'object')
+    assert.strictEqual(schema.description, 'toggle stanza')
+    assert.strictEqual(schema.properties.dns.properties.enabled.default, true)
+    assert.strictEqual(schema.properties.timers.properties.enabled.default, false)
+  })
+
+  await t.test('falls back to the generic description when there is no comment', () => {
+    const schema = instrumentationSchema(pkgDefinitions)
+    assert.strictEqual(schema.description, 'Per-module instrumentation toggles.')
+  })
+
+  await t.test('additionalProperties covers packages not in the enumerated list', () => {
+    const schema = instrumentationSchema(pkgDefinitions, { description: 'toggle stanza' })
+    assert.deepStrictEqual(schema.additionalProperties.properties.enabled, {
+      type: 'boolean',
+      default: true,
+      description: 'Whether instrumentation for this module is active.'
+    })
   })
 })
 
@@ -615,9 +633,14 @@ test('generateSchema (integration, real agent config)', async (t) => {
     }
   })
 
-  await t.test('the dynamic instrumentation map is present', () => {
+  await t.test('the instrumentation map enumerates real packages, with a fallback for the rest', () => {
     assert.strictEqual(schema.properties.instrumentation.type, 'object')
     assert.ok(schema.properties.instrumentation.additionalProperties)
+    assert.ok(
+      Object.keys(schema.properties.instrumentation.properties).length > 0,
+      'expected known packages (e.g. dns, http) to be enumerated, not just additionalProperties'
+    )
+    assert.strictEqual(schema.properties.instrumentation.properties.dns.properties.enabled.default, true)
   })
 
   await t.test(

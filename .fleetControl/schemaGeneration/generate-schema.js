@@ -15,7 +15,7 @@ const pkgInstrumentation = require('../../lib/config/build-instrumentation-confi
 const formatters = require('../../lib/config/formatters')
 
 const REPO_ROOT = path.join(__dirname, '..', '..')
-const DEFAULT_CONFIG_SOURCE = path.join(REPO_ROOT, 'lib', 'config', 'default.js')
+const DEFAULT_CONFIG_DESC_SOURCE = path.join(REPO_ROOT, 'lib', 'config', 'default.js')
 const SAMPLERS_SOURCE = path.join(REPO_ROOT, 'lib', 'config', 'samplers.js')
 const SCHEMA_PATH = path.join(__dirname, '..', 'schemas', 'config.json')
 
@@ -321,25 +321,32 @@ function isExcluded(pathStr, excludeKeys) {
   return false
 }
 
-// Package names change every release, so this is one shape via
-// additionalProperties instead of 100+ enumerated properties.
-function instrumentationSchema(sourceEntry) {
+function instrumentationEntrySchema(defaultEnabled) {
+  return {
+    type: 'object',
+    additionalProperties: true,
+    properties: {
+      enabled: {
+        type: 'boolean',
+        default: defaultEnabled,
+        description: 'Whether instrumentation for this module is active.'
+      }
+    }
+  }
+}
+
+function instrumentationSchema(pkgDefinitions, sourceEntry) {
+  const properties = {}
+  for (const [pkg, definition] of Object.entries(pkgDefinitions)) {
+    properties[pkg] = instrumentationEntrySchema(definition.enabled.default)
+  }
+
   return {
     type: 'object',
     description:
       (sourceEntry && sourceEntry.description) || 'Per-module instrumentation toggles.',
-    properties: {},
-    additionalProperties: {
-      type: 'object',
-      additionalProperties: true,
-      properties: {
-        enabled: {
-          type: 'boolean',
-          default: true,
-          description: 'Whether instrumentation for this module is active.'
-        }
-      }
-    }
+    properties,
+    additionalProperties: instrumentationEntrySchema(true)
   }
 }
 
@@ -352,7 +359,7 @@ function walk(value, pathParts, ctx) {
   }
 
   if (value === pkgInstrumentation) {
-    return instrumentationSchema(ctx.commentIndex.get(pathStr))
+    return instrumentationSchema(value, ctx.commentIndex.get(pathStr))
   }
   if (typeof value !== 'object' || value === null) {
     return makeProperty(pathStr, pathParts[pathParts.length - 1], value, ctx.commentIndex.get(pathStr), ctx)
@@ -394,7 +401,7 @@ function mergeSamplerDescriptions(commentIndex, samplerCommentIndex) {
 // Every input defaults to the real thing, so tests can pass synthetic ones instead.
 function generateSchema({
   definition = defaultConfig.definition(),
-  defaultConfigSourceText = fs.readFileSync(DEFAULT_CONFIG_SOURCE, 'utf8'),
+  defaultConfigSourceText = fs.readFileSync(DEFAULT_CONFIG_DESC_SOURCE, 'utf8'),
   samplersSourceText = fs.readFileSync(SAMPLERS_SOURCE, 'utf8'),
   excludeKeys = EXCLUDE_KEYS,
   typeOverrides = TYPE_OVERRIDES,

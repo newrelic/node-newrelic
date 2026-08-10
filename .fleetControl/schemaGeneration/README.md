@@ -224,9 +224,12 @@ is the highest severity across all changes:
 | Description changed | Cosmetic | Patch |
 
 `additionalProperties` is only compared when it's a plain boolean on both
-sides — `labels` and the dynamic `instrumentation` map constrain their
-dictionary values with an object-shaped `additionalProperties` instead,
-which isn't a bump signal.
+sides — `labels` and `instrumentation` constrain their dictionary values
+with an object-shaped `additionalProperties` instead, which isn't a bump
+signal. `instrumentation` also enumerates every currently-instrumented
+package as a real property (falling back to `additionalProperties` for
+anything newer); each addition/removal there is a normal property
+add/remove, not a bump-signal exemption.
 
 ## Running the tests
 
