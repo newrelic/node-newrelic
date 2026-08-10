@@ -1,9 +1,5 @@
 {
   "**/*.{cjs,mjs,js}": [
     "eslint --fix"
-  ],
-  "{lib/config/default.js,lib/config/samplers.js,.fleetControl/schemaGeneration/**}": [
-    "node .fleetControl/schemaGeneration/generate-schema.js",
-    "git add .fleetControl/schemas/config.json"
   ]
 }
