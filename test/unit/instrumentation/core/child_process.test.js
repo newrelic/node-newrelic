@@ -26,19 +26,30 @@ test('child_process instrumentation', async (t) => {
     assert.deepEqual(debugCalls, ['Could not find child_process, not instrumenting'])
   })
 
-  await t.test('should not re-wrap exec/execFile on repeated initialize calls', () => {
-    const fakeChildProcess = {
-      exec: function exec() {},
-      execFile: function execFile() {}
-    }
+  await t.test('teardown should restore the original exec/execFile', () => {
+    const originalExec = function exec() {}
+    const originalExecFile = function execFile() {}
+    const fakeChildProcess = { exec: originalExec, execFile: originalExecFile }
 
-    childProcessInstrumentation(agent, fakeChildProcess)
-    const wrappedExec = fakeChildProcess.exec
-    const wrappedExecFile = fakeChildProcess.execFile
+    const instrumentation = childProcessInstrumentation(agent, fakeChildProcess)
+    assert.notEqual(fakeChildProcess.exec, originalExec, 'exec should be wrapped after patch')
+    assert.notEqual(fakeChildProcess.execFile, originalExecFile, 'execFile should be wrapped after patch')
 
-    childProcessInstrumentation(agent, fakeChildProcess)
+    instrumentation.teardown()
 
-    assert.equal(fakeChildProcess.exec, wrappedExec, 'exec should not be wrapped a second time')
-    assert.equal(fakeChildProcess.execFile, wrappedExecFile, 'execFile should not be wrapped a second time')
+    assert.equal(fakeChildProcess.exec, originalExec, 'exec should be restored after teardown')
+    assert.equal(fakeChildProcess.execFile, originalExecFile, 'execFile should be restored after teardown')
+  })
+
+  await t.test('should not double-wrap after a teardown/re-patch cycle', () => {
+    const originalExec = function exec() {}
+    const fakeChildProcess = { exec: originalExec, execFile: function execFile() {} }
+
+    const first = childProcessInstrumentation(agent, fakeChildProcess)
+    first.teardown()
+
+    const second = childProcessInstrumentation(agent, fakeChildProcess)
+
+    assert.equal(second.originals.exec, originalExec, 'second patch should have wrapped the true original, not a stale wrapper')
   })
 })

@@ -719,6 +719,17 @@ test('should not throw if you call removeHooks before creating ritm and iitm hoo
   })
 })
 
+test('should call teardown on core instrumentations that provide it when removeHooks runs', async () => {
+  const cp = require('child_process')
+  const originalExec = cp.exec
+
+  const agent = helper.instrumentMockedAgent()
+  assert.notEqual(cp.exec, originalExec, 'exec should be wrapped after bootstrapping instrumentation')
+
+  helper.unloadAgent(agent)
+  assert.equal(cp.exec, originalExec, 'exec should be restored to the original after removeHooks tears it down')
+})
+
 test('Shimmer with logger mock', async (t) => {
   const sandbox = sinon.createSandbox()
   const loggerMock = require('./mocks/logger')(sandbox)
