@@ -72,7 +72,8 @@
         "number",
         "null"
       ],
-      "default": null
+      "default": null,
+      "description": "The trusted account key used to validate incoming distributed trace headers. Only used in serverless_mode; defaults to account_id when account_id is set. Locally configured values are ignored outside serverless_mode."
     },
     "primary_application_id": {
       "type": [
@@ -80,7 +81,8 @@
         "number",
         "null"
       ],
-      "default": null
+      "default": null,
+      "description": "The APM application ID to attribute serverless trace data to. Only used in serverless_mode; defaults to 'Unknown' when account_id is set. Locally configured values are ignored outside serverless_mode."
     },
     "account_id": {
       "type": [
@@ -88,7 +90,8 @@
         "number",
         "null"
       ],
-      "default": null
+      "default": null,
+      "description": "The New Relic account ID to attribute serverless trace data to. Only used in serverless_mode; required for distributed tracing to be enabled there. Locally configured values are ignored outside serverless_mode."
     },
     "certificates": {
       "type": "array",
@@ -520,7 +523,7 @@
         "enable": {
           "type": "boolean",
           "default": true,
-          "description": "Enable browser monitoring header generation. This does not auto-instrument, rather it enables the agent to generate headers. The newrelic module can generate the appropriate <script> header, but you must inject the header yourself, or use a module that does so. Usage: var newrelic = require('newrelic'); router.get('/', function (req, res) { var header = newrelic.getBrowserTimingHeader(); res.write(header) // write the rest of the page }); This generates the <script>...</script> header necessary for Browser Monitoring This script must be manually injected into your templates, as high as possible in the header, but _after_ any X-UA-COMPATIBLE HTTP-EQUIV meta tags. Otherwise you may hurt IE! This method must be called _during_ a transaction, and must be called every time you want to generate the headers. Do *not* reuse the headers between users, or even between requests."
+          "description": "Enable browser monitoring header generation. This does not auto-instrument, rather it enables the agent to generate headers. The newrelic module can generate the appropriate <script> header, but you must inject the header yourself, or use a module that does so. This generates the <script>...</script> header necessary for Browser Monitoring This script must be manually injected into your templates, as high as possible in the header, but _after_ any X-UA-COMPATIBLE HTTP-EQUIV meta tags. Otherwise you may hurt IE! This method must be called _during_ a transaction, and must be called every time you want to generate the headers. Do *not* reuse the headers between users, or even between requests."
         },
         "debug": {
           "type": "boolean",

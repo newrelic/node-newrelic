@@ -89,7 +89,7 @@ function indexJSDocComments(sourceText) {
   const lines = sourceText.split('\n')
   const index = new Map()
   const stack = []
-  const comment = { active: false, lines: [], pending: '' }
+  const comment = { active: false, lines: [], pending: '', inExample: false }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
@@ -125,6 +125,7 @@ function consumeCommentLine(comment, trimmed) {
     }
     comment.active = true
     comment.lines = []
+    comment.inExample = false
     return true
   }
 
@@ -135,7 +136,23 @@ function consumeCommentLine(comment, trimmed) {
   }
 
   const text = trimmed.replace(/^\*\s?/, '')
-  if (text && !text.startsWith('@')) {
+  if (!text) {
+    return true
+  }
+
+  // @example runs through the rest of the comment, blank lines included —
+  // that's the only way to drop a multi-line code sample that itself
+  // contains blank lines for readability.
+  if (comment.inExample) {
+    return true
+  }
+  if (text.startsWith('@example')) {
+    comment.inExample = true
+    return true
+  }
+
+  // Other @tags (@see, @property, etc.) only drop their own line.
+  if (!text.startsWith('@')) {
     comment.lines.push(text)
   }
   return true

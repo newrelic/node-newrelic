@@ -158,6 +158,42 @@ test('indexJSDocComments', async (t) => {
     assert.strictEqual(index.get('foo').description, 'real text')
   })
 
+  await t.test('@example drops a multi-line code sample, blank lines included', () => {
+    const source = [
+      '/**',
+      ' * real text',
+      ' *',
+      ' * @example',
+      ' *     line one',
+      ' *',
+      ' *     line two',
+      ' */',
+      'foo: 1,'
+    ].join('\n')
+    const index = indexJSDocComments(source)
+    assert.strictEqual(index.get('foo').description, 'real text')
+  })
+
+  await t.test(
+    '@example only drops through the end of its own comment, not a later key\'s',
+    () => {
+      const source = [
+        '/**',
+        ' * @example',
+        ' *     var x = 1',
+        ' */',
+        'foo: 1,',
+        '/**',
+        ' * bar text',
+        ' */',
+        'bar: 2,'
+      ].join('\n')
+      const index = indexJSDocComments(source)
+      assert.strictEqual(index.get('foo').description, '')
+      assert.strictEqual(index.get('bar').description, 'bar text')
+    }
+  )
+
   await t.test(
     'blank line resets a pending comment (regression: a stale comment must not leak onto a later key)',
     () => {
