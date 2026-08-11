@@ -54,8 +54,8 @@ jobs:
             echo "No schema changes — nothing to commit."
             exit 0
           fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name '${{ vars.NODE_AGENT_CI_USER_NAME }}'
+          git config user.email '${{ vars.NODE_AGENT_CI_USER_EMAIL }}'
           git add .fleetControl/schemas/config.json
           git commit -m "chore: regenerate agent config schema"
           git push
