@@ -10,63 +10,21 @@ const assert = require('node:assert')
 const dns = require('dns')
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify.js')
-
-const resolveMethods = [
-  'resolve',
-  'resolve4',
-  'resolve6',
-  'resolveAny',
-  'resolveCaa',
-  'resolveCname',
-  'resolveMx',
-  'resolveNaptr',
-  'resolveNs',
-  'resolvePtr',
-  'resolveSoa',
-  'resolveSrv',
-  'resolveTxt'
-]
+const sinon = require('sinon')
+const mockDns = require('./dns-utils')
 
 test.beforeEach((ctx) => {
+  const sandbox = sinon.createSandbox()
   ctx.nr = {}
-  ctx.nr.reverse = dns.reverse
-  ctx.nr.origResolves = {}
+  ctx.nr.sandbox = sandbox
 
-  // wrap dns.reverse to not try to actually execute this function
-  dns.reverse = (addr, cb) => {
-    cb(undefined, ['localhost'])
-  }
-
-  for (const fn of resolveMethods) {
-    ctx.nr.origResolves[fn] = dns[fn]
-  }
-  dns.resolve = (_, cb) => cb(null, ['127.0.0.1'])
-  dns.resolve4 = (_, cb) => cb(null, ['127.0.0.1'])
-  dns.resolve6 = (_, cb) => cb(null, ['::1'])
-  dns.resolveCname = (_, cb) => {
-    const error = Error('boom')
-    error.code = 'ENODATA'
-    cb(error)
-  }
-  dns.resolveMx = (_, cb) => cb(null, ['127.0.0.1'])
-  dns.resolveNs = (_, cb) => cb(null, ['a.iana-servers.net', 'b.iana-servers.net'])
-  dns.resolveTxt = (_, cb) => cb(null, ['one', 'two', 'three'])
-  dns.resolveSrv = (_, cb) => {
-    const error = Error('boom')
-    error.code = 'ENODATA'
-    cb(error)
-  }
-
+  mockDns({ dns, sandbox })
   ctx.nr.agent = helper.instrumentMockedAgent()
 })
 
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
-  dns.reverse = ctx.nr.reverse
-
-  for (const fn of resolveMethods) {
-    dns[fn] = ctx.nr.origResolves[fn]
-  }
+  ctx.nr.sandbox.restore()
 })
 
 test('lookup - IPv4', function (t, end) {
@@ -78,6 +36,16 @@ test('lookup - IPv4', function (t, end) {
       assert.equal(v, 4)
       verifySegments({ agent, end, name: 'dns.lookup' })
     })
+  })
+})
+
+test('(promise)lookup - IPv4', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    const { address, family } = await dns.promises.lookup('localhost', { verbatim: false })
+    assert.equal(address, '127.0.0.1')
+    assert.equal(family, 4)
+    verifySegments({ agent, name: 'dns.lookup', assertCallbacks: false })
   })
 })
 
@@ -100,11 +68,47 @@ test('resolve', function (t, end) {
     dns.resolve('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
-      assert.ok(ips[0].match(/^(?:\d{1,3}\.){3}\d{1,3}$/))
+      assert.equal(ips[0], '127.0.0.1')
 
-      const children = []
-      verifySegments({ agent, end, name: 'dns.resolve', children })
+      verifySegments({ agent, end, name: 'dns.resolve' })
     })
+  })
+})
+
+test('Resolver.resolve', function (t, end) {
+  const { agent } = t.nr
+  const resolver = new dns.Resolver()
+  helper.runInTransaction(agent, function () {
+    resolver.resolve('example.com', function (err, ips) {
+      assert.ok(!err, 'should not error')
+      assert.equal(ips.length, 1)
+      assert.equal(ips[0], '127.0.0.1')
+
+      verifySegments({ agent, end, name: 'dns.resolve' })
+    })
+  })
+})
+
+test('(promise)resolve', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    const ips = await dns.promises.resolve('example.com')
+    assert.equal(ips.length, 1)
+    assert.equal(ips[0], '127.0.0.1')
+
+    verifySegments({ agent, name: 'dns.resolve', assertCallbacks: false })
+  })
+})
+
+test('(promise) Resolver.resolve', async function (t) {
+  const { agent } = t.nr
+  const resolver = new dns.promises.Resolver()
+  await helper.runInTransaction(agent, async function () {
+    const ips = await resolver.resolve('example.com')
+    assert.equal(ips.length, 1)
+    assert.equal(ips[0], '127.0.0.1')
+
+    verifySegments({ agent, name: 'dns.resolve', assertCallbacks: false })
   })
 })
 
@@ -114,9 +118,19 @@ test('resolve4', function (t, end) {
     dns.resolve4('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
-      assert.ok(ips[0].match(/^(?:\d{1,3}\.){3}\d{1,3}$/))
+      assert.equal(ips[0], '127.0.0.1')
       verifySegments({ agent, end, name: 'dns.resolve4' })
     })
+  })
+})
+
+test('(promise)resolve4', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    const ips = await dns.promises.resolve4('example.com')
+    assert.equal(ips.length, 1)
+    assert.equal(ips[0], '127.0.0.1')
+    verifySegments({ agent, name: 'dns.resolve4', assertCallbacks: false })
   })
 })
 
@@ -132,6 +146,16 @@ test('resolve6', function (t, end) {
   })
 })
 
+test('(promise)resolve6', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    const ips = await dns.promises.resolve6('example.com')
+    assert.equal(ips.length, 1)
+    assert.equal(ips[0], '::1')
+    verifySegments({ agent, name: 'dns.resolve6', assertCallbacks: false })
+  })
+})
+
 test('resolveCname', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
@@ -142,15 +166,34 @@ test('resolveCname', function (t, end) {
   })
 })
 
+test('(promise)resolveCname', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    await assert.rejects(() => dns.promises.resolveCname('example.com'))
+    verifySegments({ agent, name: 'dns.resolveCname', assertCallbacks: false })
+  })
+})
+
 test('resolveMx', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
     dns.resolveMx('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
+      assert.equal(ips[0], '127.0.0.1')
 
       verifySegments({ agent, end, name: 'dns.resolveMx' })
     })
+  })
+})
+
+test('(promise)resolveMx', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    const ips = await dns.promises.resolveMx('example.com')
+    assert.equal(ips.length, 1)
+    assert.equal(ips[0], '127.0.0.1')
+    verifySegments({ agent, name: 'dns.resolveMx', assertCallbacks: false })
   })
 })
 
@@ -165,14 +208,33 @@ test('resolveNs', function (t, end) {
   })
 })
 
+test('(promise)resolveNs', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    const names = await dns.promises.resolveNs('example.com')
+    assert.deepEqual(names.sort(), ['a.iana-servers.net', 'b.iana-servers.net'])
+    verifySegments({ agent, name: 'dns.resolveNs', assertCallbacks: false })
+  })
+})
+
 test('resolveTxt', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
     dns.resolveTxt('example.com', function (err, data) {
       assert.ok(!err, 'should not error')
+      assert.deepEqual(data, ['one', 'two', 'three'])
       assert.ok(Array.isArray(data))
       verifySegments({ agent, end, name: 'dns.resolveTxt' })
     })
+  })
+})
+
+test('(promise)resolveTxt', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    const data = await dns.promises.resolveTxt('example.com')
+    assert.deepEqual(data, ['one', 'two', 'three'])
+    verifySegments({ agent, name: 'dns.resolveTxt', assertCallbacks: false })
   })
 })
 
@@ -186,13 +248,32 @@ test('resolveSrv', function (t, end) {
   })
 })
 
+test('(promise)resolveSrv', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    await assert.rejects(() => dns.promises.resolveSrv('example.com'))
+    verifySegments({ agent, name: 'dns.resolveSrv', assertCallbacks: false })
+  })
+})
+
 test('reverse', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
     dns.reverse('127.0.0.1', function (err, names) {
       assert.ok(!err, 'should not error')
-      assert.ok(names.indexOf('localhost') !== -1, 'should have expected name')
+      assert.equal(names.length, 1)
+      assert.equal(names[0], 'localhost')
       verifySegments({ agent, end, name: 'dns.reverse' })
     })
+  })
+})
+
+test('(promise)reverse', async function (t) {
+  const { agent } = t.nr
+  await helper.runInTransaction(agent, async function () {
+    const names = await dns.promises.reverse('127.0.0.1')
+    assert.equal(names.length, 1)
+    assert.equal(names[0], 'localhost')
+    verifySegments({ agent, name: 'dns.reverse', assertCallbacks: false })
   })
 })
