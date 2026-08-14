@@ -20,6 +20,12 @@ on:
         description: Whether or not it should generate a changelog.json (should only be for node-newrelic)
         type: boolean
         required: false
+    outputs:
+      release_branch:
+        description: >-
+          Name of the branch created for the release PR (e.g. release/v14.2.0).
+          Empty if the run didn't get as far as pushing a branch.
+        value: ${{ jobs.generate-release-notes.outputs.release_branch }}
 
 jobs:
   generate-release-notes:
@@ -28,6 +34,8 @@ jobs:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    outputs:
+      release_branch: ${{ steps.release-branch.outputs.name }}
 
     steps:
     # Check out caller repo
@@ -54,3 +62,6 @@ jobs:
       run: node ./agent-repo/bin/prepare-release.js --release-type ${{ inputs.release_type }} --branch ${{ github.ref }} --repo ${{ github.repository }} --changelog ${{ inputs.changelog_file }} ${{ inputs.changelog_json == true && '--changelog-json' || ''}}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Capture release branch name
+      id: release-branch
+      run: echo "name=$(git branch --show-current)" >> "$GITHUB_OUTPUT"
