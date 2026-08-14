@@ -71,6 +71,47 @@ suite.add({
   }
 })
 
+// Models a span's attribute container seeded near capacity with a mix of
+// priorities, then exercising the realistic add/overwrite/drop paths.
+const SEED_COUNT = 60
+const seededMixed = new PrioritizedAttributes(SEGMENT_SCOPE, 64)
+for (let i = 0; i < SEED_COUNT; i++) {
+  const priority = i % 2 === 0 ? ATTRIBUTE_PRIORITY.HIGH : ATTRIBUTE_PRIORITY.LOW
+  seededMixed.addAttribute(DESTINATIONS.SPAN_EVENT, `seed.${i}`, i, false, priority)
+}
+
+let realisticCount = 0
+suite.add({
+  name: 'realistic-usage',
+  fn: function () {
+    realisticCount++
+    // Add a new high-priority attribute; displaces a low-priority seed once at limit.
+    seededMixed.addAttribute(
+      DESTINATIONS.SPAN_EVENT,
+      `new.${realisticCount}`,
+      realisticCount,
+      false,
+      ATTRIBUTE_PRIORITY.HIGH
+    )
+    // Overwrite an existing seed; bypasses the limit check.
+    seededMixed.addAttribute(
+      DESTINATIONS.SPAN_EVENT,
+      `seed.${realisticCount % SEED_COUNT}`,
+      realisticCount,
+      false,
+      ATTRIBUTE_PRIORITY.HIGH
+    )
+    // Attempt a low-priority add; will be dropped once capacity is full.
+    seededMixed.addAttribute(
+      DESTINATIONS.SPAN_EVENT,
+      `low.${realisticCount}`,
+      realisticCount,
+      false,
+      ATTRIBUTE_PRIORITY.LOW
+    )
+  }
+})
+
 suite.run()
 
 function batchAddAttributes(attributes, attributeCount, priority) {
