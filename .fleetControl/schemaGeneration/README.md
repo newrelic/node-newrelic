@@ -8,7 +8,7 @@ bumps in `../configurationDefinitions.yml` for Fleet Control.
 
 | File | Description |
 |------|-------------|
-| `generate-schema.js` | Per-push regenerator. Reads `lib/config/default.js`'s `definition()`, writes `config.json`. Never touches `configurationDefinitions.yml`. |
+| `generate-schema.js` | Post-merge regenerator. Reads `lib/config/default.js`'s `definition()`, writes `config.json`. Never touches `configurationDefinitions.yml`. |
 | `bump-schema-version.js` | Release-time version bumper. Compares the schema at a prior git ref to the current schema and writes a new version into `configurationDefinitions.yml`. |
 | `schema-diff.js` | Shared library (no CLI). Holds the diff classification (`classifyChanges`), bump arithmetic (`recommendBump`, `applyBump`, `bumpVersionLine`), and schema loading (`loadExisting`). Required by both scripts above. |
 | `tests/generate-schema.test.js` | Tests for the generator (comment extraction, per-leaf type inference, override precedence, `generateSchema`). |
@@ -43,11 +43,11 @@ bumps live in the next section.
 
 ## How versioning works
 
-Schema regeneration runs **per commit and per push** on feature branches —
-locally via `lint-staged` (see `.lintstagedrc.json`) when a commit touches
-the config definition or the generator itself, and in CI via
-`.github/workflows/agent-config-schema.yml`. It writes `config.json` and
-nothing else. Reviewers see schema diffs in PRs.
+Schema regeneration runs **post-merge**, via
+`.github/workflows/agent-config-schema.yml`: once a change to the config
+definition lands on `main`, the workflow regenerates `config.json` and
+opens a separate PR with the result for review. It writes `config.json` and
+nothing else.
 
 Version bumps run **manually before each release** via
 `.github/workflows/agent-config-schema-bump.yml`, which is
@@ -161,7 +161,7 @@ schema.
 3. If the type or enum came out wrong, or the key needs to be hidden, add
    an entry to the appropriate override map above and re-run.
 4. Run the tests (`npm run unit:config-schema`).
-5. The version doesn't bump on per-push regeneration. The next release
+5. The version doesn't bump on post-merge regeneration. The next release
    will pick up your changes when someone runs the bump workflow as part
    of release prep.
 
