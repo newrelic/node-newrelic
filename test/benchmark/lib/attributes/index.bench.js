@@ -6,7 +6,7 @@
 'use strict'
 
 const benchmark = require('#testlib/benchmark.js')
-const { Attributes, MAXIMUM_CUSTOM_ATTRIBUTES } = require('#agentlib/attributes.js')
+const { Attributes, MAXIMUM_CUSTOM_ATTRIBUTES } = require('#agentlib/attributes/index.js')
 const AttributeFilter = require('#agentlib/config/attribute-filter.js')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS

@@ -7,7 +7,7 @@
 
 const benchmark = require('#testlib/benchmark.js')
 
-const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('#agentlib/prioritized-attributes.js')
+const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('#agentlib/attributes/prioritized.js')
 const AttributeFilter = require('#agentlib/config/attribute-filter.js')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
