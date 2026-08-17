@@ -48,16 +48,14 @@ test.beforeEach(async (ctx) => {
   ctx.nr.consumer = consumer
 
   // The cluster reference is captured synchronously at producer() creation
-  // time, but kafkajs doesn't populate its metadata (and thus clusterId)
-  // until the client actually talks to a broker; poll briefly until it does.
+  // time, but `connect()` alone never populates its metadata (and thus
+  // clusterId) — kafkajs only fetches metadata lazily, as a side effect of
+  // the first produce/consume call. Force that fetch on the captured
+  // reference now so it's already warm by the time the tests below read it.
+  const { kafkaCluster } = require('../../../lib/symbols.js')
   const readClusterId = require('../../../lib/subscribers/kafkajs/utils/read-cluster-id.js')
-  const pollDeadline = Date.now() + 3000
-  let clusterId = readClusterId(producer)
-  while (!clusterId && Date.now() < pollDeadline) {
-    await new Promise((resolve) => setTimeout(resolve, 50))
-    clusterId = readClusterId(producer)
-  }
-  ctx.nr.clusterId = clusterId ?? null
+  await producer[kafkaCluster]?.metadata({ topics: [] })
+  ctx.nr.clusterId = readClusterId(producer) ?? null
 })
 
 test.afterEach(async (ctx) => {
