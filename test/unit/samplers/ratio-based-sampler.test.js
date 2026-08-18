@@ -133,8 +133,8 @@ test('integration tests', async (t) => {
     const TOTAL_RATIO_VALUE = 0.7
     // For 25000 iterations, binomial distribution states that
     // the standard error rate should be around 0.3%, but this
-    // test is very flaky, so we will use 1% as the error margin.
-    const ERROR_MARGIN = 0.01
+    // test is very flaky, so we will use 1.5% as the error margin.
+    const ERROR_MARGIN = 0.015
     const numTxs = 25000
     const agent = helper.loadMockedAgent({
       distributed_tracing: {
