@@ -177,6 +177,35 @@ test('#get', async (t) => {
     assert.equal(attrs.foo.length, 4_096)
     assert.equal(attrs.foo.endsWith('ab'), true)
   })
+
+  await t.test('returns identical truncated values across repeated harvests', () => {
+    const tooLong = 'a'.repeat(255) + 'b' + ' to be dropped'
+    const inst = new Attributes({ scope: TRANSACTION_SCOPE })
+    inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'foo', tooLong)
+
+    // The truncated value is memoized on the record; repeated harvests (as
+    // happens when a single instance is read once per destination) must return
+    // the same truncated result.
+    const first = inst.get(DESTINATIONS.TRANS_SCOPE)
+    const second = inst.get(DESTINATIONS.TRANS_SCOPE)
+
+    assert.equal(first.foo.length, 256)
+    assert.equal(second.foo, first.foo)
+  })
+
+  await t.test('re-truncates after an attribute value is overwritten', () => {
+    const inst = new Attributes({ scope: TRANSACTION_SCOPE })
+    const longVal = 'a'.repeat(300)
+    inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'foo', longVal)
+
+    // Prime the memoized truncation.
+    assert.equal(inst.get(DESTINATIONS.TRANS_SCOPE).foo.length, 256)
+
+    // Overwriting replaces the record, so a later harvest must reflect the new
+    // value rather than the previously cached truncation.
+    inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'foo', 'short')
+    assert.equal(inst.get(DESTINATIONS.TRANS_SCOPE).foo, 'short')
+  })
 })
 
 test('#hasValidDestination', async (t) => {

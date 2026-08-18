@@ -45,7 +45,7 @@ test('#addAttribute', async (t) => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, tooLong, 'will fail')
 
-    assert.equal(inst.has(tooLong), undefined)
+    assert.equal(inst.has(tooLong), false)
   })
 })
 
@@ -329,7 +329,30 @@ test('#get', async (t) => {
     const res = inst.get(0x01)
     assert.equal(res.valid, 50)
 
-    assert.equal(Buffer.byteLength(res.tooLong), 255)
+    assert.equal(Buffer.byteLength(res.tooLong), 256)
+  })
+
+  await t.test('returns identical truncated values across repeated harvests', () => {
+    const tooLong = 'a'.repeat(255) + 'b' + ' to be dropped'
+    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
+    inst.addAttribute(0x01, 'foo', tooLong)
+
+    const first = inst.get(0x01)
+    const second = inst.get(0x01)
+
+    assert.equal(Buffer.byteLength(first.foo), 256)
+    assert.equal(second.foo, first.foo)
+  })
+
+  await t.test('re-truncates after an attribute value is overwritten', () => {
+    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
+    const longVal = 'a'.repeat(300)
+    inst.addAttribute(0x01, 'foo', longVal)
+
+    assert.equal(Buffer.byteLength(inst.get(0x01).foo), 256)
+
+    inst.addAttribute(0x01, 'foo', 'short')
+    assert.equal(inst.get(0x01).foo, 'short')
   })
 
   await t.test('only returns attributes up to specified limit', () => {
@@ -407,8 +430,8 @@ test('#reset', async (t) => {
 
     inst.reset()
 
-    assert.equal(inst.has('first'), undefined)
-    assert.equal(inst.has('second'), undefined)
-    assert.equal(inst.has('third'), undefined)
+    assert.equal(inst.has('first'), false)
+    assert.equal(inst.has('second'), false)
+    assert.equal(inst.has('third'), false)
   })
 })
