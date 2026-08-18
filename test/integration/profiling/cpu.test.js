@@ -104,7 +104,14 @@ describe('CpuProfiler span labels', () => {
       const parent = agent.tracer.getSegment()
       agent.tracer.addSegment('burnCpu', null, parent, false, (segment) => {
         burnCpu(500)
-        expected = { traceId: transaction.traceId, spanId: segment.getSpanId() }
+        expected = {
+          traceId: transaction.traceId,
+          spanId: segment.getSpanId(),
+          // Samples can land while the transaction's root segment is active
+          // (during setup, or after the `burnCpu` segment's scope is restored),
+          // so the root span id is a legitimate label too.
+          created: new Set([parent.getSpanId(), segment.getSpanId()])
+        }
       })
     })
 
@@ -114,10 +121,19 @@ describe('CpuProfiler span labels', () => {
     assert.ok(samples.length > 0, 'should have collected samples')
     assert.ok(labelled.length > 0, 'at least some samples should carry span labels')
 
+    const seen = new Set()
     for (const sample of labelled) {
       assert.equal(sample.traceIds[0], expected.traceId, 'trace_id should match the active transaction')
-      assert.equal(sample.spanIds[0], expected.spanId, 'span_id should match the active segment')
+      assert.ok(
+        expected.created.has(sample.spanIds[0]),
+        `span_id ${sample.spanIds[0]} should belong to a segment active in this transaction`
+      )
+      seen.add(sample.spanIds[0])
     }
+
+    // The CPU burn happens inside the `burnCpu` segment, so it must own samples;
+    // this proves labels track the active span rather than always reporting the root.
+    assert.ok(seen.has(expected.spanId), 'the active `burnCpu` segment should own some samples')
   })
 
   test('attaches at most one span_id and one trace_id label per sample', async () => {
