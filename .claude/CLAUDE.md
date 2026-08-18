@@ -19,6 +19,7 @@ specific functionality
 test files in the suite may be run directly as
 `node --test test/versioned/<suite>/<test_file>`
 - When opening Pull Requests, always open them in draft mode
+- Pull Request titles must use past tense (e.g. "Refactored foo" not "Refactor foo")
 
 ## Commands
 npm run services:start # start Docker services
