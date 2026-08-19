@@ -49,12 +49,11 @@ definition lands on `main`, the workflow regenerates `config.json` and
 opens a separate PR with the result for review. It writes `config.json` and
 nothing else.
 
-Version bumps run **manually before each release** via
-`.github/workflows/agent-config-schema-bump.yml`, which is
-`workflow_dispatch`-only. The bump workflow:
+Version bumps run as part of **release prep**, via the `bump-config-schema`
+job in `.github/workflows/prepare-release.yml`. Once `agent-release-notes`
+has pushed the release branch, that job:
 
-1. Finds the latest `v*` tag on `main` (overridable via the `since_ref`
-   workflow input).
+1. Checks out the release branch and finds the latest `v*` tag on `main`.
 2. Reads the historical `configurationDefinitions.yml` from that tag — the
    version stored there is the **starter version** for the bump.
 3. Reads the historical schema from `.fleetControl/schemas/config.json` at
@@ -62,30 +61,18 @@ Version bumps run **manually before each release** via
 4. Compares the historical schema to the current on-disk `config.json`,
    classifies the cumulative diff, and applies the recommended bump kind
    (major/minor/patch).
-5. Opens a PR titled `chore: bump agent config schema version` for team
-   review.
+5. Commits the bumped `configurationDefinitions.yml` straight into the
+   release branch (`--write`), so it rides along in the same release PR.
 
 If the latest release tag predates the schema (no `config.json`, or no
 `version` in `configurationDefinitions.yml`, at that tag),
-`bump-schema-version.js` exits `0` with a bootstrap message and no PR is
-opened. The first release that includes the schema ships at whatever
+`bump-schema-version.js` exits `0` with a bootstrap message and commits
+nothing. The first release that includes the schema ships at whatever
 version is currently in `configurationDefinitions.yml`.
 
-### Release ordering — run the bump workflow before cutting the release
-
-The bump PR is a separate review/merge step from the agent's release tag.
-Run these in order:
-
-1. Trigger `Agent Config Schema Bump` (manual `workflow_dispatch`).
-2. Wait for the PR to open (or the workflow to report that no bump is needed).
-3. Review and merge the bump PR if one was opened.
-4. Cut the release from the post-merge `main`.
-
-If the release is cut before the bump PR merges, the tag's
-`configurationDefinitions.yml` will still say the pre-bump version, even
-though the schema itself (`config.json`) at that tag reflects the new keys
-— consumers see a mismatch. The next release will compute its bump
-correctly from this tag's metadata, but the tag itself ships mismatched.
+Because the bump lands in the release PR itself, there's no ordering step
+to get wrong — reviewing and merging the release PR carries the version
+bump with it.
 
 ## Quick start
 
@@ -96,10 +83,10 @@ node .fleetControl/schemaGeneration/generate-schema.js
 
 # Preview a release-time bump against a tag (dry-run)
 node .fleetControl/schemaGeneration/bump-schema-version.js --since=v14.2.0
-# or, against the latest v* tag: npm run bump:config-schema
 
 # Apply a release-time bump (writes configurationDefinitions.yml)
 node .fleetControl/schemaGeneration/bump-schema-version.js --since=v14.2.0 --write
+# or, against the latest v* tag: npm run bump:config-schema
 ```
 
 ## Adding new configuration keys

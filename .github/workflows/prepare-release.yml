@@ -28,7 +28,6 @@ jobs:
   bump-config-schema:
     name: Bump agent config schema version
     needs: agent-release-notes
-    if: needs.agent-release-notes.outputs.release_branch != ''
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -37,7 +36,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ needs.agent-release-notes.outputs.release_branch }}
 
       - uses: actions/setup-node@v6
         with:
@@ -46,8 +44,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Determine release branch
+        id: release-branch
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          NEW_VERSION=$(node -p "require('semver').inc('$CURRENT_VERSION', '${{ github.event.inputs.release_type }}')")
+          echo "name=release/v$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release branch
+        run: git checkout ${{ steps.release-branch.outputs.name }}
+
       - name: Compute config schema bump
-        run: node .fleetControl/schemaGeneration/bump-schema-version.js --write
+        run: npm run bump:config-schema
 
       - name: Commit bump into the release PR
         run: |
@@ -59,4 +67,4 @@ jobs:
           git config user.email '${{ vars.NODE_AGENT_CI_USER_EMAIL }}'
           git add .fleetControl/configurationDefinitions.yml
           git commit -m "chore: bump agent config schema version"
-          git push origin HEAD:${{ needs.agent-release-notes.outputs.release_branch }}
+          git push origin HEAD:${{ steps.release-branch.outputs.name }}

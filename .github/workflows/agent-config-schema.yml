@@ -41,7 +41,7 @@ jobs:
         run: npm install
 
       - name: Regenerate schema
-        run: node .fleetControl/schemaGeneration/generate-schema.js
+        run: npm run generate:config-schema
 
       - name: Open schema update PR
         id: create-pr
