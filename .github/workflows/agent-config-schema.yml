@@ -54,8 +54,8 @@ jobs:
           branch: regenerate-agent-config-schema-${{ github.run_id }}
           delete-branch: true
           base: main
-          title: 'chore: regenerate agent config schema'
-          commit-message: 'chore: regenerate agent config schema'
+          title: 'chore: Regenerated agent config json schema'
+          commit-message: 'chore: Regenerated agent config json schema'
           body: |
             Auto-generated after ${{ github.sha }} changed the config
             definition on `main`.
