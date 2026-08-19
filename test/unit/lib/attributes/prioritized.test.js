@@ -10,8 +10,8 @@ const assert = require('node:assert')
 
 const helper = require('../../../lib/agent_helper')
 
-const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('../../../../lib/attributes/prioritized')
-const AttributeFilter = require('../../../../lib/config/attribute-filter')
+const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('#agentlib/attributes/prioritized.js')
+const AttributeFilter = require('#agentlib/config/attribute-filter.js')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
 const TRANSACTION_SCOPE = 'transaction'

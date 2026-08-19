@@ -8,9 +8,9 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const helper = require('../../../lib/agent_helper')
-const { Attributes } = require('../../../../lib/attributes/index')
-const AttributeFilter = require('../../../../lib/config/attribute-filter')
+const helper = require('#testlib/agent_helper.js')
+const { Attributes } = require('#agentlib/attributes/index.js')
+const AttributeFilter = require('#agentlib/config/attribute-filter.js')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
 const TRANSACTION_SCOPE = 'transaction'
