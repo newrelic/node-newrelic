@@ -24,3 +24,47 @@ jobs:
     with:
       release_type: ${{ github.event.inputs.release_type }}
       changelog_json: true
+
+  bump-config-schema:
+    name: Bump agent config schema version
+    needs: agent-release-notes
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Determine release branch
+        id: release-branch
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          NEW_VERSION=$(node -p "require('semver').inc('$CURRENT_VERSION', '${{ github.event.inputs.release_type }}')")
+          echo "name=release/v$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release branch
+        run: git checkout ${{ steps.release-branch.outputs.name }}
+
+      - name: Compute config schema bump
+        run: npm run bump:config-schema
+
+      - name: Commit bump into the release PR
+        run: |
+          if [ -z "$(git status --porcelain .fleetControl/configurationDefinitions.yml)" ]; then
+            echo "No config schema version change — nothing to add to the release PR."
+            exit 0
+          fi
+          git config user.name '${{ vars.NODE_AGENT_CI_USER_NAME }}'
+          git config user.email '${{ vars.NODE_AGENT_CI_USER_EMAIL }}'
+          git add .fleetControl/configurationDefinitions.yml
+          git commit -m "chore: bump agent config schema version"
+          git push origin HEAD:${{ steps.release-branch.outputs.name }}
