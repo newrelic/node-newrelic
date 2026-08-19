@@ -41,6 +41,11 @@
       "default": 443,
       "description": "The port on which the collector proxy will be listening. You shouldn't need to change this."
     },
+    "fake_config": {
+      "type": "boolean",
+      "default": true,
+      "description": "Test json schema update"
+    },
     "proxy": {
       "type": "string",
       "default": "",
