@@ -1,3 +1,35 @@
+### v14.3.8 (2026-08-19)
+
+#### Bug fixes
+
+* Updated `openai` instrumentation to support `>=7.5.0` ([#4228](https://github.com/newrelic/node-newrelic/pull/4228)) ([062b569](https://github.com/newrelic/node-newrelic/commit/062b569664bec61c263c7ba33fda17e1baa85735))
+
+#### Performance improvements
+
+* Skipped gRPC/http2 instrumentation when parent segment is opaque ([#4220](https://github.com/newrelic/node-newrelic/pull/4220)) ([ed2e9f3](https://github.com/newrelic/node-newrelic/commit/ed2e9f3c182f7073000e99a2d54add8affcbbaed))
+
+#### Code refactoring
+
+* Include all `.mjs` equivalents in `openai` instrumentation to properly function when using ESM ([#4232](https://github.com/newrelic/node-newrelic/pull/4232)) ([55c4dd9](https://github.com/newrelic/node-newrelic/commit/55c4dd9d91a80c457741f94086e2c386ae2f9ba1))
+* Removed dead `wrapNoSegment` code from `zlib` instrumentation ([#4231](https://github.com/newrelic/node-newrelic/pull/4231)) ([56207ec](https://github.com/newrelic/node-newrelic/commit/56207ecc6cd8c5365db00c33774aeb042d425332))
+
+#### Documentation
+
+* Updated compatibility report ([#4225](https://github.com/newrelic/node-newrelic/pull/4225)) ([679245c](https://github.com/newrelic/node-newrelic/commit/679245cd775da8d7407f4069f75d688c1f2e47fe))
+
+#### Miscellaneous chores
+
+* Improved docs and benchmarking for attributes ([#4207](https://github.com/newrelic/node-newrelic/pull/4207)) ([7dbcd04](https://github.com/newrelic/node-newrelic/commit/7dbcd044f4bcbe9d72d331e7b5a494c085efca57))
+
+#### Tests
+
+* Fixed flaky CpuProfiler and sampling-rate integration tests ([#4229](https://github.com/newrelic/node-newrelic/pull/4229)) ([edfe9a6](https://github.com/newrelic/node-newrelic/commit/edfe9a640d4c43381da6c54ff3250d05d429a6a1))
+* Widened error margin in ratio-based-sampler flaky test ([#4234](https://github.com/newrelic/node-newrelic/pull/4234)) ([ff0496e](https://github.com/newrelic/node-newrelic/commit/ff0496e49195e848ddd9335a951c5b0f5ea6d391))
+
+#### Continuous integration
+
+* Updated `child_process.exec` calls to `child_process.execFile` in `bin/npm-commands.js` ([#4211](https://github.com/newrelic/node-newrelic/pull/4211)) ([f07a8cd](https://github.com/newrelic/node-newrelic/commit/f07a8cd5b56db23df6048fb38b76e92fbc95cac0))
+
 ### v14.3.7 (2026-08-10)
 
 #### Bug fixes
