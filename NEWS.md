@@ -6,7 +6,7 @@
 
 #### Performance improvements
 
-* skip gRPC/http2 instrumentation when parent segment is opaque ([#4220](https://github.com/newrelic/node-newrelic/pull/4220)) ([ed2e9f3](https://github.com/newrelic/node-newrelic/commit/ed2e9f3c182f7073000e99a2d54add8affcbbaed))
+* Skipped gRPC/http2 instrumentation when parent segment is opaque ([#4220](https://github.com/newrelic/node-newrelic/pull/4220)) ([ed2e9f3](https://github.com/newrelic/node-newrelic/commit/ed2e9f3c182f7073000e99a2d54add8affcbbaed))
 
 #### Code refactoring
 
@@ -16,7 +16,6 @@
 #### Documentation
 
 * Updated compatibility report ([#4225](https://github.com/newrelic/node-newrelic/pull/4225)) ([679245c](https://github.com/newrelic/node-newrelic/commit/679245cd775da8d7407f4069f75d688c1f2e47fe))
-* Updated compatibility report ([#4219](https://github.com/newrelic/node-newrelic/pull/4219)) ([60db222](https://github.com/newrelic/node-newrelic/commit/60db222352e73f6dcbce82a5339974dbd70498d0))
 
 #### Miscellaneous chores
 
