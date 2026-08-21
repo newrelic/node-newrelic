@@ -42,6 +42,7 @@ const used = [
   'aws_bedrock_instrumentation',
   'langchain_instrumentation',
   'kafkajs_instrumentation',
+  'kafka_cluster_metrics',
   'undici_error_tracking'
 ]
 
