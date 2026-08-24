@@ -10,10 +10,7 @@
 
 #### Miscellaneous chores
 
-* Added fake config to test json schema update ([#4238](https://github.com/newrelic/node-newrelic/pull/4238)) ([5381e27](https://github.com/newrelic/node-newrelic/commit/5381e270da8b253bdb8c5dec2a1f14e052421447))
 * Added workflows to generate a config schema and version before agent release ([#4161](https://github.com/newrelic/node-newrelic/pull/4161)) ([56987ca](https://github.com/newrelic/node-newrelic/commit/56987ca517f32eea144e55a127686ddc2fe1bf19))
-* Regenerated agent config json schema ([#4239](https://github.com/newrelic/node-newrelic/pull/4239)) ([65190b1](https://github.com/newrelic/node-newrelic/commit/65190b14c297c6f8275eae499f99fa059b4d9c45))
-* Reverted adding fake configurations to test json schema generation ([#4242](https://github.com/newrelic/node-newrelic/pull/4242)) ([0ce21e9](https://github.com/newrelic/node-newrelic/commit/0ce21e9ee86e5b0c71924f1cf403911b22470cc2))
 
 ### v14.3.8 (2026-08-19)
 
