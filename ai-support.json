@@ -98,7 +98,7 @@
     "footnote": "Note: if a model supports streaming, we also instrument the streaming variant.",
     "models": [
       {
-        "name": "Anthropic Claude",
+        "name": "Anthropic Claude (model versions 1-5)",
         "features": [
           {
             "title": "Text",
@@ -128,7 +128,7 @@
         ]
       },
       {
-        "name": "Meta Llama3",
+        "name": "Meta Llama (all versions)",
         "features": [
           {
             "title": "Text",
