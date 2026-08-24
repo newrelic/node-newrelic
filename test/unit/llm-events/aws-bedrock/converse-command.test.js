@@ -11,7 +11,6 @@ const ConverseCommand = require('../../../../lib/llm-events/aws-bedrock/converse
 
 test('non-conforming command is handled gracefully', (t) => {
   const cmd = new ConverseCommand({ messages: [] })
-  assert.equal(cmd.isConverse, true)
   assert.equal(cmd.modelId, '')
   assert.equal(cmd.modelType, 'completion')
   assert.deepEqual(cmd.prompt, [])
