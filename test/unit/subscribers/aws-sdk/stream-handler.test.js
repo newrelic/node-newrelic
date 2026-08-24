@@ -164,7 +164,7 @@ test('handles region specific claude streams', async (t) => {
   assert.equal(br.statusCode, 200)
 })
 
-test('handles claude3streams', async (t) => {
+test('handles claudeMsgsApi streams', async (t) => {
   t.nr.passThroughParams.bedrockCommand.isClaudeMessagesApi = () => true
   t.nr.chunks = [
     { type: 'content_block_delta', delta: { type: 'text_delta', text: '42' } },
@@ -198,7 +198,7 @@ test('handles claude3streams', async (t) => {
   assert.equal(br.statusCode, 200)
 })
 
-test('handles region specific claude3streams', async (t) => {
+test('handles region specific claudeMsgsApi streams', async (t) => {
   t.nr.passThroughParams.bedrockCommand.isClaudeMessagesApi = () => true
   t.nr.chunks = [
     { type: 'content_block_delta', delta: { type: 'text_delta', text: '42' } },
