@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const structuredClone = require('./clone')
-const BedrockResponse = require('../../../../lib/llm-events/aws-bedrock/bedrock-response')
+const InvokeModelResponse = require('../../../../lib/llm-events/aws-bedrock/invoke-model-response')
 
 const claude = {
   completion: 'claude-response',
@@ -60,15 +60,7 @@ test.beforeEach((ctx) => {
       }
     },
     output: {
-      body: new TextEncoder().encode('{"foo":"foo"}'),
-      output: {
-        message: { content: [{ text: 'Hello world' }] },
-      },
-      usage: {
-        inputTokens: 42,
-        outputTokens: 58,
-        totalTokens: 100
-      }
+      body: new TextEncoder().encode('{"foo":"foo"}')
     }
   }
 
@@ -87,8 +79,7 @@ test.beforeEach((ctx) => {
     },
     isTitan() {
       return false
-    },
-    isConverse: false
+    }
   }
 
   ctx.nr.updatePayload = (payload) => {
@@ -98,7 +89,7 @@ test.beforeEach((ctx) => {
 
 test('non-conforming response is handled gracefully', async (t) => {
   delete t.nr.response.response.headers
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, [])
   assert.equal(res.finishReason, undefined)
   assert.deepStrictEqual(res.headers, undefined)
@@ -109,7 +100,7 @@ test('non-conforming response is handled gracefully', async (t) => {
 
 test('claude malformed responses work', async (t) => {
   t.nr.bedrockCommand.isClaude = () => true
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, [])
   assert.equal(res.finishReason, undefined)
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
@@ -121,7 +112,7 @@ test('claude malformed responses work', async (t) => {
 test('claude complete responses work', async (t) => {
   t.nr.bedrockCommand.isClaude = () => true
   t.nr.updatePayload(structuredClone(claude))
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, ['claude-response'])
   assert.equal(res.finishReason, 'done')
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
@@ -133,7 +124,7 @@ test('claude complete responses work', async (t) => {
 test('claude 3.5 complete responses work', async (t) => {
   t.nr.bedrockCommand.isClaude3 = () => true
   t.nr.updatePayload(structuredClone(claude35))
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, ['Hello\n\nworld'])
   assert.equal(res.finishReason, 'done')
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
@@ -144,7 +135,7 @@ test('claude 3.5 complete responses work', async (t) => {
 
 test('cohere malformed responses work', async (t) => {
   t.nr.bedrockCommand.isCohere = () => true
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, [])
   assert.equal(res.finishReason, undefined)
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
@@ -156,7 +147,7 @@ test('cohere malformed responses work', async (t) => {
 test('cohere complete responses work', async (t) => {
   t.nr.bedrockCommand.isCohere = () => true
   t.nr.updatePayload(structuredClone(cohere))
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, ['cohere-response'])
   assert.equal(res.finishReason, 'done')
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
@@ -167,7 +158,7 @@ test('cohere complete responses work', async (t) => {
 
 test('llama malformed responses work', async (t) => {
   t.nr.bedrockCommand.isLlama = () => true
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, [])
   assert.equal(res.finishReason, undefined)
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
@@ -179,7 +170,7 @@ test('llama malformed responses work', async (t) => {
 test('llama complete responses work', async (t) => {
   t.nr.bedrockCommand.isLlama = () => true
   t.nr.updatePayload(structuredClone(llama))
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, ['llama-response'])
   assert.equal(res.finishReason, 'done')
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
@@ -190,7 +181,7 @@ test('llama complete responses work', async (t) => {
 
 test('titan malformed responses work', async (t) => {
   t.nr.bedrockCommand.isTitan = () => true
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, [])
   assert.equal(res.finishReason, undefined)
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
@@ -202,7 +193,7 @@ test('titan malformed responses work', async (t) => {
 test('titan complete responses work', async (t) => {
   t.nr.bedrockCommand.isTitan = () => true
   t.nr.updatePayload(structuredClone(titan))
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, ['titan-response'])
   assert.equal(res.finishReason, 'done')
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
@@ -216,7 +207,7 @@ test('should only set data from raw response on error', (t) => {
   delete t.nr.response.response
   delete t.nr.response.output
   t.nr.isError = true
-  const res = new BedrockResponse(t.nr)
+  const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, [])
   assert.equal(res.id, undefined)
   assert.equal(res.finishReason, undefined)
@@ -226,28 +217,16 @@ test('should only set data from raw response on error', (t) => {
 })
 
 test('inputTokenCount', (t) => {
-  t.nr.bedrockCommand.isConverse = true
-  const res = new BedrockResponse(t.nr)
-  assert.equal(res.inputTokenCount, 42)
-  t.nr.bedrockCommand.isConverse = false
-  const res2 = new BedrockResponse(t.nr)
-  assert.equal(res2.inputTokenCount, 56)
+  const res = new InvokeModelResponse(t.nr)
+  assert.equal(res.inputTokenCount, 56)
 })
 
 test('outputTokenCount', (t) => {
-  t.nr.bedrockCommand.isConverse = true
-  const res = new BedrockResponse(t.nr)
-  assert.equal(res.outputTokenCount, 58)
-  t.nr.bedrockCommand.isConverse = false
-  const res2 = new BedrockResponse(t.nr)
-  assert.equal(res2.outputTokenCount, 46)
+  const res = new InvokeModelResponse(t.nr)
+  assert.equal(res.outputTokenCount, 46)
 })
 
 test('totalTokenCount', (t) => {
-  t.nr.bedrockCommand.isConverse = true
-  const res = new BedrockResponse(t.nr)
-  assert.equal(res.totalTokenCount, 100)
-  t.nr.bedrockCommand.isConverse = false
-  const res2 = new BedrockResponse(t.nr)
-  assert.equal(res2.totalTokenCount, 102)
+  const res = new InvokeModelResponse(t.nr)
+  assert.equal(res.totalTokenCount, 102)
 })
