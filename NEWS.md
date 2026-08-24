@@ -1,3 +1,17 @@
+### v14.3.9 (2026-08-24)
+
+#### Bug fixes
+
+* Fixed @google/adk instrumentation for v2.0.0 ([#4243](https://github.com/newrelic/node-newrelic/pull/4243)) ([6f850a8](https://github.com/newrelic/node-newrelic/commit/6f850a868ccc557339b42c30b4551126deadb584))
+
+#### Code refactoring
+
+* Co-located Attributes and PrioritizedAttributes under lib/attributes/ ([#4227](https://github.com/newrelic/node-newrelic/pull/4227)) ([c2a01d2](https://github.com/newrelic/node-newrelic/commit/c2a01d29bbb71ac893596e0e6091e5247c431c12))
+
+#### Miscellaneous chores
+
+* Added workflows to generate a config schema and version before agent release ([#4161](https://github.com/newrelic/node-newrelic/pull/4161)) ([56987ca](https://github.com/newrelic/node-newrelic/commit/56987ca517f32eea144e55a127686ddc2fe1bf19))
+
 ### v14.3.8 (2026-08-19)
 
 #### Bug fixes
