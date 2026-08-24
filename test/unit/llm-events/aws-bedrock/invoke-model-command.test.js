@@ -45,14 +45,28 @@ const regionClaude35 = {
     ]
   }
 }
-const claude3 = {
+const claudeMsgsApi = {
   modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
   body: {
     messages: [{ role: 'user', content: 'who are you' }]
   }
 }
 
-const regionClaude3 = {
+const claudeOpus4 = {
+  modelId: 'anthropic.claude-opus-4-1-20250805-v1:0',
+  body: {
+    messages: [{ role: 'user', content: 'who are you' }]
+  }
+}
+
+const claudeSonnet45 = {
+  modelId: 'anthropic.claude-sonnet-4-5-20250929-v1:0',
+  body: {
+    messages: [{ role: 'user', content: 'who are you' }]
+  }
+}
+
+const regionClaudeMsgsApi = {
   modelId: 'us.anthropic.claude-3-haiku-20240307-v1:0',
   body: {
     messages: [{ role: 'user', content: 'who are you' }]
@@ -110,8 +124,8 @@ test.beforeEach((ctx) => {
 test('non-conforming command is handled gracefully', async (t) => {
   const cmd = new InvokeModelCommand(t.nr.input)
   for (const model of [
-    'Claude',
-    'Claude3',
+    'ClaudePromptApi',
+    'ClaudeMessagesApi',
     'Cohere',
     'CohereEmbed',
     'Llama',
@@ -127,17 +141,10 @@ test('non-conforming command is handled gracefully', async (t) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('claude modelId with malformed body missing `prompt` produces an empty prompt', async (t) => {
-  t.nr.updatePayload({ modelId: claude.modelId, body: {} })
-  const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude(), true)
-  assert.deepEqual(cmd.prompt, [])
-})
-
 test('claude minimal command works', async (t) => {
   t.nr.updatePayload(structuredClone(claude))
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude(), true)
+  assert.equal(cmd.isClaudePromptApi(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -148,7 +155,7 @@ test('claude minimal command works', async (t) => {
 test('region specific claude minimal command works', async (t) => {
   t.nr.updatePayload(structuredClone(regionClaude))
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude(), true)
+  assert.equal(cmd.isClaudePromptApi(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, regionClaude.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -162,7 +169,7 @@ test('claude complete command works', async (t) => {
   payload.body.temperature = 0.5
   t.nr.updatePayload(payload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude(), true)
+  assert.equal(cmd.isClaudePromptApi(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -176,7 +183,7 @@ test('region specific claude complete command works', async (t) => {
   payload.body.temperature = 0.5
   t.nr.updatePayload(payload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude(), true)
+  assert.equal(cmd.isClaudePromptApi(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -184,35 +191,35 @@ test('region specific claude complete command works', async (t) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
-test('claude3 minimal command works', async (t) => {
-  t.nr.updatePayload(structuredClone(claude3))
+test('claudeMsgsApi minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(claudeMsgsApi))
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, undefined)
-  assert.equal(cmd.modelId, claude3.modelId)
+  assert.equal(cmd.modelId, claudeMsgsApi.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.deepEqual(cmd.prompt, claude3.body.messages)
+  assert.deepEqual(cmd.prompt, claudeMsgsApi.body.messages)
   assert.equal(cmd.temperature, undefined)
 })
 
-test('region specific claude3 minimal command works', async (t) => {
-  t.nr.updatePayload(structuredClone(regionClaude3))
+test('region specific claudeMsgsApi minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(regionClaudeMsgsApi))
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, undefined)
-  assert.equal(cmd.modelId, regionClaude3.modelId)
+  assert.equal(cmd.modelId, regionClaudeMsgsApi.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.deepEqual(cmd.prompt, claude3.body.messages)
+  assert.deepEqual(cmd.prompt, claudeMsgsApi.body.messages)
   assert.equal(cmd.temperature, undefined)
 })
 
-test('claude3 complete command works', async (t) => {
-  const payload = structuredClone(claude3)
+test('claudeMsgsApi complete command works', async (t) => {
+  const payload = structuredClone(claudeMsgsApi)
   payload.body.max_tokens = 25
   payload.body.temperature = 0.5
   t.nr.updatePayload(payload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -220,28 +227,52 @@ test('claude3 complete command works', async (t) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
-test('region specific claude3 complete command works', async (t) => {
-  const payload = structuredClone(regionClaude3)
+test('region specific claudeMsgsApi complete command works', async (t) => {
+  const payload = structuredClone(regionClaudeMsgsApi)
   payload.body.max_tokens = 25
   payload.body.temperature = 0.5
   t.nr.updatePayload(payload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
   assert.deepEqual(cmd.prompt, payload.body.messages)
   assert.equal(cmd.temperature, payload.body.temperature)
+})
+
+test('claude opus 4 command is detected via modelId', async (t) => {
+  const payload = structuredClone(claudeOpus4)
+  payload.body = {}
+  t.nr.updatePayload(payload)
+  const cmd = new InvokeModelCommand(t.nr.input)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
+})
+
+test('claude sonnet 4.5 command is detected via modelId', async (t) => {
+  const payload = structuredClone(claudeSonnet45)
+  payload.body = {}
+  t.nr.updatePayload(payload)
+  const cmd = new InvokeModelCommand(t.nr.input)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
+})
+
+test('claude prompt api modelId is not mistaken for the messages api', async (t) => {
+  const payload = structuredClone(claude)
+  payload.body = {}
+  t.nr.updatePayload(payload)
+  const cmd = new InvokeModelCommand(t.nr.input)
+  assert.equal(cmd.isClaudeMessagesApi(), false)
 })
 
 test('claude35 minimal command works with claude 3 api', async (t) => {
-  t.nr.updatePayload(structuredClone(claude3))
+  t.nr.updatePayload(structuredClone(claudeMsgsApi))
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, undefined)
-  assert.equal(cmd.modelId, claude3.modelId)
+  assert.equal(cmd.modelId, claudeMsgsApi.modelId)
   assert.equal(cmd.modelType, 'completion')
-  assert.deepEqual(cmd.prompt, claude3.body.messages)
+  assert.deepEqual(cmd.prompt, claudeMsgsApi.body.messages)
   assert.equal(cmd.temperature, undefined)
 })
 
@@ -250,7 +281,7 @@ test('claude35 malformed payload produces reasonable values', async (t) => {
   malformedPayload.body = {}
   t.nr.updatePayload(malformedPayload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude35.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -263,7 +294,7 @@ test('region specific claude35 malformed payload produces reasonable values', as
   malformedPayload.body = {}
   t.nr.updatePayload(malformedPayload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, regionClaude35.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -276,7 +307,7 @@ test('claude35 skips a message that is null in `body.messages`', async (t) => {
   malformedPayload.body.messages = [{ role: 'user', content: 'who are you' }, null]
   t.nr.updatePayload(malformedPayload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.deepEqual(cmd.prompt, [{ role: 'user', content: 'who are you' }])
 })
 
@@ -285,7 +316,7 @@ test('region specific claude35 skips a message that is null in `body.messages`',
   malformedPayload.body.messages = [{ role: 'user', content: 'who are you' }, null]
   t.nr.updatePayload(malformedPayload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.deepEqual(cmd.prompt, [{ role: 'user', content: 'who are you' }])
 })
 
@@ -294,7 +325,7 @@ test('claude35 handles defaulting prompt to empty array when `body.messages` is 
   malformedPayload.body.messages = null
   t.nr.updatePayload(malformedPayload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.deepEqual(cmd.prompt, [])
 })
 
@@ -303,14 +334,14 @@ test('region specific claude35 handles defaulting prompt to empty array when `bo
   malformedPayload.body.messages = null
   t.nr.updatePayload(malformedPayload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.deepEqual(cmd.prompt, [])
 })
 
 test('claude35 minimal command works', async (t) => {
   t.nr.updatePayload(structuredClone(claude35))
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude35.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -321,7 +352,7 @@ test('claude35 minimal command works', async (t) => {
 test('region specific claude35 minimal command works', async (t) => {
   t.nr.updatePayload(structuredClone(regionClaude35))
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, regionClaude35.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -335,7 +366,7 @@ test('claude35 complete command works', async (t) => {
   payload.body.temperature = 0.5
   t.nr.updatePayload(payload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')
@@ -349,7 +380,7 @@ test('region specific claude35 complete command works', async (t) => {
   payload.body.temperature = 0.5
   t.nr.updatePayload(payload)
   const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaude3(), true)
+  assert.equal(cmd.isClaudeMessagesApi(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
   assert.equal(cmd.modelType, 'completion')

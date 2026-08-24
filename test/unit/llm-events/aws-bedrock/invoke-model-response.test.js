@@ -10,12 +10,12 @@ const assert = require('node:assert')
 const structuredClone = require('./clone')
 const InvokeModelResponse = require('../../../../lib/llm-events/aws-bedrock/invoke-model-response')
 
-const claude = {
-  completion: 'claude-response',
+const claudePromptApi = {
+  completion: 'claudePromptApi-response',
   stop_reason: 'done'
 }
 
-const claude35 = {
+const claudeMsgsApi = {
   content: [
     { type: 'text', text: 'Hello' },
     { type: 'text', text: 'world' }
@@ -65,10 +65,10 @@ test.beforeEach((ctx) => {
   }
 
   ctx.nr.bedrockCommand = {
-    isClaude() {
+    isClaudePromptApi() {
       return false
     },
-    isClaude3() {
+    isClaudeMessagesApi() {
       return false
     },
     isCohere() {
@@ -98,8 +98,8 @@ test('non-conforming response is handled gracefully', async (t) => {
   assert.equal(res.statusCode, 200)
 })
 
-test('claude malformed responses work', async (t) => {
-  t.nr.bedrockCommand.isClaude = () => true
+test('claudePromptApi malformed responses work', async (t) => {
+  t.nr.bedrockCommand.isClaudePromptApi = () => true
   const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, [])
   assert.equal(res.finishReason, undefined)
@@ -109,11 +109,11 @@ test('claude malformed responses work', async (t) => {
   assert.equal(res.statusCode, 200)
 })
 
-test('claude complete responses work', async (t) => {
-  t.nr.bedrockCommand.isClaude = () => true
-  t.nr.updatePayload(structuredClone(claude))
+test('claudePromptApi complete responses work', async (t) => {
+  t.nr.bedrockCommand.isClaudePromptApi = () => true
+  t.nr.updatePayload(structuredClone(claudePromptApi))
   const res = new InvokeModelResponse(t.nr)
-  assert.deepStrictEqual(res.completions, ['claude-response'])
+  assert.deepStrictEqual(res.completions, ['claudePromptApi-response'])
   assert.equal(res.finishReason, 'done')
   assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
   assert.equal(res.id, undefined)
@@ -121,9 +121,9 @@ test('claude complete responses work', async (t) => {
   assert.equal(res.statusCode, 200)
 })
 
-test('claude 3.5 complete responses work', async (t) => {
-  t.nr.bedrockCommand.isClaude3 = () => true
-  t.nr.updatePayload(structuredClone(claude35))
+test('claudeMsgsApi complete responses work', async (t) => {
+  t.nr.bedrockCommand.isClaudeMessagesApi = () => true
+  t.nr.updatePayload(structuredClone(claudeMsgsApi))
   const res = new InvokeModelResponse(t.nr)
   assert.deepStrictEqual(res.completions, ['Hello\n\nworld'])
   assert.equal(res.finishReason, 'done')

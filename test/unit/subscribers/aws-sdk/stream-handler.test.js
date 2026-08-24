@@ -40,10 +40,10 @@ test.beforeEach((ctx) => {
       isCohereEmbed() {
         return false
       },
-      isClaude() {
+      isClaudePromptApi() {
         return false
       },
-      isClaude3() {
+      isClaudeMessagesApi() {
         return false
       },
       isLlama() {
@@ -85,14 +85,14 @@ test('unrecognized or unhandled model uses original stream', async (t) => {
 })
 
 test('handles claude streams', async (t) => {
-  t.nr.passThroughParams.bedrockCommand.isClaude = () => true
+  t.nr.passThroughParams.bedrockCommand.isClaudePromptApi = () => true
   t.nr.chunks = [
     { completion: '1', stop_reason: null },
     { completion: '2', stop_reason: 'done', ...t.nr.metrics }
   ]
   const handler = new StreamHandler(t.nr)
 
-  assert.equal(handler.generator.name, 'handleClaude')
+  assert.equal(handler.generator.name, 'handleClaudePromptApi')
   for await (const event of handler.generator()) {
     assert.equal(event.chunk.bytes.constructor, Uint8Array)
   }
@@ -125,14 +125,14 @@ test('handles claude streams', async (t) => {
 })
 
 test('handles region specific claude streams', async (t) => {
-  t.nr.passThroughParams.bedrockCommand.isClaude = () => true
+  t.nr.passThroughParams.bedrockCommand.isClaudePromptApi = () => true
   t.nr.chunks = [
     { completion: '1', stop_reason: null },
     { completion: '2', stop_reason: 'done', ...t.nr.metrics }
   ]
   const handler = new StreamHandler(t.nr)
 
-  assert.equal(handler.generator.name, 'handleClaude')
+  assert.equal(handler.generator.name, 'handleClaudePromptApi')
   for await (const event of handler.generator()) {
     assert.equal(event.chunk.bytes.constructor, Uint8Array)
   }
@@ -165,7 +165,7 @@ test('handles region specific claude streams', async (t) => {
 })
 
 test('handles claude3streams', async (t) => {
-  t.nr.passThroughParams.bedrockCommand.isClaude3 = () => true
+  t.nr.passThroughParams.bedrockCommand.isClaudeMessagesApi = () => true
   t.nr.chunks = [
     { type: 'content_block_delta', delta: { type: 'text_delta', text: '42' } },
     { type: 'message_delta', delta: { stop_reason: 'done' } },
@@ -173,7 +173,7 @@ test('handles claude3streams', async (t) => {
   ]
   const handler = new StreamHandler(t.nr)
 
-  assert.equal(handler.generator.name, 'handleClaude3')
+  assert.equal(handler.generator.name, 'handleClaudeMessagesApi')
   for await (const event of handler.generator()) {
     assert.equal(event.chunk.bytes.constructor, Uint8Array)
   }
@@ -199,7 +199,7 @@ test('handles claude3streams', async (t) => {
 })
 
 test('handles region specific claude3streams', async (t) => {
-  t.nr.passThroughParams.bedrockCommand.isClaude3 = () => true
+  t.nr.passThroughParams.bedrockCommand.isClaudeMessagesApi = () => true
   t.nr.chunks = [
     { type: 'content_block_delta', delta: { type: 'text_delta', text: '42' } },
     { type: 'message_delta', delta: { stop_reason: 'done' } },
@@ -207,7 +207,7 @@ test('handles region specific claude3streams', async (t) => {
   ]
   const handler = new StreamHandler(t.nr)
 
-  assert.equal(handler.generator.name, 'handleClaude3')
+  assert.equal(handler.generator.name, 'handleClaudeMessagesApi')
   for await (const event of handler.generator()) {
     assert.equal(event.chunk.bytes.constructor, Uint8Array)
   }
