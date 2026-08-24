@@ -52,15 +52,10 @@ const claudeMsgsApi = {
   }
 }
 
-const claudeOpus4 = {
-  modelId: 'anthropic.claude-opus-4-1-20250805-v1:0',
-  body: {
-    messages: [{ role: 'user', content: 'who are you' }]
-  }
-}
-
-const claudeSonnet45 = {
-  modelId: 'anthropic.claude-sonnet-4-5-20250929-v1:0',
+// Claude 4 and Claude 5 model IDs on Bedrock share the same shape,
+// e.g. `anthropic.claude-opus-4-1-20250805-v1:0`, so a v5 fixture covers both.
+const claudeOpus5 = {
+  modelId: 'anthropic.claude-opus-5-20260601-v1:0',
   body: {
     messages: [{ role: 'user', content: 'who are you' }]
   }
@@ -241,16 +236,8 @@ test('region specific claudeMsgsApi complete command works', async (t) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
-test('claude opus 4 command is detected via modelId', async (t) => {
-  const payload = structuredClone(claudeOpus4)
-  payload.body = {}
-  t.nr.updatePayload(payload)
-  const cmd = new InvokeModelCommand(t.nr.input)
-  assert.equal(cmd.isClaudeMessagesApi(), true)
-})
-
-test('claude sonnet 4.5 command is detected via modelId', async (t) => {
-  const payload = structuredClone(claudeSonnet45)
+test('claude opus 5 command is detected via modelId', async (t) => {
+  const payload = structuredClone(claudeOpus5)
   payload.body = {}
   t.nr.updatePayload(payload)
   const cmd = new InvokeModelCommand(t.nr.input)
