@@ -735,7 +735,10 @@ test('Transaction methods', async (t) => {
   })
 })
 
-test('_acceptDistributedTracePayload', async (t) => {
+// Detailed parsing/apply behavior is covered in
+// test/unit/transaction/distributed-trace/payload.test.js. These tests only
+// verify that Transaction delegates to DistributedTracePayload correctly.
+test('_acceptDistributedTracePayload delegation', async (t) => {
   t.beforeEach(function (ctx) {
     ctx.nr = {}
     const agent = helper.loadMockedAgent({
@@ -757,290 +760,36 @@ test('_acceptDistributedTracePayload', async (t) => {
     ctx.nr.agent = null
   })
 
-  await t.test('records supportability metric if no payload was passed', (t) => {
+  await t.test('applies a valid payload to the transaction', (t) => {
+    const { txn } = t.nr
+    const data = {
+      ac: '1',
+      ty: 'App',
+      tx: txn.id,
+      tr: txn.id,
+      ap: 'test',
+      ti: Date.now() - 1
+    }
+
+    txn._acceptDistributedTracePayload(JSON.stringify({ v: [0, 1], d: data }))
+
+    assert.ok(txn.isDistributedTrace)
+    assert.equal(txn.parentId, data.tx)
+    assert.equal(txn.traceId, data.tr)
+    assert.equal(
+      txn.agent.recordSupportability.args[0][0],
+      'DistributedTrace/AcceptPayload/Success'
+    )
+  })
+
+  await t.test('ignores a null payload', (t) => {
     const { txn } = t.nr
     txn._acceptDistributedTracePayload(null)
+    assert.ok(!txn.isDistributedTrace)
     assert.equal(
       txn.agent.recordSupportability.args[0][0],
       'DistributedTrace/AcceptPayload/Ignored/Null'
     )
-  })
-
-  await t.test(
-    'when already marked as distributed trace, records `Multiple` supportability metric if parentId exists',
-    (t) => {
-      const { txn } = t.nr
-      txn.isDistributedTrace = true
-      txn.parentId = 'exists'
-
-      txn._acceptDistributedTracePayload({})
-      assert.equal(
-        txn.agent.recordSupportability.args[0][0],
-        'DistributedTrace/AcceptPayload/Ignored/Multiple'
-      )
-    }
-  )
-
-  await t.test(
-    'when already marked as distributed trace, records `CreateBeforeAccept` metric if parentId does not exist',
-    (t) => {
-      const { txn } = t.nr
-      txn.isDistributedTrace = true
-
-      txn._acceptDistributedTracePayload({})
-      assert.equal(
-        txn.agent.recordSupportability.args[0][0],
-        'DistributedTrace/AcceptPayload/Ignored/CreateBeforeAccept'
-      )
-    }
-  )
-
-  await t.test('should not accept payload if no configured trusted key', (t) => {
-    const { txn } = t.nr
-    txn.agent.config.trusted_account_key = null
-    txn.agent.config.account_id = null
-
-    const data = {
-      ac: '1',
-      ty: 'App',
-      tx: txn.id,
-      tr: txn.id,
-      ap: 'test',
-      ti: Date.now() - 1
-    }
-
-    txn._acceptDistributedTracePayload({ v: [0, 1], d: data })
-
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/Exception'
-    )
-    assert.ok(!txn.isDistributedTrace)
-  })
-
-  await t.test('should not accept payload if DT disabled', (t) => {
-    const { txn } = t.nr
-    txn.agent.config.distributed_tracing.enabled = false
-
-    const data = {
-      ac: '1',
-      ty: 'App',
-      tx: txn.id,
-      tr: txn.id,
-      ap: 'test',
-      ti: Date.now() - 1
-    }
-
-    txn._acceptDistributedTracePayload({ v: [0, 1], d: data })
-
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/Exception'
-    )
-    assert.ok(!txn.isDistributedTrace)
-  })
-
-  await t.test('should accept payload if config valid and CAT disabled', (t) => {
-    const { txn } = t.nr
-
-    const data = {
-      ac: '1',
-      ty: 'App',
-      tx: txn.id,
-      tr: txn.id,
-      ap: 'test',
-      ti: Date.now() - 1
-    }
-
-    txn._acceptDistributedTracePayload({ v: [0, 1], d: data })
-
-    assert.ok(txn.isDistributedTrace)
-  })
-
-  await t.test('fails if payload version is above agent-supported version', (t) => {
-    const { txn } = t.nr
-    txn._acceptDistributedTracePayload({ v: [1, 0] })
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/ParseException'
-    )
-    assert.ok(!txn.isDistributedTrace)
-  })
-
-  await t.test('fails if payload account id is not in trusted ids', (t) => {
-    const { txn } = t.nr
-    const data = {
-      ac: 2,
-      ty: 'App',
-      id: txn.id,
-      tr: txn.id,
-      ap: 'test',
-      ti: Date.now()
-    }
-
-    txn._acceptDistributedTracePayload({
-      v: [0, 1],
-      d: data
-    })
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/Ignored/UntrustedAccount'
-    )
-    assert.ok(!txn.isDistributedTrace)
-  })
-
-  await t.test('fails if payload data is missing required keys', (t) => {
-    const { txn } = t.nr
-    txn._acceptDistributedTracePayload({
-      v: [0, 1],
-      d: {
-        ac: 1
-      }
-    })
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/ParseException'
-    )
-    assert.ok(!txn.isDistributedTrace)
-  })
-
-  await t.test('takes the priority and sampled state from the incoming payload', (t) => {
-    const { txn } = t.nr
-    const data = {
-      ac: '1',
-      ty: 'App',
-      id: txn.id,
-      tr: txn.id,
-      ap: 'test',
-      pr: 1.9999999,
-      sa: true,
-      ti: Date.now()
-    }
-
-    txn._acceptDistributedTracePayload({ v: [0, 1], d: data })
-    assert.ok(txn.sampled)
-    assert.equal(txn.priority, data.pr)
-    // Should not truncate accepted priority
-    assert.equal(txn.priority.toString().length, 9)
-  })
-
-  await t.test('does not take the distributed tracing data if priority is missing', (t) => {
-    const { txn } = t.nr
-    const data = {
-      ac: 1,
-      ty: 'App',
-      id: txn.id,
-      tr: txn.id,
-      ap: 'test',
-      sa: true,
-      ti: Date.now()
-    }
-
-    txn._acceptDistributedTracePayload({ v: [0, 1], d: data })
-    assert.equal(txn.priority, null)
-    assert.equal(txn.sampled, null)
-  })
-
-  await t.test('stores payload props on transaction', (t) => {
-    const { txn } = t.nr
-    const data = {
-      ac: '1',
-      ty: 'App',
-      tx: txn.id,
-      tr: txn.id,
-      ap: 'test',
-      ti: Date.now() - 1
-    }
-
-    txn._acceptDistributedTracePayload({ v: [0, 1], d: data })
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/Success'
-    )
-    assert.equal(txn.parentId, data.tx)
-    assert.equal(txn.parentType, data.ty)
-    assert.equal(txn.traceId, data.tr)
-    assert.ok(txn.isDistributedTrace)
-    assert.ok(txn.parentTransportDuration > 0)
-  })
-
-  await t.test('should 0 transport duration when receiving payloads from the future', (t) => {
-    const { txn } = t.nr
-    const data = {
-      ac: '1',
-      ty: 'App',
-      tx: txn.id,
-      id: txn.trace.root.id,
-      tr: txn.id,
-      ap: 'test',
-      ti: Date.now() + 1000
-    }
-
-    txn._acceptDistributedTracePayload({ v: [0, 1], d: data })
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/Success'
-    )
-    assert.equal(txn.parentId, data.tx)
-    assert.equal(txn.parentSpanId, txn.trace.root.id)
-    assert.equal(txn.parentType, data.ty)
-    assert.equal(txn.traceId, data.tr)
-    assert.ok(txn.isDistributedTrace)
-    assert.equal(txn.parentTransportDuration, 0)
-  })
-})
-
-test('_getParsedPayload', async (t) => {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-    const agent = helper.loadMockedAgent({
-      distributed_tracing: { enabled: true }
-    })
-
-    agent.recordSupportability = sinon.spy()
-    ctx.nr.agent = agent
-    ctx.nr.txn = new Transaction(agent)
-    ctx.nr.payload = JSON.stringify({
-      test: 'payload'
-    })
-  })
-
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
-    ctx.nr.agent = null
-  })
-
-  await t.test('returns parsed JSON object', (t) => {
-    const { txn, payload } = t.nr
-    const res = txn._getParsedPayload(payload)
-    assert.deepEqual(res, { test: 'payload' })
-  })
-
-  await t.test('returns parsed object from base64 string', (t) => {
-    const { txn, payload } = t.nr
-    txn.agent.config.encoding_key = 'test'
-
-    const res = txn._getParsedPayload(payload.toString('base64'))
-    assert.deepEqual(res, { test: 'payload' })
-  })
-
-  await t.test('returns null if string is invalid JSON', (t) => {
-    const { txn } = t.nr
-    const res = txn._getParsedPayload('{invalid JSON string}')
-    assert.equal(res, null)
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/ParseException'
-    )
-  })
-
-  await t.test('returns null if decoding fails', (t) => {
-    const { txn, payload } = t.nr
-    txn.agent.config.encoding_key = 'test'
-    const newPayload = hashes.obfuscateNameUsingKey(payload, 'some other key')
-
-    const res = txn._getParsedPayload(newPayload)
-    assert.equal(res, null)
   })
 })
 

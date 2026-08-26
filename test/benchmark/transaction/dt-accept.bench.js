@@ -10,8 +10,9 @@ const benchmark = require('#testlib/benchmark.js')
 const Transaction = require('#agentlib/transaction/index.js')
 
 // Configure the mocked agent so the DT accept path actually executes instead of
-// bailing early in `_dtConfigTest` (requires distributed_tracing.enabled and a
-// trusted account key) or `_dtSpanParentTest`/trusted-account checks.
+// bailing early in DistributedTracePayload#parseAndApply (requires
+// distributed_tracing.enabled and a trusted account key that matches the
+// payload's account).
 const agent = helper.loadMockedAgent()
 agent.config.distributed_tracing.enabled = true
 agent.config.account_id = '1'
@@ -39,21 +40,23 @@ function makePayload() {
   }
 }
 
-// The accept path is single-shot per transaction: `_isDtTest` short-circuits
-// once `isDistributedTrace` is set, and it mutates parent* fields. So every
-// measured run needs a fresh transaction. Build it in `before` (excluded from
-// the measured work) and hand it to `fn` as the context object.
+// The accept path is single-shot per transaction: DistributedTracePayload
+// short-circuits once `isDistributedTrace` is set, and it mutates parent*
+// fields. So every measured run needs a fresh transaction. Build it in `before`
+// (excluded from the measured work) and hand it to `fn` as the context object.
+//
+// `_acceptDistributedTracePayload` delegates to DistributedTracePayload, whose
+// `parseAndApply` accepts a raw newrelic header string (plain JSON or base64),
+// not an already-parsed object.
 
 suite.add({
-  name: '_acceptDistributedTracePayload (object payload)',
+  name: '_acceptDistributedTracePayload (json string payload)',
   before: function makeTxn() {
-    return { txn: new Transaction(agent), payload: makePayload() }
+    // Plain JSON string: parseAndApply skips base64 decode and goes straight
+    // to JSON.parse + the parse/validate/apply chain.
+    return { txn: new Transaction(agent), payload: JSON.stringify(makePayload()) }
   },
   fn: function (_agent, { txn, payload }) {
-    // Exercises the full `.bind(this)`-per-call helper chain:
-    // _dtPayloadTest -> _isDtTest -> _dtConfigTest -> _dtParseTest ->
-    // _dtVersionTest -> _dtRequiredKeyTest -> _dtSpanParentTest ->
-    // _dtDefineAttrsFromTraceData
     return txn._acceptDistributedTracePayload(payload, 'HTTP')
   }
 })
@@ -61,8 +64,8 @@ suite.add({
 suite.add({
   name: '_acceptDistributedTracePayload (base64 string payload)',
   before: function makeTxn() {
-    // A stringified, base64-encoded payload additionally exercises
-    // `_getParsedPayload` (Buffer.from + JSON.parse) on the hot path.
+    // A base64-encoded payload additionally exercises the Buffer.from decode
+    // step in parseAndApply before JSON.parse.
     const encoded = Buffer.from(JSON.stringify(makePayload())).toString('base64')
     return { txn: new Transaction(agent), payload: encoded }
   },
@@ -80,17 +83,6 @@ suite.add({
   fn: function (_agent, { txn, headers }) {
     // Public entry point: header dispatch + the accept chain above.
     return txn.acceptDistributedTraceHeaders('HTTP', headers)
-  }
-})
-
-suite.add({
-  name: '_getParsedPayload (base64 decode + JSON.parse)',
-  before: function makeTxn() {
-    const encoded = Buffer.from(JSON.stringify(makePayload())).toString('base64')
-    return { txn: new Transaction(agent), payload: encoded }
-  },
-  fn: function (_agent, { txn, payload }) {
-    return txn._getParsedPayload(payload)
   }
 })
 
