@@ -7,6 +7,7 @@
 
 const SpanLink = require('#agentlib/spans/span-link.js')
 const SpanEvent = require('#agentlib/spans/span-event.js')
+const PartialTrace = require('#agentlib/transaction/trace/partial-trace.js')
 const sinon = require('sinon')
 const assert = require('node:assert')
 
@@ -16,7 +17,7 @@ function setupPartialTransaction(tx, partialType) {
   tx.priority = 42
   tx.sampled = true
   tx.partialType = partialType
-  tx.createPartialTrace()
+  tx.partialTrace = new PartialTrace(tx)
 }
 
 function createSpanLink({ segment, spanId, traceId, linkSpanId, linkTraceId, testAttr }) {
