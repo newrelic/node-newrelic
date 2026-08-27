@@ -10,6 +10,8 @@ const helper = require('../../lib/agent_helper')
 const { assertMetrics } = require('../../lib/custom-assertions')
 const recordWeb = require('../../../lib/metrics/recorders/http')
 const Transaction = require('../../../lib/transaction')
+const createDistributedTracePayload = require('#testlib/create-dt-payload.js')
+const Transport = require('#agentlib/transaction/distributed-trace/transport.js')
 
 function makeSegment(options) {
   const segment = options.transaction.trace.add('placeholder')
@@ -81,9 +83,7 @@ test('recordWeb when recording web transactions with distributed tracing enabled
     agent.config.primary_application_id = '5677'
     agent.config.trusted_account_key = '1234'
 
-    const payload = trans._createDistributedTracePayload().text()
-    trans.isDistributedTrace = null
-    trans._acceptDistributedTracePayload(payload, 'HTTP')
+    createDistributedTracePayload(trans.agent, trans, Transport.HTTP)
 
     record({
       transaction: trans,

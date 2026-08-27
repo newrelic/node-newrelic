@@ -14,7 +14,8 @@ const Metrics = require('#agentlib/metrics/index.js')
 const Trace = require('#agentlib/transaction/trace/index.js')
 const Transaction = require('#agentlib/transaction/index.js')
 const Segment = require('#agentlib/transaction/trace/segment.js')
-const { Payload } = require('#agentlib/transaction/distributed-trace/payload.js')
+const createDistributedTracePayload = require('#testlib/create-dt-payload.js')
+const Transport = require('#agentlib/transaction/distributed-trace/transport.js')
 const hashes = require('#agentlib/util/hashes.js')
 const sinon = require('sinon')
 const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
@@ -736,71 +737,18 @@ test('Transaction methods', async (t) => {
   })
 })
 
-// Detailed parsing/apply behavior is covered in
-// test/unit/transaction/distributed-trace/payload.test.js. These tests only
-// verify that Transaction delegates to DistributedTracePayload correctly.
-test('_acceptDistributedTracePayload delegation', async (t) => {
-  t.beforeEach(function (ctx) {
-    ctx.nr = {}
-    const agent = helper.loadMockedAgent({
-      distributed_tracing: { enabled: true }
-    })
-    agent.config.trusted_account_key = '1'
-    // Clear deprecated values just to be extra sure.
-    agent.config._process_id = null
-    agent.config.account_ids = null
+// The outbound payload is created internally by `#createDistributedTracePayload`
+// and exposed through `insertDistributedTraceHeaders` as the base64 `newrelic`
+// header. These tests decode that header to assert the created payload's shape.
+test('creating the outbound distributed trace payload', async (t) => {
+  // Decodes the `newrelic` header value into its parsed payload object.
+  function decodeNewrelicHeader(headers) {
+    if (!headers.newrelic) {
+      return undefined
+    }
+    return JSON.parse(Buffer.from(headers.newrelic, 'base64').toString('utf-8'))
+  }
 
-    agent.recordSupportability = sinon.spy()
-
-    ctx.nr.agent = agent
-    ctx.nr.txn = new Transaction(ctx.nr.agent)
-  })
-
-  t.afterEach(function (ctx) {
-    helper.unloadAgent(ctx.nr.agent)
-    ctx.nr.agent = null
-  })
-
-  await t.test('applies a valid payload to the transaction', (t) => {
-    const { txn } = t.nr
-    const payload = new Payload({
-      input: {
-        v: [0, 1],
-        d: {
-          ac: '1',
-          ty: 'App',
-          tx: txn.id,
-          tr: txn.id,
-          ap: 'test',
-          ti: Date.now() - 1
-        }
-      }
-    })
-    const data = payload.data
-
-    txn._acceptDistributedTracePayload(JSON.stringify(payload))
-
-    assert.ok(txn.isDistributedTrace)
-    assert.equal(txn.parentId, data.tx)
-    assert.equal(txn.traceId, data.tr)
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/Success'
-    )
-  })
-
-  await t.test('ignores a null payload', (t) => {
-    const { txn } = t.nr
-    txn._acceptDistributedTracePayload(null)
-    assert.ok(!txn.isDistributedTrace)
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/AcceptPayload/Ignored/Null'
-    )
-  })
-})
-
-test('_createDistributedTracePayload', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
     const agent = helper.loadMockedAgent({
@@ -811,6 +759,9 @@ test('_createDistributedTracePayload', async (t) => {
     agent.config.account_id = '5678'
     agent.config.primary_application_id = '1234'
     agent.config.trusted_account_key = '5678'
+    // The mocked agent defaults this to true, which suppresses the newrelic
+    // header; these tests inspect that header, so emit it.
+    agent.config.distributed_tracing.exclude_newrelic_header = false
 
     // Clear deprecated values just to be extra sure.
     agent.config.cross_process_id = null
@@ -825,22 +776,23 @@ test('_createDistributedTracePayload', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should not create payload when DT disabled', (t) => {
+  await t.test('should not create a newrelic payload when DT disabled', (t) => {
     const { txn } = t.nr
     txn.agent.config.distributed_tracing.enabled = false
 
-    const payload = txn._createDistributedTracePayload().text()
-    assert.equal(payload, '')
-    assert.equal(txn.agent.recordSupportability.callCount, 0)
+    const headers = {}
+    txn.insertDistributedTraceHeaders(headers)
+    assert.equal(headers.newrelic, undefined)
     assert.ok(!txn.isDistributedTrace)
   })
 
-  await t.test('should create payload when DT enabled and CAT disabled', (t) => {
+  await t.test('should create a newrelic payload when DT enabled and CAT disabled', (t) => {
     const { txn } = t.nr
-    const payload = txn._createDistributedTracePayload().text()
+    const headers = {}
+    txn.insertDistributedTraceHeaders(headers)
 
-    assert.notEqual(payload, null)
-    assert.notEqual(payload, '')
+    assert.notEqual(headers.newrelic, undefined)
+    assert.notEqual(headers.newrelic, '')
   })
 
   await t.test('does not change existing priority', (t) => {
@@ -848,7 +800,7 @@ test('_createDistributedTracePayload', async (t) => {
     txn.priority = 999
     txn.sampled = false
 
-    txn._createDistributedTracePayload()
+    txn.insertDistributedTraceHeaders({})
 
     assert.equal(txn.priority, 999)
     assert.ok(!txn.sampled)
@@ -856,7 +808,9 @@ test('_createDistributedTracePayload', async (t) => {
 
   await t.test('sets the transaction as sampled if the trace is chosen', (t) => {
     const { txn } = t.nr
-    const payload = JSON.parse(txn._createDistributedTracePayload().text())
+    const headers = {}
+    txn.insertDistributedTraceHeaders(headers)
+    const payload = decodeNewrelicHeader(headers)
     assert.equal(payload.d.sa, txn.sampled)
     assert.equal(payload.d.pr, txn.priority)
   })
@@ -866,7 +820,9 @@ test('_createDistributedTracePayload', async (t) => {
     agent.config.span_events.enabled = true
     tracer.setSegment({ segment: txn.trace.root, transaction: txn })
     txn.sampled = true
-    const payload = JSON.parse(txn._createDistributedTracePayload().text())
+    const headers = {}
+    txn.insertDistributedTraceHeaders(headers)
+    const payload = decodeNewrelicHeader(headers)
     assert.equal(payload.d.id, txn.trace.root.id)
     tracer.setSegment({ segment: null, transaction: null })
     agent.config.span_events.enabled = false
@@ -880,19 +836,21 @@ test('_createDistributedTracePayload', async (t) => {
     }
     txn.sampled = false
     tracer.setSegment({ segment: txn.trace.root, transaction: txn })
-    const payload = JSON.parse(txn._createDistributedTracePayload().text())
+    const headers = {}
+    txn.insertDistributedTraceHeaders(headers)
+    const payload = decodeNewrelicHeader(headers)
     assert.equal(payload.d.id, undefined)
     tracer.setSegment({ segment: null, transaction: null })
     agent.config.span_events.enabled = false
   })
 
-  await t.test('returns stringified payload object', (t) => {
+  await t.test('records the create-payload supportability metric', (t) => {
     const { txn } = t.nr
-    const payload = txn._createDistributedTracePayload().text()
-    assert.equal(typeof payload, 'string')
-    assert.equal(
-      txn.agent.recordSupportability.args[0][0],
-      'DistributedTrace/CreatePayload/Success'
+    txn.insertDistributedTraceHeaders({})
+    assert.ok(
+      txn.agent.recordSupportability.args.some(
+        (args) => args[0] === 'DistributedTrace/CreatePayload/Success'
+      )
     )
     assert.ok(txn.isDistributedTrace)
   })
@@ -1460,9 +1418,7 @@ test('addDistributedTraceIntrinsics', async (t) => {
     txn.agent.config.trusted_account_key = '5678'
     txn.agent.config.distributed_tracing.enabled = true
 
-    const payload = txn._createDistributedTracePayload().text()
-    txn.isDistributedTrace = false
-    txn._acceptDistributedTracePayload(payload, 'AMQP')
+    createDistributedTracePayload(txn.agent, txn, Transport.AMQP)
     txn.addDistributedTraceIntrinsics(attributes)
 
     const expected = {

@@ -15,11 +15,11 @@ const { Payload } = require('#agentlib/transaction/distributed-trace/payload.js'
 const logger = require('#agentlib/logger.js').child({ component: 'test-dt-payload' })
 
 /**
- * Builds a `DistributedTracePayload` wired to the transaction's agent, matching
- * how `Transaction#_acceptDistributedTracePayload` constructs it.
+ * Builds an `IncomingPayload` wired to the transaction's agent, matching how
+ * `Transaction#acceptDistributedTraceHeaders` constructs it internally.
  *
  * @param {Transaction} txn the transaction under test
- * @returns {DistributedTracePayload} the payload handler
+ * @returns {IncomingPayload} the payload handler
  */
 function makeHandler(txn) {
   return new IncomingPayload({ agent: txn.agent, logger, transaction: txn })
@@ -63,7 +63,7 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
       txn.isDistributedTrace = true
       txn.parentId = 'exists'
 
-      makeHandler(txn).parseAndApply(JSON.stringify({}))
+      makeHandler(txn).parseAndApply('{}')
       assert.equal(
         txn.agent.recordSupportability.args[0][0],
         'DistributedTrace/AcceptPayload/Ignored/Multiple'
@@ -77,7 +77,7 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
       const { txn } = t.nr
       txn.isDistributedTrace = true
 
-      makeHandler(txn).parseAndApply(JSON.stringify({}))
+      makeHandler(txn).parseAndApply('{}')
       assert.equal(
         txn.agent.recordSupportability.args[0][0],
         'DistributedTrace/AcceptPayload/Ignored/CreateBeforeAccept'

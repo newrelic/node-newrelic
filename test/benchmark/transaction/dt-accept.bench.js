@@ -8,9 +8,11 @@
 const helper = require('#testlib/agent_helper.js')
 const benchmark = require('#testlib/benchmark.js')
 const Transaction = require('#agentlib/transaction/index.js')
+const IncomingPayload = require('#agentlib/transaction/distributed-trace/incoming-payload.js')
+const Transport = require('#agentlib/transaction/distributed-trace/transport.js')
 
 // Configure the mocked agent so the DT accept path actually executes instead of
-// bailing early in DistributedTracePayload#parseAndApply (requires
+// bailing early in IncomingPayload#parseAndApply (requires
 // distributed_tracing.enabled and a trusted account key that matches the
 // payload's account).
 const agent = helper.loadMockedAgent()
@@ -46,16 +48,27 @@ function makePayload() {
   }
 }
 
-// The accept path is single-shot per transaction: DistributedTracePayload
+// The accept path is single-shot per transaction: IncomingPayload
 // short-circuits once `isDistributedTrace` is set, and it mutates parent*
 // fields. So each of the ITERATIONS accepts needs its own fresh transaction.
 // Build the whole batch in `before` (excluded from the measured work) and have
 // `fn` loop over it, so the measurement captures only the accept path — not
 // Transaction construction or payload encoding.
 //
-// `_acceptDistributedTracePayload` delegates to DistributedTracePayload, whose
-// `parseAndApply` accepts a raw newrelic header string (plain JSON or base64),
-// not an already-parsed object.
+// The accept path is driven by `new IncomingPayload({...}).parseAndApply(...)`,
+// which takes a raw newrelic header string (plain JSON or base64), not an
+// already-parsed object.
+
+/**
+ * Applies a DT payload to a transaction the way `acceptDistributedTraceHeaders`
+ * does internally.
+ *
+ * @param {Transaction} transaction The transaction to apply the payload to.
+ * @param {string} payload The raw newrelic header value.
+ */
+function acceptPayload(transaction, payload) {
+  new IncomingPayload({ agent, transaction }).parseAndApply(payload, Transport.HTTP)
+}
 
 /**
  * Builds a batch of fresh transactions for one measured run.
@@ -71,7 +84,7 @@ function makeTransactions() {
 }
 
 suite.add({
-  name: '_acceptDistributedTracePayload (json string payload)',
+  name: 'IncomingPayload#parseAndApply (json string payload)',
   before: function build() {
     // Plain JSON string: parseAndApply skips base64 decode and goes straight
     // to JSON.parse + the parse/validate/apply chain.
@@ -79,13 +92,13 @@ suite.add({
   },
   fn: function (_agent, { txns, payload }) {
     for (let i = 0; i < ITERATIONS; i++) {
-      txns[i]._acceptDistributedTracePayload(payload, 'HTTP')
+      acceptPayload(txns[i], payload)
     }
   }
 })
 
 suite.add({
-  name: '_acceptDistributedTracePayload (base64 string payload)',
+  name: 'IncomingPayload#parseAndApply (base64 string payload)',
   before: function build() {
     // A base64-encoded payload additionally exercises the Buffer.from decode
     // step in parseAndApply before JSON.parse.
@@ -94,7 +107,7 @@ suite.add({
   },
   fn: function (_agent, { txns, payload }) {
     for (let i = 0; i < ITERATIONS; i++) {
-      txns[i]._acceptDistributedTracePayload(payload, 'HTTP')
+      acceptPayload(txns[i], payload)
     }
   }
 })
@@ -108,7 +121,7 @@ suite.add({
   fn: function (_agent, { txns, headers }) {
     // Public entry point: header dispatch + the accept chain above.
     for (let i = 0; i < ITERATIONS; i++) {
-      txns[i].acceptDistributedTraceHeaders('HTTP', headers)
+      txns[i].acceptDistributedTraceHeaders(Transport.HTTP, headers)
     }
   }
 })
