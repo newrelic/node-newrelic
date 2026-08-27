@@ -212,7 +212,7 @@ test('Transaction unit tests', async (t) => {
 
   await t.test('when setting apdex for key transactions', (t) => {
     const { txn } = t.nr
-    txn._setApdex('Apdex/TestController/key', 1200, 667)
+    txn.setApdex('Apdex/TestController/key', 1200, 667)
     const metric = txn.metrics.getMetric('Apdex/TestController/key')
 
     assert.equal(metric.apdexT, 0.667, 'should set apdexT to the key transaction apdexT')
@@ -220,7 +220,7 @@ test('Transaction unit tests', async (t) => {
     assert.equal(metric.tolerating, 1, 'should have been tolerated')
     assert.equal(metric.frustrating, 0, 'should not have frustrated')
 
-    txn._setApdex('Apdex/TestController/another', 1200)
+    txn.setApdex('Apdex/TestController/another', 1200)
     const another = txn.metrics.getMetric('Apdex/TestController/another')
     assert.equal(another.apdexT, 0.1, 'should not require a key transaction apdexT')
   })
@@ -228,7 +228,7 @@ test('Transaction unit tests', async (t) => {
   await t.test('should ignore calculating apdex when ignoreApdex is true', (t) => {
     const { txn } = t.nr
     txn.ignoreApdex = true
-    txn._setApdex('Apdex/TestController/key', 1200, 667)
+    txn.setApdex('Apdex/TestController/key', 1200, 667)
     const metric = txn.metrics.getMetric('Apdex/TestController/key')
     assert.ok(!metric)
   })

@@ -312,7 +312,7 @@ test("recordWeb when recording web transactions with distributed tracing enabled
     const { trans, agent } = t.nr
     // FIXME: probably shouldn't do all this through side effects
     trans.statusCode = 404
-    trans._setApdex('Apdex/Uri/test', 30)
+    trans.setApdex('Apdex/Uri/test', 30)
     const result = [[{ name: 'Apdex/Uri/test' }, [1, 0, 0, 0.1, 0.1, 0]]]
     assert.deepEqual(agent.config.error_collector.ignore_status_codes, [404])
     assertMetrics(trans.metrics, result, true, true)
@@ -351,7 +351,7 @@ test("recordWeb when recording web transactions with distributed tracing enabled
     const { trans } = t.nr
     // FIXME: probably shouldn't do all this through side effects
     trans.statusCode = 503
-    trans._setApdex('Apdex/Uri/test', 30)
+    trans.setApdex('Apdex/Uri/test', 30)
     const result = [[{ name: 'Apdex/Uri/test' }, [0, 0, 1, 0.1, 0.1, 0]]]
     assertMetrics(trans.metrics, result, true, true)
   })
