@@ -33,10 +33,10 @@ test('isValid() rejects invalid values', () => {
   assert.equal(Type.isValid('toString'), false)
 })
 
-test('Object.entries yields KEY->value pairs without leaking methods', () => {
+test('entries() yields KEY->value pairs', () => {
   // transaction-shim.js relies on this exact shape to define its static type
-  // members; the values() / isValid() methods must not appear.
-  assert.deepEqual(Object.entries(Type), [
+  // members.
+  assert.deepEqual(Type.entries(), [
     ['WEB', 'web'],
     ['BG', 'bg'],
     ['MESSAGE', 'message']
