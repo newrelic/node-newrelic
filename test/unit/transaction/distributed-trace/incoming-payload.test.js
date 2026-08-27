@@ -11,6 +11,7 @@ const sinon = require('sinon')
 const helper = require('#testlib/agent_helper.js')
 const Transaction = require('#agentlib/transaction/index.js')
 const IncomingPayload = require('#agentlib/transaction/distributed-trace/incoming-payload.js')
+const { Payload } = require('#agentlib/transaction/distributed-trace/payload.js')
 const logger = require('#agentlib/logger.js').child({ component: 'test-dt-payload' })
 
 /**
@@ -89,9 +90,14 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
     txn.agent.config.trusted_account_key = null
     txn.agent.config.account_id = null
 
-    const data = { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+      }
+    })
 
-    makeHandler(txn).parseAndApply(JSON.stringify({ v: [0, 1], d: data }))
+    makeHandler(txn).parseAndApply(JSON.stringify(payload))
 
     assert.equal(
       txn.agent.recordSupportability.args[0][0],
@@ -104,9 +110,14 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
     const { txn } = t.nr
     txn.agent.config.distributed_tracing.enabled = false
 
-    const data = { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+      }
+    })
 
-    makeHandler(txn).parseAndApply(JSON.stringify({ v: [0, 1], d: data }))
+    makeHandler(txn).parseAndApply(JSON.stringify(payload))
 
     assert.equal(
       txn.agent.recordSupportability.args[0][0],
@@ -118,9 +129,14 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
   await t.test('should accept payload if config valid and CAT disabled', (t) => {
     const { txn } = t.nr
 
-    const data = { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+      }
+    })
 
-    makeHandler(txn).parseAndApply(JSON.stringify({ v: [0, 1], d: data }))
+    makeHandler(txn).parseAndApply(JSON.stringify(payload))
 
     assert.ok(txn.isDistributedTrace)
   })
@@ -137,9 +153,14 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
 
   await t.test('fails if payload account id is not in trusted ids', (t) => {
     const { txn } = t.nr
-    const data = { ac: 2, ty: 'App', id: txn.id, tr: txn.id, ap: 'test', ti: Date.now() }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: { ac: 2, ty: 'App', id: txn.id, tr: txn.id, ap: 'test', ti: Date.now() }
+      }
+    })
 
-    makeHandler(txn).parseAndApply(JSON.stringify({ v: [0, 1], d: data }))
+    makeHandler(txn).parseAndApply(JSON.stringify(payload))
     assert.equal(
       txn.agent.recordSupportability.args[0][0],
       'DistributedTrace/AcceptPayload/Ignored/UntrustedAccount'
@@ -159,70 +180,90 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
 
   await t.test('takes the priority and sampled state from the incoming payload', (t) => {
     const { txn } = t.nr
-    const data = {
-      ac: '1',
-      ty: 'App',
-      id: txn.id,
-      tr: txn.id,
-      ap: 'test',
-      pr: 1.9999999,
-      sa: true,
-      ti: Date.now()
-    }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: {
+          ac: '1',
+          ty: 'App',
+          id: txn.id,
+          tr: txn.id,
+          ap: 'test',
+          pr: 1.9999999,
+          sa: true,
+          ti: Date.now()
+        }
+      }
+    })
 
-    makeHandler(txn).parseAndApply(JSON.stringify({ v: [0, 1], d: data }))
+    makeHandler(txn).parseAndApply(JSON.stringify(payload))
     assert.ok(txn.sampled)
-    assert.equal(txn.priority, data.pr)
+    assert.equal(txn.priority, payload.data.pr)
     // Should not truncate accepted priority
     assert.equal(txn.priority.toString().length, 9)
   })
 
   await t.test('does not take the distributed tracing data if priority is missing', (t) => {
     const { txn } = t.nr
-    const data = { ac: 1, ty: 'App', id: txn.id, tr: txn.id, ap: 'test', sa: true, ti: Date.now() }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: { ac: 1, ty: 'App', id: txn.id, tr: txn.id, ap: 'test', sa: true, ti: Date.now() }
+      }
+    })
 
-    makeHandler(txn).parseAndApply(JSON.stringify({ v: [0, 1], d: data }))
+    makeHandler(txn).parseAndApply(JSON.stringify(payload))
     assert.equal(txn.priority, null)
     assert.equal(txn.sampled, null)
   })
 
   await t.test('stores payload props on transaction', (t) => {
     const { txn } = t.nr
-    const data = { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+      }
+    })
 
-    makeHandler(txn).parseAndApply(JSON.stringify({ v: [0, 1], d: data }))
+    makeHandler(txn).parseAndApply(JSON.stringify(payload))
     assert.equal(
       txn.agent.recordSupportability.args[0][0],
       'DistributedTrace/AcceptPayload/Success'
     )
-    assert.equal(txn.parentId, data.tx)
-    assert.equal(txn.parentType, data.ty)
-    assert.equal(txn.traceId, data.tr)
+    assert.equal(txn.parentId, payload.data.tx)
+    assert.equal(txn.parentType, payload.data.ty)
+    assert.equal(txn.traceId, payload.data.tr)
     assert.ok(txn.isDistributedTrace)
     assert.ok(txn.parentTransportDuration > 0)
   })
 
   await t.test('should 0 transport duration when receiving payloads from the future', (t) => {
     const { txn } = t.nr
-    const data = {
-      ac: '1',
-      ty: 'App',
-      tx: txn.id,
-      id: txn.trace.root.id,
-      tr: txn.id,
-      ap: 'test',
-      ti: Date.now() + 1000
-    }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: {
+          ac: '1',
+          ty: 'App',
+          tx: txn.id,
+          id: txn.trace.root.id,
+          tr: txn.id,
+          ap: 'test',
+          ti: Date.now() + 1000
+        }
 
-    makeHandler(txn).parseAndApply(JSON.stringify({ v: [0, 1], d: data }))
+      }
+    })
+    makeHandler(txn).parseAndApply(JSON.stringify(payload))
     assert.equal(
       txn.agent.recordSupportability.args[0][0],
       'DistributedTrace/AcceptPayload/Success'
     )
-    assert.equal(txn.parentId, data.tx)
+    assert.equal(txn.parentId, payload.data.tx)
     assert.equal(txn.parentSpanId, txn.trace.root.id)
-    assert.equal(txn.parentType, data.ty)
-    assert.equal(txn.traceId, data.tr)
+    assert.equal(txn.parentType, payload.data.ty)
+    assert.equal(txn.traceId, payload.data.tr)
     assert.ok(txn.isDistributedTrace)
     assert.equal(txn.parentTransportDuration, 0)
   })
@@ -230,21 +271,31 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
   // Parsing behaviors migrated from the former `_getParsedPayload` tests.
   await t.test('accepts a plain JSON string payload', (t) => {
     const { txn } = t.nr
-    const data = { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+      }
+    })
 
-    makeHandler(txn).parseAndApply(JSON.stringify({ v: [0, 1], d: data }))
+    makeHandler(txn).parseAndApply(JSON.stringify(payload))
     assert.ok(txn.isDistributedTrace)
-    assert.equal(txn.traceId, data.tr)
+    assert.equal(txn.traceId, payload.data.tr)
   })
 
   await t.test('accepts a base64-encoded JSON string payload', (t) => {
     const { txn } = t.nr
-    const data = { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
-    const encoded = Buffer.from(JSON.stringify({ v: [0, 1], d: data })).toString('base64')
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: { ac: '1', ty: 'App', tx: txn.id, tr: txn.id, ap: 'test', ti: Date.now() - 1 }
+      }
+    })
+    const encoded = Buffer.from(JSON.stringify(payload)).toString('base64')
 
     makeHandler(txn).parseAndApply(encoded)
     assert.ok(txn.isDistributedTrace)
-    assert.equal(txn.traceId, data.tr)
+    assert.equal(txn.traceId, payload.data.tr)
   })
 
   await t.test('rejects an invalid JSON string with a ParseException metric', (t) => {

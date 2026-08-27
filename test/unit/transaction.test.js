@@ -14,6 +14,7 @@ const Metrics = require('#agentlib/metrics/index.js')
 const Trace = require('#agentlib/transaction/trace/index.js')
 const Transaction = require('#agentlib/transaction/index.js')
 const Segment = require('#agentlib/transaction/trace/segment.js')
+const { Payload } = require('#agentlib/transaction/distributed-trace/payload.js')
 const hashes = require('#agentlib/util/hashes.js')
 const sinon = require('sinon')
 const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
@@ -762,16 +763,22 @@ test('_acceptDistributedTracePayload delegation', async (t) => {
 
   await t.test('applies a valid payload to the transaction', (t) => {
     const { txn } = t.nr
-    const data = {
-      ac: '1',
-      ty: 'App',
-      tx: txn.id,
-      tr: txn.id,
-      ap: 'test',
-      ti: Date.now() - 1
-    }
+    const payload = new Payload({
+      input: {
+        v: [0, 1],
+        d: {
+          ac: '1',
+          ty: 'App',
+          tx: txn.id,
+          tr: txn.id,
+          ap: 'test',
+          ti: Date.now() - 1
+        }
+      }
+    })
+    const data = payload.data
 
-    txn._acceptDistributedTracePayload(JSON.stringify({ v: [0, 1], d: data }))
+    txn._acceptDistributedTracePayload(JSON.stringify(payload))
 
     assert.ok(txn.isDistributedTrace)
     assert.equal(txn.parentId, data.tx)
