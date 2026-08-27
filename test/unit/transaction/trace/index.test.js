@@ -13,7 +13,7 @@ const helper = require('../../../lib/agent_helper')
 const codec = require('../../../../lib/util/codec')
 const codecDecodeAsync = util.promisify(codec.decode)
 const Segment = require('../../../../lib/transaction/trace/segment')
-const DTPayload = require('../../../../lib/transaction/dt-payload')
+const OutgoingPayload = require('#agentlib/transaction/distributed-trace/outgoing-payload.js')
 const Trace = require('../../../../lib/transaction/trace')
 const Transaction = require('../../../../lib/transaction')
 const { assertSpanEvent, addSegment, addTwoSegments, makeTrace, addBaseSegment, setupPartialTrace } = require('./helpers')
@@ -238,7 +238,7 @@ test('Trace', async (t) => {
       // timestamp, if in the future, duration will always be 0
       ti: Date.now() + 10000
     }
-    const dtPayload = new DTPayload(dtInfo)
+    const dtPayload = new OutgoingPayload(dtInfo)
     const headers = { [NEWRELIC_TRACE_HEADER]: dtPayload.httpSafe() }
     const transaction = new Transaction(agent)
     transaction.sampled = true

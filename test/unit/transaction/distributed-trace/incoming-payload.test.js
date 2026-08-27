@@ -10,7 +10,7 @@ const { test } = require('node:test')
 const sinon = require('sinon')
 const helper = require('#testlib/agent_helper.js')
 const Transaction = require('#agentlib/transaction/index.js')
-const DistributedTracePayload = require('#agentlib/transaction/distributed-trace/payload.js')
+const IncomingPayload = require('#agentlib/transaction/distributed-trace/incoming-payload.js')
 const logger = require('#agentlib/logger.js').child({ component: 'test-dt-payload' })
 
 /**
@@ -21,7 +21,7 @@ const logger = require('#agentlib/logger.js').child({ component: 'test-dt-payloa
  * @returns {DistributedTracePayload} the payload handler
  */
 function makeHandler(txn) {
-  return new DistributedTracePayload({ agent: txn.agent, logger, transaction: txn })
+  return new IncomingPayload({ agent: txn.agent, logger, transaction: txn })
 }
 
 test('DistributedTracePayload#parseAndApply', async (t) => {

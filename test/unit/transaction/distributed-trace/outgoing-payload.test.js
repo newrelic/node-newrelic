@@ -6,8 +6,8 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
-const DistributedTracePayload = require('../../../lib/transaction/dt-payload')
-const DistributedTracePayloadStub = DistributedTracePayload.Stub
+const OutgoingPayload = require('#agentlib/transaction/distributed-trace/outgoing-payload.js')
+const OutgoingPayloadStub = OutgoingPayload.Stub
 
 test('DistributedTracePayload', async function (t) {
   await t.test('has a text method that returns the stringified payload', function () {
@@ -15,7 +15,7 @@ test('DistributedTracePayload', async function (t) {
       a: 1,
       b: 'test'
     }
-    const dt = new DistributedTracePayload(payload)
+    const dt = new OutgoingPayload(payload)
     const output = JSON.parse(dt.text())
     assert.ok(Array.isArray(output.v))
     assert.deepStrictEqual(output.d, payload)
@@ -26,7 +26,7 @@ test('DistributedTracePayload', async function (t) {
       a: 1,
       b: 'test'
     }
-    const dt = new DistributedTracePayload(payload)
+    const dt = new OutgoingPayload(payload)
     const output = JSON.parse(Buffer.from(dt.httpSafe(), 'base64').toString('utf-8'))
     assert.ok(Array.isArray(output.v))
     assert.deepStrictEqual(output.d, payload)
@@ -39,7 +39,7 @@ test('DistributedTracePayloadStub', async function (t) {
       a: 1,
       b: 'test'
     }
-    const dt = new DistributedTracePayloadStub(payload)
+    const dt = new OutgoingPayloadStub(payload)
     assert.equal(dt.httpSafe(), '')
   })
 
@@ -48,7 +48,7 @@ test('DistributedTracePayloadStub', async function (t) {
       a: 1,
       b: 'test'
     }
-    const dt = new DistributedTracePayloadStub(payload)
+    const dt = new OutgoingPayloadStub(payload)
     assert.equal(dt.text(), '')
   })
 })
