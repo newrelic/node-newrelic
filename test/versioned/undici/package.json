@@ -12,6 +12,7 @@
         "undici": ">=5.0.0"
       },
       "files": [
+        "issue-4250.js",
         "requests.test.js"
       ]
     }
