@@ -813,6 +813,76 @@ test('http2 error handling', async (t) => {
   })
 })
 
+test('http2 caller-managed connection (e.g. undici)', async (t) => {
+  const net = require('node:net')
+  const undiciConnection = Symbol.for('newrelic.undici.connection')
+
+  t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
+
+  /**
+   * Supplies the connection socket via `createConnection` (as undici does),
+   * optionally stamping it with the undici symbol before http2 assigns it to
+   * `session.socket`, drives a request, and returns the external child segments.
+   *
+   * @param {object} t node:test context
+   * @param {Function} finish invoked with the collected results
+   * @param {object} opts options
+   * @param {boolean} opts.stamp whether to stamp the socket with the undici symbol
+   */
+  const runRequest = (t, finish, { stamp }) => {
+    const { agent, http2, host, port } = t.nr
+    helper.runInTransaction(agent, function () {
+      const transaction = agent.getTransaction()
+      const session = http2.connect(`http://${host}:${port}`, {
+        createConnection() {
+          const socket = net.connect(port, host)
+          if (stamp === true) {
+            socket[undiciConnection] = true
+          }
+          return socket
+        }
+      })
+
+      const req = session.request({ ':path': '/', ':method': 'GET' })
+      req.setEncoding('utf8')
+      req.on('response', () => {
+        req.on('data', () => {})
+        req.on('end', () => {
+          session.close()
+          transaction.end()
+          const externals = transaction.trace
+            .getChildren(transaction.trace.root.id)
+            .flatMap(function collect(seg) {
+              const kids = transaction.trace.getChildren(seg.id).flatMap(collect)
+              return seg.name.startsWith(NAMES.EXTERNAL.PREFIX) ? [seg, ...kids] : kids
+            })
+          finish({ agent, externals, host, port })
+        })
+      })
+      req.end()
+    })
+  }
+
+  await t.test('should NOT create an http2 external when the socket is undici-owned', (t, end) => {
+    runRequest(t, ({ agent, externals, host, port }) => {
+      assert.equal(externals.length, 0, 'should not create any http2 external segment')
+      const metric = agent.metrics.getMetric(`External/${host}:${port}/http2`)
+      assert.equal(metric, undefined, 'should not record an http2 external metric')
+      end()
+    }, { stamp: true })
+  })
+
+  await t.test('should create an http2 external when the socket is not undici-owned', (t, end) => {
+    runRequest(t, ({ agent, externals, host, port }) => {
+      assert.equal(externals.length, 1, 'should create exactly one http2 external segment')
+      const metric = agent.metrics.getOrCreateMetric(`External/${host}:${port}/http2`)
+      assert.equal(metric.callCount, 1, 'should record the http2 external metric')
+      end()
+    }, { stamp: false })
+  })
+})
+
 // Unlike http, http2 requests take place after an explicit connect is invoked
 async function makeRequest(http2, params, cb) {
   const { protocol, host, port, path, method, headers: requestHeaders, body = '', testing = {} } = params
