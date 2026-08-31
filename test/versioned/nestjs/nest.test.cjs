@@ -9,7 +9,7 @@ const assert = require('node:assert')
 const assertPackageMetrics = require('../../lib/custom-assertions/assert-pkg-tracking-metrics.js')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
-const { initNestApp, deleteNestApp } = require('./setup')
+const { initNestApp, deleteNestApp } = require('./setup.cjs')
 
 const makeRequest = helper.asyncHttpCall
 
