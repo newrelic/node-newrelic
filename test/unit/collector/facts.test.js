@@ -851,6 +851,8 @@ test('host facts', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
     delete process.env.K_SERVICE
     delete process.env.K_REVISION
+    delete process.env.CLOUD_RUN_REVISION
+    delete process.env.CLOUD_RUN_EXECUTION
 
     // Restore system-info cache
     if (ctx.systemInfoPath) {
@@ -1010,6 +1012,101 @@ test('host facts', async (t) => {
       end()
     })
   })
+
+  await t.test(
+    'should be CLOUD_RUN_REVISION-GCPid when gcp_cloud_run.include_revision_in_host is true and K_REVISION is not set',
+    (t, end) => {
+      const { agent, facts } = t.nr
+
+      agent.config.utilization = {
+        gcp_use_instance_as_host: true,
+        gcp_cloud_run: { include_revision_in_host: true }
+      }
+      process.env.K_SERVICE = 'mock-service'
+      process.env.CLOUD_RUN_REVISION = 'mock-cloud-run-revision'
+
+      facts(agent, (result) => {
+        assert.equal(
+          result.host,
+          'mock-cloud-run-revision-mock-gcp-instance-id',
+          'Hostname should include the Cloud Run revision and instance ID'
+        )
+        end()
+      })
+    }
+  )
+
+  await t.test(
+    'should be CLOUD_RUN_EXECUTION-GCPid when gcp_cloud_run.include_revision_in_host is true and neither K_REVISION nor CLOUD_RUN_REVISION is set',
+    (t, end) => {
+      const { agent, facts } = t.nr
+
+      agent.config.utilization = {
+        gcp_use_instance_as_host: true,
+        gcp_cloud_run: { include_revision_in_host: true }
+      }
+      process.env.K_SERVICE = 'mock-service'
+      process.env.CLOUD_RUN_EXECUTION = 'mock-cloud-run-execution'
+
+      facts(agent, (result) => {
+        assert.equal(
+          result.host,
+          'mock-cloud-run-execution-mock-gcp-instance-id',
+          'Hostname should include the Cloud Run execution ID and instance ID'
+        )
+        end()
+      })
+    }
+  )
+
+  await t.test(
+    'should prefer K_REVISION over CLOUD_RUN_REVISION and CLOUD_RUN_EXECUTION when all are set',
+    (t, end) => {
+      const { agent, facts } = t.nr
+
+      agent.config.utilization = {
+        gcp_use_instance_as_host: true,
+        gcp_cloud_run: { include_revision_in_host: true }
+      }
+      process.env.K_SERVICE = 'mock-service'
+      process.env.K_REVISION = 'mock-revision'
+      process.env.CLOUD_RUN_REVISION = 'mock-cloud-run-revision'
+      process.env.CLOUD_RUN_EXECUTION = 'mock-cloud-run-execution'
+
+      facts(agent, (result) => {
+        assert.equal(
+          result.host,
+          'mock-revision-mock-gcp-instance-id',
+          'Hostname should prefer K_REVISION over the other identifying env vars'
+        )
+        end()
+      })
+    }
+  )
+
+  await t.test(
+    'should prefer CLOUD_RUN_REVISION over CLOUD_RUN_EXECUTION when K_REVISION is not set',
+    (t, end) => {
+      const { agent, facts } = t.nr
+
+      agent.config.utilization = {
+        gcp_use_instance_as_host: true,
+        gcp_cloud_run: { include_revision_in_host: true }
+      }
+      process.env.K_SERVICE = 'mock-service'
+      process.env.CLOUD_RUN_REVISION = 'mock-cloud-run-revision'
+      process.env.CLOUD_RUN_EXECUTION = 'mock-cloud-run-execution'
+
+      facts(agent, (result) => {
+        assert.equal(
+          result.host,
+          'mock-cloud-run-revision-mock-gcp-instance-id',
+          'Hostname should prefer CLOUD_RUN_REVISION over CLOUD_RUN_EXECUTION'
+        )
+        end()
+      })
+    }
+  )
 })
 
 function mockIpAddresses(values) {
