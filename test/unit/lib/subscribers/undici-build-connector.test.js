@@ -9,9 +9,9 @@ const assert = require('node:assert')
 const test = require('node:test')
 const sinon = require('sinon')
 const helper = require('#testlib/agent_helper.js')
+const { undiciConnection } = require('#agentlib/symbols.js')
 
 const BuildConnectorSubscriber = require('#agentlib/subscribers/undici/build-connector.js')
-const undiciConnection = Symbol.for('newrelic.undici.connection')
 
 test('undici build-connector instrumentation', async function (t) {
   t.beforeEach(function (ctx) {
@@ -33,7 +33,7 @@ test('undici build-connector instrumentation', async function (t) {
     const connector = () => socket
     const data = { result: connector }
 
-    const ctx = subscriber.end(data, 'ctx')
+    subscriber.end(data)
 
     // the connector is replaced with a wrapper
     assert.notEqual(data.result, connector)
@@ -43,9 +43,6 @@ test('undici build-connector instrumentation', async function (t) {
     const returned = data.result()
     assert.equal(returned, socket)
     assert.equal(socket[undiciConnection], true)
-
-    // context is passed through unchanged
-    assert.equal(ctx, 'ctx')
   })
 
   await t.test('should forward connector arguments and `this`', function (t) {
@@ -55,7 +52,7 @@ test('undici build-connector instrumentation', async function (t) {
     const connector = sinon.stub().returns(socket)
     const data = { result: connector }
 
-    subscriber.end(data, 'ctx')
+    subscriber.end(data)
     data.result.call(thisArg, 'a', 'b')
 
     assert.equal(connector.thisValues[0], thisArg)
@@ -67,7 +64,7 @@ test('undici build-connector instrumentation', async function (t) {
     const connector = () => undefined
     const data = { result: connector }
 
-    subscriber.end(data, 'ctx')
+    subscriber.end(data)
     assert.doesNotThrow(() => data.result())
   })
 
@@ -75,8 +72,7 @@ test('undici build-connector instrumentation', async function (t) {
     const { subscriber } = t.nr
     const data = { result: 'not-a-function' }
 
-    const ctx = subscriber.end(data, 'ctx')
+    subscriber.end(data)
     assert.equal(data.result, 'not-a-function')
-    assert.equal(ctx, 'ctx')
   })
 })

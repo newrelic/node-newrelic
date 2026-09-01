@@ -19,6 +19,8 @@ const assert = require('node:assert')
 const http2 = require('node:http2')
 const helper = require('../../lib/agent_helper')
 const fakeCert = require('../../lib/fake-cert')
+const { version: pkgVersion } = require('undici/package.json')
+const semver = require('semver')
 
 const cert = fakeCert({ commonName: 'localhost' })
 
@@ -84,7 +86,7 @@ test.afterEach((ctx) => {
 // h2 is negotiated on every supported undici major (>= 5), which keeps this test
 // deterministic across the versioned matrix. undici 8 flipped the `allowH2`
 // default to true, which is what surfaced this bug for users on an upgrade.
-test('undici HTTP/2 request should create exactly one external segment', async (t) => {
+test('undici HTTP/2 request should create exactly one external segment', { skip: semver.lt(pkgVersion, '5.25.0') }, async (t) => {
   const { agent, undici, origin, port } = t.nr
   const dispatcher = new undici.Agent({
     connect: { rejectUnauthorized: false },

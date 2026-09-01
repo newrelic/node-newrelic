@@ -12,6 +12,7 @@ const helper = require('../../../lib/agent_helper')
 const createHttp2ResponseServer = require('./fixtures/http2')
 const events = require('node:events')
 const nodeVersion = Number(/^v?(\d+)/.exec(process.version)[1])
+const { undiciConnection } = require('#agentlib/symbols.js')
 
 const beforeEach = async (ctx) => {
   const { server, baseUrl, responses, host, port } = await createHttp2ResponseServer()
@@ -815,8 +816,6 @@ test('http2 error handling', async (t) => {
 
 test('http2 caller-managed connection (e.g. undici)', async (t) => {
   const net = require('node:net')
-  const undiciConnection = Symbol.for('newrelic.undici.connection')
-
   t.beforeEach(beforeEach)
   t.afterEach(afterEach)
 
