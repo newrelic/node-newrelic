@@ -910,24 +910,7 @@ test('host facts', async (t) => {
     })
   })
 
-  await t.test('should not be GCP id when K_SERVICE is not present', (t, end) => {
-    const { agent, facts } = t.nr
-
-    agent.config.utilization = {
-      gcp_use_instance_as_host: true, // will be removed in v15
-      gcp_cloud_run: {
-        use_instance_as_host: true,
-        include_revision_in_host: false
-      }
-    }
-
-    facts(agent, (result) => {
-      assert.equal(result.host, os.hostname(), 'Hostname should not be set to GCP instance ID')
-      end()
-    })
-  })
-
-  await t.test('should not be GCP id when K_SERVICE is set but gcp_cloud_run.use_instance_as_host is false', (t, end) => {
+  await t.test('should not be GCP id when K_SERVICE is set but utilization.gcp_use_instance_as_host is false', (t, end) => {
     const { agent, facts } = t.nr
 
     agent.config.utilization = {
