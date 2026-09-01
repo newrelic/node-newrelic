@@ -639,7 +639,9 @@ test('display_host facts', async (t) => {
     }
 
     ctx.nr.agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
-    ctx.nr.agent.config.utilization = {}
+    ctx.nr.agent.config.utilization = {
+      gcp_cloud_run: {}
+    }
 
     ctx.nr.osNetworkInterfaces = os.networkInterfaces
     ctx.nr.osHostname = os.hostname
@@ -840,7 +842,9 @@ test('host facts', async (t) => {
     }
 
     ctx.nr.agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
-    ctx.nr.agent.config.utilization = null
+    ctx.nr.agent.config.utilization = {
+      gcp_cloud_run: {}
+    }
   })
 
   t.afterEach((ctx) => {
@@ -870,7 +874,13 @@ test('host facts', async (t) => {
   await t.test('should be GCP id when K_SERVICE is set', (t, end) => {
     const { agent, facts } = t.nr
 
-    agent.config.utilization = { gcp_use_instance_as_host: true }
+    agent.config.utilization = {
+      gcp_use_instance_as_host: true, // will be removed in v15
+      gcp_cloud_run: {
+        use_instance_as_host: true,
+        include_revision_in_host: false
+      }
+    }
     process.env.K_SERVICE = 'mock-service'
 
     facts(agent, (result) => {
@@ -883,7 +893,13 @@ test('host facts', async (t) => {
     const { agent, facts } = t.nr
     agent.config.getDisplayHost()
 
-    agent.config.utilization = { gcp_use_instance_as_host: true }
+    agent.config.utilization = {
+      gcp_use_instance_as_host: true, // will be removed in v15
+      gcp_cloud_run: {
+        use_instance_as_host: true,
+        include_revision_in_host: false
+      }
+    }
     process.env.K_SERVICE = 'mock-service'
 
     facts(agent, (result) => {
@@ -895,7 +911,13 @@ test('host facts', async (t) => {
   await t.test('should not be GCP id when K_SERVICE is not present', (t, end) => {
     const { agent, facts } = t.nr
 
-    agent.config.utilization = { gcp_use_instance_as_host: true }
+    agent.config.utilization = {
+      gcp_use_instance_as_host: true, // will be removed in v15
+      gcp_cloud_run: {
+        use_instance_as_host: true,
+        include_revision_in_host: false
+      }
+    }
 
     facts(agent, (result) => {
       assert.equal(result.host, os.hostname(), 'Hostname should not be set to GCP instance ID')
@@ -903,10 +925,16 @@ test('host facts', async (t) => {
     })
   })
 
-  await t.test('should not be GCP id when K_SERVICE is set but utilization.gcp_use_instance_as_host is false', (t, end) => {
+  await t.test('should not be GCP id when K_SERVICE is set but gcp_cloud_run.use_instance_as_host is false', (t, end) => {
     const { agent, facts } = t.nr
 
-    agent.config.utilization = { gcp_use_instance_as_host: false }
+    agent.config.utilization = {
+      gcp_use_instance_as_host: false, // will be removed in v15
+      gcp_cloud_run: {
+        use_instance_as_host: false,
+        include_revision_in_host: false
+      }
+    }
     process.env.K_SERVICE = 'mock-service'
 
     facts(agent, (result) => {
@@ -919,8 +947,11 @@ test('host facts', async (t) => {
     const { agent, facts } = t.nr
 
     agent.config.utilization = {
-      gcp_use_instance_as_host: true,
-      gcp_cloud_run: { include_revision_in_host: true }
+      gcp_use_instance_as_host: true, // will be removed in v15
+      gcp_cloud_run: {
+        use_instance_as_host: true,
+        include_revision_in_host: true
+      }
     }
     process.env.K_SERVICE = 'mock-service'
     process.env.K_REVISION = 'mock-revision'
@@ -939,8 +970,11 @@ test('host facts', async (t) => {
     const { agent, facts } = t.nr
 
     agent.config.utilization = {
-      gcp_use_instance_as_host: true,
-      gcp_cloud_run: { include_revision_in_host: true }
+      gcp_use_instance_as_host: true, // will be removed in v15
+      gcp_cloud_run: {
+        use_instance_as_host: true,
+        include_revision_in_host: true
+      }
     }
     process.env.K_SERVICE = 'mock-service'
 
@@ -958,8 +992,11 @@ test('host facts', async (t) => {
     const { agent, facts } = t.nr
 
     agent.config.utilization = {
-      gcp_use_instance_as_host: true,
-      gcp_cloud_run: { include_revision_in_host: false }
+      gcp_use_instance_as_host: true, // will be removed in v15
+      gcp_cloud_run: {
+        use_instance_as_host: true,
+        include_revision_in_host: false
+      }
     }
     process.env.K_SERVICE = 'mock-service'
     process.env.K_REVISION = 'mock-revision'
