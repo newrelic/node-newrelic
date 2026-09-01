@@ -7,12 +7,11 @@
 #### Code refactoring
 
 * Split `BedrockResponse` and `BedrockCommand` into `Converse` and `InvokeModel` variants ([#4235](https://github.com/newrelic/node-newrelic/pull/4235)) ([8235cf5](https://github.com/newrelic/node-newrelic/commit/8235cf5566b02481f215da40211d12fe119b1aa7))
-* Update Claude detection logic in `InvokeModelCommand` ([#4245](https://github.com/newrelic/node-newrelic/pull/4245)) ([b090344](https://github.com/newrelic/node-newrelic/commit/b090344f510067efbc650d62bb7b1f62a8ac2537))
+* Updated Claude detection logic in `InvokeModelCommand` ([#4245](https://github.com/newrelic/node-newrelic/pull/4245)) ([b090344](https://github.com/newrelic/node-newrelic/commit/b090344f510067efbc650d62bb7b1f62a8ac2537))
 
 #### Documentation
 
 * Updated compatibility report ([#4249](https://github.com/newrelic/node-newrelic/pull/4249)) ([f69eecd](https://github.com/newrelic/node-newrelic/commit/f69eecd16b81e7969988299fa23afd9f183b56fa))
-* Updated compatibility report ([#4237](https://github.com/newrelic/node-newrelic/pull/4237)) ([84263a7](https://github.com/newrelic/node-newrelic/commit/84263a768fdded3d9d61f162376fd40a0d51079e))
 
 #### Miscellaneous chores
 
@@ -20,7 +19,7 @@
 
 #### Tests
 
-* Add `type: module` for `@nestjs/core` tests, including version 12 ([#4252](https://github.com/newrelic/node-newrelic/pull/4252)) ([7971d05](https://github.com/newrelic/node-newrelic/commit/7971d056d11a70a1f67e71e7f3f5e4536850d5c7))
+* Added `type: module` for `@nestjs/core` tests, including version 12 ([#4252](https://github.com/newrelic/node-newrelic/pull/4252)) ([7971d05](https://github.com/newrelic/node-newrelic/commit/7971d056d11a70a1f67e71e7f3f5e4536850d5c7))
 
 ### v14.3.9 (2026-08-24)
 
