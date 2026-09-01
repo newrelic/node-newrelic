@@ -1,3 +1,26 @@
+### v14.3.10 (2026-09-01)
+
+#### Bug fixes
+
+* Prevented duplicate external segments when undici negotiates HTTP/2 ([#4251](https://github.com/newrelic/node-newrelic/pull/4251)) ([c94b81b](https://github.com/newrelic/node-newrelic/commit/c94b81b7e035fa6f6d2bc04bbe44410e3618bc09))
+
+#### Code refactoring
+
+* Split `BedrockResponse` and `BedrockCommand` into `Converse` and `InvokeModel` variants ([#4235](https://github.com/newrelic/node-newrelic/pull/4235)) ([8235cf5](https://github.com/newrelic/node-newrelic/commit/8235cf5566b02481f215da40211d12fe119b1aa7))
+* Updated Claude detection logic in `InvokeModelCommand` ([#4245](https://github.com/newrelic/node-newrelic/pull/4245)) ([b090344](https://github.com/newrelic/node-newrelic/commit/b090344f510067efbc650d62bb7b1f62a8ac2537))
+
+#### Documentation
+
+* Updated compatibility report ([#4249](https://github.com/newrelic/node-newrelic/pull/4249)) ([f69eecd](https://github.com/newrelic/node-newrelic/commit/f69eecd16b81e7969988299fa23afd9f183b56fa))
+
+#### Miscellaneous chores
+
+* Pinned nestjs to unblock CI ([#4248](https://github.com/newrelic/node-newrelic/pull/4248)) ([44abb5d](https://github.com/newrelic/node-newrelic/commit/44abb5d4de48b4a17dd46a3ee5378b0467013dd1))
+
+#### Tests
+
+* Added `type: module` for `@nestjs/core` tests, including version 12 ([#4252](https://github.com/newrelic/node-newrelic/pull/4252)) ([7971d05](https://github.com/newrelic/node-newrelic/commit/7971d056d11a70a1f67e71e7f3f5e4536850d5c7))
+
 ### v14.3.9 (2026-08-24)
 
 #### Bug fixes
