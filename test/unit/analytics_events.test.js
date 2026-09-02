@@ -10,6 +10,7 @@ const assert = require('node:assert')
 
 const Transaction = require('../../lib/transaction')
 const helper = require('../lib/agent_helper')
+const createDistributedTracePayload = require('#testlib/create-dt-payload.js')
 
 const DESTS = require('../../lib/config/attribute-filter').DESTINATIONS
 const LIMIT = 10
@@ -162,9 +163,7 @@ test('on transaction finished', async (t) => {
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
     const trans = new Transaction(agent)
-    const payload = trans._createDistributedTracePayload().text()
-    trans.isDistributedTrace = null
-    trans._acceptDistributedTracePayload(payload)
+    createDistributedTracePayload(agent, trans)
     trans.end()
 
     const events = getTransactionEvents(agent)

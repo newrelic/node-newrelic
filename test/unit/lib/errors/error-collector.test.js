@@ -16,6 +16,7 @@ const ErrorEventAggregator = require('#agentlib/errors/error-event-aggregator.js
 
 const Transaction = require('#agentlib/transaction/index.js')
 const Metrics = require('#agentlib/metrics/index.js')
+const createDistributedTracePayload = require('#testlib/create-dt-payload.js')
 
 const API = require('../../../../api')
 const DESTS = require('#agentlib/config/attribute-filter.js').DESTINATIONS
@@ -1574,9 +1575,7 @@ test('Errors', async (t) => {
         agent.config.primary_application_id = 'test'
         agent.config.account_id = 1
         const transaction = createTransaction(agent, 200)
-        const payload = transaction._createDistributedTracePayload().text()
-        transaction.isDistributedTrace = null
-        transaction._acceptDistributedTracePayload(payload)
+        createDistributedTracePayload(transaction.agent, transaction)
 
         const error = Error('some error')
         errors.add(transaction, error)
