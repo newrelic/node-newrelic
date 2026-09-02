@@ -853,6 +853,8 @@ test('host facts', async (t) => {
     delete process.env.K_REVISION
     delete process.env.CLOUD_RUN_REVISION
     delete process.env.CLOUD_RUN_EXECUTION
+    delete process.env.CLOUD_RUN_JOB
+    delete process.env.CLOUD_RUN_WORKER_POOL
 
     // Restore system-info cache
     if (ctx.systemInfoPath) {
@@ -997,15 +999,15 @@ test('host facts', async (t) => {
   })
 
   await t.test(
-    'should be CLOUD_RUN_REVISION-GCPid when gcp_cloud_run.include_revision_in_host is true and K_REVISION is not set',
+    'should be CLOUD_RUN_REVISION-GCPid on a Cloud Run worker pool when gcp_cloud_run.include_revision_in_host is true',
     (t, end) => {
       const { agent, facts } = t.nr
 
       agent.config.utilization = {
         gcp_use_instance_as_host: true,
-        gcp_cloud_run: { include_revision_in_host: true }
+        gcp_cloud_run: { use_instance_as_host: true, include_revision_in_host: true }
       }
-      process.env.K_SERVICE = 'mock-service'
+      process.env.CLOUD_RUN_WORKER_POOL = 'mock-worker-pool'
       process.env.CLOUD_RUN_REVISION = 'mock-cloud-run-revision'
 
       facts(agent, (result) => {
@@ -1020,15 +1022,15 @@ test('host facts', async (t) => {
   )
 
   await t.test(
-    'should be CLOUD_RUN_EXECUTION-GCPid when gcp_cloud_run.include_revision_in_host is true and neither K_REVISION nor CLOUD_RUN_REVISION is set',
+    'should be CLOUD_RUN_EXECUTION-GCPid on a Cloud Run job when gcp_cloud_run.include_revision_in_host is true',
     (t, end) => {
       const { agent, facts } = t.nr
 
       agent.config.utilization = {
         gcp_use_instance_as_host: true,
-        gcp_cloud_run: { include_revision_in_host: true }
+        gcp_cloud_run: { use_instance_as_host: true, include_revision_in_host: true }
       }
-      process.env.K_SERVICE = 'mock-service'
+      process.env.CLOUD_RUN_JOB = 'mock-job'
       process.env.CLOUD_RUN_EXECUTION = 'mock-cloud-run-execution'
 
       facts(agent, (result) => {
@@ -1049,7 +1051,7 @@ test('host facts', async (t) => {
 
       agent.config.utilization = {
         gcp_use_instance_as_host: true,
-        gcp_cloud_run: { include_revision_in_host: true }
+        gcp_cloud_run: { use_instance_as_host: true, include_revision_in_host: true }
       }
       process.env.K_SERVICE = 'mock-service'
       process.env.K_REVISION = 'mock-revision'
@@ -1074,9 +1076,9 @@ test('host facts', async (t) => {
 
       agent.config.utilization = {
         gcp_use_instance_as_host: true,
-        gcp_cloud_run: { include_revision_in_host: true }
+        gcp_cloud_run: { use_instance_as_host: true, include_revision_in_host: true }
       }
-      process.env.K_SERVICE = 'mock-service'
+      process.env.CLOUD_RUN_WORKER_POOL = 'mock-worker-pool'
       process.env.CLOUD_RUN_REVISION = 'mock-cloud-run-revision'
       process.env.CLOUD_RUN_EXECUTION = 'mock-cloud-run-execution'
 
@@ -1090,6 +1092,24 @@ test('host facts', async (t) => {
       })
     }
   )
+
+  await t.test('should not be GCP id when none of the Cloud Run identifying env vars are set', (t, end) => {
+    const { agent, facts } = t.nr
+
+    agent.config.utilization = {
+      gcp_use_instance_as_host: true,
+      gcp_cloud_run: { use_instance_as_host: true, include_revision_in_host: true }
+    }
+
+    facts(agent, (result) => {
+      assert.equal(
+        result.host,
+        os.hostname(),
+        'Hostname should not be set to GCP instance ID outside of a Cloud Run environment'
+      )
+      end()
+    })
+  })
 })
 
 function mockIpAddresses(values) {
