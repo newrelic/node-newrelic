@@ -379,7 +379,7 @@
         "gcp_use_instance_as_host": {
           "type": "boolean",
           "default": true,
-          "description": "When enabled, it will use GCP metadata id to set the hostname of the running application."
+          "description": "Deprecated and will be removed in v15 of the agent. Please use `utilization.gcp_cloud_run.use_instance_as_host` instead. When enabled, it will use GCP metadata id to set the hostname of the running application."
         },
         "gcp_cloud_run": {
           "type": "object",
@@ -388,6 +388,11 @@
               "type": "boolean",
               "default": false,
               "description": "When enabled, and `gcp_use_instance_as_host` is also enabled, the GCP Cloud Run revision (`K_REVISION`) will be prepended to the instance id when setting the hostname of the running application, resulting in a hostname of `${K_REVISION}-${instance_id}`."
+            },
+            "use_instance_as_host": {
+              "type": "boolean",
+              "default": true,
+              "description": "When enabled, it will use GCP metadata id to set the hostname of the running application."
             }
           },
           "additionalProperties": true
