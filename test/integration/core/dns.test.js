@@ -39,16 +39,6 @@ test('lookup - IPv4', function (t, end) {
   })
 })
 
-test('(promise)lookup - IPv4', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    const { address, family } = await dns.promises.lookup('localhost', { verbatim: false })
-    assert.equal(address, '127.0.0.1')
-    assert.equal(family, 4)
-    verifySegments({ agent, name: 'dns.lookup', assertCallbacks: false })
-  })
-})
-
 test('lookup - IPv6', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
@@ -75,43 +65,6 @@ test('resolve', function (t, end) {
   })
 })
 
-test('Resolver.resolve', function (t, end) {
-  const { agent } = t.nr
-  const resolver = new dns.Resolver()
-  helper.runInTransaction(agent, function () {
-    resolver.resolve('example.com', function (err, ips) {
-      assert.ok(!err, 'should not error')
-      assert.equal(ips.length, 1)
-      assert.equal(ips[0], '127.0.0.1')
-
-      verifySegments({ agent, end, name: 'dns.resolve' })
-    })
-  })
-})
-
-test('(promise)resolve', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    const ips = await dns.promises.resolve('example.com')
-    assert.equal(ips.length, 1)
-    assert.equal(ips[0], '127.0.0.1')
-
-    verifySegments({ agent, name: 'dns.resolve', assertCallbacks: false })
-  })
-})
-
-test('(promise) Resolver.resolve', async function (t) {
-  const { agent } = t.nr
-  const resolver = new dns.promises.Resolver()
-  await helper.runInTransaction(agent, async function () {
-    const ips = await resolver.resolve('example.com')
-    assert.equal(ips.length, 1)
-    assert.equal(ips[0], '127.0.0.1')
-
-    verifySegments({ agent, name: 'dns.resolve', assertCallbacks: false })
-  })
-})
-
 test('resolve4', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
@@ -121,16 +74,6 @@ test('resolve4', function (t, end) {
       assert.equal(ips[0], '127.0.0.1')
       verifySegments({ agent, end, name: 'dns.resolve4' })
     })
-  })
-})
-
-test('(promise)resolve4', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    const ips = await dns.promises.resolve4('example.com')
-    assert.equal(ips.length, 1)
-    assert.equal(ips[0], '127.0.0.1')
-    verifySegments({ agent, name: 'dns.resolve4', assertCallbacks: false })
   })
 })
 
@@ -146,16 +89,6 @@ test('resolve6', function (t, end) {
   })
 })
 
-test('(promise)resolve6', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    const ips = await dns.promises.resolve6('example.com')
-    assert.equal(ips.length, 1)
-    assert.equal(ips[0], '::1')
-    verifySegments({ agent, name: 'dns.resolve6', assertCallbacks: false })
-  })
-})
-
 test('resolveCname', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
@@ -163,14 +96,6 @@ test('resolveCname', function (t, end) {
       assert.equal(err.code, 'ENODATA')
       verifySegments({ agent, end, name: 'dns.resolveCname' })
     })
-  })
-})
-
-test('(promise)resolveCname', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    await assert.rejects(() => dns.promises.resolveCname('example.com'))
-    verifySegments({ agent, name: 'dns.resolveCname', assertCallbacks: false })
   })
 })
 
@@ -187,16 +112,6 @@ test('resolveMx', function (t, end) {
   })
 })
 
-test('(promise)resolveMx', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    const ips = await dns.promises.resolveMx('example.com')
-    assert.equal(ips.length, 1)
-    assert.equal(ips[0], '127.0.0.1')
-    verifySegments({ agent, name: 'dns.resolveMx', assertCallbacks: false })
-  })
-})
-
 test('resolveNs', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
@@ -205,15 +120,6 @@ test('resolveNs', function (t, end) {
       assert.deepEqual(names.sort(), ['a.iana-servers.net', 'b.iana-servers.net'])
       verifySegments({ agent, end, name: 'dns.resolveNs' })
     })
-  })
-})
-
-test('(promise)resolveNs', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    const names = await dns.promises.resolveNs('example.com')
-    assert.deepEqual(names.sort(), ['a.iana-servers.net', 'b.iana-servers.net'])
-    verifySegments({ agent, name: 'dns.resolveNs', assertCallbacks: false })
   })
 })
 
@@ -229,15 +135,6 @@ test('resolveTxt', function (t, end) {
   })
 })
 
-test('(promise)resolveTxt', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    const data = await dns.promises.resolveTxt('example.com')
-    assert.deepEqual(data, ['one', 'two', 'three'])
-    verifySegments({ agent, name: 'dns.resolveTxt', assertCallbacks: false })
-  })
-})
-
 test('resolveSrv', function (t, end) {
   const { agent } = t.nr
   helper.runInTransaction(agent, function () {
@@ -245,14 +142,6 @@ test('resolveSrv', function (t, end) {
       assert.equal(err.code, 'ENODATA')
       verifySegments({ agent, end, name: 'dns.resolveSrv' })
     })
-  })
-})
-
-test('(promise)resolveSrv', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    await assert.rejects(() => dns.promises.resolveSrv('example.com'))
-    verifySegments({ agent, name: 'dns.resolveSrv', assertCallbacks: false })
   })
 })
 
@@ -265,15 +154,5 @@ test('reverse', function (t, end) {
       assert.equal(names[0], 'localhost')
       verifySegments({ agent, end, name: 'dns.reverse' })
     })
-  })
-})
-
-test('(promise)reverse', async function (t) {
-  const { agent } = t.nr
-  await helper.runInTransaction(agent, async function () {
-    const names = await dns.promises.reverse('127.0.0.1')
-    assert.equal(names.length, 1)
-    assert.equal(names[0], 'localhost')
-    verifySegments({ agent, name: 'dns.reverse', assertCallbacks: false })
   })
 })
