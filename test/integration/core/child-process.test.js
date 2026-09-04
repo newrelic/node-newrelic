@@ -9,6 +9,8 @@ const test = require('node:test')
 const assert = require('node:assert')
 const cp = require('child_process')
 const fs = require('fs')
+const path = require('path')
+const util = require('util')
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify.js')
 
@@ -47,6 +49,50 @@ test('execFile', function (t, end) {
       assert.equal(stdout, 'I am stdout\n')
       assert.equal(stderr, 'I am stderr\n')
       verifySegments({ agent, end, name: 'child_process.execFile' })
+    })
+  })
+})
+
+test('exec via util.promisify', async function (t) {
+  const { agent } = t.nr
+  const asyncExec = util.promisify(cp.exec)
+
+  await helper.runInTransaction(agent, async function (tx) {
+    const { stdout } = await asyncExec('ls', { cwd: __dirname })
+    const files = stdout.trim().split('\n').sort()
+    assert.deepEqual(files, fs.readdirSync(__dirname).sort())
+
+    const children = tx.trace.getChildren(tx.trace.root.id)
+    // TODO: should return a 'exec' segment with an internal 'execFile' child
+    assert.equal(children.length, 1, 'should have exactly one segment, from the internal execFile call')
+    assert.equal(children[0].name, 'child_process.execFile')
+  })
+})
+
+test('execFile via util.promisify', async function (t) {
+  const { agent } = t.nr
+  const asyncExecFile = util.promisify(cp.execFile)
+
+  await helper.runInTransaction(agent, async function (tx) {
+    const { stdout } = await asyncExecFile(path.join(__dirname, 'exec-me.js'))
+    assert.equal(stdout, 'I am stdout\n')
+
+    const children = tx.trace.getChildren(tx.trace.root.id)
+    // TODO: should return a 'execFile' segment
+    assert.equal(children.length, 0, 'promisified execFile bypasses instrumentation entirely')
+  })
+})
+
+test('exec segment duration should span the full process lifetime', function (t, end) {
+  const { agent } = t.nr
+  helper.runInTransaction(agent, function (tx) {
+    cp.exec('sleep 0.2', function (err) {
+      assert.ok(!err, 'should not error')
+      setTimeout(() => {
+        const [segment] = tx.trace.getChildren(tx.trace.root.id)
+        assert.ok(segment.getDurationInMillis() >= 150, `segment duration (${segment.getDurationInMillis()}ms) should reflect the sleep, not just the sync call`)
+        end()
+      }, 0)
     })
   })
 })
