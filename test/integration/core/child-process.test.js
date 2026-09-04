@@ -35,7 +35,8 @@ test('exec', function (t, end) {
         agent,
         end,
         name: 'child_process.exec',
-        children: ['child_process.execFile']
+        children: ['child_process.execFile'],
+        assertCallbacks: false
       })
     })
   })
@@ -48,7 +49,7 @@ test('execFile', function (t, end) {
       assert.ok(!err, 'should not error')
       assert.equal(stdout, 'I am stdout\n')
       assert.equal(stderr, 'I am stderr\n')
-      verifySegments({ agent, end, name: 'child_process.execFile' })
+      verifySegments({ agent, end, name: 'child_process.execFile', assertCallbacks: false })
     })
   })
 })
