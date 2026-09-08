@@ -61,7 +61,7 @@ test('should log tracking metrics', function(t) {
 })
 
 test('send records correctly', async (t) => {
-  const plan = tspl(t, { plan: 8 })
+  const plan = tspl(t, { plan: 9 })
   const { agent, consumer, producer, topic } = t.nr
   const message = 'test message'
   const expectedName = 'produce-tx'
@@ -87,6 +87,13 @@ test('send records correctly', async (t) => {
       )
       plan.equal(produceTrackingMetric.callCount, 1)
       assertSpanKind({ agent, segments: [{ name, kind: 'producer' }], assert: plan })
+
+      // `kafka.metrics.cluster.metrics.enabled` defaults to `false`, so no
+      // `MessageBroker/Kafka/Cluster/...` metric should have been recorded.
+      const hasClusterMetric = Object.keys(agent.metrics._metrics.unscoped).some(
+        (name) => name.startsWith('MessageBroker/Kafka/Cluster/')
+      )
+      plan.equal(hasClusterMetric, false)
     }
   })
 
