@@ -8,6 +8,7 @@
 const { describe, test } = require('node:test')
 const assert = require('node:assert')
 const Config = require('../../../lib/config')
+const { idempotentEnv } = require('./helper')
 
 describe('when receiving server-side configuration', () => {
   // Unfortunately, the Config currently relies on initialize to
@@ -819,6 +820,47 @@ describe('when receiving server-side configuration', () => {
       config.otlp_resource_attributes = {}
       config.onConnect({ otlp_resource_attributes: undefined })
       assert.deepEqual(config.otlp_resource_attributes, {})
+    })
+  })
+
+  describe('browser_monitoring.version resolution warning', () => {
+    test('should warn when version is set but no js_agent_loader is returned', () => {
+      idempotentEnv({}, { browser_monitoring: { version: '1.317.0', enable: true } }, (config, loggerInstance) => {
+        config.onConnect({ agent_run_id: 1234 })
+        assert.equal(loggerInstance.logs.warn.length, 1)
+      })
+    })
+
+    test('should not warn when browser_monitoring.version is unset', () => {
+      idempotentEnv({}, { browser_monitoring: { enable: true } }, (config, loggerInstance) => {
+        config.onConnect({ agent_run_id: 1234 })
+        assert.equal(loggerInstance.logs.warn.length, 0)
+      })
+    })
+
+    test('should not warn when browser_monitoring.loader is "none"', () => {
+      idempotentEnv(
+        {},
+        { browser_monitoring: { version: '1.317.0', enable: true, loader: 'none' } },
+        (config, loggerInstance) => {
+          config.onConnect({ agent_run_id: 1234 })
+          assert.equal(loggerInstance.logs.warn.length, 0)
+        }
+      )
+    })
+
+    test('should not warn when browser_monitoring.enable is false', () => {
+      idempotentEnv({}, { browser_monitoring: { version: '1.317.0', enable: false } }, (config, loggerInstance) => {
+        config.onConnect({ agent_run_id: 1234 })
+        assert.equal(loggerInstance.logs.warn.length, 0)
+      })
+    })
+
+    test('should not warn when js_agent_loader is returned', () => {
+      idempotentEnv({}, { browser_monitoring: { version: '1.317.0', enable: true } }, (config, loggerInstance) => {
+        config.onConnect({ js_agent_loader: 'function(){}' })
+        assert.equal(loggerInstance.logs.warn.length, 0)
+      })
     })
   })
 })
