@@ -25,6 +25,7 @@
         "app-use.test.js",
         "async-error.test.js",
         "async-handlers.test.js",
+        "async-middleware-naming.test.js",
         "bare-router.test.js",
         "captures-params.test.js",
         "client-disconnect.test.js",
