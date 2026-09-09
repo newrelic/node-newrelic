@@ -2240,6 +2240,36 @@
       },
       "additionalProperties": true,
       "description": "Stanza for customizing behavior for apollo server instrumentation"
+    },
+    "kafka": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "cluster": {
+              "type": "object",
+              "properties": {
+                "metrics": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "default": false,
+                      "description": "Enables capture of the `MessageBroker/Kafka/Cluster/{cluster_id}/{Produce|Consume}/{topic_name}` metrics. Disabled by default."
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Stanza for customizing behavior for Kafka instrumentation"
     }
   },
   "required": [
