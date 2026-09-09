@@ -180,7 +180,7 @@ test('ServerlessCollector API', async (t) => {
       await t.nr.written
 
       const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(t.nr.outData[2], 'base64')))
-      assert.equal(decoded.data.otlp_payload, 'BASE64_OTLP')
+      assert.deepStrictEqual(decoded.data.otlp_payload, ['BASE64_OTLP'])
       assert.deepStrictEqual(decoded.data.metric_data, [1, 2, 3])
     })
 
@@ -193,7 +193,7 @@ test('ServerlessCollector API', async (t) => {
       api.flushPayloadSync()
 
       const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(t.nr.outData[2], 'base64')))
-      assert.equal(decoded.data.otlp_payload, undefined)
+      assert.strictEqual(decoded.data.otlp_payload, undefined)
       assert.deepStrictEqual(decoded.data.metric_data, [1, 2, 3])
     })
   })
