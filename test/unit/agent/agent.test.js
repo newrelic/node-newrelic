@@ -17,6 +17,7 @@ const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const Transaction = require('../../../lib/transaction')
 const CollectorResponse = require('../../../lib/collector/response')
+const logger = require('../../../lib/logger')
 
 const fs = require('node:fs')
 const os = require('node:os')
@@ -1566,6 +1567,63 @@ test('_reset*', async (t) => {
     const { agent } = t.nr
     agent._resetCustomEvents()
     assert.equal(agent.customEventAggregator.clear.callCount, 1)
+  })
+})
+
+test('_checkBrowserMonitoringVersion', async (t) => {
+  t.beforeEach((ctx) => {
+    const agent = helper.loadMockedAgent()
+
+    const sandbox = sinon.createSandbox()
+    sandbox.stub(agent.collector, 'reportSettings')
+    sandbox.stub(logger, 'warn')
+    ctx.nr = { agent, sandbox }
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.sandbox.restore()
+  })
+
+  await t.test('should warn when version is set but no js_agent_loader is returned', (t) => {
+    const { agent } = t.nr
+    agent.config.browser_monitoring.version = '1.317.0'
+    agent.config.browser_monitoring.enable = true
+    agent._configChange()
+    assert.equal(logger.warn.callCount, 1)
+  })
+
+  await t.test('should not warn when browser_monitoring.version is unset', (t) => {
+    const { agent } = t.nr
+    agent.config.browser_monitoring.enable = true
+    agent._configChange()
+    assert.equal(logger.warn.callCount, 0)
+  })
+
+  await t.test('should not warn when browser_monitoring.loader is "none"', (t) => {
+    const { agent } = t.nr
+    agent.config.browser_monitoring.version = '1.317.0'
+    agent.config.browser_monitoring.enable = true
+    agent.config.browser_monitoring.loader = 'none'
+    agent._configChange()
+    assert.equal(logger.warn.callCount, 0)
+  })
+
+  await t.test('should not warn when browser_monitoring.enable is false', (t) => {
+    const { agent } = t.nr
+    agent.config.browser_monitoring.version = '1.317.0'
+    agent.config.browser_monitoring.enable = false
+    agent._configChange()
+    assert.equal(logger.warn.callCount, 0)
+  })
+
+  await t.test('should not warn when js_agent_loader is returned', (t) => {
+    const { agent } = t.nr
+    agent.config.browser_monitoring.version = '1.317.0'
+    agent.config.browser_monitoring.enable = true
+    agent.config.browser_monitoring.js_agent_loader = 'function(){}'
+    agent._configChange()
+    assert.equal(logger.warn.callCount, 0)
   })
 })
 
