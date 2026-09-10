@@ -296,11 +296,16 @@ test('enable should call instrument on the package', (t) => {
   assert.equal(instrumentSpy.callCount, 1)
 })
 
-test('enable should log warning when instrument throws', (t) => {
+test('enable should log warning and bail early when instrument throws', (t) => {
   const { subscriber } = t.nr
   sinon.stub(subscriber, 'instrument').throws(new Error('bad instrument'))
+  const bindStoreSpy = sinon.spy(subscriber.channels[0].start, 'bindStore')
+  t.after(() => {
+    bindStoreSpy.restore()
+  })
   subscriber.enable()
   assert.equal(subscriber.logger.warn.callCount, 1)
+  assert.equal(bindStoreSpy.callCount, 0)
 })
 
 test('disable should unbind start store on all channels', async (t) => {
