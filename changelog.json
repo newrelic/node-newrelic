@@ -2,6 +2,20 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.4.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed duplicated router mount path in transaction names for async middleware",
+          "Fixed otlp payload format for metrics in AWS Lambda"
+        ],
+        "features": [
+          "Added support for `MessageBroker/Kafka/Cluster/{cluster_id}/{Produce|Consume}/{topic_name}` metrics",
+          "Updated GCP hostname to support more Cloud Run instance types"
+        ]
+      }
+    },
+    {
       "version": "14.3.10",
       "changes": {
         "security": [],

@@ -1,3 +1,23 @@
+### v14.4.0 (2026-09-10)
+
+#### Features
+
+* Added support for `MessageBroker/Kafka/Cluster/{cluster_id}/{Produce|Consume}/{topic_name}` metrics ([#4263](https://github.com/newrelic/node-newrelic/pull/4263)) ([3be98f1](https://github.com/newrelic/node-newrelic/commit/3be98f12810535e0abf274a99f6cafad9e19284a))
+* Updated GCP hostname to support more Cloud Run instance types ([#4256](https://github.com/newrelic/node-newrelic/pull/4256)) ([67bfd0d](https://github.com/newrelic/node-newrelic/commit/67bfd0dc79a189ddd984a13e217081d2e73167c0))
+
+#### Bug fixes
+
+* Fixed duplicated router mount path in transaction names for async middleware ([#4272](https://github.com/newrelic/node-newrelic/pull/4272)) ([51a3bf4](https://github.com/newrelic/node-newrelic/commit/51a3bf47c6637a194fc053bf41a7726a83be7316))
+* Fixed otlp payload format for metrics in AWS Lambda ([#4270](https://github.com/newrelic/node-newrelic/pull/4270)) ([5d29078](https://github.com/newrelic/node-newrelic/commit/5d29078440166211e492739c6a40913a45292713)) (upcoming feature; not yet available)
+
+#### Documentation
+
+* Updated compatibility report ([#4273](https://github.com/newrelic/node-newrelic/pull/4273)) ([40b3172](https://github.com/newrelic/node-newrelic/commit/40b3172d6bad62ddafe5dc55056f7404b87dbefe)) ([#4267](https://github.com/newrelic/node-newrelic/pull/4267)) ([b4fa928](https://github.com/newrelic/node-newrelic/commit/b4fa928b4e040c2f15a7b36cbc4f6f772f803a45)) ([#4253](https://github.com/newrelic/node-newrelic/pull/4253)) ([9fe7038](https://github.com/newrelic/node-newrelic/commit/9fe70387978e9c4dc491b738970f848a4f12982f))
+
+#### Miscellaneous chores
+
+* Deprecated `utilization.gcp_use_instance_as_host` in favor of `utilization.gcp_cloud_run.use_instance_as_host` ([#4258](https://github.com/newrelic/node-newrelic/pull/4258)) ([450303e](https://github.com/newrelic/node-newrelic/commit/450303edc0639e04da08ed5d3b5677b6befa83b3))
+
 ### v14.3.10 (2026-09-01)
 
 #### Bug fixes
