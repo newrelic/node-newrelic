@@ -14,11 +14,11 @@ supported by the agent.
 | `@anthropic-ai/sdk` | 0.33.0 | 0.124.0 | 13.19.0 |
 | `@apollo/gateway` | 2.3.0 | 2.14.4 | 14.0.0 |
 | `@apollo/server` | 4.0.0 | 5.5.1 | 14.0.0 |
-| `@aws-sdk/client-bedrock-runtime` | 3.377.0 | 3.1128.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.377.0 | 3.1128.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.377.0 | 3.1128.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.377.0 | 3.1128.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.1128.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.377.0 | 3.1129.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.377.0 | 3.1129.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.377.0 | 3.1129.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.377.0 | 3.1129.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.1129.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@azure/functions` | 4.7.0 | 4.16.2 | 12.18.0 |
 | `@elastic/elasticsearch` | 7.16.0 | 9.5.1 | 11.9.0 |
@@ -29,9 +29,9 @@ supported by the agent.
 | `@hapi/vision` | 5.0.0 | 7.0.3 | 9.0.0 |
 | `@koa/router` | 12.0.1 | 15.7.0 | 3.2.0 |
 | `@langchain/aws` | 0.1.3 | 1.4.5 | 13.8.0 |
-| `@langchain/core` | 0.2.0 | 1.2.9 | 11.13.0 |
+| `@langchain/core` | 0.2.0 | 1.2.10 | 11.13.0 |
 | `@langchain/langgraph` | 1.0.0 | 1.4.14 | 13.12.0 |
-| `@langchain/openai` | 0.2.0 | 1.5.11 | 11.13.0 |
+| `@langchain/openai` | 0.2.0 | 1.5.12 | 11.13.0 |
 | `@modelcontextprotocol/sdk` | 1.13.0 | 1.30.0 | 13.2.0 |
 | `@nestjs/core` | 10.0.0 | 12.0.1 | 10.1.0 |
 | `@opensearch-project/opensearch` | 2.1.0 | 3.6.0 | 12.10.0 |
@@ -55,7 +55,7 @@ supported by the agent.
 | `mysql` | 2.16.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 3.0.0 | 3.24.4 | 1.32.0 |
 | `next` | 14.0.0 | 16.3.4 | 12.0.0 |
-| `openai` | 4.0.0 | 7.10.0 | 11.13.0 |
+| `openai` | 4.0.0 | 7.13.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.23.0 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.9.0 | 9.0.0 |
 | `pino` | 8.0.0 | 10.3.1 | 8.11.0 |
