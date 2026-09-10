@@ -1589,14 +1589,14 @@ test('_checkBrowserMonitoringVersion', async (t) => {
     const { agent } = t.nr
     agent.config.browser_monitoring.version = '1.317.0'
     agent.config.browser_monitoring.enable = true
-    agent._configChange()
+    agent._checkBrowserMonitoringVersion()
     assert.equal(logger.warn.callCount, 1)
   })
 
   await t.test('should not warn when browser_monitoring.version is unset', (t) => {
     const { agent } = t.nr
     agent.config.browser_monitoring.enable = true
-    agent._configChange()
+    agent._checkBrowserMonitoringVersion()
     assert.equal(logger.warn.callCount, 0)
   })
 
@@ -1605,7 +1605,7 @@ test('_checkBrowserMonitoringVersion', async (t) => {
     agent.config.browser_monitoring.version = '1.317.0'
     agent.config.browser_monitoring.enable = true
     agent.config.browser_monitoring.loader = 'none'
-    agent._configChange()
+    agent._checkBrowserMonitoringVersion()
     assert.equal(logger.warn.callCount, 0)
   })
 
@@ -1613,7 +1613,7 @@ test('_checkBrowserMonitoringVersion', async (t) => {
     const { agent } = t.nr
     agent.config.browser_monitoring.version = '1.317.0'
     agent.config.browser_monitoring.enable = false
-    agent._configChange()
+    agent._checkBrowserMonitoringVersion()
     assert.equal(logger.warn.callCount, 0)
   })
 
@@ -1622,8 +1622,23 @@ test('_checkBrowserMonitoringVersion', async (t) => {
     agent.config.browser_monitoring.version = '1.317.0'
     agent.config.browser_monitoring.enable = true
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
-    agent._configChange()
+    agent._checkBrowserMonitoringVersion()
     assert.equal(logger.warn.callCount, 0)
+  })
+
+  await t.test('should run the check from reconfigure() after a connect response', (t) => {
+    const { agent } = t.nr
+    agent.config.browser_monitoring.version = '1.321.0'
+    agent.config.browser_monitoring.enable = true
+
+    agent.reconfigure({
+      'browser_monitoring.loader_version': '1.321.0',
+      js_agent_loader: 'function(){}'
+    })
+
+    assert.equal(logger.warn.callCount, 0)
+    assert.equal(agent.config.browser_monitoring.loader_version, '1.321.0')
+    assert.equal(agent.config.browser_monitoring.js_agent_loader, 'function(){}')
   })
 })
 
