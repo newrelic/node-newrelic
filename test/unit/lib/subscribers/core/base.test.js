@@ -48,7 +48,6 @@ test('should define default properties on subscriber', (t) => {
   assert.ok(subscriber.config)
   assert.ok(subscriber.logger)
   assert.equal(subscriber.packageName, 'dns')
-  assert.equal(subscriber.hasCallback, false)
   assert.equal(subscriber.id, 'nr:dns')
   assert.ok(Array.isArray(subscriber.channels))
   assert.equal(subscriber.channels.length, 1)
@@ -56,6 +55,7 @@ test('should define default properties on subscriber', (t) => {
   assert.equal(subscriber.store, agent.tracer.store)
   assert.ok(subscriber.handlers)
   assert.ok(typeof subscriber.handlers.asyncEnd, 'function')
+  assert.ok(typeof subscriber.handlers.end, 'function')
 })
 
 test('should build id with prefix when prefix is provided', (t) => {
@@ -69,19 +69,6 @@ test('should build id with prefix when prefix is provided', (t) => {
 test('should build id without prefix when prefix is omitted', (t) => {
   const { subscriber } = t.nr
   assert.equal(subscriber.id, 'nr:dns')
-})
-
-test('should include end handler when hasCallback is true', (t) => {
-  const { agent } = t.nr
-  const subscriber = makeSubscriber(agent, { hasCallback: true })
-  assert.ok(typeof subscriber.handlers.end, 'function')
-  subscriber.disable()
-  subscriber.unsubscribe()
-})
-
-test('should not include end handler when hasCallback is false', (t) => {
-  const { subscriber } = t.nr
-  assert.ok(!subscriber.handlers.end)
 })
 
 test('buildChannels should create one tracing channel per method name', (t) => {
@@ -330,55 +317,4 @@ test('disable should unbind start store on all channels', async (t) => {
   })
 
   await plan.completed
-})
-
-test('handleCallback should bind asyncStart store on a channel', async (t) => {
-  const plan = tspl(t, { plan: 2 })
-  const { agent, subscriber } = t.nr
-  subscriber.enable()
-
-  const channel = subscriber.channels[0]
-  subscriber.handleCallback(channel)
-
-  helper.runInTransaction(agent, () => {
-    const event = { name: 'lookup', callbackName: 'onLookup' }
-    channel.start.runStores(event, () => {
-      channel.asyncStart.runStores(event, () => {
-        const ctx = agent.tracer.getContext()
-        plan.ok(ctx.segment)
-        plan.equal(ctx.segment.name, 'Callback: onLookup')
-      })
-    })
-  })
-
-  await plan.completed
-})
-
-test('handleCallback should skip segment creation when transaction is inactive', async (t) => {
-  const plan = tspl(t, { plan: 1 })
-  const { subscriber } = t.nr
-  subscriber.enable()
-
-  const channel = subscriber.channels[0]
-  subscriber.handleCallback(channel)
-
-  const event = { name: 'lookup', callbackName: 'onLookup' }
-  channel.asyncStart.runStores(event, () => {
-    plan.equal(subscriber.logger.trace.callCount, 1)
-  })
-
-  await plan.completed
-})
-
-test('enable should call handleCallback for each channel when hasCallback is true', (t) => {
-  const { agent } = t.nr
-  const subscriber = makeSubscriber(agent, {
-    hasCallback: true,
-    instrumentedMethods: ['lookup', 'resolve'],
-  })
-  const handleCallbackSpy = sinon.spy(subscriber, 'handleCallback')
-  subscriber.enable()
-  assert.equal(handleCallbackSpy.callCount, 2)
-  subscriber.disable()
-  subscriber.unsubscribe()
 })

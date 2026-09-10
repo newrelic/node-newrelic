@@ -14,28 +14,25 @@ function verifySegments({ agent, name, children = [], end, assert = require('nod
   const child = traceChildren[0]
   assert.equal(child.name, name, 'child segment should have correct name')
   assert.ok(child.timer.touched, 'child should started and ended')
+  const childChildren = trace.getChildren(child.id)
+  const expectedChildLength = assertCallbacks ? children.length + 1 : children.length
+  assert.equal(childChildren.length, expectedChildLength)
+  for (let i = 0; i < children.length; ++i) {
+    assert.equal(childChildren[i].name, children[i])
+  }
 
   if (assertCallbacks) {
-    verifyCallbacks({ trace, child, assert, end, children })
+    verifyCallbacks({ assert, end, children: childChildren })
   } else {
     end?.()
   }
 }
 
-function verifyCallbacks({ trace, child, assert, end, children }) {
-  const childChildren = trace.getChildren(child.id)
-  for (let i = 0; i < children.length; ++i) {
-    assert.equal(childChildren[i].name, children[i])
-  }
-  const callback = childChildren[childChildren.length - 1]
+function verifyCallbacks({ assert, end, children }) {
+  const callback = children[children.length - 1]
   assert.ok(
     callback.name === 'Callback: anonymous' || callback.name === 'Callback: <anonymous>',
     'callback segment should have correct name'
-  )
-  assert.equal(
-    childChildren.length,
-    1 + children.length,
-    'child should have a single callback segment'
   )
 
   assert.ok(callback.timer.start, 'callback should have started')
