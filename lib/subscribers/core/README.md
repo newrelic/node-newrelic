@@ -2,7 +2,9 @@ Houses core instrumentation. It differs from third-party because we are still mo
 
 Registering a core subscriber entails both instrumenting via the `instrument` method and providing the necessary parameters to the extended subscriber class for subscribing and creating the necessary telemetry.
 
-This is an example for a core subscriber. That wraps the methods `bar` and `baz` on `core-lib-name`. Most core libraries simply create segments with a naming conventions of `<pkg-name>.<method>`. The `hasCallback` property tells the BaseCoreSubscriber to bind the `asyncStart` method to create a callback segment.  The `end`, `asyncEnd` events simply just touch the active segment.
+This is an example for a core subscriber. That wraps the methods `bar` and `baz` on `core-lib-name`. Most core libraries simply create segments with a naming conventions of `<pkg-name>.<method>`. The `end`, `asyncEnd` events simply just touch the active segment.
+
+Set `internal = true` when the instrumented methods delegate to one another (as `child_process.exec` calls `execFile`). Without it, one logical operation creates a segment per method, and because the async context then points at the inner segment, the outer one's timer is never stopped when the operation completes.
 
 ```js
 
@@ -14,7 +16,7 @@ const instrumentedMethods = ['bar', 'baz']
 
 class FakeCoreSubscriber extends BaseCoreSubscriber {
   constructor({ agent, logger }) {
-    super({ agent, logger, packageName: 'core-lib-name', hasCallback: true, instrumentedMethods })
+    super({ agent, logger, packageName: 'core-lib-name', instrumentedMethods })
   }
 
   instrument(coreLibName) {
@@ -22,9 +24,7 @@ class FakeCoreSubscriber extends BaseCoreSubscriber {
     shimmer.wrapMethod(coreLibName, this.packageName, function wrapMethod(original, method) {
       const channel = tracingChannel(`${self.id}:${method}`)
       return function wrappedMethod(...args) {
-        const callback = args.at(-1)
-        const callbackName = callback?.name || '<anonymous>'
-        const data = { name: `${self.packageName}.${method}`, callbackName }
+        const data = { name: `${self.packageName}.${method}` }
         return channel.traceCallback(original, -1, data, this, ...args)
       }
     })
