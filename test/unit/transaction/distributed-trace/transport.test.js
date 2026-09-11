@@ -21,8 +21,8 @@ test('exposes the transport type values', () => {
   assert.equal(Transport.UNKNOWN, 'Unknown')
 })
 
-test('values() returns the valid transport values', () => {
-  assert.deepEqual(Transport.values(), [
+test('values returns the valid transport values', () => {
+  assert.deepEqual(Transport.values, [
     'AMQP',
     'HTTP',
     'HTTPS',

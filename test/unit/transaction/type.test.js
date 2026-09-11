@@ -33,10 +33,10 @@ test('isValid() rejects invalid values', () => {
   assert.equal(Type.isValid('toString'), false)
 })
 
-test('entries() yields KEY->value pairs', () => {
+test('entries yields KEY->value pairs', () => {
   // transaction-shim.js relies on this exact shape to define its static type
   // members.
-  assert.deepEqual(Type.entries(), [
+  assert.deepEqual(Type.entries, [
     ['WEB', 'web'],
     ['BG', 'bg'],
     ['MESSAGE', 'message']
