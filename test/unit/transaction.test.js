@@ -239,6 +239,54 @@ test('Transaction unit tests', async (t) => {
     const tx = new Transaction(agent, traceId)
     assert.equal(tx.traceId, traceId)
   })
+
+  await t.test('should not generate a traceId until it is read', (t) => {
+    const { agent } = t.nr
+    const makeId = sinon.spy(hashes, 'makeId')
+    try {
+      const tx = new Transaction(agent)
+      // Constructing must not generate the 32-char trace id. (The 16-char
+      // transaction id is generated at construction and is unrelated.)
+      assert.equal(
+        makeId.getCalls().some((call) => call.args[0] === 32),
+        false,
+        'traceId should not be generated at construction'
+      )
+
+      // Reading it generates and memoizes the id.
+      const first = tx.traceId
+      assert.match(first, /^[0-9a-f]{32}$/)
+      assert.equal(
+        makeId.getCalls().filter((call) => call.args[0] === 32).length,
+        1,
+        'traceId should be generated exactly once on first read'
+      )
+      assert.equal(tx.traceId, first, 'subsequent reads return the memoized id')
+      assert.equal(
+        makeId.getCalls().filter((call) => call.args[0] === 32).length,
+        1,
+        'traceId should not be regenerated on subsequent reads'
+      )
+    } finally {
+      makeId.restore()
+    }
+  })
+
+  await t.test('should not generate a traceId when one is provided', (t) => {
+    const { agent } = t.nr
+    const makeId = sinon.spy(hashes, 'makeId')
+    try {
+      const tx = new Transaction(agent, 'provided-trace-id')
+      assert.equal(tx.traceId, 'provided-trace-id')
+      assert.equal(
+        makeId.getCalls().some((call) => call.args[0] === 32),
+        false,
+        'a provided traceId should never trigger id generation'
+      )
+    } finally {
+      makeId.restore()
+    }
+  })
 })
 
 test('Transaction naming tests', async (t) => {
