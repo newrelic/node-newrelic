@@ -16,7 +16,7 @@ test('exposes the transaction type values', () => {
 })
 
 test('values() returns the valid type values', () => {
-  assert.deepEqual(Type.values(), ['web', 'bg', 'message'])
+  assert.deepEqual(Type.values, ['web', 'bg', 'message'])
 })
 
 test('isValid() accepts valid type values', () => {
