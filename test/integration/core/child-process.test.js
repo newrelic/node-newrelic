@@ -35,7 +35,6 @@ test('exec', function (t, end) {
         agent,
         end,
         name: 'child_process.exec',
-        children: ['child_process.execFile'],
         assertCallbacks: false
       })
     })

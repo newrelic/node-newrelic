@@ -24,7 +24,6 @@ function makeSubscriber(agent, opts = {}) {
     logger,
     packageName: 'dns',
     instrumentedMethods: opts.instrumentedMethods ?? ['lookup'],
-    hasCallback: opts.hasCallback ?? false,
     prefix: opts.prefix,
   })
 }
@@ -212,15 +211,45 @@ test('subscribe should bind asyncEnd handler on all channels', (t) => {
   }
 })
 
-test('subscribe should bind end handler when hasCallback is true', (t) => {
-  const { agent } = t.nr
-  const subscriber = makeSubscriber(agent, { hasCallback: true })
+test('subscribe should bind end handler on all channels', (t) => {
+  const { subscriber } = t.nr
   subscriber.subscribe()
   for (const channel of subscriber.channels) {
     assert.equal(channel.end.hasSubscribers, true)
   }
-  subscriber.disable()
-  subscriber.unsubscribe()
+})
+
+test('shouldCreateSegment should be true by default', (t) => {
+  const { subscriber } = t.nr
+  assert.equal(subscriber.internal, false)
+  assert.equal(subscriber.shouldCreateSegment(undefined), true)
+  assert.equal(subscriber.shouldCreateSegment({ name: 'other', shimId: 'fs' }), true)
+  assert.equal(subscriber.shouldCreateSegment({ name: 'same', shimId: 'dns' }), true)
+})
+
+test('shouldCreateSegment should be false for a same-package parent when internal', (t) => {
+  const { subscriber } = t.nr
+  subscriber.internal = true
+  assert.equal(subscriber.shouldCreateSegment({ name: 'same', shimId: 'dns' }), false)
+  assert.equal(subscriber.shouldCreateSegment({ name: 'other', shimId: 'fs' }), true)
+  assert.equal(subscriber.shouldCreateSegment(undefined), true)
+})
+
+test('createSegment should skip a same-package parent when internal and return ctx unchanged', (t) => {
+  const { agent, subscriber } = t.nr
+  subscriber.internal = true
+
+  helper.runInTransaction(agent, (tx) => {
+    const ctx = agent.tracer.getContext()
+    const outer = subscriber.createSegment({ name: 'dns.lookup', ctx })
+    assert.equal(outer.segment.name, 'dns.lookup')
+    assert.equal(outer.segment.shimId, 'dns')
+
+    // a nested call from the same package must not add a second segment
+    const inner = subscriber.createSegment({ name: 'dns.resolve', ctx: outer })
+    assert.equal(inner, outer, 'should return the same context')
+    assert.equal(tx.trace.getChildren(outer.segment.id).length, 0, 'should not create a child segment')
+  })
 })
 
 test('unsubscribe should remove all channel handlers', (t) => {
