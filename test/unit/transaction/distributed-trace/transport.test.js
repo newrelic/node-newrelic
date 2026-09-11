@@ -36,7 +36,7 @@ test('values() returns the valid transport values', () => {
 })
 
 test('entries() yields KEY->value pairs', () => {
-  assert.deepEqual(Transport.entries(), [
+  assert.deepEqual(Transport.entries, [
     ['AMQP', 'AMQP'],
     ['HTTP', 'HTTP'],
     ['HTTPS', 'HTTPS'],
