@@ -8,6 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('#testlib/agent_helper.js')
 const SpanEvent = require('#agentlib/spans/span-event.js')
+const PartialTrace = require('#agentlib/transaction/trace/partial-trace.js')
 const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 const MODES = [PARTIAL_TYPES.REDUCED, PARTIAL_TYPES.ESSENTIAL, PARTIAL_TYPES.COMPACT]
 
@@ -39,7 +40,7 @@ for (const mode of MODES) {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
         transaction.partialType = mode
-        transaction.createPartialTrace()
+        transaction.partialTrace = new PartialTrace(transaction)
         const segment = transaction.trace.add('entrySpan')
         let span = SpanEvent.fromSegment({ segment, transaction, isEntry: true })
         span = span.applyPartialTraceRules({ isEntry: true, partialTrace: transaction.partialTrace })
@@ -56,7 +57,7 @@ for (const mode of MODES) {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
         transaction.partialType = mode
-        transaction.createPartialTrace()
+        transaction.partialTrace = new PartialTrace(transaction)
         const segment = transaction.trace.add('Llm/foobar')
         let span = SpanEvent.fromSegment({ segment, transaction })
         span = span.applyPartialTraceRules({ partialTrace: transaction.partialTrace })
@@ -72,7 +73,7 @@ for (const mode of MODES) {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
         transaction.partialType = mode
-        transaction.createPartialTrace()
+        transaction.partialTrace = new PartialTrace(transaction)
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('host', 'redis-service')
         segment.addAttribute('port_path_or_id', 6379)
@@ -115,7 +116,7 @@ for (const mode of MODES) {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
         transaction.partialType = mode
-        transaction.createPartialTrace()
+        transaction.partialTrace = new PartialTrace(transaction)
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('foo', 'bar')
         let span = SpanEvent.fromSegment({ segment, transaction })
@@ -129,7 +130,7 @@ for (const mode of MODES) {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
         transaction.partialType = mode
-        transaction.createPartialTrace()
+        transaction.partialTrace = new PartialTrace(transaction)
         const segment = transaction.trace.add('test-segment')
         segment.addAttribute('foo', 'bar')
         let span = SpanEvent.fromSegment({ segment, transaction })
@@ -143,7 +144,7 @@ for (const mode of MODES) {
       const { agent } = t.nr
       helper.runInTransaction(agent, (transaction) => {
         transaction.partialType = mode
-        transaction.createPartialTrace()
+        transaction.partialTrace = new PartialTrace(transaction)
         const segment = transaction.trace.add('Datastore/operation/Redis/SET')
         segment.addAttribute('host', 'redis-service')
         segment.addAttribute('port_path_or_id', 6379)

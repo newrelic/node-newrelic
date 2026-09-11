@@ -68,7 +68,7 @@ test('distributed tracing(newrelic header)', async function (t) {
             const headers = {}
             tx.insertDistributedTraceHeaders(headers)
             const payload = headers.newrelic
-            const created = tx._getParsedPayload(payload)
+            const created = JSON.parse(Buffer.from(payload, 'base64').toString('utf-8'))
             const exact = outbound.exact
             const keyRegex = /^d\.(.{2})$/
             Object.keys(exact).forEach((key) => {

@@ -10,6 +10,7 @@ const assert = require('node:assert')
 
 const helper = require('../lib/agent_helper')
 const { Exception } = require('../../lib/errors')
+const createDistributedTracePayload = require('#testlib/create-dt-payload.js')
 
 test('when error events are disabled', async (t) => {
   t.beforeEach((ctx) => {
@@ -49,9 +50,7 @@ test('attributes', async (t) => {
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function (tx) {
-      const payload = tx._createDistributedTracePayload().text()
-      tx.isDistributedTrace = null
-      tx._acceptDistributedTracePayload(payload)
+      createDistributedTracePayload(tx.agent, tx)
       const error = new Error('some error')
       const customAttributes = {}
       const timestamp = 0
@@ -83,9 +82,7 @@ test('attributes', async (t) => {
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function (tx) {
-      const payload = tx._createDistributedTracePayload().text()
-      tx.isDistributedTrace = null
-      tx._acceptDistributedTracePayload(payload)
+      createDistributedTracePayload(tx.agent, tx)
       const error = new Error('some error')
       const customAttributes = {}
       const timestamp = 0
