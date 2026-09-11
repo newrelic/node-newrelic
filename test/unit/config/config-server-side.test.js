@@ -295,6 +295,12 @@ describe('when receiving server-side configuration', () => {
     })
   })
 
+  test('should set browser_monitoring.loader_version when received', (t) => {
+    const { config } = t.nr
+    config.onConnect({ 'browser_monitoring.loader_version': '1.317.0' })
+    assert.equal(config.browser_monitoring.loader_version, '1.317.0')
+  })
+
   test('should not blow up when beacon is received', (t) => {
     const { config } = t.nr
     assert.doesNotThrow(() => {
