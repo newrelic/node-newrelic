@@ -56,10 +56,11 @@ test('undici instrumentation', async function (t) {
     const { channels, loggerMock } = t.nr
     channels.create.publish({ request: { origin: HOST, path: '/foo' } })
     assert.deepEqual(loggerMock.trace.args[0], [
-      'Not capturing data for outbound request (%s) because transaction is not active %s or parent segment opaque (%s)',
+      'Not capturing data for outbound request (%s) because transaction is not active (%s) or parent segment(%s) is opaque (%s)',
       '/foo',
+      true,
       undefined,
-      undefined
+      false
     ])
   })
 
@@ -74,10 +75,11 @@ test('undici instrumentation', async function (t) {
       channels.create.publish({ request: { origin: HOST, path: '/foo' } })
       assert.equal(loggerMock.trace.callCount, 1)
       assert.deepEqual(loggerMock.trace.args[0], [
-        'Not capturing data for outbound request (%s) because transaction is not active %s or parent segment opaque (%s)',
+        'Not capturing data for outbound request (%s) because transaction is not active (%s) or parent segment(%s) is opaque (%s)',
         '/foo',
-        false,
-        'Truncated/parent'
+        true,
+        'Truncated/parent',
+        false
       ])
       end()
     })
@@ -93,10 +95,11 @@ test('undici instrumentation', async function (t) {
       channels.create.publish({ request: { origin: HOST, path: '/foo' } })
       assert.equal(loggerMock.trace.callCount, 1)
       assert.deepEqual(loggerMock.trace.args[0], [
-        'Not capturing data for outbound request (%s) because transaction is not active %s or parent segment opaque (%s)',
+        'Not capturing data for outbound request (%s) because transaction is not active (%s) or parent segment(%s) is opaque (%s)',
         '/foo',
-        true,
-        'parent'
+        false,
+        'parent',
+        true
       ])
       tx.end()
       end()
