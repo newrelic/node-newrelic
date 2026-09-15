@@ -213,6 +213,23 @@ test('should add unscoped metrics for an external request', async (t) => {
   })
 })
 
+test('should not create external segment if transaction is not active', async (t) => {
+  const { agent, undici, HOST, REQUEST_URL } = t.nr
+  await helper.runInTransaction(agent, async (tx) => {
+    tx.end()
+    const { statusCode, body } = await undici.request(REQUEST_URL, {
+      path: '/headers',
+      method: 'GET'
+    })
+    assert.equal(statusCode, 200)
+    const segment = metrics.findSegment(tx.trace, tx.trace.root, `External/${HOST}/headers`)
+    assert.ok(!segment, 'should not create external segment when transaction is inactive')
+    const { traceparent } = await body.json()
+    assert.ok(!traceparent, 'should not create traceparent when transaction is not active')
+    assert.equal(tx.isDistributedTrace, null)
+  })
+})
+
 test('concurrent requests', async (t) => {
   const { agent, undici, HOST, REQUEST_URL } = t.nr
   await helper.runInTransaction(agent, async (tx) => {
