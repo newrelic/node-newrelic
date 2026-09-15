@@ -52,14 +52,35 @@ test('undici instrumentation', async function (t) {
     assert.equal(subscriber.enabled, false)
   })
 
-  await t.test('should log trace if request is not in an active transaction', function (t) {
+  await t.test('should log trace if request is not in a transaction', function (t) {
     const { channels, loggerMock } = t.nr
     channels.create.publish({ request: { origin: HOST, path: '/foo' } })
     assert.deepEqual(loggerMock.trace.args[0], [
-      'Not capturing data for outbound request (%s) because parent segment opaque (%s)',
+      'Not capturing data for outbound request (%s) because transaction is not active %s or parent segment opaque (%s)',
       '/foo',
+      undefined,
       undefined
     ])
+  })
+
+  await t.test('should not add headers request is not in an active transaction', function (t, end) {
+    const { agent, channels, loggerMock } = t.nr
+    agent.config.distributed_tracing.enabled = true
+    helper.runInTransaction(agent, function (tx) {
+      const segment = tx.trace.add('parent')
+      segment.start()
+      tx.end()
+      agent.tracer.setSegment({ segment, transaction: tx })
+      channels.create.publish({ request: { origin: HOST, path: '/foo' } })
+      assert.equal(loggerMock.trace.callCount, 1)
+      assert.deepEqual(loggerMock.trace.args[0], [
+        'Not capturing data for outbound request (%s) because transaction is not active %s or parent segment opaque (%s)',
+        '/foo',
+        false,
+        'Truncated/parent'
+      ])
+      end()
+    })
   })
 
   await t.test('should not add headers when segment is opaque', function (t, end) {
@@ -72,8 +93,9 @@ test('undici instrumentation', async function (t) {
       channels.create.publish({ request: { origin: HOST, path: '/foo' } })
       assert.equal(loggerMock.trace.callCount, 1)
       assert.deepEqual(loggerMock.trace.args[0], [
-        'Not capturing data for outbound request (%s) because parent segment opaque (%s)',
+        'Not capturing data for outbound request (%s) because transaction is not active %s or parent segment opaque (%s)',
         '/foo',
+        true,
         'parent'
       ])
       tx.end()
