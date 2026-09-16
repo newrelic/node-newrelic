@@ -425,6 +425,62 @@ test('http2 outbound request', async (t) => {
     }
   })
 
+  await t.test('should use the request authority, not the connect authority, when a session is multiplexed/rerouted across authorities', (t, end) => {
+    const { agent, http2, port, protocol, host } = t.nr
+    const path = '/rerouted?first=1&second=2'
+    const reroutedAuthority = 'rerouted-host.example:1234'
+    const name = NAMES.EXTERNAL.PREFIX + reroutedAuthority + '/rerouted'
+    helper.runInTransaction(agent, function () {
+      t.nr.transaction = agent.getTransaction()
+      assert.doesNotThrow(() => {
+        makeRequest(
+          http2,
+          {
+            host, // used only to establish the underlying connection
+            port,
+            protocol,
+            method: 'GET',
+            // simulates one http2 session (one underlying connection) being used
+            // to request a different authority than the one it was connected with,
+            // e.g. a multiplexed/rerouted session
+            testing: { overrideHeaders: { ':path': path, ':method': 'GET', ':authority': reroutedAuthority } }
+          },
+          finish
+        )
+      })
+    })
+
+    function finish() {
+      const { transaction } = t.nr
+      const [, child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(child.name, name, 'segment name should reflect the rerouted authority')
+      transaction.end()
+
+      const expectedNames = [
+        `External/${reroutedAuthority}/http2`,
+        `External/${reroutedAuthority}/all`,
+        'External/allWeb',
+        'External/all'
+      ]
+      expectedNames.forEach((metricName) => {
+        const metric = agent.metrics.getOrCreateMetric(metricName)
+        assert.equal(
+          metric.callCount,
+          1,
+          `should record unscoped external metric of ${metricName} for the rerouted authority`
+        )
+      })
+
+      const staleMetric = agent.metrics.getOrCreateMetric(`External/${host}:${port}/http2`)
+      assert.equal(
+        staleMetric.callCount,
+        0,
+        'should not record metrics under the original connect authority'
+      )
+      end()
+    }
+  })
+
   await t.test('should not crash when headers are null', (t, end) => {
     const { agent, http2, port, protocol, host } = t.nr
     const path = '/nullHead'
@@ -632,6 +688,38 @@ test('http2 outbound request', async (t) => {
       end()
     }
   })
+
+  await t.test('should not create an external segment if the transaction ends before the request is made', (t, end) => {
+    const { agent, http2, port, protocol, host } = t.nr
+    const path = '/endedBeforeRequest'
+    helper.runInTransaction(agent, function (transaction) {
+      t.nr.transaction = transaction
+      transaction.end()
+      assert.doesNotThrow(() => {
+        makeRequest(
+          http2,
+          {
+            protocol,
+            host,
+            port,
+            path,
+            method: 'GET'
+          },
+          finish
+        )
+      })
+    })
+
+    function finish(err, responseHeaders) {
+      assert.ok(!err)
+      const { transaction } = t.nr
+      const children = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(children.length, 0, 'should not create an external segment once the transaction has ended')
+      assert.ok(!responseHeaders.traceparent, 'should not inject traceparent header once the transaction has ended')
+      assert.ok(!responseHeaders.newrelic, 'should not inject newrelic header once the transaction has ended')
+      end()
+    }
+  })
 })
 
 test('http trace headers', async (t) => {
@@ -685,7 +773,7 @@ test('http trace headers', async (t) => {
         const [version, traceId, parentSpanId, sampledFlag] = headers.traceparent.split('-')
         assert.equal(version, '00')
         assert.equal(traceId, transaction.traceId)
-        assert.equal(parentSpanId, transaction.trace.root.id)
+        assert.equal(parentSpanId, child.id)
         assert.equal(sampledFlag, '01')
         end()
       }
