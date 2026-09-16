@@ -6,7 +6,7 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Updated http2 instrumentation to properly inject traceparent header with external segment id",
+          "Updated `http2` instrumentation to properly inject `traceparent` header with external segment id",
           "Updated `undici` instrumentation to not attempt to create an external segment when transaction is not active"
         ],
         "features": [

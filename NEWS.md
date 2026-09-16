@@ -3,11 +3,13 @@
 #### Features
 
 * Added `browser_monitoring.version` configuration option ([#4269](https://github.com/newrelic/node-newrelic/pull/4269)) ([b62ca00](https://github.com/newrelic/node-newrelic/commit/b62ca002441bcae50b4fd235eb046cdfa6a55bbe))
+  * When this is set, it will pin the browser agent version when using `newrelic.getBrowserTimingHeader` to the version selected.
+  * If you specify a version that is no longer supported or invalid, it will not resolve to any browser agent when calling `newrelic.getBrowserTimingHeader`.
 
 #### Bug fixes
 
 * Updated `undici` instrumentation to not attempt to create an external segment when transaction is not active ([#4278](https://github.com/newrelic/node-newrelic/pull/4278)) ([d634246](https://github.com/newrelic/node-newrelic/commit/d634246308c1a4d359eae59a035687860864969e))
-* Updated http2 instrumentation to properly inject traceparent header with external segment id ([#4279](https://github.com/newrelic/node-newrelic/pull/4279)) ([ccd7800](https://github.com/newrelic/node-newrelic/commit/ccd7800b6dd64ef9cf5cefaaef86509206d56ab9))
+* Updated `http2` instrumentation to properly inject `traceparent` header with external segment id ([#4279](https://github.com/newrelic/node-newrelic/pull/4279)) ([ccd7800](https://github.com/newrelic/node-newrelic/commit/ccd7800b6dd64ef9cf5cefaaef86509206d56ab9))
 
 #### Code refactoring
 
@@ -21,7 +23,7 @@
 
 #### Tests
 
-* Adds `legacy-peer-deps` to google adk tests to avoid peer dep conflict ([#4280](https://github.com/newrelic/node-newrelic/pull/4280)) ([e4a6b35](https://github.com/newrelic/node-newrelic/commit/e4a6b353e3778c33cafcb508c476eec47ea110b9))
+* Added `legacy-peer-deps` to google adk tests to avoid peer dep conflict ([#4280](https://github.com/newrelic/node-newrelic/pull/4280)) ([e4a6b35](https://github.com/newrelic/node-newrelic/commit/e4a6b353e3778c33cafcb508c476eec47ea110b9))
 
 ### v14.4.0 (2026-09-10)
 
