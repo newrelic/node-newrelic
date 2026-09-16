@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const flags = require('../../lib/feature_flags')
+const flags = require('#agentlib/feature-flags.js')
 const Config = require('../../lib/config')
 
 // Please do not delete flags from here.
