@@ -34,6 +34,22 @@ them during validation) to carry agent-specific metadata:
   (`NEW_RELIC_<PATH>`). For example `logging.enabled` is set by
   `NEW_RELIC_LOG_ENABLED`, not `NEW_RELIC_LOGGING_ENABLED`. Settings without this
   keyword derive their name from the path.
+- **`x-newrelic-coerce`** (string) — names the coercion applied to a setting's
+  environment-variable string value for cases the node's `type` alone cannot
+  express. Environment values are strings; coercions derivable from `type`
+  (boolean, integer, number, and comma-delimited `array`) are applied
+  automatically and need no keyword. Use this keyword only for the coercions
+  `type` cannot distinguish. Supported values:
+    - `object` — `JSON.parse` the value into an object (e.g.
+      `error_collector.ignore_messages`).
+    - `objectList` — `JSON.parse` the value into an array of objects; needed to
+      distinguish a JSON object list from a plain `array` (both are
+      `type: array`), as with `rules.name`.
+    - `regex` — compile the value into a `RegExp` (e.g.
+      `url_obfuscation.regex.pattern`).
+    - `allowList` — constrain the value to the node's `enum`, falling back to the
+      first enum entry when it is not a member (e.g. `transaction_tracer.record_sql`,
+      `process_host.ipv_preference`, `security.mode`).
 - **`x-newrelic-internal`** (`true`) — marks a setting that is not user-facing
   (e.g. `ssl`, `agent_control`, `logging.diagnostics`,
   `infinite_tracing.trace_observer.insecure`). It still appears in the schema so
