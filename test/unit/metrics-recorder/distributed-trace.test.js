@@ -10,6 +10,8 @@ const helper = require('../../lib/agent_helper')
 const { assertMetrics } = require('../../lib/custom-assertions')
 const recordDistributedTrace = require('../../../lib/metrics/recorders/distributed-trace')
 const Transaction = require('../../../lib/transaction')
+const createDistributedTracePayload = require('#testlib/create-dt-payload.js')
+const Transport = require('#agentlib/transaction/distributed-trace/transport.js')
 
 const makeSegment = (opts) => {
   const segment = opts.tx.trace.add('placeholder')
@@ -56,9 +58,7 @@ test('recordDistributedTrace', async (t) => {
     t.afterEach(afterEach)
     await t.test('records metrics with payload information', (t) => {
       const { tx } = t.nr
-      const payload = tx._createDistributedTracePayload().text()
-      tx.isDistributedTrace = null
-      tx._acceptDistributedTracePayload(payload, 'HTTP')
+      createDistributedTracePayload(tx.agent, tx, Transport.HTTP)
 
       record({
         tx,
@@ -91,9 +91,7 @@ test('recordDistributedTrace', async (t) => {
 
     await t.test('and transaction errors exist includes error-related metrics', (t) => {
       const { tx } = t.nr
-      const payload = tx._createDistributedTracePayload().text()
-      tx.isDistributedTrace = null
-      tx._acceptDistributedTracePayload(payload, 'HTTP')
+      createDistributedTracePayload(tx.agent, tx, Transport.HTTP)
 
       tx.exceptions.push('some error')
 

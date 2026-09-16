@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
+const createDistributedTracePayload = require('#testlib/create-dt-payload.js')
 
 test('SQL trace attributes', async (t) => {
   t.beforeEach((ctx) => {
@@ -36,9 +37,7 @@ test('SQL trace attributes', async (t) => {
       agent.config.account_id = 1
       agent.config.simple_compression = true
       helper.runInTransaction(agent, function (tx) {
-        const payload = tx._createDistributedTracePayload().text()
-        tx.isDistributedTrace = null
-        tx._acceptDistributedTracePayload(payload)
+        createDistributedTracePayload(tx.agent, tx)
         agent.queries.add({
           transaction: tx,
           segment: tx.trace.root,
