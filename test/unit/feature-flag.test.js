@@ -106,7 +106,7 @@ test('should account for all *used* keys', (t) => {
 
 test('should warn if released flags are still in config', () => {
   let called = false
-  Config.prototype.setLogger({
+  const logger = {
     child() {
       return {
         warn() {}
@@ -116,8 +116,8 @@ test('should warn if released flags are still in config', () => {
       called = true
     },
     warnOnce() {}
-  })
-  const config = new Config()
+  }
+  const config = new Config({}, { logger })
   config.feature_flag.released = true
   config.validateFlags()
   assert.equal(called, true)
@@ -125,7 +125,7 @@ test('should warn if released flags are still in config', () => {
 
 test('should warn if unreleased flags are still in config', () => {
   let called = false
-  Config.prototype.setLogger({
+  const logger = {
     child() {
       return {
         warn() {}
@@ -135,8 +135,8 @@ test('should warn if unreleased flags are still in config', () => {
       called = true
     },
     warnOnce() {}
-  })
-  const config = new Config()
+  }
+  const config = new Config({}, { logger })
   config.feature_flag.unreleased = true
   config.validateFlags()
   assert.equal(called, true)
