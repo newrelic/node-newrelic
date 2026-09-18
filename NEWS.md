@@ -1,3 +1,30 @@
+### v14.5.0 (2026-09-16)
+
+#### Features
+
+* Added `browser_monitoring.version` configuration option ([#4269](https://github.com/newrelic/node-newrelic/pull/4269)) ([b62ca00](https://github.com/newrelic/node-newrelic/commit/b62ca002441bcae50b4fd235eb046cdfa6a55bbe))
+  * When this is set, it will pin the browser agent version when using `newrelic.getBrowserTimingHeader` to the version selected.
+  * If you specify a version that is no longer supported or invalid, it will not resolve to any browser agent when calling `newrelic.getBrowserTimingHeader`.
+
+#### Bug fixes
+
+* Updated `undici` instrumentation to not attempt to create an external segment when transaction is not active ([#4278](https://github.com/newrelic/node-newrelic/pull/4278)) ([d634246](https://github.com/newrelic/node-newrelic/commit/d634246308c1a4d359eae59a035687860864969e))
+* Updated `http2` instrumentation to properly inject `traceparent` header with external segment id ([#4279](https://github.com/newrelic/node-newrelic/pull/4279)) ([ccd7800](https://github.com/newrelic/node-newrelic/commit/ccd7800b6dd64ef9cf5cefaaef86509206d56ab9))
+
+#### Code refactoring
+
+* Refactored `child_process` instrumentation to use tracing channel instead of `Shim` ([#4212](https://github.com/newrelic/node-newrelic/pull/4212)) ([5a39c38](https://github.com/newrelic/node-newrelic/commit/5a39c389237278955a82da5ddbd80b520ef20e6e))
+* Refactored `dns` instrumentation to subscribe to events emitted ([#4224](https://github.com/newrelic/node-newrelic/pull/4224)) ([c04289f](https://github.com/newrelic/node-newrelic/commit/c04289fbf3707ad5a36a000df3fdfb79234ac777))
+
+#### Miscellaneous chores
+
+* Regenerated agent config json schema ([#4275](https://github.com/newrelic/node-newrelic/pull/4275)) ([c2107ed](https://github.com/newrelic/node-newrelic/commit/c2107edac8e7739ebf37a26fb0ea1bf14b6246aa))
+* Update secret naming ([#4277](https://github.com/newrelic/node-newrelic/pull/4277)) ([09f5b25](https://github.com/newrelic/node-newrelic/commit/09f5b25c1be78828a326854df0c56cc68a0aed80))
+
+#### Tests
+
+* Added `legacy-peer-deps` to google adk tests to avoid peer dep conflict ([#4280](https://github.com/newrelic/node-newrelic/pull/4280)) ([e4a6b35](https://github.com/newrelic/node-newrelic/commit/e4a6b353e3778c33cafcb508c476eec47ea110b9))
+
 ### v14.4.0 (2026-09-10)
 
 #### Features

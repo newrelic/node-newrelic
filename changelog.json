@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.5.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated `http2` instrumentation to properly inject `traceparent` header with external segment id",
+          "Updated `undici` instrumentation to not attempt to create an external segment when transaction is not active"
+        ],
+        "features": [
+          "Added `browser_monitoring.version` configuration option"
+        ]
+      }
+    },
+    {
       "version": "14.4.0",
       "changes": {
         "security": [],

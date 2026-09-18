@@ -904,6 +904,13 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
+  await t.test('should pick up browser_monitoring.version via the standard derived env var name', (t, end) => {
+    idempotentEnv({ NEW_RELIC_BROWSER_MONITORING_VERSION: '1.317.0' }, function (tc) {
+      assert.equal(tc.browser_monitoring.version, '1.317.0')
+      end()
+    })
+  })
+
   const ipvValues = ['4', '6', 'bogus']
   for (const val of ipvValues) {
     const expectedValue = val === 'bogus' ? '4' : val

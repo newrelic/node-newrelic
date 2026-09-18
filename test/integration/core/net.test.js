@@ -129,8 +129,6 @@ test('connect', function connectTest(t, end) {
 
       assert.equal(dnsSegment.name, 'dns.lookup', 'dns segment should have correct name')
       assert.ok(dnsSegment.timer.touched, 'dns segment should started and ended')
-      const dnsChildren = transaction.trace.getChildren(dnsSegment.id)
-      assert.equal(dnsChildren.length, 1, 'dns should have a single callback segment')
       end()
     }
   }

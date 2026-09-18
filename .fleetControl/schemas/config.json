@@ -534,6 +534,11 @@
           "type": "boolean",
           "default": false,
           "description": "Request un-minified sources from the server."
+        },
+        "version": {
+          "type": "string",
+          "default": "",
+          "description": "The browser agent loader version to request, e.g. `\"1.317.0\"`. See the [browser agent EOL policy](https://docs.newrelic.com/docs/browser/browser-monitoring/getting-started/browser-agent-eol-policy/) for which versions are currently available and supported."
         }
       },
       "additionalProperties": true,
@@ -1635,6 +1640,17 @@
             }
           }
         },
+        "dns": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
         "@elastic/elasticsearch": {
           "type": "object",
           "additionalProperties": true,
@@ -2021,17 +2037,6 @@
           }
         },
         "crypto": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "dns": {
           "type": "object",
           "additionalProperties": true,
           "properties": {

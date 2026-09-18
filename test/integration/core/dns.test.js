@@ -10,63 +10,21 @@ const assert = require('node:assert')
 const dns = require('dns')
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify.js')
-
-const resolveMethods = [
-  'resolve',
-  'resolve4',
-  'resolve6',
-  'resolveAny',
-  'resolveCaa',
-  'resolveCname',
-  'resolveMx',
-  'resolveNaptr',
-  'resolveNs',
-  'resolvePtr',
-  'resolveSoa',
-  'resolveSrv',
-  'resolveTxt'
-]
+const sinon = require('sinon')
+const mockDns = require('./dns-utils')
 
 test.beforeEach((ctx) => {
+  const sandbox = sinon.createSandbox()
   ctx.nr = {}
-  ctx.nr.reverse = dns.reverse
-  ctx.nr.origResolves = {}
+  ctx.nr.sandbox = sandbox
 
-  // wrap dns.reverse to not try to actually execute this function
-  dns.reverse = (addr, cb) => {
-    cb(undefined, ['localhost'])
-  }
-
-  for (const fn of resolveMethods) {
-    ctx.nr.origResolves[fn] = dns[fn]
-  }
-  dns.resolve = (_, cb) => cb(null, ['127.0.0.1'])
-  dns.resolve4 = (_, cb) => cb(null, ['127.0.0.1'])
-  dns.resolve6 = (_, cb) => cb(null, ['::1'])
-  dns.resolveCname = (_, cb) => {
-    const error = Error('boom')
-    error.code = 'ENODATA'
-    cb(error)
-  }
-  dns.resolveMx = (_, cb) => cb(null, ['127.0.0.1'])
-  dns.resolveNs = (_, cb) => cb(null, ['a.iana-servers.net', 'b.iana-servers.net'])
-  dns.resolveTxt = (_, cb) => cb(null, ['one', 'two', 'three'])
-  dns.resolveSrv = (_, cb) => {
-    const error = Error('boom')
-    error.code = 'ENODATA'
-    cb(error)
-  }
-
+  mockDns({ dns, sandbox })
   ctx.nr.agent = helper.instrumentMockedAgent()
 })
 
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
-  dns.reverse = ctx.nr.reverse
-
-  for (const fn of resolveMethods) {
-    dns[fn] = ctx.nr.origResolves[fn]
-  }
+  ctx.nr.sandbox.restore()
 })
 
 test('lookup - IPv4', function (t, end) {
@@ -76,7 +34,7 @@ test('lookup - IPv4', function (t, end) {
       assert.ok(!err, 'should not error')
       assert.equal(ip, '127.0.0.1')
       assert.equal(v, 4)
-      verifySegments({ agent, end, name: 'dns.lookup' })
+      verifySegments({ agent, end, name: 'dns.lookup', assertCallbacks: false })
     })
   })
 })
@@ -89,7 +47,7 @@ test('lookup - IPv6', function (t, end) {
       assert.ok(!err, 'should not error')
       assert.equal(ip, '::1')
       assert.equal(v, 6)
-      verifySegments({ agent, end, name: 'dns.lookup' })
+      verifySegments({ agent, end, name: 'dns.lookup', assertCallbacks: false })
     })
   })
 })
@@ -100,10 +58,9 @@ test('resolve', function (t, end) {
     dns.resolve('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
-      assert.ok(ips[0].match(/^(?:\d{1,3}\.){3}\d{1,3}$/))
+      assert.equal(ips[0], '127.0.0.1')
 
-      const children = []
-      verifySegments({ agent, end, name: 'dns.resolve', children })
+      verifySegments({ agent, end, name: 'dns.resolve', assertCallbacks: false })
     })
   })
 })
@@ -114,8 +71,8 @@ test('resolve4', function (t, end) {
     dns.resolve4('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
-      assert.ok(ips[0].match(/^(?:\d{1,3}\.){3}\d{1,3}$/))
-      verifySegments({ agent, end, name: 'dns.resolve4' })
+      assert.equal(ips[0], '127.0.0.1')
+      verifySegments({ agent, end, name: 'dns.resolve4', assertCallbacks: false })
     })
   })
 })
@@ -127,7 +84,7 @@ test('resolve6', function (t, end) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
       assert.equal(ips[0], '::1')
-      verifySegments({ agent, end, name: 'dns.resolve6' })
+      verifySegments({ agent, end, name: 'dns.resolve6', assertCallbacks: false })
     })
   })
 })
@@ -137,7 +94,7 @@ test('resolveCname', function (t, end) {
   helper.runInTransaction(agent, function () {
     dns.resolveCname('example.com', function (err) {
       assert.equal(err.code, 'ENODATA')
-      verifySegments({ agent, end, name: 'dns.resolveCname' })
+      verifySegments({ agent, end, name: 'dns.resolveCname', assertCallbacks: false })
     })
   })
 })
@@ -148,8 +105,9 @@ test('resolveMx', function (t, end) {
     dns.resolveMx('example.com', function (err, ips) {
       assert.ok(!err, 'should not error')
       assert.equal(ips.length, 1)
+      assert.equal(ips[0], '127.0.0.1')
 
-      verifySegments({ agent, end, name: 'dns.resolveMx' })
+      verifySegments({ agent, end, name: 'dns.resolveMx', assertCallbacks: false })
     })
   })
 })
@@ -160,7 +118,7 @@ test('resolveNs', function (t, end) {
     dns.resolveNs('example.com', function (err, names) {
       assert.ok(!err, 'should not error')
       assert.deepEqual(names.sort(), ['a.iana-servers.net', 'b.iana-servers.net'])
-      verifySegments({ agent, end, name: 'dns.resolveNs' })
+      verifySegments({ agent, end, name: 'dns.resolveNs', assertCallbacks: false })
     })
   })
 })
@@ -170,8 +128,9 @@ test('resolveTxt', function (t, end) {
   helper.runInTransaction(agent, function () {
     dns.resolveTxt('example.com', function (err, data) {
       assert.ok(!err, 'should not error')
+      assert.deepEqual(data, ['one', 'two', 'three'])
       assert.ok(Array.isArray(data))
-      verifySegments({ agent, end, name: 'dns.resolveTxt' })
+      verifySegments({ agent, end, name: 'dns.resolveTxt', assertCallbacks: false })
     })
   })
 })
@@ -181,7 +140,7 @@ test('resolveSrv', function (t, end) {
   helper.runInTransaction(agent, function () {
     dns.resolveSrv('example.com', function (err) {
       assert.equal(err.code, 'ENODATA')
-      verifySegments({ agent, end, name: 'dns.resolveSrv' })
+      verifySegments({ agent, end, name: 'dns.resolveSrv', assertCallbacks: false })
     })
   })
 })
@@ -191,8 +150,9 @@ test('reverse', function (t, end) {
   helper.runInTransaction(agent, function () {
     dns.reverse('127.0.0.1', function (err, names) {
       assert.ok(!err, 'should not error')
-      assert.ok(names.indexOf('localhost') !== -1, 'should have expected name')
-      verifySegments({ agent, end, name: 'dns.reverse' })
+      assert.equal(names.length, 1)
+      assert.equal(names[0], 'localhost')
+      verifySegments({ agent, end, name: 'dns.reverse', assertCallbacks: false })
     })
   })
 })
