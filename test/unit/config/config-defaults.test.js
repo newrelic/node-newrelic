@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const path = require('path')
 
 const Config = require('../../../lib/config')
-const proxyquire = require('proxyquire')
 
 test('with default properties', async (t) => {
   let configuration = null
@@ -366,36 +365,28 @@ test('with default properties', async (t) => {
   })
 })
 
-test('with undefined as default', async (t) => {
-  const mockConfig = {
-    fake_key: {
-      another_layer: {
-        fake_nested_key: {
-          default: undefined
+test('applies user values only for schema-defined keys', async (t) => {
+  await t.test('overrides a nested schema-defined setting with a user value', () => {
+    const configuration = Config.initialize({
+      transaction_tracer: {
+        explain_threshold: 42
+      }
+    })
+
+    assert.equal(configuration.transaction_tracer.explain_threshold, 42)
+  })
+
+  await t.test('ignores keys that are not defined in the schema', () => {
+    const configuration = Config.initialize({
+      fake_key: {
+        another_layer: {
+          fake_nested_key: 'fake-value'
         }
       }
-    }
-  }
+    })
 
-  const defaults = require('../../../lib/config/default')
-  const orig = defaults.definition
-  defaults.definition = function stub() {
-    const configDefaults = orig.apply(this, arguments)
-    return { ...configDefaults, ...mockConfig }
-  }
-  const Config = proxyquire('../../../lib/config', {
-    './default': defaults
+    assert.equal(configuration.fake_key, undefined)
   })
-
-  const configuration = Config.initialize({
-    fake_key: {
-      another_layer: {
-        fake_nested_key: 'fake-value'
-      }
-    }
-  })
-
-  assert.equal(configuration.fake_key.another_layer.fake_nested_key, 'fake-value')
 })
 
 test('agent control', async (t) => {

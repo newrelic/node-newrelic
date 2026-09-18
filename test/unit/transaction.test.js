@@ -1883,9 +1883,10 @@ test('when being named with finalizeNameFromWeb', async (t) => {
   )
 
   await t.test('when namestate populated and high_security enabled, should use name stack', (t) => {
-    const { agent, txn } = t.nr
+    const { agent, txn } = loadHighSecurityAgent(t.nr.agent)
+    t.nr.agent = agent
+    t.nr.txn = txn
     setupNameState(txn)
-    setupHighSecurity(agent)
 
     txn.url = '/some/random/path'
     txn.finalizeNameFromWeb(200)
@@ -1897,9 +1898,10 @@ test('when being named with finalizeNameFromWeb', async (t) => {
     'when namestate populated and high_security enabled, ' +
     'should not copy parameters from the name stack',
     (t) => {
-      const { agent, txn } = t.nr
+      const { agent, txn } = loadHighSecurityAgent(t.nr.agent)
+      t.nr.agent = agent
+      t.nr.txn = txn
       setupNameState(txn)
-      setupHighSecurity(agent)
 
       txn.url = '/some/random/path'
       txn.finalizeNameFromWeb(200)
@@ -2056,10 +2058,19 @@ function setupNameState(transaction) {
   transaction.nameState.appendPath('/bar/:bar', { bar: 'bang' })
 }
 
-function setupHighSecurity(agent) {
-  agent.config.high_security = true
-  agent.config._applyHighSecurity()
-  agent.config.emit('attributes.include')
+function loadHighSecurityAgent(previousAgent) {
+  helper.unloadAgent(previousAgent)
+  const agent = helper.loadMockedAgent({
+    attributes: {
+      enabled: true,
+      include: ['request.parameters.*']
+    },
+    distributed_tracing: {
+      enabled: true
+    },
+    high_security: true
+  })
+  return { agent, txn: new Transaction(agent) }
 }
 
 function getMetrics(agent) {
