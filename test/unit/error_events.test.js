@@ -132,7 +132,7 @@ test('attributes', async (t) => {
   })
 })
 
-test('attributes', async (t) => {
+test('error_collector.capture_events', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
