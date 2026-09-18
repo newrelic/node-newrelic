@@ -311,37 +311,6 @@ test('router mounted as a route handler', function (t, end) {
   })
 })
 
-test('segments for routers', function (t, end) {
-  const { app, express } = t.nr
-
-  const router = express.Router()
-  router.all('/test', function (req, res) {
-    res.end()
-  })
-
-  app.use('/router1', router)
-
-  runTest(t, '/router1/test', function (root, transaction) {
-    assertSegments(
-      transaction.trace,
-      root,
-      [
-        'Expressjs/Router: /router1',
-        ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>']]
-      ],
-      assertSegmentsOptions
-    )
-
-    checkMetrics(
-      transaction.metrics,
-      [NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//router1/test'],
-      '/router1/test'
-    )
-
-    end()
-  })
-})
-
 test('segments for sub-app', function (t, end) {
   const { app, express } = t.nr
 

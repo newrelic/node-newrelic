@@ -137,45 +137,51 @@ test('Do not report domained exceptions', async (t) => {
   await plan.completed
 })
 
-test('Report exceptions handled in setUncaughtExceptionCaptureCallback', async (t) => {
-  const plan = tspl(t, { plan: 3 })
-  const proc = startProc()
-  let messageReceived = false
+test(
+  'Report exceptions handled in setUncaughtExceptionCaptureCallback (no error)',
+  async (t) => {
+    const plan = tspl(t, { plan: 3 })
+    const proc = startProc()
+    let messageReceived = false
 
-  proc.on('message', (errors) => {
-    messageReceived = true
-    plan.equal(errors.count, 0, 'should not have collected an error')
-    plan.deepEqual(errors.messages, [], 'should have no error messages')
-    proc.kill()
-  })
+    proc.on('message', (errors) => {
+      messageReceived = true
+      plan.equal(errors.count, 0, 'should not have collected an error')
+      plan.deepEqual(errors.messages, [], 'should have no error messages')
+      proc.kill()
+    })
 
-  proc.on('exit', () => {
-    plan.ok(messageReceived, 'should receive message')
-  })
+    proc.on('exit', () => {
+      plan.ok(messageReceived, 'should receive message')
+    })
 
-  proc.send({ name: 'setUncaughtExceptionCallback' })
-  await plan.completed
-})
+    proc.send({ name: 'setUncaughtExceptionCallback' })
+    await plan.completed
+  }
+)
 
-test('Report exceptions handled in setUncaughtExceptionCaptureCallback', async (t) => {
-  const plan = tspl(t, { plan: 3 })
-  const proc = startProc()
-  let messageReceived = false
+test(
+  'Report exceptions handled in setUncaughtExceptionCaptureCallback (error)',
+  async (t) => {
+    const plan = tspl(t, { plan: 3 })
+    const proc = startProc()
+    let messageReceived = false
 
-  proc.on('message', (errors) => {
-    messageReceived = true
-    plan.equal(errors.count, 1, 'should have collected an error')
-    plan.deepEqual(errors.messages, ['nothing can keep me down'], 'should have error messages')
-    proc.kill()
-  })
+    proc.on('message', (errors) => {
+      messageReceived = true
+      plan.equal(errors.count, 1, 'should have collected an error')
+      plan.deepEqual(errors.messages, ['nothing can keep me down'], 'should have error messages')
+      proc.kill()
+    })
 
-  proc.on('exit', () => {
-    plan.ok(messageReceived, 'should receive message')
-  })
+    proc.on('exit', () => {
+      plan.ok(messageReceived, 'should receive message')
+    })
 
-  proc.send({ name: 'unsetUncaughtExceptionCallback' })
-  await plan.completed
-})
+    proc.send({ name: 'unsetUncaughtExceptionCallback' })
+    await plan.completed
+  }
+)
 
 function startProc(env) {
   return cp.fork(path.join(helpersDir, 'exceptions.js'), {
