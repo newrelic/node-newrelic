@@ -13,13 +13,13 @@ const Config = require('#agentlib/config/index.js')
 const baselineConfig = require('../../../../newrelic.js').config
 
 // A configuration file loaded from disk that specifies a value for every field
-// the definition exposes, including the object-shaped distributed tracing
+// the schema exposes, including the object-shaped distributed tracing
 // samplers. Regenerate with `node test/benchmark/lib/config/generate-full-config.js`.
 const fullConfig = require('./full-config.json')
 
 // A config that leans on the parts of parsing that do real work: alternate
-// (object-shaped) samplers exercise the sampler builder, and the string values
-// below are re-parsed by their formatters on the way in.
+// (object-shaped) samplers exercise the sampler builder, and the scalar string
+// values below are coerced to their schema types on the way in.
 const complexConfig = {
   license_key: '0000111122223333444455556666777788889999',
   distributed_tracing: {
@@ -41,9 +41,10 @@ const complexConfig = {
 }
 
 // The environment overrides layered on top of `complexConfig`. Each value is a
-// string, as it would be in a real environment, so the definition's formatters
-// (int, float, boolean, array, allowList) run while parsing. Set in `before`
-// and cleared in `after` so neither the setup nor the teardown is measured.
+// string, as it would be in a real environment, so the environment-variable
+// coercions (int, float, boolean, array, allowList) run while parsing. Set in
+// `before` and cleared in `after` so neither the setup nor the teardown is
+// measured.
 const complexEnv = {
   // Split on `;`/`,` by app_name's custom formatter.
   NEW_RELIC_APP_NAME: 'App One, App Two; App Three',
@@ -57,8 +58,8 @@ const complexEnv = {
   NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'always_on'
 }
 
-// A logger that discards everything. `Config` reads a module-level logger that
-// is normally bootstrapped inside `initialize`; supplying a no-op instance keeps
+// A logger that discards everything. `initialize` accepts a `logger` option and
+// threads it into the constructed `Config`; supplying a no-op instance keeps
 // logging I/O out of the measured work.
 const noopLogger = {
   child() {
@@ -104,7 +105,7 @@ suite.run()
 // singleton, so each run measures a full, independent parse.
 function parse(config) {
   return function measured() {
-    Config.initialize(config, { loggerInstance: noopLogger })
+    Config.initialize(config, { logger: noopLogger })
   }
 }
 
