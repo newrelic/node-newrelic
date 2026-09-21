@@ -12,9 +12,8 @@ const Config = require('#agentlib/config/index.js')
 // install starts from.
 const baselineConfig = require('../../../../newrelic.js').config
 
-// A configuration file loaded from disk that specifies a value for every field
-// the schema exposes, including the object-shaped distributed tracing
-// samplers. Regenerate with `node test/benchmark/lib/config/generate-full-config.js`.
+// A configuration fixture specifying a value for every field the schema
+// exposes, including the object-shaped distributed tracing samplers.
 const fullConfig = require('./full-config.json')
 
 // A config that leans on the parts of parsing that do real work: alternate
