@@ -41,7 +41,7 @@ test('renderDefaults', async (t) => {
 })
 
 test('generateDefaultConfig produces the agent defaults', () => {
-  const config = generateDefaultConfig({ skipCache: true })
+  const config = generateDefaultConfig({ rebuildCache: true })
   assert.equal(typeof config, 'object')
   // Values the schema cannot carry as static defaults are filled in.
   assert.equal(config.license_key, '')

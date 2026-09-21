@@ -17,7 +17,7 @@ require('./lib/util/unwrapped-core')
 
 const featureFlags = require('#agentlib/feature-flags.js').prerelease
 const psemver = require('./lib/util/process-version')
-const logger = require('./lib/logger') // Gets re-loaded after initialization.
+const logger = require('./lib/logger')
 const NAMES = require('./lib/metrics/names')
 
 const pkgJSON = require('./package.json')
