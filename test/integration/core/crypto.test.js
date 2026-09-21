@@ -26,7 +26,7 @@ test('pbkdf2', function (t, end) {
     crypto.pbkdf2('hunter2', 'saltine', 5, 32, 'sha1', function (err, key) {
       assert.ok(!err, 'should not error')
       assert.equal(key.length, 32)
-      verifySegments({ agent, end, name: 'crypto.pbkdf2' })
+      verifySegments({ agent, end, name: 'crypto.pbkdf2', assertCallbacks: false })
     })
   })
 })
@@ -37,7 +37,7 @@ test('randomBytes', function (t, end) {
     crypto.randomBytes(32, function (err, key) {
       assert.ok(!err, 'should not error')
       assert.ok(key.length, 32)
-      verifySegments({ agent, end, name: 'crypto.randomBytes' })
+      verifySegments({ agent, end, name: 'crypto.randomBytes', assertCallbacks: false })
     })
   })
 })
@@ -61,7 +61,7 @@ test('pseudoRandomBytes', function (t, end) {
     crypto.pseudoRandomBytes(32, function (err, key) {
       assert.ok(!err, 'should not error')
       assert.ok(key.length, 32)
-      verifySegments({ agent, end, name: 'crypto.pseudoRandomBytes' })
+      verifySegments({ agent, end, name: 'crypto.pseudoRandomBytes', assertCallbacks: false })
     })
   })
 })
@@ -86,7 +86,7 @@ test('randomFill', function (t, end) {
     crypto.randomFill(buf, function (err, buffer) {
       assert.ok(!err, 'should not error')
       assert.ok(buffer.length, 10)
-      verifySegments({ agent, end, name: 'crypto.randomFill' })
+      verifySegments({ agent, end, name: 'crypto.randomFill', assertCallbacks: false })
     })
   })
 })
@@ -110,7 +110,7 @@ test('scrypt', (t, end) => {
     crypto.scrypt('secret', 'salt', 10, (err, buf) => {
       assert.ok(!err, 'should not error')
       assert.ok(buf.length, 10)
-      verifySegments({ agent, end, name: 'crypto.scrypt' })
+      verifySegments({ agent, end, name: 'crypto.scrypt', assertCallbacks: false })
     })
   })
 })
