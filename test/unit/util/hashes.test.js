@@ -20,6 +20,32 @@ test('#makeId always returns the correct length', () => {
   }
 })
 
+test('#makeId always returns lowercase hex characters', () => {
+  for (let length = 1; length < 64; length++) {
+    for (let attempts = 0; attempts < 100; attempts++) {
+      const id = hashes.makeId(length)
+      assert.match(id, /^[0-9a-f]*$/)
+    }
+  }
+})
+
+test('#makeId handles lengths beyond the internal shared buffer', () => {
+  // makeId reuses a fixed-size buffer for typical ids (max 32 hex chars,
+  // i.e. 16 bytes) and falls back to a fresh allocation above that. Exercise
+  // both sides of that boundary.
+  for (const length of [62, 63, 64, 65, 100, 200]) {
+    for (let attempts = 0; attempts < 100; attempts++) {
+      const id = hashes.makeId(length)
+      assert.equal(id.length, length)
+      assert.match(id, /^[0-9a-f]*$/)
+    }
+  }
+})
+
+test('#makeId handles a length of zero', () => {
+  assert.equal(hashes.makeId(0), '')
+})
+
 test('#makeId always unique', () => {
   const ids = {}
   for (let length = 16; length < 64; length++) {
