@@ -39,7 +39,7 @@ test('should throw error when stop is called', (t) => {
   })
 })
 
-test('should throw error when collect is called', (t) => {
+test('should throw error when collect is called', async (t) => {
   const { profiler } = t.nr
-  assert.rejects(() => profiler.collect())
+  await assert.rejects(() => profiler.collect())
 })

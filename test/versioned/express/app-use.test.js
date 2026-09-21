@@ -34,7 +34,7 @@ test('app should be at top of stack when mounted', { skip: isExpress5() }, async
   await plan.completed
 })
 
-test('app should be at top of stack when mounted', async function (t) {
+test('app should be at top of stack when mounted (thorough)', async function (t) {
   const agent = helper.instrumentMockedAgent()
 
   let version

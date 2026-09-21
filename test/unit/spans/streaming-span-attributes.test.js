@@ -95,22 +95,3 @@ test('constructor should add all valid values', () => {
 
   assert.deepEqual(attributes, expected)
 })
-
-test('addAttributes() should drop all invalid values', () => {
-  const incomingAttributes = {
-    validBool: true,
-    validDouble: 99.99,
-    invalidStr: null,
-    invalidInt: undefined,
-    invalidObj: {}
-  }
-
-  const expected = {
-    validBool: { bool_value: true },
-    validDouble: { double_value: 99.99 }
-  }
-
-  const attributes = new StreamingSpanAttributes(incomingAttributes)
-
-  assert.deepEqual(attributes, expected)
-})

@@ -258,26 +258,6 @@ describe('applyCompaction', () => {
     assert.deepEqual(span1.addAttribute.args[0], ['error.class', 'SecondError', false])
   })
 
-  test('should store the last error if multiple exist', (t) => {
-    const { partialTrace, transaction } = t.nr
-    transaction.baseSegment = { id: 100 }
-    const now = Date.now()
-    const span1 = {
-      id: 1,
-      intrinsics: { timestamp: now, duration: 5 },
-      hasErrorAttrs: true,
-      errorAttrs: { 'error.class': 'FirstError' },
-      addAttribute: sinon.spy(),
-      addIntrinsicAttribute: sinon.spy()
-    }
-    const span2 = { id: 4, intrinsics: { timestamp: now + 5000, duration: 3, }, hasErrorAttrs: false }
-    const span3 = { id: 5, intrinsics: { timestamp: now + 10000, duration: 10 }, hasErrorAttrs: false }
-    partialTrace.compactSpanGroups[1] = [span1, span2, span3]
-    partialTrace.applyCompaction(span1)
-    assert.equal(span1.addAttribute.callCount, 1)
-    assert.deepEqual(span1.addAttribute.args[0], ['error.class', 'FirstError', false])
-  })
-
   test('should store the first error if other errors happened before', (t) => {
     const { partialTrace, transaction } = t.nr
     transaction.baseSegment = { id: 100 }

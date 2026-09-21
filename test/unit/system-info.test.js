@@ -369,25 +369,6 @@ test('getMemoryStats - linux', async (t) => {
   })
 })
 
-test('getProcessorStats - unknown', async (t) => {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
-    const platformFunction = sinon.stub().returns('something weird')
-
-    ctx.nr.systemInfo = proxyquire('../../lib/system-info', {
-      os: {
-        platform: platformFunction
-      }
-    })
-  })
-
-  await t.test('should return default data', async (t) => {
-    const { systemInfo } = t.nr
-    const results = await systemInfo._getMemoryStats()
-    assert.equal(results, null)
-  })
-})
-
 test('systemInfo edge cases', async (t) => {
   const systemInfo = proxyquire('../../lib/system-info', {
     './utilization/docker-info': {

@@ -17,6 +17,11 @@ const verifySegments = require('./verify')
 const NAMES = require('../../../lib/metrics/names')
 
 const isGlobSupported = require('semver').satisfies(process.version, '>=22.0.0')
+// Node >=26.9.0 re-implemented fs.writeFile to open, write, and close the file
+// in a single native thread-pool job (WriteFileJob) when `flush` is false,
+// rather than calling the JS-level fs.open. The agent can no longer hook that
+// nested open, so writeFile no longer produces a child `open` segment/metric.
+const hasNativeWriteFileJob = require('semver').satisfies(process.version, '>=26.9.0')
 const tempDir = path.join(os.tmpdir(), crypto.randomUUID())
 fs.mkdirSync(tempDir)
 // Set umask before fs tests (for normalizing create mode on OS X and linux)
@@ -755,7 +760,11 @@ test('readFile', async function (t) {
 
 test('writeFile', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 12 })
+  // On Node >=26.9.0 writeFile no longer nests an `open` segment/metric, so
+  // there is one fewer child assertion and no `open` metric to check.
+  const children = hasNativeWriteFileJob ? [] : [NAMES.FS.PREFIX + 'open']
+  const expectedMetrics = hasNativeWriteFileJob ? ['writeFile'] : ['writeFile', 'open']
+  const plan = tspl(t, { plan: hasNativeWriteFileJob ? 11 : 12 })
   const name = path.join(tempDir, 'writeFile')
   const content = 'some-content'
 
@@ -767,12 +776,12 @@ test('writeFile', async function (t) {
         agent,
         assert: plan,
         name: NAMES.FS.PREFIX + 'writeFile',
-        children: [NAMES.FS.PREFIX + 'open']
+        children
       })
 
       trans.end()
       plan.ok(
-        checkMetric(['writeFile', 'open'], agent, trans.name),
+        checkMetric(expectedMetrics, agent, trans.name),
         'metric should exist after transaction end'
       )
     })
