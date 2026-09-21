@@ -91,6 +91,16 @@ const tests = [
   {
     name: 'full (every field)',
     fn: parse(fullConfig)
+  },
+  {
+    // The schema is read from disk and compiled once per process, then cached,
+    // so the per-parse cases above never pay that cost. This case measures the
+    // one-time cold build: `before` evicts the schema module (and its block
+    // files) from the require cache so the measured `fn` re-reads every schema
+    // file and recompiles the ajv validator.
+    name: 'cold schema build (file reads + ajv compile)',
+    before: bustSchemaCache,
+    fn: buildSchemaCold
   }
 ]
 
@@ -119,4 +129,24 @@ function clearEnv() {
   for (const key of Object.keys(complexEnv)) {
     delete process.env[key]
   }
+}
+
+// Evicts the schema module and every schema block file from the require cache
+// so the next `require('./schema')` performs a cold build. Runs in `before`, so
+// the eviction itself is not part of the measured work.
+function bustSchemaCache() {
+  for (const key of Object.keys(require.cache)) {
+    if (key.includes('/lib/config/schema.js') || key.includes('/lib/config/schemas/')) {
+      delete require.cache[key]
+    }
+  }
+}
+
+// Freshly requires the schema module and forces the one-time build (reading all
+// schema files, compiling the ajv validator, and building the env-var index).
+function buildSchemaCold() {
+  const schema = require('#agentlib/config/schema.js')
+  // Touch the cached getters that trigger and consume the build. Combine the
+  // results so the accesses are not optimized away and no unused value lingers.
+  return Boolean(schema.schema && schema.validate && schema.resolveEnvVar('NEW_RELIC_LICENSE_KEY'))
 }
