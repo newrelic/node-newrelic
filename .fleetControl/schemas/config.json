@@ -1069,41 +1069,19 @@
     "instrumentation": {
       "type": "object",
       "description": "Stanza that contains all keys to disable core & 3rd party package instrumentation(i.e. dns, http, mongodb, pg, redis, etc) **Note**: Disabling a given library may affect the instrumentation of libraries used after the disabled library. Use at your own risk.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether instrumentation for this module is active."
+          }
+        }
+      },
       "properties": {
-        "@prisma/client": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "aws-sdk": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "next": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "restify": {
+        "@anthropic-ai/sdk": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1125,51 +1103,194 @@
             }
           }
         },
-        "amqplib/callback_api": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "amqplib": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "@anthropic-ai/sdk": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "@smithy/smithy-client": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
         "@aws-sdk/smithy-client": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@azure/functions": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@elastic/elasticsearch": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@elastic/transport": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@google/adk": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@google/genai": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@grpc/grpc-js": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@hapi/hapi": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@hapi/vision": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@langchain/core": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@langchain/langgraph": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@modelcontextprotocol/sdk": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@modelcontextprotocol/sdk/client/index.js": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@nestjs/core": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@node-redis/client": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@opensearch-project/opensearch": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@prisma/client": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "@redis/client": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1191,7 +1312,40 @@
             }
           }
         },
-        "@azure/functions": {
+        "@smithy/smithy-client": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "amqplib": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "amqplib/callback_api": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "aws-sdk": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1235,6 +1389,17 @@
             }
           }
         },
+        "child_process": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
         "connect": {
           "type": "object",
           "additionalProperties": true,
@@ -1246,7 +1411,7 @@
             }
           }
         },
-        "@elastic/elasticsearch": {
+        "crypto": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1257,7 +1422,7 @@
             }
           }
         },
-        "@elastic/transport": {
+        "dns": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1268,7 +1433,7 @@
             }
           }
         },
-        "@opensearch-project/opensearch": {
+        "domain": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1290,17 +1455,6 @@
             }
           }
         },
-        "router": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
         "fastify": {
           "type": "object",
           "additionalProperties": true,
@@ -1312,7 +1466,7 @@
             }
           }
         },
-        "@hapi/hapi": {
+        "fs": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1323,7 +1477,7 @@
             }
           }
         },
-        "@hapi/vision": {
+        "http": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1334,7 +1488,7 @@
             }
           }
         },
-        "@google/adk": {
+        "http2": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1345,7 +1499,7 @@
             }
           }
         },
-        "@google/genai": {
+        "https": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1356,7 +1510,7 @@
             }
           }
         },
-        "@grpc/grpc-js": {
+        "inspector": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1411,50 +1565,6 @@
             }
           }
         },
-        "@langchain/core": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "@langchain/langgraph": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "@modelcontextprotocol/sdk/client/index.js": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "@modelcontextprotocol/sdk": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
         "memcached": {
           "type": "object",
           "additionalProperties": true,
@@ -1499,7 +1609,7 @@
             }
           }
         },
-        "@nestjs/core": {
+        "net": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1510,7 +1620,7 @@
             }
           }
         },
-        "@node-redis/client": {
+        "next": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
@@ -1576,13 +1686,35 @@
             }
           }
         },
-        "@redis/client": {
+        "restify": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
             "enabled": {
               "type": "boolean",
               "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "router": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
+        "timers": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
               "description": "Whether instrumentation for this module is active."
             }
           }
@@ -1620,116 +1752,6 @@
             }
           }
         },
-        "child_process": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "crypto": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "dns": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "fs": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "http": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "https": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "http2": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "inspector": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "net": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "timers": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": false,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
         "zlib": {
           "type": "object",
           "additionalProperties": true,
@@ -1739,28 +1761,6 @@
               "default": true,
               "description": "Whether instrumentation for this module is active."
             }
-          }
-        },
-        "domain": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        }
-      },
-      "additionalProperties": {
-        "type": "object",
-        "additionalProperties": true,
-        "properties": {
-          "enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Whether instrumentation for this module is active."
           }
         }
       }
