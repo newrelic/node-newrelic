@@ -34,4 +34,10 @@ class FakeCoreSubscriber extends BaseCoreSubscriber {
 module.exports = FakeCoreSubscriber
 ```
 
+Add the module's name to `CORE_PACKAGES` in `config.js` so the subscriber is
+picked up. It resolves to `./core/<name>`, so a simple module lives at
+`core/<name>.js` and one that grows extra files can become `core/<name>/index.js`
+without a config change. A module needing more than one subscriber should get its
+own entry in `lib/subscriber-configs.js` instead.
+
 More to come as we migrate more libraries.
