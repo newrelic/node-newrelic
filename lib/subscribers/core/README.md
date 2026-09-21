@@ -34,10 +34,16 @@ class FakeCoreSubscriber extends BaseCoreSubscriber {
 module.exports = FakeCoreSubscriber
 ```
 
-Add the module's name to `CORE_PACKAGES` in `config.js` so the subscriber is
-picked up. It resolves to `./core/<name>`, so a simple module lives at
-`core/<name>.js` and one that grows extra files can become `core/<name>/index.js`
-without a config change. A module needing more than one subscriber should get its
-own entry in `lib/subscriber-configs.js` instead.
+Register the subscriber by adding an entry to `config.js`, which follows the same
+shape as the non-core configs. `instrumentations` is empty because core
+subscribers patch with `shimmer` rather than through Orchestrion channels.
+
+```js
+module.exports = {
+  'core-lib-name': [
+    { path: './core/core-lib-name', instrumentations: [] }
+  ]
+}
+```
 
 More to come as we migrate more libraries.
