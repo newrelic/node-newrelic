@@ -6,7 +6,7 @@
 'use strict'
 
 const test = require('node:test')
-const { ExportResultCode } = require('@opentelemetry/core')
+const { ExportResultCode } = require('#agentlib/otel/constants.js')
 const NRProxyingDelegate = require('#agentlib/otel/metrics/nr-proxying-delegate.js')
 
 test.beforeEach((ctx) => {

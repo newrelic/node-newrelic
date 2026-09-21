@@ -63,7 +63,6 @@ const {
   EXCEPTION_MESSAGE,
   EXCEPTION_STACKTRACE,
   MESSAGING_SYSTEM_KIND_VALUES,
-  SPAN_STATUS_CODE
 } = require('../../../lib/otel/traces/constants.js')
 const { assertSpanKind } = require('../../lib/custom-assertions')
 
@@ -1207,7 +1206,7 @@ test('Span errors are handled and added on transaction', (t, end) => {
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'http-external-test'
     tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
-      span.status.code = SPAN_STATUS_CODE.ERROR
+      span.status.code = otel.SpanStatusCode.ERROR
 
       const errorEvent = {
         name: 'exception',
@@ -1240,7 +1239,7 @@ test('Span errors are not added on transaction when span status code is not erro
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'http-external-test'
     tracer.startActiveSpan('http-outbound', { kind: otel.SpanKind.CLIENT }, (span) => {
-      span.status.code = SPAN_STATUS_CODE.OK
+      span.status.code = otel.SpanStatusCode.OK
 
       const errorEvent = {
         name: 'exception',
