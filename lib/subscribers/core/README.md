@@ -34,4 +34,16 @@ class FakeCoreSubscriber extends BaseCoreSubscriber {
 module.exports = FakeCoreSubscriber
 ```
 
+Register the subscriber by adding an entry to `config.js`, which follows the same
+shape as the non-core configs. `instrumentations` is empty because core
+subscribers patch with `shimmer` rather than through Orchestrion channels.
+
+```js
+module.exports = {
+  'core-lib-name': [
+    { path: './core/core-lib-name', instrumentations: [] }
+  ]
+}
+```
+
 More to come as we migrate more libraries.
