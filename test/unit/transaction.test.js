@@ -18,6 +18,7 @@ const createDistributedTracePayload = require('#testlib/create-dt-payload.js')
 const Transport = require('#agentlib/transaction/distributed-trace/transport.js')
 const hashes = require('#agentlib/util/hashes.js')
 const sinon = require('sinon')
+const { Payload } = require('#agentlib/transaction/distributed-trace/payload.js')
 const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 
 test('Transaction unit tests', async (t) => {
@@ -794,7 +795,8 @@ test('creating the outbound distributed trace payload', async (t) => {
     if (!headers.newrelic) {
       return undefined
     }
-    return JSON.parse(Buffer.from(headers.newrelic, 'base64').toString('utf-8'))
+    const parsedData = JSON.parse(Buffer.from(headers.newrelic, 'base64').toString('utf-8'))
+    return new Payload({ input: parsedData })
   }
 
   t.beforeEach((ctx) => {
@@ -859,8 +861,8 @@ test('creating the outbound distributed trace payload', async (t) => {
     const headers = {}
     txn.insertDistributedTraceHeaders(headers)
     const payload = decodeNewrelicHeader(headers)
-    assert.equal(payload.d.sa, txn.sampled)
-    assert.equal(payload.d.pr, txn.priority)
+    assert.equal(payload.data.sampled, txn.sampled)
+    assert.equal(payload.data.priority, txn.priority)
   })
 
   await t.test('adds the current span id as the parent span id', (t) => {
@@ -871,7 +873,7 @@ test('creating the outbound distributed trace payload', async (t) => {
     const headers = {}
     txn.insertDistributedTraceHeaders(headers)
     const payload = decodeNewrelicHeader(headers)
-    assert.equal(payload.d.id, txn.trace.root.id)
+    assert.equal(payload.data.guid, txn.trace.root.id)
     tracer.setSegment({ segment: null, transaction: null })
     agent.config.span_events.enabled = false
   })
@@ -887,7 +889,7 @@ test('creating the outbound distributed trace payload', async (t) => {
     const headers = {}
     txn.insertDistributedTraceHeaders(headers)
     const payload = decodeNewrelicHeader(headers)
-    assert.equal(payload.d.id, undefined)
+    assert.equal(payload.data.guid, undefined)
     tracer.setSegment({ segment: null, transaction: null })
     agent.config.span_events.enabled = false
   })

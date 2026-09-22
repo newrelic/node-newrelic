@@ -198,7 +198,7 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
 
     makeHandler(txn).parseAndApply(JSON.stringify(payload))
     assert.ok(txn.sampled)
-    assert.equal(txn.priority, payload.data.pr)
+    assert.equal(txn.priority, payload.data.priority)
     // Should not truncate accepted priority
     assert.equal(txn.priority.toString().length, 9)
   })
@@ -231,9 +231,9 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
       txn.agent.recordSupportability.args[0][0],
       'DistributedTrace/AcceptPayload/Success'
     )
-    assert.equal(txn.parentId, payload.data.tx)
-    assert.equal(txn.parentType, payload.data.ty)
-    assert.equal(txn.traceId, payload.data.tr)
+    assert.equal(txn.parentId, payload.data.transactionId)
+    assert.equal(txn.parentType, payload.data.type)
+    assert.equal(txn.traceId, payload.data.traceId)
     assert.ok(txn.isDistributedTrace)
     assert.ok(txn.parentTransportDuration > 0)
   })
@@ -260,10 +260,10 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
       txn.agent.recordSupportability.args[0][0],
       'DistributedTrace/AcceptPayload/Success'
     )
-    assert.equal(txn.parentId, payload.data.tx)
+    assert.equal(txn.parentId, payload.data.transactionId)
     assert.equal(txn.parentSpanId, txn.trace.root.id)
-    assert.equal(txn.parentType, payload.data.ty)
-    assert.equal(txn.traceId, payload.data.tr)
+    assert.equal(txn.parentType, payload.data.type)
+    assert.equal(txn.traceId, payload.data.traceId)
     assert.ok(txn.isDistributedTrace)
     assert.equal(txn.parentTransportDuration, 0)
   })
@@ -280,7 +280,7 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
 
     makeHandler(txn).parseAndApply(JSON.stringify(payload))
     assert.ok(txn.isDistributedTrace)
-    assert.equal(txn.traceId, payload.data.tr)
+    assert.equal(txn.traceId, payload.data.traceId)
   })
 
   await t.test('accepts a base64-encoded JSON string payload', (t) => {
@@ -295,7 +295,7 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
 
     makeHandler(txn).parseAndApply(encoded)
     assert.ok(txn.isDistributedTrace)
-    assert.equal(txn.traceId, payload.data.tr)
+    assert.equal(txn.traceId, payload.data.traceId)
   })
 
   await t.test('rejects an invalid JSON string with a ParseException metric', (t) => {
