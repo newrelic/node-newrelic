@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { ExportResultCode } = require('@opentelemetry/core')
+const { ExportResultCode } = require('#agentlib/otel/constants.js')
 const {
   MeterProvider,
   PeriodicExportingMetricReader

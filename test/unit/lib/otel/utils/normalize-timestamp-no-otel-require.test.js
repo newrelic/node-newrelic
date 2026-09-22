@@ -10,12 +10,12 @@ const assert = require('node:assert')
 const { execFileSync } = require('node:child_process')
 const path = require('node:path')
 
-const ROOT = path.join(__dirname, '..', '..', '..', '..')
+const ROOT = path.join(__dirname, '..', '..', '..', '..', '..')
 
 /**
  * Regression test for https://github.com/newrelic/node-newrelic/issues/4162
  *
- * `lib/otel/normalize-timestamp.js` is reachable from the always-on agent
+ * `lib/otel/utils/normalize-timestamp.js` is reachable from the always-on agent
  * startup path:
  *
  *   lib/transaction/tracer/index.js
@@ -23,7 +23,7 @@ const ROOT = path.join(__dirname, '..', '..', '..', '..')
  *       -> lib/otel/context.js
  *         -> lib/otel/fake-span.js
  *           -> lib/spans/timed-event.js
- *             -> lib/otel/normalize-timestamp.js
+ *             -> lib/otel/utils/normalize-timestamp.js
  *
  * It must not `require('@opentelemetry/core')` (or any `@opentelemetry/*`
  * package) at module load time, otherwise the "slim" Lambda layer/image --
@@ -45,7 +45,7 @@ function runChild(script) {
 
 test('requiring normalize-timestamp does not load @opentelemetry/core', () => {
   const output = runChild(`
-    require('./lib/otel/normalize-timestamp.js')
+    require('./lib/otel/utils/normalize-timestamp.js')
     const loaded = Object.keys(require.cache).some((k) => k.includes('@opentelemetry'))
     process.stdout.write(loaded ? 'loaded' : 'clean')
   `)
@@ -63,7 +63,7 @@ test('the always-on tracer require chain does not load @opentelemetry/core', () 
 
 test('normalize-timestamp works when @opentelemetry/* cannot be resolved', () => {
   // Simulate the slim build by making every `@opentelemetry/*` resolution fail,
-  // then exercise the code path that used to depend on `isTimeInputHrTime`.
+  // then exercise the code path that used to depend on `isHrTime`.
   const output = runChild(`
     const Module = require('module')
     const origResolve = Module._resolveFilename
@@ -76,7 +76,7 @@ test('normalize-timestamp works when @opentelemetry/* cannot be resolved', () =>
       return origResolve.call(this, request, ...rest)
     }
 
-    const normalizeTimestamp = require('./lib/otel/normalize-timestamp.js')
+    const normalizeTimestamp = require('./lib/otel/utils/normalize-timestamp.js')
     // [seconds, nanoseconds] hrtime tuple -> milliseconds since epoch.
     const found = normalizeTimestamp([1764938931, 327000000])
     process.stdout.write(new Date(found).toISOString())
