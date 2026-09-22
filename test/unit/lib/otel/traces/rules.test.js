@@ -11,10 +11,16 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { ROOT_CONTEXT, SpanKind } = require('@opentelemetry/api')
-const { BasicTracerProvider } = require('@opentelemetry/sdk-trace-base')
 const { RulesEngine } = require('#agentlib/otel/traces/rules.js')
-
-const tracer = new BasicTracerProvider().getTracer('default')
+const { SamplingDecision } = require('#agentlib/otel/constants.js')
+const NrTracerProvider = require('#agentlib/otel/traces/nr-tracer-provider.js')
+const provider = new NrTracerProvider({
+  // Always sample, and never invoke a processor automatically -- these
+  // tests exercise the `processor` under test directly via `onStart`/`onEnd`.
+  sampler: { shouldSample: () => { return { decision: SamplingDecision.RECORD_AND_SAMPLED } } },
+  processor: { onStart() {}, onEnd() {} }
+})
+const tracer = provider.getTracer('default')
 
 test('engine returns correct matching rule', () => {
   const engine = new RulesEngine()

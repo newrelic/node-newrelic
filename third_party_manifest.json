@@ -1,81 +1,30 @@
 {
-  "lastUpdated": "Mon Sep 21 2026 16:09:27 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Sep 22 2026 11:42:52 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
-  "optionalDependencies": {
-    "@datadog/pprof@5.18.1": {
-      "name": "@datadog/pprof",
-      "version": "5.18.1",
-      "range": "^5.14.2",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/DataDog/pprof-nodejs",
-      "versionedRepoUrl": "https://github.com/DataDog/pprof-nodejs/tree/v5.18.1",
-      "licenseFile": "node_modules/@datadog/pprof/LICENSE",
-      "licenseUrl": "https://github.com/DataDog/pprof-nodejs/blob/v5.18.1/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Google Inc."
-    },
-    "@newrelic/fn-inspect@5.1.0": {
-      "name": "@newrelic/fn-inspect",
-      "version": "5.1.0",
-      "range": "^5.1.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/newrelic-forks/node-fn-inspect",
-      "versionedRepoUrl": "https://github.com/newrelic-forks/node-fn-inspect/tree/v5.1.0",
-      "licenseFile": "node_modules/@newrelic/fn-inspect/LICENSE",
-      "licenseUrl": "https://github.com/newrelic-forks/node-fn-inspect/blob/v5.1.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Contrast Security"
-    },
-    "@newrelic/native-metrics@13.1.0": {
-      "name": "@newrelic/native-metrics",
-      "version": "13.1.0",
-      "range": "^13.1.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v13.1.0",
-      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v13.1.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com"
-    },
-    "@prisma/prisma-fmt-wasm@4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085": {
-      "name": "@prisma/prisma-fmt-wasm",
-      "version": "4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
-      "range": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/prisma/prisma-engines",
-      "versionedRepoUrl": "https://github.com/prisma/prisma-engines/tree/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
-      "licenseFile": "node_modules/@prisma/prisma-fmt-wasm/README.md",
-      "licenseUrl": "https://github.com/prisma/prisma-engines/blob/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085/README.md",
-      "licenseTextSource": "spdx",
-      "publisher": "Prisma"
-    }
-  },
   "includeDev": true,
   "dependencies": {
-    "@apm-js-collab/tracing-hooks@0.13.0": {
+    "@apm-js-collab/tracing-hooks@0.13.2": {
       "name": "@apm-js-collab/tracing-hooks",
-      "version": "0.13.0",
+      "version": "0.13.2",
       "range": "^0.13.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/apm-js-collab/tracing-hooks",
-      "versionedRepoUrl": "https://github.com/apm-js-collab/tracing-hooks/tree/v0.13.0",
+      "versionedRepoUrl": "https://github.com/apm-js-collab/tracing-hooks/tree/v0.13.2",
       "licenseFile": "node_modules/@apm-js-collab/tracing-hooks/LICENSE",
-      "licenseUrl": "https://github.com/apm-js-collab/tracing-hooks/blob/v0.13.0/LICENSE",
+      "licenseUrl": "https://github.com/apm-js-collab/tracing-hooks/blob/v0.13.2/LICENSE",
       "licenseTextSource": "file"
     },
-    "@grpc/grpc-js@1.14.4": {
+    "@grpc/grpc-js@1.14.5": {
       "name": "@grpc/grpc-js",
-      "version": "1.14.4",
+      "version": "1.14.5",
       "range": "^1.13.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.14.4",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.14.5",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.14.4/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.14.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -199,18 +148,6 @@
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
-    "@opentelemetry/sdk-trace-base@2.11.0": {
-      "name": "@opentelemetry/sdk-trace-base",
-      "version": "2.11.0",
-      "range": "^2.0.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.11.0",
-      "licenseFile": "node_modules/@opentelemetry/sdk-trace-base/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.11.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "OpenTelemetry Authors"
-    },
     "@tyriar/fibonacci-heap@2.0.9": {
       "name": "@tyriar/fibonacci-heap",
       "version": "2.0.9",
@@ -251,15 +188,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@3.4.0": {
+    "import-in-the-middle@3.5.1": {
       "name": "import-in-the-middle",
-      "version": "3.4.0",
+      "version": "3.5.1",
       "range": "^3.0.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/nodejs/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v3.4.0",
+      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v3.5.1",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v3.4.0/LICENSE",
+      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v3.5.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
@@ -346,28 +283,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.1127.0": {
+    "@aws-sdk/client-s3@3.1136.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.1127.0",
+      "version": "3.1136.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1127.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1136.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1127.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1136.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.1127.0": {
+    "@aws-sdk/s3-request-presigner@3.1136.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.1127.0",
+      "version": "3.1136.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1127.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1136.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1127.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1136.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
@@ -653,15 +590,15 @@
       "licenseUrl": "https://github.com/sindresorhus/got/blob/v15.1.0/license",
       "licenseTextSource": "file"
     },
-    "js-yaml@5.4.1": {
+    "js-yaml@5.4.2": {
       "name": "js-yaml",
-      "version": "5.4.1",
+      "version": "5.4.2",
       "range": "^5.2.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/nodeca/js-yaml",
-      "versionedRepoUrl": "https://github.com/nodeca/js-yaml/tree/v5.4.1",
+      "versionedRepoUrl": "https://github.com/nodeca/js-yaml/tree/v5.4.2",
       "licenseFile": "node_modules/js-yaml/LICENSE",
-      "licenseUrl": "https://github.com/nodeca/js-yaml/blob/v5.4.1/LICENSE",
+      "licenseUrl": "https://github.com/nodeca/js-yaml/blob/v5.4.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Vladimir Zapparov",
       "email": "dervus.grim@gmail.com"
@@ -679,15 +616,15 @@
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
     },
-    "lint-staged@17.5.0": {
+    "lint-staged@17.5.1": {
       "name": "lint-staged",
-      "version": "17.5.0",
+      "version": "17.5.1",
       "range": "^17.1.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/lint-staged/lint-staged",
-      "versionedRepoUrl": "https://github.com/lint-staged/lint-staged/tree/v17.5.0",
+      "versionedRepoUrl": "https://github.com/lint-staged/lint-staged/tree/v17.5.1",
       "licenseFile": "node_modules/lint-staged/LICENSE",
-      "licenseUrl": "https://github.com/lint-staged/lint-staged/blob/v17.5.0/LICENSE",
+      "licenseUrl": "https://github.com/lint-staged/lint-staged/blob/v17.5.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
@@ -796,6 +733,57 @@
       "licenseUrl": "https://github.com/sinonjs/sinon/blob/v22.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
+    }
+  },
+  "optionalDependencies": {
+    "@datadog/pprof@5.19.0": {
+      "name": "@datadog/pprof",
+      "version": "5.19.0",
+      "range": "^5.14.2",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/DataDog/pprof-nodejs",
+      "versionedRepoUrl": "https://github.com/DataDog/pprof-nodejs/tree/v5.19.0",
+      "licenseFile": "node_modules/@datadog/pprof/LICENSE",
+      "licenseUrl": "https://github.com/DataDog/pprof-nodejs/blob/v5.19.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Google Inc."
+    },
+    "@newrelic/fn-inspect@5.1.0": {
+      "name": "@newrelic/fn-inspect",
+      "version": "5.1.0",
+      "range": "^5.1.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/newrelic-forks/node-fn-inspect",
+      "versionedRepoUrl": "https://github.com/newrelic-forks/node-fn-inspect/tree/v5.1.0",
+      "licenseFile": "node_modules/@newrelic/fn-inspect/LICENSE",
+      "licenseUrl": "https://github.com/newrelic-forks/node-fn-inspect/blob/v5.1.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Contrast Security"
+    },
+    "@newrelic/native-metrics@13.1.0": {
+      "name": "@newrelic/native-metrics",
+      "version": "13.1.0",
+      "range": "^13.1.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-native-metrics",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v13.1.0",
+      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v13.1.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
+    "@prisma/prisma-fmt-wasm@4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085": {
+      "name": "@prisma/prisma-fmt-wasm",
+      "version": "4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+      "range": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/prisma/prisma-engines",
+      "versionedRepoUrl": "https://github.com/prisma/prisma-engines/tree/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+      "licenseFile": "node_modules/@prisma/prisma-fmt-wasm/README.md",
+      "licenseUrl": "https://github.com/prisma/prisma-engines/blob/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085/README.md",
+      "licenseTextSource": "spdx",
+      "publisher": "Prisma"
     }
   }
 }
