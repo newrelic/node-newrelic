@@ -33,6 +33,37 @@ describe('getTracer', () => {
     const [span] = processor.calls.onStart
     assert.deepEqual(span.instrumentationScope, scope)
   })
+
+  test('includes schemaUrl in the instrumentation scope when provided', (t) => {
+    const { processor, provider } = t.nr
+    const tracer = provider.getTracer('my-lib', '2.0', { schemaUrl: 'https://example.com/schema' })
+    tracer.startSpan('op')
+    const [span] = processor.calls.onStart
+    assert.deepEqual(span.instrumentationScope, { name: 'my-lib', version: '2.0', schemaUrl: 'https://example.com/schema' })
+  })
+
+  test('returns the same tracer for the same name and version', (t) => {
+    const { provider } = t.nr
+    const tracer1 = provider.getTracer('my-lib', '2.0')
+    const tracer2 = provider.getTracer('my-lib', '2.0')
+    assert.strictEqual(tracer1, tracer2)
+  })
+
+  test('returns different tracers for different names or versions', (t) => {
+    const { provider } = t.nr
+    const tracer1 = provider.getTracer('my-lib', '1.0')
+    const tracer2 = provider.getTracer('my-lib', '2.0')
+    const tracer3 = provider.getTracer('other-lib', '1.0')
+    assert.notStrictEqual(tracer1, tracer2)
+    assert.notStrictEqual(tracer1, tracer3)
+  })
+
+  test('returns different tracers for different schemaUrls', (t) => {
+    const { provider } = t.nr
+    const tracer1 = provider.getTracer('my-lib', '1.0', { schemaUrl: 'a' })
+    const tracer2 = provider.getTracer('my-lib', '1.0', { schemaUrl: 'b' })
+    assert.notStrictEqual(tracer1, tracer2)
+  })
 })
 
 test('forceFlush resolves', async (t) => {

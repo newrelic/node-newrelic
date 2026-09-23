@@ -8,7 +8,7 @@
 const { describe, test } = require('node:test')
 const assert = require('node:assert')
 const { ROOT_CONTEXT, SpanKind, context, trace } = require('@opentelemetry/api')
-const { SamplingDecision } = require('#agentlib/otel/constants.js')
+const { SamplingDecision, SUPPRESS_TRACING_KEY } = require('#agentlib/otel/constants.js')
 const NrTracer = require('#agentlib/otel/traces/nr-tracer.js')
 const NrSpan = require('#agentlib/otel/traces/nr-span.js').NrSpan
 const { makeProcessor, makeSampler } = require('./helpers')
@@ -101,6 +101,47 @@ describe('startSpan', () => {
     const parentCtx = trace.setSpan(ROOT_CONTEXT, parent)
     tracer.startSpan('child', { root: true }, parentCtx)
     assert.equal(trace.getSpan(parentCtx), parent)
+  })
+
+  test('returns a non-recording span when tracing is suppressed', () => {
+    const { processor, tracer } = makeTracer()
+    const suppressedCtx = ROOT_CONTEXT.setValue(SUPPRESS_TRACING_KEY, true)
+    const span = tracer.startSpan('op', {}, suppressedCtx)
+    assert.ok(!(span instanceof NrSpan))
+    assert.equal(span.isRecording(), false)
+    assert.equal(processor.calls.onStart.length, 0)
+  })
+
+  test('does not treat a falsy suppress-tracing value as suppressed', () => {
+    const { tracer } = makeTracer()
+    const ctx = ROOT_CONTEXT.setValue(SUPPRESS_TRACING_KEY, false)
+    const span = tracer.startSpan('op', {}, ctx)
+    assert.ok(span instanceof NrSpan)
+  })
+
+  test('starts a new trace when the parent span context is invalid', () => {
+    const { tracer } = makeTracer()
+    const invalidCtx = trace.setSpanContext(ROOT_CONTEXT, {
+      traceId: '0'.repeat(32),
+      spanId: '0'.repeat(16),
+      traceFlags: 1
+    })
+    const span = tracer.startSpan('op', {}, invalidCtx)
+    assert.notEqual(span.spanContext().traceId, '0'.repeat(32))
+    assert.equal(span.parentSpanId, undefined)
+  })
+
+  test('preserves traceState from parent context on a non-recording span', () => {
+    const { tracer } = makeTracer(SamplingDecision.NOT_RECORD)
+    const traceState = { serialize: () => 'foo=bar' }
+    const parentCtx = trace.setSpanContext(ROOT_CONTEXT, {
+      traceId: 'a'.repeat(32),
+      spanId: 'b'.repeat(16),
+      traceFlags: 1,
+      traceState
+    })
+    const span = tracer.startSpan('op', {}, parentCtx)
+    assert.strictEqual(span.spanContext().traceState, traceState)
   })
 })
 
