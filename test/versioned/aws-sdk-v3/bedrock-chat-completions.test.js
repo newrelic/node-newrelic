@@ -17,7 +17,6 @@ const helper = require('../../lib/agent_helper')
 const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { assertSegments, match } = require('../../lib/custom-assertions')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const createAiResponseServer = getAiResponseServer(__dirname)
 
 function consumeStreamChunk() {
@@ -179,7 +178,7 @@ test('Chat completions', async (t) => {
 
     await t.test(`${modelId}:  supports custom attributes on LlmChatCompletionMessage(s) and LlmChatCompletionSummary events`, async (t) => {
       const { agent, bedrock, client } = t.nr
-      const { promise, resolve } = promiseResolvers()
+      const { promise, resolve } = Promise.withResolvers()
       const prompt = `text ${resKey} ultimate question`
       const input = requests[resKey](prompt, modelId)
       const command = new bedrock.InvokeModelCommand(input)
@@ -204,7 +203,7 @@ test('Chat completions', async (t) => {
 
     await t.test(`${modelId}:  supports assigning token counts in callback`, async (t) => {
       const { agent, bedrock, client } = t.nr
-      const { promise, resolve } = promiseResolvers()
+      const { promise, resolve } = Promise.withResolvers()
       const prompt = `text ${resKey} ultimate question`
       const input = requests[resKey](prompt, modelId)
       const command = new bedrock.InvokeModelCommand(input)

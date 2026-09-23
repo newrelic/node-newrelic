@@ -11,7 +11,6 @@ const amqpUtils = require('./amqp-utils')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const getPackageVersion = require('../../lib/get-package-version')
 
 const {
@@ -24,7 +23,7 @@ const version = getPackageVersion({ pkgName: 'amqplib', baseDir: __dirname })
 
 test('amqplib callback instrumentation', async function (t) {
   t.beforeEach(async function (ctx) {
-    const { promise, resolve, reject } = promiseResolvers()
+    const { promise, resolve, reject } = Promise.withResolvers()
     const agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true
@@ -54,7 +53,7 @@ test('amqplib callback instrumentation', async function (t) {
   })
 
   t.afterEach(async function (ctx) {
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     helper.unloadAgent(ctx.nr.agent)
     removeMatchedModules(/amqplib/)
     ctx.nr.conn.close(resolve)
@@ -286,7 +285,7 @@ test('amqplib callback instrumentation', async function (t) {
 
   await t.test('consume in a transaction with distributed tracing', async function (t) {
     const { agent, api, channel } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     agent.config.span_events.enabled = true
     agent.config.account_id = 1234
     agent.config.primary_application_id = 4321

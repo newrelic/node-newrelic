@@ -11,7 +11,6 @@ const { afterEach, setupCoreTest } = require('../../lib/apollo/test-tools')
 const assert = require('node:assert')
 const { executeQuery, executeQueryBatch } = require('../../lib/apollo/test-client')
 const { checkResult } = require('../../lib/apollo/common')
-const promiseResolvers = require('../../lib/promise-resolvers')
 
 const ANON_PLACEHOLDER = '<anonymous>'
 const transactionNamingTests = []
@@ -38,7 +37,7 @@ transactionNamingTests.push({
   name: 'anonymous query, single level, should use anonymous placeholder',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       hello
@@ -63,7 +62,7 @@ transactionNamingTests.push({
   name: 'named query, single level, should use query name',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'HeyThere'
     const query = `query ${expectedName} {
@@ -89,7 +88,7 @@ transactionNamingTests.push({
   name: 'Federated Server health check query with only __typename in selection set should omit deepest unique path',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = '__ApolloServiceHealthCheck__'
     const query = `query ${expectedName} { __typename }`
@@ -113,7 +112,7 @@ transactionNamingTests.push({
   name: 'Nested queries with arguments',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       library(branch: "riverside") {
@@ -147,7 +146,7 @@ transactionNamingTests.push({
   name: 'anonymous query, multi-level should return deepest unique path',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       libraries {
@@ -181,7 +180,7 @@ transactionNamingTests.push({
   name: 'anonymous query, only returns reserved field(id) should return deepest unique path',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
         searchCollection(title: "True life") {
@@ -211,7 +210,7 @@ transactionNamingTests.push({
   name: 'named query, multi-level should return deepest unique path',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBooksByLibrary'
     const query = `query ${expectedName} {
@@ -246,7 +245,7 @@ transactionNamingTests.push({
   name: 'named query, multi-level with aliases should ignore aliases in naming',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBooksByLibrary'
     const query = `query ${expectedName} {
@@ -281,7 +280,7 @@ transactionNamingTests.push({
   name: 'anonymous mutation, single level, reserved field, should use anonymous placeholder',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `mutation {
         addToCollection(title: "Don Quixote") {
@@ -311,7 +310,7 @@ transactionNamingTests.push({
   name: 'anonymous mutation, single level, should use anonymous placeholder',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `mutation {
       addThing(name: "added thing!")
@@ -336,7 +335,7 @@ transactionNamingTests.push({
   name: 'named mutation, single level, reserved field, should use mutation name',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'addIt'
     const query = `mutation ${expectedName} {
@@ -364,7 +363,7 @@ transactionNamingTests.push({
   name: 'named mutation, single level, should use mutation name',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'AddThing'
     const query = `mutation ${expectedName} {
@@ -390,7 +389,7 @@ transactionNamingTests.push({
   name: 'anonymous query, with params, should use anonymous placeholder',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       paramQuery(blah: "blah", blee: "blee")
@@ -415,7 +414,7 @@ transactionNamingTests.push({
   name: 'named query, with params, should use query name',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'BlahQuery'
     const query = `query ${expectedName} {
@@ -441,7 +440,7 @@ transactionNamingTests.push({
   name: 'named query, with params, should return deepest unique path',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBookForLibrary'
     const query = `query ${expectedName} {
@@ -476,7 +475,7 @@ transactionNamingTests.push({
   name: 'batch query should include "batch" all queries separated by delimeter',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName1 = 'GetBookForLibrary'
     const query1 = `query ${expectedName1} {
@@ -524,7 +523,7 @@ transactionNamingTests.push({
   name: 'union, should return deepest unique path',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetSearchResult'
     const query = `query ${expectedName} {
@@ -568,7 +567,7 @@ transactionNamingTests.push({
   name: 'union, multiple inline fragments, should return deepest unique path',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetSearchResult'
     const query = `query ${expectedName} {
@@ -613,7 +612,7 @@ transactionNamingTests.push({
   name: 'named query with fragment, query first',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBookForLibrary'
     const query = `query ${expectedName} {
@@ -649,7 +648,7 @@ transactionNamingTests.push({
   name: 'named query with fragment, fragment first',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBookForLibrary'
     const query = `fragment LibraryBook on Book {
@@ -686,7 +685,7 @@ transactionNamingTests.push({
   async fn(t) {
     // there will be no document/AST nor resolved operation
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const invalidQuery = `query {
       libraries {
@@ -726,7 +725,7 @@ transactionNamingTests.push({
     // if parse succeeds but validation fails, there will not be a resolved operation
     // but the document/AST can still be leveraged for what was intended.
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const invalidQuery = `query {
       libraries {
@@ -767,7 +766,7 @@ transactionNamingTests.push({
     // if parse succeeds but validation fails, there will not be a resolved operation
     // but the document/AST can still be leveraged for what was intended.
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'FailsToValidate'
     const invalidQuery = `query ${expectedName} {
@@ -807,7 +806,7 @@ transactionNamingTests.push({
   name: 'multiple queries do not affect transaction naming',
   async fn(t) {
     const { agent, serverUrl, EXPECTED_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'HeyThere'
     const query = `query ${expectedName} {
@@ -854,7 +853,7 @@ function generateIntrospectionTests({ ignore, captureIntrospection }) {
       async fn(t) {
         const { agent, serverUrl } = t.nr
         agent.config.apollo_server.introspection_queries = captureIntrospection
-        const { promise, resolve } = promiseResolvers()
+        const { promise, resolve } = Promise.withResolvers()
 
         agent.once('transactionFinished', (transaction) => {
           assert.equal(transaction.ignore, ignore, `should set transaction.ignore to ${ignore}`)
@@ -873,7 +872,7 @@ function generateIntrospectionTests({ ignore, captureIntrospection }) {
       name: `should not ignore transaction when captureIntrospectionQuery is ${captureIntrospection} and query does not contain an introspection type`,
       async fn(t) {
         const { agent, serverUrl } = t.nr
-        const { promise, resolve } = promiseResolvers()
+        const { promise, resolve } = Promise.withResolvers()
         agent.config.apollo_server.introspection_queries = captureIntrospection
 
         agent.once('transactionFinished', (transaction) => {

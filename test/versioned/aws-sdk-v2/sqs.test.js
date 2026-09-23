@@ -9,7 +9,6 @@ const assert = require('node:assert')
 const test = require('node:test')
 
 const helper = require('../../lib/agent_helper')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const checkAWSAttributes = require('../aws-sdk-v3/test-utils/check-aws-attributes.js')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
@@ -108,7 +107,7 @@ test('SQS API', async (t) => {
 
   await t.test('commands with promises', async (t) => {
     const { agent, queueName, sqs } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     const createParams = getCreateParams(queueName)
     let sendMessageRequestId
     let sendMessageBatchRequestId

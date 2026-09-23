@@ -11,7 +11,6 @@ const { afterEach, setupCoreTest } = require('../../lib/apollo/test-tools')
 const assert = require('node:assert')
 const { executeQuery, executeJson } = require('../../lib/apollo/test-client')
 const { checkResult } = require('../../lib/apollo/common')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const { findSegment } = require('../../lib/metrics_helper')
 
 const SEGMENT_DESTINATION = 0x20
@@ -27,7 +26,7 @@ queryObfuscationTests.push({
   name: 'Obfuscates query arguments and nested query arguments',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       library(branch: "riverside") {
@@ -71,7 +70,7 @@ queryObfuscationTests.push({
   name: 'Obfuscates query arguments with parenthesis and brackets',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       library(branch: "rivers)i{de") {
@@ -111,7 +110,7 @@ queryObfuscationTests.push({
   name: 'Obfuscates parameterized query arguments',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     const expectedName = 'ParamQueryWithArgs'
     const query = `query ${expectedName}($branch: String!) {
       library(branch: $branch) {
@@ -159,7 +158,7 @@ queryObfuscationTests.push({
   name: 'Obfuscates query arguments for failed query validation',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       boooook(branch: "riverside") {
@@ -206,7 +205,7 @@ queryObfuscationTests.push({
   name: 'Failed query parsing should not include query attribute',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       blahblah()>>: "riverside") {

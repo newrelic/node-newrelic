@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const { EventEmitter } = require('node:events')
 const sinon = require('sinon')
 
-const promiseResolvers = require('../lib/promise-resolvers')
 const Harvester = require('../../lib/harvester')
 
 class FakeAggregator extends EventEmitter {
@@ -103,7 +102,7 @@ test('should reconfigure all aggregators', (t) => {
 })
 
 test('resolve when all data is sent', async (t) => {
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   const { aggregators, harvester } = t.nr
   await harvester.clear(() => {
     assert.equal(aggregators[0].send.callCount, 1, 'should call send on enabled aggregator')

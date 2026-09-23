@@ -8,7 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const { redis_tls_host: HOST, redis_tls_port: PORT } = require('../../lib/params')
 const { removeModules } = require('../../lib/cache-buster')
 
@@ -18,7 +17,7 @@ test('redis over tls connection', async (t) => {
   })
 
   await t.test('should work with self-signed tls cert on server', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     const agent = helper.instrumentMockedAgent()
     const redis = require('redis')
     const client = redis.createClient({
@@ -50,7 +49,7 @@ test('redis over tls connection', async (t) => {
   })
 
   await t.test('url parsing should add tls true', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     const agent = helper.instrumentMockedAgent()
     const redis = require('redis')
     const client = redis.createClient({

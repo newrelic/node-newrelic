@@ -9,14 +9,13 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { assertMetricValues } = require('../lib/custom-assertions')
-const promiseResolvers = require('../lib/promise-resolvers')
 const RemoteMethod = require('../../lib/collector/remote-method')
 const NAMES = require('../../lib/metrics/names')
 const helper = require('../lib/agent_helper')
 const Collector = require('../lib/test-collector')
 
 test('DataSender (callback style) talking to fake collector', async (t) => {
-  const { promise, resolve, reject } = promiseResolvers()
+  const { promise, resolve, reject } = Promise.withResolvers()
   const collector = new Collector({ runId: 1337 })
   await collector.listen()
 

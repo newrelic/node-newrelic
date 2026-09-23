@@ -8,7 +8,6 @@
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const { setup, teardown } = require('./utils')
 
 test('ignoring an Express route', async function (t) {
@@ -18,7 +17,7 @@ test('ignoring an Express route', async function (t) {
   t.after(() => { teardown(t) })
 
   const { agent, app, port } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   const api = new API(agent)
 
   agent.on('transactionFinished', function (transaction) {

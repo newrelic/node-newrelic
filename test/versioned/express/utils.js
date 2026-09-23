@@ -7,7 +7,6 @@
 const http = require('http')
 const helper = require('../../lib/agent_helper')
 const semver = require('semver')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const TEST_HOST = 'localhost'
 const TEST_URL = `http://${TEST_HOST}`
 
@@ -27,7 +26,7 @@ async function setup(ctx, config = {}) {
 
   ctx.nr.express = require('express')
   ctx.nr.app = ctx.nr.express()
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   const server = require('http').createServer(ctx.nr.app)
   server.listen(0, TEST_HOST, resolve)
   await promise

@@ -10,7 +10,6 @@ const { afterEach, setupCoreTest } = require('../../lib/apollo/test-tools')
 const assert = require('node:assert')
 const { executeQuery, executeJson } = require('../../lib/apollo/test-client')
 const { match } = require('../../lib/custom-assertions')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const { findSegment } = require('../../lib/metrics_helper')
 const helper = require('../../lib/agent_helper')
 
@@ -35,7 +34,7 @@ attributesTestSuite.push({
   name: 'anon query should capture standard attributes except operation name',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       hello
@@ -89,7 +88,7 @@ attributesTestSuite.push({
   name: 'named query should capture all standard attributes',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'HeyThere'
     const query = `query ${expectedName} {
@@ -138,7 +137,7 @@ attributesTestSuite.push({
   name: 'named query, multi-level, should capture deepest unique path',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBooksByLibrary'
     const query = `query ${expectedName} {
@@ -209,7 +208,7 @@ attributesTestSuite.push({
   name: 'named mutation should capture all standard attributes',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'AddThing'
     const query = `mutation ${expectedName} {
@@ -259,7 +258,7 @@ attributesTestSuite.push({
   name: 'named mutation should not capture args by default',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'AddThing'
     const query = `mutation ${expectedName} {
@@ -295,7 +294,7 @@ attributesTestSuite.push({
   name: 'named mutation should capture args when added to include list',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     agent.config.attributes.include = ['graphql.field.args.*']
     agent.config.emit('attributes.include')
@@ -334,7 +333,7 @@ attributesTestSuite.push({
   name: 'named query should capture args when added to include list',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     agent.config.attributes.include = ['graphql.field.args.*']
     agent.config.emit('attributes.include')
@@ -377,7 +376,7 @@ attributesTestSuite.push({
   name: 'query should capture nested args',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     agent.config.attributes.include = ['graphql.field.args.*']
     agent.config.emit('attributes.include')
@@ -423,7 +422,7 @@ attributesTestSuite.push({
   name: 'query with variables should capture args when added to include list',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     agent.config.attributes.include = ['graphql.field.args.*']
     agent.config.emit('attributes.include')
@@ -475,7 +474,7 @@ attributesTestSuite.push({
   name: 'should capture query in operation segment attributes',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'Greetings'
     const query = `query ${expectedName} {
@@ -513,7 +512,7 @@ attributesTestSuite.push({
   name: 'union, should capture all expected attributes',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetSearchResult'
     const query = `query ${expectedName} {
@@ -569,7 +568,7 @@ attributesTestSuite.push({
   name: 'union, multiple inline fragments, should return expected attributes',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetSearchResult'
     const query = `query ${expectedName} {
@@ -628,7 +627,7 @@ attributesTestSuite.push({
   name: 'should capture all attributes on multiple queries',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve, reject } = promiseResolvers()
+    const { promise, resolve, reject } = Promise.withResolvers()
 
     const expectedName = 'HeyThere'
     const query = `query ${expectedName} {

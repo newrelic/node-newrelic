@@ -8,7 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const promiseResolvers = require('../../lib/promise-resolvers')
 const Collector = require('../../lib/test-collector')
 const helper = require('../../lib/agent_helper')
 const CollectorApi = require('../../../lib/collector/api')
@@ -34,7 +33,7 @@ test('should bail out if disconnected', async (t) => {
   t.after(() => afterEach(t))
 
   const { collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error) => {
     assert.equal(error.message, 'Not connected to collector.')
     resolve()
@@ -48,7 +47,7 @@ test('should discard HTTP 413 errors', async (t) => {
   t.after(() => afterEach(t))
 
   const { agent, collector, collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
     res.writeHead(413)
     res.end()
@@ -69,7 +68,7 @@ test('should discard HTTP 415 errors', async (t) => {
   t.after(() => afterEach(t))
 
   const { agent, collector, collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
     res.writeHead(415)
     res.end()
@@ -90,7 +89,7 @@ test('should retain after HTTP 500 errors', async (t) => {
   t.after(() => afterEach(t))
 
   const { agent, collector, collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
     res.writeHead(500)
     res.end()
@@ -111,7 +110,7 @@ test('should retain after HTTP 503 errors', async (t) => {
   t.after(() => afterEach(t))
 
   const { agent, collector, collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
     res.writeHead(503)
     res.end()
@@ -132,7 +131,7 @@ test('should indicate a restart and discard data after 401 errors', async (t) =>
   t.after(() => afterEach(t))
 
   const { agent, collector, collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
     res.writeHead(401)
     res.end()
@@ -154,7 +153,7 @@ test('should indicate a restart and discard data after 409 errors', async (t) =>
   t.after(() => afterEach(t))
 
   const { agent, collector, collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
     res.writeHead(409)
     res.end()
@@ -176,7 +175,7 @@ test('should stop the agent on 410 (force disconnect)', async (t) => {
   t.after(() => afterEach(t))
 
   const { agent, collector, collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collector.addHandler(helper.generateCollectorPath('shutdown', RUN_ID), (req, res) => {
     res.json({ payload: { return_value: null } })
   })
@@ -202,7 +201,7 @@ test('should discard unexpected HTTP errors (501)', async (t) => {
   t.after(() => afterEach(t))
 
   const { agent, collector, collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
     res.writeHead(501)
     res.end()
@@ -222,7 +221,7 @@ test('should handle error in invoked method', async (t) => {
   t.after(() => afterEach(t))
 
   const { agent, collector, collectorApi } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req) => {
     req.destroy()
   })
