@@ -50,6 +50,11 @@ them during validation) to carry agent-specific metadata:
     - `allowList` — constrain the value to the node's `enum`, falling back to the
       first enum entry when it is not a member (e.g. `transaction_tracer.record_sql`,
       `process_host.ipv_preference`, `security.mode`).
+    - `numericOrString` — parse the value to a number when it is numeric, else
+      pass the string through unchanged; for settings that accept either a
+      number or a sentinel string (e.g. `transaction_tracer.transaction_threshold`,
+      a number of seconds or `'apdex_f'`). Needed because a `['number','string']`
+      union `type` has no single native coercion.
 - **`x-newrelic-internal`** (`true`) — marks a setting that is not user-facing
   (e.g. `ssl`, `agent_control`, `logging.diagnostics`,
   `infinite_tracing.trace_observer.insecure`). It still appears in the schema so

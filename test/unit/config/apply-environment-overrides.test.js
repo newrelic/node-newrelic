@@ -39,6 +39,17 @@ test('applyEnvironmentOverrides', async (t) => {
     assert.equal(config.high_security, true)
   })
 
+  await t.test('applies the numericOrString coercion for transaction_threshold', () => {
+    // A numeric value parses to a number so the trace aggregator's
+    // `typeof === 'number'` check honors it; a sentinel string is left alone.
+    const numeric = apply({ NEW_RELIC_TRACER_THRESHOLD: '0.5' })
+    assert.strictEqual(typeof numeric.transaction_tracer.transaction_threshold, 'number')
+    assert.equal(numeric.transaction_tracer.transaction_threshold, 0.5)
+
+    const sentinel = apply({ NEW_RELIC_TRACER_THRESHOLD: 'apdex_f' })
+    assert.strictEqual(sentinel.transaction_tracer.transaction_threshold, 'apdex_f')
+  })
+
   await t.test('distinguishes sibling keys that are name-prefixes of one another', () => {
     // `proxy` uses the explicit NEW_RELIC_PROXY_URL; proxy_host/proxy_port use
     // their derived names. Each resolves to its own leaf, none bleeding onto another.

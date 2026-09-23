@@ -87,6 +87,24 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
+  await t.test('should coerce a numeric transaction_threshold to a number', (t, end) => {
+    // Regression guard: the transaction trace aggregator only honors a custom
+    // threshold when `typeof transaction_threshold === 'number'`, so a numeric
+    // env value must be parsed to a number rather than left as a string.
+    idempotentEnv({ NEW_RELIC_TRACER_THRESHOLD: '0.5' }, (tc) => {
+      assert.strictEqual(typeof tc.transaction_tracer.transaction_threshold, 'number')
+      assert.equal(tc.transaction_tracer.transaction_threshold, 0.5)
+      end()
+    })
+  })
+
+  await t.test('should keep a non-numeric transaction_threshold as a string', (t, end) => {
+    idempotentEnv({ NEW_RELIC_TRACER_THRESHOLD: 'apdex_f' }, (tc) => {
+      assert.strictEqual(tc.transaction_tracer.transaction_threshold, 'apdex_f')
+      end()
+    })
+  })
+
   await t.test('should pick up the collector host', (t, end) => {
     idempotentEnv({ NEW_RELIC_HOST: 'localhost' }, (tc) => {
       assert.ok(tc.host)
