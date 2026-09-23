@@ -82,6 +82,45 @@ describe('setAttribute', () => {
     assert.equal(span.attributes['short'], 'ok')
     assert.equal(span.attributes['long'].length, ATTR_VALUE_LENGTH_LIMIT)
   })
+
+  test('ignores a null or undefined value', () => {
+    const span = makeSpan()
+    span.setAttribute('nil', null)
+    span.setAttribute('undef', undefined)
+    assert.equal('nil' in span.attributes, false)
+    assert.equal('undef' in span.attributes, false)
+  })
+
+  test('skips an empty key', () => {
+    const span = makeSpan()
+    span.setAttribute('', 'value')
+    assert.deepEqual(span.attributes, {})
+  })
+
+  test('skips an invalid attribute value', () => {
+    const span = makeSpan()
+    span.setAttribute('bad', { nested: true })
+    assert.equal('bad' in span.attributes, false)
+  })
+
+  test('skips a heterogeneous array value', () => {
+    const span = makeSpan()
+    span.setAttribute('bad', ['a', 1])
+    assert.equal('bad' in span.attributes, false)
+  })
+
+  test('accepts a homogeneous array value', () => {
+    const span = makeSpan()
+    span.setAttribute('good', ['a', 'b'])
+    assert.deepEqual(span.attributes['good'], ['a', 'b'])
+  })
+
+  test('does not store the value once the span has ended', () => {
+    const span = makeSpan()
+    span.end()
+    span.setAttribute('key', 'value')
+    assert.equal('key' in span.attributes, false)
+  })
 })
 
 describe('addEvent', () => {
@@ -109,6 +148,13 @@ describe('addEvent', () => {
     const time = [1234, 0]
     span.addEvent('ev', time)
     assert.deepEqual(span.events[0].attributes, {})
+  })
+
+  test('does not add an event once the span has ended', () => {
+    const span = makeSpan()
+    span.end()
+    span.addEvent('ev')
+    assert.equal(span.events.length, 0)
   })
 })
 
@@ -141,18 +187,63 @@ describe('addLink/addLinks', () => {
     ])
     assert.equal(span.links.length, 2)
   })
+
+  test('does not add a link once the span has ended', () => {
+    const span = makeSpan()
+    span.end()
+    span.addLink({ context: makeSpanContext() })
+    assert.equal(span.links.length, 0)
+  })
 })
 
-test('setStatus updates status code and message', () => {
-  const span = makeSpan()
-  span.setStatus({ code: 2, message: 'oops' })
-  assert.deepEqual(span.status, { code: 2, message: 'oops' })
+describe('setStatus', () => {
+  test('updates status code and message', () => {
+    const span = makeSpan()
+    span.setStatus({ code: 2, message: 'oops' })
+    assert.deepEqual(span.status, { code: 2, message: 'oops' })
+  })
+
+  test('ignores an UNSET status code', () => {
+    const span = makeSpan()
+    span.setStatus({ code: 2, message: 'oops' })
+    span.setStatus({ code: 0 })
+    assert.deepEqual(span.status, { code: 2, message: 'oops' })
+  })
+
+  test('is sticky once set to OK', () => {
+    const span = makeSpan()
+    span.setStatus({ code: 1 })
+    span.setStatus({ code: 2, message: 'oops' })
+    assert.deepEqual(span.status, { code: 1 })
+  })
+
+  test('drops a non-string message', () => {
+    const span = makeSpan()
+    span.setStatus({ code: 2, message: { not: 'a string' } })
+    assert.deepEqual(span.status, { code: 2 })
+  })
+
+  test('does not update status once the span has ended', () => {
+    const span = makeSpan()
+    span.end()
+    span.setStatus({ code: 2, message: 'oops' })
+    assert.deepEqual(span.status, { code: 0 })
+  })
 })
 
-test('updateName updates the span name', () => {
-  const span = makeSpan()
-  span.updateName('new-name')
-  assert.equal(span.name, 'new-name')
+describe('updateName', () => {
+  test('updates the span name', () => {
+    const span = makeSpan()
+    span.updateName('new-name')
+    assert.equal(span.name, 'new-name')
+  })
+
+  test('does not update the name once the span has ended', () => {
+    const span = makeSpan()
+    span.end()
+    span.updateName('new-name')
+    assert.equal(span.name, 'test-span')
+  })
 })
 
 describe('isRecording', () => {
@@ -191,6 +282,12 @@ describe('end', () => {
     const [seconds, nanos] = span.duration
     assert.ok(seconds >= 0)
     assert.ok(nanos >= 0)
+  })
+
+  test('clamps duration to zero when endTime is before startTime', () => {
+    const span = makeSpan({ startTime: [1000, 0] })
+    span.end([500, 0])
+    assert.deepEqual(span.duration, [0, 0])
   })
 })
 
