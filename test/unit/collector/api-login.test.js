@@ -8,7 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const promiseResolvers = require('../../lib/promise-resolvers')
 const Collector = require('../../lib/test-collector')
 const helper = require('../../lib/agent_helper')
 const CollectorApi = require('../../../lib/collector/api')
@@ -107,7 +106,7 @@ test('when high_security: false', async (t) => {
   })
 })
 test('should copy request headers', async (t) => {
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   await beforeEach(t)
   t.after(async () => {
     await afterEach(t)

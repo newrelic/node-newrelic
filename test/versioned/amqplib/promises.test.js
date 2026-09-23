@@ -11,7 +11,6 @@ const amqpUtils = require('./amqp-utils')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const getPackageVersion = require('../../lib/get-package-version')
 const metrics = require('../../lib/metrics_helper')
 const {
@@ -75,7 +74,7 @@ test('amqplib promise instrumentation', async function (t) {
 
   await t.test('sendToQueue', async function (t) {
     const { agent, channel } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     helper.runInTransaction(agent, function transactionInScope(tx) {
       channel.sendToQueue('testQueue', Buffer.from('hello'), {
@@ -247,7 +246,7 @@ test('amqplib promise instrumentation', async function (t) {
 
   await t.test('consume in a transaction with distributed tracing', async function (t) {
     const { agent, api, channel } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     agent.config.account_id = 1234
     agent.config.primary_application_id = 4321
     agent.config.trusted_account_key = 1234
@@ -290,7 +289,7 @@ test('amqplib promise instrumentation', async function (t) {
 
   await t.test('consume out of transaction', async function (t) {
     const { api, channel } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     await channel.assertExchange(amqpUtils.DIRECT_EXCHANGE, 'direct')
     const { queue } = await channel.assertQueue('', { exclusive: true })
@@ -313,7 +312,7 @@ test('amqplib promise instrumentation', async function (t) {
 
   await t.test('rename message consume transaction', async function (t) {
     const { api, channel } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     await channel.assertExchange(amqpUtils.DIRECT_EXCHANGE, 'direct')
     const { queue } = await channel.assertQueue('', { exclusive: true })
@@ -337,7 +336,7 @@ test('amqplib promise instrumentation', async function (t) {
 
   await t.test('should create consume segment if consume is happening with an existing transaction', async function (t) {
     const { agent, api, channel } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     const exchange = amqpUtils.DIRECT_EXCHANGE
 
     let publishTx
@@ -371,7 +370,7 @@ test('amqplib promise instrumentation', async function (t) {
 
   await t.test('publish to pre-declared exchange', async function (t) {
     const { api, channel } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     const fanoutExchange = 'amq.fanout'
     await channel.assertExchange(fanoutExchange, 'fanout')
     const { queue } = await channel.assertQueue('', { exclusive: true })
@@ -399,7 +398,7 @@ test('amqplib promise instrumentation', async function (t) {
 
   await t.test('consume with async message handler', async function (t) {
     const { api, channel } = t.nr
-    const { promise, resolve: promiseResolve } = promiseResolvers()
+    const { promise, resolve: promiseResolve } = Promise.withResolvers()
 
     await channel.assertExchange(amqpUtils.DIRECT_EXCHANGE, 'direct')
     const { queue } = await channel.assertQueue('', { exclusive: true })
@@ -432,7 +431,7 @@ test('amqplib promise instrumentation', async function (t) {
 
   await t.test('consume with async message handler that rejects', async function (t) {
     const { api, channel } = t.nr
-    const { promise, reject } = promiseResolvers()
+    const { promise, reject } = Promise.withResolvers()
 
     await channel.assertExchange(amqpUtils.DIRECT_EXCHANGE, 'direct')
     const { queue } = await channel.assertQueue('', { exclusive: true })

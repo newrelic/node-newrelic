@@ -9,7 +9,6 @@ const assert = require('node:assert')
 const test = require('node:test')
 
 const helper = require('../../lib/agent_helper')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const checkAWSAttributes = require('../aws-sdk-v3/test-utils/check-aws-attributes.js')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
@@ -63,7 +62,7 @@ test('SNS', async (t) => {
 
   await t.test('publish with promise', async (t) => {
     const { agent, sns } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     helper.runInTransaction(agent, async (tx) => {
       const params = { TopicArn, Message: 'Hello!' }
 

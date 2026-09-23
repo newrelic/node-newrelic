@@ -8,7 +8,6 @@
 const test = require('node:test')
 
 const helper = require('../../lib/agent_helper')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const params = require('../../lib/params')
 const { DESTINATIONS } = require('../../../lib/transaction')
 
@@ -21,7 +20,7 @@ test('span links are propagated to new relic', async (t) => {
   // correctly. We need to await this promise in order for the test to have
   // time to work under that release.
   // TODO: remove once Node.js 22 is the baseline
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
 
   const agent = helper.instrumentMockedAgent({
     instrumentation: {

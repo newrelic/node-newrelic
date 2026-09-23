@@ -18,7 +18,6 @@ const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const { assertPackageMetrics, assertSegments, match } = require('../../lib/custom-assertions')
 const { findSegment } = require('../../lib/metrics_helper')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const responseConstants = require('../../lib/aws-server-stubs/ai-server/responses/constants')
 const createAiResponseServer = getAiResponseServer(__dirname)
 
@@ -142,7 +141,7 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
 
   await t.test('supports custom attributes on LlmChatCompletionMessage(s) and LlmChatCompletionSummary events', async (t) => {
     const { agent, bedrock, client } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     const prompt = 'text converse ultimate question'
     const input = {
       modelId,

@@ -10,7 +10,6 @@ const helper = require('../../lib/agent_helper')
 const afterEach = require('./test-utils/after-each.js')
 const checkExternals = require('./test-utils/check-externals.js')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
-const promiseResolvers = require('../../lib/promise-resolvers')
 
 test('APIGatewayClient', async (t) => {
   t.beforeEach(async (ctx) => {
@@ -36,7 +35,7 @@ test('APIGatewayClient', async (t) => {
 
   await t.test('CreateApiKeyCommand', async (t) => {
     const { agent, service, CreateApiKeyCommand } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new CreateApiKeyCommand({
         customerId: 'STRING_VALUE',

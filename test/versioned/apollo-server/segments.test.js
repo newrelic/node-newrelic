@@ -6,7 +6,6 @@
 'use strict'
 
 const test = require('node:test')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const helper = require('../../lib/agent_helper')
 const { executeQuery, executeQueryBatch } = require('../../lib/apollo/test-client')
 const { afterEach, setupCoreTest } = require('../../lib/apollo/test-tools')
@@ -36,7 +35,7 @@ segmentsTests.push({
   name: 'anonymous query, single level',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX, apolloServerPkg } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       hello
@@ -70,7 +69,7 @@ segmentsTests.push({
   name: 'named query, single level',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'HeyThere'
     const query = `query ${expectedName} {
@@ -103,7 +102,7 @@ segmentsTests.push({
   name: 'named query, @include directive',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'HeyThere'
     const query = `query ${expectedName} {
@@ -143,7 +142,7 @@ segmentsTests.push({
       config,
       TRANSACTION_PREFIX
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       libraries {
@@ -201,7 +200,7 @@ segmentsTests.push({
       serverUrl,
       TRANSACTION_PREFIX
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBooksByLibrary'
     const query = `query ${expectedName} {
@@ -260,7 +259,7 @@ segmentsTests.push({
   name: 'named query with aliases should use alias in segment naming',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBooksByLibrary'
     const query = `query ${expectedName} {
@@ -307,7 +306,7 @@ segmentsTests.push({
   name: 'anonymous mutation, single level',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `mutation {
       addThing(name: "added thing!")
@@ -340,7 +339,7 @@ segmentsTests.push({
   name: 'named mutation, single level, should use mutation name',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'AddThing'
     const query = `mutation ${expectedName} {
@@ -374,7 +373,7 @@ segmentsTests.push({
   name: 'anonymous query, with params',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       paramQuery(blah: "blah", blee: "blee")
@@ -407,7 +406,7 @@ segmentsTests.push({
   name: 'named query, with params',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'BlahQuery'
     const query = `query ${expectedName} {
@@ -446,7 +445,7 @@ segmentsTests.push({
       serverUrl,
       TRANSACTION_PREFIX
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBookForLibrary'
     const query = `query ${expectedName} {
@@ -511,7 +510,7 @@ segmentsTests.push({
       serverUrl,
       TRANSACTION_PREFIX
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBookForLibrary'
     const query = `query ${expectedName} {
@@ -577,7 +576,7 @@ segmentsTests.push({
       serverUrl,
       TRANSACTION_PREFIX
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBookForLibrary'
     const query = `fragment LibraryBook on Book {
@@ -637,7 +636,7 @@ segmentsTests.push({
   name: 'batch query should include segments for nested queries',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName1 = 'GetBookForLibrary'
     const query1 = `query ${expectedName1} {
@@ -709,7 +708,7 @@ segmentsTests.push({
   name: 'union, single level',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetSearchResult'
     const query = `query ${expectedName} {
@@ -749,7 +748,7 @@ segmentsTests.push({
   name: 'union, multiple inline fragments, single level',
   async fn(t) {
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetSearchResult'
     const query = `query ${expectedName} {
@@ -793,7 +792,7 @@ segmentsTests.push({
   async fn(t) {
     // there will be no document/AST nor resolved operation
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const invalidQuery = `query {
       libraries {
@@ -839,7 +838,7 @@ segmentsTests.push({
     // if parse succeeds but validation fails, there will not be a resolved operation
     // but the document/AST can still be leveraged for what was intended.
     const { agent, serverUrl, TRANSACTION_PREFIX } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const invalidQuery = `query {
       libraries {
@@ -939,7 +938,7 @@ test('skipped scalar segment: async (db-querying) resolver still runs in the ope
   t.nr.TRANSACTION_PREFIX = prefix
 
   const { agent, serverUrl } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
 
   const expectedName = 'GetBookSummaries'
   // `libraries` (top-level) and `Library.books` (object field) both keep their
@@ -1010,7 +1009,7 @@ test('fragmented trace does not add segments to trace but still records metrics 
   // see: https://github.com/newrelic/newrelic-node-apollo-server-plugin/issues/344
   await setupCoreTest({ t, testDir: __dirname, agentConfig: { max_trace_segments: 7 } })
   const { agent, serverUrl } = t.nr
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   const expectedName = 'testQuery'
   const query = `query ${expectedName} {
     libraries {

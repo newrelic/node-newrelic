@@ -11,7 +11,6 @@ const crypto = require('node:crypto')
 const { afterEach, setupCoreTest } = require('../../lib/apollo/test-tools')
 const { executeQuery, executeQueryBatch, makeRequest } = require('../../lib/apollo/test-client')
 const { assertMetrics } = require('../../lib/custom-assertions')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const ANON_PLACEHOLDER = '<anonymous>'
 const UNKNOWN_OPERATION = '<unknown>'
 const OPERATION_PREFIX = 'GraphQL/operation/ApolloServer'
@@ -29,7 +28,7 @@ tests.push({
       serverUrl,
       config: { apollo_server: { field_metrics: captureFieldMetrics } }
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       hello
@@ -66,7 +65,7 @@ tests.push({
       serverUrl,
       config: { apollo_server: { field_metrics: captureFieldMetrics } }
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'HeyThere'
     const query = `query ${expectedName} {
@@ -104,7 +103,7 @@ tests.push({
       serverUrl,
       config: { apollo_server: { field_metrics: captureFieldMetrics } }
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = `query {
       libraries {
@@ -161,7 +160,7 @@ tests.push({
       serverUrl,
       config: { apollo_server: { field_metrics: captureFieldMetrics } }
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName1 = 'GetBookForLibrary'
     const query1 = `query ${expectedName1} {
@@ -236,7 +235,7 @@ tests.push({
       serverUrl,
       config: { apollo_server: { field_metrics: captureFieldMetrics } }
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     const expectedName = 'FindBooks'
     const path = 'searchByBook'
 
@@ -283,7 +282,7 @@ tests.push({
       serverUrl,
       config: { apollo_server: { field_metrics: captureFieldMetrics } }
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const query = '{ libraries { books { title author { name } } } }'
     const path = 'libraries.books'
@@ -337,7 +336,7 @@ tests.push({
   name: 'when cannot parse, should have unknown placeholder metric',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const invalidQuery = `query {
       libraries {
@@ -372,7 +371,7 @@ tests.push({
       serverUrl,
       config: { apollo_server: { field_metrics: captureFieldMetrics } }
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBookForLibrary'
     const query = `query ${expectedName} {
@@ -434,7 +433,7 @@ tests.push({
       serverUrl,
       config: { apollo_server: { field_metrics: captureFieldMetrics } }
     } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedName = 'GetBookForLibrary'
     const query = `fragment LibraryBook on Book {

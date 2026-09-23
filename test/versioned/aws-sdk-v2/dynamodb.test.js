@@ -9,7 +9,6 @@ const assert = require('node:assert')
 const test = require('node:test')
 
 const helper = require('../../lib/agent_helper')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const checkAWSAttributes = require('../aws-sdk-v3/test-utils/check-aws-attributes.js')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
@@ -76,7 +75,7 @@ test('DynamoDB', async (t) => {
 
   await t.test('commands with promises', async (t) => {
     const { tests, agent } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     helper.runInTransaction(agent, async function (tx) {
       // Execute commands in order
       // Await works because this is in a for-loop / no callback api

@@ -17,7 +17,6 @@ const {
   compareSegments,
   isNonWritable
 } = require('../../lib/custom-assertions')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const { tspl } = require('@matteo.collina/tspl')
 const tempOverrideUncaught = require('../../lib/temp-override-uncaught')
 const Transaction = require('../../../lib/transaction')
@@ -1187,7 +1186,7 @@ test('Shim', async function (t) {
   await t.test('#record with a promise', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
-      const { promise, resolve, reject } = promiseResolvers()
+      const { promise, resolve, reject } = Promise.withResolvers()
       const toWrap = function () {
         promise.segment = ctx.nr.tracer.getSegment()
         return promise

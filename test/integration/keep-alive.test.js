@@ -10,12 +10,11 @@ const https = require('node:https')
 
 const tspl = require('@matteo.collina/tspl')
 const fakeCert = require('../lib/fake-cert')
-const promiseResolvers = require('../lib/promise-resolvers')
 const RemoteMethod = require('../../lib/collector/remote-method')
 
 test('RemoteMethod makes two requests with one connection', async (t) => {
   const plan = tspl(t, { plan: 4 })
-  const { promise, resolve, reject } = promiseResolvers()
+  const { promise, resolve, reject } = Promise.withResolvers()
   const cert = fakeCert()
   const serverOpts = { key: cert.privateKey, cert: cert.certificate }
   const server = https.createServer(serverOpts, (req, res) => {

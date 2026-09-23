@@ -12,12 +12,11 @@ import assert from 'node:assert'
 // file and export the agent
 import { agent } from './setup-agent.js'
 import helper from '../../lib/agent_helper.js'
-import promiseResolvers from '../../lib/promise-resolvers.js'
 import amqpUtils from '../amqplib/amqp-utils.js'
 import amqplib from 'amqplib'
 
 test('esm import does instrumentation', async () => {
-  const { promise, resolve } = promiseResolvers()
+  const { promise, resolve } = Promise.withResolvers()
   const { connection: conn, channel } = await amqpUtils.getChannel(amqplib)
   await channel.assertQueue('testQueue')
 

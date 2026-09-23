@@ -10,7 +10,6 @@ const test = require('node:test')
 const { afterEach, setupCoreTest } = require('../../lib/apollo/test-tools')
 const assert = require('node:assert')
 const { executeQuery, makeRequest } = require('../../lib/apollo/test-client')
-const promiseResolvers = require('../../lib/promise-resolvers')
 
 const ANON_PLACEHOLDER = '<anonymous>'
 const UNKNOWN_OPERATION = '<unknown>'
@@ -57,7 +56,7 @@ errorsTests.push({
   name: 'parsing error should be noticed and assigned to operation span',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedErrorMessage = 'Syntax Error: Expected Name, found <EOF>.'
     const expectedErrorType = 'GraphQLError'
@@ -117,7 +116,7 @@ errorsTests.push({
   name: 'validation error should be noticed and assigned to operation span',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedErrorMessage = 'Cannot query field "doesnotexist" on type "Book".'
     const expectedErrorType = 'GraphQLError'
@@ -179,7 +178,7 @@ errorsTests.push({
   name: 'resolver error should be noticed and assigned to resolve span',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
 
     const expectedErrorMessage = 'Boom goes the dynamite!'
     const expectedErrorType = 'Error'
@@ -255,7 +254,7 @@ for (const errorTest of errorTests) {
     name: type,
     async fn(t) {
       const { agent, serverUrl } = t.nr
-      const { promise, resolve } = promiseResolvers()
+      const { promise, resolve } = Promise.withResolvers()
 
       const expectedErrorMessage = msg
       const expectedErrorType = type
@@ -307,7 +306,7 @@ errorsTests.push({
   name: 'Invalid operation name should not crash server',
   async fn(t) {
     const { agent, serverUrl } = t.nr
-    const { promise, resolve } = promiseResolvers()
+    const { promise, resolve } = Promise.withResolvers()
     const query = 'query Hello { hello }'
     const expectedErrorMessage = 'Unknown operation named "testMe".'
     const expectedErrorType = 'GraphQLError'
