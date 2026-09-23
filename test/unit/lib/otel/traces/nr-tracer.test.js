@@ -85,6 +85,23 @@ describe('startSpan', () => {
     assert.equal(span.instrumentationScope.name, 'test')
     assert.equal(span.instrumentationScope.version, '1.0')
   })
+
+  test('ignores parent context when options.root is true', () => {
+    const { tracer } = makeTracer()
+    const parent = tracer.startSpan('parent', {}, ROOT_CONTEXT)
+    const parentCtx = trace.setSpan(ROOT_CONTEXT, parent)
+    const child = tracer.startSpan('child', { root: true }, parentCtx)
+    assert.notEqual(child.spanContext().traceId, parent.spanContext().traceId)
+    assert.equal(child.parentSpanId, undefined)
+  })
+
+  test('does not mutate the context passed in when options.root is true', () => {
+    const { tracer } = makeTracer()
+    const parent = tracer.startSpan('parent', {}, ROOT_CONTEXT)
+    const parentCtx = trace.setSpan(ROOT_CONTEXT, parent)
+    tracer.startSpan('child', { root: true }, parentCtx)
+    assert.equal(trace.getSpan(parentCtx), parent)
+  })
 })
 
 describe('startActiveSpan', () => {
