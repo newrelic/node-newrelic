@@ -143,6 +143,12 @@ describe('startSpan', () => {
     const span = tracer.startSpan('op', {}, parentCtx)
     assert.strictEqual(span.spanContext().traceState, traceState)
   })
+
+  test('uses options.startTime when provided', () => {
+    const { tracer } = makeTracer()
+    const span = tracer.startSpan('op', { startTime: [1000, 0] }, ROOT_CONTEXT)
+    assert.deepEqual(span.startTime, [1000, 0])
+  })
 })
 
 describe('startActiveSpan', () => {
@@ -168,6 +174,14 @@ describe('startActiveSpan', () => {
     const parentCtx = trace.setSpan(ROOT_CONTEXT, parent)
     tracer.startActiveSpan('child', {}, parentCtx, (span) => {
       assert.equal(span.parentSpanId, parent.spanContext().spanId)
+      end()
+    })
+  })
+
+  test('(name, opts, ctx, fn) defaults opts and ctx when explicitly undefined', (t, end) => {
+    const { tracer } = makeTracer()
+    tracer.startActiveSpan('op', undefined, undefined, (span) => {
+      assert.equal(span.kind, SpanKind.INTERNAL)
       end()
     })
   })

@@ -41,6 +41,16 @@ describe('constructor', () => {
     assert.equal(span.links[0].attributes.key.length, ATTR_VALUE_LENGTH_LIMIT)
     assert.equal(link.attributes.key.length, OVER_LIMIT.length)
   })
+
+  test('defaults instrumentationScope when not provided', () => {
+    const span = new NrSpan({
+      name: 'test-span',
+      kind: 0,
+      spanContext: makeSpanContext(),
+      processor: makeProcessor()
+    })
+    assert.deepEqual(span.instrumentationScope, { name: '', version: undefined })
+  })
 })
 
 test('spanContext returns the stored span context', () => {
@@ -115,6 +125,12 @@ describe('setAttribute', () => {
     assert.deepEqual(span.attributes['good'], ['a', 'b'])
   })
 
+  test('accepts an array containing null or undefined elements', () => {
+    const span = makeSpan()
+    span.setAttribute('good', ['a', null, undefined, 'b'])
+    assert.deepEqual(span.attributes['good'], ['a', null, undefined, 'b'])
+  })
+
   test('does not store the value once the span has ended', () => {
     const span = makeSpan()
     span.end()
@@ -148,6 +164,13 @@ describe('addEvent', () => {
     const time = [1234, 0]
     span.addEvent('ev', time)
     assert.deepEqual(span.events[0].attributes, {})
+  })
+
+  test('uses the timeStamp argument when attributes are also given', () => {
+    const span = makeSpan()
+    const time = [1234, 0]
+    span.addEvent('ev', { foo: 'bar' }, time)
+    assert.deepEqual(span.events[0].time, time)
   })
 
   test('does not add an event once the span has ended', () => {
@@ -259,6 +282,19 @@ describe('isRecording', () => {
   })
 })
 
+describe('ended', () => {
+  test('returns false before end', () => {
+    const span = makeSpan()
+    assert.equal(span.ended, false)
+  })
+
+  test('returns true after end', () => {
+    const span = makeSpan()
+    span.end()
+    assert.equal(span.ended, true)
+  })
+})
+
 describe('end', () => {
   test('calls processor.onEnd', () => {
     const processor = makeProcessor()
@@ -308,6 +344,16 @@ describe('recordException', () => {
     assert.equal(attrs['exception.type'], 'Error')
     assert.equal(attrs['exception.message'], 'bad')
     assert.ok(attrs['exception.stacktrace'].includes('Error: bad'))
+  })
+
+  test('with an exception that has a code uses it as the type', () => {
+    const span = makeSpan()
+    const err = new Error('no such file')
+    err.code = 'ENOENT'
+    span.recordException(err)
+    const attrs = span.events[0].attributes
+    assert.equal(attrs['exception.type'], 'ENOENT')
+    assert.equal(attrs['exception.message'], 'no such file')
   })
 
   test('with no useful info does not add an event', () => {
