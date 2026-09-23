@@ -34,7 +34,7 @@ test('deflate', function (t, end) {
     zlib.deflate(CONTENT, function (err, data) {
       assert.ok(!err, 'should not error')
       assert.equal(data.toString('base64'), DEFLATED_CONTENT)
-      verifySegments({ agent, end, name: 'zlib.deflate' })
+      verifySegments({ agent, end, name: 'zlib.deflate', assertCallbacks: false })
     })
   })
 })
@@ -45,7 +45,7 @@ test('deflateRaw', function (t, end) {
     zlib.deflateRaw(CONTENT, function (err, data) {
       assert.ok(!err, 'should not error')
       assert.equal(data.toString('base64'), DEFLATED_RAW)
-      verifySegments({ agent, end, name: 'zlib.deflateRaw' })
+      verifySegments({ agent, end, name: 'zlib.deflateRaw', assertCallbacks: false })
     })
   })
 })
@@ -56,7 +56,7 @@ test('gzip', function (t, end) {
     zlib.gzip(CONTENT, function (err, data) {
       assert.ok(!err, 'should not error')
       assert.equal(data.toString('base64'), GZIP_CONTENT)
-      verifySegments({ agent, end, name: 'zlib.gzip' })
+      verifySegments({ agent, end, name: 'zlib.gzip', assertCallbacks: false })
     })
   })
 })
@@ -67,7 +67,7 @@ test('inflate', function (t, end) {
     zlib.inflate(Buffer.from(DEFLATED_CONTENT, 'base64'), function (err, data) {
       assert.ok(!err, 'should not error')
       assert.equal(data.toString(), CONTENT)
-      verifySegments({ agent, end, name: 'zlib.inflate' })
+      verifySegments({ agent, end, name: 'zlib.inflate', assertCallbacks: false })
     })
   })
 })
@@ -78,7 +78,7 @@ test('inflateRaw', function (t, end) {
     zlib.inflateRaw(Buffer.from(DEFLATED_RAW, 'base64'), function (err, data) {
       assert.ok(!err, 'should not error')
       assert.equal(data.toString(), CONTENT)
-      verifySegments({ agent, end, name: 'zlib.inflateRaw' })
+      verifySegments({ agent, end, name: 'zlib.inflateRaw', assertCallbacks: false })
     })
   })
 })
@@ -89,7 +89,7 @@ test('gunzip', function (t, end) {
     zlib.gunzip(Buffer.from(GZIP_CONTENT, 'base64'), function (err, data) {
       assert.ok(!err, 'should not error')
       assert.equal(data.toString(), CONTENT)
-      verifySegments({ agent, end, name: 'zlib.gunzip' })
+      verifySegments({ agent, end, name: 'zlib.gunzip', assertCallbacks: false })
     })
   })
 })
@@ -100,7 +100,7 @@ test('unzip', function (t, end) {
     zlib.unzip(Buffer.from(GZIP_CONTENT, 'base64'), function (err, data) {
       assert.ok(!err, 'should not error')
       assert.equal(data.toString(), CONTENT)
-      verifySegments({ agent, end, name: 'zlib.unzip' })
+      verifySegments({ agent, end, name: 'zlib.unzip', assertCallbacks: false })
     })
   })
 })

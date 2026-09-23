@@ -8,7 +8,7 @@ Set `internal = true` when the instrumented methods delegate to one another (as 
 
 ```js
 
-const BaseCoreSubscriber = require('../base')
+const BaseCoreSubscriber = require('#agentlib/subscribers/core/base.js')
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 const { tracingChannel } = require('node:diagnostics_channel')
 const shimmer = require('#agentlib/shimmer.js')
@@ -19,15 +19,20 @@ class FakeCoreSubscriber extends BaseCoreSubscriber {
     super({ agent, logger, packageName: 'core-lib-name', instrumentedMethods })
   }
 
-  instrument(coreLibName) {
+  instrument(moduleBeingInstrumented) {
     const self = this
-    shimmer.wrapMethod(coreLibName, this.packageName, function wrapMethod(original, method) {
-      const channel = tracingChannel(`${self.id}:${method}`)
-      return function wrappedMethod(...args) {
-        const data = { name: `${self.packageName}.${method}` }
-        return channel.traceCallback(original, -1, data, this, ...args)
+    shimmer.wrapMethod(
+      moduleBeingInstrumented,
+      this.packageName,
+      instrumentedMethods,
+      function wrapMethod(original, method) {
+        const channel = tracingChannel(`${self.id}:${method}`)
+        return function wrappedMethod(...args) {
+          const data = { name: `${self.packageName}.${method}` }
+          return channel.traceCallback(original, -1, data, this, ...args)
+        }
       }
-    })
+    )
   }
 }
 
