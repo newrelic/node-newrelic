@@ -5,25 +5,27 @@
 
 'use strict'
 
-const Agent = require('../../lib/agent')
-const API = require('../../api')
-const zlib = require('zlib')
-const copy = require('../../lib/util/copy')
-const hashes = require('#agentlib/util/hashes.js')
-const { defaultAttributeConfig } = require('./fixtures')
-const { EventEmitter } = require('events')
-const Transaction = require('../../lib/transaction')
-const symbols = require('../../lib/symbols')
-const InstrumentationTracker = require('../../lib/instrumentation-tracker')
-const { removeModules } = require('./cache-buster')
-const http = require('http')
-const https = require('https')
-const semver = require('semver')
-const crypto = require('crypto')
-const util = require('util')
-const cp = require('child_process')
+const cp = require('node:child_process')
+const crypto = require('node:crypto')
 const fs = require('node:fs')
+const http = require('node:http')
+const https = require('node:https')
 const path = require('node:path')
+const util = require('node:util')
+const zlib = require('node:zlib')
+const { EventEmitter } = require('events')
+const semver = require('semver')
+
+const copy = require('#agentlib/util/copy.js')
+const hashes = require('#agentlib/util/hashes.js')
+const methodWrapper = require('#agentlib/subscribers/wrap-method.js')
+const symbols = require('#agentlib/symbols.js')
+const API = require('../../api')
+const Agent = require('#agentlib/agent.js')
+const InstrumentationTracker = require('#agentlib/instrumentation-tracker.js')
+const Transaction = require('#agentlib/transaction/index.js')
+const { defaultAttributeConfig } = require('./fixtures')
+const { removeModules } = require('./cache-buster')
 
 let _agent = null
 let _agentApi = null
@@ -187,6 +189,7 @@ helper.generateAllPaths = (runId) => {
  */
 helper.instrumentMockedAgent = (conf, setState = true, shimmer = require('../../lib/shimmer')) => {
   shimmer.debug = true
+  methodWrapper.toggleUnwrappingTracking()
 
   const agent = helper.loadMockedAgent(conf, setState)
 
@@ -266,6 +269,8 @@ helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
   shimmer.unwrapAll()
   shimmer.registeredInstrumentations = new InstrumentationTracker()
   shimmer.debug = false
+  methodWrapper.unwrapAll()
+  methodWrapper.toggleUnwrappingTracking()
   helper.maybeUnloadSecurityAgent(agent)
 
   // Stop future harvesting by aggregators.
