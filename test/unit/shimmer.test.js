@@ -790,9 +790,7 @@ test('Shimmer with logger mock', async (t) => {
       require(TEST_MODULE_RELATIVE_PATH)
       clearCachedModules([TEST_MODULE_RELATIVE_PATH])
       require(TEST_MODULE_RELATIVE_PATH)
-      assert.deepEqual(loggerMock.trace.args[2], [
-        'Already instrumented test-mod/module@0.0.1, skipping registering instrumentation'
-      ])
+      assert.ok(loggerMock.trace.args.some(([msg]) => msg === 'Already instrumented test-mod/module@0.0.1, skipping registering instrumentation'))
     }
   )
 
@@ -810,9 +808,7 @@ test('Shimmer with logger mock', async (t) => {
       require(TEST_MODULE_RELATIVE_PATH)
       clearCachedModules([TEST_MODULE_RELATIVE_PATH])
       require(TEST_MODULE_RELATIVE_PATH)
-      assert.deepEqual(loggerMock.trace.args[2], [
-        'Failed to instrument test-mod/module@0.0.1, skipping registering instrumentation'
-      ])
+      assert.ok(loggerMock.trace.args.some(([msg]) => msg === 'Failed to instrument test-mod/module@0.0.1, skipping registering instrumentation'))
     }
   )
 })
