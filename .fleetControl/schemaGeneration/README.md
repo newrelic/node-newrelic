@@ -1,14 +1,14 @@
 # Agent Config Schema Generator
 
-This directory contains the scripts that turn the agent's own config
-definition into a JSON Schema (`../schemas/config.json`) and manage version
-bumps in `../configurationDefinitions.yml` for Fleet Control.
+This directory contains the scripts that turn the agent's config JSON Schema
+into the published `../schemas/config.json` and manage version bumps in
+`../configurationDefinitions.yml` for Fleet Control.
 
 ## Files
 
 | File | Description |
 |------|-------------|
-| `generate-schema.js` | Post-merge regenerator. Reads `lib/config/default.js`'s `definition()`, writes `config.json`. Never touches `configurationDefinitions.yml`. |
+| `generate-schema.js` | Post-merge regenerator. Reads the agent's rendered config schema (`lib/config/schema.js`'s `renderedSchema`), prunes it for publication, and writes `config.json`. Never touches `configurationDefinitions.yml`. |
 | `bump-schema-version.js` | Release-time version bumper. Compares the schema at a prior git ref to the current schema and writes a new version into `configurationDefinitions.yml`. |
 | `schema-diff.js` | Shared library (no CLI). Holds the diff classification (`classifyChanges`), bump arithmetic (`recommendBump`, `applyBump`, `bumpVersionLine`), and schema loading (`loadExisting`). Required by both scripts above. |
 | `tests/generate-schema.test.js` | Tests for the generator (comment extraction, per-leaf type inference, override precedence, `generateSchema`). |
@@ -21,19 +21,18 @@ bumps in `../configurationDefinitions.yml` for Fleet Control.
 
 `generate-schema.js`:
 
-1. Requires `lib/config/default.js` directly and calls its `definition()`
-   function. That function is the agent's own source of truth for config
-   defaults, types (via each leaf's `formatter`), and env var overrides —
-   there's no separate mirror file to keep in sync.
-2. Re-reads `lib/config/default.js` as plain text to extract the JSDoc
-   comments documenting each key, since `require()` only gives you the
-   evaluated values, not the comments above them. `distributed_tracing.sampler`'s
-   `root`/`remote_parent_sampled`/`remote_parent_not_sampled` fields are spread
-   in from `lib/config/samplers.js` rather than written directly in
-   `default.js`, so that file is read too and its comments reindexed under
-   the right dotted path (`mergeSamplerDescriptions`).
-3. Applies the `TYPE_OVERRIDES`, `ENUM_OVERRIDES`, and `EXCLUDE_KEYS`
-   configured in the script.
+1. Requires `lib/config/schema.js` and reads its `renderedSchema` — the
+   agent's config JSON Schema (`lib/config/schemas/`) with every `$ref` block
+   inlined. That rendered schema already carries every setting's type,
+   default, constraints, and description, so there is nothing to infer.
+2. Prunes the rendered schema for publication (`prune`): drops any setting
+   marked `x-newrelic-internal` (not user-facing) and strips the vendor
+   keywords that shouldn't appear in the published artifact (`$id`,
+   `x-newrelic-coerce`, `x-newrelic-sampler`). It **keeps**
+   `x-newrelic-env-var`, which documents the environment variable that sets a
+   setting.
+3. Applies the published document's `title`, `description`, `required`, and
+   `additionalProperties`.
 4. Validates the result against the JSON Schema Draft 2020-12 meta-schema
    (via `ajv`).
 5. Writes `config.json`.
@@ -91,64 +90,31 @@ node .fleetControl/schemaGeneration/bump-schema-version.js --since=v14.2.0 --wri
 
 ## Adding new configuration keys
 
-New keys under `defaultConfig.definition()` in `lib/config/default.js` are
-picked up automatically — the generator walks that structure directly. Most
-of the time nothing else is needed: each leaf's `formatter` (`boolean`,
-`int`, `float`, `array`, `object`, `objectList`, `regex`, or an
-`allowList.bind(...)` call) tells the generator exactly what JSON Schema
-type — and, for `allowList`, what `enum` — to emit, and the JSDoc comment
-directly above the key becomes its `description`.
+New settings are added to the agent's config schema under
+`lib/config/schemas/` (see that directory's README for authoring details).
+The generator picks them up automatically — it reads the rendered schema
+directly, so a setting's `type`, `default`, constraints, `enum`, and
+`description` come straight from the schema with nothing to infer or
+override here.
 
-Three cases need manual handling, all configured via override maps in
-`generate-schema.js`:
+Two schema conventions control what reaches `config.json`:
 
-- **A key accepts more than one shape.** `app_name` is parsed with a custom
-  formatter that splits a string on `;`/`,`, so it accepts either a real
-  array or a delimited string — that shape can't be inferred from a single
-  default value, so it's declared explicitly in `TYPE_OVERRIDES`.
-- **A key has a fixed set of values not expressed via `allowList`.** Add it
-  to `ENUM_OVERRIDES`.
-- **A key's `default` in `definition()` is computed at require-time**, not
-  a stable literal — e.g. `logging.filepath` defaults to
-  `require('path').join(process.cwd(), ...)`, and `serverless_mode.enabled`
-  defaults to whether an env var happens to be set. Left alone, the
-  generator bakes in whatever that expression evaluates to on the machine
-  that last ran it (an absolute path specific to that checkout, in the
-  `logging.filepath` case — this is exactly the kind of bug the generator
-  should never produce silently). Add a corrected schema to `TYPE_OVERRIDES`.
-
-## Excluding keys
-
-Add a key's dotted path to `EXCLUDE_KEYS` to drop it, and everything nested
-under it, from the schema entirely. This schema is scoped to public-facing
-config — settings a user is meant to set:
-
-```js
-const EXCLUDE_KEYS = new Set([
-  'agent_control', // Fleet Control sets this itself.
-  'logging.diagnostics',
-  'infinite_tracing.trace_observer.insecure',
-  'ssl' // no-op: the formatter always forces true regardless of input.
-])
-```
-
-## Missing descriptions
-
-The generator prints every config path it wrote without a `description` —
-usually because the JSDoc comment documents a parent stanza (or, in a few
-spots, a single child written under its parent's comment) rather than that
-specific leaf. Check the printout after each run; fixing this means adding
-or moving a comment in `lib/config/default.js`, not editing the generated
-schema.
+- **Hiding a setting.** Mark it `x-newrelic-internal: true` in the schema.
+  The generator drops any such node (and everything nested under it) from
+  `config.json`, which is scoped to public-facing config. This is how
+  `ssl` and `agent_control` are excluded, for example.
+- **Documenting the environment variable.** A setting's `x-newrelic-env-var`
+  keyword is preserved in `config.json`; the other `x-newrelic-*` keywords
+  are internal to the agent and are stripped.
 
 ## Checklist for new config keys
 
-1. Add the key to `lib/config/default.js` with a JSDoc comment, as usual.
-2. Run the generator. Check the inferred type in `config.json`.
-3. If the type or enum came out wrong, or the key needs to be hidden, add
-   an entry to the appropriate override map above and re-run.
-4. Run the tests (`npm run unit:config-schema`).
-5. The version doesn't bump on post-merge regeneration. The next release
+1. Add the setting to the schema under `lib/config/schemas/`, with a
+   `description` (and `x-newrelic-internal: true` if it should not be
+   published).
+2. Run the generator and check the result in `config.json`.
+3. Run the tests (`npm run unit:config-schema`).
+4. The version doesn't bump on post-merge regeneration. The next release
    will pick up your changes when someone runs the bump workflow as part
    of release prep.
 
@@ -227,15 +193,11 @@ node --test .fleetControl/schemaGeneration/tests/
 npm run unit:config-schema
 ```
 
-`tests/generate-schema.test.js` covers the comment-extraction scanner,
-per-leaf type inference (including override precedence and `allowList`
-enum extraction), the exclusion/recursion logic, and `generateSchema`
-itself — once against a small synthetic fixture (fast, isolated from the
-real config) and once against the actual `lib/config/default.js` (catches
-real drift). `tests/schema-diff.test.js` and
-`tests/bump-schema-version.test.js` cover the version-bump classification
-and driver logic above, entirely with synthetic schema fixtures — no git or
-real config involved. Every function across all three scripts takes its
-inputs — definitions, source text, override maps, schemas — as parameters
-rather than reading module-level constants directly, specifically so tests
-can supply synthetic ones instead of depending on production data.
+`tests/generate-schema.test.js` covers the publication pruning (`prune`:
+internal-node removal and vendor-keyword stripping, including nested
+`oneOf`/`items`) and `generateSchema` against the real rendered schema
+(document metadata, internal exclusions, retained descriptions, and the
+`x-newrelic-env-var`-kept/other-keywords-stripped contract).
+`tests/schema-diff.test.js` and `tests/bump-schema-version.test.js` cover the
+version-bump classification and driver logic above, entirely with synthetic
+schema fixtures — no git or real config involved.

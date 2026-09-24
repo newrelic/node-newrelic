@@ -4,14 +4,15 @@ permissions:
   contents: read
 
 # Regenerates .fleetControl/schemas/config.json whenever main's config
-# definition changes, then opens a PR with the result for a human to
+# schema changes, then opens a PR with the result for a human to
 # review and merge.
 on:
   push:
     branches:
       - main
     paths:
-      - 'lib/config/default.js'
+      - 'lib/config/schemas/**'
+      - '!lib/config/schemas/README.md'
       - 'lib/config/samplers.js'
       - '.fleetControl/schemaGeneration/**'
 
