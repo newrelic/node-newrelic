@@ -1,3 +1,29 @@
+### v14.5.1 (2026-09-24)
+
+#### Bug fixes
+
+* Updated `segment.getExclusiveDuration` to only attempt to calculate and cache the durations of all segments in a trace once ([#4303](https://github.com/newrelic/node-newrelic/pull/4303)) ([563f743](https://github.com/newrelic/node-newrelic/commit/563f743421e3d8d0bc47328ccda028295a0f914a))
+
+#### Performance improvements
+
+* Updated algorithm for `hashes.makeId` to gain up to 3x perf ([#4286](https://github.com/newrelic/node-newrelic/pull/4286)) ([6737071](https://github.com/newrelic/node-newrelic/commit/6737071a0257ce2d5abd97b14066d6d44334f394))
+
+#### Code refactoring
+
+* Consolidated core subscriber configs into a single file ([#4294](https://github.com/newrelic/node-newrelic/pull/4294)) ([a6adc6d](https://github.com/newrelic/node-newrelic/commit/a6adc6dcabb77042b84be0464bf545f8508ed4e9))
+* Migrated core `crypto` instrumentation to subscriber-based ([#4293](https://github.com/newrelic/node-newrelic/pull/4293)) ([8848d84](https://github.com/newrelic/node-newrelic/commit/8848d845abc3a6a5dc2497a03813ebc16cc4e6f9))
+* Removed reliance on `@opentelemetry/core` for hybrid agent ([#4295](https://github.com/newrelic/node-newrelic/pull/4295)) ([8a83507](https://github.com/newrelic/node-newrelic/commit/8a8350796119cc65999576db1f8922e788ca7258))
+* Replaced test helper with native Promise.withResolvers ([#4301](https://github.com/newrelic/node-newrelic/pull/4301)) ([be5f3f3](https://github.com/newrelic/node-newrelic/commit/be5f3f3ce9222f330e5982de78347a57a7565dd3))
+
+#### Documentation
+
+* Updated compatibility report ([#4282](https://github.com/newrelic/node-newrelic/pull/4282)) ([87be369](https://github.com/newrelic/node-newrelic/commit/87be369f49e9c39b608a341d9e24d6830bdac3e1))
+
+#### Miscellaneous chores
+
+* Fixes issues in CI ([#4285](https://github.com/newrelic/node-newrelic/pull/4285)) ([6e61b03](https://github.com/newrelic/node-newrelic/commit/6e61b03243b9d51225b24a0559307f6f7b94fbae))
+* Refactored `zlib` instrumentation to be subscriber based ([#4299](https://github.com/newrelic/node-newrelic/pull/4299)) ([e4ede21](https://github.com/newrelic/node-newrelic/commit/e4ede21329b5f04bcd825be6e6d9b1514ee20133))
+
 ### v14.5.0 (2026-09-16)
 
 #### Features
