@@ -746,6 +746,103 @@ test('when inserting segments', async (t) => {
     assert.equal(trace.getExclusiveDurationInMillis(), 9)
   })
 
+  await t.test('_mergeSortedRanges should return an empty array when given no ranges', (t) => {
+    const { trace } = t.nr
+    assert.deepEqual(trace._mergeSortedRanges([]), [])
+  })
+
+  await t.test('_mergeSortedRanges should return a single range unchanged', (t) => {
+    const { trace } = t.nr
+    assert.deepEqual(trace._mergeSortedRanges([[1, 5]]), [[1, 5]])
+  })
+
+  await t.test('_mergeSortedRanges should keep disjoint, start-sorted ranges separate', (t) => {
+    const { trace } = t.nr
+    const ranges = [
+      [1, 2],
+      [5, 6],
+      [10, 12]
+    ]
+    assert.deepEqual(trace._mergeSortedRanges(ranges), [
+      [1, 2],
+      [5, 6],
+      [10, 12]
+    ])
+  })
+
+  await t.test('_mergeSortedRanges should merge overlapping ranges', (t) => {
+    const { trace } = t.nr
+    const ranges = [
+      [1, 5],
+      [3, 8],
+      [7, 9]
+    ]
+    assert.deepEqual(trace._mergeSortedRanges(ranges), [[1, 9]])
+  })
+
+  await t.test(
+    '_mergeSortedRanges should merge touching ranges where one starts exactly where another ends',
+    (t) => {
+      const { trace } = t.nr
+      const ranges = [
+        [1, 5],
+        [5, 9]
+      ]
+      assert.deepEqual(trace._mergeSortedRanges(ranges), [[1, 9]])
+    }
+  )
+
+  await t.test(
+    '_mergeSortedRanges should collapse a range fully contained within a prior range',
+    (t) => {
+      const { trace } = t.nr
+      const ranges = [
+        [1, 20],
+        [3, 5],
+        [15, 18]
+      ]
+      assert.deepEqual(trace._mergeSortedRanges(ranges), [[1, 20]])
+    }
+  )
+
+  await t.test('should accurately sum total time across many disjoint sibling segments', (t) => {
+    const { trace } = t.nr
+    const now = Date.now()
+    const numChildren = 200
+    const childDuration = 3
+
+    for (let i = 0; i < numChildren; ++i) {
+      const child = trace.add(`Custom/ManySiblings/Child${i}`)
+      child.setDurationInMillis(childDuration, now + i * childDuration)
+    }
+
+    // Each child is a leaf with no overlap, so total time is a simple sum --
+    // this exercises the same many-children code path as the overlapping
+    // case below, without any merging actually taking place.
+    assert.equal(trace.getTotalTimeDurationInMillis(), numChildren * childDuration)
+  })
+
+  await t.test(
+    'should merge many overlapping sibling ranges when computing the parent exclusive duration',
+    (t) => {
+      const { trace } = t.nr
+      const now = Date.now()
+      const numChildren = 200
+
+      trace.setDurationInMillis(50, now)
+
+      // Every child fully overlaps the same [now, now + 10] range.
+      for (let i = 0; i < numChildren; ++i) {
+        const child = trace.add(`Custom/Overlap/Child${i}`)
+        child.setDurationInMillis(10, now)
+      }
+
+      // No matter how many overlapping children there are, the root's own
+      // exclusive time only excludes the merged range once, not once per child.
+      assert.equal(trace.getExclusiveDurationInMillis(), 40)
+    }
+  )
+
   await t.test('should be limited to 900 children', (t) => {
     const { trace, transaction } = t.nr
     // They will be tagged as _collect = false after the limit runs out.
@@ -765,6 +862,47 @@ test('when inserting segments', async (t) => {
     trace.end()
     function noop() {}
   })
+
+  await t.test(
+    'should compute total time correctly when segments exceed `max_trace_segments`',
+    (t) => {
+      const { trace } = t.nr
+      const now = Date.now()
+
+      for (let i = 0; i < 950; ++i) {
+        const segment = trace.add(i.toString())
+        segment.timer.setDurationInMillis(1, now + i)
+      }
+
+      // Only the 899 collected children (root fills the 900th slot) can
+      // contribute -- the rest were never added to the trace's segment tree.
+      assert.equal(trace.getTotalTimeDurationInMillis(), 899)
+    }
+  )
+
+  await t.test(
+    'should only walk the trace once when every segment recorder queries exclusive duration, even with many uncollected segments',
+    (t) => {
+      const { trace, transaction } = t.nr
+      const computeSpy = sinon.spy(trace, '_computeTotalTime')
+
+      // Recorders are attached to every segment regardless of whether it was
+      // collected (see `tracer.createSegment`), so a transaction with far more
+      // segments than `max_trace_segments` still runs a recorder for each one.
+      for (let i = 0; i < 950; ++i) {
+        const segment = trace.add(i.toString(), (seg, name, txn) => {
+          seg.getExclusiveDurationInMillis(txn.trace)
+        })
+        segment.timer.setDurationInMillis(1, i)
+      }
+
+      transaction.record()
+
+      // Regardless of how many uncollected segments ran their recorder, the
+      // trace should only ever be walked once to compute exclusive durations.
+      assert.equal(computeSpy.callCount, 1)
+    }
+  )
 
   await t.test('should not cause a stack overflow', { timeout: 30000 }, (t) => {
     const { trace } = t.nr

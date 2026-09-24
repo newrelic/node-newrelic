@@ -76,6 +76,82 @@ test('TraceSegment', async (t) => {
     assert.ok(duration > 0)
   })
 
+  await t.test(
+    'does not recompute the trace when the segment was never added to the trace tree',
+    (t) => {
+      const { agent } = t.nr
+      const trans = new Transaction(agent)
+      const collected = new TraceSegment({
+        config: agent.config,
+        name: 'Collected',
+        collect: true,
+        parentId: trans.trace.root.id
+      })
+      trans.trace.segments.add(collected)
+      collected.timer.setDurationInMillis(5, trans.trace.root.timer.start)
+
+      // Beyond `max_trace_segments`, `tracer.createSegment` creates the
+      // segment with `collect: false` and never adds it to `trace.segments`.
+      const uncollected = new TraceSegment({
+        config: agent.config,
+        name: 'Uncollected',
+        collect: false,
+        parentId: trans.trace.root.id
+      })
+
+      const computeSpy = sinon.spy(trans.trace, '_computeTotalTime')
+
+      assert.equal(uncollected.getExclusiveDurationInMillis(trans.trace), null)
+      assert.equal(computeSpy.callCount, 0)
+
+      assert.equal(typeof collected.getExclusiveDurationInMillis(trans.trace), 'number')
+      assert.equal(computeSpy.callCount, 1)
+
+      // Calling again on the uncollected segment still returns null and still
+      // never triggers another walk of the trace.
+      assert.equal(uncollected.getExclusiveDurationInMillis(trans.trace), null)
+      assert.equal(computeSpy.callCount, 1)
+    }
+  )
+
+  await t.test(
+    'computes exclusive duration for the root segment even when its own `_collect` is falsy',
+    (t) => {
+      const { agent } = t.nr
+      const trans = new Transaction(agent)
+      const { root } = trans.trace
+      // `transaction.collect` is unset by default, so the root's `_collect`
+      // is falsy even though the root is always part of the trace tree.
+      assert.ok(!root._collect)
+
+      root.timer.setDurationInMillis(10, root.timer.start)
+      const child = trans.trace.add('Custom/Child')
+      child.setDurationInMillis(5, root.timer.start)
+
+      const computeSpy = sinon.spy(trans.trace, '_computeTotalTime')
+
+      assert.equal(root.getExclusiveDurationInMillis(trans.trace), 5)
+      assert.equal(computeSpy.callCount, 1)
+    }
+  )
+
+  await t.test('memoizes the trace-wide computation across sibling segments', (t) => {
+    const { agent } = t.nr
+    const trans = new Transaction(agent)
+    const child1 = trans.trace.add('Custom/Child1')
+    child1.setDurationInMillis(5, Date.now())
+    const child2 = trans.trace.add('Custom/Child2')
+    child2.setDurationInMillis(7, Date.now())
+
+    const computeSpy = sinon.spy(trans.trace, '_computeTotalTime')
+
+    child1.getExclusiveDurationInMillis(trans.trace)
+    child2.getExclusiveDurationInMillis(trans.trace)
+    trans.trace.root.getExclusiveDurationInMillis(trans.trace)
+
+    assert.equal(computeSpy.callCount, 1)
+  })
+
   await t.test('allows the timer to be updated without ending it', (t) => {
     const { agent } = t.nr
     const segment = new TraceSegment({
