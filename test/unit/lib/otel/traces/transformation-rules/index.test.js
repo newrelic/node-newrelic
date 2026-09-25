@@ -270,10 +270,17 @@ test('transformation rules module', async (t) => {
     rulesWithConditions.forEach((rule) => {
       const conditions = rule.matcher.attribute_conditions
       for (const [key, values] of Object.entries(conditions)) {
-        assert.ok(Array.isArray(values),
-          `${rule.name} attribute condition for ${key} should be an array`)
-        assert.ok(values.length > 0,
-          `${rule.name} attribute condition for ${key} should not be empty`)
+        if (Array.isArray(values)) {
+          assert.ok(values.length > 0,
+            `${rule.name} attribute condition for ${key} should not be empty`)
+        } else if (typeof values === 'object' && values !== null) {
+          assert.ok(Array.isArray(values.expected),
+            `${rule.name} attribute condition for ${key} expected field should be an array`)
+          assert.ok(values.expected.length > 0,
+            `${rule.name} attribute condition for ${key} expected should not be empty`)
+          assert.ok(typeof values.value === 'string' && values.value.length > 0,
+            `${rule.name} attribute condition for ${key} value should be a non-empty string`)
+        }
       }
     })
   })
