@@ -159,6 +159,43 @@ test('does not create new transaction when one already exists', async (t) => {
   })
 })
 
+test('ends the transaction and records the error when a background handler throws', async (t) => {
+  bootstrapModule({ t })
+  const { agent, mockApi } = t.nr
+
+  const txFinished = once(agent, 'transactionFinished')
+  const error = new Error('handler blew up')
+  const handler = async function () {
+    throw error
+  }
+
+  const options = { handler }
+  mockApi.app.serviceBusQueue('throwing-test', options)
+  const wrappedHandler = global.azure.handlers.at(-1)
+
+  // The error must propagate to the caller (Azure abandons → retries → dead-letters on it).
+  await assert.rejects(mockApi.request('serviceBusQueue', wrappedHandler), /handler blew up/)
+
+  // Even though the handler threw, the transaction must still be ended so its data — including
+  // in-context logs — is harvested rather than silently dropped.
+  const [tx] = await txFinished
+  assert.ok(tx, 'transaction should be finished')
+  assert.equal(tx.isActive(), false, 'transaction should be ended')
+
+  // The thrown error should be recorded against the transaction.
+  const errors = agent.errors.traceAggregator.errors
+  assert.equal(errors.length, 1, 'one error should be recorded')
+  assert.equal(errors[0][2], 'handler blew up', 'records the handler error message')
+
+  // Transaction metrics are produced, confirming end()/record() ran on the error path.
+  const metrics = tx.metrics.unscoped
+  assert.equal(
+    metrics['OtherTransaction/AzureFunction/test-func-serviceBusQueue']?.callCount,
+    1,
+    'transaction metric recorded on the error path'
+  )
+})
+
 test('instruments background methods', async (t) => {
   bootstrapModule({ t })
   const { agent, mockApi } = t.nr
