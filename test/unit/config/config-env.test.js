@@ -1086,14 +1086,12 @@ test('when overriding configuration values via environment variables', async (t)
         'NEW_RELIC_INSTRUMENTATION_@GRPC/GRPC-JS_ENABLED': 'false',
         NEW_RELIC_INSTRUMENTATION_HTTP_ENABLED: 'false',
         NEW_RELIC_INSTRUMENTATION_UNDICI_ENABLED: 'false',
-        NEW_RELIC_INSTRUMENTATION_DOMAIN_ENABLED: 'false',
       }
       idempotentEnv(env, (config) => {
         assert.equal(config.instrumentation.ioredis.enabled, false)
         assert.equal(config.instrumentation['@grpc/grpc-js'].enabled, false)
         assert.equal(config.instrumentation.http.enabled, false)
         assert.equal(config.instrumentation.undici.enabled, false)
-        assert.equal(config.instrumentation.domain.enabled, false)
         end()
       })
     })

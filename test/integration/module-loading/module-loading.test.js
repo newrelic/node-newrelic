@@ -122,21 +122,6 @@ test('shim.require() should play well with multiple test runs', (t) => {
   assert.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
 })
 
-test('Should create usage metric onRequire for built-in', (t) => {
-  const { agent } = t.nr
-  const domainMetric = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/domain`
-  // eslint-disable-next-line n/no-deprecated-api
-  require('domain')
-
-  const onRequireMetric = agent.metrics._metrics.unscoped[domainMetric]
-
-  assert.ok(onRequireMetric)
-  assert.equal(onRequireMetric.callCount, 1)
-  const domainMetrics = Object.keys(agent.metrics._metrics.unscoped)
-  // 3 of these are FullGranularity supportability metrics
-  assert.equal(domainMetrics.length, 4, 'should not log a version metric for a built-in')
-})
-
 test('should instrument a local package', (t, end) => {
   const { agent } = t.nr
   shimmer.registerInstrumentation({
