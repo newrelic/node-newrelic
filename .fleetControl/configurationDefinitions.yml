@@ -1,7 +1,12 @@
 configurationDefinitions:
   - platform: KUBERNETESCLUSTER
-    description: Node agent configuration
-    type: agent-config
+    type: AgentConfig
     version: 1.2.0
     schema: ./schemas/config.json
     format: js
+    bindings:
+      - type: CONFIGURES
+        targetType: AGENT
+        target: NRNodeAgent
+        versions:
+          - ">=13.10.0"
