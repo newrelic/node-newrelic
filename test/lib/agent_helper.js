@@ -86,6 +86,8 @@ helper.loadMockedAgent = function loadMockedAgent(conf, setState = true) {
     throw _agent.__created
   }
 
+  methodWrapper.toggleUnwrappingTracking()
+
   // agent needs a 'real' configuration
   const configurator = require('../../lib/config')
   const config = configurator.createInstance(conf)
@@ -189,7 +191,6 @@ helper.generateAllPaths = (runId) => {
  */
 helper.instrumentMockedAgent = (conf, setState = true, shimmer = require('../../lib/shimmer')) => {
   shimmer.debug = true
-  methodWrapper.toggleUnwrappingTracking()
 
   const agent = helper.loadMockedAgent(conf, setState)
 
@@ -269,14 +270,14 @@ helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
   shimmer.unwrapAll()
   shimmer.registeredInstrumentations = new InstrumentationTracker()
   shimmer.debug = false
-  methodWrapper.unwrapAll()
-  methodWrapper.toggleUnwrappingTracking()
   helper.maybeUnloadSecurityAgent(agent)
 
   // Stop future harvesting by aggregators.
   agent.harvester.stop()
 
   if (agent === _agent) {
+    methodWrapper.unwrapAll()
+    methodWrapper.toggleUnwrappingTracking()
     _agent = null
     _agentApi = null
   }
