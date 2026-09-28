@@ -1,19 +1,19 @@
 {
-  "lastUpdated": "Tue Sep 22 2026 11:42:52 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Sep 28 2026 16:30:24 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "includeDev": true,
   "dependencies": {
-    "@apm-js-collab/tracing-hooks@0.13.2": {
+    "@apm-js-collab/tracing-hooks@0.13.3": {
       "name": "@apm-js-collab/tracing-hooks",
-      "version": "0.13.2",
+      "version": "0.13.3",
       "range": "^0.13.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/apm-js-collab/tracing-hooks",
-      "versionedRepoUrl": "https://github.com/apm-js-collab/tracing-hooks/tree/v0.13.2",
+      "versionedRepoUrl": "https://github.com/apm-js-collab/tracing-hooks/tree/v0.13.3",
       "licenseFile": "node_modules/@apm-js-collab/tracing-hooks/LICENSE",
-      "licenseUrl": "https://github.com/apm-js-collab/tracing-hooks/blob/v0.13.2/LICENSE",
+      "licenseUrl": "https://github.com/apm-js-collab/tracing-hooks/blob/v0.13.3/LICENSE",
       "licenseTextSource": "file"
     },
     "@grpc/grpc-js@1.14.5": {
@@ -52,15 +52,15 @@
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
-    "@opentelemetry/api-logs@0.221.0": {
+    "@opentelemetry/api-logs@0.222.0": {
       "name": "@opentelemetry/api-logs",
-      "version": "0.221.0",
-      "range": "^0.221.0",
+      "version": "0.222.0",
+      "range": "^0.222.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.221.0",
+      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.222.0",
       "licenseFile": "node_modules/@opentelemetry/api-logs/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.221.0/LICENSE",
+      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.222.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
@@ -121,18 +121,6 @@
       "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.11.0",
       "licenseFile": "node_modules/@opentelemetry/resources/LICENSE",
       "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.11.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "OpenTelemetry Authors"
-    },
-    "@opentelemetry/sdk-logs@0.221.0": {
-      "name": "@opentelemetry/sdk-logs",
-      "version": "0.221.0",
-      "range": "^0.221.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.221.0",
-      "licenseFile": "node_modules/@opentelemetry/sdk-logs/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.221.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
@@ -283,28 +271,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.1136.0": {
+    "@aws-sdk/client-s3@3.1141.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.1136.0",
+      "version": "3.1141.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1136.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1141.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1136.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1141.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.1136.0": {
+    "@aws-sdk/s3-request-presigner@3.1141.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.1136.0",
+      "version": "3.1141.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1136.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1141.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1136.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1141.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
