@@ -122,6 +122,27 @@ test('shim.require() should play well with multiple test runs', (t) => {
   assert.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
 })
 
+test('Should create usage metric onRequire for built-in', (t) => {
+  const { agent } = t.nr
+  const builtinMetric = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/dgram`
+  // Core modules are instrumented eagerly and never hit the require hook, so
+  // register one lazily to exercise usage tracking for a built-in.
+  shimmer.registerInstrumentation({
+    moduleName: 'dgram',
+    type: null,
+    onRequire: () => {}
+  })
+
+  require('dgram')
+
+  const onRequireMetric = agent.metrics._metrics.unscoped[builtinMetric]
+
+  assert.ok(onRequireMetric)
+  assert.equal(onRequireMetric.callCount, 1)
+  const versionMetrics = Object.keys(agent.metrics._metrics.unscoped).filter((name) => name.startsWith(`${builtinMetric}/Version/`))
+  assert.deepEqual(versionMetrics, [], 'should not log a version metric for a built-in')
+})
+
 test('should instrument a local package', (t, end) => {
   const { agent } = t.nr
   shimmer.registerInstrumentation({
