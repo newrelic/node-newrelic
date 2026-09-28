@@ -123,6 +123,21 @@ describe('wrapMethod', () => {
     t.assert.equal(module.greet.decoration, 'decorated')
   })
 
+  test('copies symbols onto the wrapper', (t) => {
+    const module = { greet: () => 'hello' }
+    const symFoo = Symbol('foo')
+    module.greet[symFoo] = 'decorated'
+
+    wrapMethod({
+      module,
+      methodName: 'greet',
+      logger: t.nr.logger,
+      wrapper: (orig) => function wrapped() { return orig() }
+    })
+
+    t.assert.equal(module.greet[symFoo], 'decorated')
+  })
+
   test('does not wrap a method that is not defined', (t) => {
     const module = {}
 
