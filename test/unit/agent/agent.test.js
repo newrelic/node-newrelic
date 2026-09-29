@@ -1695,9 +1695,12 @@ test('applies user-configured attribute filter rules to a transaction', () => {
   // The agent is built via initialize() + new Agent() rather than
   // helper.loadMockedAgent() on purpose: loadMockedAgent seeds the config
   // singleton, which would mask the bug. When attribute filtering read the
-  // global Config.getInstance() singleton, this flow left it unpopulated (a
-  // default config, at best), so a user-supplied `attributes.exclude` rule was
-  // ignored. With the filter built from the owning config, the rule is honored.
+  // global Config.getInstance() singleton, this flow filtered against the
+  // *default* config the logger incidentally primed the singleton with, not
+  // this agent's config, so a user-supplied `attributes.exclude` rule was
+  // silently ignored. Against 175a4ba71 this test fails its assertion (the
+  // excluded attribute is still present) rather than throwing. With the filter
+  // built from the owning config, the rule is honored.
   const config = configurator.initialize({
     app_name: 'attribute-filter-test',
     license_key: 'license key here'.padEnd(40, 'a'),
