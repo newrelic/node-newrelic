@@ -19,14 +19,6 @@ test('getLogger returns a logger that routes to the emit handler', () => {
   assert.strictEqual(records[0], record)
 })
 
-test('getLogger ignores name, version, and options arguments', () => {
-  let called = false
-  const provider = new NrLoggerProvider(() => { called = true }, () => true)
-  const logger = provider.getLogger('lib', '2.0', { schemaUrl: 'http://example.com' })
-  logger.emit({ body: 'x' })
-  assert.equal(called, true)
-})
-
 test('multiple loggers from the same provider all route to the same handler', () => {
   const records = []
   const provider = new NrLoggerProvider((r) => records.push(r), () => true)
@@ -43,9 +35,25 @@ test('getLogger returns a logger whose enabled defers to the provider enabled ha
   assert.equal(logger.enabled(), false)
 })
 
-test('getLogger returns the same logger instance regardless of name, version, or options', () => {
+test('getLogger returns the same logger instance for the same name and version', () => {
   const provider = new NrLoggerProvider(() => {}, () => true)
   const logger = provider.getLogger('a', '1.0')
   assert.strictEqual(provider.getLogger('a', '1.0'), logger)
-  assert.strictEqual(provider.getLogger('b', '2.0', { schemaUrl: 'http://example.com' }), logger)
+  assert.strictEqual(provider.getLogger('a', '1.0', { schemaUrl: 'http://example.com' }), logger)
+})
+
+test('getLogger returns a distinct logger instance for a different name or version', () => {
+  const provider = new NrLoggerProvider(() => {}, () => true)
+  const logger = provider.getLogger('a', '1.0')
+  assert.notStrictEqual(provider.getLogger('b', '1.0'), logger)
+  assert.notStrictEqual(provider.getLogger('a', '2.0'), logger)
+})
+
+test('emit passes the requested name and version through as the logger scope', () => {
+  const scopes = []
+  const provider = new NrLoggerProvider((_record, scope) => scopes.push(scope), () => true)
+  provider.getLogger('my-lib', '1.2.3').emit({ body: 'hi' })
+  assert.equal(scopes.length, 1)
+  assert.equal(scopes[0].name, 'my-lib')
+  assert.equal(scopes[0].version, '1.2.3')
 })
