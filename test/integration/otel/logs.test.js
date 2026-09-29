@@ -20,12 +20,10 @@ const BASE_AGENT_CONFIG = {
 const TS_FIXTURE = 1752516000000 // 2025-07-14T14:00:00.000-04:00
 
 test.beforeEach(async (ctx) => {
-  process.env.OTEL_BLRP_SCHEDULE_DELAY = 1_000 // Interval for processor to ship logs
   ctx.nr = {}
 })
 
 test.afterEach((ctx) => {
-  delete process.env.OTEL_BLRP_SCHEDULE_DELAY
   helper.unloadAgent(ctx.nr.agent)
 })
 
@@ -76,7 +74,7 @@ test('sends logs outside of transaction', async (t) => {
     'Logging/lines/INFO',
     'Supportability/Logging/Forwarding/Seen',
     'Supportability/Logging/Forwarding/Sent',
-    'Supportability/Nodejs/OpenTelemetryBridge/Logs',
+    'Supportability/Logging/Nodejs/OpenTelemetryBridge/enabled',
     'Supportability/Nodejs/OpenTelemetryBridge/Setup'
   ]
   for (const expectedMetricName of expectedMetricNames) {
@@ -191,7 +189,7 @@ test('does not forward logs when disabled', async (t) => {
   expectedMetricNames = [
     'Logging/lines',
     'Logging/lines/INFO',
-    'Supportability/Nodejs/OpenTelemetryBridge/Logs',
+    'Supportability/Logging/Nodejs/OpenTelemetryBridge/enabled',
     'Supportability/Nodejs/OpenTelemetryBridge/Setup'
   ]
   for (const expectedMetricName of expectedMetricNames) {

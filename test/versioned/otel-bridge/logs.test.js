@@ -13,8 +13,6 @@ const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 
-process.env.OTEL_BLRP_SCHEDULE_DELAY = 1_000 // Interval for processor to ship logs
-
 // `registerInstrumentations` patches the `pino` module via a require hook the
 // first time it's called. It must only run once for the whole file -- each
 // test below reloads `pino` fresh (via `removeMatchedModules`) so its
