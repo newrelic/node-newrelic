@@ -28,68 +28,79 @@ const RUN_ID = 1337
 const DEFAULT_LIMIT = 2000
 const DEFAULT_PERIOD = 60000
 
-test('requires link data', (t) => {
-  t.plan(2)
+test('span link creation', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
 
-  const logger = {
-    error(msg) {
-      t.assert.equal(msg, 'cannot create span link without required link data')
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('requires link data', (t) => {
+    t.plan(2)
+
+    const logger = {
+      error(msg) {
+        t.assert.equal(msg, 'cannot create span link without required link data')
+      }
     }
-  }
 
-  const link = new SpanLink({}, { logger })
-  t.assert.ok(link)
-})
+    const link = new SpanLink({}, { logger })
+    t.assert.ok(link)
+  })
 
-test('requires span context', (t) => {
-  t.plan(2)
+  await t.test('requires span context', (t) => {
+    t.plan(2)
 
-  const logger = {
-    error(msg) {
-      t.assert.equal(msg, 'cannot create span link without required span context')
+    const logger = {
+      error(msg) {
+        t.assert.equal(msg, 'cannot create span link without required span context')
+      }
     }
-  }
 
-  const otelLink = {}
-  const link = new SpanLink({ link: otelLink }, { logger })
-  t.assert.ok(link)
-})
+    const otelLink = {}
+    const link = new SpanLink({ link: otelLink }, { logger })
+    t.assert.ok(link)
+  })
 
-test('builds correct instance', (t) => {
-  const otelLink = {
-    context: {
-      spanId: 'upstream-span-id',
-      traceId: 'upstream-trace-id'
-    },
-    attributes: {
-      testAttr1: 'ok1',
-      testAttr2: 'ok2',
-      testAttr3: null
+  await t.test('builds correct instance', () => {
+    const otelLink = {
+      context: {
+        spanId: 'upstream-span-id',
+        traceId: 'upstream-trace-id'
+      },
+      attributes: {
+        testAttr1: 'ok1',
+        testAttr2: 'ok2',
+        testAttr3: null
+      }
     }
-  }
-  const spanContext = {
-    spanId: 'local-span-id',
-    traceId: 'local-trace-id'
-  }
-  const link = new SpanLink({ link: otelLink, spanContext, timestamp: 123 })
+    const spanContext = {
+      spanId: 'local-span-id',
+      traceId: 'local-trace-id'
+    }
+    const link = new SpanLink({ link: otelLink, spanContext, timestamp: 123 })
 
-  const expectedIntrinsics = {
-    type: 'SpanLink',
-    id: spanContext.spanId,
-    timestamp: 123,
-    'trace.id': spanContext.traceId,
-    linkedSpanId: otelLink.context.spanId,
-    linkedTraceId: otelLink.context.traceId
-  }
+    const expectedIntrinsics = {
+      type: 'SpanLink',
+      id: spanContext.spanId,
+      timestamp: 123,
+      'trace.id': spanContext.traceId,
+      linkedSpanId: otelLink.context.spanId,
+      linkedTraceId: otelLink.context.traceId
+    }
 
-  assert.ok(link)
-  assert.equal(link.toString(), '[object SpanLink]')
-  match(link.getIntrinsicAttributes(), expectedIntrinsics)
-  match(link.toJSON(), [
-    expectedIntrinsics,
-    { testAttr1: 'ok1', testAttr2: 'ok2' },
-    {}
-  ])
+    assert.ok(link)
+    assert.equal(link.toString(), '[object SpanLink]')
+    match(link.getIntrinsicAttributes(), expectedIntrinsics)
+    match(link.toJSON(), [
+      expectedIntrinsics,
+      { testAttr1: 'ok1', testAttr2: 'ok2' },
+      {}
+    ])
+  })
 })
 
 test('partial tracing with span links', async (t) => {

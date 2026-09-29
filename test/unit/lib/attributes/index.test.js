@@ -16,6 +16,15 @@ const DESTINATIONS = AttributeFilter.DESTINATIONS
 const TRANSACTION_SCOPE = 'transaction'
 
 test('#addAttribute', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
   await t.test('adds an attribute to instance', () => {
     const inst = new Attributes({ scope: TRANSACTION_SCOPE })
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'test', 'success')
@@ -41,6 +50,15 @@ test('#addAttribute', async (t) => {
 })
 
 test('#addAttributes', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
   await t.test('adds multiple attributes to instance', () => {
     const inst = new Attributes({ scope: TRANSACTION_SCOPE })
     inst.addAttributes(DESTINATIONS.TRANS_SCOPE, { one: '1', two: '2' })
@@ -123,6 +141,15 @@ test('#addAttributes', async (t) => {
 })
 
 test('#get', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
   await t.test('gets attributes by destination, truncating values if necessary', () => {
     const longVal = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
@@ -261,6 +288,15 @@ test('#hasValidDestination', async (t) => {
 })
 
 test('#reset', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
   await t.test('resets instance attributes', () => {
     const inst = new Attributes({ scope: TRANSACTION_SCOPE })
     inst.addAttribute(0x01, 'first', 'first')

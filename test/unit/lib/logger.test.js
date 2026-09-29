@@ -5,184 +5,192 @@
 
 'use strict'
 
+// This test suite verifies that the bootstrapping logger works as intended.
+// The bootstrapping logger is used prior to configuration being fully
+// parsed and validated. It accumulates logs until configuration is ready,
+// and then reconfigures itself to the production logger and flushes the
+// accumulated data to the configured final destination stream.
+
 const test = require('node:test')
 const assert = require('node:assert')
-const sinon = require('sinon')
-const proxyquire = require('proxyquire').noPreserveCache()
-const EventEmitter = require('events').EventEmitter
+const { Writable } = require('node:stream')
+const { removeMatchedModules } = require('#testlib/cache-buster.js')
 
-test('Bootstrapped Logger', async (t) => {
-  let fakeLoggerConfigure
-  let fakeStreamPipe
-  let fakeLogger
-  let testEmitter
-  let testEmitterSpy
-  let fakeFS
-  let originalConsoleError
+const { fs } = require('#agentlib/util/unwrapped-core.js')
 
-  t.beforeEach(() => {
-    // Make sure we don't pollute our logs
-    originalConsoleError = global.console.error
-    global.console.error = sinon.stub()
+test.beforeEach((ctx) => {
+  ctx.nr = {
+    logger: require('#agentlib/logger.js')
+  }
 
-    fakeLoggerConfigure = sinon.stub()
-    fakeStreamPipe = sinon.stub()
+  // Make sure we don't pollute our logs.
+  ctx.nr.errorLogs = []
+  ctx.nr.originalConsoleError = global.console.error
+  global.console.error = (...args) => {
+    ctx.nr.errorLogs.push(args)
+  }
 
-    fakeLogger = sinon.stub().returns({
-      configure: fakeLoggerConfigure,
-      pipe: fakeStreamPipe
-    })
+  ctx.nr.destinationStream = new Writable({
+    write(chunk, encoding, cb) {
+      cb()
+    }
+  })
+  ctx.nr.origCreateWriteStream = fs.createWriteStream
+  ctx.nr.createStreamArgs = []
+  fs.createWriteStream = (path, options) => {
+    Array.prototype.push.apply(ctx.nr.createStreamArgs, [path, options])
+    return ctx.nr.destinationStream
+  }
+})
 
-    testEmitter = new EventEmitter()
-    testEmitterSpy = sinon.spy(testEmitter, 'on')
-    fakeFS = {
-      createWriteStream: sinon.stub().returns(testEmitter)
+test.afterEach((ctx) => {
+  fs.createWriteStream = ctx.nr.origCreateWriteStream
+  removeMatchedModules(/unwrapped-core\.js/)
+  removeMatchedModules(/logger\.js/)
+  global.console.error = ctx.nr.originalConsoleError
+})
+
+test('should configure the logger (logging enabled + filepath)', (t) => {
+  const { logger } = t.nr
+
+  let configureOptions
+  logger.configure = (opts) => { configureOptions = opts }
+  let pipe
+  logger.pipe = (p) => { pipe = p }
+
+  process.emit('nr-config-load-complete', {
+    logging: {
+      enabled: true,
+      filepath: '/foo/bar/baz',
+      level: 'debug'
+    },
+    audit_log: {
+      enabled: false
+    }
+  })
+  assert.deepStrictEqual(
+    configureOptions,
+    {
+      auditLogging: false,
+      enabled: true,
+      level: 'debug',
+      name: 'newrelic'
+    },
+    'invokes .configure with the correct options'
+  )
+
+  assert.deepStrictEqual(
+    t.nr.createStreamArgs,
+    ['/foo/bar/baz', { flags: 'a+', mode: 0o600 }],
+    'should create a new write stream to specific file'
+  )
+
+  assert.equal(
+    pipe,
+    t.nr.destinationStream,
+    'should assign a new stream for the destination'
+  )
+
+  const expectedError = new Error('stuff blew up')
+  t.nr.destinationStream.emit('error', expectedError)
+
+  assert.deepStrictEqual(
+    t.nr.errorLogs[0],
+    [
+      'New Relic failed to open log file',
+      '/foo/bar/baz'
+    ],
+    'should log error to console when it occurs'
+  )
+})
+
+test('should configure the logger (logging enabled + stderr)', (t) => {
+  const { logger } = t.nr
+  let pipe
+  logger.pipe = (p) => { pipe = p }
+
+  process.emit('nr-config-load-complete', {
+    logging: {
+      enabled: true,
+      filepath: 'stderr',
+      level: 'debug'
     }
   })
 
-  t.afterEach(() => {
-    // Restore so we don't have a knock-on effect with other test suites
-    global.console.error = originalConsoleError
+  assert.equal(pipe, process.stderr, 'should use process.stderr for output')
+})
+
+test('should configure the logger (logging enabled + stdout)', (t) => {
+  const { logger } = t.nr
+  let pipe
+  logger.pipe = (p) => { pipe = p }
+
+  process.emit('nr-config-load-complete', {
+    logging: {
+      enabled: true,
+      filepath: 'stdout',
+      level: 'debug'
+    }
   })
 
-  await t.test('should instantiate a new logger (logging enabled + filepath)', () => {
-    proxyquire('../../../lib/logger', {
-      './util/logger': fakeLogger,
-      './util/unwrapped-core': { fs: fakeFS },
-      './config': {
-        getOrCreateInstance: sinon.stub().returns({
-          logging: {
-            enabled: true,
-            filepath: '/foo/bar/baz',
-            level: 'debug',
-            auditLogging: false
-          }
-        })
-      }
-    })
+  assert.ok(pipe, process.stdout, 'should use process.stdout for output')
+})
 
-    assert.ok(
-      fakeLogger.calledOnceWithExactly({
-        name: 'newrelic_bootstrap',
-        level: 'info',
-        configured: false
-      }),
-      'should bootstrap sub-logger'
-    )
+test('should configure the logger (logging disabled)', (t) => {
+  const { logger } = t.nr
+  let configureOptions
+  logger.configure = (opts) => { configureOptions = opts }
+  let pipe
+  logger.pipe = (p) => { pipe = p }
 
-    assert.ok(
-      fakeLoggerConfigure.calledOnceWithExactly({
-        name: 'newrelic',
-        level: 'debug',
-        enabled: true,
-        auditLogging: false
-      }),
-      'should call logger.configure with config options'
-    )
-
-    assert.ok(
-      fakeFS.createWriteStream.calledOnceWithExactly('/foo/bar/baz', { flags: 'a+', mode: 0o600 }),
-      'should create a new write stream to specific file'
-    )
-
-    assert.ok(
-      fakeStreamPipe.calledOnceWithExactly(testEmitter),
-      'should use a new write stream for output'
-    )
-
-    const expectedError = new Error('stuff blew up')
-    testEmitter.emit('error', expectedError)
-
-    assert.ok(
-      testEmitterSpy.calledOnceWith('error'),
-      'should handle errors emitted from the write stream'
-    )
-    assert.ok(
-      global.console.error.calledWith('New Relic failed to open log file /foo/bar/baz'),
-      'should log filepath when error occurs'
-    )
-    assert.ok(global.console.error.calledWith(expectedError), 'should log error when it occurs')
+  process.emit('nr-config-load-complete', {
+    logging: {
+      enabled: false,
+      filepath: 'stdout',
+      level: 'debug'
+    }
   })
 
-  await t.test('should instantiate a new logger (logging enabled + stderr)', () => {
-    proxyquire('../../../lib/logger', {
-      './util/logger': fakeLogger,
-      './util/unwrapped-core': { fs: fakeFS },
-      './config': {
-        getOrCreateInstance: sinon.stub().returns({
-          logging: {
-            enabled: true,
-            filepath: 'stderr',
-            level: 'debug'
-          }
-        })
-      }
-    })
+  assert.deepStrictEqual(
+    configureOptions,
+    {
+      auditLogging: false,
+      enabled: false,
+      level: 'debug',
+      name: 'newrelic'
+    },
+    'invokes .configure with the correct options'
+  )
 
-    assert.ok(
-      fakeStreamPipe.calledOnceWithExactly(process.stderr),
-      'should use process.stderr for output'
-    )
-  })
+  assert.equal(pipe, undefined, 'should not call pipe when logging is disabled')
+})
 
-  await t.test('should instantiate a new logger (logging enabled + stdout)', () => {
-    proxyquire('../../../lib/logger', {
-      './util/logger': fakeLogger,
-      './util/unwrapped-core': { fs: fakeFS },
-      './config': {
-        getOrCreateInstance: sinon.stub().returns({
-          logging: {
-            enabled: true,
-            filepath: 'stdout',
-            level: 'debug'
-          }
-        })
-      }
-    })
+test('should not configure the logger when no config load completes', (t) => {
+  const { logger } = t.nr
+  let configureOptions
+  logger.configure = (opts) => { configureOptions = opts }
+  assert.equal(configureOptions, undefined, 'should not call logger.configure')
+})
 
-    assert.ok(
-      fakeStreamPipe.calledOnceWithExactly(process.stdout),
-      'should use process.stdout for output'
-    )
-  })
+test('should only pipe once across multiple config loads', (t) => {
+  const { logger } = t.nr
+  let pipeCount = 0
+  logger.pipe = () => { pipeCount += 1 }
 
-  await t.test('should instantiate a new logger (logging disabled)', () => {
-    proxyquire('../../../lib/logger', {
-      './util/logger': fakeLogger,
-      './util/unwrapped-core': { fs: fakeFS },
-      './config': {
-        getOrCreateInstance: sinon.stub().returns({
-          logging: {
-            enabled: false,
-            filepath: 'stdout',
-            level: 'debug'
-          }
-        })
-      }
-    })
+  const config = {
+    logging: {
+      enabled: true,
+      filepath: 'stdout',
+      level: 'debug'
+    }
+  }
 
-    assert.ok(
-      fakeLoggerConfigure.calledOnceWithExactly({
-        name: 'newrelic',
-        level: 'debug',
-        enabled: false,
-        auditLogging: false
-      }),
-      'should call logger.configure with config options'
-    )
+  // The logger reconfigures on each `nr-config-load-complete`, but it must only
+  // pipe to a destination once; re-piping the shared logger stream on every load
+  // would stack `data`/`end` listeners on it.
+  process.emit('nr-config-load-complete', config)
+  process.emit('nr-config-load-complete', config)
+  process.emit('nr-config-load-complete', config)
 
-    assert.ok(!fakeStreamPipe.called, 'should not call pipe when logging is disabled')
-  })
-
-  await t.test('should instantiate a new logger (no config)', () => {
-    proxyquire('../../../lib/logger', {
-      './util/logger': fakeLogger,
-      './util/unwrapped-core': { fs: fakeFS },
-      './config': {
-        getOrCreateInstance: sinon.stub().returns()
-      }
-    })
-
-    assert.ok(!fakeLoggerConfigure.called, 'should not call logger.configure')
-  })
+  assert.equal(pipeCount, 1, 'should invoke pipe exactly once')
 })

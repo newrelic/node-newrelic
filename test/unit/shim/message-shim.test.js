@@ -54,8 +54,7 @@ test('MessageShim', async function (t) {
       cross_process_id: '1234#4321'
     }
     agent.config.trusted_account_ids = [9876, 6789]
-    agent.config._fromServer(params, 'encoding_key')
-    agent.config._fromServer(params, 'cross_process_id')
+    agent.config.onConnect(params)
     ctx.nr.agent = agent
     ctx.nr.shim = shim
   }
@@ -1160,8 +1159,7 @@ test('MessageShim', async function (t) {
         cross_process_id: '1234#4321'
       }
       agent.config.trusted_account_ids = [9876, 6789]
-      agent.config._fromServer(params, 'encoding_key')
-      agent.config._fromServer(params, 'cross_process_id')
+      agent.config.onConnect(params)
 
       const idHeader = hashes.obfuscateNameUsingKey('9876#id', agent.config.encoding_key)
       let txHeader = JSON.stringify(['trans id', false, 'trip id', 'path hash'])
