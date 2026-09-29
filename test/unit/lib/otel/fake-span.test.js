@@ -11,9 +11,11 @@ const helper = require('#testlib/agent_helper.js')
 const FakeSpan = require('#agentlib/otel/fake-span.js')
 const TraceSegment = require('#agentlib/transaction/trace/segment.js')
 
+let agent
 test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent()
+  agent = ctx.nr.agent
 })
 
 test.afterEach((ctx) => {
@@ -37,7 +39,7 @@ test('should create a fake span from segment and transaction', () => {
 test('should add attributes to the segment', () => {
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -70,7 +72,7 @@ test('should add attributes to the segment', () => {
 test('addEvent should add a timed event to the segment', () => {
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -95,7 +97,7 @@ test('addEvent should add a timed event to the segment', () => {
 test('addEvent should add a timed event with no attributes given', () => {
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -112,7 +114,7 @@ test('addEvent should add a timed event with no attributes given', () => {
 test('addEvent handles (string, number) passed in', () => {
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -133,7 +135,7 @@ test('addEvent handles (string, number) passed in', () => {
 test('should add links to spans', () => {
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -171,7 +173,7 @@ test('setStatus should log warning', () => {
   }
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -197,7 +199,7 @@ test('updateName should log warning', () => {
   }
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -223,7 +225,7 @@ test('end should log warning', () => {
   }
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -243,7 +245,7 @@ test('end should log warning', () => {
 test('recording returns true', () => {
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -256,7 +258,7 @@ test('recording returns true', () => {
 test('recordException should add a timed event from a string exception', () => {
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -276,7 +278,7 @@ test('recordException should add a timed event from a string exception', () => {
 test('recordException should add a timed event from an Error exception', () => {
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -298,7 +300,7 @@ test('recordException should add a timed event from an Error exception', () => {
 test('recordException should prefer exception.code over exception.name for the exception type', () => {
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -325,7 +327,7 @@ test('recordException should log a warning when the exception has no usable info
   }
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true

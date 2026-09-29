@@ -29,9 +29,11 @@ const DEFAULT_LIMIT = 2000
 const DEFAULT_PERIOD = 60000
 
 test('span link creation', async (t) => {
+  let agent
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
+    agent = ctx.nr.agent
   })
 
   t.afterEach((ctx) => {
@@ -47,7 +49,7 @@ test('span link creation', async (t) => {
       }
     }
 
-    const link = new SpanLink({}, { logger })
+    const link = new SpanLink({ config: agent.config }, { logger })
     t.assert.ok(link)
   })
 
@@ -61,7 +63,7 @@ test('span link creation', async (t) => {
     }
 
     const otelLink = {}
-    const link = new SpanLink({ link: otelLink }, { logger })
+    const link = new SpanLink({ link: otelLink, config: agent.config }, { logger })
     t.assert.ok(link)
   })
 
@@ -81,7 +83,7 @@ test('span link creation', async (t) => {
       spanId: 'local-span-id',
       traceId: 'local-trace-id'
     }
-    const link = new SpanLink({ link: otelLink, spanContext, timestamp: 123 })
+    const link = new SpanLink({ link: otelLink, spanContext, timestamp: 123, config: agent.config })
 
     const expectedIntrinsics = {
       type: 'SpanLink',
