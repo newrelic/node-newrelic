@@ -40,6 +40,7 @@ test('span link creation', async (t) => {
 
   await t.test('requires link data', (t) => {
     t.plan(2)
+    const { agent } = t.nr
 
     const logger = {
       error(msg) {
@@ -47,12 +48,13 @@ test('span link creation', async (t) => {
       }
     }
 
-    const link = new SpanLink({}, { logger })
+    const link = new SpanLink({ config: agent.config }, { logger })
     t.assert.ok(link)
   })
 
   await t.test('requires span context', (t) => {
     t.plan(2)
+    const { agent } = t.nr
 
     const logger = {
       error(msg) {
@@ -61,11 +63,12 @@ test('span link creation', async (t) => {
     }
 
     const otelLink = {}
-    const link = new SpanLink({ link: otelLink }, { logger })
+    const link = new SpanLink({ link: otelLink, config: agent.config }, { logger })
     t.assert.ok(link)
   })
 
-  await t.test('builds correct instance', () => {
+  await t.test('builds correct instance', (t) => {
+    const { agent } = t.nr
     const otelLink = {
       context: {
         spanId: 'upstream-span-id',
@@ -81,7 +84,7 @@ test('span link creation', async (t) => {
       spanId: 'local-span-id',
       traceId: 'local-trace-id'
     }
-    const link = new SpanLink({ link: otelLink, spanContext, timestamp: 123 })
+    const link = new SpanLink({ link: otelLink, spanContext, timestamp: 123, config: agent.config })
 
     const expectedIntrinsics = {
       type: 'SpanLink',
