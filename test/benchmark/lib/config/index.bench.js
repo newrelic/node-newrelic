@@ -92,14 +92,27 @@ const tests = [
     fn: parse(fullConfig)
   },
   {
-    // The schema is read from disk and compiled once per process, then cached,
-    // so the per-parse cases above never pay that cost. This case measures the
-    // one-time cold build: `before` evicts the schema module (and its block
-    // files) from the require cache so the measured `fn` re-reads every schema
-    // file and recompiles the ajv validator.
-    name: 'cold schema build (file reads + ajv compile)',
-    before: bustSchemaCache,
+    // The schema is built once per process, then cached, so the per-parse cases
+    // above never pay that cost. This case measures the one-time cold build via
+    // the shipped, pre-compiled artifact (`lib/config/schema.generated.js`): the
+    // production path, where the schema module obtains its state from a plain
+    // require rather than reading and compiling the schema from disk. `before`
+    // evicts the schema module and the artifact from the require cache (but not
+    // the block files, which this path never reads) so the measured `fn` re-runs
+    // the artifact-backed build from a cold require.
+    name: 'cold schema build (prebuilt artifact)',
+    before: bustSchemaModule,
     fn: buildSchemaCold
+  },
+  {
+    // The development / fallback path: the pre-compiled artifact is absent, so
+    // the schema is built from disk — every block file is read, the ajv
+    // validator is recompiled, and the env-var index is rebuilt. `buildState`
+    // performs exactly that work and always reads from disk (it never consults
+    // the artifact or the module cache), so it measures the cold disk build
+    // directly without needing to hide the artifact file.
+    name: 'cold schema build (disk: file reads + ajv compile)',
+    fn: buildSchemaFromDisk
   }
 ]
 
@@ -130,22 +143,37 @@ function clearEnv() {
   }
 }
 
-// Evicts the schema module and every schema block file from the require cache
-// so the next `require('./schema')` performs a cold build. Runs in `before`, so
-// the eviction itself is not part of the measured work.
-function bustSchemaCache() {
+// Evicts the schema module and the pre-compiled artifact from the require cache
+// so the next `require('./schema')` performs a cold, artifact-backed build
+// (re-requiring `schema.generated.js` and re-hydrating the env-var index Map).
+// The schema block files are intentionally left cached: the artifact path never
+// reads them, and this benchmark measures that path. Runs in `before`, so the
+// eviction itself is not part of the measured work.
+function bustSchemaModule() {
   for (const key of Object.keys(require.cache)) {
-    if (key.includes('/lib/config/schema.js') || key.includes('/lib/config/schemas/')) {
+    if (key.includes('/lib/config/schema.js') || key.includes('/lib/config/schema.generated.js')) {
       delete require.cache[key]
     }
   }
 }
 
-// Freshly requires the schema module and forces the one-time build (reading all
-// schema files, compiling the ajv validator, and building the env-var index).
+// Freshly requires the schema module and forces the one-time build. With the
+// pre-compiled artifact present, this exercises the production path (a require
+// of `schema.generated.js` plus env-var index hydration).
 function buildSchemaCold() {
   const schema = require('#agentlib/config/schema.js')
   // Touch the cached getters that trigger and consume the build. Combine the
   // results so the accesses are not optimized away and no unused value lingers.
   return Boolean(schema.schema && schema.validate && schema.resolveEnvVar('NEW_RELIC_LICENSE_KEY'))
+}
+
+// Builds the schema state from disk, bypassing both the module cache and the
+// pre-compiled artifact: reads every block file, compiles the ajv validator, and
+// rebuilds the env-var index. This is the development / fallback path. `refs`
+// eviction is unnecessary because `buildState` always constructs a fresh ajv
+// instance and reads the schema files directly.
+function buildSchemaFromDisk() {
+  const schema = require('#agentlib/config/schema.js')
+  const state = schema.buildState()
+  return Boolean(state.schema && state.validate && state.envVarIndex.size)
 }
