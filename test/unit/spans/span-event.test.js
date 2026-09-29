@@ -43,9 +43,14 @@ test('#constructor() should construct an empty span event', () => {
 })
 
 describe('createSpan()', () => {
+  // A minimal config for the stub segments below. These tests only assert
+  // spanLinks/timedEvents propagation with empty attributes, so the filter is
+  // never actually exercised; it just needs to exist.
+  const config = { attributeFilter: { filterSegment() {} } }
+
   test('adds empty spanLinks if none present', () => {
     const span = SpanEvent.createSpan({
-      segment: {},
+      segment: { config },
       attributes: {},
       customAttributes: {}
     })
@@ -55,6 +60,7 @@ describe('createSpan()', () => {
 
   test('propagates spanLinks', () => {
     const segment = {
+      config,
       spanLinks: [{ id: 1 }]
     }
     const span = SpanEvent.createSpan({
@@ -67,7 +73,7 @@ describe('createSpan()', () => {
 
   test('adds empty timedEvents (otel span events) if none present', () => {
     const span = SpanEvent.createSpan({
-      segment: {},
+      segment: { config },
       attributes: {},
       customAttributes: {}
     })
@@ -77,6 +83,7 @@ describe('createSpan()', () => {
 
   test('propagates timedEvents (otel span events)', () => {
     const segment = {
+      config,
       timedEvents: [{ name: 'custom.otel.span-event', attributes: { 'event.type': 'custom' } }]
     }
     const span = SpanEvent.createSpan({
