@@ -1690,3 +1690,29 @@ test('getLinkingMetadata', async (t) => {
     assert.equal(metadata.hostname, agent.config.getHostnameSafe())
   })
 })
+
+test('applies user-configured attribute filter rules to a transaction', () => {
+  // The agent is built via initialize() + new Agent() rather than
+  // helper.loadMockedAgent() on purpose: loadMockedAgent seeds the config
+  // singleton, which would mask the bug. When attribute filtering read the
+  // global Config.getInstance() singleton, this flow left it unpopulated (a
+  // default config, at best), so a user-supplied `attributes.exclude` rule was
+  // ignored. With the filter built from the owning config, the rule is honored.
+  const config = configurator.initialize({
+    app_name: 'attribute-filter-test',
+    license_key: 'license key here'.padEnd(40, 'a'),
+    attributes: {
+      enabled: true,
+      exclude: ['secret.*']
+    }
+  })
+  const agent = new Agent(config)
+  const tx = new Transaction(agent)
+
+  tx.trace.attributes.addAttribute(0x01, 'secret.token', 'do-not-report')
+  tx.trace.attributes.addAttribute(0x01, 'keep.me', 'reported')
+
+  const attributes = tx.trace.attributes.get(0x01)
+  assert.equal('secret.token' in attributes, false, 'user exclude rule is applied')
+  assert.equal(attributes['keep.me'], 'reported', 'non-excluded attribute is kept')
+})
