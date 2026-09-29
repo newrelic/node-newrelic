@@ -48,9 +48,8 @@ function setup(applicationLogging) {
     }
   })
   const logger = require('pino')({
-    level: 'info',
-    stream: dest
-  })
+    level: 'debug',
+  }, dest)
 
   return { agent, logger }
 }
@@ -64,7 +63,7 @@ test.afterEach((ctx) => {
 test('otel decorated logs do not overwrite NR data', (t, end) => {
   const { agent, logger } = setup({
     enabled: true,
-    metrics: { enabled: true },
+    metrics: { enabled: false },
     forwarding: { enabled: true },
     local_decorating: { enabled: false }
   })
@@ -72,7 +71,6 @@ test('otel decorated logs do not overwrite NR data', (t, end) => {
 
   helper.runInTransaction(agent, (tx) => {
     logger.info({ foo: 'bar' }, 'hello world')
-
     assert.equal(agent.logs.length, 0)
     assert.equal(tx.logs.storage.length, 1, 'should not get a duplicate log')
 
@@ -86,7 +84,51 @@ test('otel decorated logs do not overwrite NR data', (t, end) => {
     assert.equal(log['trace.id'], tx.traceId, 'trace id should be NR id')
     assert.equal(log['span.id'], span.id, 'span id should be NR id')
     assert.equal(log.foo, 'bar')
+    assert.equal(log['otel.scope.name'], '@opentelemetry/instrumentation-pino')
+    assert.equal(log['otel.library.name'], '@opentelemetry/instrumentation-pino')
+    assert.equal(typeof log['otel.scope.version'], 'string')
+    assert.equal(log['otel.scope.version'], log['otel.library.version'])
 
+    end()
+  })
+})
+
+test('otel decorated logs increment NR metrics', (t, end) => {
+  const { agent, logger } = setup({
+    enabled: true,
+    metrics: { enabled: true },
+    forwarding: { enabled: false },
+    local_decorating: { enabled: false }
+  })
+  t.nr = { agent }
+
+  helper.runInTransaction(agent, (tx) => {
+    const logLevels = {
+      debug: 5,
+      info: 20,
+      warn: 3,
+      error: 2
+    }
+    for (const [logLevel, maxCount] of Object.entries(logLevels)) {
+      for (let count = 0; count < maxCount; count++) {
+        const msg = `This is log message #${count} at ${logLevel} level`
+        logger[logLevel](msg)
+      }
+    }
+
+    let grandTotal = 0
+    for (const [logLevel, maxCount] of Object.entries(logLevels)) {
+      grandTotal += maxCount
+      const metricName = LOGGING.LEVELS[logLevel.toUpperCase()] || LOGGING.LEVELS.UNKNOWN
+      const metric = agent.metrics.getMetric(metricName)
+      assert.ok(metric, `ensure ${metricName} exists`)
+      assert.equal(metric.callCount, maxCount, `ensure ${metricName} has the right value`)
+    }
+
+    const metricName = LOGGING.LINES
+    const metric = agent.metrics.getMetric(metricName)
+    assert.ok(metric, `ensure ${metricName} exists`)
+    assert.equal(metric.callCount, grandTotal, `ensure ${metricName} has the right value`)
     end()
   })
 })

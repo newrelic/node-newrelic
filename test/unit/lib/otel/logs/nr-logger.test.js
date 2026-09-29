@@ -33,3 +33,19 @@ test('enabled defers to the enabled handler', () => {
   const disabledLogger = new NrLogger(() => {}, () => false)
   assert.equal(disabledLogger.enabled(), false)
 })
+
+test('emit passes the logger scope to the emit handler', () => {
+  const scopes = []
+  const scope = { name: 'my-lib', version: '1.0' }
+  const logger = new NrLogger((_record, s) => scopes.push(s), () => true, scope)
+  logger.emit({ body: 'hello' })
+  assert.equal(scopes.length, 1)
+  assert.strictEqual(scopes[0], scope)
+})
+
+test('emit passes undefined scope when the logger was not given one', () => {
+  const scopes = []
+  const logger = new NrLogger((_record, s) => scopes.push(s), () => true)
+  logger.emit({ body: 'hello' })
+  assert.equal(scopes[0], undefined)
+})
