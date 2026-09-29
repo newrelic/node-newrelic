@@ -12,6 +12,7 @@ const http = require('http')
 const SpanEvent = require('../../../lib/spans/span-event')
 const DatastoreParameters = require('../../../lib/shim/specs/params/datastore')
 const { QuerySpec } = require('../../../lib/shim/specs')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const nock = require('nock')
 
 test('#constructor() should construct an empty span event', () => {
@@ -92,6 +93,28 @@ describe('createSpan()', () => {
       customAttributes: {}
     })
     assert.deepStrictEqual(span.timedEvents, [{ name: 'custom.otel.span-event', attributes: { 'event.type': 'custom' } }])
+  })
+})
+
+describe('addCustomAttribute()', () => {
+  function makeSpan(filterSegment) {
+    return SpanEvent.createSpan({
+      segment: { config: { attributeFilter: { filterSegment } } },
+      attributes: {},
+      customAttributes: {}
+    })
+  }
+
+  test('adds the attribute when the filter allows the span destination', () => {
+    const span = makeSpan(() => DESTINATIONS.SPAN_EVENT)
+    span.addCustomAttribute('allowed', 'value')
+    assert.equal(span.customAttributes.allowed, 'value')
+  })
+
+  test('drops the attribute when the filter excludes the span destination', () => {
+    const span = makeSpan(() => DESTINATIONS.NONE)
+    span.addCustomAttribute('excluded', 'value')
+    assert.equal('excluded' in span.customAttributes, false)
   })
 })
 
