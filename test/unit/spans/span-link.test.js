@@ -29,11 +29,9 @@ const DEFAULT_LIMIT = 2000
 const DEFAULT_PERIOD = 60000
 
 test('span link creation', async (t) => {
-  let agent
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
-    agent = ctx.nr.agent
   })
 
   t.afterEach((ctx) => {
@@ -42,6 +40,7 @@ test('span link creation', async (t) => {
 
   await t.test('requires link data', (t) => {
     t.plan(2)
+    const { agent } = t.nr
 
     const logger = {
       error(msg) {
@@ -55,6 +54,7 @@ test('span link creation', async (t) => {
 
   await t.test('requires span context', (t) => {
     t.plan(2)
+    const { agent } = t.nr
 
     const logger = {
       error(msg) {
@@ -67,7 +67,8 @@ test('span link creation', async (t) => {
     t.assert.ok(link)
   })
 
-  await t.test('builds correct instance', () => {
+  await t.test('builds correct instance', (t) => {
+    const { agent } = t.nr
     const otelLink = {
       context: {
         spanId: 'upstream-span-id',

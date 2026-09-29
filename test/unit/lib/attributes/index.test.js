@@ -16,18 +16,17 @@ const DESTINATIONS = AttributeFilter.DESTINATIONS
 const TRANSACTION_SCOPE = 'transaction'
 
 test('#addAttribute', async (t) => {
-  let agent
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
-    agent = ctx.nr.agent
   })
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('adds an attribute to instance', () => {
+  await t.test('adds an attribute to instance', (t) => {
+    const { agent } = t.nr
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'test', 'success')
     const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
@@ -35,7 +34,8 @@ test('#addAttribute', async (t) => {
     assert.equal(attributes.test, 'success')
   })
 
-  await t.test('does not add attribute if key length limit is exceeded', () => {
+  await t.test('does not add attribute if key length limit is exceeded', (t) => {
+    const { agent } = t.nr
     const tooLong = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
@@ -52,18 +52,17 @@ test('#addAttribute', async (t) => {
 })
 
 test('#addAttributes', async (t) => {
-  let agent
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
-    agent = ctx.nr.agent
   })
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('adds multiple attributes to instance', () => {
+  await t.test('adds multiple attributes to instance', (t) => {
+    const { agent } = t.nr
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
     inst.addAttributes(DESTINATIONS.TRANS_SCOPE, { one: '1', two: '2' })
     const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
@@ -72,7 +71,8 @@ test('#addAttributes', async (t) => {
     assert.equal(attributes.two, '2')
   })
 
-  await t.test('only allows non-null-type primitive attribute values', () => {
+  await t.test('only allows non-null-type primitive attribute values', (t) => {
+    const { agent } = t.nr
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config, limit: 10 })
     const attributes = {
       first: 'first',
@@ -100,7 +100,8 @@ test('#addAttributes', async (t) => {
     assert.equal(hasAttribute('ninth'), false)
   })
 
-  await t.test('disallows adding more than maximum allowed attributes', () => {
+  await t.test('disallows adding more than maximum allowed attributes', (t) => {
+    const { agent } = t.nr
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config, limit: 3 })
     const attributes = {
       first: 1,
@@ -115,7 +116,8 @@ test('#addAttributes', async (t) => {
     assert.equal(Object.keys(res).length, 3)
   })
 
-  await t.test('Overwrites value of added attribute with same key', () => {
+  await t.test('Overwrites value of added attribute with same key', (t) => {
+    const { agent } = t.nr
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config, limit: 2 })
     inst.addAttribute(0x01, 'Roboto', 1)
     inst.addAttribute(0x01, 'Roboto', 99)
@@ -127,7 +129,8 @@ test('#addAttributes', async (t) => {
     assert.equal(inst.attributeCount, 1)
   })
 
-  await t.test('allows overwriting attributes when at limit', () => {
+  await t.test('allows overwriting attributes when at limit', (t) => {
+    const { agent } = t.nr
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config, limit: 1 })
     inst.addAttribute(0x01, 'Roboto', 1)
     inst.addAttribute(0x01, 'Roboto', 99)
@@ -145,18 +148,17 @@ test('#addAttributes', async (t) => {
 })
 
 test('#get', async (t) => {
-  let agent
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
-    agent = ctx.nr.agent
   })
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('gets attributes by destination, truncating values if necessary', () => {
+  await t.test('gets attributes by destination, truncating values if necessary', (t) => {
+    const { agent } = t.nr
     const longVal = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
@@ -178,7 +180,8 @@ test('#get', async (t) => {
     assert.equal(Buffer.byteLength(res.tooLong), 256)
   })
 
-  await t.test('only returns attributes up to specified limit', () => {
+  await t.test('only returns attributes up to specified limit', (t) => {
+    const { agent } = t.nr
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config, limit: 2 })
     inst.addAttribute(0x01, 'first', 'first')
     inst.addAttribute(0x01, 'second', 'second')
@@ -191,7 +194,8 @@ test('#get', async (t) => {
     assert.equal(hasAttribute('third'), false)
   })
 
-  await t.test('truncates to default maximum', () => {
+  await t.test('truncates to default maximum', (t) => {
+    const { agent } = t.nr
     const tooLong = 'a'.repeat(255) + 'b' + ' to be dropped'
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'foo', tooLong)
@@ -201,7 +205,8 @@ test('#get', async (t) => {
     assert.equal(attrs.foo.endsWith('ab'), true)
   })
 
-  await t.test('truncates to hard maximum', () => {
+  await t.test('truncates to hard maximum', (t) => {
+    const { agent } = t.nr
     const tooLong = 'a'.repeat(4_095) + 'b' + ' to be dropped'
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config, valueLengthLimit: 6_000 })
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'foo', tooLong)
@@ -211,7 +216,8 @@ test('#get', async (t) => {
     assert.equal(attrs.foo.endsWith('ab'), true)
   })
 
-  await t.test('returns identical truncated values across repeated harvests', () => {
+  await t.test('returns identical truncated values across repeated harvests', (t) => {
+    const { agent } = t.nr
     const tooLong = 'a'.repeat(255) + 'b' + ' to be dropped'
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'foo', tooLong)
@@ -226,7 +232,8 @@ test('#get', async (t) => {
     assert.equal(second.foo, first.foo)
   })
 
-  await t.test('re-truncates after an attribute value is overwritten', () => {
+  await t.test('re-truncates after an attribute value is overwritten', (t) => {
+    const { agent } = t.nr
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
     const longVal = 'a'.repeat(300)
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'foo', longVal)
@@ -242,25 +249,25 @@ test('#get', async (t) => {
 })
 
 test('#hasValidDestination', async (t) => {
-  let agent
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
-    agent = ctx.nr.agent
   })
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should return true if single destination valid', () => {
+  await t.test('should return true if single destination valid', (t) => {
+    const { agent } = t.nr
     const attributes = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
     const hasDestination = attributes.hasValidDestination(DESTINATIONS.TRANS_EVENT, 'testAttr')
 
     assert.equal(hasDestination, true)
   })
 
-  await t.test('should return true if all destinations valid', () => {
+  await t.test('should return true if all destinations valid', (t) => {
+    const { agent } = t.nr
     const attributes = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
     const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
     const hasDestination = attributes.hasValidDestination(destinations, 'testAttr')
@@ -296,18 +303,17 @@ test('#hasValidDestination', async (t) => {
 })
 
 test('#reset', async (t) => {
-  let agent
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
-    agent = ctx.nr.agent
   })
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('resets instance attributes', () => {
+  await t.test('resets instance attributes', (t) => {
+    const { agent } = t.nr
     const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
     inst.addAttribute(0x01, 'first', 'first')
     inst.addAttribute(0x01, 'second', 'second')
