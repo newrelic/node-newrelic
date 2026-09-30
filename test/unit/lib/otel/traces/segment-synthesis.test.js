@@ -7,12 +7,13 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { BasicTracerProvider } = require('@opentelemetry/sdk-trace-base')
 const { SpanKind, TraceFlags } = require('@opentelemetry/api')
 
 const helper = require('#testlib/agent_helper.js')
 const hashes = require('#agentlib/util/hashes.js')
 const SegmentSynthesizer = require('#agentlib/otel/traces/segment-synthesis.js')
+const { SamplingDecision } = require('#agentlib/otel/constants.js')
+const NrTracerProvider = require('#agentlib/otel/traces/nr-tracer-provider.js')
 const createMockLogger = require('../../../mocks/logger')
 const {
   createConsumerSpan,
@@ -36,7 +37,14 @@ test.beforeEach((ctx) => {
   const loggerMock = createMockLogger()
   const agent = helper.loadMockedAgent()
   const synthesizer = new SegmentSynthesizer(agent, { logger: loggerMock })
-  const tracer = new BasicTracerProvider().getTracer('default')
+  const provider = new NrTracerProvider({
+    // Always sample, and never invoke a processor automatically -- these
+    // tests exercise the `processor` under test directly via `onStart`/`onEnd`.
+    sampler: { shouldSample: () => { return { decision: SamplingDecision.RECORD_AND_SAMPLED } } },
+    processor: { onStart() {}, onEnd() {} }
+  })
+
+  const tracer = provider.getTracer('default')
   ctx.nr = {
     agent,
     loggerMock,

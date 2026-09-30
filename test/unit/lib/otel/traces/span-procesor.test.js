@@ -6,7 +6,8 @@
 'use strict'
 
 const test = require('node:test')
-const { BasicTracerProvider } = require('@opentelemetry/sdk-trace-base')
+const NrTracerProvider = require('#agentlib/otel/traces/nr-tracer-provider.js')
+const { SamplingDecision } = require('#agentlib/otel/constants.js')
 const helper = require('#testlib/agent_helper.js')
 const { otelSynthesis } = require('#agentlib/symbols.js')
 const { DESTINATIONS } = require('#agentlib/transaction/index.js')
@@ -37,8 +38,14 @@ test.beforeEach((ctx) => {
     }
   }
 
-  const tracer = new BasicTracerProvider().getTracer('test-tracer', '1.0.0')
   const processor = new NrSpanProcessor(agent, { logger: ctx.nr.logger })
+  const provider = new NrTracerProvider({
+    // Always sample, and never invoke a processor automatically -- these
+    // tests exercise the `processor` under test directly via `onStart`/`onEnd`.
+    sampler: { shouldSample: () => { return { decision: SamplingDecision.RECORD_AND_SAMPLED } } },
+    processor
+  })
+  const tracer = provider.getTracer('test-tracer', '1.0.0')
   ctx.nr.tracer = tracer
   ctx.nr.processor = processor
 })
@@ -48,13 +55,11 @@ test.afterEach((ctx) => {
 })
 
 test('onStart attaches required entities to internal symbol', (t) => {
-  t.plan(5)
-  const { agent, processor, tracer } = t.nr
+  t.plan(4)
+  const { agent, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    t.assert.equal(span[otelSynthesis], undefined)
-    processor.onStart(span)
     const meta = span[otelSynthesis]
     t.assert.ok(meta)
     t.assert.ok(meta.segment)
@@ -66,16 +71,15 @@ test('onStart attaches required entities to internal symbol', (t) => {
 
 test('onEnd sets status code: unset', (t) => {
   t.plan(2)
-  const { agent, processor, tracer } = t.nr
+  const { agent, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
     const { segment } = span[otelSynthesis]
     span.status.code = 0
     tx.end()
 
-    processor.onEnd(span)
+    span.end()
 
     const attrs = segment.attributes.get(DESTINATIONS.TRANS_SEGMENT)
     t.assert.equal(attrs['status.code'], 'unset')
@@ -85,16 +89,15 @@ test('onEnd sets status code: unset', (t) => {
 
 test('onEnd sets status code: ok', (t) => {
   t.plan(2)
-  const { agent, processor, tracer } = t.nr
+  const { agent, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
     const { segment } = span[otelSynthesis]
     span.status.code = 1
     tx.end()
 
-    processor.onEnd(span)
+    span.end()
 
     const attrs = segment.attributes.get(DESTINATIONS.TRANS_SEGMENT)
     t.assert.equal(attrs['status.code'], 'ok')
@@ -104,17 +107,16 @@ test('onEnd sets status code: ok', (t) => {
 
 test('onEnd sets status code: error', (t) => {
   t.plan(2)
-  const { agent, processor, tracer } = t.nr
+  const { agent, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
     const { segment } = span[otelSynthesis]
     span.status.code = 2
     span.status.message = 'boom'
     tx.end()
 
-    processor.onEnd(span)
+    span.end()
 
     const attrs = segment.attributes.get(DESTINATIONS.TRANS_SEGMENT)
     t.assert.equal(attrs['status.code'], 'error')
@@ -124,15 +126,14 @@ test('onEnd sets status code: error', (t) => {
 
 test('onEnd adds instrumentation scope attributes', (t) => {
   t.plan(4)
-  const { agent, processor, tracer } = t.nr
+  const { agent, tracer } = t.nr
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
     const { segment } = span[otelSynthesis]
     tx.end()
 
-    processor.onEnd(span)
+    span.end()
 
     const attrs = segment.attributes.get(DESTINATIONS.TRANS_SEGMENT)
     t.assert.equal(attrs['otel.scope.name'], 'test-tracer')
@@ -156,11 +157,10 @@ test('onEnd invokes expected methods', (t) => {
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpServerSpan({ tracer })
-    processor.onStart(span)
     tx.end()
 
     t.assert.ok(span[otelSynthesis])
-    processor.onEnd(span)
+    span.end()
     t.assert.equal(invocations, 6)
     t.assert.equal(span[otelSynthesis], undefined)
   })
@@ -176,7 +176,6 @@ test('handleError does nothing if span not an error', (t) => {
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
     span.status.code = 0
     tx.end()
 
@@ -210,7 +209,6 @@ test('handleError collects exception events', (t) => {
       }
     })
 
-    processor.onStart(span)
     const { segment } = span[otelSynthesis]
     span.status.code = 2
     span.status.message = 'boom'
@@ -234,7 +232,6 @@ test('updateDuration touches and converts', (t) => {
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
 
     const { segment } = span[otelSynthesis]
     segment.touch = () => t.assert.ok('invoked')
@@ -259,7 +256,6 @@ test('reconcileEvents skips work if no events', (t) => {
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
 
     const { segment } = span[otelSynthesis]
     segment.addTimedEvent = () => t.assert.fail('should not be invoked')
@@ -277,7 +273,6 @@ test('reconcileEvents adds remapped events to the segment', (t) => {
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
 
     span.events.push({
       name: 'test-event',
@@ -309,7 +304,6 @@ test('reconcileEvents logs `Supportability/Nodejs/SpanEvent/Links/Dropped` when 
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
 
     for (let i = 0; i < 105; i++) {
       span.events.push({
@@ -333,7 +327,6 @@ test('reconcileLinks skips work if no links', (t) => {
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
 
     const { segment } = span[otelSynthesis]
     segment.addSpanLink = () => t.assert.fail('should not be invoked')
@@ -351,7 +344,6 @@ test('reconcileLinks adds remapped links to the segment', (t) => {
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
 
     span.links.push({
       attributes: { test: 'attr' },
@@ -385,7 +377,6 @@ test('reconcileLinks logs `Supportability/Nodejs/SpanEvent/Links/Dropped` when l
 
   helper.runInTransaction(agent, (tx) => {
     const span = createHttpClientSpan({ tracer })
-    processor.onStart(span)
 
     for (let i = 0; i < 105; i++) {
       span.links.push({
@@ -543,7 +534,6 @@ test('finalizeTransaction handles tx with static name value transform', (t) => {
   agent.config.high_security = true
 
   const span = createFallbackServer({ tracer })
-  processor.onStart(span)
 
   const { segment, transaction, rule } = span[otelSynthesis]
   t.assert.equal(transaction.isActive(), true)
@@ -561,12 +551,12 @@ test('finalizeWebTransaction handles url.template transforms', (t) => {
   const { processor, tracer } = t.nr
 
   const span = createHttpServer1dot23Span({ tracer })
+  processor.onStart(span)
   span.attributes['url.scheme'] = 'http'
   span.attributes['server.address'] = 'example.com'
   span.attributes['server.port'] = '80'
   span.attributes['url.path'] = '/foo'
   span.attributes['url.query'] = 'a=b'
-  processor.onStart(span)
 
   const { transaction, rule } = span[otelSynthesis]
   const nameState = transaction.nameState
@@ -599,8 +589,8 @@ test('finalizeWebTransaction handles url.key transforms', (t) => {
   const { processor, tracer } = t.nr
 
   const span = createHttpServerSpan({ tracer })
-  span.attributes['http.url'] = 'http://example.com/foo?a=b'
   processor.onStart(span)
+  span.attributes['http.url'] = 'http://example.com/foo?a=b'
 
   const { transaction, rule } = span[otelSynthesis]
   const nameState = transaction.nameState
