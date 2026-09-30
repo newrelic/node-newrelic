@@ -24,6 +24,7 @@ const {
   addCLMAttributes: maybeAddCLMAttributes
 } = require('./lib/util/code-level-metrics')
 const LlmFeedbackMessage = require('./lib/llm-events/feedback-message')
+const { isAiMonitoringEnabled } = require('./lib/util/llm-utils')
 
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/instrumentation-descriptor').TYPES
@@ -1612,7 +1613,7 @@ API.prototype.recordLlmFeedbackEvent = function recordLlmFeedbackEvent({
     return
   }
 
-  if (this.agent.config?.ai_monitoring?.enabled !== true) {
+  if (isAiMonitoringEnabled(this.agent.config) === false) {
     logger.warn('recordLlmFeedbackEvent invoked but ai_monitoring is disabled.')
     return
   }
