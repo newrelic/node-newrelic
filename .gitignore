@@ -23,11 +23,6 @@ nr-security-home
 benchmark_results
 bin/.env
 
-# Pre-compiled config schema validator. Generated during the release process
-# (npm run generate:config-validator) and committed into the release PR so it
-# ships with the package; not tracked during normal development.
-lib/config/schema.generated.js
-
 # Local developer resources:
 local/
 # .gitignore - Claude Code personal files

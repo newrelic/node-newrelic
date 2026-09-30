@@ -68,19 +68,3 @@ jobs:
           git add .fleetControl/configurationDefinitions.yml
           git commit -m "chore: bump agent config schema version"
           git push origin HEAD:${{ steps.release-branch.outputs.name }}
-
-      - name: Generate pre-compiled config schema validator
-        run: npm run generate:config-validator
-
-      - name: Commit pre-compiled validator into the release PR
-        run: |
-          git config user.name '${{ vars.NODE_AGENT_CI_USER_NAME }}'
-          git config user.email '${{ vars.NODE_AGENT_CI_USER_EMAIL }}'
-          # The artifact is gitignored during development, so force-add it.
-          git add -f lib/config/schema.generated.js
-          if git diff --cached --quiet; then
-            echo "Pre-compiled validator unchanged — nothing to add to the release PR."
-            exit 0
-          fi
-          git commit -m "chore: generate pre-compiled config schema validator"
-          git push origin HEAD:${{ steps.release-branch.outputs.name }}
