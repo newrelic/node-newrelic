@@ -13,7 +13,14 @@ const { req, res, getExpectedResult } = require('./common')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-  ctx.nr.agent = helper.loadMockedAgent()
+  ctx.nr.agent = helper.loadMockedAgent({
+    ai_monitoring: {
+      enabled: true,
+      record_content: {
+        enabled: true
+      }
+    }
+  })
 })
 
 test.afterEach((ctx) => {
