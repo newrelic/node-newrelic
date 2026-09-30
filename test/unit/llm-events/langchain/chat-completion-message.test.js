@@ -27,6 +27,7 @@ test.beforeEach((ctx) => {
   ctx.nr.agent = {
     config: {
       ai_monitoring: {
+        enabled: true,
         record_content: {
           enabled: true
         }
