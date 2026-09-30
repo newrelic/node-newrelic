@@ -75,3 +75,21 @@ common.constructOperationSegments = function constructOperationSegments(
 
   return ['Nodejs/Middleware/Expressjs/<anonymous>', operationSegments]
 }
+
+/**
+ * Flattens a trace's segment tree into a single array, for tests that need to
+ * assert a segment is absent anywhere in the trace (not just at a known position).
+ * @param {Trace} trace the transaction trace
+ * @returns {Array} all segments in the trace
+ */
+common.collectSegments = function collectSegments(trace) {
+  const segments = []
+  const collect = (segment) => {
+    segments.push(segment)
+    for (const child of trace.getChildren(segment.id)) {
+      collect(child)
+    }
+  }
+  collect(trace.root)
+  return segments
+}
