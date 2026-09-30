@@ -52,7 +52,7 @@ test.after(() => {
 
 test('rename', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 13 })
+  const plan = tspl(t, { plan: 9 })
   const name = path.join(tempDir, 'rename-me')
   const newName = path.join(tempDir, 'renamed')
   const content = 'some-content'
@@ -67,7 +67,7 @@ test('rename', async function (t) {
         content,
         'file with new name should have expected contents'
       )
-      verifySegments({ agent, name: NAMES.FS.PREFIX + 'rename', assert: plan })
+      verifySegments({ agent, name: NAMES.FS.PREFIX + 'rename', assert: plan, assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -80,7 +80,7 @@ test('rename', async function (t) {
 })
 
 test('truncate', async function (t) {
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 8 })
   const { agent } = t.nr
   const name = path.join(tempDir, 'truncate-me')
   const content = 'some-content'
@@ -97,7 +97,8 @@ test('truncate', async function (t) {
         agent,
         name: NAMES.FS.PREFIX + 'truncate',
         children: [NAMES.FS.PREFIX + 'open'],
-        assert: plan
+        assert: plan,
+        assertCallbacks: false
       })
 
       trans.end()
@@ -111,7 +112,7 @@ test('truncate', async function (t) {
 })
 
 test('ftruncate', async function (t) {
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const { agent } = t.nr
   const name = path.join(tempDir, 'ftruncate-me')
   const content = 'some-content'
@@ -121,7 +122,7 @@ test('ftruncate', async function (t) {
     fs.ftruncate(fd, 4, function (err) {
       plan.ok(!err, 'should not error')
       plan.equal(fs.readFileSync(name, 'utf8'), content.slice(0, 4), 'content should be truncated')
-      verifySegments({ agent, name: NAMES.FS.PREFIX + 'ftruncate', assert: plan })
+      verifySegments({ agent, name: NAMES.FS.PREFIX + 'ftruncate', assert: plan, assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -135,7 +136,7 @@ test('ftruncate', async function (t) {
 })
 
 test('chown', async function (t) {
-  const plan = tspl(t, { plan: 10 })
+  const plan = tspl(t, { plan: 6 })
   const { agent } = t.nr
   const name = path.join(tempDir, 'chown-me')
   const content = 'some-content'
@@ -145,7 +146,7 @@ test('chown', async function (t) {
   helper.runInTransaction(agent, function (trans) {
     fs.chown(name, uid, gid, function (err) {
       plan.ok(err, 'should error for non root users')
-      verifySegments({ agent, name: NAMES.FS.PREFIX + 'chown', assert: plan })
+      verifySegments({ agent, name: NAMES.FS.PREFIX + 'chown', assert: plan, assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -158,7 +159,7 @@ test('chown', async function (t) {
 })
 
 test('fchown', async function (t) {
-  const plan = tspl(t, { plan: 10 })
+  const plan = tspl(t, { plan: 6 })
   const { agent } = t.nr
   const name = path.join(tempDir, 'chown-me')
   const content = 'some-content'
@@ -169,7 +170,7 @@ test('fchown', async function (t) {
   helper.runInTransaction(agent, function (trans) {
     fs.fchown(fd, uid, gid, function (err) {
       plan.ok(err, 'should error for non root users')
-      verifySegments({ agent, name: NAMES.FS.PREFIX + 'fchown', assert: plan })
+      verifySegments({ agent, name: NAMES.FS.PREFIX + 'fchown', assert: plan, assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -186,7 +187,7 @@ test('fchown', async function (t) {
 // appears in other versions too.
 test('lchown', { skip: fs.lchown === undefined }, async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 10 })
+  const plan = tspl(t, { plan: 6 })
   const name = path.join(tempDir, 'chown-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -195,7 +196,7 @@ test('lchown', { skip: fs.lchown === undefined }, async function (t) {
   helper.runInTransaction(agent, function (trans) {
     fs.lchown(name, uid, gid, function (err) {
       plan.ok(err, 'should error for non root users')
-      verifySegments({ agent, name: NAMES.FS.PREFIX + 'lchown', assert: plan })
+      verifySegments({ agent, name: NAMES.FS.PREFIX + 'lchown', assert: plan, assertCallbacks: false })
 
       trans.end()
       const names = ['lchown']
@@ -207,7 +208,7 @@ test('lchown', { skip: fs.lchown === undefined }, async function (t) {
 
 test('chmod', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 8 })
   const name = path.join(tempDir, 'chmod-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -217,7 +218,7 @@ test('chmod', async function (t) {
       plan.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
       plan.equal((fs.statSync(name).mode & 0x1ff).toString(8), '777')
-      verifySegments({ agent, name: NAMES.FS.PREFIX + 'chmod', assert: plan })
+      verifySegments({ agent, name: NAMES.FS.PREFIX + 'chmod', assert: plan, assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -235,7 +236,7 @@ test('chmod', async function (t) {
 // eslint-disable-next-line n/no-deprecated-api
 test('lchmod', { skip: fs.lchmod === undefined }, async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 13 })
+  const plan = tspl(t, { plan: 9 })
   const name = path.join(tempDir, 'lchmod-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -249,7 +250,8 @@ test('lchmod', { skip: fs.lchmod === undefined }, async function (t) {
         agent,
         name: NAMES.FS.PREFIX + 'lchmod',
         children: [NAMES.FS.PREFIX + 'open'],
-        assert: plan
+        assert: plan,
+        assertCallbacks: false
       })
 
       trans.end()
@@ -265,7 +267,7 @@ test('lchmod', { skip: fs.lchmod === undefined }, async function (t) {
 
 test('fchmod', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 8 })
   const name = path.join(tempDir, 'fchmod-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -275,7 +277,7 @@ test('fchmod', async function (t) {
     fs.fchmod(fd, '0777', function (err) {
       plan.equal(err, null, 'should not error')
       plan.equal((fs.statSync(name).mode & 0x1ff).toString(8), '777')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'fchmod' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'fchmod', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -290,7 +292,7 @@ test('fchmod', async function (t) {
 
 test('stat', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'stat-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -298,7 +300,7 @@ test('stat', async function (t) {
     fs.stat(name, function (err, stat) {
       plan.equal(err, null, 'should not error')
       plan.equal((stat.mode & 0x1ff).toString(8), '666')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'stat' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'stat', assertCallbacks: false })
 
       trans.end()
       plan.ok(checkMetric(['stat'], agent, trans.name), 'metric should exist after transaction end')
@@ -310,7 +312,7 @@ test('stat', async function (t) {
 
 test('lstat', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'lstat-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -318,7 +320,7 @@ test('lstat', async function (t) {
     fs.lstat(name, function (err, stat) {
       plan.equal(err, null, 'should not error')
       plan.equal((stat.mode & 0x1ff).toString(8), '666')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'lstat' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'lstat', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -333,7 +335,7 @@ test('lstat', async function (t) {
 
 test('fstat', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'fstat-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -342,7 +344,7 @@ test('fstat', async function (t) {
     fs.fstat(fd, function (err, stat) {
       plan.equal(err, null, 'should not error')
       plan.equal((stat.mode & 0x1ff).toString(8), '666')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'fstat' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'fstat', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -357,7 +359,7 @@ test('fstat', async function (t) {
 
 test('link', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'link-to-me')
   const link = path.join(tempDir, 'link-me')
   const content = 'some-content'
@@ -367,7 +369,7 @@ test('link', async function (t) {
       plan.equal(err, null, 'should not error')
       plan.equal(fs.statSync(name).ino, fs.statSync(link).ino, 'should point to the same file')
 
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'link' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'link', assertCallbacks: false })
 
       trans.end()
       plan.ok(checkMetric(['link'], agent, trans.name), 'metric should exist after transaction end')
@@ -379,7 +381,7 @@ test('link', async function (t) {
 
 test('symlink', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'symlink-to-me')
   const link = path.join(tempDir, 'symlink-me')
   const content = 'some-content'
@@ -389,7 +391,7 @@ test('symlink', async function (t) {
       plan.equal(err, null, 'should not error')
       plan.equal(fs.readlinkSync(link), name, 'should point to the same file')
 
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'symlink' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'symlink', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -404,7 +406,7 @@ test('symlink', async function (t) {
 
 test('readlink', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'readlink')
   const link = path.join(tempDir, 'readlink-me')
   const content = 'some-content'
@@ -415,7 +417,7 @@ test('readlink', async function (t) {
       plan.equal(err, null, 'should not error')
       plan.equal(target, name, 'should point to the same file')
 
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'readlink' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'readlink', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -429,7 +431,7 @@ test('readlink', async function (t) {
 
 test('realpath', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 8 })
   const name = path.join(tempDir, 'realpath')
   const link = path.join(tempDir, 'link-to-realpath')
   const content = 'some-content'
@@ -446,7 +448,8 @@ test('realpath', async function (t) {
         assert: plan,
         name: NAMES.FS.PREFIX + 'realpath',
         children: [NAMES.FS.PREFIX + 'lstat'],
-        end: afterVerify
+        end: afterVerify,
+        assertCallbacks: false
       })
 
       function afterVerify() {
@@ -465,7 +468,7 @@ test('realpath', async function (t) {
 
 test('realpath.native', async (t) => {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'realpath-native')
   const link = path.join(tempDir, 'link-to-realpath-native')
   const content = 'some-content'
@@ -481,7 +484,8 @@ test('realpath.native', async (t) => {
         agent,
         assert: plan,
         name: NAMES.FS.PREFIX + 'realpath.native',
-        end: afterVerify
+        end: afterVerify,
+        assertCallbacks: false
       })
 
       function afterVerify() {
@@ -500,7 +504,7 @@ test('realpath.native', async (t) => {
 
 test('unlink', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'unlink-from-me')
   const link = path.join(tempDir, 'unlink-me')
   const content = 'some-content'
@@ -510,7 +514,7 @@ test('unlink', async function (t) {
     fs.unlink(link, function (err) {
       plan.equal(err, null, 'should not error')
       plan.ok(!fs.existsSync(link), 'link should not exist')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'unlink' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'unlink', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -525,14 +529,14 @@ test('unlink', async function (t) {
 
 test('mkdir', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 8 })
   const name = path.join(tempDir, 'mkdir')
   helper.runInTransaction(agent, function (trans) {
     fs.mkdir(name, function (err) {
       plan.equal(err, null, 'should not error')
       plan.ok(fs.existsSync(name), 'dir should exist')
       plan.ok(fs.readdirSync(name), 'dir should be readable')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'mkdir' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'mkdir', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -547,14 +551,14 @@ test('mkdir', async function (t) {
 
 test('rmdir', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'rmdir')
   fs.mkdirSync(name)
   helper.runInTransaction(agent, function (trans) {
     fs.rmdir(name, function (err) {
       plan.equal(err, null, 'should not error')
       plan.ok(!fs.existsSync(name), 'dir should not exist')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'rmdir' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'rmdir', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -569,14 +573,14 @@ test('rmdir', async function (t) {
 
 test('readdir', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'readdir')
   fs.mkdirSync(name)
   helper.runInTransaction(agent, function (trans) {
     fs.readdir(name, function (err, data) {
       plan.equal(err, null, 'should not error')
       plan.deepEqual(data, [], 'should get list of contents')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'readdir' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'readdir', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -591,7 +595,7 @@ test('readdir', async function (t) {
 
 test('close', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 10 })
+  const plan = tspl(t, { plan: 6 })
   const name = path.join(tempDir, 'close-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -599,7 +603,7 @@ test('close', async function (t) {
   helper.runInTransaction(agent, function (trans) {
     fs.close(fd, function (err) {
       plan.equal(err, null, 'should not error')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'close' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'close', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -614,7 +618,7 @@ test('close', async function (t) {
 
 test('open', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'open-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -622,7 +626,7 @@ test('open', async function (t) {
     fs.open(name, 'r+', function (err, fd) {
       plan.equal(err, null, 'should not error')
       plan.ok(fd, 'should get a file descriptor')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'open' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'open', assertCallbacks: false })
 
       trans.end()
       plan.ok(checkMetric(['open'], agent, trans.name), 'metric should exist after transaction end')
@@ -634,7 +638,7 @@ test('open', async function (t) {
 
 test('utimes', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 8 })
   const name = path.join(tempDir, 'utimes-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -655,7 +659,7 @@ test('utimes', async function (t) {
       }
 
       plan.equal(stats.mtime.toISOString(), modified.toISOString())
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'utimes' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'utimes', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -670,7 +674,7 @@ test('utimes', async function (t) {
 
 test('futimes', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 8 })
   const name = path.join(tempDir, 'futimes-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -692,7 +696,7 @@ test('futimes', async function (t) {
       }
 
       plan.equal(stats.mtime.toISOString(), modified.toISOString())
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'futimes' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'futimes', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -707,7 +711,7 @@ test('futimes', async function (t) {
 
 test('fsync', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 10 })
+  const plan = tspl(t, { plan: 6 })
   const name = path.join(tempDir, 'fsync-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -716,7 +720,7 @@ test('fsync', async function (t) {
   helper.runInTransaction(agent, function (trans) {
     fs.fsync(fd, function (err) {
       plan.ok(!err, 'should not error')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'fsync' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'fsync', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -731,7 +735,7 @@ test('fsync', async function (t) {
 
 test('readFile', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const name = path.join(tempDir, 'readFile')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -744,7 +748,8 @@ test('readFile', async function (t) {
       verifySegments({
         agent,
         assert: plan,
-        name: NAMES.FS.PREFIX + 'readFile'
+        name: NAMES.FS.PREFIX + 'readFile',
+        assertCallbacks: false
       })
 
       trans.end()
@@ -764,7 +769,7 @@ test('writeFile', async function (t) {
   // there is one fewer child assertion and no `open` metric to check.
   const children = hasNativeWriteFileJob ? [] : [NAMES.FS.PREFIX + 'open']
   const expectedMetrics = hasNativeWriteFileJob ? ['writeFile'] : ['writeFile', 'open']
-  const plan = tspl(t, { plan: hasNativeWriteFileJob ? 11 : 12 })
+  const plan = tspl(t, { plan: hasNativeWriteFileJob ? 7 : 8 })
   const name = path.join(tempDir, 'writeFile')
   const content = 'some-content'
 
@@ -776,7 +781,8 @@ test('writeFile', async function (t) {
         agent,
         assert: plan,
         name: NAMES.FS.PREFIX + 'writeFile',
-        children
+        children,
+        assertCallbacks: false
       })
 
       trans.end()
@@ -792,7 +798,7 @@ test('writeFile', async function (t) {
 
 test('appendFile', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 12 })
+  const plan = tspl(t, { plan: 8 })
   const name = path.join(tempDir, 'appendFile')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -807,7 +813,8 @@ test('appendFile', async function (t) {
         agent,
         assert: plan,
         name: NAMES.FS.PREFIX + 'appendFile',
-        children: [NAMES.FS.PREFIX + 'writeFile']
+        children: [NAMES.FS.PREFIX + 'writeFile'],
+        assertCallbacks: false
       })
 
       trans.end()
@@ -823,7 +830,7 @@ test('appendFile', async function (t) {
 
 test('exists', async function (t) {
   const { agent } = t.nr
-  const plan = tspl(t, { plan: 10 })
+  const plan = tspl(t, { plan: 6 })
   const name = path.join(tempDir, 'exists')
   const content = 'some-content'
   fs.writeFileSync(name, content)
@@ -832,7 +839,7 @@ test('exists', async function (t) {
     // eslint-disable-next-line n/no-deprecated-api
     fs.exists(name, function (exists) {
       plan.ok(exists, 'should exist')
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'exists' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'exists', assertCallbacks: false })
 
       trans.end()
       plan.ok(
@@ -1015,7 +1022,7 @@ test('watchFile', async function (t) {
 test('glob', { skip: isGlobSupported === false }, async function (t) {
   const { agent } = t.nr
   const name = path.join(tempDir, 'glob-me')
-  const plan = tspl(t, { plan: 11 })
+  const plan = tspl(t, { plan: 7 })
   const content = 'some-content'
   fs.writeFileSync(name, content)
 
@@ -1026,7 +1033,7 @@ test('glob', { skip: isGlobSupported === false }, async function (t) {
       const match = matches.find((m) => m.includes('glob-me'))
       plan.ok(match, 'glob found file')
 
-      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'glob' })
+      verifySegments({ agent, assert: plan, name: NAMES.FS.PREFIX + 'glob', assertCallbacks: false })
 
       tx.end()
       plan.ok(checkMetric(['glob'], agent, tx.name), 'metric should exist after transaction end')
