@@ -96,9 +96,15 @@ test('ai_monitoring configuration precedence', async (t) => {
   }
 })
 
-test('basic_telemetry.enabled defaults to true', () => {
+test('default configuration sends basic telemetry without content', () => {
   const config = Config.initialize({})
   assert.equal(config.ai_monitoring.basic_telemetry.enabled, true)
+  assert.equal(config.ai_monitoring.enabled, null)
+  // `record_content.enabled` defaults to `true` but only takes effect when
+  // `ai_monitoring.enabled` is explicitly `true`.
+  assert.equal(config.ai_monitoring.record_content.enabled, true)
+  assert.equal(isAiMonitoringEnabled(config), true)
+  assert.equal(shouldRecordAiContent(config), false)
   assert.equal(recordedMetric(config), BASIC_METRIC)
 })
 
