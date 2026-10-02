@@ -151,6 +151,22 @@ test('DistributedTracePayload#parseAndApply', async (t) => {
     assert.ok(!txn.isDistributedTrace)
   })
 
+  await t.test('ignores a newer major version before validating data keys', (t) => {
+    const { txn } = t.nr
+    // A future major version whose `d` does not carry today's required keys
+    // must be recognized as a newer version and ignored gracefully, not
+    // misclassified as a parse error. The major-version check must take
+    // precedence over data-key validation.
+    makeHandler(txn).parseAndApply(
+      JSON.stringify({ v: [1, 0], d: { futureField: 'x' } })
+    )
+    assert.equal(
+      txn.agent.recordSupportability.args[0][0],
+      'DistributedTrace/AcceptPayload/Ignored/MajorVersion'
+    )
+    assert.equal(txn.isDistributedTrace, null)
+  })
+
   await t.test('fails if payload account id is not in trusted ids', (t) => {
     const { txn } = t.nr
     const payload = new Payload({

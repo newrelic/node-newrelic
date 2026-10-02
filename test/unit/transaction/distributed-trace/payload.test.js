@@ -108,6 +108,15 @@ test('Payload', async (t) => {
     assert.deepStrictEqual(p.version, [1, 3])
   })
 
+  await t.test('does not validate data keys for a newer major version', () => {
+    // A future major version may restructure `d`. Such payloads must parse
+    // (so the caller can recognize the version and ignore it) rather than
+    // throw a "missing required keys" error against today's expected shape.
+    const p = new Payload({ input: { v: [1, 0], d: { futureField: 'x' } } })
+    assert.equal(p.major, 1)
+    assert.equal(p.data, undefined, 'data is not built for an unknown major version')
+  })
+
   await t.test('throws on a missing or malformed version key', () => {
     assert.throws(() => new Payload({ input: { d: makeData() } }), /Missing or invalid version \(v\) key\./)
     assert.throws(() => new Payload({ input: { v: [0], d: makeData() } }), /Missing or invalid version \(v\) key\./)
@@ -121,6 +130,10 @@ test('Payload', async (t) => {
   await t.test('throws on a missing or invalid data key', () => {
     assert.throws(() => new Payload({ input: { v: [0, 1] } }), /Missing or invalid data \(d\) key\./)
     assert.throws(() => new Payload({ input: { v: [0, 1], d: 'nope' } }), /Missing or invalid data \(d\) key\./)
+    // `typeof null === 'object'`, so `d: null` must throw the descriptive error
+    // rather than falling through to `new PayloadData(null)` (a generic TypeError).
+    assert.throws(() => new Payload({ input: { v: [0, 1], d: null } }), /Missing or invalid data \(d\) key\./)
+    assert.throws(() => new Payload({ input: { v: [0, 1], d: undefined } }), /Missing or invalid data \(d\) key\./)
   })
 
   await t.test('propagates PayloadData validation errors', () => {
