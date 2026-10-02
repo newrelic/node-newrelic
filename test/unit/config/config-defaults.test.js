@@ -302,7 +302,9 @@ test('with default properties', async (t) => {
   })
 
   await t.test('ai_monitoring defaults', () => {
-    assert.equal(configuration.ai_monitoring.enabled, false)
+    assert.equal(configuration.ai_monitoring.enabled, null)
+    assert.equal(configuration.ai_monitoring.basic_telemetry.enabled, true)
+    assert.equal(configuration.ai_monitoring.record_content.enabled, true)
     assert.equal(configuration.ai_monitoring.streaming.enabled, true)
   })
 
