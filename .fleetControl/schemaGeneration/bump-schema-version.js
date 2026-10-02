@@ -6,9 +6,9 @@
 'use strict'
 /* eslint-disable no-console */
 
-const fs = require('fs')
-const path = require('path')
-const { execFileSync } = require('child_process')
+const fs = require('node:fs')
+const path = require('node:path')
+const { execFileSync } = require('node:child_process')
 const yaml = require('js-yaml')
 
 const schemaDiff = require('./schema-diff')
@@ -32,6 +32,9 @@ function extractVersion(yamlText) {
  * The latest final release tag (`vX.Y.Z`), ignoring anything else (RCs,
  * lightweight markers, etc). `git tag` output is newline-separated, already
  * sorted newest-first by the caller's `--sort=-v:refname`.
+ *
+ * @param {string[]} tagLines The `git tag` output lines, newest-first.
+ * @returns {string|null} The latest `vX.Y.Z` tag, or `null` when none match.
  */
 function findLatestReleaseTag(tagLines) {
   return tagLines.map((line) => line.trim()).find((name) => /^v\d+\.\d+\.\d+$/.test(name)) || null
@@ -46,7 +49,14 @@ function latestReleaseTag() {
   return findLatestReleaseTag(output.split('\n'))
 }
 
-/** `git show <ref>:<repoPath>`, or null if the ref/path doesn't exist. */
+/**
+ * `git show <ref>:<repoPath>`, or null if the ref/path doesn't exist.
+ *
+ * @param {string} ref The git ref (e.g. a release tag).
+ * @param {string} repoPath The repo-relative path to show at that ref.
+ * @returns {string|null} The file contents, or `null` when the ref/path does
+ *   not exist.
+ */
 function gitShow(ref, repoPath) {
   try {
     // eslint-disable-next-line sonarjs/no-os-command-from-path
@@ -65,6 +75,13 @@ function gitShow(ref, repoPath) {
  * Returns nulls when there's no tag, or the tag predates the schema/version
  * fields existing — both are "first release that includes the schema" cases,
  * not failures.
+ *
+ * @param {string} tag The release tag to read the baseline from.
+ * @param {object} [options] Optional dependency overrides.
+ * @param {Function} [options.gitShow] A `gitShow(ref, repoPath)` override, for
+ *   tests.
+ * @returns {{baselineSchema: object|null, starterVersion: string|null}} The
+ *   baseline schema and its version, or nulls for a first release.
  */
 function previousRelease(tag, { gitShow: gitShowFn = gitShow } = {}) {
   if (!tag) {
@@ -94,6 +111,14 @@ function previousRelease(tag, { gitShow: gitShowFn = gitShow } = {}) {
  * exercised directly in tests with synthetic fixtures.
  *
  * Returns `{ action: 'first_release' | 'no_change' | 'bump', ... }`.
+ *
+ * @param {object} params Function parameters.
+ * @param {object|null} params.baselineSchema The previous release's schema, or
+ *   `null` for a first release.
+ * @param {object} params.currentSchema The current on-disk schema.
+ * @param {string|null} params.starterVersion The schema version at the previous
+ *   release, or `null` for a first release.
+ * @returns {object} The decision: `{ action, bump, changes, ... }`.
  */
 function decideBump({ baselineSchema, currentSchema, starterVersion }) {
   if (!baselineSchema || !starterVersion) {

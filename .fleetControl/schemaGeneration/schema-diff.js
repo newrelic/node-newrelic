@@ -14,6 +14,10 @@ const BUMP_FOR_SEVERITY = { breaking: 'major', additive: 'minor', cosmetic: 'pat
 /**
  * Parse a schema JSON file into an object. Missing or malformed files yield
  * `{}` so a bootstrap run (no baseline schema yet) is handled by the caller.
+ *
+ * @param {string} filePath The path to the schema JSON file to read.
+ * @returns {object} The parsed schema, or `{}` when the file is missing or
+ *   malformed.
  */
 function loadExisting(filePath) {
   if (!fs.existsSync(filePath)) {
@@ -62,22 +66,48 @@ function deepEqual(a, b) {
 // array-or-delimited-string shape). `anyOf` takes precedence since a
 // property with both would mean `anyOf` is what actually constrains it.
 function typeSignature(prop) {
-  return prop.anyOf || prop.type
+  return prop.oneOf || prop.anyOf || prop.type
+}
+
+// Renders a single union member's type: its `type` keyword (`'string'`,
+// `'object'`, etc.), a `|`-joined list when `type` is itself an array
+// (`['string', 'null']`), or `'unknown'` when the member constrains by
+// something other than `type` (e.g. a bare `$ref`, which the published schema
+// does not emit).
+function describeMember(member) {
+  if (!member || typeof member !== 'object') {
+    return 'unknown'
+  }
+  if (Array.isArray(member.type)) {
+    return member.type.join('|')
+  }
+  return member.type || 'unknown'
 }
 
 function describeType(signature) {
   if (typeof signature === 'string') {
     return signature
   }
-  if (Array.isArray(signature) && signature.every((entry) => typeof entry === 'string')) {
+  if (!Array.isArray(signature)) {
+    return 'unknown'
+  }
+  // A `type: ['string', 'null']` nullable union is an array of strings.
+  if (signature.every((entry) => typeof entry === 'string')) {
     return signature.join('|')
   }
-  return 'array-or-string'
+  // An `oneOf`/`anyOf` is an array of subschema objects; render each member's
+  // type, de-duplicated and order-preserved (e.g. `string|object`).
+  return [...new Set(signature.map(describeMember))].join('|')
 }
 
 /**
  * Compare two schema nodes' `required` arrays. Applied at every recursion
  * level (root and each nested object), not just the root.
+ *
+ * @param {object} oldNode The baseline schema node.
+ * @param {object} newNode The current schema node.
+ * @param {string} path The dotted config path of these nodes.
+ * @returns {object[]} The required-field changes between the two nodes.
  */
 function requiredChanges(oldNode, newNode, path) {
   const oldRequired = new Set(oldNode.required || [])
@@ -103,6 +133,11 @@ function requiredChanges(oldNode, newNode, path) {
  * `instrumentation` map) use an object-shaped `additionalProperties` to
  * constrain dictionary values, which isn't a true/false toggle and isn't
  * classified by this check.
+ *
+ * @param {object} oldNode The baseline schema node.
+ * @param {object} newNode The current schema node.
+ * @param {string} path The dotted config path of these nodes.
+ * @returns {object[]} The `additionalProperties` changes between the two nodes.
  */
 function additionalPropertiesChanges(oldNode, newNode, path) {
   const oldValue = Object.prototype.hasOwnProperty.call(oldNode, 'additionalProperties')
@@ -196,6 +231,12 @@ function classifyLeaf(oldProp, newProp, path) {
  * shape); everything else — including dictionary-shaped objects like
  * `labels` that constrain values via `additionalProperties` instead of
  * naming properties — is classified as a leaf.
+ *
+ * @param {object} oldSchema The baseline schema node.
+ * @param {object} newSchema The current schema node.
+ * @param {string} [path] The dotted config path of these nodes (`''` at the
+ *   root).
+ * @returns {object[]} The change records between the two schema nodes.
  */
 function classifyChanges(oldSchema, newSchema, path = '') {
   const changes = [
@@ -230,7 +271,13 @@ function classifyChanges(oldSchema, newSchema, path = '') {
   return changes
 }
 
-/** Highest-severity bump implied by a list of change records. */
+/**
+ * Highest-severity bump implied by a list of change records.
+ *
+ * @param {object[]} changes The change records to evaluate.
+ * @returns {string} The bump kind: `'major'`, `'minor'`, `'patch'`, or
+ *   `'none'`.
+ */
 function recommendBump(changes) {
   let highest = null
   for (const entry of changes) {
@@ -242,7 +289,14 @@ function recommendBump(changes) {
   return highest ? BUMP_FOR_SEVERITY[highest] : 'none'
 }
 
-/** Apply a bump kind to a semver `X.Y.Z` string. `'none'` returns it unchanged. */
+/**
+ * Apply a bump kind to a semver `X.Y.Z` string. `'none'` returns it unchanged.
+ *
+ * @param {string} version The current semver version string.
+ * @param {string} bump The bump kind: `'major'`, `'minor'`, `'patch'`, or
+ *   `'none'`.
+ * @returns {string} The bumped version string.
+ */
 function applyBump(version, bump) {
   if (bump === 'none') {
     return version
@@ -272,6 +326,10 @@ function applyBump(version, bump) {
  * Replace the single `version:` line in configurationDefinitions.yml text.
  * Throws unless exactly one such line exists, so a malformed file can't be
  * silently half-updated.
+ *
+ * @param {string} yamlText The configurationDefinitions.yml file contents.
+ * @param {string} newVersion The version to write into the `version:` line.
+ * @returns {string} The file contents with the `version:` line updated.
  */
 function bumpVersionLine(yamlText, newVersion) {
   const pattern = /^([ \t]*version:[ \t]*)(\S+)([ \t]*)$/gm
@@ -292,7 +350,12 @@ function symbolForChange(kind) {
   return '~'
 }
 
-/** One-line human rendering: + added, - removed, ~ modified. */
+/**
+ * One-line human rendering: + added, - removed, ~ modified.
+ *
+ * @param {object} entry A change record (`{ path, kind, severity, detail }`).
+ * @returns {string} The one-line rendering of the change.
+ */
 function renderChange(entry) {
   return `${symbolForChange(entry.kind)} ${entry.path}: ${entry.detail}`
 }
