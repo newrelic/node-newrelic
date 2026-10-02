@@ -36,7 +36,9 @@ const globalIgnores = {
     'test/versioned/nextjs/app',
     'test/versioned/nextjs/app-dir',
     // Transpiled profiler fixture (checked-in .ts + generated .js/.js.map).
-    'test/integration/profiling/fixtures/'
+    'test/integration/profiling/fixtures/',
+    // Generated, committed pre-compiled config schema (npm run generate:config-validator).
+    'lib/config/schema.generated.js'
   ]
 }
 

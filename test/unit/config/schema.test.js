@@ -7,8 +7,12 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const fs = require('node:fs')
 
 const schema = require('#agentlib/config/schema.js')
+
+// The committed pre-compiled artifact, resolved relative to the schema module.
+const GENERATED_FILE = require.resolve('#agentlib/config/schema.generated.js')
 
 test('schema getter exposes the root schema', () => {
   const root = schema.schema
@@ -83,5 +87,57 @@ test('renderedSchema fully dereferences the schema', async (t) => {
 
   await t.test('caches the rendered schema across accesses', () => {
     assert.equal(schema.renderedSchema, schema.renderedSchema)
+  })
+})
+
+test('buildState builds directly from disk', async (t) => {
+  await t.test('returns the schema state plus the ajv instance and ref map', () => {
+    const state = schema.buildState()
+    assert.equal(state.schema.properties.app_name !== undefined, true, 'exposes the root schema')
+    assert.equal(typeof state.validate, 'function', 'exposes a compiled validator')
+    assert.equal(state.validate({}), true, 'the validator works')
+    assert.equal(typeof state.ajv.compile, 'function', 'exposes the live ajv instance')
+    assert.ok(state.refs['attributes.js'], 'exposes the $id-to-schema map')
+    assert.ok(state.envVarIndex.get('NEW_RELIC_LICENSE_KEY'), 'builds the env var index')
+  })
+
+  await t.test('forwards ajv options to the constructor', () => {
+    // `code.source` makes ajv retain the generated validation source, which the
+    // pre-compiled schema generator serializes; the default build does not.
+    const state = schema.buildState({ code: { source: true } })
+    assert.equal(state.ajv.opts.code.source, true, 'the option reached the ajv instance')
+  })
+
+  await t.test('does not share state with the cached build', () => {
+    assert.notEqual(schema.buildState(), schema.buildState(), 'each call is independent')
+  })
+})
+
+test('renderNode inlines a $ref against a resolver', () => {
+  const block = { $id: 'block.js', $schema: 'x', type: 'object' }
+  const resolveRef = (ref) => (ref === 'block.js' ? block : undefined)
+  const rendered = schema.renderNode({ properties: { a: { $ref: 'block.js' } } }, resolveRef)
+
+  assert.equal(rendered.properties.a.$ref, undefined, 'the $ref is replaced')
+  assert.equal(rendered.properties.a.type, 'object', 'the resolved schema is inlined')
+  assert.equal(rendered.properties.a.$id, undefined, 'inlined block $id is stripped')
+  assert.equal(rendered.properties.a.$schema, undefined, 'inlined block $schema is stripped')
+})
+
+test('static config schema is in sync with the schema sources', async (t) => {
+  const REMEDY =
+    'The committed static config schema is stale. Run ' +
+    '`npm run generate:config-validator` and commit lib/config/schema.generated.js.'
+
+  await t.test('the committed artifact exists', () => {
+    assert.equal(fs.existsSync(GENERATED_FILE), true, `lib/config/schema.generated.js is missing. ${REMEDY}`)
+  })
+
+  await t.test('regenerating produces no change', () => {
+    // Generation is deterministic, so a fresh render must match the committed
+    // file byte for byte. A mismatch means a schema block under
+    // lib/config/schemas/ changed without the artifact being regenerated.
+    const committed = fs.readFileSync(GENERATED_FILE, 'utf8')
+    assert.equal(schema.render(), committed, REMEDY)
   })
 })
