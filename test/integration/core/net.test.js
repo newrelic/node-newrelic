@@ -200,3 +200,106 @@ test('createServer and connect', function createServerTest(t, end) {
     }
   })
 })
+
+test('connect outside a transaction', function outsideTransactionTest(t, end) {
+  const { agent } = t.nr
+
+  const server = net.createServer(function connectionHandler(socket) {
+    socket.end()
+  })
+
+  t.after(function () {
+    server.close()
+  })
+
+  server.listen(0, function listening() {
+    const socket = net.connect({ port: server.address().port })
+    assert.equal(agent.getTransaction(), null, 'should not be in a transaction')
+    assert.equal(Object.hasOwn(socket, 'emit'), false, 'should not wrap emit')
+
+    socket.on('connect', function onConnect() {
+      assert.equal(agent.getTransaction(), null, 'should not be in a transaction')
+    })
+    socket.on('close', function onClose() {
+      end()
+    })
+  })
+})
+
+test('listen and close callbacks', function listenCloseTest(t, end) {
+  const { agent } = t.nr
+
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
+    const server = net.createServer()
+
+    server.listen(0, function listening() {
+      assert.equal(id(agent.getTransaction()), id(transaction), 'listen should maintain tx')
+
+      server.close(function closed() {
+        assert.equal(id(agent.getTransaction()), id(transaction), 'close should maintain tx')
+        end()
+      })
+    })
+  })
+})
+
+test('Socket#connect with port, host, and callback', function socketConnectTest(t, end) {
+  const { agent } = t.nr
+
+  const server = net.createServer(function connectionHandler(socket) {
+    socket.end()
+  })
+
+  t.after(function () {
+    server.close()
+  })
+
+  server.listen(0, '127.0.0.1', function listening() {
+    const { port } = server.address()
+
+    helper.runInTransaction(agent, function transactionWrapper(transaction) {
+      const socket = new net.Socket()
+      socket.connect(port, '127.0.0.1', function onConnect() {
+        assert.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
+        assert.equal(socket.remotePort, port, 'should connect to the given port')
+        assert.equal(socket.remoteAddress, '127.0.0.1', 'should connect to the given host')
+
+        const children = transaction.trace.getChildren(transaction.trace.root.id)
+        const connectSegment = children.find((child) => child.name === 'net.Socket.connect')
+        assert.ok(connectSegment, 'should create a net.Socket.connect segment')
+        assert.ok(connectSegment.timer.touched, 'connect should started and ended')
+
+        socket.end()
+        end()
+      })
+    })
+  })
+})
+
+test('does not instrument when net is disabled', function disabledTest(t, end) {
+  helper.unloadAgent(t.nr.agent)
+  const agent = helper.instrumentMockedAgent({ instrumentation: { net: { enabled: false } } })
+  t.nr.agent = agent
+
+  const server = net.createServer(function connectionHandler(socket) {
+    socket.end()
+  })
+
+  t.after(function () {
+    server.close()
+  })
+
+  server.listen(0, function listening() {
+    helper.runInTransaction(agent, function transactionWrapper(transaction) {
+      const socket = net.connect({ port: server.address().port })
+      assert.equal(Object.hasOwn(socket, 'emit'), false, 'should not wrap emit')
+
+      socket.on('close', function onClose() {
+        const children = transaction.trace.getChildren(transaction.trace.root.id)
+        const netSegments = children.filter((child) => child.name.startsWith('net.'))
+        assert.equal(netSegments.length, 0, 'should not create net segments')
+        end()
+      })
+    })
+  })
+})
