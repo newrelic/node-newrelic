@@ -11,6 +11,7 @@ const helper = require('../../lib/agent_helper')
 const { createServer } = require('../../lib/undici-mock-server')
 const assert = require('node:assert')
 const { PARTIAL_TYPES } = require('../../../lib/transaction/index')
+const PartialTrace = require('../../../lib/transaction/trace/partial-trace')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent({
@@ -197,9 +198,8 @@ test('should drop all span events if partial granularity is enabled with reduced
 
   await helper.runInTransaction(agent, async (tx) => {
     // Force tx to be partial
-    tx.partialTrace = true
     tx.partialType = PARTIAL_TYPES.REDUCED
-    tx.createPartialTrace()
+    tx.partialTrace = new PartialTrace(tx)
 
     const { status } = await fetch(`${REQUEST_URL}/post`, {
       method: 'POST',
@@ -234,9 +234,8 @@ test('should drop all span events if partial granularity is enabled with compact
 
   await helper.runInTransaction(agent, async (tx) => {
     // Force tx to be partial
-    tx.partialTrace = true
     tx.partialType = PARTIAL_TYPES.COMPACT
-    tx.createPartialTrace()
+    tx.partialTrace = new PartialTrace(tx)
 
     const { status } = await fetch(`${REQUEST_URL}/post`, {
       method: 'POST',
@@ -271,9 +270,8 @@ test('should drop all span events if partial granularity is enabled with essenti
 
   await helper.runInTransaction(agent, async (tx) => {
     // Force tx to be partial
-    tx.partialTrace = true
     tx.partialType = PARTIAL_TYPES.ESSENTIAL
-    tx.createPartialTrace()
+    tx.partialTrace = new PartialTrace(tx)
 
     const { status } = await fetch(`${REQUEST_URL}/post`, {
       method: 'POST',

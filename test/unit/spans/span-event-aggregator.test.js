@@ -12,6 +12,7 @@ const helper = require('../../lib/agent_helper')
 const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 const SpanLink = require('#agentlib/spans/span-link.js')
+const PartialTrace = require('#agentlib/transaction/trace/partial-trace.js')
 const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 
 const RUN_ID = 1337
@@ -428,7 +429,7 @@ test('SpanAggregator', async (t) => {
       tx.priority = 42
       tx.sampled = true
       tx.partialType = PARTIAL_TYPES.REDUCED
-      tx.createPartialTrace()
+      tx.partialTrace = new PartialTrace(tx)
       const segment = agent.tracer.getSegment()
 
       assert.equal(spanEventAggregator.length, 0)
@@ -452,7 +453,7 @@ test('SpanAggregator', async (t) => {
       tx.priority = 42
       tx.sampled = true
       tx.partialType = PARTIAL_TYPES.REDUCED
-      tx.createPartialTrace()
+      tx.partialTrace = new PartialTrace(tx)
       const segment = agent.tracer.getSegment()
 
       assert.equal(spanEventAggregator.length, 0)
