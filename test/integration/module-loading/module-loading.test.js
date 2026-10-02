@@ -124,17 +124,23 @@ test('shim.require() should play well with multiple test runs', (t) => {
 
 test('Should create usage metric onRequire for built-in', (t) => {
   const { agent } = t.nr
-  const domainMetric = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/domain`
-  // eslint-disable-next-line n/no-deprecated-api
-  require('domain')
+  const builtinMetric = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/dgram`
+  // Core modules are instrumented eagerly and never hit the require hook, so
+  // register one lazily to exercise usage tracking for a built-in.
+  shimmer.registerInstrumentation({
+    moduleName: 'dgram',
+    type: null,
+    onRequire: () => {}
+  })
 
-  const onRequireMetric = agent.metrics._metrics.unscoped[domainMetric]
+  require('dgram')
+
+  const onRequireMetric = agent.metrics._metrics.unscoped[builtinMetric]
 
   assert.ok(onRequireMetric)
   assert.equal(onRequireMetric.callCount, 1)
-  const domainMetrics = Object.keys(agent.metrics._metrics.unscoped)
-  // 3 of these are FullGranularity supportability metrics
-  assert.equal(domainMetrics.length, 4, 'should not log a version metric for a built-in')
+  const versionMetrics = Object.keys(agent.metrics._metrics.unscoped).filter((name) => name.startsWith(`${builtinMetric}/Version/`))
+  assert.deepEqual(versionMetrics, [], 'should not log a version metric for a built-in')
 })
 
 test('should instrument a local package', (t, end) => {
