@@ -1,3 +1,30 @@
+### v14.6.0 (2026-10-05)
+
+#### Features
+
+* Added a pre-compiled config schema validator ([#4320](https://github.com/newrelic/node-newrelic/pull/4320)) ([c965a33](https://github.com/newrelic/node-newrelic/commit/c965a33764974989929deddf687b099eef571346))
+
+#### Bug fixes
+
+* Bootstrap attribute filter from actual parsed config ([#4319](https://github.com/newrelic/node-newrelic/pull/4319)) ([724fb70](https://github.com/newrelic/node-newrelic/commit/724fb70de06604d7be1610c32af269db2261bbfc))
+* Ended the transaction and recorded the error when an Azure Functions handler throws ([#4310](https://github.com/newrelic/node-newrelic/pull/4310)) ([918ef55](https://github.com/newrelic/node-newrelic/commit/918ef55ea3d1877c42912c6a464673dcc6aa159c))
+
+#### Code refactoring
+
+* Migrated `fs` instrumentation over to subscriber-based ([#4317](https://github.com/newrelic/node-newrelic/pull/4317)) ([4711f4c](https://github.com/newrelic/node-newrelic/commit/4711f4c621b8443dbabf4ae4db8e2e9c4ba75dec))
+* Migrated core `globals` instrumentation to subscriber-based ([#4300](https://github.com/newrelic/node-newrelic/pull/4300)) ([7827797](https://github.com/newrelic/node-newrelic/commit/7827797cf21755358fded39748b507e9737e4064))
+* Refactored the Transaction class and affected other entities ([#4246](https://github.com/newrelic/node-newrelic/pull/4246)) ([b965d8e](https://github.com/newrelic/node-newrelic/commit/b965d8ee6b35338759194e7d75020dd92b9fc105))
+
+#### Documentation
+
+* Updated compatibility report ([#4305](https://github.com/newrelic/node-newrelic/pull/4305)) ([fb5a184](https://github.com/newrelic/node-newrelic/commit/fb5a184d8b4088a1747f25be58445f818bb36128))
+
+#### Miscellaneous chores
+
+* Migrated configuration to JSON Schema ([#4284](https://github.com/newrelic/node-newrelic/pull/4284)) ([39cdebc](https://github.com/newrelic/node-newrelic/commit/39cdebc4f3823e3169bdf184624f370963a356bf))
+* Migrated configuration to JSON Schema ([#4284](https://github.com/newrelic/node-newrelic/issues/4284)) ([#4325](https://github.com/newrelic/node-newrelic/pull/4325)) ([1f1ecfe](https://github.com/newrelic/node-newrelic/commit/1f1ecfe00fd287d9ba358d2bd9eac738002cf050))
+* update agent-types 1.0.0 ([#4307](https://github.com/newrelic/node-newrelic/pull/4307)) ([175a4ba](https://github.com/newrelic/node-newrelic/commit/175a4ba71998f0b8ab87f120d0b404e0994d17ad))
+
 ### v14.5.1 (2026-09-24)
 
 #### Bug fixes
