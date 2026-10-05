@@ -82,7 +82,13 @@ test('when overriding the config file location via NEW_RELIC_HOME', async (t) =>
       configuration = Config.initialize()
     })
 
-    assert.ok(!configuration.newrelic_home)
+    // `newrelic_home` gets set by the `NEW_RELIC_HOME` environment variable
+    // and is not an indicator of anything other than the environment
+    // variable being set. When a config file is actually loaded,
+    // `config_file_path` will be set to the one that was loaded. Otherwise, it
+    // will not be defined.
+    assert.equal(configuration.newrelic_home, '/xxxnoexist/nofile')
+    assert.equal(configuration.config_file_path, null)
     assert.ok(configuration.error_collector)
     assert.equal(configuration.error_collector.enabled, true)
     end()

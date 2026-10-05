@@ -1226,7 +1226,7 @@ test('getAdaptiveSampler', async (t) => {
   })
 
   await t.test('should use config values for sampler initialization', (t) => {
-    t.nr.agent.config.sampling_target = 25
+    t.nr.agent.config.setSamplingTarget(25)
     t.nr.agent.config.sampling_target_period_in_seconds = 150
     const samplers = new Samplers(t.nr.agent)
     samplers.adaptiveSampler = null

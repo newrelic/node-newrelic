@@ -34,10 +34,11 @@ test('should create a fake span from segment and transaction', () => {
   })
 })
 
-test('should add attributes to the segment', () => {
+test('should add attributes to the segment', (t) => {
+  const { agent } = t.nr
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -67,10 +68,11 @@ test('should add attributes to the segment', () => {
   assert.equal(instance, span)
 })
 
-test('addEvent should add a timed event to the segment', () => {
+test('addEvent should add a timed event to the segment', (t) => {
+  const { agent } = t.nr
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -92,10 +94,11 @@ test('addEvent should add a timed event to the segment', () => {
   assert.deepEqual(agentAttrs, { bar: 'baz' })
 })
 
-test('addEvent should add a timed event with no attributes given', () => {
+test('addEvent should add a timed event with no attributes given', (t) => {
+  const { agent } = t.nr
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -109,10 +112,11 @@ test('addEvent should add a timed event with no attributes given', () => {
   assert.deepEqual(agentAttrs, {})
 })
 
-test('addEvent handles (string, number) passed in', () => {
+test('addEvent handles (string, number) passed in', (t) => {
+  const { agent } = t.nr
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -130,10 +134,11 @@ test('addEvent handles (string, number) passed in', () => {
   assert.deepEqual(agentAttrs, {})
 })
 
-test('should add links to spans', () => {
+test('should add links to spans', (t) => {
+  const { agent } = t.nr
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -162,7 +167,8 @@ test('should add links to spans', () => {
   assert.equal(instance, span)
 })
 
-test('setStatus should log warning', () => {
+test('setStatus should log warning', (t) => {
+  const { agent } = t.nr
   const logs = []
   const logger = {
     warn(msg, name) {
@@ -171,7 +177,7 @@ test('setStatus should log warning', () => {
   }
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -188,7 +194,8 @@ test('setStatus should log warning', () => {
   ]])
 })
 
-test('updateName should log warning', () => {
+test('updateName should log warning', (t) => {
+  const { agent } = t.nr
   const logs = []
   const logger = {
     warn(msg, name) {
@@ -197,7 +204,7 @@ test('updateName should log warning', () => {
   }
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -214,7 +221,8 @@ test('updateName should log warning', () => {
   ]])
 })
 
-test('end should log warning', () => {
+test('end should log warning', (t) => {
+  const { agent } = t.nr
   const logs = []
   const logger = {
     warn(msg, name) {
@@ -223,7 +231,7 @@ test('end should log warning', () => {
   }
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -240,10 +248,11 @@ test('end should log warning', () => {
   ]])
 })
 
-test('recording returns true', () => {
+test('recording returns true', (t) => {
+  const { agent } = t.nr
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -253,10 +262,11 @@ test('recording returns true', () => {
   assert.deepEqual(span.isRecording(), true)
 })
 
-test('recordException should add a timed event from a string exception', () => {
+test('recordException should add a timed event from a string exception', (t) => {
+  const { agent } = t.nr
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -273,10 +283,11 @@ test('recordException should add a timed event from a string exception', () => {
   assert.deepEqual(agentAttrs, { 'exception.message': 'a message' })
 })
 
-test('recordException should add a timed event from an Error exception', () => {
+test('recordException should add a timed event from an Error exception', (t) => {
+  const { agent } = t.nr
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -295,10 +306,11 @@ test('recordException should add a timed event from an Error exception', () => {
   assert.ok(error.stack.startsWith(agentAttrs['exception.stacktrace']))
 })
 
-test('recordException should prefer exception.code over exception.name for the exception type', () => {
+test('recordException should prefer exception.code over exception.name for the exception type', (t) => {
+  const { agent } = t.nr
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true
@@ -316,7 +328,8 @@ test('recordException should prefer exception.code over exception.name for the e
   assert.equal(agentAttrs['exception.message'], 'file not found')
 })
 
-test('recordException should log a warning when the exception has no usable information', () => {
+test('recordException should log a warning when the exception has no usable information', (t) => {
+  const { agent } = t.nr
   const logs = []
   const logger = {
     warn(msg, name) {
@@ -325,7 +338,7 @@ test('recordException should log a warning when the exception has no usable info
   }
   const segment = new TraceSegment({
     id: 'id',
-    config: { attributes: {} },
+    config: agent.config,
     name: 'test-segment',
     parentId: 1,
     collect: true

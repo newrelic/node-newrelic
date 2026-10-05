@@ -9,6 +9,7 @@ const Config = require('../../../lib/config')
 
 class TestConfigLogger {
   #logs = {
+    debug: [],
     error: [],
     info: [],
     trace: [],
@@ -19,6 +20,10 @@ class TestConfigLogger {
 
   child() {
     return this
+  }
+
+  debug(...args) {
+    this.#logs.debug.push(args)
   }
 
   error(...args) {
@@ -57,7 +62,7 @@ function idempotentEnv(envConfig, initialConfig, callback) {
   })
   try {
     const loggerInstance = new TestConfigLogger()
-    const tc = Config.initialize(initialConfig, { loggerInstance })
+    const tc = Config.initialize(initialConfig, { logger: loggerInstance })
     callback(tc, loggerInstance)
   } finally {
     Object.keys(envConfig).forEach((finalKey) => {

@@ -229,7 +229,8 @@ test('SpanAggregator', async (t) => {
             spanId: 'span1',
             traceId: 'trace1'
           },
-          timestamp
+          timestamp,
+          config: child1Segment.config
         }))
 
         const child2Segment = agent.tracer.createSegment({

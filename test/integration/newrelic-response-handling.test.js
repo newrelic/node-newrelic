@@ -51,7 +51,7 @@ test('New Relic response code handling', async (t) => {
           slow_sql: { enabled: true },
           transaction_tracer: {
             record_sql: 'obfuscated',
-            explain_threshold: Number.MIN_VALUE // force SQL traces
+            explain_threshold: Number.MIN_SAFE_INTEGER // force SQL traces
           },
           utilization: {
             detect_aws: false

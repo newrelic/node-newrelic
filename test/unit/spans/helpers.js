@@ -30,7 +30,8 @@ function createSpanLink({ segment, spanId, traceId, linkSpanId, linkTraceId, tes
       spanId,
       traceId
     },
-    timestamp: TIMESTAMP
+    timestamp: TIMESTAMP,
+    config: segment.config
   })
   segment.spanLinks.push(link)
   return link

@@ -7,19 +7,21 @@
 
 const benchmark = require('#testlib/benchmark.js')
 
+const Config = require('#agentlib/config/index.js')
 const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('#agentlib/attributes/prioritized.js')
 const AttributeFilter = require('#agentlib/config/attribute-filter.js')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
 const SEGMENT_SCOPE = 'segment'
+const config = Config.initialize({ app_name: 'bench', license_key: 'a'.repeat(40) })
 
-const highPriorityAttributes = new PrioritizedAttributes(SEGMENT_SCOPE, 64)
+const highPriorityAttributes = new PrioritizedAttributes({ scope: SEGMENT_SCOPE, limit: 64, config })
 batchAddAttributes(highPriorityAttributes, 64, ATTRIBUTE_PRIORITY.HIGH)
 
-const lowPriorityAttributes = new PrioritizedAttributes(SEGMENT_SCOPE, 64)
+const lowPriorityAttributes = new PrioritizedAttributes({ scope: SEGMENT_SCOPE, limit: 64, config })
 batchAddAttributes(lowPriorityAttributes, 64, ATTRIBUTE_PRIORITY.LOW)
 
-const halfLowHalfHighPriorityAttributes = new PrioritizedAttributes(SEGMENT_SCOPE, 64)
+const halfLowHalfHighPriorityAttributes = new PrioritizedAttributes({ scope: SEGMENT_SCOPE, limit: 64, config })
 batchAddAttributes(halfLowHalfHighPriorityAttributes, 32, ATTRIBUTE_PRIORITY.LOW)
 batchAddAttributes(halfLowHalfHighPriorityAttributes, 32, ATTRIBUTE_PRIORITY.HIGH)
 
@@ -74,7 +76,7 @@ suite.add({
 // Models a span's attribute container seeded near capacity with a mix of
 // priorities, then exercising the realistic add/overwrite/drop paths.
 const SEED_COUNT = 60
-const seededMixed = new PrioritizedAttributes(SEGMENT_SCOPE, 64)
+const seededMixed = new PrioritizedAttributes({ scope: SEGMENT_SCOPE, limit: 64, config })
 for (let i = 0; i < SEED_COUNT; i++) {
   const priority = i % 2 === 0 ? ATTRIBUTE_PRIORITY.HIGH : ATTRIBUTE_PRIORITY.LOW
   seededMixed.addAttribute(DESTINATIONS.SPAN_EVENT, `seed.${i}`, i, false, priority)

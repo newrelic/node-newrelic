@@ -185,28 +185,14 @@ test('conditional application of server side settings', async (t) => {
 
 test('coerces other settings', async (t) => {
   await t.test('coerces other settings', async (t) => {
-    t.beforeEach((ctx) => {
-      ctx.nr = {}
-
-      ctx.nr.orig = Config.prototype._applyHighSecurity
-      ctx.nr.called = false
-      Config.prototype._applyHighSecurity = () => {
-        ctx.nr.called = true
-      }
+    await t.test('should apply if high_security is on', () => {
+      const config = new Config({ high_security: true })
+      assert.equal(config.attributes.exclude.includes('request.parameters.*'), true)
     })
 
-    t.afterEach((ctx) => {
-      Config.prototype._applyHighSecurity = ctx.nr.orig
-    })
-
-    await t.test('should call if high_security is on', (t) => {
-      new Config({ high_security: true }) // eslint-disable-line no-new
-      assert.equal(t.nr.called, true)
-    })
-
-    await t.test('should not call if high_security is off', (t) => {
-      new Config({ high_security: false }) // eslint-disable-line no-new
-      assert.equal(t.nr.called, false)
+    await t.test('should not apply if high_security is off', () => {
+      const config = new Config({ high_security: false })
+      assert.equal(config.attributes.exclude.includes('request.parameters.*'), false)
     })
   })
 
@@ -270,10 +256,11 @@ test('coerces other settings', async (t) => {
     })
 
     await t.test('should detect no problems', () => {
-      const config = new Config({ high_security: true })
-      config.ssl = true
-      config.attributes.include = ['some val']
-      config._applyHighSecurity()
+      const config = new Config({
+        high_security: true,
+        ssl: true,
+        attributes: { include: ['some val'] }
+      })
       assert.equal(config.ssl, true)
       assert.deepEqual(config.attributes.include, [])
     })

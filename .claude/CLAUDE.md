@@ -6,6 +6,10 @@ third party modules.
 ## Conventions
 - Code style is enforced using eslint and should be written according to its configuration
 - Tests are written using the `node:test` module
+- Always use the `node:` prefix when requiring/importing Node.js core modules
+(e.g. `require('node:fs')`, not `require('fs')`)
+- Write JSDoc `@param` and `@returns` descriptions as complete sentences: start with
+a capital letter and end with a period (e.g. `@param {object} node The schema node to inspect.`)
 - Create new source files without a copyright preamble, then run `npm run lint:fix`
 to insert it. Do not hand-write the header: the `@newrelic/eslint-config` header rule
 only adds a missing header (stamping the current year) and will not correct an

@@ -122,7 +122,7 @@ test('Tracer', async function (t) {
           }
 
           assert.throws(() => {
-            const segment = new Segment({ name: 'name', isRoot: false, root: trans.trace.root })
+            const segment = new Segment({ name: 'name', isRoot: false, root: trans.trace.root, config: agent.config })
             let context = tracer.getContext()
             context = context.enterSegment({ segment })
             const fn = tracer.bindFunction(wrapMe, context)

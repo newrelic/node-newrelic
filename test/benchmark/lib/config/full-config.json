@@ -1,0 +1,634 @@
+{
+  "newrelic_home": "sample",
+  "app_name": [
+    "Benchmark App One",
+    "Benchmark App Two"
+  ],
+  "license_key": "0000111122223333444455556666777788889999",
+  "host": "sample",
+  "port": 443,
+  "ssl": true,
+  "proxy": "",
+  "proxy_host": "sample",
+  "proxy_port": "sample",
+  "proxy_user": "sample",
+  "proxy_pass": "sample",
+  "trusted_account_key": "sample",
+  "primary_application_id": "sample",
+  "account_id": "sample",
+  "certificates": [
+    "sample-a",
+    "sample-b"
+  ],
+  "agent_enabled": false,
+  "agent_control": {
+    "enabled": true,
+    "health": {
+      "delivery_location": "file:///newrelic/apm/health",
+      "frequency": 5
+    }
+  },
+  "apdex_t": 0.1,
+  "allow_all_headers": true,
+  "compressed_content_encoding": "gzip",
+  "attributes": {
+    "enabled": false,
+    "value_size_limit": 256,
+    "exclude": [
+      "sample-a",
+      "sample-b"
+    ],
+    "include": [
+      "sample-a",
+      "sample-b"
+    ],
+    "include_enabled": false,
+    "filter_cache_limit": 1000
+  },
+  "logging": {
+    "level": "info",
+    "filepath": "stdout",
+    "enabled": false,
+    "diagnostics": true
+  },
+  "audit_log": {
+    "enabled": true,
+    "endpoints": [
+      "sample-a",
+      "sample-b"
+    ]
+  },
+  "error_collector": {
+    "attributes": {
+      "enabled": false,
+      "exclude": [
+        "sample-a",
+        "sample-b"
+      ],
+      "include": [
+        "sample-a",
+        "sample-b"
+      ]
+    },
+    "enabled": false,
+    "ignore_status_codes": [
+      404
+    ],
+    "capture_events": false,
+    "max_event_samples_stored": 100,
+    "expected_classes": [
+      "sample-a",
+      "sample-b"
+    ],
+    "expected_messages": {},
+    "expected_status_codes": [
+      "sample-a",
+      "sample-b"
+    ],
+    "ignore_classes": [
+      "sample-a",
+      "sample-b"
+    ],
+    "ignore_messages": {}
+  },
+  "strip_exception_messages": {
+    "enabled": true
+  },
+  "cloud": {
+    "aws": {
+      "account_id": 1
+    }
+  },
+  "utilization": {
+    "detect_aws": false,
+    "detect_pcf": false,
+    "detect_azure": false,
+    "detect_azurefunction": false,
+    "detect_docker": false,
+    "detect_gcp": false,
+    "detect_kubernetes": false,
+    "logical_processors": 0.5,
+    "billing_hostname": "sample",
+    "total_ram_mib": 1,
+    "gcp_use_instance_as_host": false,
+    "gcp_cloud_run": {
+      "include_revision_in_host": true,
+      "use_instance_as_host": false
+    }
+  },
+  "transaction_tracer": {
+    "attributes": {
+      "enabled": false,
+      "exclude": [
+        "sample-a",
+        "sample-b"
+      ],
+      "include": [
+        "sample-a",
+        "sample-b"
+      ]
+    },
+    "enabled": false,
+    "transaction_threshold": 0.5,
+    "top_n": 20,
+    "record_sql": "obfuscated",
+    "explain_threshold": 500
+  },
+  "rules": {
+    "name": [
+      {
+        "key": "value"
+      }
+    ],
+    "ignore": [
+      "^/socket.io/.*/xhr-polling/"
+    ]
+  },
+  "enforce_backstop": false,
+  "browser_monitoring": {
+    "attributes": {
+      "enabled": true,
+      "exclude": [
+        "sample-a",
+        "sample-b"
+      ],
+      "include": [
+        "sample-a",
+        "sample-b"
+      ]
+    },
+    "enable": false,
+    "debug": true
+  },
+  "api": {
+    "custom_attributes_enabled": false,
+    "custom_events_enabled": false,
+    "notice_error_enabled": false
+  },
+  "transaction_events": {
+    "attributes": {
+      "enabled": false,
+      "exclude": [
+        "sample-a",
+        "sample-b"
+      ],
+      "include": [
+        "sample-a",
+        "sample-b"
+      ]
+    },
+    "enabled": false,
+    "max_samples_stored": 10000
+  },
+  "custom_insights_events": {
+    "enabled": false,
+    "max_samples_stored": 3000
+  },
+  "process_host": {
+    "display_name": "sample",
+    "ipv_preference": "4"
+  },
+  "high_security": true,
+  "labels": {},
+  "slow_sql": {
+    "enabled": true,
+    "max_samples": 10
+  },
+  "datastore_tracer": {
+    "instance_reporting": {
+      "enabled": false
+    },
+    "database_name_reporting": {
+      "enabled": false
+    }
+  },
+  "grpc": {
+    "record_errors": false,
+    "ignore_status_codes": [
+      "sample-a",
+      "sample-b"
+    ]
+  },
+  "span_events": {
+    "enabled": false,
+    "attributes": {
+      "enabled": false,
+      "exclude": [
+        "sample-a",
+        "sample-b"
+      ],
+      "include": [
+        "sample-a",
+        "sample-b"
+      ]
+    },
+    "max_samples_stored": 2000
+  },
+  "transaction_segments": {
+    "attributes": {
+      "enabled": false,
+      "exclude": [
+        "sample-a",
+        "sample-b"
+      ],
+      "include": [
+        "sample-a",
+        "sample-b"
+      ]
+    }
+  },
+  "distributed_tracing": {
+    "enabled": false,
+    "exclude_newrelic_header": false,
+    "sampler": {
+      "root": "adaptive",
+      "remote_parent_sampled": {
+        "trace_id_ratio_based": {
+          "ratio": 0.5
+        }
+      },
+      "remote_parent_not_sampled": {
+        "adaptive": {
+          "sampling_target": 20
+        }
+      },
+      "adaptive_sampling_target": 10,
+      "full_granularity": {
+        "enabled": false
+      },
+      "partial_granularity": {
+        "enabled": true,
+        "type": "essential",
+        "root": "adaptive",
+        "remote_parent_sampled": "adaptive",
+        "remote_parent_not_sampled": "adaptive"
+      }
+    }
+  },
+  "message_tracer": {
+    "segment_parameters": {
+      "enabled": false
+    }
+  },
+  "infinite_tracing": {
+    "trace_observer": {
+      "host": "sample",
+      "port": 443,
+      "insecure": true
+    },
+    "span_events": {
+      "queue_size": 10000,
+      "batch_size": 750
+    },
+    "batching": false,
+    "compression": false
+  },
+  "profiling": {
+    "enabled": true,
+    "include": [
+      "cpu",
+      "heap"
+    ],
+    "delay": 0,
+    "duration": 0,
+    "source_mapping": {
+      "enabled": true
+    }
+  },
+  "apm_lambda_mode": true,
+  "serverless_mode": {
+    "enabled": true
+  },
+  "plugins": {
+    "native_metrics": {
+      "enabled": false
+    }
+  },
+  "application_logging": {
+    "enabled": false,
+    "forwarding": {
+      "enabled": false,
+      "max_samples_stored": 10000,
+      "labels": {
+        "enabled": true,
+        "exclude": [
+          "sample-a",
+          "sample-b"
+        ]
+      }
+    },
+    "metrics": {
+      "enabled": false
+    },
+    "local_decorating": {
+      "enabled": true
+    }
+  },
+  "ignore_server_configuration": true,
+  "code_level_metrics": {
+    "enabled": false
+  },
+  "url_obfuscation": {
+    "enabled": true,
+    "regex": {
+      "pattern": "sample",
+      "flags": "",
+      "replacement": ""
+    }
+  },
+  "security": {
+    "enabled": true,
+    "agent": {
+      "enabled": true
+    },
+    "mode": "IAST",
+    "validator_service_url": "wss://csec.nr-data.net",
+    "detection": {
+      "rci": {
+        "enabled": false
+      },
+      "rxss": {
+        "enabled": false
+      },
+      "deserialization": {
+        "enabled": false
+      }
+    },
+    "iast_test_identifier": "sample",
+    "scan_controllers": {
+      "iast_scan_request_rate_limit": 3600,
+      "scan_instance_count": 0
+    },
+    "scan_schedule": {
+      "delay": 0,
+      "duration": 0,
+      "schedule": "sample",
+      "always_sample_traces": true
+    },
+    "exclude_from_iast_scan": {
+      "api": [
+        "sample-a",
+        "sample-b"
+      ],
+      "http_request_parameters": {
+        "header": [
+          "sample-a",
+          "sample-b"
+        ],
+        "query": [
+          "sample-a",
+          "sample-b"
+        ],
+        "body": [
+          "sample-a",
+          "sample-b"
+        ]
+      },
+      "iast_detection_category": {
+        "insecure_settings": true,
+        "invalid_file_access": true,
+        "sql_injection": true,
+        "nosql_injection": true,
+        "ldap_injection": true,
+        "javascript_injection": true,
+        "command_injection": true,
+        "xpath_injection": true,
+        "ssrf": true,
+        "rxss": true
+      }
+    }
+  },
+  "heroku": {
+    "use_dyno_names": false
+  },
+  "worker_threads": {
+    "enabled": true
+  },
+  "ai_monitoring": {
+    "enabled": true,
+    "record_content": {
+      "enabled": false
+    },
+    "streaming": {
+      "enabled": false
+    }
+  },
+  "instrumentation": {
+    "@prisma/client": {
+      "enabled": false
+    },
+    "aws-sdk": {
+      "enabled": false
+    },
+    "next": {
+      "enabled": false
+    },
+    "restify": {
+      "enabled": false
+    },
+    "@apollo/server": {
+      "enabled": false
+    },
+    "amqplib/callback_api": {
+      "enabled": false
+    },
+    "amqplib": {
+      "enabled": false
+    },
+    "@anthropic-ai/sdk": {
+      "enabled": false
+    },
+    "@smithy/smithy-client": {
+      "enabled": false
+    },
+    "@aws-sdk/smithy-client": {
+      "enabled": false
+    },
+    "@smithy/core": {
+      "enabled": false
+    },
+    "@azure/functions": {
+      "enabled": false
+    },
+    "bluebird": {
+      "enabled": false
+    },
+    "bunyan": {
+      "enabled": false
+    },
+    "cassandra-driver": {
+      "enabled": false
+    },
+    "connect": {
+      "enabled": false
+    },
+    "@elastic/elasticsearch": {
+      "enabled": false
+    },
+    "@elastic/transport": {
+      "enabled": false
+    },
+    "@opensearch-project/opensearch": {
+      "enabled": false
+    },
+    "express": {
+      "enabled": false
+    },
+    "router": {
+      "enabled": false
+    },
+    "fastify": {
+      "enabled": false
+    },
+    "@hapi/hapi": {
+      "enabled": false
+    },
+    "@hapi/vision": {
+      "enabled": false
+    },
+    "@google/adk": {
+      "enabled": false
+    },
+    "@google/genai": {
+      "enabled": false
+    },
+    "@grpc/grpc-js": {
+      "enabled": false
+    },
+    "ioredis": {
+      "enabled": false
+    },
+    "iovalkey": {
+      "enabled": false
+    },
+    "kafkajs": {
+      "enabled": false
+    },
+    "koa": {
+      "enabled": false
+    },
+    "@langchain/core": {
+      "enabled": false
+    },
+    "@langchain/langgraph": {
+      "enabled": false
+    },
+    "@modelcontextprotocol/sdk/client/index.js": {
+      "enabled": false
+    },
+    "@modelcontextprotocol/sdk": {
+      "enabled": false
+    },
+    "memcached": {
+      "enabled": false
+    },
+    "mongodb": {
+      "enabled": false
+    },
+    "mysql": {
+      "enabled": false
+    },
+    "mysql2": {
+      "enabled": false
+    },
+    "@nestjs/core": {
+      "enabled": false
+    },
+    "@node-redis/client": {
+      "enabled": false
+    },
+    "openai": {
+      "enabled": false
+    },
+    "pg": {
+      "enabled": false
+    },
+    "pino": {
+      "enabled": false
+    },
+    "q": {
+      "enabled": false
+    },
+    "redis": {
+      "enabled": false
+    },
+    "@redis/client": {
+      "enabled": false
+    },
+    "undici": {
+      "enabled": false
+    },
+    "when": {
+      "enabled": false
+    },
+    "winston": {
+      "enabled": false
+    },
+    "child_process": {
+      "enabled": false
+    },
+    "crypto": {
+      "enabled": false
+    },
+    "dns": {
+      "enabled": false
+    },
+    "fs": {
+      "enabled": false
+    },
+    "http": {
+      "enabled": false
+    },
+    "https": {
+      "enabled": false
+    },
+    "http2": {
+      "enabled": false
+    },
+    "inspector": {
+      "enabled": false
+    },
+    "net": {
+      "enabled": false
+    },
+    "timers": {
+      "enabled": false
+    },
+    "zlib": {
+      "enabled": false
+    },
+    "domain": {
+      "enabled": false
+    }
+  },
+  "opentelemetry": {
+    "enabled": true,
+    "traces": {
+      "enabled": false
+    },
+    "logs": {
+      "enabled": false
+    },
+    "metrics": {
+      "enabled": false,
+      "export_interval": 60000,
+      "export_timeout": 10000
+    }
+  },
+  "apollo_server": {
+    "scalars": true,
+    "introspection_queries": true,
+    "service_definition_queries": true,
+    "health_check_queries": true,
+    "field_metrics": true
+  },
+  "kafka": {
+    "metrics": {
+      "cluster": {
+        "metrics": {
+          "enabled": true
+        }
+      }
+    }
+  }
+}
