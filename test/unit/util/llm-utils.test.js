@@ -28,7 +28,7 @@ const PRECEDENCE_TABLE = [
   { basic: true, enabled: UNSET, content: NA, sent: true, withContent: false, metric: BASIC_METRIC },
   { basic: true, enabled: true, content: UNSET, sent: true, withContent: true, metric: BASE_METRIC },
   { basic: true, enabled: true, content: true, sent: true, withContent: true, metric: BASE_METRIC },
-  { basic: true, enabled: true, content: false, sent: true, withContent: false, metric: BASIC_METRIC },
+  { basic: true, enabled: true, content: false, sent: true, withContent: false, metric: BASE_METRIC },
   { basic: true, enabled: false, content: NA, sent: false, withContent: false, metric: null },
   { basic: false, enabled: UNSET, content: NA, sent: false, withContent: false, metric: null },
   { basic: false, enabled: true, content: UNSET, sent: true, withContent: true, metric: BASE_METRIC },
@@ -108,22 +108,33 @@ test('default configuration sends basic telemetry without content', () => {
   assert.equal(recordedMetric(config), BASIC_METRIC)
 })
 
-test('supportability metric table', async (t) => {
-  // `ai_monitoring.enabled` is set explicitly so that `record_content.enabled`
-  // is honored. "No metric emitted" means no `/Basic` metric; the base
-  // tracking metric is still recorded because AI monitoring is enabled.
+test('supportability metric table with ai_monitoring.enabled unset', async (t) => {
+  // `record_content.enabled` only takes effect when `ai_monitoring.enabled` is
+  // `true`, so basic telemetry always records the `/Basic` metric, even when
+  // `record_content.enabled` is `true`.
   const cases = [
-    { basic: false, content: false, expected: BASE_METRIC },
-    { basic: false, content: true, expected: BASE_METRIC },
+    { basic: false, content: false, expected: null },
+    { basic: false, content: true, expected: null },
     { basic: true, content: false, expected: BASIC_METRIC },
-    { basic: true, content: true, expected: BASE_METRIC }
+    { basic: true, content: true, expected: BASIC_METRIC }
   ]
 
   for (const { basic, content, expected } of cases) {
     await t.test(`basic_telemetry=${basic}, record_content=${content}`, () => {
-      const config = buildConfig({ basic, enabled: true, content })
+      const config = buildConfig({ basic, enabled: UNSET, content })
       assert.equal(recordedMetric(config), expected)
     })
+  }
+})
+
+test('ai_monitoring.enabled = true always records the base metric', async (t) => {
+  for (const basic of [true, false]) {
+    for (const content of [UNSET, true, false]) {
+      await t.test(`basic_telemetry=${basic}, record_content=${content}`, () => {
+        const config = buildConfig({ basic, enabled: true, content })
+        assert.equal(recordedMetric(config), BASE_METRIC)
+      })
+    }
   }
 })
 
