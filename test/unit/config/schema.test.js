@@ -46,6 +46,13 @@ test('resolveRef resolves block ids', async (t) => {
   })
 })
 
+test('instrumentation block omits excluded packages', () => {
+  const block = schema.resolveRef('instrumentation.js')
+  assert.ok(block.properties.fs, 'includes a regular core subscriber')
+  assert.equal(block.properties.globals, undefined, 'globals is not configurable')
+  assert.equal(schema.resolveEnvVar('NEW_RELIC_INSTRUMENTATION_GLOBALS_ENABLED'), undefined)
+})
+
 test('resolveEnvVar maps environment names to config paths', async (t) => {
   await t.test('resolves a recognized variable to its path and node', () => {
     const resolved = schema.resolveEnvVar('NEW_RELIC_LICENSE_KEY')
