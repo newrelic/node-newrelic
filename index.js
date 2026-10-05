@@ -15,9 +15,9 @@ const { isMainThread } = require('worker_threads')
 // Load unwrapped core now to ensure it gets the freshest properties.
 require('./lib/util/unwrapped-core')
 
-const featureFlags = require('./lib/feature_flags').prerelease
+const featureFlags = require('#agentlib/feature-flags.js').prerelease
 const psemver = require('./lib/util/process-version')
-let logger = require('./lib/logger') // Gets re-loaded after initialization.
+const logger = require('./lib/logger')
 const NAMES = require('./lib/metrics/names')
 
 const pkgJSON = require('./package.json')
@@ -89,10 +89,6 @@ function initialize() {
     logger.debug('Application was invoked as %s', cliArgs.join(' '))
 
     const config = require('./lib/config').getOrCreateInstance()
-
-    // Get the initialized logger as we likely have a bootstrap logger which
-    // just pipes to stdout.
-    logger = require('./lib/logger')
 
     if (!config) {
       logger.info('No configuration detected. Not starting.')

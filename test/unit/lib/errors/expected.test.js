@@ -32,7 +32,7 @@ test('Expected Errors, when expected configuration is present', async (t) => {
       tx.statusCode = 500
 
       const apdexStats = tx.metrics.getOrCreateApdexMetric(APDEX)
-      tx._setApdex(APDEX, 1, 1)
+      tx.setApdex(APDEX, 1, 1)
       const json = apdexStats.toJSON()
       tx.end()
       assert.equal(json[2], 0, 'should be no errors in the frustrating column')
@@ -174,7 +174,7 @@ test('Expected Errors, when expected configuration is present', async (t) => {
         const api = new API(agent)
         api.noticeError(new Error('we expected something to go wrong'), {}, true)
         const apdexStats = tx.metrics.getOrCreateApdexMetric(APDEX)
-        tx._setApdex(APDEX, 1, 1)
+        tx.setApdex(APDEX, 1, 1)
         const json = apdexStats.toJSON()
         tx.end()
 
@@ -347,7 +347,7 @@ test('Expected Errors, when expected configuration is present', async (t) => {
 
       assert.equal(tx.hasOnlyExpectedErrors(), true)
 
-      tx._setApdex(APDEX, 1, 1)
+      tx.setApdex(APDEX, 1, 1)
       const json = apdexStats.toJSON()
       tx.end()
       // no errors in the frustrating column
@@ -363,7 +363,7 @@ test('Expected Errors, when expected configuration is present', async (t) => {
       const apdexStats = tx.metrics.getOrCreateApdexMetric(APDEX)
       assert.equal(tx.hasOnlyExpectedErrors(), false)
 
-      tx._setApdex(APDEX, 1, 1)
+      tx.setApdex(APDEX, 1, 1)
       const json = apdexStats.toJSON()
       tx.end()
 
@@ -394,7 +394,7 @@ test('Expected Errors, when expected configuration is present', async (t) => {
       exception = new Exception({ error })
       tx.addException(exception)
 
-      tx._setApdex(APDEX, 1, 1)
+      tx.setApdex(APDEX, 1, 1)
       const json = apdexStats.toJSON()
       tx.end()
 

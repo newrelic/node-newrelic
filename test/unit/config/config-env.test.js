@@ -87,6 +87,24 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
+  await t.test('should coerce a numeric transaction_threshold to a number', (t, end) => {
+    // Regression guard: the transaction trace aggregator only honors a custom
+    // threshold when `typeof transaction_threshold === 'number'`, so a numeric
+    // env value must be parsed to a number rather than left as a string.
+    idempotentEnv({ NEW_RELIC_TRACER_THRESHOLD: '0.5' }, (tc) => {
+      assert.strictEqual(typeof tc.transaction_tracer.transaction_threshold, 'number')
+      assert.equal(tc.transaction_tracer.transaction_threshold, 0.5)
+      end()
+    })
+  })
+
+  await t.test('should keep a non-numeric transaction_threshold as a string', (t, end) => {
+    idempotentEnv({ NEW_RELIC_TRACER_THRESHOLD: 'apdex_f' }, (tc) => {
+      assert.strictEqual(tc.transaction_tracer.transaction_threshold, 'apdex_f')
+      end()
+    })
+  })
+
   await t.test('should pick up the collector host', (t, end) => {
     idempotentEnv({ NEW_RELIC_HOST: 'localhost' }, (tc) => {
       assert.ok(tc.host)
@@ -154,7 +172,7 @@ test('when overriding configuration values via environment variables', async (t)
       assert.equal(tc.distributed_tracing.enabled, true)
       assert.equal(tc.distributed_tracing.exclude_newrelic_header, true)
       assert.equal(tc.distributed_tracing.sampler.adaptive_sampling_target, 20)
-      assert.equal(tc.sampling_target, 20)
+      assert.equal(tc.getSamplingTarget(), 20)
       end()
     })
   })
@@ -1085,15 +1103,13 @@ test('when overriding configuration values via environment variables', async (t)
         NEW_RELIC_INSTRUMENTATION_IOREDIS_ENABLED: 'false',
         'NEW_RELIC_INSTRUMENTATION_@GRPC/GRPC-JS_ENABLED': 'false',
         NEW_RELIC_INSTRUMENTATION_HTTP_ENABLED: 'false',
-        NEW_RELIC_INSTRUMENTATION_UNDICI_ENABLED: 'false',
-        NEW_RELIC_INSTRUMENTATION_DOMAIN_ENABLED: 'false',
+        NEW_RELIC_INSTRUMENTATION_UNDICI_ENABLED: 'false'
       }
       idempotentEnv(env, (config) => {
         assert.equal(config.instrumentation.ioredis.enabled, false)
         assert.equal(config.instrumentation['@grpc/grpc-js'].enabled, false)
         assert.equal(config.instrumentation.http.enabled, false)
         assert.equal(config.instrumentation.undici.enabled, false)
-        assert.equal(config.instrumentation.domain.enabled, false)
         end()
       })
     })

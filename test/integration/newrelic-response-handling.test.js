@@ -51,7 +51,7 @@ test('New Relic response code handling', async (t) => {
           slow_sql: { enabled: true },
           transaction_tracer: {
             record_sql: 'obfuscated',
-            explain_threshold: Number.MIN_VALUE // force SQL traces
+            explain_threshold: Number.MIN_SAFE_INTEGER // force SQL traces
           },
           utilization: {
             detect_aws: false
@@ -81,8 +81,11 @@ test('New Relic response code handling', async (t) => {
         testClock.restore()
         if (!nock.isDone()) {
           console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-          nock.cleanAll()
         }
+        // Always clear the global nock interceptor registry. Leaving consumed
+        // interceptors registered makes nock's request matching grow linearly
+        // across the 160 inner tests, slowing later tests progressively.
+        nock.cleanAll()
 
         nock.enableNetConnect()
       })

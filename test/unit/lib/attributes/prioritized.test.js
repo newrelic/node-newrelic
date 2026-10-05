@@ -26,15 +26,17 @@ test('#addAttribute', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('adds an attribute to instance', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
+  await t.test('adds an attribute to instance', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'test', 'success')
     const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
 
     assert.equal(attributes.test, 'success')
   })
 
-  await t.test('does not add attribute if key length limit is exceeded', () => {
+  await t.test('does not add attribute if key length limit is exceeded', (t) => {
+    const { agent } = t.nr
     const tooLong = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
@@ -42,7 +44,7 @@ test('#addAttribute', async (t) => {
       'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
     ].join(' ')
 
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, tooLong, 'will fail')
 
     assert.equal(inst.has(tooLong), false)
@@ -50,8 +52,18 @@ test('#addAttribute', async (t) => {
 })
 
 test('#addAttribute - high priority', async (t) => {
-  await t.test('should overwrite existing high priority attribute', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should overwrite existing high priority attribute', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: 2, config: agent.config })
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.HIGH)
 
     inst.addAttribute(0x01, 'Roboto', 99, false, ATTRIBUTE_PRIORITY.HIGH)
@@ -62,8 +74,9 @@ test('#addAttribute - high priority', async (t) => {
     assert.equal(res.Roboto, 99)
   })
 
-  await t.test('should overwrite existing low priority attribute', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
+  await t.test('should overwrite existing low priority attribute', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: 2, config: agent.config })
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.LOW)
 
     inst.addAttribute(0x01, 'Roboto', 99, false, ATTRIBUTE_PRIORITY.HIGH)
@@ -74,9 +87,10 @@ test('#addAttribute - high priority', async (t) => {
     assert.equal(res.Roboto, 99)
   })
 
-  await t.test('should overwrite existing attribute even when at maximum', () => {
+  await t.test('should overwrite existing attribute even when at maximum', (t) => {
+    const { agent } = t.nr
     const maxAttributeCount = 1
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: maxAttributeCount, config: agent.config })
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.LOW)
 
     inst.addAttribute(0x01, 'Roboto', 99, false, ATTRIBUTE_PRIORITY.HIGH)
@@ -89,9 +103,10 @@ test('#addAttribute - high priority', async (t) => {
 
   await t.test(
     'should not add new attribute past maximum when no lower priority attributes',
-    () => {
+    (t) => {
+      const { agent } = t.nr
       const maxAttributeCount = 1
-      const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+      const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: maxAttributeCount, config: agent.config })
       inst.addAttribute(0x01, 'old', 1, false, ATTRIBUTE_PRIORITY.HIGH)
 
       inst.addAttribute(0x01, 'new', 99, false, ATTRIBUTE_PRIORITY.HIGH)
@@ -107,9 +122,10 @@ test('#addAttribute - high priority', async (t) => {
 
   await t.test(
     'should add new attribute, drop newest low priority attribute, when at maximum',
-    () => {
+    (t) => {
+      const { agent } = t.nr
       const maxAttributeCount = 4
-      const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+      const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: maxAttributeCount, config: agent.config })
       inst.addAttribute(0x01, 'old-low', 1, false, ATTRIBUTE_PRIORITY.LOW)
       inst.addAttribute(0x01, 'old-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
       inst.addAttribute(0x01, 'new-low', 99, false, ATTRIBUTE_PRIORITY.LOW)
@@ -131,9 +147,10 @@ test('#addAttribute - high priority', async (t) => {
 
   await t.test(
     'should stop adding attributes after all low priority dropped, when at maximum',
-    () => {
+    (t) => {
+      const { agent } = t.nr
       const maxAttributeCount = 3
-      const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+      const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: maxAttributeCount, config: agent.config })
       inst.addAttribute(0x01, 'old-low', 1, false, ATTRIBUTE_PRIORITY.LOW)
       inst.addAttribute(0x01, 'oldest-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
       inst.addAttribute(0x01, 'new-low', 99, false, ATTRIBUTE_PRIORITY.LOW)
@@ -158,9 +175,10 @@ test('#addAttribute - high priority', async (t) => {
 
   await t.test(
     'should not drop low priority attribute overwritten by high priority, when at maximum',
-    () => {
+    (t) => {
+      const { agent } = t.nr
       const maxAttributeCount = 4
-      const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+      const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: maxAttributeCount, config: agent.config })
       inst.addAttribute(0x01, 'old-low', 1, false, ATTRIBUTE_PRIORITY.LOW)
       inst.addAttribute(0x01, 'overwritten', 1, false, ATTRIBUTE_PRIORITY.LOW)
       inst.addAttribute(0x01, 'old-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
@@ -190,8 +208,18 @@ test('#addAttribute - high priority', async (t) => {
 })
 
 test('#addAttribute - low priority', async (t) => {
-  await t.test('should overwrite existing low priority attribute', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should overwrite existing low priority attribute', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: 2, config: agent.config })
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.LOW)
 
     inst.addAttribute(0x01, 'Roboto', 99, false, ATTRIBUTE_PRIORITY.LOW)
@@ -202,8 +230,9 @@ test('#addAttribute - low priority', async (t) => {
     assert.equal(res.Roboto, 99)
   })
 
-  await t.test('should overwrite existing low priority attribute even when at maximum', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 1)
+  await t.test('should overwrite existing low priority attribute even when at maximum', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: 1, config: agent.config })
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.LOW)
 
     inst.addAttribute(0x01, 'Roboto', 99, false, ATTRIBUTE_PRIORITY.LOW)
@@ -214,8 +243,9 @@ test('#addAttribute - low priority', async (t) => {
     assert.equal(res.Roboto, 99)
   })
 
-  await t.test('should not overwrite existing high priority attribute', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 1)
+  await t.test('should not overwrite existing high priority attribute', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: 1, config: agent.config })
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.HIGH)
 
     inst.addAttribute(0x01, 'Roboto', 99, false, ATTRIBUTE_PRIORITY.LOW)
@@ -226,9 +256,10 @@ test('#addAttribute - low priority', async (t) => {
     assert.equal(res.Roboto, 1)
   })
 
-  await t.test('should not add new attribute past maximum', () => {
+  await t.test('should not add new attribute past maximum', (t) => {
+    const { agent } = t.nr
     const maxAttributeCount = 2
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: maxAttributeCount, config: agent.config })
     inst.addAttribute(0x01, 'old-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
     inst.addAttribute(0x01, 'old-low', 99, false, ATTRIBUTE_PRIORITY.LOW)
 
@@ -245,8 +276,18 @@ test('#addAttribute - low priority', async (t) => {
 })
 
 test('#addAttributes', async (t) => {
-  await t.test('adds multiple attributes to instance', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('adds multiple attributes to instance', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     inst.addAttributes(DESTINATIONS.TRANS_SCOPE, { one: '1', two: '2' })
     const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
 
@@ -254,8 +295,9 @@ test('#addAttributes', async (t) => {
     assert.equal(attributes.two, '2')
   })
 
-  await t.test('only allows non-null-type primitive attribute values', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 10)
+  await t.test('only allows non-null-type primitive attribute values', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: 10, config: agent.config })
     const attributes = {
       first: 'first',
       second: ['second'],
@@ -282,8 +324,9 @@ test('#addAttributes', async (t) => {
     assert.equal(hasAttribute('ninth'), false)
   })
 
-  await t.test('disallows adding more than maximum allowed attributes', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 3)
+  await t.test('disallows adding more than maximum allowed attributes', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: 3, config: agent.config })
     const attributes = {
       first: 1,
       second: 2,
@@ -297,8 +340,9 @@ test('#addAttributes', async (t) => {
     assert.equal(Object.keys(res).length, 3)
   })
 
-  await t.test('Overwrites value of added attribute with same key', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
+  await t.test('Overwrites value of added attribute with same key', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: 2, config: agent.config })
     inst.addAttribute(0x01, 'Roboto', 1)
     inst.addAttribute(0x01, 'Roboto', 99)
 
@@ -310,7 +354,17 @@ test('#addAttributes', async (t) => {
 })
 
 test('#get', async (t) => {
-  await t.test('gets attributes by destination, truncating values if necessary', () => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('gets attributes by destination, truncating values if necessary', (t) => {
+    const { agent } = t.nr
     const longVal = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
@@ -319,7 +373,7 @@ test('#get', async (t) => {
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
     ].join(' ')
 
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     inst.addAttribute(0x01, 'valid', 50)
     inst.addAttribute(0x01, 'tooLong', longVal)
     inst.addAttribute(0x08, 'wrongDest', 'hello')
@@ -332,9 +386,10 @@ test('#get', async (t) => {
     assert.equal(Buffer.byteLength(res.tooLong), 256)
   })
 
-  await t.test('returns identical truncated values across repeated harvests', () => {
+  await t.test('returns identical truncated values across repeated harvests', (t) => {
+    const { agent } = t.nr
     const tooLong = 'a'.repeat(255) + 'b' + ' to be dropped'
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     inst.addAttribute(0x01, 'foo', tooLong)
 
     const first = inst.get(0x01)
@@ -344,8 +399,9 @@ test('#get', async (t) => {
     assert.equal(second.foo, first.foo)
   })
 
-  await t.test('re-truncates after an attribute value is overwritten', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
+  await t.test('re-truncates after an attribute value is overwritten', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     const longVal = 'a'.repeat(300)
     inst.addAttribute(0x01, 'foo', longVal)
 
@@ -355,8 +411,9 @@ test('#get', async (t) => {
     assert.equal(inst.get(0x01).foo, 'short')
   })
 
-  await t.test('only returns attributes up to specified limit', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
+  await t.test('only returns attributes up to specified limit', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: 2, config: agent.config })
     inst.addAttribute(0x01, 'first', 'first')
     inst.addAttribute(0x01, 'second', 'second')
     inst.addAttribute(0x01, 'third', 'third')
@@ -379,15 +436,17 @@ test('#hasValidDestination', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should return true if single destination valid', () => {
-    const attributes = new PrioritizedAttributes(TRANSACTION_SCOPE)
+  await t.test('should return true if single destination valid', (t) => {
+    const { agent } = t.nr
+    const attributes = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     const hasDestination = attributes.hasValidDestination(DESTINATIONS.TRANS_EVENT, 'testAttr')
 
     assert.equal(hasDestination, true)
   })
 
-  await t.test('should return true if all destinations valid', () => {
-    const attributes = new PrioritizedAttributes(TRANSACTION_SCOPE)
+  await t.test('should return true if all destinations valid', (t) => {
+    const { agent } = t.nr
+    const attributes = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
     const hasDestination = attributes.hasValidDestination(destinations, 'testAttr')
 
@@ -400,7 +459,7 @@ test('#hasValidDestination', async (t) => {
     agent.config.transaction_events.attributes.exclude = [attributeName]
     agent.config.emit('transaction_events.attributes.exclude')
 
-    const attributes = new PrioritizedAttributes(TRANSACTION_SCOPE)
+    const attributes = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
     const hasDestination = attributes.hasValidDestination(destinations, attributeName)
 
@@ -413,7 +472,7 @@ test('#hasValidDestination', async (t) => {
     agent.config.attributes.exclude = [attributeName]
     agent.config.emit('attributes.exclude')
 
-    const attributes = new PrioritizedAttributes(TRANSACTION_SCOPE)
+    const attributes = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
     const hasDestination = attributes.hasValidDestination(destinations, attributeName)
 
@@ -422,8 +481,18 @@ test('#hasValidDestination', async (t) => {
 })
 
 test('#reset', async (t) => {
-  await t.test('resets instance attributes', () => {
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('resets instance attributes', (t) => {
+    const { agent } = t.nr
+    const inst = new PrioritizedAttributes({ scope: TRANSACTION_SCOPE, limit: Infinity, config: agent.config })
     inst.addAttribute(0x01, 'first', 'first')
     inst.addAttribute(0x01, 'second', 'second')
     inst.addAttribute(0x01, 'third', 'third')
