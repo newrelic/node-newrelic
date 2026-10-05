@@ -135,6 +135,20 @@ test('#publicSettings', async (t) => {
     assert.equal(publicSettings['certificates.1'], '****')
   })
 
+  await t.test('should omit `ai_monitoring.enabled` when it is unset', () => {
+    const pub = configuration.publicSettings()
+    assert.equal(Object.hasOwn(pub, 'ai_monitoring.enabled'), false)
+    assert.equal(pub['ai_monitoring.basic_telemetry.enabled'], true)
+  })
+
+  for (const enabled of [true, false]) {
+    await t.test(`should send \`ai_monitoring.enabled\` when it is set to ${enabled}`, () => {
+      configuration = Config.initialize({ ai_monitoring: { enabled } })
+      const pub = configuration.publicSettings()
+      assert.equal(pub['ai_monitoring.enabled'], enabled)
+    })
+  }
+
   await t.test('should turn the app name into an array', () => {
     configuration = Config.initialize({ app_name: 'test app name' })
     assert.deepStrictEqual(configuration.applications(), ['test app name'])
