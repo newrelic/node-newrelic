@@ -81,8 +81,11 @@ test('New Relic response code handling', async (t) => {
         testClock.restore()
         if (!nock.isDone()) {
           console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-          nock.cleanAll()
         }
+        // Always clear the global nock interceptor registry. Leaving consumed
+        // interceptors registered makes nock's request matching grow linearly
+        // across the 160 inner tests, slowing later tests progressively.
+        nock.cleanAll()
 
         nock.enableNetConnect()
       })
