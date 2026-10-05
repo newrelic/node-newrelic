@@ -9,11 +9,12 @@ const { describe, test } = require('node:test')
 const helper = require('#testlib/agent_helper.js')
 const sinon = require('sinon')
 const Transaction = require('#agentlib/transaction/index.js')
+const PartialTrace = require('#agentlib/transaction/trace/partial-trace.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
   const transaction = new Transaction(agent)
-  transaction.createPartialTrace()
+  transaction.partialTrace = new PartialTrace(transaction)
   ctx.nr = {
     agent,
     transaction,
