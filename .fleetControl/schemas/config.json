@@ -1477,6 +1477,17 @@
             }
           }
         },
+        "globals": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether instrumentation for this module is active."
+            }
+          }
+        },
         "http": {
           "type": "object",
           "additionalProperties": true,
