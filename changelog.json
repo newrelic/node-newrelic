@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.6.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Bootstrap attribute filter from actual parsed config",
+          "Ended the transaction and recorded the error when an Azure Functions handler throws"
+        ],
+        "features": [
+          "Added a pre-compiled config schema validator"
+        ]
+      }
+    },
+    {
       "version": "14.5.1",
       "changes": {
         "security": [],
