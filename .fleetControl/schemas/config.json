@@ -1433,17 +1433,6 @@
             }
           }
         },
-        "domain": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
         "express": {
           "type": "object",
           "additionalProperties": true,
@@ -1500,17 +1489,6 @@
           }
         },
         "https": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
-        "inspector": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
