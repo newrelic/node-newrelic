@@ -270,24 +270,64 @@ test('detects and validates ESM configuration over stdin', async () => {
   assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
 })
 
-test('errors when the stdin source type cannot be detected', async () => {
+test('exits gracefully when the stdin source type cannot be detected', async () => {
   const { stderr, code } = await runCli(
+    ['validate-config'],
+    'this is not a recognizable configuration'
+  )
+
+  assert.equal(code, 2, 'should exit with the unprocessable code')
+  assert.match(stderr, /Could not detect source type provided via stdin\./)
+  assert.doesNotMatch(stderr, /\n\s+at /, 'should not print a stack trace')
+})
+
+test('reports an undetectable stdin source as JSON when requested', async () => {
+  const { stdout, code } = await runCli(
     ['validate-config', '-f', 'json'],
     'this is not a recognizable configuration'
   )
 
-  assert.notEqual(code, 0, 'should exit non-zero')
-  assert.match(stderr, /Could not detect source type provided via stdin\./)
+  assert.equal(code, 2)
+  const parsed = JSON.parse(stdout)
+  assert.equal(parsed.status, 2)
+  assert.equal(parsed.errors.length, 1)
+  assert.match(parsed.errors[0].message, /Could not detect source type provided via stdin\./)
 })
 
-test('errors when a file has an unrecognized extension', async () => {
+test('exits gracefully when a file has an unrecognized extension', async () => {
   const { stderr, code } = await runCli([
     'validate-config',
     '-c', join(fixturesDir, 'unknown.txt')
   ])
 
-  assert.notEqual(code, 0, 'should exit non-zero')
+  assert.equal(code, 2, 'should exit with the unprocessable code')
   assert.match(stderr, /Could not detect source type of file/)
+  assert.doesNotMatch(stderr, /\n\s+at /, 'should not print a stack trace')
+})
+
+test('reports an unrecognized file extension as JSON when requested', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'unknown.txt'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 2)
+  const parsed = JSON.parse(stdout)
+  assert.equal(parsed.status, 2)
+  assert.equal(parsed.errors.length, 1)
+  assert.match(parsed.errors[0].message, /Could not detect source type of file/)
+})
+
+test('exits gracefully when the input cannot be parsed', async () => {
+  const { stderr, code } = await runCli(
+    ['validate-config', '-f', 'json'],
+    '{ not valid json'
+  )
+
+  assert.equal(code, 2, 'should exit with the unprocessable code')
+  assert.notEqual(stderr, '', 'should report a message')
+  assert.doesNotMatch(stderr, /\n\s+at /, 'should not print a stack trace')
 })
 
 test('reports an unrecognized command', async () => {
