@@ -17,6 +17,7 @@ process.exitCode = 1
 // making use of what is available to us.
 import { parseArgs } from 'node:util'
 import { createReadStream, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 import validateCliConfig from './validate-config.mjs'
 
@@ -71,12 +72,16 @@ validateCliConfig({
 function displayHelp(cmd = null) {
   if (cmd === null) {
     console.error(
-      readFileSync('./cli/help.txt').toString('utf8')
+      readFileSync(
+        join(import.meta.dirname, 'help.txt')
+      ).toString('utf8')
     )
     return
   }
 
   console.error(
-    readFileSync(`./cli/help/${cmd}.txt`).toString('utf8')
+    readFileSync(
+      join(import.meta.dirname, 'help', `${cmd}.txt`)
+    ).toString('utf8')
   )
 }

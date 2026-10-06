@@ -53,12 +53,12 @@ async function validateFile(source, filePath) {
   let config
   switch (detectFormatFromPath(filePath, source)) {
     case SOURCE_TYPE.CJS: {
-      config = loadCjs(source)
+      config = loadCjs(source, filePath)
       break
     }
 
     case SOURCE_TYPE.ESM: {
-      config = await loadEsm(source)
+      config = await loadEsm(source, filePath)
       break
     }
 
@@ -180,9 +180,9 @@ async function loadEsm(source, anchorPath) {
     identifier: anchorUrl,
     initializeImportMeta(meta) {
       meta.url = anchorUrl
-      meta.resolve = (spec) => import.meta.resolve(spec, anchorUrl)
+      meta.resolve = (spec) => resolveSpecifier(spec, anchorUrl)
     },
-    importModuleDynamically: (spec) => import(import.meta.resolve(spec, anchorUrl))
+    importModuleDynamically: (spec) => import(resolveSpecifier(spec, anchorUrl))
   })
   await module.link(link)
   await module.evaluate()
@@ -190,7 +190,7 @@ async function loadEsm(source, anchorPath) {
   return module.namespace.config
 
   async function link(specifier, referrer) {
-    const resolvedUrl = import.meta.resolve(specifier, referrer.indentifier)
+    const resolvedUrl = resolveSpecifier(specifier, referrer.identifier)
     if (linked.has(resolvedUrl) === true) return linked.get(resolvedUrl)
 
     const imported = await import(resolvedUrl)
@@ -200,11 +200,41 @@ async function loadEsm(source, anchorPath) {
     const synthetic = new vm.SyntheticModule(
       Array.from(names),
       function () { for (const n of names) this.setExport(n, imported[n]) },
-      { identifiers: resolvedUrl }
+      { identifier: resolvedUrl }
     )
     linked.set(resolvedUrl, synthetic)
     return synthetic
   }
+}
+
+/**
+ * Resolves a module specifier to a fully-qualified URL, relative to a referrer
+ * URL, exactly as Node.js would when loading `referrerUrl` directly. This does
+ * not rely on the two-argument form of `import.meta.resolve`, whose parent
+ * specifier parameter is only honored under `--experimental-import-meta-resolve`.
+ *
+ * @param {string} specifier The specifier from an `import` statement.
+ * @param {string} referrerUrl The URL of the module performing the import.
+ *
+ * @returns {string} The resolved absolute URL.
+ */
+function resolveSpecifier(specifier, referrerUrl) {
+  if (
+    specifier.startsWith('node:') === true ||
+    specifier.startsWith('file:') === true
+  ) {
+    return specifier
+  }
+
+  // Relative and absolute path specifiers resolve against the referrer's URL.
+  if (/^\.{0,2}\//.test(specifier) === true) {
+    return new URL(specifier, referrerUrl).href
+  }
+
+  // Bare specifiers (e.g. a package name) resolve via the Node.js module
+  // resolution algorithm anchored at the referrer's location.
+  const require = createRequire(referrerUrl)
+  return pathToFileURL(require.resolve(specifier)).href
 }
 
 function writeHuman(errors) {
