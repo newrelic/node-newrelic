@@ -27,8 +27,8 @@ const DESTINATION_MIX = [
   DESTINATIONS.TRANS_EVENT
 ]
 
-// The `Attributes` constructor reads the agent config via `Config.getInstance()`,
-// so an agent must be loaded before instances can be created.
+// The `Attributes` constructor requires an agent config with the computed
+// `attributeFilter`, so an agent must be loaded before instances can be created.
 const suite = benchmark.createBenchmark({
   name: 'Attributes',
   runs: 200_000,
@@ -105,12 +105,12 @@ for (const test of tests) {
 }
 suite.run()
 
-function freshInstance() {
-  return { inst: new Attributes({ scope: TRANSACTION_SCOPE }) }
+function freshInstance(agent) {
+  return { inst: new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config }) }
 }
 
-function populatedInstance() {
-  const inst = new Attributes({ scope: TRANSACTION_SCOPE })
+function populatedInstance(agent) {
+  const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
   inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'one', '1')
   inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'two', '2')
   return { inst }
@@ -127,8 +127,8 @@ const HARVEST_DESTINATIONS = [
 // Seeds an instance with long, truncatable string values to model the case
 // where a single instance is harvested once per destination and each value
 // must be truncated (a byte-length scan plus binary search).
-function longValueInstance() {
-  const inst = new Attributes({ scope: TRANSACTION_SCOPE })
+function longValueInstance(agent) {
+  const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
   const longValue = 'x'.repeat(300)
   for (let i = 0; i < MAXIMUM_CUSTOM_ATTRIBUTES; i++) {
     inst.addAttribute(DESTINATIONS.TRANS_COMMON, `seed.${i}`, `${longValue}.${i}`)
@@ -142,9 +142,9 @@ function getRepeatedHarvest(agent, { inst }) {
   }
 }
 
-function construct() {
+function construct(agent) {
   // eslint-disable-next-line no-new
-  new Attributes({ scope: TRANSACTION_SCOPE })
+  new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
 }
 
 function isValidLength(agent, { inst }) {
@@ -183,9 +183,10 @@ function hasValidDestination(agent, { inst }) {
 // pre-seeded with SEED_COUNT existing attributes so the measured work exercises
 // the realistic mix of adding new keys (crossing and exceeding the limit) and
 // updating existing keys (the overwrite path, which bypasses the limit check).
-function seededInstance() {
+function seededInstance(agent) {
   const inst = new Attributes({
     scope: TRANSACTION_SCOPE,
+    config: agent.config,
     limit: MAXIMUM_CUSTOM_ATTRIBUTES
   })
   for (let i = 0; i < SEED_COUNT; i++) {
