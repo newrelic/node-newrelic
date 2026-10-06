@@ -173,7 +173,6 @@ async function loadEsm(source, anchorPath) {
   }
 
   const anchorUrl = pathToFileURL(anchorPath).href
-  const linked = new Map()
 
   // eslint-disable-next-line sonarjs/code-eval
   const module = new vm.SourceTextModule(source, {
@@ -191,19 +190,15 @@ async function loadEsm(source, anchorPath) {
 
   async function link(specifier, referrer) {
     const resolvedUrl = resolveSpecifier(specifier, referrer.identifier)
-    if (linked.has(resolvedUrl) === true) return linked.get(resolvedUrl)
-
     const imported = await import(resolvedUrl)
     const names = new Set(Object.keys(imported))
     names.add('default')
 
-    const synthetic = new vm.SyntheticModule(
+    return new vm.SyntheticModule(
       Array.from(names),
       function () { for (const n of names) this.setExport(n, imported[n]) },
       { identifier: resolvedUrl }
     )
-    linked.set(resolvedUrl, synthetic)
-    return synthetic
   }
 }
 
