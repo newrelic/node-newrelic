@@ -192,6 +192,7 @@
     "versioned:security:major": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned:major"
   },
   "bin": {
+    "newrelic": "cli/index.mjs",
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "imports": {
@@ -273,6 +274,7 @@
   "files": [
     "index.js",
     "api.js",
+    "cli/",
     "stub_api.js",
     "newrelic.js",
     "load-externals.js",

@@ -43,7 +43,7 @@ const globalIgnores = {
 }
 
 const newrelicConfigOverrides = {
-  files: ['**/newrelic.js', '**/newrelic.mjs'],
+  files: ['**/newrelic.js', '**/newrelic.mjs', 'cli.js'],
   rules: {
     'header/header': 'off'
   }
