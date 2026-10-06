@@ -6,7 +6,7 @@
 
 #### Bug fixes
 
-* Bootstrap attribute filter from actual parsed config ([#4319](https://github.com/newrelic/node-newrelic/pull/4319)) ([724fb70](https://github.com/newrelic/node-newrelic/commit/724fb70de06604d7be1610c32af269db2261bbfc))
+* Bootstraped attribute filter from actual parsed config ([#4319](https://github.com/newrelic/node-newrelic/pull/4319)) ([724fb70](https://github.com/newrelic/node-newrelic/commit/724fb70de06604d7be1610c32af269db2261bbfc))
 * Ended the transaction and recorded the error when an Azure Functions handler throws ([#4310](https://github.com/newrelic/node-newrelic/pull/4310)) ([918ef55](https://github.com/newrelic/node-newrelic/commit/918ef55ea3d1877c42912c6a464673dcc6aa159c))
 
 #### Code refactoring
@@ -23,10 +23,9 @@
 
 * Added `excludedPkgs` list to `instrumentation` and added `globals` to it ([#4334](https://github.com/newrelic/node-newrelic/pull/4334)) ([4f356f5](https://github.com/newrelic/node-newrelic/commit/4f356f54b26eee7fa69c72e305c24b1a8baa9af1))
 * Migrated configuration to JSON Schema ([#4284](https://github.com/newrelic/node-newrelic/pull/4284)) ([39cdebc](https://github.com/newrelic/node-newrelic/commit/39cdebc4f3823e3169bdf184624f370963a356bf))
-* Migrated configuration to JSON Schema ([#4284](https://github.com/newrelic/node-newrelic/issues/4284)) ([#4325](https://github.com/newrelic/node-newrelic/pull/4325)) ([1f1ecfe](https://github.com/newrelic/node-newrelic/commit/1f1ecfe00fd287d9ba358d2bd9eac738002cf050))
 * Regenerated agent config json schema ([#4335](https://github.com/newrelic/node-newrelic/pull/4335)) ([4c199a5](https://github.com/newrelic/node-newrelic/commit/4c199a53e8b499a90d859877cf95ba28d73d4ba7))
 * Removed `domain` and `inspector` instrumentation and old `zlib` file ([#4331](https://github.com/newrelic/node-newrelic/pull/4331)) ([f887492](https://github.com/newrelic/node-newrelic/commit/f887492fd9a58f01f40dc3c5b03f3bfb5aef7d02))
-* update agent-types 1.0.0 ([#4307](https://github.com/newrelic/node-newrelic/pull/4307)) ([175a4ba](https://github.com/newrelic/node-newrelic/commit/175a4ba71998f0b8ab87f120d0b404e0994d17ad))
+* Updated agent-types 1.0.0 ([#4307](https://github.com/newrelic/node-newrelic/pull/4307)) ([175a4ba](https://github.com/newrelic/node-newrelic/commit/175a4ba71998f0b8ab87f120d0b404e0994d17ad))
 
 #### Tests
 
