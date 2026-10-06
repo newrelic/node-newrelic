@@ -6,7 +6,6 @@
 
 #### Bug fixes
 
-* Bootstraped attribute filter from actual parsed config ([#4319](https://github.com/newrelic/node-newrelic/pull/4319)) ([724fb70](https://github.com/newrelic/node-newrelic/commit/724fb70de06604d7be1610c32af269db2261bbfc))
 * Ended the transaction and recorded the error when an Azure Functions handler throws ([#4310](https://github.com/newrelic/node-newrelic/pull/4310)) ([918ef55](https://github.com/newrelic/node-newrelic/commit/918ef55ea3d1877c42912c6a464673dcc6aa159c))
 
 #### Code refactoring
