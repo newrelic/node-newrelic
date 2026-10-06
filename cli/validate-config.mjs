@@ -23,7 +23,14 @@ const SOURCE_TYPE = {
   UNKNOWN: 'unknown'
 }
 
+const EXIT_CODE = {
+  VALID: 0,
+  INVALID: 1,
+  UNPROCESSABLE: 2
+}
+
 let writeOutput
+let reportUnprocessable
 
 export default async function validateCliConfig({
   input = process.stdin,
@@ -42,6 +49,9 @@ export default async function validateCliConfig({
   writeOutput = format === FORMAT_TYPE.HUMAN
     ? writeHuman
     : writeJson
+  reportUnprocessable = format === FORMAT_TYPE.HUMAN
+    ? reportUnprocessableHuman
+    : reportUnprocessableJson
 
   if (!filePath) {
     return validateStdin(toValidate)
@@ -68,13 +78,15 @@ async function validateFile(source, filePath) {
     }
 
     case SOURCE_TYPE.UNKNOWN: {
-      throw Error(`Could not detect source type of file "${filePath}".`)
+      reportUnprocessable(`Could not detect source type of file "${filePath}".`)
+      process.exitCode = EXIT_CODE.UNPROCESSABLE
+      return
     }
   }
 
   const result = validateConfig(config, false)
   if (result.status === 0) {
-    process.exitCode = 0
+    process.exitCode = EXIT_CODE.VALID
   }
   writeOutput(result.errors)
 }
@@ -98,13 +110,15 @@ async function validateStdin(source) {
     }
 
     case SOURCE_TYPE.UNKNOWN: {
-      throw Error('Could not detect source type provided via stdin.')
+      reportUnprocessable('Could not detect source type provided via stdin.')
+      process.exitCode = EXIT_CODE.UNPROCESSABLE
+      return
     }
   }
 
   const result = validateConfig(config, false)
   if (result.status === 0) {
-    process.exitCode = 0
+    process.exitCode = EXIT_CODE.VALID
   }
 
   writeOutput(result.errors)
@@ -261,5 +275,27 @@ function writeJson(errors) {
   }
   console.log(
     JSON.stringify(result, null, 2)
+  )
+}
+
+/**
+ * Reports an input-processing failure (e.g. an undetectable source format) as
+ * a single human-readable line on stderr.
+ *
+ * @param {string} message The failure description.
+ */
+function reportUnprocessableHuman(message) {
+  console.error(message)
+}
+
+/**
+ * Reports an input-processing failure as a JSON object on stdout, mirroring the
+ * shape produced by `writeJson` but with the unprocessable status code.
+ *
+ * @param {string} message The failure description.
+ */
+function reportUnprocessableJson(message) {
+  console.log(
+    JSON.stringify({ status: EXIT_CODE.UNPROCESSABLE, errors: [{ message }] }, null, 2)
   )
 }

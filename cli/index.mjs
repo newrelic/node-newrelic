@@ -67,6 +67,12 @@ validateCliConfig({
   input,
   filePath: configFile,
   format: values.format
+}).catch((error) => {
+  // Any failure that escapes the validator (e.g. malformed JSON or a config
+  // module that throws while loading) should exit cleanly rather than surface
+  // as an unhandled rejection with a stack trace.
+  console.error(error.message)
+  process.exitCode = 2
 })
 
 function displayHelp(cmd = null) {
