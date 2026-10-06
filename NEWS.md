@@ -1,3 +1,35 @@
+### v14.6.0 (2026-10-06)
+
+#### Features
+
+* Added a pre-compiled config schema validator ([#4320](https://github.com/newrelic/node-newrelic/pull/4320)) ([c965a33](https://github.com/newrelic/node-newrelic/commit/c965a33764974989929deddf687b099eef571346))
+
+#### Bug fixes
+
+* Ended the transaction and recorded the error when an Azure Functions handler throws ([#4310](https://github.com/newrelic/node-newrelic/pull/4310)) ([918ef55](https://github.com/newrelic/node-newrelic/commit/918ef55ea3d1877c42912c6a464673dcc6aa159c))
+
+#### Code refactoring
+
+* Migrated `fs` instrumentation over to subscriber-based ([#4317](https://github.com/newrelic/node-newrelic/pull/4317)) ([4711f4c](https://github.com/newrelic/node-newrelic/commit/4711f4c621b8443dbabf4ae4db8e2e9c4ba75dec))
+* Migrated core `globals` instrumentation to subscriber-based ([#4300](https://github.com/newrelic/node-newrelic/pull/4300)) ([7827797](https://github.com/newrelic/node-newrelic/commit/7827797cf21755358fded39748b507e9737e4064))
+* Refactored the Transaction class and affected other entities ([#4246](https://github.com/newrelic/node-newrelic/pull/4246)) ([b965d8e](https://github.com/newrelic/node-newrelic/commit/b965d8ee6b35338759194e7d75020dd92b9fc105))
+
+#### Documentation
+
+* Updated compatibility report ([#4305](https://github.com/newrelic/node-newrelic/pull/4305)) ([fb5a184](https://github.com/newrelic/node-newrelic/commit/fb5a184d8b4088a1747f25be58445f818bb36128))
+
+#### Miscellaneous chores
+
+* Added `excludedPkgs` list to `instrumentation` and added `globals` to it ([#4334](https://github.com/newrelic/node-newrelic/pull/4334)) ([4f356f5](https://github.com/newrelic/node-newrelic/commit/4f356f54b26eee7fa69c72e305c24b1a8baa9af1))
+* Migrated configuration to JSON Schema ([#4284](https://github.com/newrelic/node-newrelic/pull/4284)) ([39cdebc](https://github.com/newrelic/node-newrelic/commit/39cdebc4f3823e3169bdf184624f370963a356bf))
+* Regenerated agent config json schema ([#4335](https://github.com/newrelic/node-newrelic/pull/4335)) ([4c199a5](https://github.com/newrelic/node-newrelic/commit/4c199a53e8b499a90d859877cf95ba28d73d4ba7))
+* Removed `domain` and `inspector` instrumentation and old `zlib` file ([#4331](https://github.com/newrelic/node-newrelic/pull/4331)) ([f887492](https://github.com/newrelic/node-newrelic/commit/f887492fd9a58f01f40dc3c5b03f3bfb5aef7d02))
+* Updated agent-types 1.0.0 ([#4307](https://github.com/newrelic/node-newrelic/pull/4307)) ([175a4ba](https://github.com/newrelic/node-newrelic/commit/175a4ba71998f0b8ab87f120d0b404e0994d17ad))
+
+#### Tests
+
+* Sped up newrelic-response-handling by always clearing nock ([#4329](https://github.com/newrelic/node-newrelic/pull/4329)) ([31494cc](https://github.com/newrelic/node-newrelic/commit/31494cc16e3eac36019847e6de74f35377a7a629))
+
 ### v14.5.1 (2026-09-24)
 
 #### Bug fixes
