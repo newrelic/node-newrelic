@@ -249,3 +249,72 @@ test('every fixture format is detected and surfaces the same errors', async () =
     assert.equal(parsed.errors.length, 2, `${fixture} should report two errors`)
   }
 })
+
+test('detects and validates CJS configuration over stdin', async () => {
+  const { stdout, code } = await runCli(
+    ['validate-config', '-f', 'json'],
+    'module.exports = { high_security: false }'
+  )
+
+  assert.equal(code, 0)
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+})
+
+test('detects and validates ESM configuration over stdin', async () => {
+  const { stdout, code } = await runCli(
+    ['validate-config', '-f', 'json'],
+    'export const config = { high_security: false }'
+  )
+
+  assert.equal(code, 0)
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+})
+
+test('errors when the stdin source type cannot be detected', async () => {
+  const { stderr, code } = await runCli(
+    ['validate-config', '-f', 'json'],
+    'this is not a recognizable configuration'
+  )
+
+  assert.notEqual(code, 0, 'should exit non-zero')
+  assert.match(stderr, /Could not detect source type provided via stdin\./)
+})
+
+test('errors when a file has an unrecognized extension', async () => {
+  const { stderr, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'unknown.txt')
+  ])
+
+  assert.notEqual(code, 0, 'should exit non-zero')
+  assert.match(stderr, /Could not detect source type of file/)
+})
+
+test('reports an unrecognized command', async () => {
+  const { stderr } = await runCli(['bogus-command'])
+
+  assert.match(stderr, /Unrecognized command\./)
+  assert.match(stderr, /newrelic <command> \[options\]/)
+})
+
+test('resolves a node: builtin imported by an ESM config', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'imports-core.mjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 0)
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+})
+
+test('resolves a bare package specifier imported by an ESM config', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'imports-package.mjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 0)
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+})
