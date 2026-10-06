@@ -1,0 +1,8 @@
+{
+  "high_security": false,
+
+  "attributes": {
+    "enabled": true,
+    "value_size_limit": 400
+  }
+}
