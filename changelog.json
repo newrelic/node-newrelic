@@ -6,7 +6,6 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Bootstraped attribute filter from actual parsed config",
           "Ended the transaction and recorded the error when an Azure Functions handler throws"
         ],
         "features": [
