@@ -2079,4 +2079,55 @@ API.prototype.setApolloResolverAttributesCallback = function setApolloResolverAt
   }
 }
 
+/**
+ * Function for adding a custom callback to determine whether a resolver segment should be
+ * created for an Apollo Server field resolution. This can be used to reduce span/segment
+ * volume, e.g. by skipping fields resolved by graphql-js's default (property-access) resolver.
+ *
+ * Provided functions must be synchronous and return a boolean: `true` to create the resolver
+ * segment, `false` to skip it. When registered, this callback is the sole authority on whether
+ * a resolver segment is created for a field -- it takes the place of the built-in
+ * `apollo_server.scalars` / top-level-field logic used when no callback is registered.
+ *
+ * The arguments provided to callback are:
+ *
+ * ```
+ * {
+ *   source: object,
+ *   args: array,
+ *   contextValue: object,
+ *   info: object
+ * }
+ * ```
+ *
+ * @param {Function} callback - callback function to determine if a resolver segment should be created
+ * @example
+ * function apolloResolverFilter({ info }) {
+ *  // Always create a segment for top-level Query/Mutation fields, and for
+ *  // fields that have an explicit resolver in our own resolver map.
+ *  return (
+ *    info.parentType.name === 'Query' ||
+ *    info.parentType.name === 'Mutation' ||
+ *    resolvers[info.parentType.name]?.[info.fieldName] != null
+ *  )
+ * }
+ *
+ * newrelic.setApolloResolverFilterCallback(apolloResolverFilter)
+ */
+API.prototype.setApolloResolverFilterCallback = function setApolloResolverFilterCallback(callback) {
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setApolloResolverFilterCallback'
+  )
+  metric.incrementCallCount()
+
+  if (!this.shim.isFunction(callback) || this.shim.isAsyncFunction(callback)) {
+    logger.warn(
+      'Apollo resolver filter callback must be a synchronous function, resolver segments will not be filtered.'
+    )
+    return
+  }
+
+  this.agent.customCallbacks.apollo.resolverFilterCallback = callback
+}
+
 module.exports = API

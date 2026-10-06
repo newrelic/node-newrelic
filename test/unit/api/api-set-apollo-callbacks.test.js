@@ -123,3 +123,87 @@ for (const scenario of scenarios) {
     })
   })
 }
+
+test('setApolloResolverFilterCallback tests', async (t) => {
+  const method = 'setApolloResolverFilterCallback'
+  const property = 'resolverFilterCallback'
+
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    loggerMock.warn.reset()
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test(`should have a ${method} method`, (t, end) => {
+    const { api } = t.nr
+    assert.ok(api[method])
+    assert.equal(typeof api[method], 'function')
+    end()
+  })
+
+  await t.test('should attach callback function when a function', (t, end) => {
+    const { api, agent } = t.nr
+    assert.ok(!agent.customCallbacks.apollo[property])
+    const callback = function myTestFilterCallback() {
+      return false
+    }
+    api[method](callback)
+
+    assert.equal(loggerMock.warn.callCount, 0, 'should not log warnings when successful')
+    assert.equal(
+      agent.customCallbacks.apollo[property],
+      callback,
+      'should attach the raw callback on the apollo agent property'
+    )
+    assert.equal(
+      api.agent.metrics.getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/${method}`).callCount,
+      1,
+      'should increment the API tracking metric'
+    )
+    end()
+  })
+
+  await t.test('should not attach the callback when not a function', (t, end) => {
+    const { api } = t.nr
+    const callback = 'test-string'
+    api[method](callback)
+
+    assert.equal(loggerMock.warn.callCount, 1, 'should log warning when failed')
+    assert.ok(
+      !api.agent.customCallbacks.apollo[property],
+      'should not attach the callback on apollo key'
+    )
+    assert.equal(
+      api.agent.metrics.getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/${method}`).callCount,
+      1,
+      'should increment the API tracking metric'
+    )
+    end()
+  })
+
+  await t.test('should not attach the callback when async function', (t, end) => {
+    const { api } = t.nr
+    async function callback() {
+      return true
+    }
+    api[method](callback)
+
+    assert.equal(loggerMock.warn.callCount, 1, 'should log warning when failed')
+    assert.ok(
+      !api.agent.customCallbacks.apollo[property],
+      'should not attach the callback when callback is async'
+    )
+    assert.equal(
+      api.agent.metrics.getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/${method}`).callCount,
+      1,
+      'should increment the API tracking metric'
+    )
+    end()
+  })
+})
