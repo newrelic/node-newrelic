@@ -318,3 +318,25 @@ test('resolves a bare package specifier imported by an ESM config', async () => 
   assert.equal(code, 0)
   assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
 })
+
+test('reuses a module imported twice by an ESM config', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'imports-duplicate.mjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 0)
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+})
+
+test('supports import.meta.resolve and dynamic import in an ESM config', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'imports-dynamic.mjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 0)
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+})
