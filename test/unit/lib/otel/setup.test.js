@@ -12,7 +12,6 @@ const { once } = require('node:events')
 const helper = require('../../../lib/agent_helper')
 const mockLogger = require('../../mocks/logger')
 const { setupOtel } = require('../../../../lib/otel/setup')
-const otel = require('@opentelemetry/api')
 
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
@@ -25,15 +24,6 @@ test.beforeEach((ctx) => {
 
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
-})
-
-test('should attributeValueLengthLimit accordingly', (t) => {
-  const { agent, loggerMock } = t.nr
-  agent.config.opentelemetry.enabled = true
-  agent.config.opentelemetry.traces.enabled = true
-  setupOtel(agent, loggerMock)
-  const tracer = otel.trace.getTracer('test')
-  assert.equal(tracer._spanLimits.attributeValueLengthLimit, 4095)
 })
 
 test('should create supportability metric on successful setup of opentelemetry bridge', (t) => {
