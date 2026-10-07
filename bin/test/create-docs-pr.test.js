@@ -106,7 +106,8 @@ test('Create Docs PR script', async (t) => {
       assert.deepEqual(result, {
         security: '["one","two"]',
         bugfixes: '["five","six"]',
-        features: '["three","four"]'
+        features: '["three","four"]',
+        enhancements: '[]'
       })
     })
 
@@ -129,7 +130,8 @@ test('Create Docs PR script', async (t) => {
       assert.deepEqual(result, {
         security: '[]',
         bugfixes: '[]',
-        features: '[]'
+        features: '[]',
+        enhancements: '[]'
       })
     })
   })
@@ -153,7 +155,8 @@ test('Create Docs PR script', async (t) => {
       const frontmatter = {
         security: '["upgraded a dep"]',
         bugfixes: '["fixed a bug"]',
-        features: '["added new api method"]'
+        features: '["added new api method"]',
+        enhancements: '[]'
       }
       const result = script.formatReleaseNotes('2020-04-03', 'v2.0.0', markdown, frontmatter)
 
@@ -166,6 +169,7 @@ test('Create Docs PR script', async (t) => {
         'security: ["upgraded a dep"]',
         'bugs: ["fixed a bug"]',
         'features: ["added new api method"]',
+        'enhancements: []',
         '---',
         '',
         '## Notes',
