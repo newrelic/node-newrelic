@@ -199,403 +199,370 @@ test('chat.completions.create', async (t) => {
     })
   })
 
-  if (semver.gte(pkgVersion, '4.12.2')) {
-    await t.test('should create span on successful chat completion stream create', (t, end) => {
-      const { client, agent, host, port } = t.nr
-      helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response'
-        const stream = await client.chat.completions.create({
-          stream: true,
-          messages: [{ role: 'user', content }]
-        })
-
-        let chunk = {}
-        let res = ''
-        for await (chunk of stream) {
-          res += chunk.choices[0]?.delta?.content
-        }
-        assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
-        assert.equal(chunk.choices[0].message.role, 'assistant')
-        const expectedRes = responses.get(content)
-        assert.equal(chunk.choices[0].message.content, expectedRes.streamData)
-        assert.equal(chunk.choices[0].message.content, res)
-
-        assertSegments(
-          tx.trace,
-          tx.trace.root,
-          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
-          { exact: false }
-        )
-
-        tx.end()
-        end()
+  await t.test('should create span on successful chat completion stream create', (t, end) => {
+    const { client, agent, host, port } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const stream = await client.chat.completions.create({
+        stream: true,
+        messages: [{ role: 'user', content }]
       })
-    })
 
-    test('should create chat completion message and summary for every message sent in stream', (t, end) => {
-      const { client, agent } = t.nr
-      helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response'
-        const model = 'gpt-4'
-        const stream = await client.chat.completions.create({
-          max_tokens: 100,
-          temperature: 0.5,
-          model,
-          messages: [
-            { role: 'user', content },
-            { role: 'user', content: 'What does 1 plus 1 equal?' }
-          ],
-          stream: true
-        })
-
-        let res = ''
-
-        let i = 0
-        for await (const chunk of stream) {
-          res += chunk.choices[0]?.delta?.content
-
-          // I tried to doing stream.controller.abort like their docs say
-          // but this didn't break
-          if (i === 10) {
-            break
-          }
-          i++
-        }
-
-        const events = agent.customEventAggregator.events.toArray()
-        assert.equal(events.length, 4, 'should create a chat completion message and summary event')
-        const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-        assertChatCompletionMessages({
-          tx,
-          chatMsgs,
-          id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
-          model,
-          resContent: res,
-          reqContent: content,
-          noTokenUsage: true
-        })
-
-        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-        assertChatCompletionSummary({ tx, model, chatSummary, noUsageTokens: true })
-
-        tx.end()
-        end()
-      })
-    })
-
-    await t.test('should assign usage information when `include_usage` exists in stream', (t, end) => {
-      const { client, agent } = t.nr
-      helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response usage'
-        const model = 'gpt-4'
-        const stream = await client.chat.completions.create({
-          stream: true,
-          model,
-          messages: [
-            { role: 'user', content },
-            { role: 'user', content: 'What does 1 plus 1 equal?' }
-          ],
-          streaming_options: { include_usage: true }
-        })
-
-        let chunk = {}
-        let res = ''
-        for await (chunk of stream) {
-          if (!chunk.usage) {
-            res += chunk.choices[0]?.delta?.content
-          }
-        }
-        assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
-        assert.equal(chunk.choices[0].message.role, 'assistant')
-        const expectedRes = responses.get(content)
-        assert.equal(chunk.choices[0].message.content, expectedRes.streamData)
-        assert.equal(chunk.choices[0].message.content, res)
-        assert.deepEqual(chunk.usage, { prompt_tokens: 53, completion_tokens: 11, total_tokens: 64 })
-        const events = agent.customEventAggregator.events.toArray()
-        assert.equal(events.length, 4, 'should create a chat completion message and summary event')
-        const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-        assertChatCompletionMessages({
-          tx,
-          chatMsgs,
-          id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
-          model,
-          resContent: res,
-          reqContent: content
-        })
-
-        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-        assertChatCompletionSummary({ tx, model, chatSummary })
-
-        tx.end()
-        end()
-      })
-    })
-
-    test('should call the tokenCountCallback in streaming', (t, end) => {
-      const { client, agent } = t.nr
-      const promptContent = 'Streamed response'
-      const promptContent2 = 'What does 1 plus 1 equal?'
-      const promptTokens = 11
-      const completionTokens = 53
+      let chunk = {}
       let res = ''
-      const expectedModel = 'gpt-4'
-      const api = helper.getAgentApi()
-      function cb(model, content) {
-        assert.equal(model, expectedModel)
-        if (content === promptContent + ' ' + promptContent2) {
-          return promptTokens
-        } else if (content === res) {
-          return completionTokens
+      for await (chunk of stream) {
+        res += chunk.choices[0]?.delta?.content
+      }
+      assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
+      assert.equal(chunk.choices[0].message.role, 'assistant')
+      const expectedRes = responses.get(content)
+      assert.equal(chunk.choices[0].message.content, expectedRes.streamData)
+      assert.equal(chunk.choices[0].message.content, res)
+
+      assertSegments(
+        tx.trace,
+        tx.trace.root,
+        [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+        { exact: false }
+      )
+
+      tx.end()
+      end()
+    })
+  })
+
+  test('should create chat completion message and summary for every message sent in stream', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const model = 'gpt-4'
+      const stream = await client.chat.completions.create({
+        max_tokens: 100,
+        temperature: 0.5,
+        model,
+        messages: [
+          { role: 'user', content },
+          { role: 'user', content: 'What does 1 plus 1 equal?' }
+        ],
+        stream: true
+      })
+
+      let res = ''
+
+      let i = 0
+      for await (const chunk of stream) {
+        res += chunk.choices[0]?.delta?.content
+
+        // I tried to doing stream.controller.abort like their docs say
+        // but this didn't break
+        if (i === 10) {
+          break
+        }
+        i++
+      }
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 4, 'should create a chat completion message and summary event')
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      assertChatCompletionMessages({
+        tx,
+        chatMsgs,
+        id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+        model,
+        resContent: res,
+        reqContent: content,
+        noTokenUsage: true
+      })
+
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      assertChatCompletionSummary({ tx, model, chatSummary, noUsageTokens: true })
+
+      tx.end()
+      end()
+    })
+  })
+
+  await t.test('should assign usage information when `include_usage` exists in stream', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response usage'
+      const model = 'gpt-4'
+      const stream = await client.chat.completions.create({
+        stream: true,
+        model,
+        messages: [
+          { role: 'user', content },
+          { role: 'user', content: 'What does 1 plus 1 equal?' }
+        ],
+        streaming_options: { include_usage: true }
+      })
+
+      let chunk = {}
+      let res = ''
+      for await (chunk of stream) {
+        if (!chunk.usage) {
+          res += chunk.choices[0]?.delta?.content
         }
       }
-      api.setLlmTokenCountCallback(cb)
+      assert.equal(chunk.headers, undefined, 'should remove response headers from user result')
+      assert.equal(chunk.choices[0].message.role, 'assistant')
+      const expectedRes = responses.get(content)
+      assert.equal(chunk.choices[0].message.content, expectedRes.streamData)
+      assert.equal(chunk.choices[0].message.content, res)
+      assert.deepEqual(chunk.usage, { prompt_tokens: 53, completion_tokens: 11, total_tokens: 64 })
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 4, 'should create a chat completion message and summary event')
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      assertChatCompletionMessages({
+        tx,
+        chatMsgs,
+        id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+        model,
+        resContent: res,
+        reqContent: content
+      })
 
-      helper.runInTransaction(agent, async (tx) => {
-        const stream = await client.chat.completions.create({
-          max_tokens: 100,
-          temperature: 0.5,
-          model: expectedModel,
-          messages: [
-            { role: 'user', content: promptContent },
-            { role: 'user', content: promptContent2 }
-          ],
-          stream: true
-        })
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      assertChatCompletionSummary({ tx, model, chatSummary })
 
+      tx.end()
+      end()
+    })
+  })
+
+  test('should call the tokenCountCallback in streaming', (t, end) => {
+    const { client, agent } = t.nr
+    const promptContent = 'Streamed response'
+    const promptContent2 = 'What does 1 plus 1 equal?'
+    const promptTokens = 11
+    const completionTokens = 53
+    let res = ''
+    const expectedModel = 'gpt-4'
+    const api = helper.getAgentApi()
+    function cb(model, content) {
+      assert.equal(model, expectedModel)
+      if (content === promptContent + ' ' + promptContent2) {
+        return promptTokens
+      } else if (content === res) {
+        return completionTokens
+      }
+    }
+    api.setLlmTokenCountCallback(cb)
+
+    helper.runInTransaction(agent, async (tx) => {
+      const stream = await client.chat.completions.create({
+        max_tokens: 100,
+        temperature: 0.5,
+        model: expectedModel,
+        messages: [
+          { role: 'user', content: promptContent },
+          { role: 'user', content: promptContent2 }
+        ],
+        stream: true
+      })
+
+      for await (const chunk of stream) {
+        res += chunk.choices[0]?.delta?.content
+      }
+
+      const events = agent.customEventAggregator.events.toArray()
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      assertChatCompletionMessages({
+        tx,
+        chatMsgs,
+        id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+        model: expectedModel,
+        resContent: res,
+        reqContent: promptContent
+      })
+
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      assertChatCompletionSummary({ tx, model: expectedModel, chatSummary, promptTokens, completionTokens })
+
+      tx.end()
+      end()
+    })
+  })
+
+  test('should set time_to_first_token on llm chat completion summary', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const model = 'gpt-4'
+      const stream = await client.chat.completions.create({
+        max_tokens: 100,
+        temperature: 0.5,
+        model,
+        messages: [
+          { role: 'user', content },
+          { role: 'user', content: 'What does 1 plus 1 equal?' }
+        ],
+        stream: true
+      })
+
+      let res = ''
+      for await (const chunk of stream) {
+        res += chunk.choices[0]?.delta?.content
+      }
+      assert.ok(res)
+
+      const events = agent.customEventAggregator.events.toArray()
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
+      const timeToFirstToken = chatSummary?.[1]?.['time_to_first_token']
+      assert.ok(timeToFirstToken, 'time_to_first_token should exist')
+      assert.equal(typeof timeToFirstToken, 'number', 'time_to_first_token should be a number')
+      assert.ok(timeToFirstToken >= 0, 'time_to_first_token should be >= 0')
+
+      tx.end()
+      end()
+    })
+  })
+
+  test('handles error in stream', (t, end) => {
+    const { client, agent } = t.nr
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'bad stream'
+      const model = 'gpt-4'
+      const stream = await client.chat.completions.create({
+        max_tokens: 100,
+        temperature: 0.5,
+        model,
+        messages: [
+          { role: 'user', content },
+          { role: 'user', content: 'What does 1 plus 1 equal?' }
+        ],
+        stream: true
+      })
+
+      let res = ''
+
+      try {
         for await (const chunk of stream) {
           res += chunk.choices[0]?.delta?.content
         }
-
+      } catch (err) {
+        assert.ok(res)
+        assert.ok(err.message, 'exceeded count')
         const events = agent.customEventAggregator.events.toArray()
-        const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-        assertChatCompletionMessages({
-          tx,
-          chatMsgs,
-          id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
-          model: expectedModel,
-          resContent: res,
-          reqContent: promptContent
-        })
-
+        assert.equal(events.length, 4)
         const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-        assertChatCompletionSummary({ tx, model: expectedModel, chatSummary, promptTokens, completionTokens })
-
+        assertChatCompletionSummary({ tx, model, chatSummary, error: true })
+        if (semver.gte(pkgVersion, '5.0.0')) {
+          assert.equal(tx.exceptions.length, 2)
+          match(tx.exceptions[1], {
+            customAttributes: {
+              'error.message': /terminated/,
+              'error.code': 'UND_ERR_SOCKET',
+              completion_id: /\w{32}/
+            }
+          })
+        } else {
+          assert.equal(tx.exceptions.length, 1)
+          match(tx.exceptions[0], {
+            customAttributes: {
+              'error.message': /Premature close/,
+              'error.code': 'ERR_STREAM_PREMATURE_CLOSE',
+              completion_id: /\w{32}/
+            }
+          })
+        }
         tx.end()
         end()
-      })
+      }
     })
+  })
 
-    test('should set time_to_first_token on llm chat completion summary', (t, end) => {
-      const { client, agent } = t.nr
-      helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response'
-        const model = 'gpt-4'
-        const stream = await client.chat.completions.create({
-          max_tokens: 100,
-          temperature: 0.5,
-          model,
-          messages: [
-            { role: 'user', content },
-            { role: 'user', content: 'What does 1 plus 1 equal?' }
-          ],
-          stream: true
-        })
-
-        let res = ''
-        for await (const chunk of stream) {
-          res += chunk.choices[0]?.delta?.content
-        }
-        assert.ok(res)
-
-        const events = agent.customEventAggregator.events.toArray()
-        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-        assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
-        const timeToFirstToken = chatSummary?.[1]?.['time_to_first_token']
-        assert.ok(timeToFirstToken, 'time_to_first_token should exist')
-        assert.equal(typeof timeToFirstToken, 'number', 'time_to_first_token should be a number')
-        assert.ok(timeToFirstToken >= 0, 'time_to_first_token should be >= 0')
-
-        tx.end()
-        end()
+  test('should not create llm events when ai_monitoring.streaming.enabled is false', (t, end) => {
+    const { client, agent, host, port } = t.nr
+    agent.config.ai_monitoring.streaming.enabled = false
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const model = 'gpt-4'
+      const stream = await client.chat.completions.create({
+        max_tokens: 100,
+        temperature: 0.5,
+        model,
+        messages: [{ role: 'user', content }],
+        stream: true
       })
+
+      let res = ''
+      let chunk = {}
+
+      for await (chunk of stream) {
+        res += chunk.choices[0]?.delta?.content
+      }
+      const expectedRes = responses.get(content)
+      assert.equal(res, expectedRes.streamData)
+
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 0, 'should not create llm events when streaming is disabled')
+
+      // Should still create the OPENAI.COMPLETION segment since ai_monitoring is enabled
+      assertSegments(
+        tx.trace,
+        tx.trace.root,
+        [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+        { exact: false }
+      )
+
+      const streamingDisabled = agent.metrics.getOrCreateMetric(
+        'Supportability/Nodejs/ML/Streaming/Disabled'
+      )
+      assert.equal(streamingDisabled.callCount > 0, true)
+
+      tx.end()
+      end()
     })
+  })
 
-    test('handles error in stream', (t, end) => {
-      const { client, agent } = t.nr
-      helper.runInTransaction(agent, async (tx) => {
-        const content = 'bad stream'
-        const model = 'gpt-4'
-        const stream = await client.chat.completions.create({
-          max_tokens: 100,
-          temperature: 0.5,
-          model,
-          messages: [
-            { role: 'user', content },
-            { role: 'user', content: 'What does 1 plus 1 equal?' }
-          ],
-          stream: true
-        })
+  await t.test('should create segment and llm events in stream when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
+    const { host, port } = t.nr
+    // tear down the enabled agent/module set up in `beforeEach`
+    helper.unloadAgent(t.nr.agent)
+    removeModules('openai')
 
-        let res = ''
-
-        try {
-          for await (const chunk of stream) {
-            res += chunk.choices[0]?.delta?.content
-          }
-        } catch (err) {
-          assert.ok(res)
-          assert.ok(err.message, 'exceeded count')
-          const events = agent.customEventAggregator.events.toArray()
-          assert.equal(events.length, 4)
-          const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-          assertChatCompletionSummary({ tx, model, chatSummary, error: true })
-          if (semver.gte(pkgVersion, '5.0.0')) {
-            assert.equal(tx.exceptions.length, 2)
-            match(tx.exceptions[1], {
-              customAttributes: {
-                'error.message': /terminated/,
-                'error.code': 'UND_ERR_SOCKET',
-                completion_id: /\w{32}/
-              }
-            })
-          } else {
-            assert.equal(tx.exceptions.length, 1)
-            match(tx.exceptions[0], {
-              customAttributes: {
-                'error.message': /Premature close/,
-                'error.code': 'ERR_STREAM_PREMATURE_CLOSE',
-                completion_id: /\w{32}/
-              }
-            })
-          }
-          tx.end()
-          end()
+    // set up the agent instance with ai_monitoring disabled
+    const agent = helper.instrumentMockedAgent({
+      ai_monitoring: {
+        enabled: false,
+        streaming: {
+          enabled: true
         }
-      })
+      }
     })
-
-    test('should not create llm events when ai_monitoring.streaming.enabled is false', (t, end) => {
-      const { client, agent, host, port } = t.nr
-      agent.config.ai_monitoring.streaming.enabled = false
-      helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response'
-        const model = 'gpt-4'
-        const stream = await client.chat.completions.create({
-          max_tokens: 100,
-          temperature: 0.5,
-          model,
-          messages: [{ role: 'user', content }],
-          stream: true
-        })
-
-        let res = ''
-        let chunk = {}
-
-        for await (chunk of stream) {
-          res += chunk.choices[0]?.delta?.content
-        }
-        const expectedRes = responses.get(content)
-        assert.equal(res, expectedRes.streamData)
-
-        const events = agent.customEventAggregator.events.toArray()
-        assert.equal(events.length, 0, 'should not create llm events when streaming is disabled')
-
-        // Should still create the OPENAI.COMPLETION segment since ai_monitoring is enabled
-        assertSegments(
-          tx.trace,
-          tx.trace.root,
-          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
-          { exact: false }
-        )
-
-        const streamingDisabled = agent.metrics.getOrCreateMetric(
-          'Supportability/Nodejs/ML/Streaming/Disabled'
-        )
-        assert.equal(streamingDisabled.callCount > 0, true)
-
-        tx.end()
-        end()
-      })
+    t.nr.agent = agent
+    const OpenAI = require('openai')
+    const client = new OpenAI({
+      apiKey: 'fake-versioned-test-key',
+      baseURL: `http://${host}:${port}`
     })
+    t.nr.client = client
 
-    await t.test('should create segment and llm events in stream when ai_monitoring is disabled at instrumentation but enabled before the call', (t, end) => {
-      const { host, port } = t.nr
-      // tear down the enabled agent/module set up in `beforeEach`
-      helper.unloadAgent(t.nr.agent)
-      removeModules('openai')
-
-      // set up the agent instance with ai_monitoring disabled
-      const agent = helper.instrumentMockedAgent({
-        ai_monitoring: {
-          enabled: false,
-          streaming: {
-            enabled: true
-          }
-        }
+    // enable ai_monitoring before making the call
+    agent.config.ai_monitoring.enabled = true
+    helper.runInTransaction(agent, async (tx) => {
+      const content = 'Streamed response'
+      const stream = await client.chat.completions.create({
+        stream: true,
+        messages: [{ role: 'user', content }]
       })
-      t.nr.agent = agent
-      const OpenAI = require('openai')
-      const client = new OpenAI({
-        apiKey: 'fake-versioned-test-key',
-        baseURL: `http://${host}:${port}`
-      })
-      t.nr.client = client
 
-      // enable ai_monitoring before making the call
-      agent.config.ai_monitoring.enabled = true
-      helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response'
-        const stream = await client.chat.completions.create({
-          stream: true,
-          messages: [{ role: 'user', content }]
-        })
+      let res = ''
+      for await (const chunk of stream) {
+        res += chunk.choices[0]?.delta?.content
+      }
+      assert.ok(res)
 
-        let res = ''
-        for await (const chunk of stream) {
-          res += chunk.choices[0]?.delta?.content
-        }
-        assert.ok(res)
+      const events = agent.customEventAggregator.events.toArray()
+      assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
+      assert.ok(findSegment(tx.trace, tx.trace.root, OPENAI.COMPLETION))
 
-        const events = agent.customEventAggregator.events.toArray()
-        assert.ok(events.length > 0, 'should create llm events when ai_monitoring is enabled before the call')
-        assert.ok(findSegment(tx.trace, tx.trace.root, OPENAI.COMPLETION))
-
-        tx.end()
-        end()
-      })
+      tx.end()
+      end()
     })
-  } else {
-    await t.test('should not instrument streams when openai < 4.12.2', (t, end) => {
-      const { client, agent, host, port } = t.nr
-      helper.runInTransaction(agent, async (tx) => {
-        const content = 'Streamed response'
-        const stream = await client.chat.completions.create({
-          stream: true,
-          messages: [{ role: 'user', content }]
-        })
-
-        let chunk = {}
-        let res = ''
-        for await (chunk of stream) {
-          res += chunk.choices[0]?.delta?.content
-        }
-
-        assert.ok(res)
-        const events = agent.customEventAggregator.events.toArray()
-        assert.equal(events.length, 0)
-        // we will still record the external segment but not the chat completion
-        assertSegments(
-          tx.trace,
-          tx.trace.root,
-          [`External/${host}:${port}/chat/completions`],
-          { exact: false }
-        )
-
-        tx.end()
-        end()
-      })
-    })
-  }
+  })
 
   await t.test('should not create llm events when not in a transaction', async (t) => {
     const { client, agent } = t.nr
