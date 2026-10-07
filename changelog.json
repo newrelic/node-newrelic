@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.7.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated the channel name for resolver fields in ESM to `nr_resolve`",
+          "Wrapped openai stream `[Symbol.asyncIterator]` so synthesized message survives v7 chunk normalization"
+        ],
+        "features": [
+          "Added a new api `setApolloResolverFilterCallback` to allow customers to filter out resolver segments before they are created"
+        ]
+      }
+    },
+    {
       "version": "14.6.0",
       "changes": {
         "security": [],

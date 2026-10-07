@@ -1,3 +1,24 @@
+### v14.7.0 (2026-10-07)
+
+#### Features
+
+* Added a new api `setApolloResolverFilterCallback` to allow customers to filter out resolver segments before they are created ([#4312](https://github.com/newrelic/node-newrelic/pull/4312)) ([0d89bde](https://github.com/newrelic/node-newrelic/commit/0d89bdef93ab4fc2e62cb49f72ccfabbcc465201))
+
+#### Bug fixes
+
+* Updated the channel name for resolver fields in ESM to `nr_resolve` ([#4346](https://github.com/newrelic/node-newrelic/pull/4346)) ([e8b294c](https://github.com/newrelic/node-newrelic/commit/e8b294cdcf9968e97f15db63aa0f2f7c1b35f8da))
+* Wrapped openai stream `[Symbol.asyncIterator]` so synthesized message survives v7 chunk normalization ([#4342](https://github.com/newrelic/node-newrelic/pull/4342)) ([aa8ed4b](https://github.com/newrelic/node-newrelic/commit/aa8ed4b3dfd04973df1a1683b17f4172fbb7bbcd))
+
+#### Code refactoring
+
+* Removed reliance on `@opentelemetry/sdk-logs` for hybrid agent ([#4318](https://github.com/newrelic/node-newrelic/pull/4318)) ([1d05075](https://github.com/newrelic/node-newrelic/commit/1d0507537465f8ccba0e0e80ba6561887229a6ea))
+* Removed reliance on `@opentelemetry/sdk-trace-base` for hybrid agent ([#4297](https://github.com/newrelic/node-newrelic/pull/4297)) ([00c363b](https://github.com/newrelic/node-newrelic/commit/00c363be953406659030b092d1665f3c160ed442))
+
+#### Documentation
+
+* Added an empty `enhancements` array to docs PR ([#4344](https://github.com/newrelic/node-newrelic/pull/4344)) ([b505eda](https://github.com/newrelic/node-newrelic/commit/b505edae232425bf7db24aa8b09dc605a4e1d824))
+* Updated compatibility report ([#4339](https://github.com/newrelic/node-newrelic/pull/4339)) ([6204ebb](https://github.com/newrelic/node-newrelic/commit/6204ebb2b01c7fa4846ee53e0d4544e785dbc6dc))
+
 ### v14.6.0 (2026-10-06)
 
 #### Features
