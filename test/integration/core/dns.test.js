@@ -13,9 +13,6 @@ const verifySegments = require('./verify.js')
 const sinon = require('sinon')
 const mockDns = require('./dns-utils')
 
-// `resolveTlsa` was added in Node.js 22.15.0
-const skipTlsa = typeof dns.resolveTlsa !== 'function'
-
 function beforeEach(ctx) {
   const sandbox = sinon.createSandbox()
   ctx.nr = {}
@@ -204,7 +201,7 @@ test('callback', async (t) => {
     })
   })
 
-  await t.test('resolveTlsa', { skip: skipTlsa }, function (t, end) {
+  await t.test('resolveTlsa', function (t, end) {
     const { agent } = t.nr
     helper.runInTransaction(agent, function () {
       dns.resolveTlsa('example.com', function (err, records) {
@@ -286,6 +283,19 @@ test('promises', async (t) => {
     })
   })
 
+  await t.test('resolve4 after setServers', async function (t) {
+    const { agent } = t.nr
+    // `setServers` rebinds the module-level methods from `Resolver.prototype`,
+    // replacing the wrappers on the module itself
+    dns.setServers(dns.getServers())
+    await helper.runInTransaction(agent, async function () {
+      const ips = await dns.promises.resolve4('example.com')
+      assert.equal(ips.length, 1)
+      assert.equal(ips[0], '127.0.0.1')
+      verifySegments({ agent, name: 'dns.resolve4', assertCallbacks: false })
+    })
+  })
+
   await t.test('resolve6', async function (t) {
     const { agent } = t.nr
     await helper.runInTransaction(agent, async function () {
@@ -319,7 +329,7 @@ test('promises', async (t) => {
   await t.test('resolveCname', async function (t) {
     const { agent } = t.nr
     await helper.runInTransaction(agent, async function () {
-      await assert.rejects(() => dns.promises.resolveCname('example.com'))
+      await assert.rejects(() => dns.promises.resolveCname('example.com'), (err) => err.code === 'ENODATA')
       verifySegments({ agent, name: 'dns.resolveCname', assertCallbacks: false })
     })
   })
@@ -372,7 +382,7 @@ test('promises', async (t) => {
     })
   })
 
-  await t.test('resolveTlsa', { skip: skipTlsa }, async function (t) {
+  await t.test('resolveTlsa', async function (t) {
     const { agent } = t.nr
     await helper.runInTransaction(agent, async function () {
       const records = await dns.promises.resolveTlsa('example.com')
@@ -394,7 +404,7 @@ test('promises', async (t) => {
   await t.test('resolveSrv', async function (t) {
     const { agent } = t.nr
     await helper.runInTransaction(agent, async function () {
-      await assert.rejects(() => dns.promises.resolveSrv('example.com'))
+      await assert.rejects(() => dns.promises.resolveSrv('example.com'), (err) => err.code === 'ENODATA')
       verifySegments({ agent, name: 'dns.resolveSrv', assertCallbacks: false })
     })
   })

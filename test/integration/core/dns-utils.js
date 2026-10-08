@@ -132,16 +132,13 @@ module.exports = function mockDns({ dns, sandbox }) {
   })
   sandbox.stub(dns.promises, 'resolveSoa').callsFake(async () => Promise.resolve(soa))
 
-  // `resolveTlsa` was added in Node.js 22.15.0
-  if (dns.resolveTlsa) {
-    const tlsa = [{ certUsage: 3, selector: 1, match: 1, data: new ArrayBuffer(0) }]
-    sandbox.stub(dns, 'resolveTlsa').callsFake((_, cb) => {
-      setImmediate(() => {
-        cb(null, tlsa)
-      })
+  const tlsa = [{ certUsage: 3, selector: 1, match: 1, data: new ArrayBuffer(0) }]
+  sandbox.stub(dns, 'resolveTlsa').callsFake((_, cb) => {
+    setImmediate(() => {
+      cb(null, tlsa)
     })
-    sandbox.stub(dns.promises, 'resolveTlsa').callsFake(async () => Promise.resolve(tlsa))
-  }
+  })
+  sandbox.stub(dns.promises, 'resolveTlsa').callsFake(async () => Promise.resolve(tlsa))
 
   sandbox.stub(dns.Resolver.prototype, 'resolve4').callsFake((_, cb) => {
     setImmediate(() => {
