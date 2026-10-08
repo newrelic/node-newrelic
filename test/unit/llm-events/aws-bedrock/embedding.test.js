@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const Config = require('#agentlib/config/index.js')
 const {
   DESTINATIONS: { TRANS_SCOPE }
 } = require('../../../../lib/config/attribute-filter')
@@ -16,14 +17,14 @@ test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = {
     llm: {},
-    config: {
+    config: new Config({
       ai_monitoring: {
         enabled: true,
         record_content: {
           enabled: true
         }
       }
-    },
+    }),
     tracer: {
       getTransaction() {
         return {

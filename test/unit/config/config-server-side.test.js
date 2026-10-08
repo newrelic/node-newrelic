@@ -8,7 +8,6 @@
 const { describe, test } = require('node:test')
 const assert = require('node:assert')
 const Config = require('../../../lib/config')
-const { isAiMonitoringEnabled, shouldRecordAiContent } = require('../../../lib/util/llm-utils')
 
 describe('when receiving server-side configuration', () => {
   // Unfortunately, the Config currently relies on initialize to
@@ -766,7 +765,7 @@ describe('when receiving server-side configuration', () => {
           'ai_monitoring.record_content.enabled': false
         }
       })
-      assert.equal(isAiMonitoringEnabled(config), false)
+      assert.equal(config.isAiMonitoringEnabled(), false)
     })
 
     test('should send basic telemetry without content when SSC option is Basic', () => {
@@ -777,14 +776,14 @@ describe('when receiving server-side configuration', () => {
           'ai_monitoring.record_content.enabled': false
         }
       })
-      assert.equal(isAiMonitoringEnabled(config), true)
-      assert.equal(shouldRecordAiContent(config), false)
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      assert.equal(config.shouldRecordAiContent(), false)
     })
 
     test('should not let SSC basic_telemetry override a local ai_monitoring.enabled = false', () => {
       const config = new Config({ ai_monitoring: { enabled: false } })
       config.onConnect({ agent_config: { 'ai_monitoring.basic_telemetry.enabled': true } })
-      assert.equal(isAiMonitoringEnabled(config), false)
+      assert.equal(config.isAiMonitoringEnabled(), false)
     })
   })
 
