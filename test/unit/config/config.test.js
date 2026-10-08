@@ -135,6 +135,20 @@ test('#publicSettings', async (t) => {
     assert.equal(publicSettings['certificates.1'], '****')
   })
 
+  await t.test('should omit `ai_monitoring.enabled` when it is unset', () => {
+    const pub = configuration.publicSettings()
+    assert.equal(Object.hasOwn(pub, 'ai_monitoring.enabled'), false)
+    assert.equal(pub['ai_monitoring.basic_telemetry.enabled'], true)
+  })
+
+  for (const enabled of [true, false]) {
+    await t.test(`should send \`ai_monitoring.enabled\` when it is set to ${enabled}`, () => {
+      configuration = Config.initialize({ ai_monitoring: { enabled } })
+      const pub = configuration.publicSettings()
+      assert.equal(pub['ai_monitoring.enabled'], enabled)
+    })
+  }
+
   await t.test('should turn the app name into an array', () => {
     configuration = Config.initialize({ app_name: 'test app name' })
     assert.deepStrictEqual(configuration.applications(), ['test app name'])
@@ -618,4 +632,67 @@ test('redacted_license_key', async (t) => {
 test('otlp_resource_attributes', () => {
   const config = Config.initialize()
   assert.deepEqual(config.otlp_resource_attributes, {})
+})
+
+test('ai_monitoring.enabled deprecation warning', async (t) => {
+  /**
+   * Creates a logger that captures `ai_monitoring.enabled` deprecation warnings.
+   *
+   * @returns {{ logger: object, warnings: string[] }} The logger and the captured warnings.
+   */
+  function createLogger() {
+    const warnings = []
+    const logger = {
+      warn(msg) {
+        if (msg.includes('`ai_monitoring.enabled` is deprecated')) {
+          warnings.push(msg)
+        }
+      },
+      child() {
+        return logger
+      },
+      trace() {},
+      debug() {},
+      info() {},
+      error() {}
+    }
+    return { logger, warnings }
+  }
+
+  await t.test('should not warn when ai_monitoring.enabled is unset', () => {
+    const { logger, warnings } = createLogger()
+    new Config({}, { logger }) // eslint-disable-line no-new
+    assert.equal(warnings.length, 0)
+  })
+
+  for (const enabled of [true, false]) {
+    await t.test(`should warn when ai_monitoring.enabled is explicitly ${enabled}`, () => {
+      const { logger, warnings } = createLogger()
+      new Config({ ai_monitoring: { enabled } }, { logger }) // eslint-disable-line no-new
+      assert.equal(warnings.length, 1)
+    })
+  }
+
+  await t.test('should warn when ai_monitoring.enabled is set via environment variable', (t) => {
+    process.env.NEW_RELIC_AI_MONITORING_ENABLED = 'true'
+    t.after(() => {
+      delete process.env.NEW_RELIC_AI_MONITORING_ENABLED
+    })
+    const { logger, warnings } = createLogger()
+    new Config({}, { logger }) // eslint-disable-line no-new
+    assert.equal(warnings.length, 1)
+  })
+
+  await t.test('should not warn when only high security mode sets ai_monitoring.enabled', () => {
+    const { logger, warnings } = createLogger()
+    new Config({ high_security: true }, { logger }) // eslint-disable-line no-new
+    assert.equal(warnings.length, 0)
+  })
+
+  await t.test('should not warn when ai_monitoring.enabled is set via server side config', () => {
+    const { logger, warnings } = createLogger()
+    const config = new Config({}, { logger })
+    config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+    assert.equal(warnings.length, 0)
+  })
 })

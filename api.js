@@ -1612,7 +1612,7 @@ API.prototype.recordLlmFeedbackEvent = function recordLlmFeedbackEvent({
     return
   }
 
-  if (this.agent.config?.ai_monitoring?.enabled !== true) {
+  if (this.agent.config.isAiMonitoringEnabled() === false) {
     logger.warn('recordLlmFeedbackEvent invoked but ai_monitoring is disabled.')
     return
   }
