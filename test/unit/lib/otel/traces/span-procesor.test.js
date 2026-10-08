@@ -649,3 +649,79 @@ test('finalizeTransaction handles next.js server spans', (t) => {
   t.assert.equal(t.nr.logs.debug.length, 0)
   t.assert.equal(transaction.name, 'WebTransaction/WebFrameworkUri//PUT/user/:id')
 })
+
+// The following tests assert the current, buggy behavior: a server or consumer
+// span that starts inside an active transaction runs `rule.txTransformation = {}`
+// on the shared rule, and its `onEnd` finalizes and ends the outer transaction.
+test('bug: nested server span wipes naming for subsequent transactions', (t) => {
+  t.plan(6)
+  const { agent, processor, tracer } = t.nr
+
+  // Before the nested span, a top-level next.js request is named from the rule.
+  const before = createNextjsServerSpan({ tracer })
+  processor.onStart(before)
+  const { transaction: beforeTx } = before[otelSynthesis]
+  before.end()
+  t.assert.equal(beforeTx.type, 'web')
+  t.assert.equal(beforeTx.name, 'WebTransaction/WebFrameworkUri//PUT/user/:id')
+  t.assert.equal(beforeTx.url, '/user/1')
+
+  // A next.js server span that starts while a transaction is already active.
+  helper.runInTransaction(agent, (tx) => {
+    const nested = createNextjsServerSpan({ tracer })
+    processor.onStart(nested)
+    tx.end()
+  })
+
+  // The same request afterwards has no name, type or url.
+  const after = createNextjsServerSpan({ tracer })
+  processor.onStart(after)
+  const { transaction: afterTx } = after[otelSynthesis]
+  after.end()
+  t.assert.equal(afterTx.name, null)
+  t.assert.equal(afterTx.type, undefined)
+  t.assert.equal(afterTx.url, null)
+})
+
+test('bug: nested server span ends the outer transaction early', (t) => {
+  t.plan(5)
+  const { agent, processor, tracer } = t.nr
+
+  const outer = createNextjsServerSpan({ tracer })
+  processor.onStart(outer)
+  const { transaction, segment } = outer[otelSynthesis]
+  t.assert.equal(transaction.isActive(), true)
+
+  // End a nested next.js server span while the outer span's transaction is active.
+  const context = agent.tracer.getContext().enterSegment({ transaction, segment })
+  agent.tracer.runInContext({
+    context,
+    handler() {
+      const nested = createNextjsServerSpan({ tracer })
+      processor.onStart(nested)
+      nested.end()
+    }
+  })
+
+  // The outer transaction is ended by the nested span, before the outer span
+  // ends, with no name, type or url.
+  t.assert.equal(transaction.isActive(), false)
+  t.assert.equal(transaction.name, null)
+  t.assert.equal(transaction.type, undefined)
+  t.assert.equal(transaction.url, null)
+
+  outer.end()
+})
+
+test('bug: nested consumer span ends the active transaction early', (t) => {
+  t.plan(2)
+  const { agent, processor, tracer } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    const nested = createConsumerSpan({ tracer })
+    processor.onStart(nested)
+    t.assert.equal(tx.isActive(), true)
+    nested.end()
+    t.assert.equal(tx.isActive(), false)
+  })
+})

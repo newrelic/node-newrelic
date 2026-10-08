@@ -227,6 +227,25 @@ test('should not create tx if one already exists when a server span is created',
   })
 })
 
+// Asserts the current, buggy behavior: `createServerSegment` runs
+// `rule.txTransformation = {}` on the rule instance shared by every span.
+test('bug: server span created in an active tx wipes the shared rule txTransformation', (t, end) => {
+  const { agent, synthesizer, tracer } = t.nr
+  const span = createHttpServerSpan({ tracer })
+  assert.deepEqual(synthesizer.engine.test(span).txTransformation, {
+    type: 'web',
+    name: { verb: 'http.method', path: 'http.route' },
+    url: { key: 'http.url' }
+  })
+
+  helper.runInTransaction(agent, (tx) => {
+    synthesizer.synthesize(span)
+    assert.deepEqual(synthesizer.engine.test(span).txTransformation, {})
+    tx.end()
+    end()
+  })
+})
+
 test('should create producer segment', (t, end) => {
   const { agent, synthesizer, tracer } = t.nr
   helper.runInTransaction(agent, (tx) => {
