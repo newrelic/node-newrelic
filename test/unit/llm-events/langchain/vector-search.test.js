@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const Config = require('#agentlib/config/index.js')
 const LlmVectorSearch = require('#agentlib/llm-events/langchain/vector-search.js')
 
 test.beforeEach((ctx) => {
@@ -24,17 +25,15 @@ test.beforeEach((ctx) => {
   }
 
   ctx.nr.agent = {
-    config: {
+    config: new Config({
+      app_name: ['test-app'],
       ai_monitoring: {
         enabled: true,
         record_content: {
           enabled: true
         }
-      },
-      applications() {
-        return ['test-app']
       }
-    },
+    }),
     tracer: {
       getTransaction() {
         return ctx.nr._tx

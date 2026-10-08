@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const Config = require('#agentlib/config/index.js')
 const { DESTINATIONS: { TRANS_SCOPE } } = require('#agentlib/config/attribute-filter.js')
 const { LlmChatCompletionMessage } = require('#agentlib/llm-events/aws-bedrock/index.js')
 
@@ -14,14 +15,14 @@ test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = {
     llm: {},
-    config: {
+    config: new Config({
       ai_monitoring: {
         enabled: true,
         record_content: {
           enabled: true
         }
       }
-    },
+    }),
     tracer: {
       getTransaction() {
         return {
