@@ -1,0 +1,37 @@
+Usage:
+  validate-command [options]
+
+Examples:
+  newrelic validate-config -c ./newrelic.js
+
+  newrelic validate-config -c ./newrelic.js -f json
+
+  echo 'export const config = {"high_security": 42}' | \
+    NODE_OPTIONS=--experimental-vm-modules newrelic validate-config
+
+  NODE_OPTIONS=--experimental-vm-modules newrelic validate-config -c ./newrelic.mjs
+
+Options:
+  -c, --config-file     Path to a configuration file to validate. When omitted,
+                        stdin will be evaluated as a JSON string representing
+                        a configuration object. Allowed file types are `.js`,
+                        `.cjs`, `.mjs`, and `.json`. Script should export a
+                        "config" object; JSON files should be a JSON string
+                        representing the configuration object to validate.
+
+                        If your configuration uses imports you must run the
+                        tool from the same directory as the configuration file.
+                        This is to allow the typical import resolution
+                        algorithm to function properly.
+
+                        CJS files (or stdin) must assign the configuration to
+                        `module.exports`.
+
+                        ESM files (or stdin) require the
+                        `--experimental-vm-modules` switch to be provided when
+                        starting the tool.
+
+  -f, --format          Specifies the format the tool will use when reporting
+                        the result of the validation. The default format is a
+                        human-readable report. The value "json" may be provided
+                        to generate a JSON representation of the result.

@@ -1,0 +1,5 @@
+Usage:
+  newrelic <command> [options]
+
+Commands:
+  validate-config     Validate a New Relic configuration file.

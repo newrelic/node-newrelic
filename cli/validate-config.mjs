@@ -1,0 +1,301 @@
+/*
+ * Copyright 2026 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* eslint-disable n/no-unsupported-features/node-builtins,no-console */
+
+import vm from 'node:vm'
+import { dirname, extname, join } from 'node:path'
+import { createRequire } from 'node:module'
+import { pathToFileURL } from 'node:url'
+import validateConfig from '#agentlib/config/validate-config.js'
+
+const FORMAT_TYPE = {
+  HUMAN: 'human',
+  JSON: 'json'
+}
+
+const SOURCE_TYPE = {
+  CJS: 'cjs',
+  ESM: 'esm',
+  JSON: 'json',
+  UNKNOWN: 'unknown'
+}
+
+const EXIT_CODE = {
+  VALID: 0,
+  INVALID: 1,
+  UNPROCESSABLE: 2
+}
+
+let writeOutput
+let reportUnprocessable
+
+export default async function validateCliConfig({
+  input = process.stdin,
+  format = FORMAT_TYPE.HUMAN,
+  filePath
+} = {}) {
+  let toValidate = ''
+  await new Promise((resolve, reject) => {
+    input.on('data', (d) => {
+      toValidate += d.toString('utf-8')
+    })
+    input.on('end', resolve)
+    input.on('error', reject)
+  })
+
+  writeOutput = format === FORMAT_TYPE.HUMAN
+    ? writeHuman
+    : writeJson
+  reportUnprocessable = format === FORMAT_TYPE.HUMAN
+    ? reportUnprocessableHuman
+    : reportUnprocessableJson
+
+  if (!filePath) {
+    return validateStdin(toValidate)
+  }
+  return validateFile(toValidate, filePath)
+}
+
+async function validateFile(source, filePath) {
+  let config
+  switch (detectFormatFromPath(filePath, source)) {
+    case SOURCE_TYPE.CJS: {
+      config = loadCjs(source, filePath)
+      break
+    }
+
+    case SOURCE_TYPE.ESM: {
+      config = await loadEsm(source, filePath)
+      break
+    }
+
+    case SOURCE_TYPE.JSON: {
+      config = JSON.parse(source)
+      break
+    }
+
+    case SOURCE_TYPE.UNKNOWN: {
+      reportUnprocessable(`Could not detect source type of file "${filePath}".`)
+      process.exitCode = EXIT_CODE.UNPROCESSABLE
+      return
+    }
+  }
+
+  const result = validateConfig(config, false)
+  if (result.status === 0) {
+    process.exitCode = EXIT_CODE.VALID
+  }
+  writeOutput(result.errors)
+}
+
+async function validateStdin(source) {
+  let config
+  switch (detectFormatFromSource(source)) {
+    case SOURCE_TYPE.CJS: {
+      config = loadCjs(source)
+      break
+    }
+
+    case SOURCE_TYPE.ESM: {
+      config = await loadEsm(source)
+      break
+    }
+
+    case SOURCE_TYPE.JSON: {
+      config = JSON.parse(source)
+      break
+    }
+
+    case SOURCE_TYPE.UNKNOWN: {
+      reportUnprocessable('Could not detect source type provided via stdin.')
+      process.exitCode = EXIT_CODE.UNPROCESSABLE
+      return
+    }
+  }
+
+  const result = validateConfig(config, false)
+  if (result.status === 0) {
+    process.exitCode = EXIT_CODE.VALID
+  }
+
+  writeOutput(result.errors)
+}
+
+function detectFormatFromPath(filePath, source) {
+  switch (extname(filePath)) {
+    case '.cjs': return SOURCE_TYPE.CJS
+    case '.mjs': return SOURCE_TYPE.ESM
+    case '.json': return SOURCE_TYPE.JSON
+    case '.js': return detectFormatFromSource(source)
+    default: return SOURCE_TYPE.UNKNOWN
+  }
+}
+
+function detectFormatFromSource(source) {
+  if (/export const config/.test(source) === true) return SOURCE_TYPE.ESM
+  if (/module\.exports =/.test(source) === true) return SOURCE_TYPE.CJS
+  if (source.charAt(0) === '{') return SOURCE_TYPE.JSON
+  return SOURCE_TYPE.UNKNOWN
+}
+
+/**
+ * Given a CJS source string, load the module as Node.js normally would
+ * and return the object assigned to `module.exports`.
+ *
+ * @param {string} source The CJS source to parse.
+ * @param {string} [anchorPath] File path that points to the source file.
+ * When reading from stdin, this will be empty. Otherwise, it should be
+ * the full path to the script file.
+ *
+ * @returns {*} The entity assigned to `module.exports`.
+ */
+function loadCjs(source, anchorPath) {
+  if (!anchorPath) {
+    anchorPath = join(process.cwd(), 'tmp-mod.js')
+  }
+
+  const require = createRequire(anchorPath)
+  const module = { exports: {} }
+  const dir = dirname(anchorPath)
+  const wrapper = vm.compileFunction(
+    source,
+    ['exports', 'require', 'module', '__filename', '__dirname'],
+    { filename: anchorPath }
+  )
+  wrapper(module.exports, require, module, anchorPath, dir)
+
+  return module.exports
+}
+
+/**
+ * Given an ESM source string, load the module as Node.js normally would
+ * and return the object exported as `config`.
+ *
+ * @param {string} source The ESM source to parse.
+ * @param {string} [anchorPath] File path that points to the source file.
+ * When reading from stdin, this will be empty. Otherwise, it should be
+ * the full path to the script file.
+ *
+ * @returns {*} The `config` export value.
+ */
+async function loadEsm(source, anchorPath) {
+  if (!anchorPath) {
+    anchorPath = join(process.cwd(), 'tmp-mod.mjs')
+  }
+
+  const anchorUrl = pathToFileURL(anchorPath).href
+
+  // eslint-disable-next-line sonarjs/code-eval
+  const module = new vm.SourceTextModule(source, {
+    identifier: anchorUrl,
+    initializeImportMeta(meta) {
+      meta.url = anchorUrl
+      meta.resolve = (spec) => resolveSpecifier(spec, anchorUrl)
+    },
+    importModuleDynamically: (spec) => import(resolveSpecifier(spec, anchorUrl))
+  })
+  await module.link(link)
+  await module.evaluate()
+  // ESM exports are defined in the namespace. We want the `config` export.
+  return module.namespace.config
+
+  async function link(specifier, referrer) {
+    const resolvedUrl = resolveSpecifier(specifier, referrer.identifier)
+    const imported = await import(resolvedUrl)
+    const names = new Set(Object.keys(imported))
+    names.add('default')
+
+    return new vm.SyntheticModule(
+      Array.from(names),
+      function () { for (const n of names) this.setExport(n, imported[n]) },
+      { identifier: resolvedUrl }
+    )
+  }
+}
+
+/**
+ * Resolves a module specifier to a fully-qualified URL, relative to a referrer
+ * URL, exactly as Node.js would when loading `referrerUrl` directly. This does
+ * not rely on the two-argument form of `import.meta.resolve`, whose parent
+ * specifier parameter is only honored under `--experimental-import-meta-resolve`.
+ *
+ * @param {string} specifier The specifier from an `import` statement.
+ * @param {string} referrerUrl The URL of the module performing the import.
+ *
+ * @returns {string} The resolved absolute URL.
+ */
+function resolveSpecifier(specifier, referrerUrl) {
+  if (
+    specifier.startsWith('node:') === true ||
+    specifier.startsWith('file:') === true
+  ) {
+    return specifier
+  }
+
+  // Relative and absolute path specifiers resolve against the referrer's URL.
+  if (/^\.{0,2}\//.test(specifier) === true) {
+    return new URL(specifier, referrerUrl).href
+  }
+
+  // Bare specifiers (e.g. a package name) resolve via the Node.js module
+  // resolution algorithm anchored at the referrer's location.
+  const require = createRequire(referrerUrl)
+  return pathToFileURL(require.resolve(specifier)).href
+}
+
+function writeHuman(errors) {
+  if (errors == null) {
+    console.log('No configuration errors detected.')
+    return
+  }
+
+  console.log('Found the following configuration errors:')
+  for (const error of errors) {
+    console.log(`  + ${error.instancePath}: ${error.message}`)
+  }
+}
+
+function writeJson(errors) {
+  if (errors == null) {
+    console.log(
+      JSON.stringify({ status: 0, errors: [] }, null, 2)
+    )
+    return
+  }
+
+  const result = {
+    status: 1,
+    errors: []
+  }
+  for (const error of errors) {
+    result.errors.push({ [error.instancePath]: error.message })
+  }
+  console.log(
+    JSON.stringify(result, null, 2)
+  )
+}
+
+/**
+ * Reports an input-processing failure (e.g. an undetectable source format) as
+ * a single human-readable line on stderr.
+ *
+ * @param {string} message The failure description.
+ */
+function reportUnprocessableHuman(message) {
+  console.error(message)
+}
+
+/**
+ * Reports an input-processing failure as a JSON object on stdout, mirroring the
+ * shape produced by `writeJson` but with the unprocessable status code.
+ *
+ * @param {string} message The failure description.
+ */
+function reportUnprocessableJson(message) {
+  console.log(
+    JSON.stringify({ status: EXIT_CODE.UNPROCESSABLE, errors: [{ message }] }, null, 2)
+  )
+}

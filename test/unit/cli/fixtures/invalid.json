@@ -1,0 +1,8 @@
+{
+  "high_security": 42,
+
+  "attributes": {
+    "enabled": true,
+    "value_size_limit": "four hundred"
+  }
+}
