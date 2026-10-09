@@ -244,7 +244,7 @@ test('listen and close callbacks', function listenCloseTest(t, end) {
 })
 
 test('Socket#connect with port, host, and callback', function socketConnectTest(t, end) {
-  const { agent } = t.nr
+  const { agent, tracer } = t.nr
 
   const server = net.createServer(function connectionHandler(socket) {
     socket.end()
@@ -268,8 +268,108 @@ test('Socket#connect with port, host, and callback', function socketConnectTest(
         const connectSegment = children.find((child) => child.name === 'net.Socket.connect')
         assert.ok(connectSegment, 'should create a net.Socket.connect segment')
         assert.ok(connectSegment.timer.touched, 'connect should started and ended')
+        assert.equal(
+          tracer.getSegment(),
+          connectSegment,
+          'connect callback should run bound to the connect segment'
+        )
+      })
 
-        socket.end()
+      socket.on('close', () => {
+        end()
+      })
+    })
+  })
+})
+
+test('net.connect runs its optional callback in the correct segment', function (t, end) {
+  const { agent, tracer } = t.nr
+
+  const server = net.createServer(function connectionHandler(socket) {
+    socket.end('end data')
+  })
+
+  t.after(function () {
+    server.close()
+  })
+
+  server.listen(4133, function listening() {
+    helper.runInTransaction(agent, function transactionWrapper(transaction) {
+      let segmentInCallback = null
+      const socket = net.connect({ port: 4133 }, function onConnect() {
+        assert.equal(id(agent.getTransaction()), id(transaction), 'callback should maintain tx')
+        segmentInCallback = tracer.getSegment()
+      })
+
+      socket.on('data', function onData() {})
+      socket.on('end', function onEnd() {
+        const children = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.equal(children.length, 1, 'should have a single child')
+        let connectSegment = children[0]
+        assert.equal(connectSegment.name, 'net.connect', 'outer segment should have correct name')
+
+        // Depending on the version of Node there may be another connection
+        // segment floating in the trace -- that nested segment is the one
+        // the optional callback actually gets bound to.
+        const connectChildren = transaction.trace.getChildren(connectSegment.id)
+        if (connectChildren[0] && connectChildren[0].name === 'net.Socket.connect') {
+          connectSegment = connectChildren[0]
+        }
+
+        assert.equal(
+          segmentInCallback,
+          connectSegment,
+          'optional callback should run bound to the innermost connect segment'
+        )
+        end()
+      })
+    })
+  })
+})
+
+test('net.createConnection runs its optional callback in the correct segment', function (t, end) {
+  const { agent, tracer } = t.nr
+
+  const server = net.createServer(function connectionHandler(socket) {
+    socket.end('end data')
+  })
+
+  t.after(function () {
+    server.close()
+  })
+
+  server.listen(4134, function listening() {
+    helper.runInTransaction(agent, function transactionWrapper(transaction) {
+      let segmentInCallback = null
+      const socket = net.createConnection({ port: 4134 }, function onConnect() {
+        assert.equal(id(agent.getTransaction()), id(transaction), 'callback should maintain tx')
+        segmentInCallback = tracer.getSegment()
+      })
+
+      socket.on('data', function onData() {})
+      socket.on('end', function onEnd() {
+        const children = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.equal(children.length, 1, 'should have a single child')
+        let connectSegment = children[0]
+        assert.equal(
+          connectSegment.name,
+          'net.createConnection',
+          'outer segment should have correct name'
+        )
+
+        // Depending on the version of Node there may be another connection
+        // segment floating in the trace -- that nested segment is the one
+        // the optional callback actually gets bound to.
+        const connectChildren = transaction.trace.getChildren(connectSegment.id)
+        if (connectChildren[0] && connectChildren[0].name === 'net.Socket.connect') {
+          connectSegment = connectChildren[0]
+        }
+
+        assert.equal(
+          segmentInCallback,
+          connectSegment,
+          'optional callback should run bound to the innermost connect segment'
+        )
         end()
       })
     })
@@ -359,7 +459,6 @@ test('socket.connect called directly', function (t, end) {
           'connect callback should run in the correct transaction'
         )
         segmentInCallback = tracer.getSegment()
-        socket.end()
       })
       socket.on('close', function onClose() {
         const children = transaction.trace.getChildren(transaction.trace.root.id)
