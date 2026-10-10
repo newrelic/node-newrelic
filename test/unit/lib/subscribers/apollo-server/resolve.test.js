@@ -24,78 +24,56 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
 
-function fakeTransaction(names) {
-  return {
+function captureArgMetrics(subscriber, obj) {
+  const counts = {}
+  const transaction = {
     metrics: {
       getOrCreateMetric(name) {
-        names.push(name)
-        return { incrementCallCount() {} }
+        return {
+          incrementCallCount() {
+            counts[name] = (counts[name] ?? 0) + 1
+          }
+        }
       }
     }
   }
+  const args = subscriber.flattenArgs({ obj })
+  subscriber.captureFieldMetrics({ transaction, args, fieldType: 'Query', fieldName: 'books' })
+  return counts
 }
 
-test('flattenArgs flattens nested object args', (t) => {
+test('captureFieldMetrics collapses list args into one metric per item', (t) => {
   const { subscriber } = t.nr
-  const flattened = subscriber.flattenArgs({
-    obj: { book: { author: { name: 'George Orwell' }, title: '1984' } }
+  const counts = captureArgMetrics(subscriber, {
+    ids: [1, 2, 3],
+    searchCriteria: [{ name: 'test' }, { name: 'test2' }]
   })
-  assert.deepEqual(flattened, {
-    'book.author.name': 'George Orwell',
-    'book.title': '1984'
+  assert.deepEqual(counts, {
+    'GraphQL/field/ApolloServer/Query.books': 1,
+    'GraphQL/arg/ApolloServer/Query.books/ids': 3,
+    'GraphQL/arg/ApolloServer/Query.books/searchCriteria.name': 2
   })
 })
 
-test('flattenArgs collapses a list of scalars under the arg name', (t) => {
+test('captureFieldMetrics collapses nested lists', (t) => {
   const { subscriber } = t.nr
-  const flattened = subscriber.flattenArgs({ obj: { ids: [1, 2, 3] } })
-  assert.deepEqual(flattened, { ids: 3 })
-})
-
-test('flattenArgs collapses a list of objects under the arg name', (t) => {
-  const { subscriber } = t.nr
-  const flattened = subscriber.flattenArgs({
-    obj: { searchCriteria: [{ name: 'test' }, { name: 'test2' }] }
+  const counts = captureArgMetrics(subscriber, {
+    book: { editions: [{ formats: ['pb', 'hb'] }] },
+    matrix: [[1], [2]]
   })
-  assert.deepEqual(flattened, { 'searchCriteria.name': 'test2' })
-})
-
-test('flattenArgs collapses lists nested inside object args', (t) => {
-  const { subscriber } = t.nr
-  const flattened = subscriber.flattenArgs({
-    obj: { book: { ids: [1, 2], editions: [{ format: 'pb' }, { format: 'hb' }] } }
+  assert.deepEqual(counts, {
+    'GraphQL/field/ApolloServer/Query.books': 1,
+    'GraphQL/arg/ApolloServer/Query.books/book.editions.formats': 2,
+    'GraphQL/arg/ApolloServer/Query.books/matrix': 2
   })
-  assert.deepEqual(flattened, { 'book.ids': 2, 'book.editions.format': 'hb' })
 })
 
-test('flattenArgs produces no keys for an empty list', (t) => {
+test('captureFieldMetrics keeps non-list arg names unchanged', (t) => {
   const { subscriber } = t.nr
-  const flattened = subscriber.flattenArgs({ obj: { ids: [] } })
-  assert.deepEqual(flattened, {})
-})
-
-test('captureFieldMetrics creates a single arg metric for a list of scalars', (t) => {
-  const { subscriber } = t.nr
-  const names = []
-  const transaction = fakeTransaction(names)
-  const args = subscriber.flattenArgs({ obj: { ids: [1, 2, 3] } })
-  subscriber.captureFieldMetrics({ transaction, args, fieldType: 'Query', fieldName: 'books' })
-  assert.deepEqual(names, [
-    'GraphQL/field/ApolloServer/Query.books',
-    'GraphQL/arg/ApolloServer/Query.books/ids'
-  ])
-})
-
-test('captureFieldMetrics creates a single arg metric per leaf of a list of objects', (t) => {
-  const { subscriber } = t.nr
-  const names = []
-  const transaction = fakeTransaction(names)
-  const args = subscriber.flattenArgs({
-    obj: { searchCriteria: [{ name: 'test' }, { name: 'test2' }] }
+  const counts = captureArgMetrics(subscriber, { book: { author: { name: 'a' }, title: 'b' } })
+  assert.deepEqual(counts, {
+    'GraphQL/field/ApolloServer/Query.books': 1,
+    'GraphQL/arg/ApolloServer/Query.books/book.author.name': 1,
+    'GraphQL/arg/ApolloServer/Query.books/book.title': 1
   })
-  subscriber.captureFieldMetrics({ transaction, args, fieldType: 'Query', fieldName: 'books' })
-  assert.deepEqual(names, [
-    'GraphQL/field/ApolloServer/Query.books',
-    'GraphQL/arg/ApolloServer/Query.books/searchCriteria.name'
-  ])
 })
