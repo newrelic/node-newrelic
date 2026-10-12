@@ -37,7 +37,6 @@ test('Promise.race', async function (t) {
       testFunc: function ({ plan, name }) {
         return Promise.race([
           Promise.resolve(name + 'resolved'),
-          // eslint-disable-next-line prefer-promise-reject-errors
           Promise.reject(name + 'rejection!'),
           Promise.delay(15, name + 'delayed')
         ]).then(function (result) {

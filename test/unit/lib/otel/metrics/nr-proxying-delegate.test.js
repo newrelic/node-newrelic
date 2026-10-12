@@ -34,6 +34,7 @@ test.beforeEach((ctx) => {
 
   const mockDelegate = {
     export(items, callback) {
+      // eslint-disable-next-line n/no-callback-literal
       callback({ code: 0 })
     },
     forceFlush() {
@@ -72,6 +73,7 @@ test('records success metric when export succeeds', (t) => {
   const { delegate, mockDelegate } = t.nr
 
   mockDelegate.export = (items, callback) => {
+    // eslint-disable-next-line n/no-callback-literal
     callback({ code: ExportResultCode.SUCCESS })
   }
 
@@ -88,6 +90,7 @@ test('records failure metric when export fails', (t) => {
   const { delegate, mockDelegate } = t.nr
 
   mockDelegate.export = (items, callback) => {
+    // eslint-disable-next-line n/no-callback-literal
     callback({ code: ExportResultCode.FAILED })
   }
 
@@ -105,6 +108,7 @@ test('does not record metric for unknown result codes', (t) => {
 
   // Use a code that's not SUCCESS or FAILED (e.g., undefined or other value)
   mockDelegate.export = (items, callback) => {
+    // eslint-disable-next-line n/no-callback-literal
     callback({ code: 999 })
   }
 

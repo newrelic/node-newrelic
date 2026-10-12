@@ -86,6 +86,7 @@ function bootstrapModule({ t, request = basicHttpRequest }) {
       request.method = method
       function fireLogHook(message, level) {
         for (const cb of global.azure.logHandlers) {
+          // eslint-disable-next-line n/no-callback-literal
           cb({ message, level, category: 'Function.test-func' })
         }
       }
@@ -214,6 +215,7 @@ test('uses default values when context fields are missing', async (t) => {
   const handler = async function () {
     // Fire log hook with empty context to test defaults
     for (const cb of global.azure.logHandlers) {
+      // eslint-disable-next-line n/no-callback-literal
       cb({})
     }
     return makeOkResponse()
