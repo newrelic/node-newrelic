@@ -218,13 +218,77 @@ test('should not create tx if one already exists when a server span is created',
   helper.runInTransaction(agent, (tx) => {
     tx.name = 'test-tx'
     const span = createHttpServerSpan({ tracer })
-    const { segment, transaction } = synthesizer.synthesize(span)
+    const { segment, transaction, rule } = synthesizer.synthesize(span)
     assert.deepEqual(tx, transaction)
     assert.equal(segment.name, 'test-span')
     assert.equal(segment.id, span.spanContext().spanId)
     assert.equal(segment.parentId, tx.trace.root.id)
+    // The rule is cached and shared across every span that matches it for
+    // the life of the agent (see RulesEngine). Synthesizing a nested server
+    // span (one with an already-active transaction) must not mutate it.
+    assert.equal(rule.txTransformation.type, 'web')
+
     end()
   })
+})
+
+test('rule.txTransformation is not corrupted by a nested server span for later root spans', (t) => {
+  const { agent, synthesizer, tracer } = t.nr
+  let outerTx
+
+  helper.runInTransaction(agent, (tx) => {
+    outerTx = tx
+    tx.name = 'test-tx'
+    // A server span created while a transaction is already active is folded
+    // into an internal segment on the existing transaction.
+    const nestedSpan = createHttpServerSpan({ tracer })
+    const nestedResult = synthesizer.synthesize(nestedSpan)
+    assert.equal(nestedResult.transaction, tx)
+    tx.end()
+  })
+
+  // `helper.runInTransaction` runs its callback synchronously, so there is no
+  // active transaction here -- this is a genuinely root server span matching
+  // the exact same rule as the nested span above. It must still get a fully
+  // populated `txTransformation`, proving the rule object cached inside the
+  // (reused) `synthesizer`'s `RulesEngine` was not mutated by the nested span.
+  const rootSpan = createHttpServerSpan({ tracer })
+  const rootResult = synthesizer.synthesize(rootSpan)
+  assert.notEqual(rootResult.transaction, outerTx)
+  assert.equal(rootResult.rule.txTransformation.type, 'web')
+  assert.equal(rootResult.rule.txTransformation.name.verb, 'http.method')
+
+  rootResult.transaction.end()
+})
+
+test('rule.txTransformation is not corrupted by a nested consumer span for later root spans', (t) => {
+  const { agent, synthesizer, tracer } = t.nr
+  let outerTx
+
+  helper.runInTransaction(agent, (tx) => {
+    outerTx = tx
+    tx.name = 'test-tx'
+    // A consumer span created while a transaction is already active is
+    // folded into an internal segment on the existing transaction.
+    const nestedSpan = createConsumerSpan({ tracer })
+    const nestedResult = synthesizer.synthesize(nestedSpan)
+    assert.equal(nestedResult.transaction, tx)
+    tx.end()
+  })
+
+  // `helper.runInTransaction` runs its callback synchronously, so there is no
+  // active transaction here -- this is a genuinely root consumer span
+  // matching the exact same rule as the nested span above. It must still get
+  // a fully populated `txTransformation`, proving the rule object cached
+  // inside the (reused) `synthesizer`'s `RulesEngine` was not mutated by the
+  // nested span.
+  const rootSpan = createConsumerSpan({ tracer })
+  const rootResult = synthesizer.synthesize(rootSpan)
+  assert.notEqual(rootResult.transaction, outerTx)
+  assert.equal(rootResult.rule.txTransformation.type, 'message')
+  assert.ok(rootResult.rule.txTransformation.name.templateValue.includes('messaging.operation'))
+
+  rootResult.transaction.end()
 })
 
 test('should create producer segment', (t, end) => {
