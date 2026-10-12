@@ -156,18 +156,48 @@ test('onEnd invokes expected methods', (t) => {
   processor.finalizeTransaction = interceptor
 
   helper.runInTransaction(agent, (tx) => {
+    // span is created while `tx` is already active,
+    // it should just create a baseSegment not finalize transaction
     const span = createHttpServerSpan({ tracer })
     tx.end()
 
     t.assert.ok(span[otelSynthesis])
     span.end()
-    t.assert.equal(invocations, 6)
+    t.assert.equal(invocations, 5)
     t.assert.equal(span[otelSynthesis], undefined)
   })
 
   function interceptor() {
     invocations += 1
   }
+})
+
+test('onEnd does not end the outer transaction when a nested server span ends', (t, end) => {
+  t.plan(2)
+  const { agent, tracer } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    const nestedSpan = createHttpServerSpan({ tracer })
+    nestedSpan.end()
+    t.assert.equal(tx.isActive(), true, 'outer transaction should still be active')
+    tx.end()
+    t.assert.equal(tx.isActive(), false)
+    end()
+  })
+})
+
+test('onEnd does not end the outer transaction when a nested consumer span ends', (t, end) => {
+  t.plan(2)
+  const { agent, tracer } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    const nestedSpan = createConsumerSpan({ tracer })
+    nestedSpan.end()
+    t.assert.equal(tx.isActive(), true, 'outer transaction must still be active')
+    tx.end()
+    t.assert.equal(tx.isActive(), false)
+    end()
+  })
 })
 
 test('handleError does nothing if span not an error', (t) => {
