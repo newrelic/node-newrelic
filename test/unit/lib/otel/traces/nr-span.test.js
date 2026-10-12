@@ -125,6 +125,13 @@ describe('setAttribute', () => {
     assert.deepEqual(span.attributes['good'], ['a', 'b'])
   })
 
+  test('truncates over-limit string elements within an array value', () => {
+    const span = makeSpan()
+    span.setAttribute('good', ['ok', OVER_LIMIT])
+    assert.equal(span.attributes['good'][0], 'ok')
+    assert.equal(span.attributes['good'][1].length, ATTR_VALUE_LENGTH_LIMIT)
+  })
+
   test('accepts an array containing null or undefined elements', () => {
     const span = makeSpan()
     span.setAttribute('good', ['a', null, undefined, 'b'])
