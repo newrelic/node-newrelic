@@ -19,6 +19,7 @@ const {
   createHttpClientSpan,
   createHttpServerSpan,
   createHttpServer1dot23Span,
+  createInternalSpan,
   createNextjsServerSpan,
   createRpcServerSpan
 } = require('../fixtures')
@@ -140,6 +141,57 @@ test('onEnd adds instrumentation scope attributes', (t) => {
     t.assert.equal(attrs['otel.library.name'], 'test-tracer')
     t.assert.equal(attrs['otel.scope.version'], '1.0.0')
     t.assert.equal(attrs['otel.library.version'], '1.0.0')
+  })
+})
+
+test('onEnd resyncs the segment name for an internal span after updateName() is called', (t) => {
+  t.plan(1)
+  const { agent, tracer } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    const span = createInternalSpan({ tracer })
+    const { segment } = span[otelSynthesis]
+    span.updateName('resolved-route-name')
+
+    span.end()
+    tx.end()
+
+    t.assert.equal(segment.name, 'resolved-route-name')
+  })
+})
+
+test('onEnd resyncs the segment name for a nested server span after updateName() is called', (t) => {
+  t.plan(1)
+  const { agent, tracer } = t.nr
+
+  // A root server span's base segment has its name re-derived from the
+  // finalized transaction name regardless of `updateName()` (see
+  // Transaction#finalizeName -> baseSegment.setNameFromTransaction). The
+  // resync is only observable for a span that does NOT own/finalize a
+  // transaction, i.e. one nested inside an already-active transaction.
+  helper.runInTransaction(agent, (tx) => {
+    const span = createHttpServerSpan({ tracer })
+    const { segment } = span[otelSynthesis]
+    span.updateName('resolved-route-name')
+    span.end()
+    tx.end()
+
+    t.assert.equal(segment.name, 'resolved-route-name')
+  })
+})
+
+test('onEnd resyncs the segment name for a nested consumer span after updateName() is called', (t) => {
+  t.plan(1)
+  const { agent, tracer } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    const span = createConsumerSpan({ tracer })
+    const { segment } = span[otelSynthesis]
+    span.updateName('resolved-destination-name')
+    span.end()
+    tx.end()
+
+    t.assert.equal(segment.name, 'resolved-destination-name')
   })
 })
 

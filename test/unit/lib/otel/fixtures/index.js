@@ -22,6 +22,7 @@ const {
 } = require('./server')
 const { createProducerSpan } = require('./producer')
 const { createConsumerSpan } = require('./consumer')
+const { createInternalSpan } = require('./internal')
 
 module.exports = {
   createConsumerSpan,
@@ -31,6 +32,7 @@ module.exports = {
   createHttpClientSpan,
   createHttpServerSpan,
   createHttpServer1dot23Span,
+  createInternalSpan,
   createMemcachedDbSpan,
   createMongoDbSpan,
   createNextjsServerSpan,
