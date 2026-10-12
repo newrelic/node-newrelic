@@ -1,3 +1,18 @@
+### v14.8.0 (2026-10-12)
+
+#### Features
+
+* Added instrumentation for `dns.promises`, `dns.Resolver`, `dns.promises.Resolver`, and additional `resolve*` methods ([#4321](https://github.com/newrelic/node-newrelic/pull/4321)) ([e1e7784](https://github.com/newrelic/node-newrelic/commit/e1e7784abfce958a48ac43420b9da92509c10249))
+* Refactored `net` instrumentation to subscriber-based ([#4322](https://github.com/newrelic/node-newrelic/pull/4322)) ([0123e56](https://github.com/newrelic/node-newrelic/commit/0123e5692d4bfec6ce7f5c513cbcd8ce18b6d4bc))
+
+#### Documentation
+
+* Updated compatibility report ([#4348](https://github.com/newrelic/node-newrelic/pull/4348)) ([0a01c40](https://github.com/newrelic/node-newrelic/commit/0a01c40da0601065af100d8366c8973ca8b36c72))
+
+#### Continuous integration
+
+* Updated agent config schema workflow to update its open PR instead of opening new ones ([#4340](https://github.com/newrelic/node-newrelic/pull/4340)) ([fb7f482](https://github.com/newrelic/node-newrelic/commit/fb7f4824c7edfee0ade6dc3c5e9917c35b80a6b0))
+
 ### v14.7.0 (2026-10-07)
 
 #### Features

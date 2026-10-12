@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.8.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Refactored `net` instrumentation to subscriber-based",
+          "Added instrumentation for `dns.promises`, `dns.Resolver`, `dns.promises.Resolver`, and additional `resolve*` methods"
+        ]
+      }
+    },
+    {
       "version": "14.7.0",
       "changes": {
         "security": [],
