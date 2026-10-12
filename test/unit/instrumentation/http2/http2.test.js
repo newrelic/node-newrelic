@@ -745,6 +745,40 @@ test('http2 outbound request', async (t) => {
     })
   })
 
+  await t.test('should leave the parent segment untouched if the external segment cannot be created', (t, end) => {
+    const { agent, http2, port, protocol, host } = t.nr
+    helper.runInTransaction(agent, function (transaction) {
+      t.nr.transaction = transaction
+      t.nr.rootName = transaction.trace.root.name
+      t.mock.method(agent.tracer, 'createSegment', () => null)
+      makeRequest(
+        http2,
+        {
+          protocol,
+          host,
+          port,
+          path: '/noSegment',
+          method: 'GET'
+        },
+        finish
+      )
+    })
+
+    function finish(err, responseHeaders) {
+      assert.ok(!err)
+      const { agent, transaction, rootName } = t.nr
+      const { root } = transaction.trace
+      assert.equal(transaction.trace.getChildren(root.id).length, 0, 'should not create an external segment')
+      assert.equal(root.name, rootName, 'should not rename the parent segment')
+      assert.ok(!responseHeaders.traceparent, 'should not inject traceparent header')
+      assert.ok(!responseHeaders.newrelic, 'should not inject newrelic header')
+      transaction.end()
+      const metric = agent.metrics.getMetric(`External/${host}:${port}/http2`)
+      assert.equal(metric, undefined, 'should not record an http2 external metric')
+      end()
+    }
+  })
+
   await t.test('should record the default port when the connect URL omits it', (t, end) => {
     const net = require('node:net')
     const { agent, http2, host, port } = t.nr
