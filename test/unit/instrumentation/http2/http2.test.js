@@ -720,6 +720,115 @@ test('http2 outbound request', async (t) => {
       end()
     }
   })
+
+  await t.test('should not throw when request() is called without headers', (t, end) => {
+    const { agent, http2, host, port } = t.nr
+    helper.runInTransaction(agent, function (transaction) {
+      const session = http2.connect(`http://${host}:${port}`)
+      let req
+      assert.doesNotThrow(() => {
+        req = session.request()
+      })
+      req.on('response', (headers) => {
+        assert.equal(headers[':status'], 200)
+        req.resume()
+        req.on('end', () => {
+          session.close()
+          const child = transaction.trace
+            .getChildren(transaction.trace.root.id)
+            .find((segment) => segment.name.startsWith(NAMES.EXTERNAL.PREFIX))
+          assert.equal(child.name, `External/${host}:${port}/`)
+          end()
+        })
+      })
+      req.end()
+    })
+  })
+
+  await t.test('should record the default port when the connect URL omits it', (t, end) => {
+    const net = require('node:net')
+    const { agent, http2, host, port } = t.nr
+    helper.runInTransaction(agent, function (transaction) {
+      // connect to the default http port, but route the socket to the test server
+      const session = http2.connect(`http://${host}`, {
+        createConnection: () => net.connect(port, host)
+      })
+      const req = session.request({ ':path': '/', ':method': 'GET' })
+      req.on('response', () => {
+        req.on('data', () => {})
+        req.on('end', () => {
+          session.close()
+          // createConnection adds a net.connect segment alongside the external
+          const child = transaction.trace
+            .getChildren(transaction.trace.root.id)
+            .find((segment) => segment.name.startsWith(NAMES.EXTERNAL.PREFIX))
+          assert.equal(child.name, `External/${host}/`)
+          const spanAttrs = child.attributes.get(DESTINATIONS.SPAN_EVENT)
+          assert.equal(spanAttrs.port, 80)
+          assert.equal(spanAttrs.url, `http://${host}/`)
+          end()
+        })
+      })
+      req.end()
+    })
+  })
+
+  await t.test('should parse the authority of an IPv6 connection', async (t) => {
+    const { agent, http2 } = t.nr
+    const server = http2.createServer((req, res) => res.end())
+    try {
+      await new Promise((resolve, reject) => {
+        server.once('error', reject)
+        server.listen({ host: '::1', port: 0 }, resolve)
+      })
+    } catch (err) {
+      t.skip(`IPv6 loopback is not available: ${err.code}`)
+      return
+    }
+    t.after(() => server.close())
+    const { port } = server.address()
+
+    const child = await helper.runInTransaction(agent, (transaction) => new Promise((resolve) => {
+      const session = http2.connect(`http://[::1]:${port}`)
+      const req = session.request({ ':path': '/search?token=abc', ':method': 'GET' })
+      req.resume()
+      req.on('end', () => {
+        session.close()
+        resolve(transaction.trace
+          .getChildren(transaction.trace.root.id)
+          .find((segment) => segment.name.startsWith(NAMES.EXTERNAL.PREFIX)))
+      })
+      req.end()
+    }))
+
+    assert.equal(child.name, `External/[::1]:${port}/search`)
+    const spanAttrs = child.attributes.get(DESTINATIONS.SPAN_EVENT)
+    assert.equal(spanAttrs.hostname, '[::1]')
+    assert.equal(spanAttrs.port, port)
+    assert.equal(spanAttrs.url, `http://[::1]:${port}/search`)
+  })
+
+  await t.test('should drop the query string when the request URL cannot be parsed', (t, end) => {
+    const { agent, http2, host, port } = t.nr
+    helper.runInTransaction(agent, function (transaction) {
+      const session = http2.connect(`http://${host}:${port}`)
+      // a :path without a leading slash cannot be joined into a valid URL
+      const req = session.request({ ':path': 'noslash?token=abc', ':method': 'GET' })
+      req.on('error', () => {}) // the server rejects the malformed path
+      req.on('close', () => {
+        session.close()
+        const child = transaction.trace
+          .getChildren(transaction.trace.root.id)
+          .find((segment) => segment.name.startsWith(NAMES.EXTERNAL.PREFIX))
+        assert.equal(child.name, 'External/unknownnoslash')
+        const spanAttrs = child.attributes.get(DESTINATIONS.SPAN_EVENT)
+        assert.equal(spanAttrs.url, 'https://unknownnoslash')
+        assert.equal(Object.keys(spanAttrs).some((key) => key.startsWith('request.parameters.')), false)
+        end()
+      })
+      req.end()
+    })
+  })
 })
 
 test('http trace headers', async (t) => {
