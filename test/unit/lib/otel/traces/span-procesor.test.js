@@ -256,6 +256,31 @@ test('handleError collects exception events', (t) => {
   })
 })
 
+test('handleError keeps the generated stack when the exception event has no stacktrace', (t) => {
+  t.plan(1)
+  const { agent, processor, tracer } = t.nr
+
+  helper.runInTransaction(agent, (tx) => {
+    const span = createHttpClientSpan({ tracer })
+    span.events.push({
+      name: 'exception',
+      attributes: {
+        'exception.message': 'no stack here'
+      }
+    })
+
+    const { segment } = span[otelSynthesis]
+    span.status.code = 2
+    span.status.message = 'boom'
+
+    const errors = []
+    agent.errors.add = (_tx, error) => errors.push(error)
+    processor.handleError({ span, segment, transaction: tx })
+
+    t.assert.notEqual(errors[0].stack, undefined, 'should not be marking stack as undefined when no stacktrace exists on span')
+  })
+})
+
 test('updateDuration touches and converts', (t) => {
   t.plan(2)
   const { agent, processor, tracer } = t.nr
