@@ -26,6 +26,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [@opentelemetry/resources](#opentelemetryresources)
 * [@opentelemetry/sdk-metrics](#opentelemetrysdk-metrics)
 * [@tyriar/fibonacci-heap](#tyriarfibonacci-heap)
+* [ajv](#ajv)
 * [concat-stream](#concat-stream)
 * [https-proxy-agent](#https-proxy-agent)
 * [import-in-the-middle](#import-in-the-middle)
@@ -49,7 +50,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [@slack/bolt](#slackbolt)
 * [@smithy/eventstream-codec](#smithyeventstream-codec)
 * [@smithy/util-utf8](#smithyutil-utf8)
-* [ajv](#ajv)
 * [borp](#borp)
 * [c8](#c8)
 * [clean-jsdoc-theme](#clean-jsdoc-theme)
@@ -300,7 +300,7 @@ This product includes source derived from [@apm-js-collab/tracing-hooks](https:/
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.14.5](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.14.5)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.14.5/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.14.6](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.14.6)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.14.6/LICENSE):
 
 ```
                                  Apache License
@@ -1809,7 +1809,7 @@ This product includes source derived from [@opentelemetry/otlp-transformer](http
 
 ### @opentelemetry/resources
 
-This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.11.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.11.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.11.0/LICENSE):
+This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v2.12.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.12.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.12.0/LICENSE):
 
 ```
                                  Apache License
@@ -2018,7 +2018,7 @@ This product includes source derived from [@opentelemetry/resources](https://git
 
 ### @opentelemetry/sdk-metrics
 
-This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.11.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.11.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.11.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v2.12.0](https://github.com/open-telemetry/opentelemetry-js/tree/v2.12.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v2.12.0/LICENSE):
 
 ```
                                  Apache License
@@ -2254,6 +2254,36 @@ THE SOFTWARE.
 
 ```
 
+### ajv
+
+This product includes source derived from [ajv](https://github.com/ajv-validator/ajv) ([v8.20.0](https://github.com/ajv-validator/ajv/tree/v8.20.0)), distributed under the [MIT License](https://github.com/ajv-validator/ajv/blob/v8.20.0/LICENSE):
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2015-2021 Evgeny Poberezkin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+```
+
 ### concat-stream
 
 This product includes source derived from [concat-stream](https://github.com/maxogden/concat-stream) ([v2.0.0](https://github.com/maxogden/concat-stream/tree/v2.0.0)), distributed under the [MIT License](https://github.com/maxogden/concat-stream/blob/v2.0.0/LICENSE):
@@ -2316,7 +2346,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v3.5.1](https://github.com/nodejs/import-in-the-middle/tree/v3.5.1)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v3.5.1/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v3.5.2](https://github.com/nodejs/import-in-the-middle/tree/v3.5.2)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v3.5.2/LICENSE):
 
 ```
                                  Apache License
@@ -2692,7 +2722,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1141.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1141.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1141.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1149.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1149.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1149.0/LICENSE):
 
 ```
                                 Apache License
@@ -2901,7 +2931,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1141.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1141.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1141.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1149.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1149.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1149.0/LICENSE):
 
 ```
                                 Apache License
@@ -3110,7 +3140,7 @@ This product includes source derived from [@aws-sdk/s3-request-presigner](https:
 
 ### @conventional-changelog/git-client
 
-This product includes source derived from [@conventional-changelog/git-client](https://github.com/conventional-changelog/conventional-changelog) ([v3.1.2](https://github.com/conventional-changelog/conventional-changelog/tree/v3.1.2)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v3.1.2/LICENSE.md):
+This product includes source derived from [@conventional-changelog/git-client](https://github.com/conventional-changelog/conventional-changelog) ([v3.2.0](https://github.com/conventional-changelog/conventional-changelog/tree/v3.2.0)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v3.2.0/LICENSE.md):
 
 ```
 ### MIT License
@@ -4269,36 +4299,6 @@ Apache License
    limitations under the License.
 ```
 
-### ajv
-
-This product includes source derived from [ajv](https://github.com/ajv-validator/ajv) ([v8.20.0](https://github.com/ajv-validator/ajv/tree/v8.20.0)), distributed under the [MIT License](https://github.com/ajv-validator/ajv/blob/v8.20.0/LICENSE):
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2015-2021 Evgeny Poberezkin
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
-```
-
 ### borp
 
 This product includes source derived from [borp](https://github.com/mcollina/borp) ([v1.0.0](https://github.com/mcollina/borp/tree/v1.0.0)), distributed under the [MIT License](https://github.com/mcollina/borp/blob/v1.0.0/LICENSE):
@@ -4444,7 +4444,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### conventional-changelog-conventionalcommits
 
-This product includes source derived from [conventional-changelog-conventionalcommits](https://github.com/conventional-changelog/conventional-changelog) ([v10.4.0](https://github.com/conventional-changelog/conventional-changelog/tree/v10.4.0)), distributed under the [ISC License](https://github.com/conventional-changelog/conventional-changelog/blob/v10.4.0/LICENSE.md):
+This product includes source derived from [conventional-changelog-conventionalcommits](https://github.com/conventional-changelog/conventional-changelog) ([v10.4.1](https://github.com/conventional-changelog/conventional-changelog/tree/v10.4.1)), distributed under the [ISC License](https://github.com/conventional-changelog/conventional-changelog/blob/v10.4.1/LICENSE.md):
 
 ```
 ### ISC License
@@ -4467,7 +4467,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ### conventional-changelog-writer
 
-This product includes source derived from [conventional-changelog-writer](https://github.com/conventional-changelog/conventional-changelog) ([v9.2.1](https://github.com/conventional-changelog/conventional-changelog/tree/v9.2.1)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v9.2.1/LICENSE.md):
+This product includes source derived from [conventional-changelog-writer](https://github.com/conventional-changelog/conventional-changelog) ([v9.3.0](https://github.com/conventional-changelog/conventional-changelog/tree/v9.3.0)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v9.3.0/LICENSE.md):
 
 ```
 ### MIT License
@@ -4496,7 +4496,7 @@ SOFTWARE.
 
 ### conventional-commits-parser
 
-This product includes source derived from [conventional-commits-parser](https://github.com/conventional-changelog/conventional-changelog) ([v7.1.2](https://github.com/conventional-changelog/conventional-changelog/tree/v7.1.2)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v7.1.2/LICENSE.md):
+This product includes source derived from [conventional-commits-parser](https://github.com/conventional-changelog/conventional-changelog) ([v7.1.3](https://github.com/conventional-changelog/conventional-changelog/tree/v7.1.3)), distributed under the [MIT License](https://github.com/conventional-changelog/conventional-changelog/blob/v7.1.3/LICENSE.md):
 
 ```
 ### MIT License
@@ -4584,7 +4584,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v5.2.1](https://github.com/expressjs/express/tree/v5.2.1)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v5.2.1/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v5.3.0](https://github.com/expressjs/express/tree/v5.3.0)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v5.3.0/LICENSE):
 
 ```
 (The MIT License)
@@ -4616,7 +4616,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### got
 
-This product includes source derived from [got](https://github.com/sindresorhus/got) ([v15.1.0](https://github.com/sindresorhus/got/tree/v15.1.0)), distributed under the [MIT License](https://github.com/sindresorhus/got/blob/v15.1.0/license):
+This product includes source derived from [got](https://github.com/sindresorhus/got) ([v16.0.0](https://github.com/sindresorhus/got/tree/v16.0.0)), distributed under the [MIT License](https://github.com/sindresorhus/got/blob/v16.0.0/license):
 
 ```
 MIT License
@@ -4633,7 +4633,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### js-yaml
 
-This product includes source derived from [js-yaml](https://github.com/nodeca/js-yaml) ([v5.4.2](https://github.com/nodeca/js-yaml/tree/v5.4.2)), distributed under the [MIT License](https://github.com/nodeca/js-yaml/blob/v5.4.2/LICENSE):
+This product includes source derived from [js-yaml](https://github.com/nodeca/js-yaml) ([v5.4.3](https://github.com/nodeca/js-yaml/tree/v5.4.3)), distributed under the [MIT License](https://github.com/nodeca/js-yaml/blob/v5.4.3/LICENSE):
 
 ```
 (The MIT License)
@@ -4772,7 +4772,7 @@ https://github.com/jmblog/color-themes-for-google-code-prettify
 
 ### lint-staged
 
-This product includes source derived from [lint-staged](https://github.com/lint-staged/lint-staged) ([v17.5.1](https://github.com/lint-staged/lint-staged/tree/v17.5.1)), distributed under the [MIT License](https://github.com/lint-staged/lint-staged/blob/v17.5.1/LICENSE):
+This product includes source derived from [lint-staged](https://github.com/lint-staged/lint-staged) ([v17.6.0](https://github.com/lint-staged/lint-staged/tree/v17.6.0)), distributed under the [MIT License](https://github.com/lint-staged/lint-staged/blob/v17.6.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -5024,7 +5024,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### @datadog/pprof
 
-This product includes source derived from [@datadog/pprof](https://github.com/DataDog/pprof-nodejs) ([v5.19.0](https://github.com/DataDog/pprof-nodejs/tree/v5.19.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/pprof-nodejs/blob/v5.19.0/LICENSE):
+This product includes source derived from [@datadog/pprof](https://github.com/DataDog/pprof-nodejs) ([v5.20.0](https://github.com/DataDog/pprof-nodejs/tree/v5.20.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/pprof-nodejs/blob/v5.20.0/LICENSE):
 
 ```
 
