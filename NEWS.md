@@ -1,10 +1,5 @@
 ### v14.8.0 (2026-10-13)
 
-#### Features
-
-* Added instrumentation for `dns.promises`, `dns.Resolver`, `dns.promises.Resolver`, and additional `resolve*` methods ([#4321](https://github.com/newrelic/node-newrelic/pull/4321)) ([e1e7784](https://github.com/newrelic/node-newrelic/commit/e1e7784abfce958a48ac43420b9da92509c10249))
-* Refactored `net` instrumentation to subscriber-based ([#4322](https://github.com/newrelic/node-newrelic/pull/4322)) ([0123e56](https://github.com/newrelic/node-newrelic/commit/0123e5692d4bfec6ce7f5c513cbcd8ce18b6d4bc))
-
 #### Bug fixes
 
 * Prevented nested server/consumer spans from ending the outer transactions early ([#4355](https://github.com/newrelic/node-newrelic/pull/4355)) ([1a41313](https://github.com/newrelic/node-newrelic/commit/1a41313ffc1c183b0e48b05cf29ff2088ffd8922))
@@ -14,14 +9,12 @@
 
 * Handled updating segment name on internal spans when `span.updateName` is used after span is created ([#4356](https://github.com/newrelic/node-newrelic/pull/4356)) ([320b7e6](https://github.com/newrelic/node-newrelic/commit/320b7e646d02e2f5130334c2b06735fe0100f3f8))
 * Updated span process `onEnd` logic to skip attaching stacktrace to error when span lacks stack trace ([#4357](https://github.com/newrelic/node-newrelic/pull/4357)) ([d318777](https://github.com/newrelic/node-newrelic/commit/d318777a197ecc3df7570da1ebebc0837aee8a5b))
+* Added instrumentation for `dns.promises`, `dns.Resolver`, `dns.promises.Resolver`, and additional `resolve*` methods ([#4321](https://github.com/newrelic/node-newrelic/pull/4321)) ([e1e7784](https://github.com/newrelic/node-newrelic/commit/e1e7784abfce958a48ac43420b9da92509c10249))
+* Refactored `net` instrumentation to subscriber-based ([#4322](https://github.com/newrelic/node-newrelic/pull/4322)) ([0123e56](https://github.com/newrelic/node-newrelic/commit/0123e5692d4bfec6ce7f5c513cbcd8ce18b6d4bc))
 
 #### Documentation
 
 * Updated compatibility report ([#4348](https://github.com/newrelic/node-newrelic/pull/4348)) ([0a01c40](https://github.com/newrelic/node-newrelic/commit/0a01c40da0601065af100d8366c8973ca8b36c72))
-
-#### Continuous integration
-
-* Updated agent config schema workflow to update its open PR instead of opening new ones ([#4340](https://github.com/newrelic/node-newrelic/pull/4340)) ([fb7f482](https://github.com/newrelic/node-newrelic/commit/fb7f4824c7edfee0ade6dc3c5e9917c35b80a6b0))
 
 ### v14.7.0 (2026-10-07)
 
