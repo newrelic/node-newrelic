@@ -8,10 +8,6 @@
         "bugfixes": [
           "Truncated every string within an array based span attribute",
           "Prevented nested server/consumer spans from ending the outer transactions early"
-        ],
-        "features": [
-          "Refactored `net` instrumentation to subscriber-based",
-          "Added instrumentation for `dns.promises`, `dns.Resolver`, `dns.promises.Resolver`, and additional `resolve*` methods"
         ]
       }
     },
