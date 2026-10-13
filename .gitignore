@@ -13,6 +13,7 @@ ca-serial*
 out
 .vscode
 .nyc_output
+.eslintcache
 test/**/package-lock.json
 coverage/
 test/versioned-external/TEMP_TESTS

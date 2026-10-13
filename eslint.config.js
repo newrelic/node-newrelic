@@ -50,13 +50,17 @@ const newrelicConfigOverrides = {
 }
 
 const jsdocConfig = {
+  // We do not need a `plugins: { jsdoc }` block here because when we load
+  // the recommended flat config from the plugin below (in the configuration
+  // compilation section) the plugin is already registered in that config.
+  // eslint@10 makes defining the same plugin twice a hard error instead of
+  // silently accepting it.
   settings: {
     jsdoc: {
-      // This is explicity set, so we don't get TypeScript-specific linting errors.
+      // This is explicitly set, so we don't get TypeScript-specific linting errors.
       mode: 'jsdoc'
     }
   },
-  plugins: { jsdoc },
   rules: {
     // General rules
     'jsdoc/require-jsdoc': 'off',

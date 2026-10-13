@@ -124,6 +124,7 @@ function sayHelloBidiStream(call) {
 }
 
 function sayError(call, cb) {
+  // eslint-disable-next-line n/no-callback-literal
   return cb({
     code: ERR_CODE,
     message: ERR_MSG
@@ -135,6 +136,7 @@ function sayErrorClientStream(call, cb) {
     // have server send error mid-stream
     // when name matches `error`
     if (stream.name === 'error') {
+      // eslint-disable-next-line n/no-callback-literal
       cb({
         code: HALT_CODE,
         message: HALT_SERVER_ERR_MSG
@@ -143,6 +145,7 @@ function sayErrorClientStream(call, cb) {
   })
 
   call.on('end', function () {
+    // eslint-disable-next-line n/no-callback-literal
     cb({
       code: ERR_CODE,
       message: ERR_MSG

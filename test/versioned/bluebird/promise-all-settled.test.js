@@ -37,7 +37,6 @@ test('Promise.allSettled', { skip: semver.lt(pkgVersion, '3.7.0') }, async funct
       end,
       testFunc: function ({ name, plan }) {
         const p1 = Promise.resolve(name + '1')
-        // eslint-disable-next-line prefer-promise-reject-errors
         const p2 = Promise.reject(name + '2')
 
         return Promise.allSettled([p1, p2]).then(function (inspections) {

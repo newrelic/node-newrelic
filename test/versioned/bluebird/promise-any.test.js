@@ -5,7 +5,6 @@
 
 'use strict'
 
-/* eslint-disable prefer-promise-reject-errors */
 const test = require('node:test')
 
 const {
