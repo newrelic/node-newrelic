@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Oct 13 2026 15:25:00 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Oct 13 2026 15:48:07 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -160,18 +160,6 @@
       "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v0.221.0",
       "licenseFile": "node_modules/@opentelemetry/otlp-transformer/LICENSE",
       "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v0.221.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "OpenTelemetry Authors"
-    },
-    "@opentelemetry/resources@2.12.0": {
-      "name": "@opentelemetry/resources",
-      "version": "2.12.0",
-      "range": "^2.0.1",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/open-telemetry/opentelemetry-js",
-      "versionedRepoUrl": "https://github.com/open-telemetry/opentelemetry-js/tree/v2.12.0",
-      "licenseFile": "node_modules/@opentelemetry/resources/LICENSE",
-      "licenseUrl": "https://github.com/open-telemetry/opentelemetry-js/blob/v2.12.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "OpenTelemetry Authors"
     },
