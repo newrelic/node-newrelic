@@ -7,7 +7,7 @@
 
 const limits = require('./limits.cjs')
 
-module.exports = {
+module.exports.config = {
   high_security: false,
 
   attributes: {

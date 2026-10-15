@@ -5,7 +5,7 @@
 
 'use strict'
 
-module.exports = {
+module.exports.config = {
   high_security: 42,
 
   attributes: {

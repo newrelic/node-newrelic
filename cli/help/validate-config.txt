@@ -1,35 +1,28 @@
 Usage:
-  validate-command [options]
+  newrelic validate-config -c <file> [options]
 
 Examples:
   newrelic validate-config -c ./newrelic.js
 
+  newrelic validate-config -c ./newrelic.mjs
+
   newrelic validate-config -c ./newrelic.js -f json
 
-  echo 'export const config = {"high_security": 42}' | \
-    NODE_OPTIONS=--experimental-vm-modules newrelic validate-config
-
-  NODE_OPTIONS=--experimental-vm-modules newrelic validate-config -c ./newrelic.mjs
-
 Options:
-  -c, --config-file     Path to a configuration file to validate. When omitted,
-                        stdin will be evaluated as a JSON string representing
-                        a configuration object. Allowed file types are `.js`,
-                        `.cjs`, `.mjs`, and `.json`. Script should export a
-                        "config" object; JSON files should be a JSON string
-                        representing the configuration object to validate.
+  -c, --config-file     Path to the configuration file to validate. This option
+                        is required. Allowed file types are `.js`, `.cjs`, and
+                        `.mjs`.
 
-                        If your configuration uses imports you must run the
-                        tool from the same directory as the configuration file.
-                        This is to allow the typical import resolution
-                        algorithm to function properly.
+                        The file is loaded with Node.js's normal `require` /
+                        `import` rules, so whether it is treated as CommonJS or
+                        ECMAScript follows the file extension and the nearest
+                        `package.json` `type`. Any modules the file imports are
+                        resolved relative to the file, as usual.
 
-                        CJS files (or stdin) must assign the configuration to
-                        `module.exports`.
-
-                        ESM files (or stdin) require the
-                        `--experimental-vm-modules` switch to be provided when
-                        starting the tool.
+                        The configuration must be exported as a `config`
+                        property: `export const config = {}` for ECMAScript, or
+                        `module.exports.config = {}` / `exports.config = {}` for
+                        CommonJS.
 
   -f, --format          Specifies the format the tool will use when reporting
                         the result of the validation. The default format is a

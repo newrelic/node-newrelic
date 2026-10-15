@@ -21,19 +21,17 @@ const foreignCwd = import.meta.dirname
  * Runs the `newrelic` CLI as a child process exactly as a user would, and
  * resolves with the captured output and exit code. The CLI is executed from a
  * directory unrelated to both the install location and the fixtures to prove
- * it works from any directory, and with VM Modules enabled because the ESM
- * config loader depends on them.
+ * it works from any directory.
  *
  * @param {string[]} args The command-line arguments to pass to the CLI.
- * @param {string} [stdin] Optional data to write to the child's stdin.
  *
  * @returns {Promise<object>} The captured `stdout`, `stderr`, and `code`.
  */
-function runCli(args, stdin) {
+function runCli(args) {
   return new Promise((resolve) => {
-    const child = execFile(
+    execFile(
       process.execPath,
-      ['--experimental-vm-modules', cliPath, ...args],
+      [cliPath, ...args],
       { cwd: foreignCwd },
       (error, stdout, stderr) => {
         resolve({
@@ -43,39 +41,10 @@ function runCli(args, stdin) {
         })
       }
     )
-
-    if (stdin !== undefined) {
-      child.stdin.end(stdin)
-    }
   })
 }
 
-/**
- * Runs the CLI as if stdin were an interactive terminal, by preloading a module
- * that fakes `process.stdin.isTTY`. Used to exercise the guard that refuses to
- * read stdin when nothing has been piped in. Stdin is closed immediately so the
- * process cannot hang regardless of the guard's behavior.
- *
- * @param {string[]} args The command-line arguments to pass to the CLI.
- *
- * @returns {Promise<object>} The captured `stdout`, `stderr`, and `code`.
- */
-function runCliInteractive(args) {
-  const preload = join(fixturesDir, 'fake-tty.cjs')
-  return new Promise((resolve) => {
-    const child = execFile(
-      process.execPath,
-      ['--require', preload, '--experimental-vm-modules', cliPath, ...args],
-      { cwd: foreignCwd },
-      (error, stdout, stderr) => {
-        resolve({ stdout, stderr, code: error ? error.code : 0 })
-      }
-    )
-    child.stdin.end()
-  })
-}
-
-test('validates an invalid .js (CJS-detected) config file', async () => {
+test('validates an invalid .js (CJS) config file', async () => {
   const { stdout, code } = await runCli([
     'validate-config',
     '-c', join(fixturesDir, 'invalid.js')
@@ -109,17 +78,6 @@ test('validates an invalid .mjs (ESM) config file', async () => {
   assert.match(stdout, /\/attributes\/value_size_limit: must be integer/)
 })
 
-test('validates an invalid .json config file', async () => {
-  const { stdout, code } = await runCli([
-    'validate-config',
-    '-c', join(fixturesDir, 'invalid.json')
-  ])
-
-  assert.equal(code, 1)
-  assert.match(stdout, /\/high_security: must be boolean/)
-  assert.match(stdout, /\/attributes\/value_size_limit: must be integer/)
-})
-
 test('emits JSON output when the json format is requested', async () => {
   const { stdout, code } = await runCli([
     'validate-config',
@@ -136,19 +94,7 @@ test('emits JSON output when the json format is requested', async () => {
   ])
 })
 
-test('validates configuration provided over stdin', async () => {
-  const { stdout, code } = await runCli(
-    ['validate-config', '-f', 'json'],
-    '{ "high_security": 42 }'
-  )
-
-  assert.equal(code, 1)
-  const parsed = JSON.parse(stdout)
-  assert.equal(parsed.status, 1)
-  assert.deepEqual(parsed.errors, [{ '/high_security': 'must be boolean' }])
-})
-
-test('accepts a valid .js (CJS-detected) config file', async () => {
+test('accepts a valid .js (CJS) config file', async () => {
   const { stdout, code } = await runCli([
     'validate-config',
     '-c', join(fixturesDir, 'valid.js')
@@ -178,14 +124,15 @@ test('accepts a valid .mjs (ESM) config file', async () => {
   assert.match(stdout, /No configuration errors detected\./)
 })
 
-test('accepts a valid .json config file', async () => {
+test('reads config from a whole module.exports assignment', async () => {
   const { stdout, code } = await runCli([
     'validate-config',
-    '-c', join(fixturesDir, 'valid.json')
+    '-c', join(fixturesDir, 'valid-module-exports.cjs'),
+    '-f', 'json'
   ])
 
   assert.equal(code, 0)
-  assert.match(stdout, /No configuration errors detected\./)
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
 })
 
 test('emits a passing JSON result for a valid config', async () => {
@@ -199,18 +146,8 @@ test('emits a passing JSON result for a valid config', async () => {
   assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
 })
 
-test('accepts valid configuration provided over stdin', async () => {
-  const { stdout, code } = await runCli(
-    ['validate-config', '-f', 'json'],
-    '{ "high_security": false }'
-  )
-
-  assert.equal(code, 0)
-  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
-})
-
 test('every valid fixture format is accepted', async () => {
-  for (const fixture of ['valid.js', 'valid.cjs', 'valid.mjs', 'valid.json']) {
+  for (const fixture of ['valid.js', 'valid.cjs', 'valid.mjs']) {
     const { stdout, code } = await runCli([
       'validate-config',
       '-c', join(fixturesDir, fixture),
@@ -221,6 +158,21 @@ test('every valid fixture format is accepted', async () => {
     const parsed = JSON.parse(stdout)
     assert.equal(parsed.status, 0, `${fixture} should report a passing status`)
     assert.equal(parsed.errors.length, 0, `${fixture} should report no errors`)
+  }
+})
+
+test('every invalid fixture format surfaces the same errors', async () => {
+  for (const fixture of ['invalid.js', 'invalid.cjs', 'invalid.mjs']) {
+    const { stdout, code } = await runCli([
+      'validate-config',
+      '-c', join(fixturesDir, fixture),
+      '-f', 'json'
+    ])
+
+    assert.equal(code, 1, `${fixture} should exit non-zero`)
+    const parsed = JSON.parse(stdout)
+    assert.equal(parsed.status, 1, `${fixture} should report a failing status`)
+    assert.equal(parsed.errors.length, 2, `${fixture} should report two errors`)
   }
 })
 
@@ -246,130 +198,6 @@ test('loads and validates an ESM config that imports a sibling file', async () =
   assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
 })
 
-test('loads help text when run from an arbitrary directory', async () => {
-  const { stderr, code } = await runCli(['validate-config', '-h'])
-
-  assert.equal(code, 0, 'requesting help should exit zero')
-  assert.match(stderr, /newrelic validate-config -c \.\/newrelic\.js/)
-})
-
-test('loads top-level help text when the command is missing', async () => {
-  const { stderr } = await runCli([])
-
-  assert.match(stderr, /Missing command\./)
-  assert.match(stderr, /newrelic <command> \[options\]/)
-})
-
-test('every fixture format is detected and surfaces the same errors', async () => {
-  for (const fixture of ['invalid.js', 'invalid.cjs', 'invalid.mjs', 'invalid.json']) {
-    const { stdout, code } = await runCli([
-      'validate-config',
-      '-c', join(fixturesDir, fixture),
-      '-f', 'json'
-    ])
-
-    assert.equal(code, 1, `${fixture} should exit non-zero`)
-    const parsed = JSON.parse(stdout)
-    assert.equal(parsed.status, 1, `${fixture} should report a failing status`)
-    assert.equal(parsed.errors.length, 2, `${fixture} should report two errors`)
-  }
-})
-
-test('detects and validates CJS configuration over stdin', async () => {
-  const { stdout, code } = await runCli(
-    ['validate-config', '-f', 'json'],
-    'module.exports = { high_security: false }'
-  )
-
-  assert.equal(code, 0)
-  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
-})
-
-test('detects and validates ESM configuration over stdin', async () => {
-  const { stdout, code } = await runCli(
-    ['validate-config', '-f', 'json'],
-    'export const config = { high_security: false }'
-  )
-
-  assert.equal(code, 0)
-  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
-})
-
-test('exits gracefully when the stdin source type cannot be detected', async () => {
-  const { stderr, code } = await runCli(
-    ['validate-config'],
-    'this is not a recognizable configuration'
-  )
-
-  assert.equal(code, 2, 'should exit with the unprocessable code')
-  assert.match(stderr, /Could not detect source type provided via stdin\./)
-  assert.doesNotMatch(stderr, /\n\s+at /, 'should not print a stack trace')
-})
-
-test('reports an undetectable stdin source as JSON when requested', async () => {
-  const { stdout, code } = await runCli(
-    ['validate-config', '-f', 'json'],
-    'this is not a recognizable configuration'
-  )
-
-  assert.equal(code, 2)
-  const parsed = JSON.parse(stdout)
-  assert.equal(parsed.status, 2)
-  assert.equal(parsed.errors.length, 1)
-  assert.match(parsed.errors[0].message, /Could not detect source type provided via stdin\./)
-})
-
-test('exits gracefully when a file has an unrecognized extension', async () => {
-  const { stderr, code } = await runCli([
-    'validate-config',
-    '-c', join(fixturesDir, 'unknown.txt')
-  ])
-
-  assert.equal(code, 2, 'should exit with the unprocessable code')
-  assert.match(stderr, /Could not detect source type of file/)
-  assert.doesNotMatch(stderr, /\n\s+at /, 'should not print a stack trace')
-})
-
-test('reports an unrecognized file extension as JSON when requested', async () => {
-  const { stdout, code } = await runCli([
-    'validate-config',
-    '-c', join(fixturesDir, 'unknown.txt'),
-    '-f', 'json'
-  ])
-
-  assert.equal(code, 2)
-  const parsed = JSON.parse(stdout)
-  assert.equal(parsed.status, 2)
-  assert.equal(parsed.errors.length, 1)
-  assert.match(parsed.errors[0].message, /Could not detect source type of file/)
-})
-
-test('exits gracefully when the input cannot be parsed', async () => {
-  const { stderr, code } = await runCli(
-    ['validate-config', '-f', 'json'],
-    '{ not valid json'
-  )
-
-  assert.equal(code, 2, 'should exit with the unprocessable code')
-  assert.notEqual(stderr, '', 'should report a message')
-  assert.doesNotMatch(stderr, /\n\s+at /, 'should not print a stack trace')
-})
-
-test('reports an unrecognized command', async () => {
-  const { stderr } = await runCli(['bogus-command'])
-
-  assert.match(stderr, /Unrecognized command\./)
-  assert.match(stderr, /newrelic <command> \[options\]/)
-})
-
-test('errors instead of hanging when no file is given and stdin is a TTY', async () => {
-  const { stderr, code } = await runCliInteractive(['validate-config'])
-
-  assert.notEqual(code, 0, 'should exit non-zero')
-  assert.match(stderr, /Must supply a file to validate or pipe a configuration via stdin\./)
-  assert.match(stderr, /validate-command \[options\]/, 'should show the command help')
-})
-
 test('resolves a node: builtin imported by an ESM config', async () => {
   const { stdout, code } = await runCli([
     'validate-config',
@@ -392,24 +220,67 @@ test('resolves a bare package specifier imported by an ESM config', async () => 
   assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
 })
 
-test('reuses a module imported twice by an ESM config', async () => {
-  const { stdout, code } = await runCli([
-    'validate-config',
-    '-c', join(fixturesDir, 'imports-duplicate.mjs'),
-    '-f', 'json'
-  ])
+test('errors when no configuration file is supplied', async () => {
+  const { stderr, code } = await runCli(['validate-config'])
 
-  assert.equal(code, 0)
-  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+  assert.notEqual(code, 0, 'should exit non-zero')
+  assert.match(stderr, /Must supply a configuration file to validate\./)
+  assert.match(stderr, /newrelic validate-config -c <file>/, 'should show the command help')
 })
 
-test('supports import.meta.resolve and dynamic import in an ESM config', async () => {
+test('exits gracefully when the file cannot be loaded', async () => {
+  const { stderr, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'unknown.txt')
+  ])
+
+  assert.equal(code, 2, 'should exit with the unprocessable code')
+  assert.match(stderr, /Could not load configuration file/)
+  assert.doesNotMatch(stderr, /\n\s+at /, 'should not print a stack trace')
+})
+
+test('reports a load failure as JSON when requested', async () => {
   const { stdout, code } = await runCli([
     'validate-config',
-    '-c', join(fixturesDir, 'imports-dynamic.mjs'),
+    '-c', join(fixturesDir, 'unknown.txt'),
     '-f', 'json'
   ])
 
-  assert.equal(code, 0)
-  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+  assert.equal(code, 2)
+  const parsed = JSON.parse(stdout)
+  assert.equal(parsed.status, 2)
+  assert.equal(parsed.errors.length, 1)
+  assert.match(parsed.errors[0].message, /Could not load configuration file/)
+})
+
+test('exits gracefully when the file does not exist', async () => {
+  const { stderr, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'does-not-exist.js')
+  ])
+
+  assert.equal(code, 2, 'should exit with the unprocessable code')
+  assert.match(stderr, /Could not load configuration file/)
+  assert.doesNotMatch(stderr, /\n\s+at /, 'should not print a stack trace')
+})
+
+test('reports an unrecognized command', async () => {
+  const { stderr } = await runCli(['bogus-command'])
+
+  assert.match(stderr, /Unrecognized command\./)
+  assert.match(stderr, /newrelic <command> \[options\]/)
+})
+
+test('loads help text when run from an arbitrary directory', async () => {
+  const { stderr, code } = await runCli(['validate-config', '-h'])
+
+  assert.equal(code, 0, 'requesting help should exit zero')
+  assert.match(stderr, /newrelic validate-config -c <file>/)
+})
+
+test('loads top-level help text when the command is missing', async () => {
+  const { stderr } = await runCli([])
+
+  assert.match(stderr, /Missing command\./)
+  assert.match(stderr, /newrelic <command> \[options\]/)
 })

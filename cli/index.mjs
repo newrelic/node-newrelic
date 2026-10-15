@@ -16,7 +16,7 @@ process.exitCode = 1
 // have to include another dependency for a rarely used CLI tool. So we are
 // making use of what is available to us.
 import { parseArgs } from 'node:util'
-import { createReadStream, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import validateCliConfig from './validate-config.mjs'
@@ -60,28 +60,15 @@ if (command !== 'validate-config') {
 }
 
 const configFile = values['config-file']
-if (configFile == null && process.stdin.isTTY === true) {
-  // Without a file we read the configuration from stdin. When stdin is an
-  // interactive terminal there is nothing piped in and reading it would hang
-  // waiting for input that never ends, so require a file in that case.
-  console.error('Must supply a file to validate or pipe a configuration via stdin.\n')
+if (configFile == null) {
+  console.error('Must supply a configuration file to validate.\n')
   displayHelp('validate-config')
   process.exit()
 }
 
-const input = configFile
-  ? createReadStream(configFile)
-  : process.stdin
-validateCliConfig({
-  input,
+await validateCliConfig({
   filePath: configFile,
   format: values.format
-}).catch((error) => {
-  // Any failure that escapes the validator (e.g. malformed JSON or a config
-  // module that throws while loading) should exit cleanly rather than surface
-  // as an unhandled rejection with a stack trace.
-  console.error(error.message)
-  process.exitCode = 2
 })
 
 function displayHelp(cmd = null) {
