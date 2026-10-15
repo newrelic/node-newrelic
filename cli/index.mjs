@@ -88,6 +88,7 @@ function displayHelp(cmd = null) {
   if (cmd === null) {
     console.error(
       readFileSync(
+        // eslint-disable-next-line n/no-unsupported-features/node-builtins
         join(import.meta.dirname, 'help.txt')
       ).toString('utf8')
     )
@@ -96,6 +97,7 @@ function displayHelp(cmd = null) {
 
   console.error(
     readFileSync(
+      // eslint-disable-next-line n/no-unsupported-features/node-builtins
       join(import.meta.dirname, 'help', `${cmd}.txt`)
     ).toString('utf8')
   )
