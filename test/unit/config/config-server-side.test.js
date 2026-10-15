@@ -744,6 +744,47 @@ describe('when receiving server-side configuration', () => {
       t.assert.equal(config.ai_monitoring.streaming.enabled, false)
       t.assert.equal(config.ai_monitoring.record_content.enabled, false)
     })
+
+    test('should change ai_monitoring.basic_telemetry.enabled via server side config', (t) => {
+      t.plan(2)
+      const { config } = t.nr
+      assert.equal(config.ai_monitoring.basic_telemetry.enabled, true)
+      config.on('ai_monitoring.basic_telemetry.enabled', (value) => {
+        t.assert.equal(value, false)
+      })
+
+      config.onConnect({ agent_config: { 'ai_monitoring.basic_telemetry.enabled': false } })
+      t.assert.equal(config.ai_monitoring.basic_telemetry.enabled, false)
+    })
+
+    test('should disable basic telemetry when SSC option is Off', () => {
+      const config = new Config()
+      config.onConnect({
+        agent_config: {
+          'ai_monitoring.basic_telemetry.enabled': false,
+          'ai_monitoring.record_content.enabled': false
+        }
+      })
+      assert.equal(config.isAiMonitoringEnabled(), false)
+    })
+
+    test('should send basic telemetry without content when SSC option is Basic', () => {
+      const config = new Config({ ai_monitoring: { basic_telemetry: { enabled: false } } })
+      config.onConnect({
+        agent_config: {
+          'ai_monitoring.basic_telemetry.enabled': true,
+          'ai_monitoring.record_content.enabled': false
+        }
+      })
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      assert.equal(config.shouldRecordAiContent(), false)
+    })
+
+    test('should not let SSC basic_telemetry override a local ai_monitoring.enabled = false', () => {
+      const config = new Config({ ai_monitoring: { enabled: false } })
+      config.onConnect({ agent_config: { 'ai_monitoring.basic_telemetry.enabled': true } })
+      assert.equal(config.isAiMonitoringEnabled(), false)
+    })
   })
 
   describe('when handling profiling.enabled', () => {
