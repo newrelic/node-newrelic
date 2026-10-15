@@ -60,6 +60,15 @@ if (command !== 'validate-config') {
 }
 
 const configFile = values['config-file']
+if (configFile == null && process.stdin.isTTY === true) {
+  // Without a file we read the configuration from stdin. When stdin is an
+  // interactive terminal there is nothing piped in and reading it would hang
+  // waiting for input that never ends, so require a file in that case.
+  console.error('Must supply a file to validate or pipe a configuration via stdin.\n')
+  displayHelp('validate-config')
+  process.exit()
+}
+
 const input = configFile
   ? createReadStream(configFile)
   : process.stdin

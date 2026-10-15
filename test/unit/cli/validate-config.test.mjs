@@ -50,6 +50,31 @@ function runCli(args, stdin) {
   })
 }
 
+/**
+ * Runs the CLI as if stdin were an interactive terminal, by preloading a module
+ * that fakes `process.stdin.isTTY`. Used to exercise the guard that refuses to
+ * read stdin when nothing has been piped in. Stdin is closed immediately so the
+ * process cannot hang regardless of the guard's behavior.
+ *
+ * @param {string[]} args The command-line arguments to pass to the CLI.
+ *
+ * @returns {Promise<object>} The captured `stdout`, `stderr`, and `code`.
+ */
+function runCliInteractive(args) {
+  const preload = join(fixturesDir, 'fake-tty.cjs')
+  return new Promise((resolve) => {
+    const child = execFile(
+      process.execPath,
+      ['--require', preload, '--experimental-vm-modules', cliPath, ...args],
+      { cwd: foreignCwd },
+      (error, stdout, stderr) => {
+        resolve({ stdout, stderr, code: error ? error.code : 0 })
+      }
+    )
+    child.stdin.end()
+  })
+}
+
 test('validates an invalid .js (CJS-detected) config file', async () => {
   const { stdout, code } = await runCli([
     'validate-config',
@@ -335,6 +360,14 @@ test('reports an unrecognized command', async () => {
 
   assert.match(stderr, /Unrecognized command\./)
   assert.match(stderr, /newrelic <command> \[options\]/)
+})
+
+test('errors instead of hanging when no file is given and stdin is a TTY', async () => {
+  const { stderr, code } = await runCliInteractive(['validate-config'])
+
+  assert.notEqual(code, 0, 'should exit non-zero')
+  assert.match(stderr, /Must supply a file to validate or pipe a configuration via stdin\./)
+  assert.match(stderr, /validate-command \[options\]/, 'should show the command help')
 })
 
 test('resolves a node: builtin imported by an ESM config', async () => {
