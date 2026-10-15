@@ -103,7 +103,7 @@ test('previousRelease', async (t) => {
     assert.deepStrictEqual(result.baselineSchema, { properties: { app_name: { type: 'string' } } })
     assert.strictEqual(result.starterVersion, '1.2.3')
     assert.deepStrictEqual(gitShow.calls, [
-      ['v1.2.3', '.fleetControl/schemas/config.json'],
+      ['v1.2.3', 'lib/config/schema.json'],
       ['v1.2.3', '.fleetControl/configurationDefinitions.yml']
     ])
   })

@@ -15,9 +15,9 @@ const schemaDiff = require('./schema-diff')
 
 const REPO_ROOT = path.join(__dirname, '..', '..')
 const FLEET_CONTROL_DIR = path.join(__dirname, '..')
-const SCHEMA_PATH = path.join(FLEET_CONTROL_DIR, 'schemas', 'config.json')
+const SCHEMA_PATH = path.join(REPO_ROOT, 'lib', 'config', 'schema.json')
 const CONFIG_DEF_PATH = path.join(FLEET_CONTROL_DIR, 'configurationDefinitions.yml')
-const SCHEMA_REPO_PATH = '.fleetControl/schemas/config.json'
+const SCHEMA_REPO_PATH = 'lib/config/schema.json'
 const CONFIG_DEF_REPO_PATH = '.fleetControl/configurationDefinitions.yml'
 
 // The version being bumped lives in the first entry of configurationDefinitions,
