@@ -5,6 +5,7 @@
 
 'use strict'
 
+const helper = require('#testlib/agent_helper.js')
 const shared = require('./shared')
 
 const suite = shared.makeSuite('recordQuery')
@@ -26,6 +27,20 @@ suite.add({
     return new Promise((resolve) => {
       testDatastore.testQuery('test', resolve)
     })
+  }
+})
+
+suite.add({
+  name: 'instrumented operation recorded at transaction end',
+  agent: {},
+  initialize: makeInit(true),
+  fn: function (agent) {
+    return helper.runInTransaction(agent, (transaction) => new Promise((resolve) => {
+      testDatastore.testQuery('SELECT * FROM homes WHERE id = 1', () => {
+        transaction.end()
+        resolve()
+      })
+    }))
   }
 })
 
