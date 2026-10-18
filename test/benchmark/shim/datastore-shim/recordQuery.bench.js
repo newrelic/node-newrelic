@@ -36,7 +36,7 @@ suite.add({
   initialize: makeInit(true),
   fn: function (agent) {
     return helper.runInTransaction(agent, (transaction) => new Promise((resolve) => {
-      testDatastore.testQuery('SELECT * FROM homes WHERE id = 1', () => {
+      testDatastore.testQuery('select * from foo where a=2', () => {
         transaction.end()
         resolve()
       })
