@@ -82,3 +82,23 @@ test('returns multiple blockers in a stable order', () => {
     'license_key'
   ])
 })
+
+test('evaluates only the requested field', () => {
+  // A config that would trip every blocker, but only app_name is requested.
+  const config = buildConfig({ agent_enabled: false })
+  const blockers = findStartupBlockers(config, 'app_name')
+
+  assert.equal(blockers.length, 1)
+  assert.equal(blockers[0].key, 'app_name')
+})
+
+test('does not throw on a partial configuration', () => {
+  // A bare object missing applications()/serverless_mode/license_key must yield
+  // blockers rather than throwing.
+  const keys = findStartupBlockers({ agent_enabled: true }).map((blocker) => blocker.key)
+
+  assert.deepEqual(keys, [
+    'app_name',
+    'license_key'
+  ])
+})

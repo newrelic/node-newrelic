@@ -156,8 +156,8 @@ function createAgent(config) {
     logger.warn('Diagnostics logging is enabled, this may cause significant overhead.')
   }
 
-  const blockers = findStartupBlockers(config)
-  if (blockers.some((blocker) => blocker.key === 'app_name')) {
+  const appNameBlockers = findStartupBlockers(config, 'app_name')
+  if (appNameBlockers.length > 0) {
     const message =
       'New Relic requires that you name this application!\n' +
       'Set app_name in your newrelic.js or newrelic.cjs file or set environment variable\n' +
