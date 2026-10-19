@@ -176,6 +176,68 @@ test('every invalid fixture format surfaces the same errors', async () => {
   }
 })
 
+test('flags a schema-valid config missing app_name as a startup blocker', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'blocker-no-app-name.cjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 1, 'should exit non-zero for an unstartable config')
+  const parsed = JSON.parse(stdout)
+  assert.equal(parsed.status, 1)
+  assert.equal(parsed.errors.length, 1)
+  assert.match(parsed.errors[0]['/app_name'], /application name is required/)
+})
+
+test('flags a schema-valid config missing license_key as a startup blocker', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'blocker-no-license.cjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 1)
+  const parsed = JSON.parse(stdout)
+  assert.equal(parsed.errors.length, 1)
+  assert.match(parsed.errors[0]['/license_key'], /license key is required/)
+})
+
+test('does not require license_key when serverless mode is enabled', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'serverless-no-license.cjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 0, 'serverless mode exempts the license_key requirement')
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+})
+
+test('flags a disabled agent as a startup blocker', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'agent-disabled.cjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 1)
+  const parsed = JSON.parse(stdout)
+  assert.equal(parsed.errors.length, 1)
+  assert.match(parsed.errors[0]['/agent_enabled'], /agent is disabled/)
+})
+
+test('reports a startup blocker in human format', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'blocker-no-app-name.cjs')
+  ])
+
+  assert.equal(code, 1)
+  assert.match(stdout, /Found the following configuration errors:/)
+  assert.match(stdout, /\/app_name: An application name is required/)
+})
+
 test('loads and validates a CJS config that requires a sibling file', async () => {
   const { stdout, code } = await runCli([
     'validate-config',

@@ -1,3 +1,7 @@
+Ensures the provided configuration will allow the agent to start without
+error. Environment variables are considered when evaluating the provided
+configuration. Server-side configuration is not considered.
+
 Usage:
   newrelic validate-config -c <file> [options]
 

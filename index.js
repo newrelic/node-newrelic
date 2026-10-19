@@ -6,6 +6,7 @@
 'use strict'
 
 const HealthReporter = require('./lib/health-reporter.js')
+const findStartupBlockers = require('./lib/config/find-startup-blockers.js')
 
 // Record opening times before loading any other files.
 const preAgentTime = process.uptime()
@@ -150,13 +151,13 @@ function createAgent(config) {
    */
   const Agent = require('./lib/agent')
   const agent = new Agent(config)
-  const appNames = agent.config.applications()
 
   if (config.logging.diagnostics) {
     logger.warn('Diagnostics logging is enabled, this may cause significant overhead.')
   }
 
-  if (appNames.length < 1) {
+  const blockers = findStartupBlockers(config)
+  if (blockers.some((blocker) => blocker.key === 'app_name')) {
     const message =
       'New Relic requires that you name this application!\n' +
       'Set app_name in your newrelic.js or newrelic.cjs file or set environment variable\n' +
