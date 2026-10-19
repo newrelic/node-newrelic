@@ -46,6 +46,13 @@ To use New Relic's Node.js agent entails these three steps, which are described 
       /* ... rest of configuration .. */
     }
     ```
+   
+    You can validate your configuration file is valid by using the included
+    configuration validator:
+
+    ```sh
+   $ npx newrelic validate-config --config-file ./newrelic.js
+    ```
 
 4. Finally, run your program with the `newrelic` module loaded first by using node's `-r/--require` flag.
 

@@ -1,0 +1,30 @@
+Usage:
+  newrelic validate-config -c <file> [options]
+
+Examples:
+  newrelic validate-config -c ./newrelic.js
+
+  newrelic validate-config -c ./newrelic.mjs
+
+  newrelic validate-config -c ./newrelic.js -f json
+
+Options:
+  -c, --config-file     Path to the configuration file to validate. This option
+                        is required. Allowed file types are `.js`, `.cjs`, and
+                        `.mjs`.
+
+                        The file is loaded with Node.js's normal `require` /
+                        `import` rules, so whether it is treated as CommonJS or
+                        ECMAScript follows the file extension and the nearest
+                        `package.json` `type`. Any modules the file imports are
+                        resolved relative to the file, as usual.
+
+                        The configuration must be exported as a `config`
+                        property: `export const config = {}` for ECMAScript, or
+                        `module.exports.config = {}` / `exports.config = {}` for
+                        CommonJS.
+
+  -f, --format          Specifies the format the tool will use when reporting
+                        the result of the validation. The default format is a
+                        human-readable report. The value "json" may be provided
+                        to generate a JSON representation of the result.

@@ -1,0 +1,128 @@
+/*
+ * Copyright 2026 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* eslint-disable no-console */
+
+import { pathToFileURL } from 'node:url'
+import validateConfig from '#agentlib/config/validate-config.js'
+
+const FORMAT_TYPE = {
+  HUMAN: 'human',
+  JSON: 'json'
+}
+
+const EXIT_CODE = {
+  VALID: 0,
+  INVALID: 1,
+  UNPROCESSABLE: 2
+}
+
+let writeOutput
+let reportUnprocessable
+
+export default async function validateCliConfig({
+  format = FORMAT_TYPE.HUMAN,
+  filePath
+} = {}) {
+  writeOutput = format === FORMAT_TYPE.HUMAN
+    ? writeHuman
+    : writeJson
+  reportUnprocessable = format === FORMAT_TYPE.HUMAN
+    ? reportUnprocessableHuman
+    : reportUnprocessableJson
+
+  let config
+  try {
+    config = await loadConfig(filePath)
+  } catch (error) {
+    reportUnprocessable(
+      `Could not load configuration file "${filePath}": ${error.message}`
+    )
+    process.exitCode = EXIT_CODE.UNPROCESSABLE
+    return
+  }
+
+  const result = validateConfig(config, false)
+  if (result.status === 0) {
+    process.exitCode = EXIT_CODE.VALID
+  }
+  writeOutput(result.errors)
+}
+
+/**
+ * Loads a configuration file by path using Node.js's own module resolution,
+ * exactly as the agent loads a configuration. The file is imported, letting
+ * Node decide whether it is CommonJS or ECMAScript based on its extension and
+ * the nearest `package.json` `type`.
+ *
+ * The configuration is read from the file's exported `config` property, whether
+ * that is `export const config` (ESM) or `module.exports.config` /
+ * `exports.config` (CommonJS). For an ESM module the property is a named export
+ * (`namespace.config`); for CommonJS it lives on the default export
+ * (`namespace.default.config`).
+ *
+ * @param {string} filePath Path to the configuration file to load.
+ *
+ * @returns {Promise<object>} The exported `config` object.
+ */
+async function loadConfig(filePath) {
+  const url = pathToFileURL(filePath).href
+  const namespace = await import(url)
+  return namespace.config ?? namespace.default.config
+}
+
+function writeHuman(errors) {
+  if (errors == null) {
+    console.log('No configuration errors detected.')
+    return
+  }
+
+  console.log('Found the following configuration errors:')
+  for (const error of errors) {
+    console.log(`  + ${error.instancePath}: ${error.message}`)
+  }
+}
+
+function writeJson(errors) {
+  if (errors == null) {
+    console.log(
+      JSON.stringify({ status: 0, errors: [] }, null, 2)
+    )
+    return
+  }
+
+  const result = {
+    status: 1,
+    errors: []
+  }
+  for (const error of errors) {
+    result.errors.push({ [error.instancePath]: error.message })
+  }
+  console.log(
+    JSON.stringify(result, null, 2)
+  )
+}
+
+/**
+ * Reports an input-processing failure (e.g. a file that cannot be loaded) as
+ * a single human-readable line on stderr.
+ *
+ * @param {string} message The failure description.
+ */
+function reportUnprocessableHuman(message) {
+  console.error(message)
+}
+
+/**
+ * Reports an input-processing failure as a JSON object on stdout, mirroring the
+ * shape produced by `writeJson` but with the unprocessable status code.
+ *
+ * @param {string} message The failure description.
+ */
+function reportUnprocessableJson(message) {
+  console.log(
+    JSON.stringify({ status: EXIT_CODE.UNPROCESSABLE, errors: [{ message }] }, null, 2)
+  )
+}
