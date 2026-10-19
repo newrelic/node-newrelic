@@ -8,9 +8,9 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const Config = require('../../../lib/config')
-const HealthReporter = require('../../../lib/health-reporter')
-const findStartupBlockers = require('../../../lib/config/find-startup-blockers')
+const Config = require('#agentlib/config/index.js')
+const HealthReporter = require('#agentlib/health-reporter.js')
+const findStartupBlockers = require('#agentlib/config/find-startup-blockers.js')
 
 /**
  * Builds a Config without touching the global singleton.
