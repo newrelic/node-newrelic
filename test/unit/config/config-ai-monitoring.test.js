@@ -10,21 +10,20 @@ const test = require('node:test')
 const Config = require('../../../lib/config')
 
 const UNSET = 'unset'
-const NA = 'N/A'
+const ANY = 'any'
 
-// Each row of the `ai_monitoring` configuration precedence table. `N/A` rows
-// are verified against every possible `record_content.enabled` value.
+// Each row of the "Default AIM Data Collection" precedence table. `any`
+// values are verified against every possible value of that setting.
 const PRECEDENCE_TABLE = [
-  { basic: true, enabled: UNSET, content: NA, sent: true, withContent: false },
-  { basic: true, enabled: true, content: UNSET, sent: true, withContent: true },
-  { basic: true, enabled: true, content: true, sent: true, withContent: true },
-  { basic: true, enabled: true, content: false, sent: true, withContent: false },
-  { basic: true, enabled: false, content: NA, sent: false, withContent: false },
-  { basic: false, enabled: UNSET, content: NA, sent: false, withContent: false },
-  { basic: false, enabled: true, content: UNSET, sent: true, withContent: true },
-  { basic: false, enabled: true, content: true, sent: true, withContent: true },
-  { basic: false, enabled: true, content: false, sent: true, withContent: false },
-  { basic: false, enabled: false, content: NA, sent: false, withContent: false }
+  { enabled: false, basic: ANY, content: ANY, sent: false, withContent: false },
+  { enabled: UNSET, basic: false, content: ANY, sent: false, withContent: false },
+  { enabled: UNSET, basic: true, content: UNSET, sent: true, withContent: false },
+  { enabled: UNSET, basic: true, content: false, sent: true, withContent: false },
+  { enabled: UNSET, basic: true, content: true, sent: true, withContent: true },
+  // `record_content.enabled` is forced to `true` when it is unset.
+  { enabled: true, basic: ANY, content: UNSET, sent: true, withContent: true },
+  { enabled: true, basic: ANY, content: true, sent: true, withContent: true },
+  { enabled: true, basic: ANY, content: false, sent: true, withContent: false }
 ]
 
 /**
@@ -49,18 +48,17 @@ function buildConfig({ basic, enabled, content }) {
 }
 
 /**
- * Expands `N/A` rows into one row per possible `record_content.enabled` value.
+ * Expands `any` values into one row per possible value of that setting.
  *
  * @param {object} row A row from the precedence table.
  * @returns {object[]} The rows to verify.
  */
 function expand(row) {
-  if (row.content !== NA) {
-    return [row]
-  }
-  return [UNSET, true, false].map((content) => {
-    return { ...row, content }
-  })
+  const basics = row.basic === ANY ? [true, false] : [row.basic]
+  const contents = row.content === ANY ? [UNSET, true, false] : [row.content]
+  return basics.flatMap((basic) => contents.map((content) => {
+    return { ...row, basic, content }
+  }))
 }
 
 test('ai_monitoring configuration precedence', async (t) => {
@@ -78,9 +76,35 @@ test('default configuration sends basic telemetry without content', () => {
   const config = Config.initialize({})
   assert.equal(config.ai_monitoring.basic_telemetry.enabled, true)
   assert.equal(config.ai_monitoring.enabled, null)
-  // `record_content.enabled` defaults to `true` but only takes effect when
-  // `ai_monitoring.enabled` is explicitly `true`.
-  assert.equal(config.ai_monitoring.record_content.enabled, true)
+  assert.equal(config.ai_monitoring.record_content.enabled, null)
   assert.equal(config.isAiMonitoringEnabled(), true)
   assert.equal(config.shouldRecordAiContent(), false)
+})
+
+test('explicit `null` values are treated as unset', () => {
+  // Schema validation must not coerce `null` to `false`, which would be an
+  // explicit opt-out for `ai_monitoring.enabled`.
+  const config = Config.initialize({
+    ai_monitoring: { enabled: null, record_content: { enabled: null } }
+  })
+  assert.strictEqual(config.ai_monitoring.enabled, null)
+  assert.strictEqual(config.ai_monitoring.record_content.enabled, null)
+  assert.equal(config.isAiMonitoringEnabled(), true)
+  assert.equal(config.shouldRecordAiContent(), false)
+})
+
+test('environment variables are coerced to booleans', async (t) => {
+  const vars = ['NEW_RELIC_AI_MONITORING_ENABLED', 'NEW_RELIC_AI_MONITORING_RECORD_CONTENT_ENABLED']
+  t.afterEach(() => {
+    for (const name of vars) delete process.env[name]
+  })
+
+  for (const value of [true, false]) {
+    await t.test(`${value}`, () => {
+      for (const name of vars) process.env[name] = `${value}`
+      const config = Config.initialize({})
+      assert.strictEqual(config.ai_monitoring.enabled, value)
+      assert.strictEqual(config.ai_monitoring.record_content.enabled, value)
+    })
+  }
 })
