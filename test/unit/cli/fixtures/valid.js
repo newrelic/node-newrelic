@@ -6,6 +6,8 @@
 'use strict'
 
 module.exports.config = {
+  app_name: ['My Application'],
+  license_key: 'license key here',
   high_security: false,
 
   attributes: {

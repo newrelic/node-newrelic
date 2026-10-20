@@ -7,6 +7,24 @@
 
 import { pathToFileURL } from 'node:url'
 import validateConfig from '#agentlib/config/validate-config.js'
+import findStartupBlockers from '#agentlib/config/find-startup-blockers.js'
+import Config from '#agentlib/config/index.js'
+import { applyEnvironmentOverrides } from '#agentlib/config/apply-environment-overrides.js'
+
+// Config construction logs through this; the CLI wants it silent. Every method
+// delegates to one no-op, and `child` returns the same logger, so there is a
+// single implementation to exercise.
+const noop = () => {}
+const silentLogger = {
+  warn: noop,
+  error: noop,
+  info: noop,
+  debug: noop,
+  trace: noop,
+  child() {
+    return silentLogger
+  }
+}
 
 const FORMAT_TYPE = {
   HUMAN: 'human',
@@ -44,11 +62,39 @@ export default async function validateCliConfig({
     return
   }
 
-  const result = validateConfig(config, false)
-  if (result.status === 0) {
-    process.exitCode = EXIT_CODE.VALID
-  }
-  writeOutput(result.errors)
+  // Merge `NEW_RELIC_*` environment overrides into the loaded configuration
+  // before validating it, exactly as the agent does when it builds its config.
+  // This keeps both halves below (schema validation and startup blockers)
+  // consistent with how the running agent would see the configuration.
+  applyEnvironmentOverrides(config, { logger: silentLogger })
+
+  // Schema validation catches structural/type problems. Startup blockers catch
+  // configurations that are structurally valid but would prevent the agent
+  // from starting (missing app_name/license_key, agent disabled). Both are
+  // reported together so a passing result means the agent can actually start.
+  const schemaErrors = validateConfig(config, false).errors ?? []
+  const blockerErrors = findBlockerErrors(config)
+  const errors = [...schemaErrors, ...blockerErrors]
+
+  process.exitCode = errors.length === 0 ? EXIT_CODE.VALID : EXIT_CODE.INVALID
+  writeOutput(errors.length === 0 ? null : errors)
+}
+
+/**
+ * Builds a `Config` from the loaded configuration and returns any startup
+ * blockers as validation-error entries (shaped like schema errors) so they can
+ * be reported alongside them. Returns an empty array when the configuration is
+ * startable.
+ *
+ * @param {object} config The loaded configuration object.
+ *
+ * @returns {Array<object>} Blocker entries, each `{ instancePath, message }`.
+ */
+function findBlockerErrors(config) {
+  const built = new Config(config, { logger: silentLogger })
+  return findStartupBlockers(built).map((blocker) => {
+    return { instancePath: `/${blocker.key}`, message: blocker.message }
+  })
 }
 
 /**

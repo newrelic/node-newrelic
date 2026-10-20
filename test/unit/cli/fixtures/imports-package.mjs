@@ -8,5 +8,7 @@ import semver from 'semver'
 // Import a bare specifier (an installed package) so the loader resolves it via
 // the Node.js module resolution algorithm anchored at this file's location.
 export const config = {
+  app_name: ['My Application'],
+  license_key: 'license key here',
   high_security: semver.valid('1.0.0') === null
 }

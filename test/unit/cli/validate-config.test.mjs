@@ -24,15 +24,17 @@ const foreignCwd = import.meta.dirname
  * it works from any directory.
  *
  * @param {string[]} args The command-line arguments to pass to the CLI.
+ * @param {object} [env] Extra environment variables to set for the child,
+ * merged over the current process environment.
  *
  * @returns {Promise<object>} The captured `stdout`, `stderr`, and `code`.
  */
-function runCli(args) {
+function runCli(args, env) {
   return new Promise((resolve) => {
     execFile(
       process.execPath,
       [cliPath, ...args],
-      { cwd: foreignCwd },
+      { cwd: foreignCwd, env: { ...process.env, ...env } },
       (error, stdout, stderr) => {
         resolve({
           stdout,
@@ -174,6 +176,94 @@ test('every invalid fixture format surfaces the same errors', async () => {
     assert.equal(parsed.status, 1, `${fixture} should report a failing status`)
     assert.equal(parsed.errors.length, 2, `${fixture} should report two errors`)
   }
+})
+
+test('flags a schema-valid config missing app_name as a startup blocker', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'blocker-no-app-name.cjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 1, 'should exit non-zero for an unstartable config')
+  const parsed = JSON.parse(stdout)
+  assert.equal(parsed.status, 1)
+  assert.equal(parsed.errors.length, 1)
+  assert.match(parsed.errors[0]['/app_name'], /application name is required/)
+})
+
+test('flags a schema-valid config missing license_key as a startup blocker', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'blocker-no-license.cjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 1)
+  const parsed = JSON.parse(stdout)
+  assert.equal(parsed.errors.length, 1)
+  assert.match(parsed.errors[0]['/license_key'], /license key is required/)
+})
+
+test('does not require license_key when serverless mode is enabled', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'serverless-no-license.cjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 0, 'serverless mode exempts the license_key requirement')
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
+})
+
+test('flags a disabled agent as a startup blocker', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'agent-disabled.cjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 1)
+  const parsed = JSON.parse(stdout)
+  assert.equal(parsed.errors.length, 1)
+  assert.match(parsed.errors[0]['/agent_enabled'], /agent is disabled/)
+})
+
+test('reports a startup blocker in human format', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'blocker-no-app-name.cjs')
+  ])
+
+  assert.equal(code, 1)
+  assert.match(stdout, /Found the following configuration errors:/)
+  assert.match(stdout, /\/app_name: An application name is required/)
+})
+
+test('reports a schema error for a value with the wrong type', async () => {
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'env-override.cjs'),
+    '-f', 'json'
+  ])
+
+  assert.equal(code, 1, 'the bad attributes.enabled type should fail validation')
+  const parsed = JSON.parse(stdout)
+  assert.deepEqual(parsed.errors, [{ '/attributes/enabled': 'must be boolean' }])
+})
+
+test('applies NEW_RELIC_ environment overrides before validating', async () => {
+  const { stdout, code } = await runCli(
+    [
+      'validate-config',
+      '-c', join(fixturesDir, 'env-override.cjs'),
+      '-f', 'json'
+    ],
+    { NEW_RELIC_ATTRIBUTES_ENABLED: 'true' }
+  )
+
+  assert.equal(code, 0, 'the environment override should correct the value')
+  assert.deepEqual(JSON.parse(stdout), { status: 0, errors: [] })
 })
 
 test('loads and validates a CJS config that requires a sibling file', async () => {
