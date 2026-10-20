@@ -1719,3 +1719,42 @@ test('applies user-configured attribute filter rules to a transaction', () => {
   assert.equal('secret.token' in attributes, false, 'user exclude rule is applied')
   assert.equal(attributes['keep.me'], 'reported', 'non-excluded attribute is kept')
 })
+
+test('system metrics sampler in serverless mode', async (t) => {
+  t.beforeEach((ctx) => {
+    // The sampler is a module-level singleton; earlier tests may leave it running.
+    systemMetricsSampler.stop()
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent({ serverless_mode: { enabled: true } }, false)
+    ctx.nr.start = sinon.spy(systemMetricsSampler, 'start')
+  })
+
+  t.afterEach((ctx) => {
+    ctx.nr.start.restore()
+    systemMetricsSampler.stop()
+    helper.unloadAgent(ctx.nr.agent)
+    delete process.env.AWS_LAMBDA_INITIALIZATION_TYPE
+  })
+
+  await t.test('is not started on Lambda Managed Instances', (t, end) => {
+    process.env.AWS_LAMBDA_INITIALIZATION_TYPE = 'lambda-managed-instances'
+    const { agent, start } = t.nr
+
+    agent.start(() => {
+      assert.equal(start.callCount, 0)
+      assert.equal(systemMetricsSampler.state, 'stopped')
+      end()
+    })
+  })
+
+  await t.test('is started on standard Lambda', (t, end) => {
+    process.env.AWS_LAMBDA_INITIALIZATION_TYPE = 'on-demand'
+    const { agent, start } = t.nr
+
+    agent.start(() => {
+      assert.equal(start.callCount, 1)
+      assert.equal(systemMetricsSampler.state, 'running')
+      end()
+    })
+  })
+})

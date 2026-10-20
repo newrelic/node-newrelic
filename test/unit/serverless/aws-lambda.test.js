@@ -1640,3 +1640,95 @@ test('APM Mode transaction name should include event type', async (t) => {
   assert.equal(transaction.type, 'web')
   assert.equal(transaction.getFullName(), expectedApmTxnName)
 })
+
+test('metric window', async (t) => {
+  const HOUR = 60 * 60 * 1000
+  const START = Date.UTC(2026, 9, 19, 17, 0, 0)
+
+  t.beforeEach((ctx) => {
+    beforeTests(ctx)
+    ctx.nr.clock = sinon.useFakeTimers({ now: START, toFake: ['Date'] })
+    // Start the current window under the fake clock, as at agent startup.
+    ctx.nr.agent.metrics.clear()
+    ctx.nr.send = sinon.spy(ctx.nr.agent.collector, 'send')
+    ctx.nr.callbacks = []
+    ctx.nr.wrappedHandler = ctx.nr.awsLambda.patchLambdaHandler((event, context, callback) => {
+      ctx.nr.callbacks.push(callback)
+    })
+  })
+
+  t.afterEach((ctx) => {
+    ctx.nr.send.restore()
+    ctx.nr.clock.restore()
+    afterTests(ctx)
+  })
+
+  function invoke(t) {
+    const { stubEvent, stubContext, stubCallback, wrappedHandler } = t.nr
+    wrappedHandler(stubEvent, stubContext, stubCallback)
+  }
+
+  function metricWindows(t) {
+    return t.nr.send.args
+      .filter(([method]) => method === 'metric_data')
+      .map(([, [, begin, end]]) => {
+        return { begin: Math.round(begin * 1000), end: Math.round(end * 1000) }
+      })
+  }
+
+  await t.test('resets the metrics start time once, before the handler runs', (t) => {
+    const { agent, awsLambda, stubEvent, stubContext, stubCallback } = t.nr
+    const resetStartTime = sinon.spy(agent.metrics, 'resetStartTime')
+    t.after(() => resetStartTime.restore())
+    const handler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      assert.equal(resetStartTime.callCount, 1)
+      callback(null, 'worked')
+    })
+
+    handler(stubEvent, stubContext, stubCallback)
+
+    assert.equal(resetStartTime.callCount, 1)
+  })
+
+  await t.test('starts at the first invocation after idle time', (t) => {
+    const { callbacks, clock } = t.nr
+    clock.tick(2 * HOUR)
+    const invokedAt = Date.now()
+    invoke(t)
+    clock.tick(250)
+    callbacks[0](null, 'worked')
+
+    assert.deepEqual(metricWindows(t), [{ begin: invokedAt, end: invokedAt + 250 }])
+  })
+
+  await t.test('does not move the window start for an overlapping invocation', (t) => {
+    const { callbacks, clock } = t.nr
+    clock.tick(2 * HOUR)
+    const firstStart = Date.now()
+    invoke(t)
+    clock.tick(10_000)
+    invoke(t)
+    clock.tick(10_000)
+    callbacks[0](null, 'worked')
+    clock.tick(5_000)
+    callbacks[1](null, 'worked')
+
+    assert.deepEqual(metricWindows(t), [
+      { begin: firstStart, end: firstStart + 20_000 },
+      { begin: firstStart + 20_000, end: firstStart + 25_000 }
+    ])
+  })
+
+  await t.test('resets again for the first invocation after the next idle period', (t) => {
+    const { callbacks, clock } = t.nr
+    invoke(t)
+    callbacks[0](null, 'worked')
+    clock.tick(HOUR)
+    const secondStart = Date.now()
+    invoke(t)
+    clock.tick(100)
+    callbacks[1](null, 'worked')
+
+    assert.deepEqual(metricWindows(t)[1], { begin: secondStart, end: secondStart + 100 })
+  })
+})
