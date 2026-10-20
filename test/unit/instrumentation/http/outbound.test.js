@@ -8,6 +8,7 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const http = require('node:http')
+const net = require('node:net')
 const url = require('node:url')
 const nock = require('nock')
 
@@ -38,6 +39,18 @@ function makeRequest(opts) {
   req.on('error', () => {})
   req.destroy()
   return req
+}
+
+/**
+ * Gets the external segments directly under the transaction's root segment.
+ *
+ * @param {Transaction} transaction The transaction to inspect.
+ * @returns {TraceSegment[]} The external segments.
+ */
+function getExternalSegments(transaction) {
+  return transaction.trace
+    .getChildren(transaction.trace.root.id)
+    .filter((segment) => segment.name.startsWith(NAMES.EXTERNAL.PREFIX))
 }
 
 test('HttpOutboundSubscriber', async (t) => {
@@ -288,6 +301,133 @@ test('HttpOutboundSubscriber', async (t) => {
       assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${HOSTNAME}:${PORT}/newrelic`)
       end()
     })
+  })
+
+  await t.test('should not create a segment when the port is invalid', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      // `createConnection` hands http an unconnected socket, so the request is
+      // created without `net` rejecting the port
+      const createConnection = () => new net.Socket()
+      const req = http.request({ host: HOSTNAME, port: -1, path: '/newrelic', createConnection })
+      req.on('error', () => {})
+
+      assert.equal(getExternalSegments(transaction).length, 0)
+      assert.ok(!req[symbols.segment])
+      req.destroy()
+      end()
+    })
+  })
+
+  const disableDtHeaders = [
+    ['the x-new-relic-disable-dt header', { 'x-new-relic-disable-dt': 'true' }],
+    ['the disableDT symbol', { [symbols.disableDT]: true }]
+  ]
+  for (const [label, headers] of disableDtHeaders) {
+    await t.test(`should not add distributed tracing headers when disabled by ${label}`, (t, end) => {
+      helper.runInTransaction(t.nr.agent, function (transaction) {
+        const req = makeRequest({ host: HOSTNAME, port: PORT, path: '/newrelic', headers })
+
+        assert.ok(!req.getHeader('traceparent'), 'should not add traceparent')
+        assert.ok(!req.getHeader('tracestate'), 'should not add tracestate')
+        assert.equal(getExternalSegments(transaction).length, 1, 'should still record the external')
+        end()
+      })
+    })
+  }
+
+  const proxyTargets = [
+    ['http', 'http://example.com/foo?a=b', 'http://example.com/foo', '80'],
+    ['https', 'https://example.com/foo?a=b', 'https://example.com/foo', '443']
+  ]
+  for (const [protocol, path, url, port] of proxyTargets) {
+    await t.test(`should record the target of an ${protocol} proxy request`, (t, end) => {
+      helper.runInTransaction(t.nr.agent, function (transaction) {
+        makeRequest({ host: HOSTNAME, port: PORT, path })
+
+        const [child] = getExternalSegments(transaction)
+        assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}example.com/foo`)
+        const attributes = child.attributes.get(DESTINATIONS.SPAN_EVENT)
+        assert.equal(attributes.url, url)
+        assert.equal(attributes.hostname, 'example.com')
+        assert.equal(attributes.port, port)
+        end()
+      })
+    })
+  }
+
+  await t.test('should fall back to the request path when the url cannot be parsed', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      // the href includes the path, so it is used, but it is not a valid url
+      makeRequest({ href: 'not-a-valid-url/newrelic', host: HOSTNAME, port: PORT, path: '/newrelic' })
+
+      const [child] = getExternalSegments(transaction)
+      assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${HOSTNAME}:${PORT}`, 'should not add the path to the name')
+      assert.deepEqual(child.getAttributes(), {
+        procedure: 'GET',
+        url: `http://${HOSTNAME}:${PORT}/newrelic`
+      })
+      end()
+    })
+  })
+
+  await t.test('should end the segment and not capture an error the user handles', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = http.request({ host: HOSTNAME, port: PORT, path: '/newrelic' })
+      req.on('error', () => {})
+      const [child] = getExternalSegments(transaction)
+
+      req.emit('error', new Error('boom'))
+
+      assert.equal(child.timer.isActive(), false, 'should end the segment')
+      assert.equal(transaction.exceptions.length, 0, 'should not capture the error')
+      req.destroy()
+      end()
+    })
+  })
+
+  await t.test('should capture an error the user does not handle', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = http.request({ host: HOSTNAME, port: PORT, path: '/newrelic' })
+      const [child] = getExternalSegments(transaction)
+      const error = new Error('boom')
+
+      // with no listener the emitter rethrows, as it would without the agent
+      assert.throws(() => req.emit('error', error), error)
+
+      assert.equal(child.timer.isActive(), false, 'should end the segment')
+      assert.equal(transaction.exceptions.length, 1, 'should capture the error')
+      assert.equal(transaction.exceptions[0].error, error)
+      req.on('error', () => {})
+      req.destroy()
+      end()
+    })
+  })
+
+  await t.test('should add tracing headers when the request headers are an array', async (t) => {
+    let received
+    const server = http.createServer((req, res) => {
+      received = req.headers
+      res.end()
+    })
+    await new Promise((resolve) => server.listen(0, resolve))
+    t.after(() => server.close())
+
+    await helper.runInTransaction(t.nr.agent, function () {
+      return new Promise((resolve) => {
+        const { port } = server.address()
+        // http does not add a host header to array headers, and the server
+        // rejects requests without one
+        const headers = [['host', `${HOSTNAME}:${port}`], ['x-foo', 'bar']]
+        const opts = { host: HOSTNAME, port, path: '/', headers }
+        http.request(opts, (res) => {
+          res.resume()
+          res.on('end', resolve)
+        }).end()
+      })
+    })
+
+    assert.equal(received['x-foo'], 'bar', 'should keep the existing headers')
+    assert.ok(received.traceparent, 'should add traceparent')
   })
 })
 
