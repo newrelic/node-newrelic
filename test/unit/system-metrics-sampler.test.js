@@ -72,7 +72,9 @@ test('environmental sampler', async function (t) {
 
       const gc = agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + type)
       assert.ok(gc.callCount >= 1)
-      assert.ok(gc.total >= 0.001) // At least 1 ms of GC
+      // GC ran, so a positive pause duration was recorded. The magnitude is
+      // runtime/hardware dependent, so do not assert an arbitrary floor.
+      assert.ok(gc.total > 0)
 
       const pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
       assert.ok(pause.callCount >= gc.callCount)
@@ -184,10 +186,10 @@ test('environmental sampler', async function (t) {
       const gc = agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + type)
       assert.ok(gc.callCount >= 1)
 
-      // Assuming GC to take some amount of time.
-      // With Node 12, the minimum for this work often seems to be
-      // around 0.0008 on the servers.
-      assert.ok(gc.total >= 0.0004)
+      // GC ran (callCount above), so a pause duration was recorded. Its exact
+      // magnitude is a function of the runtime and hardware, not the agent, so
+      // only assert that a positive duration was captured rather than a floor.
+      assert.ok(gc.total > 0)
 
       const pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
       assert.ok(pause.callCount >= gc.callCount)
