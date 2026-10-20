@@ -193,9 +193,8 @@ function parseArgs(argv) {
 }
 
 // Every dependency defaults to the real thing, so tests can inject synthetic
-// ones instead — same DI convention generate-schema.js uses, so main()'s own
-// branching (bootstrap/no-change/dry-run/write) is testable without touching
-// real git or the real configurationDefinitions.yml.
+// ones instead, so main()'s own branching (bootstrap/no-change/dry-run/write)
+// is testable without touching real git or the real configurationDefinitions.yml.
 function main({
   argv = process.argv.slice(2),
   latestReleaseTag: latestReleaseTagFn = latestReleaseTag,
