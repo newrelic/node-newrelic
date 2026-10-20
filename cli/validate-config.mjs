@@ -9,6 +9,7 @@ import { pathToFileURL } from 'node:url'
 import validateConfig from '#agentlib/config/validate-config.js'
 import findStartupBlockers from '#agentlib/config/find-startup-blockers.js'
 import Config from '#agentlib/config/index.js'
+import { applyEnvironmentOverrides } from '#agentlib/config/apply-environment-overrides.js'
 
 // Config construction logs through this; the CLI wants it silent. Every method
 // delegates to one no-op, and `child` returns the same logger, so there is a
@@ -60,6 +61,12 @@ export default async function validateCliConfig({
     process.exitCode = EXIT_CODE.UNPROCESSABLE
     return
   }
+
+  // Merge `NEW_RELIC_*` environment overrides into the loaded configuration
+  // before validating it, exactly as the agent does when it builds its config.
+  // This keeps both halves below (schema validation and startup blockers)
+  // consistent with how the running agent would see the configuration.
+  applyEnvironmentOverrides(config, { logger: silentLogger })
 
   // Schema validation catches structural/type problems. Startup blockers catch
   // configurations that are structurally valid but would prevent the agent
