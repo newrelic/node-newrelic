@@ -10,6 +10,7 @@ import validateConfig from '#agentlib/config/validate-config.js'
 import findStartupBlockers from '#agentlib/config/find-startup-blockers.js'
 import Config from '#agentlib/config/index.js'
 import { applyEnvironmentOverrides } from '#agentlib/config/apply-environment-overrides.js'
+import { generateDefaultConfig } from '#agentlib/config/generate-default-config.js'
 
 // Config construction logs through this; the CLI wants it silent. Every method
 // delegates to one no-op, and `child` returns the same logger, so there is a
@@ -31,6 +32,12 @@ const FORMAT_TYPE = {
   JSON: 'json'
 }
 
+const DUMP_FORMAT = {
+  CJS: 'cjs',
+  ESM: 'esm',
+  JSON: 'json'
+}
+
 const EXIT_CODE = {
   VALID: 0,
   INVALID: 1,
@@ -41,15 +48,29 @@ let writeOutput
 let reportUnprocessable
 
 export default async function validateCliConfig({
-  format = FORMAT_TYPE.HUMAN,
-  filePath
+  outputFormat = FORMAT_TYPE.HUMAN,
+  filePath,
+  dump,
+  dumpFormat = DUMP_FORMAT.CJS
 } = {}) {
-  writeOutput = format === FORMAT_TYPE.HUMAN
+  writeOutput = outputFormat === FORMAT_TYPE.HUMAN
     ? writeHuman
     : writeJson
-  reportUnprocessable = format === FORMAT_TYPE.HUMAN
+  reportUnprocessable = outputFormat === FORMAT_TYPE.HUMAN
     ? reportUnprocessableHuman
     : reportUnprocessableJson
+
+  // `dump` is undefined when `--dump` was not passed, '' for a bare `--dump`,
+  // or a mode string such as 'full'. `--format` only matters alongside `--dump`.
+  const dumpRequested = dump !== undefined
+  if (dumpRequested === true && isValidDumpFormat(dumpFormat) === false) {
+    reportUnprocessable(
+      `Invalid --format "${dumpFormat}". Expected one of: ` +
+        `${Object.values(DUMP_FORMAT).join(', ')}.`
+    )
+    process.exitCode = EXIT_CODE.UNPROCESSABLE
+    return
+  }
 
   let config
   try {
@@ -68,33 +89,112 @@ export default async function validateCliConfig({
   // consistent with how the running agent would see the configuration.
   applyEnvironmentOverrides(config, { logger: silentLogger })
 
+  // A single constructed Config supplies both the startup-blocker checks and
+  // the normalized values used when dumping.
+  const built = new Config(config, { logger: silentLogger })
+
   // Schema validation catches structural/type problems. Startup blockers catch
   // configurations that are structurally valid but would prevent the agent
   // from starting (missing app_name/license_key, agent disabled). Both are
   // reported together so a passing result means the agent can actually start.
   const schemaErrors = validateConfig(config, false).errors ?? []
-  const blockerErrors = findBlockerErrors(config)
+  const blockerErrors = findStartupBlockers(built).map((blocker) => {
+    return { instancePath: `/${blocker.key}`, message: blocker.message }
+  })
   const errors = [...schemaErrors, ...blockerErrors]
+
+  if (dumpRequested === true) {
+    // Only dump a valid, startable configuration so a redirected stdout yields
+    // a complete, re-loadable file. Otherwise report the errors to stderr and
+    // leave stdout empty.
+    if (errors.length > 0) {
+      for (const error of errors) {
+        console.error(`${error.instancePath}: ${error.message}`)
+      }
+      process.exitCode = EXIT_CODE.INVALID
+      return
+    }
+
+    const template = dump === 'full'
+      ? generateDefaultConfig({ skipInternal: true })
+      : config
+    process.stdout.write(renderDump(projectConfig(template, built), dumpFormat))
+    process.exitCode = EXIT_CODE.VALID
+    return
+  }
 
   process.exitCode = errors.length === 0 ? EXIT_CODE.VALID : EXIT_CODE.INVALID
   writeOutput(errors.length === 0 ? null : errors)
 }
 
 /**
- * Builds a `Config` from the loaded configuration and returns any startup
- * blockers as validation-error entries (shaped like schema errors) so they can
- * be reported alongside them. Returns an empty array when the configuration is
- * startable.
+ * Determines whether a value is one of the supported dump formats.
  *
- * @param {object} config The loaded configuration object.
+ * @param {string} format The requested dump format.
  *
- * @returns {Array<object>} Blocker entries, each `{ instancePath, message }`.
+ * @returns {boolean} True when the format is supported.
  */
-function findBlockerErrors(config) {
-  const built = new Config(config, { logger: silentLogger })
-  return findStartupBlockers(built).map((blocker) => {
-    return { instancePath: `/${blocker.key}`, message: blocker.message }
-  })
+function isValidDumpFormat(format) {
+  return Object.values(DUMP_FORMAT).includes(format)
+}
+
+/**
+ * Projects the normalized values from a constructed `Config` onto the shape of
+ * a template object. Only keys present in the template appear in the result,
+ * so internal/derived `Config` fields can never leak into the output. Nested
+ * plain objects are projected recursively; everything else is taken from the
+ * source.
+ *
+ * @param {object} template The object whose keys define what to include (the
+ * user's raw configuration for a plain dump, or the default-config universe for
+ * a full dump).
+ * @param {object} source The constructed `Config` to read normalized values
+ * from.
+ *
+ * @returns {object} A nested plain configuration object.
+ */
+function projectConfig(template, source) {
+  const out = {}
+  for (const key of Object.keys(template)) {
+    const templateValue = template[key]
+    const sourceValue = source?.[key]
+    if (isPlainObject(templateValue) === true && isPlainObject(sourceValue) === true) {
+      out[key] = projectConfig(templateValue, sourceValue)
+    } else {
+      out[key] = sourceValue
+    }
+  }
+  return out
+}
+
+/**
+ * @param {*} value The value to test.
+ *
+ * @returns {boolean} True when `value` is a non-array, non-null object.
+ */
+function isPlainObject(value) {
+  return value != null && typeof value === 'object' && Array.isArray(value) === false
+}
+
+/**
+ * Serializes a configuration object as a re-loadable file in the requested
+ * module format.
+ *
+ * @param {object} config The configuration object to serialize.
+ * @param {string} format One of `cjs`, `esm`, or `json`.
+ *
+ * @returns {string} The serialized configuration, terminated by a newline.
+ */
+function renderDump(config, format) {
+  const body = JSON.stringify(config, null, 2)
+  switch (format) {
+    case DUMP_FORMAT.JSON:
+      return `${JSON.stringify({ config }, null, 2)}\n`
+    case DUMP_FORMAT.ESM:
+      return `export const config = ${body}\n`
+    default:
+      return `exports.config = ${body}\n`
+  }
 }
 
 /**

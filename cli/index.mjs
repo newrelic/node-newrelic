@@ -30,6 +30,18 @@ const argumentsConfig = {
           short: 'c'
         },
 
+        'output-format': {
+          type: 'string',
+          short: 'o'
+        },
+
+        dump: {
+          type: 'string',
+          short: 'd',
+          optionalValue: true,
+          greedy: true
+        },
+
         format: {
           type: 'string',
           short: 'f'
@@ -70,7 +82,9 @@ if (configFile == null) {
 
 await validateCliConfig({
   filePath: configFile,
-  format: parsed.options.format
+  outputFormat: parsed.options['output-format'],
+  dump: parsed.options.dump,
+  dumpFormat: parsed.options.format
 })
 
 function displayHelp(cmd = null) {
