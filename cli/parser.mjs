@@ -239,7 +239,8 @@ export function parse(spec, argv = process.argv.slice(2)) {
       tokens: true
     }))
   } catch (err) {
-    throw new ParseError(friendlyMessage(err), { code: err.code ?? 'EPARSE', cause: err })
+    // parseArgs always sets a `code` on the errors it throws.
+    throw new ParseError(friendlyMessage(err), { code: err.code, cause: err })
   }
 
   // Which switches the user actually supplied (vs. filled in from `default`).
@@ -376,7 +377,14 @@ function normalizeOptionalValues(args, merged, shortIndex, normSpec) {
   return out
 }
 
-function friendlyMessage(err) {
+/**
+ * Translates a `node:util.parseArgs` error into a concise, user-facing message.
+ *
+ * @param {Error} err The error thrown by parseArgs (carries a `code`).
+ *
+ * @returns {string} A friendly message for the error.
+ */
+export function friendlyMessage(err) {
   switch (err.code) {
     case 'ERR_PARSE_ARGS_UNKNOWN_OPTION':
       return `unknown option: ${err.message.replace(/^.*?'(-[^']*)'.*$/s, '$1')}`

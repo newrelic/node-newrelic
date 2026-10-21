@@ -6,7 +6,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { parse, validateSpec, ParseError } from '../../../cli/parser.mjs'
+import { parse, validateSpec, friendlyMessage, ParseError } from '../../../cli/parser.mjs'
 
 const spec = {
   globals: {
@@ -195,4 +195,84 @@ test('allowNegative passthrough (--no-force)', () => {
   const neg = { ...spec, allowNegative: true }
   const r = parse(neg, ['deploy', '--no-force'])
   assert.equal(r.options.force, false)
+})
+
+test('validateSpec: non-object spec throws EBADSPEC', () => {
+  assert.throws(() => validateSpec(null), (e) => e instanceof ParseError && e.code === 'EBADSPEC')
+  assert.throws(() => validateSpec('nope'), (e) => e instanceof ParseError && e.code === 'EBADSPEC')
+})
+
+test('validateSpec: unknown defaultCommand throws EBADSPEC', () => {
+  const bad = { ...spec, defaultCommand: 'nonexistent' }
+  assert.throws(() => validateSpec(bad), (e) => e instanceof ParseError && e.code === 'EBADSPEC')
+})
+
+test('an unknown short option is not treated as a known switch', () => {
+  // `-x` is not in any short index, so parseArgs reports it as unknown.
+  assert.throws(() => parse(spec, ['deploy', '-x']), (e) => e instanceof ParseError)
+})
+
+test('a `--` terminator before the command still finds the default command', () => {
+  const withDefault = { ...spec, defaultCommand: 'deploy' }
+  const r = parse(withDefault, ['--', 'a', 'b'])
+  assert.equal(r.command, 'deploy')
+  assert.deepEqual(r.operands, ['a', 'b'])
+})
+
+test('a non-command operand resolves to the default command', () => {
+  const withDefault = { ...spec, defaultCommand: 'deploy' }
+  const r = parse(withDefault, ['not-a-command'])
+  assert.equal(r.command, 'deploy')
+  assert.deepEqual(r.operands, ['not-a-command'])
+})
+
+test('an invalid option value yields a friendly ParseError', () => {
+  // A boolean switch given an inline value is an invalid option value.
+  assert.throws(
+    () => parse(spec, ['deploy', '--force=nope']),
+    (e) => e instanceof ParseError && /invalid option value/.test(e.message)
+  )
+})
+
+test('a command declared without an options block parses', () => {
+  const noOpts = {
+    globals: { verbose: { type: 'boolean', short: 'v' } },
+    commands: { status: {} }
+  }
+  const r = parse(noOpts, ['status', '--verbose'])
+  assert.equal(r.command, 'status')
+  assert.equal(r.globals.verbose, true)
+  assert.deepEqual(r.options, {})
+})
+
+test('ParseError defaults its code to EPARSE', () => {
+  assert.equal(new ParseError('boom').code, 'EPARSE')
+})
+
+test('a spec without a globals block parses', () => {
+  const noGlobals = { commands: { deploy: { options: { force: { type: 'boolean', short: 'f' } } } } }
+  const r = parse(noGlobals, ['deploy', '--force'])
+  assert.equal(r.command, 'deploy')
+  assert.equal(r.options.force, true)
+  assert.deepEqual(r.globals, {})
+})
+
+test('friendlyMessage maps parseArgs error codes to concise messages', () => {
+  assert.equal(
+    friendlyMessage({ code: 'ERR_PARSE_ARGS_UNKNOWN_OPTION', message: "Unknown option '--bogus'" }),
+    'unknown option: --bogus'
+  )
+  assert.equal(
+    friendlyMessage({ code: 'ERR_PARSE_ARGS_INVALID_OPTION_VALUE', message: 'bad' }),
+    'invalid option value: bad'
+  )
+  assert.equal(
+    friendlyMessage({ code: 'ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL', message: 'extra' }),
+    'unexpected argument: extra'
+  )
+  // Any other error is passed through verbatim.
+  assert.equal(
+    friendlyMessage({ code: 'SOMETHING_ELSE', message: 'raw message' }),
+    'raw message'
+  )
 })
