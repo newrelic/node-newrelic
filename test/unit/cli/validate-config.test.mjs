@@ -374,3 +374,11 @@ test('loads top-level help text when the command is missing', async () => {
   assert.match(stderr, /Missing command\./)
   assert.match(stderr, /newrelic <command> \[options\]/)
 })
+
+test('reports an unknown option and shows command help', async () => {
+  const { stderr, code } = await runCli(['validate-config', '--bogus'])
+
+  assert.notEqual(code, 0, 'should exit non-zero')
+  assert.match(stderr, /unknown option: --bogus/)
+  assert.match(stderr, /newrelic validate-config -c <file>/)
+})

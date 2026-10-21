@@ -8,58 +8,60 @@
 
 process.exitCode = 1
 
-// `(node:util).parseArgs` is very clearly not designed for tools that operate
-// via commands. First, we have a fragile reliance on positional parameters
-// in order to get the desired command (e.g. the command can come after the
-// options that are associated with it). Second, the options (values) are not
-// actually associated with the provided command. But we really don't want to
-// have to include another dependency for a rarely used CLI tool. So we are
-// making use of what is available to us.
-import { parseArgs } from 'node:util'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { parse, ParseError } from './parser.mjs'
 import validateCliConfig from './validate-config.mjs'
 
-const options = {
-  'config-file': {
-    type: 'string',
-    short: 'c',
+const argumentsConfig = {
+  globals: {
+    help: {
+      type: 'boolean',
+      short: 'h'
+    }
   },
 
-  format: {
-    type: 'string',
-    short: 'f'
-  },
+  commands: {
+    'validate-config': {
+      options: {
+        'config-file': {
+          type: 'string',
+          short: 'c'
+        },
 
-  help: {
-    type: 'boolean',
-    short: 'h'
+        format: {
+          type: 'string',
+          short: 'f'
+        }
+      }
+    }
   }
 }
-const { values, positionals } = parseArgs({
-  args: process.argv.slice(2),
-  allowPositionals: true,
-  options
-})
 
-if (positionals.length < 1) {
-  console.error('Missing command.\n')
-  displayHelp()
+let parsed
+try {
+  parsed = parse(argumentsConfig, process.argv.slice(2))
+} catch (error) {
+  if (error instanceof ParseError && error.code === 'ENOCMD') {
+    // Distinguish "no command given" from "a command was given but is not
+    // recognized" so the message matches what the user did.
+    const gaveOperand = process.argv.slice(2).some((arg) => arg.startsWith('-') === false)
+    console.error(gaveOperand ? 'Unrecognized command.\n' : 'Missing command.\n')
+    displayHelp()
+    process.exit()
+  }
+  console.error(`${error.message}\n`)
+  displayHelp('validate-config')
   process.exit()
 }
 
-const command = positionals[0]
-if (command !== 'validate-config') {
-  console.error('Unrecognized command.\n')
-  displayHelp()
-  process.exit()
-} else if (values.help === true) {
+if (parsed.globals.help === true) {
   displayHelp('validate-config')
   process.exit(0)
 }
 
-const configFile = values['config-file']
+const configFile = parsed.options['config-file']
 if (configFile == null) {
   console.error('Must supply a configuration file to validate.\n')
   displayHelp('validate-config')
@@ -68,7 +70,7 @@ if (configFile == null) {
 
 await validateCliConfig({
   filePath: configFile,
-  format: values.format
+  format: parsed.options.format
 })
 
 function displayHelp(cmd = null) {
