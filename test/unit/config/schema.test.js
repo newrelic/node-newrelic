@@ -8,11 +8,13 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const fs = require('node:fs')
+const path = require('node:path')
 
 const schema = require('#agentlib/config/schema.js')
 
-// The committed pre-compiled artifact, resolved relative to the schema module.
+// The committed pre-compiled artifacts, resolved relative to the schema module.
 const GENERATED_FILE = require.resolve('#agentlib/config/schema.generated.js')
+const RENDERED_SCHEMA_FILE = path.join(path.dirname(GENERATED_FILE), 'schema.json')
 
 test('schema getter exposes the root schema', () => {
   const root = schema.schema
@@ -134,17 +136,20 @@ test('renderNode inlines a $ref against a resolver', () => {
 test('static config schema is in sync with the schema sources', async (t) => {
   const REMEDY =
     'The committed static config schema is stale. Run ' +
-    '`npm run generate:config-validator` and commit lib/config/schema.generated.js.'
+    '`npm run generate:config-validator` and commit lib/config/schema.generated.js ' +
+    'and lib/config/schema.json.'
 
-  await t.test('the committed artifact exists', () => {
+  await t.test('the committed artifacts exist', () => {
     assert.equal(fs.existsSync(GENERATED_FILE), true, `lib/config/schema.generated.js is missing. ${REMEDY}`)
+    assert.equal(fs.existsSync(RENDERED_SCHEMA_FILE), true, `lib/config/schema.json is missing. ${REMEDY}`)
   })
 
   await t.test('regenerating produces no change', () => {
     // Generation is deterministic, so a fresh render must match the committed
-    // file byte for byte. A mismatch means a schema block under
-    // lib/config/schemas/ changed without the artifact being regenerated.
-    const committed = fs.readFileSync(GENERATED_FILE, 'utf8')
-    assert.equal(schema.render(), committed, REMEDY)
+    // files byte for byte. A mismatch means a schema block under
+    // lib/config/schemas/ changed without the artifacts being regenerated.
+    const { generated, renderedSchema } = schema.render()
+    assert.equal(generated, fs.readFileSync(GENERATED_FILE, 'utf8'), REMEDY)
+    assert.equal(renderedSchema, fs.readFileSync(RENDERED_SCHEMA_FILE, 'utf8'), REMEDY)
   })
 })

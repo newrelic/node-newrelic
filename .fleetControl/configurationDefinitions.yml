@@ -1,8 +1,8 @@
 configurationDefinitions:
   - platform: KUBERNETESCLUSTER
     type: AgentConfig
-    version: 1.2.0
-    schema: ./schemas/config.json
+    version: 2.0.0
+    schema: ../lib/config/schema.json
     format: js
     bindings:
       - type: CONFIGURES

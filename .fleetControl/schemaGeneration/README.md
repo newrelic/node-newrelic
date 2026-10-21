@@ -1,52 +1,43 @@
-# Agent Config Schema Generator
+# Agent Config Schema Versioning
 
-This directory contains the scripts that turn the agent's config JSON Schema
-into the published `../schemas/config.json` and manage version bumps in
-`../configurationDefinitions.yml` for Fleet Control.
+This directory contains the scripts that manage the version of the agent's
+config JSON Schema that Fleet Control publishes. The schema itself is not
+generated here: Fleet Control reads the agent's rendered config schema directly
+from `lib/config/schema.json`, and these scripts only bump its version in
+`../configurationDefinitions.yml` at release time.
 
 ## Files
 
 | File | Description |
 |------|-------------|
-| `generate-schema.js` | Post-merge regenerator. Reads the agent's rendered config schema (`lib/config/schema.js`'s `renderedSchema`), prunes it for publication, and writes `config.json`. Never touches `configurationDefinitions.yml`. |
-| `bump-schema-version.js` | Release-time version bumper. Compares the schema at a prior git ref to the current schema and writes a new version into `configurationDefinitions.yml`. |
-| `schema-diff.js` | Shared library (no CLI). Holds the diff classification (`classifyChanges`), bump arithmetic (`recommendBump`, `applyBump`, `bumpVersionLine`), and schema loading (`loadExisting`). Required by both scripts above. |
-| `tests/generate-schema.test.js` | Tests for the generator (comment extraction, per-leaf type inference, override precedence, `generateSchema`). |
-| `tests/schema-diff.test.js` | Tests for the shared library (`classifyChanges`, `recommendBump`, `applyBump`, `bumpVersionLine`). |
-| `tests/bump-schema-version.test.js` | Tests for the bump script (parsing helpers, `decideBump`'s bootstrap/no-change/bump paths). |
-| `../schemas/config.json` | Generated JSON Schema (Draft 2020-12). |
-| `../configurationDefinitions.yml` | Fleet Control metadata, including the schema's semver version. Bumped only at release time. |
+| `bump-schema-version.js` | Release-time version bumper. Compares `lib/config/schema.json` at a prior git ref to the current one and writes a new version into `configurationDefinitions.yml`. |
+| `schema-diff.js` | Shared library (no CLI). Holds the diff classification (`classifyChanges`), bump arithmetic (`recommendBump`, `applyBump`, `bumpVersionLine`), and schema loading (`loadExisting`). Required by `bump-schema-version.js`. |
+| `tests/schema-diff.test.js` | Tests for the shared library (`loadExisting`, `classifyChanges`, `recommendBump`, `applyBump`, `bumpVersionLine`, `renderChange`). |
+| `tests/bump-schema-version.test.js` | Tests for the bump script (parsing helpers, `previousRelease`, `decideBump`'s bootstrap/no-change/bump paths, `applyWrite`, `main`), plus a check that `configurationDefinitions.yml` points at `lib/config/schema.json`. |
+| `../../lib/config/schema.json` | The schema Fleet Control reads: the agent's rendered config JSON Schema (Draft 2020-12). |
+| `../configurationDefinitions.yml` | Fleet Control metadata, including the schema's path and semver version. The version is bumped only at release time. |
 
-## How the generator works
+## Where the schema comes from
 
-`generate-schema.js`:
+`lib/config/schema.json` is the agent's config JSON Schema
+(`lib/config/schemas/`) with every `$ref` block inlined into a single document.
+It carries every setting's type, default, constraints, and description, and is
+published as is — nothing is pruned or rewritten for Fleet Control.
 
-1. Requires `lib/config/schema.js` and reads its `renderedSchema` — the
-   agent's config JSON Schema (`lib/config/schemas/`) with every `$ref` block
-   inlined. That rendered schema already carries every setting's type,
-   default, constraints, and description, so there is nothing to infer.
-2. Prunes the rendered schema for publication (`prune`): drops any setting
-   marked `x-newrelic-internal` (not user-facing) and strips the vendor
-   keywords that shouldn't appear in the published artifact (`$id`,
-   `x-newrelic-coerce`, `x-newrelic-sampler`). It **keeps**
-   `x-newrelic-env-var`, which documents the environment variable that sets a
-   setting.
-3. Applies the published document's `title`, `description`, `required`, and
-   `additionalProperties`.
-4. Validates the result against the JSON Schema Draft 2020-12 meta-schema
-   (via `ajv`).
-5. Writes `config.json`.
+When a schema block under `lib/config/schemas/` changes, do this in the same
+PR:
 
-The generator does **not** touch `configurationDefinitions.yml` — version
-bumps live in the next section.
+1. Run `npm run generate:config-validator`. It regenerates
+   `lib/config/schema.json` together with `lib/config/schema.generated.js`.
+2. Commit both `lib/config/schema.generated.js` and `lib/config/schema.json`.
+
+Tests in `test/unit/config/schema.test.js` fail CI when either committed file
+is stale relative to the schema sources, and when `schema.json` is not a valid
+Draft 2020-12 JSON Schema document. There is no separate post-merge
+regeneration step, and the schema version is not touched here: it is bumped at
+release time (see below).
 
 ## How versioning works
-
-Schema regeneration runs **post-merge**, via
-`.github/workflows/agent-config-schema.yml`: once a change to the config
-definition lands on `main`, the workflow regenerates `config.json` and
-opens a separate PR with the result for review. It writes `config.json` and
-nothing else.
 
 Version bumps run as part of **release prep**, via the `bump-config-schema`
 job in `.github/workflows/prepare-release.yml`. Once `agent-release-notes`
@@ -55,19 +46,19 @@ has pushed the release branch, that job:
 1. Checks out the release branch and finds the latest `v*` tag on `main`.
 2. Reads the historical `configurationDefinitions.yml` from that tag — the
    version stored there is the **starter version** for the bump.
-3. Reads the historical schema from `.fleetControl/schemas/config.json` at
-   that same tag.
-4. Compares the historical schema to the current on-disk `config.json`,
-   classifies the cumulative diff, and applies the recommended bump kind
-   (major/minor/patch).
+3. Reads the historical schema from `lib/config/schema.json` at that same
+   tag.
+4. Compares the historical schema to the current on-disk
+   `lib/config/schema.json`, classifies the cumulative diff, and applies the
+   recommended bump kind (major/minor/patch).
 5. Commits the bumped `configurationDefinitions.yml` straight into the
    release branch (`--write`), so it rides along in the same release PR.
 
-If the latest release tag predates the schema (no `config.json`, or no
-`version` in `configurationDefinitions.yml`, at that tag),
+If the latest release tag predates the schema (no `lib/config/schema.json`, or
+no `version` in `configurationDefinitions.yml`, at that tag),
 `bump-schema-version.js` exits `0` with a bootstrap message and commits
-nothing. The first release that includes the schema ships at whatever
-version is currently in `configurationDefinitions.yml`.
+nothing. That release ships at whatever version is currently in
+`configurationDefinitions.yml`.
 
 Because the bump lands in the release PR itself, there's no ordering step
 to get wrong — reviewing and merging the release PR carries the version
@@ -76,9 +67,8 @@ bump with it.
 ## Quick start
 
 ```bash
-# Regenerate the schema (from repo root)
-node .fleetControl/schemaGeneration/generate-schema.js
-# or: npm run generate:config-schema
+# Regenerate the schema after changing lib/config/schemas/ (from repo root)
+npm run generate:config-validator
 
 # Preview a release-time bump against a tag (dry-run)
 node .fleetControl/schemaGeneration/bump-schema-version.js --since=v14.2.0
@@ -92,37 +82,34 @@ node .fleetControl/schemaGeneration/bump-schema-version.js --since=v14.2.0 --wri
 
 New settings are added to the agent's config schema under
 `lib/config/schemas/` (see that directory's README for authoring details).
-The generator picks them up automatically — it reads the rendered schema
-directly, so a setting's `type`, `default`, constraints, `enum`, and
-`description` come straight from the schema with nothing to infer or
-override here.
+Every setting in the schema reaches `lib/config/schema.json`, and therefore
+Fleet Control, with its `type`, `default`, constraints, `enum`, and
+`description` as written.
 
-Two schema conventions control what reaches `config.json`:
+The schema's vendor keywords are published too:
 
-- **Hiding a setting.** Mark it `x-newrelic-internal: true` in the schema.
-  The generator drops any such node (and everything nested under it) from
-  `config.json`, which is scoped to public-facing config. This is how
-  `ssl` and `agent_control` are excluded, for example.
-- **Documenting the environment variable.** A setting's `x-newrelic-env-var`
-  keyword is preserved in `config.json`; the other `x-newrelic-*` keywords
-  are internal to the agent and are stripped.
+- **`x-newrelic-env-var`** documents the environment variable that sets a
+  setting.
+- **`x-newrelic-internal: true`** marks a setting that is not user-facing (for
+  example `ssl` and `agent_control`). It is an annotation only: the setting is
+  still published, and Fleet Control or other tooling can use the keyword to
+  hide it.
+- **`x-newrelic-coerce`** and **`x-newrelic-sampler`** are implementation
+  details for the agent's environment-variable handling.
 
 ## Checklist for new config keys
 
 1. Add the setting to the schema under `lib/config/schemas/`, with a
-   `description` (and `x-newrelic-internal: true` if it should not be
-   published).
-2. Run the generator and check the result in `config.json`.
-3. Run the tests (`npm run unit:config-schema`).
-4. The version doesn't bump on post-merge regeneration. The next release
-   will pick up your changes when someone runs the bump workflow as part
-   of release prep.
+   `description` (and `x-newrelic-internal: true` if it is not user-facing).
+2. Run `npm run generate:config-validator` and check the result in
+   `lib/config/schema.json`.
+3. Commit `lib/config/schema.generated.js` and `lib/config/schema.json` with
+   your change, and run the tests (`npm run unit` and
+   `npm run unit:config-schema`).
+4. The version doesn't bump when your PR merges. The next release will pick
+   up your changes when the bump job runs as part of release prep.
 
 ## CLI options
-
-### `generate-schema.js`
-
-None — every run regenerates unconditionally and writes `config.json`.
 
 ### `bump-schema-version.js`
 
@@ -133,13 +120,6 @@ None — every run regenerates unconditionally and writes `config.json`.
 
 ## Exit codes
 
-### `generate-schema.js`
-
-| Code | Meaning |
-|------|---------|
-| 0 | Ran successfully. `config.json` reflects the current config definition, whether or not its contents actually changed. |
-| non-zero | Generator or meta-schema validation failure — `config.json` was not written. |
-
 ### `bump-schema-version.js`
 
 | Code | Meaning |
@@ -147,13 +127,13 @@ None — every run regenerates unconditionally and writes `config.json`.
 | 0 | Ran successfully — whether or not a bump was applied or recommended. |
 | non-zero | A real failure (bad ref, malformed YAML, unknown flag, etc). |
 
-Both scripts use this same two-way contract deliberately, rather than a
-three-way "unchanged/changed/failed" one: Node's default exit code for any
-uncaught exception is `1`, which would collide with "changed" if that were
-also `1`, letting a genuine crash slip through as a false success. Callers
-that need to know whether a file's contents actually changed check that
-directly — e.g. `git status`/`git diff` on `config.json` or
-`configurationDefinitions.yml` — rather than relying on the exit code.
+The script uses this two-way contract deliberately, rather than a three-way
+"unchanged/changed/failed" one: Node's default exit code for any uncaught
+exception is `1`, which would collide with "changed" if that were also `1`,
+letting a genuine crash slip through as a false success. Callers that need to
+know whether the version actually changed check that directly — e.g.
+`git status`/`git diff` on `configurationDefinitions.yml` — rather than relying
+on the exit code.
 
 ## Version bumping rules
 
@@ -176,6 +156,9 @@ is the highest severity across all changes:
 | `additionalProperties` loosened (`false` → `true`) | Additive | Minor |
 | Description changed | Cosmetic | Patch |
 
+Because the schema is published unpruned, these rules apply to internal
+settings (`x-newrelic-internal`) the same as to user-facing ones.
+
 `additionalProperties` is only compared when it's a plain boolean on both
 sides — `labels` and `instrumentation` constrain their dictionary values
 with an object-shaped `additionalProperties` instead, which isn't a bump
@@ -184,20 +167,21 @@ package as a real property (falling back to `additionalProperties` for
 anything newer); each addition/removal there is a normal property
 add/remove, not a bump-signal exemption.
 
+Anything not listed above is not compared and never triggers a bump: other
+constraints (`minimum`/`maximum`, `pattern`, `const`, `items`), the
+`x-newrelic-*` keywords, and the document's `title`, `description`, and `$id`.
+
 ## Running the tests
 
 ```bash
-node --test .fleetControl/schemaGeneration/tests/
+node --test .fleetControl/schemaGeneration/tests/*.test.js
 
 # Or via npm
 npm run unit:config-schema
 ```
 
-`tests/generate-schema.test.js` covers the publication pruning (`prune`:
-internal-node removal and vendor-keyword stripping, including nested
-`oneOf`/`items`) and `generateSchema` against the real rendered schema
-(document metadata, internal exclusions, retained descriptions, and the
-`x-newrelic-env-var`-kept/other-keywords-stripped contract).
-`tests/schema-diff.test.js` and `tests/bump-schema-version.test.js` cover the
-version-bump classification and driver logic above, entirely with synthetic
-schema fixtures — no git or real config involved.
+`tests/schema-diff.test.js` and most of `tests/bump-schema-version.test.js`
+cover the version-bump classification and driver logic above, entirely with
+synthetic schema fixtures — no git or real config involved. The one exception
+is the check that `configurationDefinitions.yml` resolves to the real
+`lib/config/schema.json`.

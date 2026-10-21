@@ -10,8 +10,23 @@ const assert = require('node:assert')
 const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
+const yaml = require('js-yaml')
 
 const { findLatestReleaseTag, extractVersion, previousRelease, applyWrite, decideBump, parseArgs, main } = require('../bump-schema-version')
+
+const FLEET_CONTROL_DIR = path.join(__dirname, '..', '..')
+const REPO_ROOT = path.join(FLEET_CONTROL_DIR, '..')
+
+test('configurationDefinitions.yml points Fleet Control at the published schema', () => {
+  // Fleet Control resolves `schema` relative to .fleetControl/. It must name
+  // lib/config/schema.json — the file the agent generates and this bump script
+  // diffs — so moving or renaming that file without updating the pointer fails
+  // here rather than silently in Fleet Control.
+  const configDef = yaml.load(fs.readFileSync(path.join(FLEET_CONTROL_DIR, 'configurationDefinitions.yml'), 'utf8'))
+  const schemaPath = path.resolve(FLEET_CONTROL_DIR, configDef.configurationDefinitions[0].schema)
+  assert.strictEqual(schemaPath, path.join(REPO_ROOT, 'lib', 'config', 'schema.json'))
+  assert.ok(fs.existsSync(schemaPath), `${schemaPath} does not exist`)
+})
 
 test('findLatestReleaseTag', async (t) => {
   await t.test('picks the first v-prefixed semver tag, ignoring non-matching entries', () => {
@@ -34,7 +49,7 @@ test('findLatestReleaseTag', async (t) => {
 
 test('extractVersion', async (t) => {
   await t.test('reads version from the first configurationDefinitions entry', () => {
-    const yamlText = 'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 1.2.3\n    schema: ./schemas/config.json\n'
+    const yamlText = 'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 1.2.3\n    schema: ../lib/config/schema.json\n'
     assert.strictEqual(extractVersion(yamlText), '1.2.3')
   })
 
@@ -103,7 +118,7 @@ test('previousRelease', async (t) => {
     assert.deepStrictEqual(result.baselineSchema, { properties: { app_name: { type: 'string' } } })
     assert.strictEqual(result.starterVersion, '1.2.3')
     assert.deepStrictEqual(gitShow.calls, [
-      ['v1.2.3', '.fleetControl/schemas/config.json'],
+      ['v1.2.3', 'lib/config/schema.json'],
       ['v1.2.3', '.fleetControl/configurationDefinitions.yml']
     ])
   })
@@ -118,7 +133,7 @@ test('applyWrite', async (t) => {
 
   await t.test('writes the new version and returns true when it differs from what is on disk', () => {
     const configDefPath = tmpConfigDef(
-      'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 1.0.0\n    schema: ./schemas/config.json\n'
+      'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 1.0.0\n    schema: ../lib/config/schema.json\n'
     )
     try {
       assert.strictEqual(applyWrite({ newVersion: '2.0.0' }, { configDefPath }), true)
@@ -130,7 +145,7 @@ test('applyWrite', async (t) => {
 
   await t.test('is a no-op and returns false when the on-disk version already matches', () => {
     const configDefPath = tmpConfigDef(
-      'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 2.0.0\n    schema: ./schemas/config.json\n'
+      'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 2.0.0\n    schema: ../lib/config/schema.json\n'
     )
     try {
       const before = fs.readFileSync(configDefPath, 'utf8')

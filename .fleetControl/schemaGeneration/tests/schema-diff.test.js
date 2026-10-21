@@ -283,10 +283,10 @@ test('applyBump', async (t) => {
 
 test('bumpVersionLine', async (t) => {
   await t.test('replaces the single version line, preserving indentation and trailing content', () => {
-    const yamlText = 'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 1.0.0\n    schema: ./schemas/config.json\n'
+    const yamlText = 'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 1.0.0\n    schema: ../lib/config/schema.json\n'
     assert.strictEqual(
       bumpVersionLine(yamlText, '2.0.0'),
-      'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 2.0.0\n    schema: ./schemas/config.json\n'
+      'configurationDefinitions:\n  - platform: KUBERNETESCLUSTER\n    version: 2.0.0\n    schema: ../lib/config/schema.json\n'
     )
   })
 

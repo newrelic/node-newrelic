@@ -1,8 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "root.js",
   "title": "New Relic Node.js Agent Configuration",
-  "description": "Configuration accepted by the New Relic Node.js agent's config file (newrelic.js, newrelic.cjs, or newrelic.mjs), and by the equivalent NEW_RELIC_* environment variables. Generated from the agent config JSON Schema (lib/config/schemas/); regenerate with `node .fleetControl/schemaGeneration/generate-schema.js`.",
+  "description": "Configuration accepted by the New Relic Node.js agent's config file (newrelic.js, newrelic.cjs, or newrelic.mjs), and by the equivalent NEW_RELIC_* environment variables.",
   "type": "object",
+  "required": [],
+  "additionalProperties": true,
   "properties": {
     "account_id": {
       "type": [
@@ -148,6 +151,14 @@
       "default": "",
       "description": "Proxy user name when required."
     },
+    "ssl": {
+      "x-newrelic-env-var": "NEW_RELIC_USE_SSL",
+      "type": "boolean",
+      "const": true,
+      "default": true,
+      "x-newrelic-internal": true,
+      "description": "Whether or not to use SSL to connect to New Relic servers. This can no longer be disabled; the only permitted value is true."
+    },
     "trusted_account_key": {
       "type": [
         "string",
@@ -156,6 +167,35 @@
       ],
       "default": null,
       "description": "The trusted account key used to validate incoming distributed trace headers. Only used in serverless_mode; defaults to account_id when account_id is set. Locally configured values are ignored outside serverless_mode."
+    },
+    "agent_control": {
+      "type": "object",
+      "x-newrelic-internal": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Indicates that the agent is being managed by Agent Control. Must be set to true for health monitoring."
+        },
+        "health": {
+          "type": "object",
+          "properties": {
+            "delivery_location": {
+              "type": "string",
+              "default": "file:///newrelic/apm/health",
+              "description": "A string file path to a directory that the agent is expected to write health status files to. Must be set for health monitoring to be enabled."
+            },
+            "frequency": {
+              "type": "integer",
+              "default": 5,
+              "description": "An integer representing how often the agent should write to the health status file(s), in seconds."
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Settings for integration with Agent Control. Set by Agent Control, not user-facing."
     },
     "ai_monitoring": {
       "type": "object",
@@ -574,6 +614,7 @@
                 }
               ],
               "default": "adaptive",
+              "x-newrelic-sampler": true,
               "description": "Example setting root sampler via config to a string value - root: 'always_on' Example setting root sampler via config to trace id ratio based - root: { trace_id_ratio_based: { ratio: 0.5 } }"
             },
             "remote_parent_sampled": {
@@ -629,6 +670,7 @@
                 }
               ],
               "default": "adaptive",
+              "x-newrelic-sampler": true,
               "description": "When set to `always_on`, the sampled flag in the `traceparent` header being set to \"true\" will result in the local transaction being sampled with a priority value of \"2\". When set to `always_off`, the local transaction will never be sampled. At the default setting, the sampling decision will be determined according to the normal algorithm. This setting takes precedence over the `remote_parent_not_sampled` setting."
             },
             "remote_parent_not_sampled": {
@@ -684,6 +726,7 @@
                 }
               ],
               "default": "adaptive",
+              "x-newrelic-sampler": true,
               "description": "When set to `always_on`, the local transaction will be sampled with a priority of \"2\". When set to `always_off`, the local transaction will never be sampled. At the default setting, the sampling decision will be determined according to the normal algorithm. This setting only affects decisions when the traceparent sampled flag is set to 0."
             },
             "adaptive_sampling_target": {
@@ -711,6 +754,7 @@
                   "default": false
                 },
                 "type": {
+                  "x-newrelic-coerce": "allowList",
                   "type": "string",
                   "enum": [
                     "compact",
@@ -772,6 +816,7 @@
                     }
                   ],
                   "default": "adaptive",
+                  "x-newrelic-sampler": true,
                   "description": "Example setting root sampler via config to a string value - root: 'always_on' Example setting root sampler via config to trace id ratio based - root: { trace_id_ratio_based: { ratio: 0.5 } }"
                 },
                 "remote_parent_sampled": {
@@ -827,6 +872,7 @@
                     }
                   ],
                   "default": "adaptive",
+                  "x-newrelic-sampler": true,
                   "description": "When set to `always_on`, the sampled flag in the `traceparent` header being set to \"true\" will result in the local transaction being sampled with a priority value of \"2\". When set to `always_off`, the local transaction will never be sampled. At the default setting, the sampling decision will be determined according to the normal algorithm. This setting takes precedence over the `remote_parent_not_sampled` setting."
                 },
                 "remote_parent_not_sampled": {
@@ -882,6 +928,7 @@
                     }
                   ],
                   "default": "adaptive",
+                  "x-newrelic-sampler": true,
                   "description": "When set to `always_on`, the local transaction will be sampled with a priority of \"2\". When set to `always_off`, the local transaction will never be sampled. At the default setting, the sampling decision will be determined according to the normal algorithm. This setting only affects decisions when the traceparent sampled flag is set to 0."
                 }
               },
@@ -959,6 +1006,7 @@
           "default": []
         },
         "expected_messages": {
+          "x-newrelic-coerce": "object",
           "type": "object",
           "additionalProperties": true,
           "default": {}
@@ -980,6 +1028,7 @@
           "default": []
         },
         "ignore_messages": {
+          "x-newrelic-coerce": "object",
           "type": "object",
           "additionalProperties": true,
           "default": {}
@@ -1034,6 +1083,12 @@
               "type": "integer",
               "default": 443,
               "description": "The URI PORT of the observer."
+            },
+            "insecure": {
+              "type": "boolean",
+              "default": false,
+              "x-newrelic-internal": true,
+              "description": "Whether to connect to the trace observer without TLS. Internal use only."
             }
           },
           "additionalProperties": true
@@ -1792,6 +1847,12 @@
           "default": true,
           "description": "Whether to write to a log file at all",
           "x-newrelic-env-var": "NEW_RELIC_LOG_ENABLED"
+        },
+        "diagnostics": {
+          "type": "boolean",
+          "default": false,
+          "x-newrelic-internal": true,
+          "description": "Whether to enable internal agent diagnostics logging."
         }
       },
       "additionalProperties": true
@@ -1896,6 +1957,7 @@
         },
         "ipv_preference": {
           "x-newrelic-env-var": "NEW_RELIC_IPV_PREFERENCE",
+          "x-newrelic-coerce": "allowList",
           "type": "string",
           "enum": [
             "4",
@@ -1956,6 +2018,7 @@
       "properties": {
         "name": {
           "x-newrelic-env-var": "NEW_RELIC_NAMING_RULES",
+          "x-newrelic-coerce": "objectList",
           "type": "array",
           "items": {},
           "default": [],
@@ -1999,6 +2062,7 @@
           "description": "Flag to tell the Node.js agent to load the security agent. This property is read only once at application start."
         },
         "mode": {
+          "x-newrelic-coerce": "allowList",
           "type": "string",
           "enum": [
             "IAST",
@@ -2394,6 +2458,7 @@
         },
         "transaction_threshold": {
           "x-newrelic-env-var": "NEW_RELIC_TRACER_THRESHOLD",
+          "x-newrelic-coerce": "numericOrString",
           "type": [
             "number",
             "string"
@@ -2409,6 +2474,7 @@
         },
         "record_sql": {
           "x-newrelic-env-var": "NEW_RELIC_RECORD_SQL",
+          "x-newrelic-coerce": "allowList",
           "type": "string",
           "enum": [
             "off",
@@ -2439,6 +2505,7 @@
           "type": "object",
           "properties": {
             "pattern": {
+              "x-newrelic-coerce": "regex",
               "type": "string",
               "description": "Must be a valid regular expression.",
               "default": null
@@ -2549,10 +2616,5 @@
       "additionalProperties": true,
       "description": "When enabled, it will allow loading of the agent in worker threads. In 11.0.0 we added code to prevent loading in worker threads to cut down on unnecessary overhead of the agent. We have found in testing that traces and spans were useless unless work was completely self contained in the worker thread."
     }
-  },
-  "required": [
-    "app_name",
-    "license_key"
-  ],
-  "additionalProperties": true
+  }
 }
