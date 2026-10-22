@@ -8,7 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const { addCLMAttributes } = require('../../../lib/util/code-level-metrics')
 const { anon, arrow, named } = require('../../lib/clm-helper')
-const path = require('path')
+const path = require('node:path')
 const helperPath = path.resolve(path.join(__dirname, '/../../lib/clm-helper.js'))
 const sinon = require('sinon')
 const symbols = require('../../../lib/symbols')
@@ -173,5 +173,81 @@ test('failure cases', async (t) => {
     fnInspector.funcInfo.throws(err)
     addCLMAttributes(fn, segmentStub)
     assert.ok(!segmentStub.addAttribute.callCount)
+  })
+})
+
+test('function inspector caching', async (t) => {
+  const Module = require('node:module')
+  const clmPath = require.resolve('../../../lib/util/code-level-metrics')
+
+  /**
+   * Loads a fresh copy of the CLM module so its cached inspector state is reset,
+   * leaving the copy used by the rest of this file in the require cache.
+   *
+   * @returns {object} A new instance of the CLM module.
+   */
+  function loadFreshClm() {
+    const original = require.cache[clmPath]
+    delete require.cache[clmPath]
+    const fresh = require(clmPath)
+    require.cache[clmPath] = original
+    return fresh
+  }
+
+  /**
+   * Counts how many times the function inspector was required.
+   *
+   * @param {object} requireSpy A sinon spy or stub on `Module.prototype.require`.
+   * @returns {number} The number of `require('@newrelic/fn-inspect')` calls.
+   */
+  function inspectorLoads(requireSpy) {
+    return requireSpy.getCalls().filter((call) => call.args[0] === '@newrelic/fn-inspect').length
+  }
+
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.segmentStub = {
+      addAttribute: sinon.stub()
+    }
+  })
+
+  await t.test('should only load the function inspector once', (t) => {
+    const { segmentStub } = t.nr
+    const clm = loadFreshClm()
+    const requireSpy = sinon.spy(Module.prototype, 'require')
+    t.after(() => requireSpy.restore())
+    function one() {}
+    function two() {}
+    one[symbols.clm] = true
+    two[symbols.clm] = true
+
+    clm.addCLMAttributes(one, segmentStub)
+    clm.addCLMAttributes(one, segmentStub)
+    clm.addCLMAttributes(two, segmentStub)
+
+    assert.equal(inspectorLoads(requireSpy), 1, 'should load the inspector once')
+    assert.equal(segmentStub.addAttribute.callCount, 12, 'should add all 4 code.* attrs on every call')
+  })
+
+  await t.test('should fall back to code.function and not retry when the inspector fails to load', (t) => {
+    const { segmentStub } = t.nr
+    const clm = loadFreshClm()
+    const requireStub = sinon.stub(Module.prototype, 'require').callsFake(function fakeRequire(id) {
+      if (id === '@newrelic/fn-inspect') {
+        throw new Error('No native build was found')
+      }
+      return requireStub.wrappedMethod.call(this, id)
+    })
+    t.after(() => requireStub.restore())
+    function testFn() {}
+    testFn[symbols.clm] = true
+
+    clm.addCLMAttributes(testFn, segmentStub)
+    clm.addCLMAttributes(testFn, segmentStub)
+
+    assert.equal(inspectorLoads(requireStub), 1, 'should not retry loading the inspector')
+    assert.equal(segmentStub.addAttribute.callCount, 2)
+    assert.deepEqual(segmentStub.addAttribute.args[0], ['code.function', 'testFn'])
+    assert.deepEqual(segmentStub.addAttribute.args[1], ['code.function', 'testFn'])
   })
 })
