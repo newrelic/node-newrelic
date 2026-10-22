@@ -128,3 +128,35 @@ test('env var index', async (t) => {
     assert.equal(schema.resolveEnvVar('NEW_RELIC_NOT_REAL'), undefined)
   })
 })
+
+test('applyEnvironmentOverrides with Core Tracing disabled', async (t) => {
+  await t.test('skips granularity variables and logs a warning for each', () => {
+    const warnings = []
+    const logger = { trace() {}, warn: (...args) => warnings.push(args) }
+    const config = applyEnvironmentOverrides({}, {
+      env: {
+        NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_FULL_GRANULARITY_ENABLED: 'false',
+        NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ENABLED: 'true',
+        NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ROOT: 'always_on'
+      },
+      logger
+    })
+    assert.deepStrictEqual(config, {})
+    assert.deepStrictEqual(warnings.map(([, name, key]) => [name, key]), [
+      ['NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_FULL_GRANULARITY_ENABLED', 'full_granularity'],
+      ['NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ENABLED', 'partial_granularity'],
+      ['NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ROOT', 'partial_granularity']
+    ])
+  })
+
+  await t.test('still applies sibling sampler variables', () => {
+    const config = apply({
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'always_on',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ADAPTIVE_SAMPLING_TARGET: '20',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ENABLED: 'true'
+    }, { logger: { trace() {}, warn() {} } })
+    assert.deepStrictEqual(config, {
+      distributed_tracing: { sampler: { root: 'always_on', adaptive_sampling_target: 20 } }
+    })
+  })
+})

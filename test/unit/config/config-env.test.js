@@ -1149,3 +1149,74 @@ test('logs redacted information when setting from env vars', (t, end) => {
     end()
   })
 })
+
+test('Core Tracing is disabled', async (t) => {
+  const WARNING = 'Ignoring %s: distributed_tracing.sampler.%s cannot be configured.'
+
+  await t.test('should not allow changes from granularity env vars', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_FULL_GRANULARITY_ENABLED: 'false',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ENABLED: 'true',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_TYPE: 'reduced'
+    }
+    idempotentEnv(env, (tc, logger) => {
+      const { sampler } = tc.distributed_tracing
+      assert.equal(sampler.full_granularity.enabled, true)
+      assert.equal(sampler.partial_granularity.enabled, false)
+      assert.equal(sampler.partial_granularity.type, 'essential')
+      assert.deepStrictEqual(logger.logs.warn, [
+        [WARNING, 'NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_FULL_GRANULARITY_ENABLED', 'full_granularity'],
+        [WARNING, 'NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ENABLED', 'partial_granularity'],
+        [WARNING, 'NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_TYPE', 'partial_granularity']
+      ])
+      end()
+    })
+  })
+
+  await t.test('should not allow changes from partial granularity sampler env vars', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ROOT: 'trace_id_ratio_based',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ROOT_TRACE_ID_RATIO_BASED_RATIO: '0.5',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_REMOTE_PARENT_SAMPLED: 'always_on',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_REMOTE_PARENT_NOT_SAMPLED: 'always_off'
+    }
+    idempotentEnv(env, (tc) => {
+      const { partial_granularity: partial } = tc.distributed_tracing.sampler
+      assert.equal(partial.root, 'adaptive')
+      assert.equal(partial.remote_parent_sampled, 'adaptive')
+      assert.equal(partial.remote_parent_not_sampled, 'adaptive')
+      end()
+    })
+  })
+
+  await t.test('should not allow env vars to override the granularity config', (t, end) => {
+    // Env vars are applied after user config, so verify they cannot re-enable
+    // what the user config path blocked.
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ENABLED: 'true'
+    }
+    const initialConfig = {
+      distributed_tracing: { sampler: { partial_granularity: { enabled: true } } }
+    }
+    idempotentEnv(env, initialConfig, (tc) => {
+      assert.equal(tc.distributed_tracing.sampler.full_granularity.enabled, true)
+      assert.equal(tc.distributed_tracing.sampler.partial_granularity.enabled, false)
+      end()
+    })
+  })
+
+  await t.test('should still apply other sampler env vars', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT: 'always_on',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ADAPTIVE_SAMPLING_TARGET: '20',
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ENABLED: 'true'
+    }
+    idempotentEnv(env, (tc) => {
+      const { sampler } = tc.distributed_tracing
+      assert.equal(sampler.root, 'always_on')
+      assert.equal(sampler.adaptive_sampling_target, 20)
+      assert.equal(sampler.partial_granularity.enabled, false)
+      end()
+    })
+  })
+})

@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { buildSamplers, setSamplersFromEnv, isValidDTSampler } = require('#agentlib/config/samplers.js')
+const { buildSamplers, setSamplersFromEnv, isValidDTSampler, CORE_TRACING_KEYS } = require('#agentlib/config/samplers.js')
 
 function testLogger() {
   const traces = []
@@ -36,6 +36,10 @@ test('isValidDTSampler', () => {
   assert.equal(isValidDTSampler('partial_granularity'), true)
   assert.equal(isValidDTSampler('root'), false)
   assert.equal(isValidDTSampler('nope'), false)
+})
+
+test('CORE_TRACING_KEYS', () => {
+  assert.deepStrictEqual([...CORE_TRACING_KEYS], ['full_granularity', 'partial_granularity'])
 })
 
 test('buildSamplers', async (t) => {
