@@ -48,3 +48,30 @@ test('generateDefaultConfig produces the agent defaults', () => {
   assert.equal(config.serverless_mode.enabled, false)
   assert.ok(config.logging.filepath.endsWith('newrelic_agent.log'))
 })
+
+test('renderDefaults omits x-newrelic-internal nodes when skipInternal is set', () => {
+  const node = {
+    type: 'object',
+    properties: {
+      keep: { type: 'boolean', default: true },
+      secret: { type: 'boolean', default: true, 'x-newrelic-internal': true }
+    }
+  }
+
+  assert.deepEqual(renderDefaults(node, noResolve, false), { keep: true, secret: true })
+  assert.deepEqual(renderDefaults(node, noResolve, true), { keep: true })
+})
+
+test('generateDefaultConfig skipInternal omits internal settings and is not cached', () => {
+  const full = generateDefaultConfig({ rebuildCache: true })
+  const trimmed = generateDefaultConfig({ skipInternal: true })
+
+  // `ssl` is marked x-newrelic-internal in the schema.
+  assert.equal('ssl' in full, true)
+  assert.equal('ssl' in trimmed, false)
+  // User-facing settings remain.
+  assert.equal('transaction_tracer' in trimmed, true)
+
+  // The skip-internal view must not replace the shared cache.
+  assert.equal('ssl' in generateDefaultConfig(), true)
+})

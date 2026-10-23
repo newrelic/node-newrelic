@@ -10,7 +10,9 @@ Examples:
 
   newrelic validate-config -c ./newrelic.mjs
 
-  newrelic validate-config -c ./newrelic.js -f json
+  newrelic validate-config -c ./newrelic.js -o json
+
+  newrelic validate-config -c ./newrelic.js --dump > ./newrelic.cjs
 
 Options:
   -c, --config-file     Path to the configuration file to validate. This option
@@ -28,7 +30,18 @@ Options:
                         `module.exports.config = {}` / `exports.config = {}` for
                         CommonJS.
 
-  -f, --format          Specifies the format the tool will use when reporting
+  -o, --output-format   Specifies the format the tool will use when reporting
                         the result of the validation. The default format is a
                         human-readable report. The value "json" may be provided
                         to generate a JSON representation of the result.
+
+  -d, --dump            Write the validated configuration to stdout as a
+                        re-loadable configuration file (environment variables
+                        and value normalization applied). Only the settings the
+                        user supplied are written. Use `--dump full` to also
+                        include every supported setting, assigning its default
+                        where the user did not provide a value. The dump is only
+                        written when the configuration is valid and startable.
+
+  -f, --format          The module format for `--dump` output: "cjs" (default),
+                        "esm", or "json". Has no effect without `--dump`.
