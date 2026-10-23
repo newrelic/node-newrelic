@@ -8,13 +8,14 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const http = require('node:http')
+const net = require('node:net')
 const url = require('node:url')
-const events = require('node:events')
 const nock = require('nock')
 
 const Tracestate = require('#agentlib/w3c/tracestate.js')
 const helper = require('../../../lib/agent_helper')
-const instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
+const HttpOutboundSubscriber = require('#agentlib/subscribers/core/http-outbound.js')
+const logger = require('#agentlib/logger.js')
 const symbols = require('../../../../lib/symbols')
 const testSignatures = require('./outbound-utils')
 
@@ -23,10 +24,50 @@ const NAMES = require('../../../../lib/metrics/names')
 const HOSTNAME = 'localhost'
 const PORT = 8890
 
-test('instrumentOutbound', async (t) => {
+/**
+ * Issues a request with `http.request` and immediately destroys it. These tests
+ * only assert on the external segment, which is complete once `request()`
+ * returns, so the request never needs to reach a server (nothing listens on
+ * `PORT`).
+ *
+ * @param {object} opts The HTTP request options.
+ * @returns {http.ClientRequest} The destroyed request.
+ */
+function makeRequest(opts) {
+  const req = http.request(opts)
+  // handled so the destroyed request's error isn't thrown
+  req.on('error', () => {})
+  req.destroy()
+  return req
+}
+
+/**
+ * Gets the external segments directly under the transaction's root segment.
+ *
+ * @param {Transaction} transaction The transaction to inspect.
+ * @returns {TraceSegment[]} The external segments.
+ */
+function getExternalSegments(transaction) {
+  return transaction.trace
+    .getChildren(transaction.trace.root.id)
+    .filter((segment) => segment.name.startsWith(NAMES.EXTERNAL.PREFIX))
+}
+
+test('HttpOutboundSubscriber', async (t) => {
+  // nock replaces `http.ClientRequest` and rejects options it cannot parse into
+  // a URL (e.g. an invalid `href`), so use the real one; requests are destroyed
+  // before they connect
+  t.before(() => {
+    nock.restore()
+  })
+
+  t.after(() => {
+    nock.activate()
+  })
+
   t.beforeEach((ctx) => {
     ctx.nr = {}
-    ctx.nr.agent = helper.loadMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent()
   })
 
   t.afterEach((ctx) => {
@@ -38,16 +79,10 @@ test('instrumentOutbound', async (t) => {
     (t, end) => {
       const { agent } = t.nr
       agent.config.attributes.enabled = false
-      const req = new events.EventEmitter()
       helper.runInTransaction(agent, function (transaction) {
-        instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+        makeRequest({ host: HOSTNAME, port: PORT, path: '/asdf?a=b&another=yourself&thing&grownup=true' })
         const [child] = transaction.trace.getChildren(transaction.trace.root.id)
         assert.deepEqual(child.getAttributes(), {})
-
-        function makeFakeRequest() {
-          req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
-          return req
-        }
         end()
       })
     }
@@ -56,19 +91,13 @@ test('instrumentOutbound', async (t) => {
   await t.test('should omit query parameters from path if high_security is true', (t, end) => {
     const { agent } = t.nr
     agent.config.high_security = true
-    const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      makeRequest({ host: HOSTNAME, port: PORT, path: '/asdf?a=b&another=yourself&thing&grownup=true' })
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.deepEqual(child.getAttributes(), {
         procedure: 'GET',
         url: `http://${HOSTNAME}:${PORT}/asdf`
       })
-
-      function makeFakeRequest() {
-        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
-        return req
-      }
       end()
     })
   })
@@ -82,48 +111,34 @@ test('instrumentOutbound', async (t) => {
         replacement: '/***'
       }
     }
-    const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      makeRequest({ host: HOSTNAME, port: PORT, path: '/asdf/foo/bar/baz?test=123&test2=456' })
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.deepEqual(child.getAttributes(), {
         procedure: 'GET',
         url: `http://${HOSTNAME}:${PORT}/***`
       })
-
-      function makeFakeRequest() {
-        req.path = '/asdf/foo/bar/baz?test=123&test2=456'
-        return req
-      }
       end()
     })
   })
 
   await t.test('should strip query parameters from path in transaction trace segment', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
-      const path = '/asdf'
-      const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
+      const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/asdf'
 
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      makeRequest({ host: HOSTNAME, port: PORT, path: '/asdf?a=b&another=yourself&thing&grownup=true' })
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(child.name, name)
-
-      function makeFakeRequest() {
-        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
-        return req
-      }
       end()
     })
   })
 
   await t.test('should save query parameters from path if attributes.enabled is true', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
       agent.config.attributes.enabled = true
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      makeRequest({ host: HOSTNAME, port: PORT, path: '/asdf?a=b&another=yourself&thing&grownup=true' })
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.deepEqual(
         child.attributes.get(DESTINATIONS.SPAN_EVENT),
@@ -139,192 +154,310 @@ test('instrumentOutbound', async (t) => {
         },
         'adds attributes to spans'
       )
-
-      function makeFakeRequest() {
-        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
-        return req
-      }
       end()
     })
   })
 
   await t.test('should accept a simple path with no parameters', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
     const path = '/newrelic'
     helper.runInTransaction(agent, function (transaction) {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
-      req.path = path
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      makeRequest({ host: HOSTNAME, port: PORT, path })
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(child.name, name)
       end()
     })
-
-    function makeFakeRequest() {
-      req.path = path
-      return req
-    }
   })
 
   await t.test('should purge trailing slash', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
-    const path = '/newrelic/'
     helper.runInTransaction(agent, function (transaction) {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
-      req.path = path
-      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      makeRequest({ host: HOSTNAME, port: PORT, path: '/newrelic/' })
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.equal(child.name, name)
+      end()
     })
-
-    function makeFakeRequest() {
-      req.path = path
-      return req
-    }
-    end()
   })
 
   await t.test('should not throw if hostname is undefined', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
-
     helper.runInTransaction(agent, function () {
-      let req2 = null
+      let req = null
       assert.doesNotThrow(() => {
-        req2 = instrumentOutbound(agent, { port: PORT }, makeFakeRequest)
+        req = makeRequest({ port: PORT, path: '/newrelic' })
       })
 
-      assert.equal(req2, req)
-      assert.ok(!req2[symbols.transactionInfo])
+      assert.ok(req instanceof http.ClientRequest)
+      assert.ok(!req[symbols.transactionInfo])
+      end()
     })
-
-    function makeFakeRequest() {
-      req.path = '/newrelic'
-      return req
-    }
-    end()
   })
 
   await t.test('should not throw if hostname is null', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
-
     helper.runInTransaction(agent, function () {
-      let req2 = null
+      let req = null
       assert.doesNotThrow(() => {
-        req2 = instrumentOutbound(agent, { host: null, port: PORT }, makeFakeRequest)
+        req = makeRequest({ host: null, port: PORT, path: '/newrelic' })
       })
 
-      assert.equal(req2, req)
-      assert.ok(!req2[symbols.transactionInfo])
+      assert.ok(req instanceof http.ClientRequest)
+      assert.ok(!req[symbols.transactionInfo])
+      end()
     })
-
-    function makeFakeRequest() {
-      req.path = '/newrelic'
-      return req
-    }
-    end()
   })
 
   await t.test('should not throw if hostname is an empty string', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
     helper.runInTransaction(agent, function () {
-      let req2 = null
+      let req = null
       assert.doesNotThrow(() => {
-        req2 = instrumentOutbound(agent, { host: '', port: PORT }, makeFakeRequest)
+        req = makeRequest({ host: '', port: PORT, path: '/newrelic' })
       })
 
-      assert.equal(req2, req)
-      assert.ok(!req2[symbols.transactionInfo])
+      assert.ok(req instanceof http.ClientRequest)
+      assert.ok(!req[symbols.transactionInfo])
+      end()
     })
-
-    function makeFakeRequest() {
-      req.path = '/newrelic'
-      return req
-    }
-    end()
   })
 
   await t.test('should not throw if port is undefined', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
-
     helper.runInTransaction(agent, function () {
-      let req2 = null
+      let req = null
       assert.doesNotThrow(() => {
-        req2 = instrumentOutbound(agent, { host: 'hostname' }, makeFakeRequest)
+        req = makeRequest({ host: 'hostname', path: '/newrelic' })
       })
 
-      assert.equal(req2, req)
-      assert.ok(!req2[symbols.transactionInfo])
+      assert.ok(req instanceof http.ClientRequest)
+      assert.ok(!req[symbols.transactionInfo])
+      end()
     })
-
-    function makeFakeRequest() {
-      req.path = '/newrelic'
-      return req
-    }
-    end()
   })
 
   await t.test('should not crash when req.headers is null', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
     helper.runInTransaction(agent, function () {
-      const path = '/asdf'
-
-      instrumentOutbound(agent, { headers: null, host: HOSTNAME, port: PORT }, makeFakeRequest)
-
-      function makeFakeRequest(opts) {
-        assert.ok(opts.headers, 'should assign headers when null')
-        assert.ok(opts.headers.traceparent, 'traceparent should exist')
-        req.path = path
-        return req
-      }
+      const req = makeRequest({ headers: null, host: HOSTNAME, port: PORT, path: '/asdf' })
+      assert.ok(req.getHeader('traceparent'), 'traceparent should exist')
+      end()
     })
-    end()
   })
 
   await t.test('should prioritize using href', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
-      const path = '/someother/path'
       const href = `http://${HOSTNAME}:${PORT}/someother/path/more?query=string`
 
-      instrumentOutbound(agent, { href, host: HOSTNAME, port: PORT }, makeFakeRequest)
+      makeRequest({ href, host: HOSTNAME, port: PORT, path: '/someother/path' })
 
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.ok(child.name.includes('someother/path/more'), 'should use href over request.path')
-
-      function makeFakeRequest(opts) {
-        req.path = path
-        return req
-      }
       end()
     })
   })
 
   await t.test('should construct url from protocol, host header and path when path is not a substring of href', (t, end) => {
     const { agent } = t.nr
-    const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
       const path = '/fallback/path'
       const href = 'not-a-valid-url'
 
-      instrumentOutbound(agent, { href, host: HOSTNAME, port: PORT }, makeFakeRequest)
+      makeRequest({ href, host: HOSTNAME, port: PORT, path })
 
       const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.ok(child.name.includes(path), 'should use request.path when href is invalid')
-
-      function makeFakeRequest(opts) {
-        req.path = path
-        return req
-      }
       end()
     })
+  })
+
+  await t.test('should not record requests marked off the record', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = makeRequest({ host: HOSTNAME, port: PORT, path: '/newrelic', [symbols.offTheRecord]: true })
+
+      const children = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.ok(!children.some((child) => child.name.startsWith(NAMES.EXTERNAL.PREFIX)), 'should not create an external segment')
+      assert.ok(!req.getHeader('traceparent'), 'should not add tracing headers')
+      assert.ok(!req[symbols.segment])
+      end()
+    })
+  })
+
+  await t.test('should not record requests outside of a transaction', () => {
+    const req = makeRequest({ host: HOSTNAME, port: PORT, path: '/newrelic' })
+
+    assert.ok(!req.getHeader('traceparent'), 'should not add tracing headers')
+    assert.ok(!req[symbols.segment])
+  })
+
+  await t.test('should tie the request to the external segment', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = makeRequest({ host: HOSTNAME, port: PORT, path: '/newrelic' })
+
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(req[symbols.segment], child)
+      assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${HOSTNAME}:${PORT}/newrelic`)
+      end()
+    })
+  })
+
+  await t.test('should not create a segment when the port is invalid', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      // `createConnection` hands http an unconnected socket, so the request is
+      // created without `net` rejecting the port
+      const createConnection = () => new net.Socket()
+      const req = http.request({ host: HOSTNAME, port: -1, path: '/newrelic', createConnection })
+      req.on('error', () => {})
+
+      assert.equal(getExternalSegments(transaction).length, 0)
+      assert.ok(!req[symbols.segment])
+      req.destroy()
+      end()
+    })
+  })
+
+  const disableDtHeaders = [
+    ['the x-new-relic-disable-dt header', { 'x-new-relic-disable-dt': 'true' }],
+    ['the disableDT symbol', { [symbols.disableDT]: true }]
+  ]
+  for (const [label, headers] of disableDtHeaders) {
+    await t.test(`should not add distributed tracing headers when disabled by ${label}`, (t, end) => {
+      helper.runInTransaction(t.nr.agent, function (transaction) {
+        const req = makeRequest({ host: HOSTNAME, port: PORT, path: '/newrelic', headers })
+
+        assert.ok(!req.getHeader('traceparent'), 'should not add traceparent')
+        assert.ok(!req.getHeader('tracestate'), 'should not add tracestate')
+        assert.equal(getExternalSegments(transaction).length, 1, 'should still record the external')
+        end()
+      })
+    })
+  }
+
+  const proxyTargets = [
+    ['http', 'http://example.com/foo?a=b', 'http://example.com/foo', '80'],
+    ['https', 'https://example.com/foo?a=b', 'https://example.com/foo', '443']
+  ]
+  for (const [protocol, path, url, port] of proxyTargets) {
+    await t.test(`should record the target of an ${protocol} proxy request`, (t, end) => {
+      helper.runInTransaction(t.nr.agent, function (transaction) {
+        makeRequest({ host: HOSTNAME, port: PORT, path })
+
+        const [child] = getExternalSegments(transaction)
+        assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}example.com/foo`)
+        const attributes = child.attributes.get(DESTINATIONS.SPAN_EVENT)
+        assert.equal(attributes.url, url)
+        assert.equal(attributes.hostname, 'example.com')
+        assert.equal(attributes.port, port)
+        end()
+      })
+    })
+  }
+
+  await t.test('should fall back to the request path when the url cannot be parsed', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      // the href includes the path, so it is used, but it is not a valid url
+      makeRequest({ href: 'not-a-valid-url/newrelic', host: HOSTNAME, port: PORT, path: '/newrelic' })
+
+      const [child] = getExternalSegments(transaction)
+      assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${HOSTNAME}:${PORT}`, 'should not add the path to the name')
+      assert.deepEqual(child.getAttributes(), {
+        procedure: 'GET',
+        url: `http://${HOSTNAME}:${PORT}/newrelic`
+      })
+      end()
+    })
+  })
+
+  await t.test('should end the segment and not capture an error the user handles', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = http.request({ host: HOSTNAME, port: PORT, path: '/newrelic' })
+      req.on('error', () => {})
+      const [child] = getExternalSegments(transaction)
+
+      req.emit('error', new Error('boom'))
+
+      assert.equal(child.timer.isActive(), false, 'should end the segment')
+      assert.equal(transaction.exceptions.length, 0, 'should not capture the error')
+      req.destroy()
+      end()
+    })
+  })
+
+  await t.test('should capture an error the user does not handle', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = http.request({ host: HOSTNAME, port: PORT, path: '/newrelic' })
+      const [child] = getExternalSegments(transaction)
+      const error = new Error('boom')
+
+      // with no listener the emitter rethrows, as it would without the agent
+      assert.throws(() => req.emit('error', error), error)
+
+      assert.equal(child.timer.isActive(), false, 'should end the segment')
+      assert.equal(transaction.exceptions.length, 1, 'should capture the error')
+      assert.equal(transaction.exceptions[0].error, error)
+      req.on('error', () => {})
+      req.destroy()
+      end()
+    })
+  })
+
+  await t.test('should add tracing headers when the request headers are an array', async (t) => {
+    let received
+    const server = http.createServer((req, res) => {
+      received = req.headers
+      res.end()
+    })
+    await new Promise((resolve) => server.listen(0, resolve))
+    t.after(() => server.close())
+
+    await helper.runInTransaction(t.nr.agent, function () {
+      return new Promise((resolve) => {
+        const { port } = server.address()
+        // http does not add a host header to array headers, and the server
+        // rejects requests without one
+        const headers = [['host', `${HOSTNAME}:${port}`], ['x-foo', 'bar']]
+        const opts = { host: HOSTNAME, port, path: '/', headers }
+        http.request(opts, (res) => {
+          res.resume()
+          res.on('end', resolve)
+        }).end()
+      })
+    })
+
+    assert.equal(received['x-foo'], 'bar', 'should keep the existing headers')
+    assert.ok(received.traceparent, 'should add traceparent')
+  })
+})
+
+test('HttpOutboundSubscriber enabled', async (t) => {
+  t.beforeEach((ctx) => {
+    const agent = helper.loadMockedAgent()
+    ctx.nr = { agent, subscriber: new HttpOutboundSubscriber({ agent, logger }) }
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should be enabled when only https instrumentation is enabled', (t) => {
+    const { agent, subscriber } = t.nr
+    agent.config.instrumentation.http.enabled = false
+    assert.equal(subscriber.enabled, true)
+  })
+
+  await t.test('should be enabled when only http instrumentation is enabled', (t) => {
+    const { agent, subscriber } = t.nr
+    agent.config.instrumentation.https.enabled = false
+    assert.equal(subscriber.enabled, true)
+  })
+
+  await t.test('should be disabled when http and https instrumentation are disabled', (t) => {
+    const { agent, subscriber } = t.nr
+    agent.config.instrumentation.http.enabled = false
+    agent.config.instrumentation.https.enabled = false
+    assert.equal(subscriber.enabled, false)
   })
 })
 
@@ -479,6 +612,8 @@ test('when working with http.request', async (t) => {
         assert.ok(!headers.tracestate.includes('null'))
         assert.ok(!headers.tracestate.includes('true'))
         assert.ok(headers.newrelic, 'newrelic dt header')
+        const payload = JSON.parse(Buffer.from(headers.newrelic, 'base64').toString())
+        assert.equal(payload.d.id, segment.id, 'newrelic header should reference the external segment')
         const valid = Tracestate.fromHeader({ header: headers.tracestate, agent })
         assert.ok(valid.intrinsics)
         res.resume()
