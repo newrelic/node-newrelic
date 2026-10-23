@@ -619,3 +619,94 @@ test('otlp_resource_attributes', () => {
   const config = Config.initialize()
   assert.deepEqual(config.otlp_resource_attributes, {})
 })
+
+test('Core Tracing is disabled', async (t) => {
+  const { TestConfigLogger } = require('./helper')
+  const WARNING = 'distributed_tracing.sampler.%s cannot be configured, not updating.'
+
+  await t.test('should not allow disabling full granularity', () => {
+    const logger = new TestConfigLogger()
+    const config = Config.initialize(
+      { distributed_tracing: { sampler: { full_granularity: { enabled: false } } } },
+      { logger }
+    )
+    assert.equal(config.distributed_tracing.sampler.full_granularity.enabled, true)
+    assert.deepStrictEqual(logger.logs.warn, [[WARNING, 'full_granularity']])
+  })
+
+  await t.test('should not allow enabling partial granularity or changing its type', () => {
+    const logger = new TestConfigLogger()
+    const config = Config.initialize(
+      {
+        distributed_tracing: {
+          sampler: { partial_granularity: { enabled: true, type: 'reduced' } }
+        }
+      },
+      { logger }
+    )
+    const { partial_granularity: partial } = config.distributed_tracing.sampler
+    assert.equal(partial.enabled, false)
+    assert.equal(partial.type, 'essential')
+    assert.deepStrictEqual(logger.logs.warn, [[WARNING, 'partial_granularity']])
+  })
+
+  await t.test('should not allow setting partial granularity samplers to strings', () => {
+    const config = Config.initialize({
+      distributed_tracing: {
+        sampler: {
+          partial_granularity: {
+            root: 'always_on',
+            remote_parent_sampled: 'always_off',
+            remote_parent_not_sampled: 'always_on'
+          }
+        }
+      }
+    })
+    const { partial_granularity: partial } = config.distributed_tracing.sampler
+    assert.equal(partial.root, 'adaptive')
+    assert.equal(partial.remote_parent_sampled, 'adaptive')
+    assert.equal(partial.remote_parent_not_sampled, 'adaptive')
+  })
+
+  await t.test('should not allow setting partial granularity samplers to objects', () => {
+    // Object-form samplers are written by `buildSamplers`, so this verifies the
+    // Core Tracing check runs before it.
+    const config = Config.initialize({
+      distributed_tracing: {
+        sampler: {
+          partial_granularity: {
+            root: { trace_id_ratio_based: { ratio: 0.5 } },
+            remote_parent_sampled: { adaptive: { sampling_target: 20 } },
+            remote_parent_not_sampled: { trace_id_ratio_based: { ratio: 0.1 } }
+          }
+        }
+      }
+    })
+    const { partial_granularity: partial } = config.distributed_tracing.sampler
+    assert.equal(partial.root, 'adaptive')
+    assert.equal(partial.remote_parent_sampled, 'adaptive')
+    assert.equal(partial.remote_parent_not_sampled, 'adaptive')
+  })
+
+  await t.test('should still apply other sampler settings', () => {
+    const config = Config.initialize({
+      distributed_tracing: {
+        sampler: {
+          root: { trace_id_ratio_based: { ratio: 0.3 } },
+          remote_parent_sampled: 'always_on',
+          remote_parent_not_sampled: { adaptive: { sampling_target: 5 } },
+          adaptive_sampling_target: 20,
+          full_granularity: { enabled: false },
+          partial_granularity: { enabled: true }
+        }
+      }
+    })
+    const { sampler } = config.distributed_tracing
+    assert.deepStrictEqual(sampler.root, { trace_id_ratio_based: { ratio: 0.3 } })
+    assert.equal(sampler.remote_parent_sampled, 'always_on')
+    assert.deepStrictEqual(sampler.remote_parent_not_sampled, { adaptive: { sampling_target: 5 } })
+    assert.equal(sampler.adaptive_sampling_target, 20)
+    assert.equal(sampler.full_granularity.enabled, true)
+    assert.equal(sampler.partial_granularity.enabled, false)
+  })
+})
