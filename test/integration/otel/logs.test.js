@@ -7,8 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const logsApi = require('@opentelemetry/api-logs')
-
+const { logs, SeverityNumber } = require('@opentelemetry/api')
 const helper = require('#testlib/agent_helper.js')
 
 const BASE_AGENT_CONFIG = {
@@ -37,11 +36,9 @@ function initAgent({ t, config = BASE_AGENT_CONFIG }) {
 
 test('sends logs outside of transaction', async (t) => {
   const agent = initAgent({ t })
-  const { logs } = require('@opentelemetry/api-logs')
-
   const logger = logs.getLogger('testLogger')
   logger.emit({
-    severityNumber: logsApi.SeverityNumber.INFO,
+    severityNumber: SeverityNumber.INFO,
     body: 'test log outside of transaction',
     timestamp: new Date(TS_FIXTURE),
     attributes: {
@@ -84,12 +81,11 @@ test('sends logs outside of transaction', async (t) => {
 
 test('sends logs within transaction', (t, end) => {
   const agent = initAgent({ t })
-  const { logs } = require('@opentelemetry/api-logs')
   const logger = logs.getLogger('testLogger')
 
   helper.runInTransaction(agent, (tx) => {
     logger.emit({
-      severityNumber: logsApi.SeverityNumber.INFO,
+      severityNumber: SeverityNumber.INFO,
       body: 'test log in transaction',
       timestamp: new Date(TS_FIXTURE),
       attributes: {
@@ -125,11 +121,9 @@ test('omits logging metrics when disabled', async (t) => {
     }
   )
   const agent = initAgent({ t, config: agentConfig })
-  const { logs } = require('@opentelemetry/api-logs')
-
   const logger = logs.getLogger('testLogger')
   logger.emit({
-    severityNumber: logsApi.SeverityNumber.INFO,
+    severityNumber: SeverityNumber.INFO,
     body: 'test log metrics disabled',
     timestamp: new Date(TS_FIXTURE),
     attributes: {
@@ -164,11 +158,9 @@ test('does not forward logs when disabled', async (t) => {
     }
   )
   const agent = initAgent({ t, config: agentConfig })
-  const { logs } = require('@opentelemetry/api-logs')
-
   const logger = logs.getLogger('testLogger')
   logger.emit({
-    severityNumber: logsApi.SeverityNumber.INFO,
+    severityNumber: SeverityNumber.INFO,
     body: 'test log no forwarding',
     timestamp: new Date(TS_FIXTURE),
     attributes: {
