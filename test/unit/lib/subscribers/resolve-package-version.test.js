@@ -103,6 +103,41 @@ test('returns unknown if app root does not have manifest', (t) => {
   t.assert.equal(result.stdout.toString(), 'unknown\n')
 })
 
+test('returns unknown when traversal reaches the filesystem root', (t) => {
+  const resolverPath = require.resolve(
+    '#agentlib/subscribers/resolve-package-version.js'
+  )
+  const publisherPath = path.join(
+    path.parse(__dirname).root,
+    '__newrelic_missing_package__',
+    'index.js'
+  )
+  const script = `
+    const resolvePackageVersion = require(process.argv[1])
+    const stack = ['frame', '    at publisher (' + process.argv[2] + ':1:1)']
+    console.log(resolvePackageVersion('missing', {
+      logger: { warn() {}, trace() {} },
+      getStack: () => stack
+    }))
+  `
+  const timeout = 5000
+  const result = spawnSync(process.execPath, ['-e', script, resolverPath, publisherPath], {
+    encoding: 'utf8',
+    timeout
+  })
+
+  // `spawnSync` kills the child with SIGTERM on timeout, leaving `status`
+  // null and `stderr` empty. Check the signal first so a hang is reported as
+  // such rather than as an opaque status mismatch.
+  t.assert.equal(
+    result.signal,
+    null,
+    `resolver did not terminate within ${timeout}ms (${result.error?.code})`
+  )
+  t.assert.equal(result.status, 0, result.stderr)
+  t.assert.equal(result.stdout, 'unknown\n')
+})
+
 // Simulates a stack where the diagnostics channel event was published from a
 // Node.js bundled module (e.g. modern Node's internal undici), so the publisher
 // frame is a `node:internal` path rather than a real filesystem path.
