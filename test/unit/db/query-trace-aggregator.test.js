@@ -12,6 +12,8 @@ const QueryTraceAggregator = require('../../../lib/db/query-trace-aggregator')
 const codec = require('../../../lib/util/codec')
 const { FakeSegment, FakeTransaction } = require('../../lib/agent_helper')
 const sinon = require('sinon')
+const proxyquire = require('proxyquire')
+const realObfuscate = require('../../../lib/util/sql/obfuscate')
 
 const FAKE_STACK = 'Error\nfake stack'
 
@@ -282,6 +284,119 @@ test('Query Trace Aggregator', async (t) => {
       )
       end()
     })
+  })
+
+  await t.test('lazy SlowQuery construction', async (t) => {
+    t.beforeEach((ctx) => {
+      ctx.nr = {}
+      ctx.nr.obfuscateSpy = sinon.spy(realObfuscate)
+      // SlowQuery obfuscates internally too, so it must see the same spy as the
+      // aggregator in order to accurately count every obfuscate() call.
+      const SlowQueryWithSpiedObfuscate = proxyquire('../../../lib/db/slow-query', {
+        '../util/sql/obfuscate': ctx.nr.obfuscateSpy
+      })
+      ctx.nr.slowQuerySpy = sinon.spy(SlowQueryWithSpiedObfuscate)
+      ctx.nr.QueryTraceAggregatorSpied = proxyquire('../../../lib/db/query-trace-aggregator', {
+        './slow-query': ctx.nr.slowQuerySpy,
+        '../util/sql/obfuscate': ctx.nr.obfuscateSpy
+      })
+    })
+
+    await t.test('should not construct SlowQuery or obfuscate below threshold when record_sql is "raw"', (t, end) => {
+      const { QueryTraceAggregatorSpied, slowQuerySpy, obfuscateSpy } = t.nr
+      const opts = {
+        config: new Config({
+          slow_sql: { enabled: true },
+          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+        }),
+        method: 'sql_trace_data'
+      }
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregatorSpied(opts, {}, harvester)
+
+      addQuery(queries, 100)
+
+      assert.equal(slowQuerySpy.callCount, 0, 'SlowQuery should not be constructed below threshold')
+      assert.equal(obfuscateSpy.callCount, 0, 'raw mode should never obfuscate below threshold')
+      end()
+    })
+
+    await t.test(
+      'should obfuscate but not construct SlowQuery below threshold when record_sql is "obfuscated"',
+      (t, end) => {
+        const { QueryTraceAggregatorSpied, slowQuerySpy, obfuscateSpy } = t.nr
+        const opts = {
+          config: new Config({
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+          }),
+          method: 'sql_trace_data'
+        }
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregatorSpied(opts, {}, harvester)
+
+        addQuery(queries, 100)
+
+        assert.equal(obfuscateSpy.callCount, 1, 'the sql_obfuscated attribute still needs obfuscate')
+        assert.equal(slowQuerySpy.callCount, 0, 'SlowQuery should not be constructed below threshold')
+        end()
+      }
+    )
+
+    await t.test(
+      'should construct SlowQuery exactly once above threshold when record_sql is "raw"',
+      (t, end) => {
+        const { QueryTraceAggregatorSpied, slowQuerySpy, obfuscateSpy } = t.nr
+        const opts = {
+          config: new Config({
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+          }),
+          method: 'sql_trace_data'
+        }
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregatorSpied(opts, {}, harvester)
+
+        addQuery(queries, 1000)
+
+        assert.equal(slowQuerySpy.callCount, 1, 'SlowQuery should be constructed once above threshold')
+        assert.equal(obfuscateSpy.callCount, 1, 'obfuscate should run once, lazily, inside SlowQuery')
+        end()
+      }
+    )
+
+    await t.test(
+      'should not obfuscate twice above threshold when record_sql is "obfuscated"',
+      (t, end) => {
+        const { QueryTraceAggregatorSpied, slowQuerySpy, obfuscateSpy } = t.nr
+        const opts = {
+          config: new Config({
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+          }),
+          method: 'sql_trace_data'
+        }
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregatorSpied(opts, {}, harvester)
+
+        addQuery(queries, 1000)
+
+        assert.equal(slowQuerySpy.callCount, 1, 'SlowQuery should be constructed once above threshold')
+        assert.equal(
+          obfuscateSpy.callCount,
+          1,
+          'the already-obfuscated sql should be reused instead of obfuscating again'
+        )
+
+        const slowQueryArgs = slowQuerySpy.args[0][0]
+        assert.equal(
+          slowQueryArgs.obfuscated,
+          obfuscateSpy.returnValues[0],
+          'SlowQuery should receive the already-computed obfuscated sql'
+        )
+        end()
+      }
+    )
   })
 
   await t.test('prepareJSON', async (t) => {
