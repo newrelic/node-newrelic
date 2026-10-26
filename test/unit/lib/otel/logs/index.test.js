@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
-const logsApi = require('@opentelemetry/api-logs')
+const otelApi = require('@opentelemetry/api')
 
 const helper = require('../../../../lib/agent_helper')
 const mockLogger = require('../../../mocks/logger')
@@ -24,7 +24,7 @@ test.beforeEach((ctx) => {
 })
 
 test.afterEach((ctx) => {
-  logsApi.logs.disable()
+  otelApi.logs.disable()
   helper.unloadAgent(ctx.nr.agent)
   sinon.restore()
 })
@@ -48,7 +48,7 @@ test('does not set the global logger provider when application logging is disabl
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  const otelLogger = logsApi.logs.getLogger('test-lib')
+  const otelLogger = otelApi.logs.getLogger('test-lib')
   assert.equal(otelLogger.enabled(), false)
 })
 
@@ -73,7 +73,7 @@ test('creates the enabled metric and sets the global logger provider when applic
   assert.equal(agent.metrics.getMetric(ENABLED_METRIC).callCount, 1)
   assert.equal(agent.metrics.getMetric(DISABLED_METRIC), undefined)
 
-  const otelLogger = logsApi.logs.getLogger('test-lib')
+  const otelLogger = otelApi.logs.getLogger('test-lib')
   assert.equal(otelLogger.enabled(), true)
 })
 
@@ -96,7 +96,7 @@ test('logger enabled() is false when both metrics and forwarding are disabled', 
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  assert.equal(logsApi.logs.getLogger('test-lib').enabled(), false)
+  assert.equal(otelApi.logs.getLogger('test-lib').enabled(), false)
 })
 
 test('logger enabled() is true when only metrics is enabled', (t) => {
@@ -107,7 +107,7 @@ test('logger enabled() is true when only metrics is enabled', (t) => {
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  assert.equal(logsApi.logs.getLogger('test-lib').enabled(), true)
+  assert.equal(otelApi.logs.getLogger('test-lib').enabled(), true)
 })
 
 test('logger enabled() is true when only forwarding is enabled', (t) => {
@@ -118,7 +118,7 @@ test('logger enabled() is true when only forwarding is enabled', (t) => {
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  assert.equal(logsApi.logs.getLogger('test-lib').enabled(), true)
+  assert.equal(otelApi.logs.getLogger('test-lib').enabled(), true)
 })
 
 test('increments logging line metrics when metrics are enabled', (t) => {
@@ -128,8 +128,8 @@ test('increments logging line metrics when metrics are enabled', (t) => {
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  logsApi.logs.getLogger('test-lib').emit({ body: 'hello', severityNumber: 9 })
-  logsApi.logs.getLogger('test-lib').emit({ body: 'oh no', severityNumber: 17 })
+  otelApi.logs.getLogger('test-lib').emit({ body: 'hello', severityNumber: 9 })
+  otelApi.logs.getLogger('test-lib').emit({ body: 'oh no', severityNumber: 17 })
 
   assert.equal(agent.metrics.getMetric('Logging/lines').callCount, 2)
   assert.equal(agent.metrics.getMetric('Logging/lines/INFO').callCount, 1)
@@ -143,7 +143,7 @@ test('does not increment logging line metrics when metrics are disabled', (t) =>
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  logsApi.logs.getLogger('test-lib').emit({ body: 'hello', severityNumber: 9 })
+  otelApi.logs.getLogger('test-lib').emit({ body: 'hello', severityNumber: 9 })
 
   assert.equal(agent.metrics.getMetric('Logging/lines'), undefined)
 })
@@ -163,7 +163,7 @@ test('forwards log data to agent.logs when forwarding is enabled', (t) => {
     timestamp: now,
     attributes: { foo: 'bar' }
   }
-  logsApi.logs.getLogger('test-lib').emit(record)
+  otelApi.logs.getLogger('test-lib').emit(record)
 
   assert.equal(agent.logs.add.callCount, 1)
   const logData = agent.logs.add.args[0][0]
@@ -181,7 +181,7 @@ test('does not forward log data to agent.logs when forwarding is disabled', (t) 
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  logsApi.logs.getLogger('test-lib').emit({ body: 'hello', severityNumber: 9 })
+  otelApi.logs.getLogger('test-lib').emit({ body: 'hello', severityNumber: 9 })
 
   assert.equal(agent.logs.add.callCount, 0)
 })
@@ -193,7 +193,7 @@ test('attaches otel.scope.* and otel.library.* attributes when the logger has sc
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  logsApi.logs.getLogger('my-lib', '1.2.3').emit({ body: 'hello', severityNumber: 9 })
+  otelApi.logs.getLogger('my-lib', '1.2.3').emit({ body: 'hello', severityNumber: 9 })
 
   assert.equal(agent.logs.add.callCount, 1)
   const logData = agent.logs.add.args[0][0]
@@ -210,7 +210,7 @@ test('does not attach otel.scope.* attributes when the logger has no name or ver
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  logsApi.logs.getLogger().emit({ body: 'hello', severityNumber: 9 })
+  otelApi.logs.getLogger().emit({ body: 'hello', severityNumber: 9 })
 
   assert.equal(agent.logs.add.callCount, 1)
   const logData = agent.logs.add.args[0][0]
@@ -228,7 +228,7 @@ test('record attributes and linking metadata are merged into the forwarded log d
   // eslint-disable-next-line no-new
   new SetupLogs({ agent, logger })
 
-  logsApi.logs.getLogger('test-lib').emit({
+  otelApi.logs.getLogger('test-lib').emit({
     body: 'hello',
     severityNumber: 9,
     attributes: { 'custom.attr': 'value' }
@@ -245,9 +245,9 @@ test('teardown disables the global logger provider', (t) => {
   const { agent, logger } = t.nr
   const signal = new SetupLogs({ agent, logger })
 
-  assert.equal(logsApi.logs.getLogger('test-lib').enabled(), true)
+  assert.equal(otelApi.logs.getLogger('test-lib').enabled(), true)
 
   signal.teardown()
 
-  assert.equal(logsApi.logs.getLogger('test-lib').enabled(), false)
+  assert.equal(otelApi.logs.getLogger('test-lib').enabled(), false)
 })
