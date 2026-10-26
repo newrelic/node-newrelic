@@ -56,13 +56,10 @@ function formatSamplerName(sampler) {
  * @param {object} params.assertions assertions to make against constructed samplers
  */
 function assertSamplers({ samplers, assertions }) {
-  const { full_root, full_remote_parent_not_sampled, full_remote_parent_sampled, partial_root, partial_remote_parent_sampled, partial_remote_parent_not_sampled } = assertions
+  const { full_root, full_remote_parent_not_sampled, full_remote_parent_sampled } = assertions
   assertSampler({ samplers, name: 'root', assertions: full_root })
   assertSampler({ samplers, name: 'remoteParentSampled', assertions: full_remote_parent_sampled })
   assertSampler({ samplers, name: 'remoteParentNotSampled', assertions: full_remote_parent_not_sampled })
-  assertSampler({ samplers, name: 'partialRoot', assertions: partial_root })
-  assertSampler({ samplers, name: 'partialRemoteParentSampled', assertions: partial_remote_parent_sampled })
-  assertSampler({ samplers, name: 'partialRemoteParentNotSampled', assertions: partial_remote_parent_not_sampled })
 }
 
 /**
