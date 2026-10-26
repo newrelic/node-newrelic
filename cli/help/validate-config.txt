@@ -7,6 +7,10 @@ packages must be reachable from the configuration file's require path; otherwise
 the agent will not start. The tool verifies these packages are available when
 the feature is enabled.
 
+⚠️ Server-side settings, settings overridden by high security mode, and various
+internal settings are not considered by this tool. Such settings either get
+applied at run time, or are always set to an agent specified value.
+
 Usage:
   newrelic validate-config -c <file> [options]
 
