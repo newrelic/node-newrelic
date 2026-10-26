@@ -85,6 +85,15 @@ them during validation) to carry agent-specific metadata:
   `setSamplersFromEnv` in `lib/config/samplers.js` when a node is marked
   `x-newrelic-sampler`. Note: that helper reads `process.env` directly, so the
   sampler's second variable is not read from an injected `env`.
+- **Core Tracing `enabled` flags cannot be configured.** Core Tracing is
+  currently disabled ([#4380](https://github.com/newrelic/node-newrelic/issues/4380)):
+  `distributed_tracing.sampler.full_granularity.enabled` is always `true` and
+  `distributed_tracing.sampler.partial_granularity.enabled` is always `false`.
+  Both remain in the schema (marked `x-newrelic-internal`), but user-provided
+  values are ignored with a warning, in `#applyUserValue` in
+  `lib/config/index.js` for config files and in `applyEnvironmentOverrides` for
+  environment variables. Other `partial_granularity` settings are accepted but
+  have no effect.
 - **`ssl` only accepts `true`.** It is declared `const: true`; any other value
   fails validation. It carries `NEW_RELIC_USE_SSL` and `x-newrelic-internal`.
 - **`instrumentation` enumerates known packages** as `enabled` toggles plus
