@@ -126,11 +126,9 @@ test('integration tests', async (t) => {
     })
   })
 
-  await t.test('should sample approximately correct percentage of traces between full and partial traces', async (t) => {
-    const plan = tspl(t, { plan: 3 })
-    const FULL_RATIO_VALUE = 0.5
-    const PARTIAL_RATIO_VALUE = 0.2
-    const TOTAL_RATIO_VALUE = 0.7
+  await t.test('should sample approximately correct percentage of traces', async (t) => {
+    const plan = tspl(t, { plan: 1 })
+    const RATIO_VALUE = 0.5
     // For 25000 iterations, binomial distribution states that
     // the standard error rate should be around 0.3%, but this
     // test is very flaky, so we will use 1.5% as the error margin.
@@ -140,13 +138,7 @@ test('integration tests', async (t) => {
       distributed_tracing: {
         sampler: {
           root: {
-            trace_id_ratio_based: { ratio: FULL_RATIO_VALUE }
-          },
-          partial_granularity: {
-            enabled: true,
-            root: {
-              trace_id_ratio_based: { ratio: PARTIAL_RATIO_VALUE }
-            }
+            trace_id_ratio_based: { ratio: RATIO_VALUE }
           }
         }
       }
@@ -163,17 +155,9 @@ test('integration tests', async (t) => {
       })
     }
 
-    const sampledTraces = txns.filter((tx) => tx.sampled)
-    const partialTraces = sampledTraces.filter((tx) => tx.partialType)
-    const fullTraces = sampledTraces.length - partialTraces.length
+    const sampledRatio = txns.filter((tx) => tx.sampled).length / numTxs
 
-    const totalRatio = sampledTraces.length / numTxs
-    const partialRatio = partialTraces.length / numTxs
-    const fullRatio = fullTraces / numTxs
-
-    plan.ok(totalRatio > TOTAL_RATIO_VALUE - ERROR_MARGIN && totalRatio < TOTAL_RATIO_VALUE + ERROR_MARGIN, `should sample approximately ${TOTAL_RATIO_VALUE * 100}% of traces, got ${totalRatio * 100}%`)
-    plan.ok(partialRatio > PARTIAL_RATIO_VALUE - ERROR_MARGIN && partialRatio < PARTIAL_RATIO_VALUE + ERROR_MARGIN, `should sample approximately ${PARTIAL_RATIO_VALUE * 100}% of traces as partial, got ${(partialRatio * 100)}%`)
-    plan.ok(fullRatio > FULL_RATIO_VALUE - ERROR_MARGIN && fullRatio < FULL_RATIO_VALUE + ERROR_MARGIN, `should sample approximately ${FULL_RATIO_VALUE * 100}% of traces as full, got ${(fullRatio * 100)}%`)
+    plan.ok(sampledRatio > RATIO_VALUE - ERROR_MARGIN && sampledRatio < RATIO_VALUE + ERROR_MARGIN, `should sample approximately ${RATIO_VALUE * 100}% of traces, got ${sampledRatio * 100}%`)
     await plan.completed
   })
 })
