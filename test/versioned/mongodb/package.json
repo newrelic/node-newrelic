@@ -27,6 +27,7 @@
         "collection-update.test.js",
         "cursor.test.js",
         "db.test.js",
+        "instrumentation-shape.test.js",
         "srv-connect.test.js"
       ]
     }
