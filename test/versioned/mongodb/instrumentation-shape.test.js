@@ -18,11 +18,9 @@
 // These assertions capture the root-cause invariant rather than the slow,
 // environment-sensitive memory symptom: the instrumentation should wrap the
 // driver's prototype methods once, not mutate the shape of every cursor
-// instance. They FAIL against the current per-instance wrapping and should
-// PASS once the instrumentation wraps at the prototype level (or otherwise
-// stops allocating a fresh wrapper per cursor).
+// instance.
 
-const test = require('node:test')
+const { describe, test } = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
@@ -30,8 +28,8 @@ const helper = require('../../lib/agent_helper')
 const common = require('./common')
 const { COLLECTIONS, DB_NAME, MONGO_SEGMENT_RE } = common
 
-test('mongodb instrumentation does not mutate per-cursor shape (#4397)', async (t) => {
-  t.beforeEach(async (ctx) => {
+describe('mongodb instrumentation does not mutate per-cursor shape (#4397)', () => {
+  test.beforeEach(async (ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent()
 
@@ -51,14 +49,14 @@ test('mongodb instrumentation does not mutate per-cursor shape (#4397)', async (
     ])
   })
 
-  t.afterEach(async (ctx) => {
+  test.afterEach(async (ctx) => {
     await ctx.nr.collection.deleteMany({})
     await common.close(ctx.nr.client, ctx.nr.db)
     helper.unloadAgent(ctx.nr.agent)
     removeModules(['mongodb'])
   })
 
-  await t.test('cursor read methods come from the prototype, not the instance', (t) => {
+  test('cursor read methods come from the prototype, not the instance', (t) => {
     const { collection } = t.nr
 
     // Constructing a cursor must not require an active transaction to trigger
@@ -83,7 +81,7 @@ test('mongodb instrumentation does not mutate per-cursor shape (#4397)', async (
     )
   })
 
-  await t.test('distinct cursors share the same wrapped method reference', (t) => {
+  test('distinct cursors share the same wrapped method reference', (t) => {
     const { collection } = t.nr
 
     // Each `find()` constructs a fresh cursor. The wrapper function should be
@@ -105,7 +103,7 @@ test('mongodb instrumentation does not mutate per-cursor shape (#4397)', async (
     )
   })
 
-  await t.test('instrumentation still records the datastore segment', (t, end) => {
+  test('instrumentation still records the datastore segment', (t, end) => {
     const { agent, collection } = t.nr
 
     // Guard rail: a shape fix must not silently drop instrumentation. This
