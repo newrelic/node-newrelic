@@ -11,6 +11,7 @@
 #### Bug fixes
 
 * Bounded module version resolution at filesystem root ([#4393](https://github.com/newrelic/node-newrelic/pull/4393)) ([71c90b6](https://github.com/newrelic/node-newrelic/commit/71c90b685f465faabac59a515d1275c3d871ddde))
+	* Thanks for your contribution @cnpryer  🚀
 * Fixed `http2` client handling of missing headers, default ports, IPv6 hosts, and unparseable URLs ([#4362](https://github.com/newrelic/node-newrelic/pull/4362)) ([0eef6a6](https://github.com/newrelic/node-newrelic/commit/0eef6a6c6ca689da51343e35ebd490e45f77a2f9))
 * Loaded the code-level metrics function inspector once instead of on every call ([#4391](https://github.com/newrelic/node-newrelic/pull/4391)) ([01d2797](https://github.com/newrelic/node-newrelic/commit/01d2797aa156cce59162e713fdee2bb36beb3048))
 
