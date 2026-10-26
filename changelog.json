@@ -11,9 +11,8 @@
           "Fixed `http2` client handling of missing headers, default ports, IPv6 hosts, and unparseable URLs"
         ],
         "features": [
-          "Added CLI tool help note about derived settings",
           "Flagged a missing OpenTelemetry bridge as a validate-config startup blocker",
-          "Added --dump to validate-config to emit the effective configuration",
+          "Added `--dump` to validate-config to emit the effective configuration",
           "Reduced instances of the schema file to be just one instance in `schema.json`",
           "Shared startup-blocker checks between the agent and validate-config CLI",
           "Added a validate-config CLI command"
