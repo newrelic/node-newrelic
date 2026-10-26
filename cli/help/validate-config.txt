@@ -2,6 +2,11 @@ Ensures the provided configuration will allow the agent to start without
 error. Environment variables are considered when evaluating the provided
 configuration. Server-side configuration is not considered.
 
+When `opentelemetry.enabled` is true, the required `@opentelemetry/*`
+packages must be reachable from the configuration file's require path; otherwise
+the agent will not start. The tool verifies these packages are available when
+the feature is enabled.
+
 Usage:
   newrelic validate-config -c <file> [options]
 

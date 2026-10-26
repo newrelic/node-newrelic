@@ -7,6 +7,7 @@
 
 const HealthReporter = require('./lib/health-reporter.js')
 const findStartupBlockers = require('./lib/config/find-startup-blockers.js')
+const { isOtelBridgeAvailable } = require('./lib/otel/bridge-available.js')
 
 // Record opening times before loading any other files.
 const preAgentTime = process.uptime()
@@ -27,10 +28,6 @@ logger.info(
   pkgJSON.version,
   process.version
 )
-const path = require('node:path')
-const Module = require('node:module')
-const otelPackages = Object.keys(pkgJSON.dependencies).filter((d) => d.startsWith('@opentelemetry'))
-const otelRequire = Module.createRequire(path.join(__dirname, __filename))
 
 if (require.cache.__NR_cache) {
   logger.warn(
@@ -53,7 +50,6 @@ function initApi({ agent }) {
   return api
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 function initialize() {
   logger.debug('Loading agent from %s', __dirname)
   let agent = null
@@ -99,7 +95,11 @@ function initialize() {
       logger.warn(
         'New Relic for Node.js in worker_threads is not officially supported. Not starting! To bypass this, set `config.worker_threads.enabled` to true in configuration.'
       )
-    } else if (config.opentelemetry.enabled === true && otelBridgeAvailable() === false) {
+    } else if (
+      findStartupBlockers(config, 'opentelemetry', {
+        otelBridgeAvailable: isOtelBridgeAvailable(__filename)
+      }).length > 0
+    ) {
       logger.warn(
         'OpenTelemetry bridge enabled, but packages are missing. Not starting!'
       )
@@ -283,17 +283,4 @@ function recordDisabledPackages(agent) {
       agent.recordSupportability(`Nodejs/Instrumentation/${pkg}/disabled`)
     }
   }
-}
-
-function otelBridgeAvailable() {
-  for (const p of otelPackages) {
-    try {
-      otelRequire.resolve(p)
-    } catch (error) {
-      if (error.code.includes('MODULE_NOT_FOUND')) {
-        return false
-      }
-    }
-  }
-  return true
 }

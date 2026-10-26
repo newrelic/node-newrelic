@@ -5,12 +5,14 @@
 
 /* eslint-disable no-console */
 
+import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import validateConfig from '#agentlib/config/validate-config.js'
 import findStartupBlockers from '#agentlib/config/find-startup-blockers.js'
 import Config from '#agentlib/config/index.js'
 import { applyEnvironmentOverrides } from '#agentlib/config/apply-environment-overrides.js'
 import { generateDefaultConfig } from '#agentlib/config/generate-default-config.js'
+import { isOtelBridgeAvailable } from '#agentlib/otel/bridge-available.js'
 
 // Config construction logs through this; the CLI wants it silent. Every method
 // delegates to one no-op, and `child` returns the same logger, so there is a
@@ -93,12 +95,18 @@ export default async function validateCliConfig({
   // the normalized values used when dumping.
   const built = new Config(config, { logger: silentLogger })
 
+  // The OpenTelemetry bridge requires packages resolvable from the
+  // configuration file's location, which is where the agent runs, so check
+  // availability anchored there rather than at the CLI's own location.
+  const otelBridgeAvailable = isOtelBridgeAvailable(pathToFileURL(resolve(filePath)).href)
+
   // Schema validation catches structural/type problems. Startup blockers catch
   // configurations that are structurally valid but would prevent the agent
-  // from starting (missing app_name/license_key, agent disabled). Both are
-  // reported together so a passing result means the agent can actually start.
+  // from starting (missing app_name/license_key, agent disabled, OpenTelemetry
+  // bridge packages missing). Both are reported together so a passing result
+  // means the agent can actually start.
   const schemaErrors = validateConfig(config, false).errors ?? []
-  const blockerErrors = findStartupBlockers(built).map((blocker) => {
+  const blockerErrors = findStartupBlockers(built, undefined, { otelBridgeAvailable }).map((blocker) => {
     return { instancePath: `/${blocker.key}`, message: blocker.message }
   })
   const errors = [...schemaErrors, ...blockerErrors]
