@@ -114,7 +114,21 @@ function inRange({ sampled, expected, variance }) {
   return sampled.length <= expected + allowable && sampled.length >= expected - allowable
 }
 
+// Core Tracing is disabled: full granularity is always on and partial
+// granularity is always off. These cases layer partial granularity samplers,
+// so they are excluded until Core Tracing is re-enabled.
+const EXCLUDED_TESTS = new Set([
+  'trace_ratios_should_be_additive_when_layered',
+  'should_create_multiple_instances_of_adaptive_sampler',
+  'giant_example_from_spec',
+  'adaptive_and_ratio_samplers_are_layered'
+])
+
 for (const testCase of testCases) {
+  if (EXCLUDED_TESTS.has(testCase.test_name)) {
+    continue
+  }
+
   test(testCase.test_name, () => {
     if (!testCase.variance) {
       const { sampled, fullSampled, partialSampled, adaptiveDecisions } = runScenario(testCase)

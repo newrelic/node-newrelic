@@ -9,8 +9,13 @@ const helper = require('#testlib/agent_helper.js')
 const testCases = require('#testlib/cross_agent_tests/distributed_tracing/partial_granularity.json')
 const { assertDroppedSpans, assertMetrics, assertSpanTree } = require('./core-tracing-assertions')
 
+// Core Tracing is disabled: full granularity is always on and partial
+// granularity is always off. These cases require partial granularity, so they
+// are skipped until Core Tracing is re-enabled.
+const SKIP_REASON = 'Core Tracing is disabled'
+
 for (const testCase of testCases) {
-  test(testCase.test_name, (t, end) => {
+  test(testCase.test_name, { skip: SKIP_REASON }, (t, end) => {
     const config = {
       distributed_tracing: {
         sampler: {
