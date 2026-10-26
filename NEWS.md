@@ -1,3 +1,45 @@
+### v14.9.0 (2026-10-26)
+
+#### Features
+
+* Added --dump to validate-config to emit the effective configuration ([#4390](https://github.com/newrelic/node-newrelic/pull/4390)) ([fe3e684](https://github.com/newrelic/node-newrelic/commit/fe3e684621d02d849df0be5556b609ffd9239e5d))
+* Added a validate-config CLI command ([#4341](https://github.com/newrelic/node-newrelic/pull/4341)) ([821848d](https://github.com/newrelic/node-newrelic/commit/821848d4685597475e736226b67b54e71eace5e5))
+* Added CLI tool help note about derived settings ([#4398](https://github.com/newrelic/node-newrelic/pull/4398)) ([7c8b36d](https://github.com/newrelic/node-newrelic/commit/7c8b36d3b734347c0d0003162410eb0417cbdf9e))
+* Flagged a missing OpenTelemetry bridge as a validate-config startup blocker ([#4396](https://github.com/newrelic/node-newrelic/pull/4396)) ([75397be](https://github.com/newrelic/node-newrelic/commit/75397bec42548c78930fd3f50bbb8a5319b93d0e))
+* Reduced instances of the schema file to be just one instance in `schema.json` ([#4379](https://github.com/newrelic/node-newrelic/pull/4379)) ([a870c3b](https://github.com/newrelic/node-newrelic/commit/a870c3bb7d1415b0346934e8c9b72350103256c8))
+* Shared startup-blocker checks between the agent and validate-config CLI ([#4378](https://github.com/newrelic/node-newrelic/pull/4378)) ([06e6596](https://github.com/newrelic/node-newrelic/commit/06e65963b4c411137cba4a5cfa3fcbd562093a01))
+
+#### Bug fixes
+
+* Bounded module version resolution at filesystem root ([#4393](https://github.com/newrelic/node-newrelic/pull/4393)) ([71c90b6](https://github.com/newrelic/node-newrelic/commit/71c90b685f465faabac59a515d1275c3d871ddde))
+* Fixed `http2` client handling of missing headers, default ports, IPv6 hosts, and unparseable URLs ([#4362](https://github.com/newrelic/node-newrelic/pull/4362)) ([0eef6a6](https://github.com/newrelic/node-newrelic/commit/0eef6a6c6ca689da51343e35ebd490e45f77a2f9))
+* Loaded the code-level metrics function inspector once instead of on every call ([#4391](https://github.com/newrelic/node-newrelic/pull/4391)) ([01d2797](https://github.com/newrelic/node-newrelic/commit/01d2797aa156cce59162e713fdee2bb36beb3048))
+
+#### Performance improvements
+
+* Reduced CPU per SQL query by skipping slow query processing below `explain_threshold` ([#4376](https://github.com/newrelic/node-newrelic/pull/4376)) ([047e2cd](https://github.com/newrelic/node-newrelic/commit/047e2cda35c8e5b47f407b0cd26065d4d3b9cdd3))
+    * Thanks for your contribution @naile  🚀
+
+#### Code refactoring
+
+* Migrated `http2` client instrumentation to subscriber-based ([#4360](https://github.com/newrelic/node-newrelic/pull/4360)) ([8f5b504](https://github.com/newrelic/node-newrelic/commit/8f5b504c269bfb3cad827a694179dc44d56b7264))
+
+#### Documentation
+
+* Updated compatibility report ([#4388](https://github.com/newrelic/node-newrelic/pull/4388)) ([cbb6970](https://github.com/newrelic/node-newrelic/commit/cbb6970931e6495df51c2bdb9919387c3ea811c9))
+* Updated compatibility report ([#4363](https://github.com/newrelic/node-newrelic/pull/4363)) ([3cc962d](https://github.com/newrelic/node-newrelic/commit/3cc962dcd4fe5f14df0313538ea13712fd89e219))
+
+#### Miscellaneous chores
+
+* fixed `MAXIMUM_TIMEOUT_TIME` in `lib/otel/metrics/index.js` to be the correct expected value ([#4365](https://github.com/newrelic/node-newrelic/pull/4365)) ([39b037c](https://github.com/newrelic/node-newrelic/commit/39b037cbdd7ec04bbb1c0c5ab49de57647fc8eda))
+* Updated linter to latest version ([#4351](https://github.com/newrelic/node-newrelic/pull/4351)) ([a1a30f5](https://github.com/newrelic/node-newrelic/commit/a1a30f56b3314649f135a178514efbf8b985941f))
+
+#### Tests
+
+* Attempted to fix flaky tests ([#4383](https://github.com/newrelic/node-newrelic/pull/4383)) ([01ddfd8](https://github.com/newrelic/node-newrelic/commit/01ddfd8b234c3b55a390e31288d549fcf3b2dfa4))
+* Pin version of `@opentelemetry/api` to 1.9.0 ([#4387](https://github.com/newrelic/node-newrelic/pull/4387)) ([525b81c](https://github.com/newrelic/node-newrelic/commit/525b81c85ccaf7c30adf6b8a601cfbb92335cb5b))
+* Updated `got` to latest to ensure it is up to date ([#4364](https://github.com/newrelic/node-newrelic/pull/4364)) ([b586275](https://github.com/newrelic/node-newrelic/commit/b5862756e641c43a8a96c5ab4054708b92d22cb1))
+
 ### v14.8.0 (2026-10-13)
 
 #### Bug fixes
