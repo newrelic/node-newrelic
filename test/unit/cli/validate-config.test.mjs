@@ -242,6 +242,55 @@ test('reports a startup blocker in human format', async () => {
   assert.match(stdout, /\/app_name: An application name is required/)
 })
 
+test('flags OpenTelemetry when enabled but the bridge packages are missing', async () => {
+  // Place the config in a temp dir so `@opentelemetry/*` cannot resolve from
+  // the configuration file's location.
+  const dir = mkdtempSync(join(tmpdir(), 'nr-otel-'))
+  try {
+    const file = join(dir, 'newrelic.cjs')
+    writeFileSync(
+      file,
+      "exports.config = { app_name: ['x'], license_key: 'k', opentelemetry: { enabled: true } }\n"
+    )
+    const { stdout, code } = await runCli(['validate-config', '-c', file, '-o', 'json'])
+
+    assert.equal(code, 1)
+    const parsed = JSON.parse(stdout)
+    assert.equal(parsed.errors.length, 1)
+    assert.match(parsed.errors[0]['/opentelemetry'], /@opentelemetry\/\* bridge packages/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('does not flag OpenTelemetry when it is disabled', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'nr-otel-'))
+  try {
+    const file = join(dir, 'newrelic.cjs')
+    writeFileSync(
+      file,
+      "exports.config = { app_name: ['x'], license_key: 'k', opentelemetry: { enabled: false } }\n"
+    )
+    const { stdout, code } = await runCli(['validate-config', '-c', file])
+
+    assert.equal(code, 0)
+    assert.match(stdout, /No configuration errors detected\./)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('does not flag OpenTelemetry when the bridge packages resolve', async () => {
+  // The fixtures directory resolves the agent's own @opentelemetry/* packages.
+  const { stdout, code } = await runCli([
+    'validate-config',
+    '-c', join(fixturesDir, 'valid-opentelemetry.cjs')
+  ])
+
+  assert.equal(code, 0)
+  assert.match(stdout, /No configuration errors detected\./)
+})
+
 test('reports a schema error for a value with the wrong type', async () => {
   const { stdout, code } = await runCli([
     'validate-config',

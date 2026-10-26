@@ -102,3 +102,40 @@ test('does not throw on a partial configuration', () => {
     'license_key'
   ])
 })
+
+test('flags the OpenTelemetry bridge when enabled and packages are missing', () => {
+  const config = buildConfig({
+    app_name: ['My Application'],
+    license_key: 'license key here',
+    opentelemetry: { enabled: true }
+  })
+  const blockers = findStartupBlockers(config, 'opentelemetry', { otelBridgeAvailable: false })
+
+  assert.equal(blockers.length, 1)
+  assert.equal(blockers[0].key, 'opentelemetry')
+  // The agent reports no health status for this case, so the blocker omits it.
+  assert.equal('healthStatus' in blockers[0], false)
+})
+
+test('does not flag OpenTelemetry when the bridge packages are available', () => {
+  const config = buildConfig({ opentelemetry: { enabled: true } })
+  const blockers = findStartupBlockers(config, 'opentelemetry', { otelBridgeAvailable: true })
+
+  assert.deepEqual(blockers, [])
+})
+
+test('does not flag OpenTelemetry when it is disabled', () => {
+  const config = buildConfig({ opentelemetry: { enabled: false } })
+  const blockers = findStartupBlockers(config, 'opentelemetry', { otelBridgeAvailable: false })
+
+  assert.deepEqual(blockers, [])
+})
+
+test('does not flag OpenTelemetry when availability is not supplied', () => {
+  // Without an injected availability fact the check cannot fire, so callers
+  // that can't determine availability are unaffected.
+  const config = buildConfig({ opentelemetry: { enabled: true } })
+  const blockers = findStartupBlockers(config, 'opentelemetry')
+
+  assert.deepEqual(blockers, [])
+})
