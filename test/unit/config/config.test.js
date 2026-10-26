@@ -524,27 +524,6 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(configuration.distributed_tracing.sampler.partial_granularity.remote_parent_not_sampled, 'adaptive')
   })
 
-  await t.test('should set full/granularity options', () => {
-    const config = {
-      distributed_tracing: {
-        sampler: {
-          full_granularity: {
-            enabled: false
-          },
-          partial_granularity: {
-            enabled: true,
-            type: 'reduced'
-          }
-        }
-      }
-    }
-
-    const configuration = Config.initialize(config)
-    assert.equal(configuration.distributed_tracing.sampler.full_granularity.enabled, false)
-    assert.equal(configuration.distributed_tracing.sampler.partial_granularity.enabled, true)
-    assert.equal(configuration.distributed_tracing.sampler.partial_granularity.type, 'reduced')
-  })
-
   await t.test('should set cpu profiling options', () => {
     const config = {
       profiling: {

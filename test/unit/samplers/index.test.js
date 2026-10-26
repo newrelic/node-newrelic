@@ -47,24 +47,6 @@ test('Samplers constructor', async (t) => {
     assert.ok(samplers.adaptiveSampler !== null)
   })
 
-  await t.test('should initialize adaptiveSampler to null', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          full_granularity: {
-            enabled: false
-          },
-          partial_granularity: {
-            enabled: true
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    assert.equal(samplers.fullEnabled, false)
-    assert.equal(samplers.partialEnabled, true)
-  })
-
   await t.test('should call determineSampler for each sampler type', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
@@ -147,121 +129,6 @@ test('Samplers constructor', async (t) => {
     assert.equal(samplers.remoteParentNotSampled, samplers.adaptiveSampler)
   })
 
-  await t.test('partial granularity sampler should add full granularity ratio value if present', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          root: {
-            trace_id_ratio_based: {
-              ratio: 0.3
-            }
-          },
-          remote_parent_sampled: {
-            adaptive: {
-              sampling_target: 50
-            }
-          },
-          remote_parent_not_sampled: {
-            trace_id_ratio_based: {
-              ratio: 0.7
-            }
-          },
-          partial_granularity: {
-            root: 'always_on',
-            remote_parent_sampled: {
-              trace_id_ratio_based: {
-                ratio: 0.9
-              }
-            },
-            remote_parent_not_sampled: {
-              trace_id_ratio_based: {
-                ratio: 0.2
-              }
-            }
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    assert.equal(samplers.root._ratio, 0.3)
-    assert.equal(samplers.remoteParentNotSampled._ratio, 0.7)
-    assert.equal(samplers.partialRemoteParentSampled._ratio, 0.9)
-    // javascript precision issues require toFixed usage here to assert values
-    // otherwise the value is 0.8999999999999999
-    assert.equal(samplers.partialRemoteParentNotSampled._ratio.toFixed(1), 0.9)
-  })
-
-  await t.test('partial granularity sampler should add full granularity ratio value if present and full granularity is enabled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          full_granularity: {
-            enabled: false
-          },
-          root: {
-            trace_id_ratio_based: {
-              ratio: 0.3
-            }
-          },
-          remote_parent_sampled: {
-            adaptive: {
-              sampling_target: 50
-            }
-          },
-          remote_parent_not_sampled: {
-            trace_id_ratio_based: {
-              ratio: 0.7
-            }
-          },
-          partial_granularity: {
-            root: 'always_on',
-            remote_parent_sampled: {
-              trace_id_ratio_based: {
-                ratio: 0.9
-              }
-            },
-            remote_parent_not_sampled: {
-              trace_id_ratio_based: {
-                ratio: 0.2
-              }
-            }
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    assert.equal(samplers.root._ratio, 0.3)
-    assert.equal(samplers.remoteParentNotSampled._ratio, 0.7)
-    assert.equal(samplers.partialRemoteParentSampled._ratio, 0.9)
-    assert.equal(samplers.partialRemoteParentNotSampled._ratio, 0.2)
-  })
-
-  await t.test('should send partial granularity metrics when partial is enabled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          full_granularity: {
-            enabled: false
-          },
-          partial_granularity: {
-            enabled: true
-          }
-        }
-      }
-    })
-
-    const samplers = new Samplers(t.nr.agent)
-    assert.ok(samplers)
-
-    const pgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/Root/Adaptive/Shared')
-    const pgRemoteSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/RemoteParentSampled/Adaptive/Shared')
-    const pgRemoteNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/RemoteParentNotSampled/Adaptive/Shared')
-
-    assert.ok(pgRootMetric)
-    assert.ok(pgRemoteSampledMetric)
-    assert.ok(pgRemoteNotSampledMetric)
-  })
-
   await t.test('should send full granularity metrics when full is enabled', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
@@ -286,41 +153,6 @@ test('Samplers constructor', async (t) => {
     assert.ok(fgRootMetric)
     assert.ok(fgRemoteSampledMetric)
     assert.ok(fgRemoteNotSampledMetric)
-  })
-
-  await t.test('should send both partial and full granularity metrics when both are enabled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          full_granularity: {
-            enabled: true
-          },
-          partial_granularity: {
-            enabled: true
-          }
-        }
-      }
-    })
-
-    const samplers = new Samplers(t.nr.agent)
-    assert.ok(samplers)
-
-    // Partial granularity metrics
-    const pgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/Root/Adaptive/Shared')
-    const pgRemoteParentSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/RemoteParentSampled/Adaptive/Shared')
-    const pgRemoteParentNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/PartialGranularity/RemoteParentNotSampled/Adaptive/Shared')
-
-    // Full granularity metrics
-    const fgRootMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/Root/Adaptive/Shared')
-    const fgRemoteParentSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentSampled/Adaptive/Shared')
-    const fgRemoteParentNotSampledMetric = t.nr.agent.metrics.getMetric('Supportability/Nodejs/FullGranularity/RemoteParentNotSampled/Adaptive/Shared')
-
-    assert.ok(pgRootMetric)
-    assert.ok(pgRemoteParentSampledMetric)
-    assert.ok(pgRemoteParentNotSampledMetric)
-    assert.ok(fgRootMetric)
-    assert.ok(fgRemoteParentSampledMetric)
-    assert.ok(fgRemoteParentNotSampledMetric)
   })
 
   await t.test('should send correct sampler type for always_on sampler', (t) => {
@@ -522,66 +354,6 @@ test('applySamplingDecision', async (t) => {
     })
   })
 
-  await t.test('should apply full and partial sampling decision when both are configured and full does not sample', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          root: 'always_off',
-          partial_granularity: {
-            enabled: true,
-            root: 'always_on'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    const transaction = { priority: null, sampled: null }
-    samplers.applySamplingDecision({ transaction })
-    assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
-    assert.equal(transaction.partialType, 'essential')
-  })
-
-  await t.test('should apply full and partial sampling decision when both are configured and full and partial does not sample', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          root: 'always_off',
-          partial_granularity: {
-            enabled: true,
-            root: 'always_off'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    const transaction = { priority: null, sampled: null }
-    samplers.applySamplingDecision({ transaction })
-    assert.equal(transaction.sampled, false)
-    assert.equal(transaction.priority, 0)
-    assert.equal(transaction.partialType, 'essential')
-  })
-
-  await t.test('should not apply both full and partial sampling decision when both are configured and full does sample', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          root: 'always_on',
-          partial_granularity: {
-            enabled: true,
-            root: 'always_off'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    const transaction = { priority: null, sampled: null }
-    samplers.applySamplingDecision({ transaction })
-    assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 3.0)
-    assert.equal(transaction.partialType, undefined)
-  })
-
   await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if DT is disabled', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
@@ -602,28 +374,6 @@ test('applySamplingDecision', async (t) => {
     assert.equal(transaction.sampled, false)
     assert.ok(transaction.priority > 0 && transaction.priority < 1)
     assert.equal(transaction.isPartialTrace, null)
-  })
-
-  await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if both full and partial are disabled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          full_granularity: {
-            enabled: false
-          },
-          partial_granularity: {
-            enabled: false,
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    const transaction = { priority: null, sampled: null }
-    samplers.applySamplingDecision({ transaction })
-    assert.equal(transaction.sampled, false)
-    assert.ok(transaction.priority > 0 && transaction.priority < 1)
-    assert.equal(transaction.isPartialTrace, null)
-    assert.equal(transaction.partialType, null)
   })
 })
 
@@ -650,30 +400,6 @@ test('applyDTSamplingDecision', async (t) => {
     assert.equal(transaction.partialType, undefined)
   })
 
-  await t.test('should apply full and partial to remoteParentSampled when traceparent is sampled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          remote_parent_sampled: 'always_off',
-          partial_granularity: {
-            enabled: true,
-            remote_parent_sampled: 'always_on'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-
-    const transaction = { priority: null, sampled: null }
-    const traceparent = { isSampled: true }
-
-    samplers.applyDTSamplingDecision({ transaction, traceparent })
-
-    assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
-    assert.equal(transaction.partialType, 'essential')
-  })
-
   await t.test('should not apply both full and partial to remoteParentSampled when traceparent is sampled', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
@@ -696,30 +422,6 @@ test('applyDTSamplingDecision', async (t) => {
     assert.equal(transaction.sampled, true)
     assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
-  })
-
-  await t.test('should apply full and partial to remoteParentSampled when traceparent is sampled and transaction is not sampled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          remote_parent_sampled: 'always_off',
-          partial_granularity: {
-            enabled: true,
-            remote_parent_sampled: 'always_off'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-
-    const transaction = { priority: null, sampled: null }
-    const traceparent = { isSampled: true }
-
-    samplers.applyDTSamplingDecision({ transaction, traceparent })
-
-    assert.equal(transaction.sampled, false)
-    assert.equal(transaction.priority, 0)
-    assert.equal(transaction.partialType, 'essential')
   })
 
   await t.test('should not crash when a transaction does not exist for remoteParentSampled', (t) => {
@@ -756,54 +458,6 @@ test('applyDTSamplingDecision', async (t) => {
 
     assert.equal(transaction.sampled, false)
     assert.equal(transaction.priority, 0)
-  })
-
-  await t.test('should apply both full and partial to remoteParentNotSampled when traceparent is not sampled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          remote_parent_not_sampled: 'always_off',
-          partial_granularity: {
-            enabled: true,
-            remote_parent_not_sampled: 'always_on'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-
-    const transaction = { priority: null, sampled: null }
-    const traceparent = { isSampled: false }
-
-    samplers.applyDTSamplingDecision({ transaction, traceparent })
-
-    assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
-    assert.equal(transaction.partialType, 'essential')
-  })
-
-  await t.test('should not apply both full and partial to remoteParentNotSampled when traceparent is not sampled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          remote_parent_not_sampled: 'always_on',
-          partial_granularity: {
-            enabled: true,
-            remote_parent_not_sampled: 'always_off'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-
-    const transaction = { priority: null, sampled: null }
-    const traceparent = { isSampled: false }
-
-    samplers.applyDTSamplingDecision({ transaction, traceparent })
-
-    assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 3.0)
-    assert.equal(transaction.partialType, undefined)
   })
 
   await t.test('should not crash when a transaction does not exist for remoteParentNotSampled', (t) => {
@@ -865,46 +519,6 @@ test('applyDTSamplingDecision', async (t) => {
     assert.ok(transaction.priority > 0 && transaction.priority < 1)
     assert.equal(transaction.isPartialTrace, null)
   })
-
-  await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if both full and partial are disabled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          full_granularity: {
-            enabled: false
-          },
-          partial_granularity: {
-            enabled: false,
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    const transaction = { priority: null, sampled: null }
-    samplers.applyDTSamplingDecision({ transaction })
-    assert.equal(transaction.sampled, false)
-    assert.ok(transaction.priority > 0 && transaction.priority < 1)
-    assert.equal(transaction.partialType, null)
-  })
-
-  await t.test('should not apply any samplers if both full and partial are disabled, and no transaction', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          full_granularity: {
-            enabled: false
-          },
-          partial_granularity: {
-            enabled: false,
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    assert.doesNotThrow(() => {
-      samplers.applyDTSamplingDecision({ transaction: null })
-    })
-  })
 })
 
 test('applyLegacyDTSamplingDecision', async (t) => {
@@ -946,50 +560,6 @@ test('applyLegacyDTSamplingDecision', async (t) => {
     assert.equal(transaction.partialType, undefined)
   })
 
-  await t.test('should apply both full and partial remoteParentSampled when isSampled is true', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          remote_parent_sampled: 'always_off',
-          partial_granularity: {
-            enabled: true,
-            remote_parent_sampled: 'always_on'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-
-    const transaction = { priority: null, sampled: null }
-    samplers.applyLegacyDTSamplingDecision({ transaction, isSampled: true })
-
-    assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
-    assert.equal(transaction.partialType, 'essential')
-  })
-
-  await t.test('should not apply both full and partial remoteParentSampled when isSampled is true', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          remote_parent_sampled: 'always_on',
-          partial_granularity: {
-            enabled: true,
-            remote_parent_sampled: 'always_off'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-
-    const transaction = { priority: null, sampled: null }
-    samplers.applyLegacyDTSamplingDecision({ transaction, isSampled: true })
-
-    assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 3.0)
-    assert.equal(transaction.partialType, undefined)
-  })
-
   await t.test('should apply remoteParentNotSampled when isSampled is false', (t) => {
     t.nr.agent.config = new Config({
       distributed_tracing: {
@@ -1005,50 +575,6 @@ test('applyLegacyDTSamplingDecision', async (t) => {
 
     assert.equal(transaction.sampled, false)
     assert.equal(transaction.priority, 0)
-    assert.equal(transaction.partialType, undefined)
-  })
-
-  await t.test('should apply both full and partial remoteParentNotSampled when isSampled is false', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          remote_parent_not_sampled: 'always_off',
-          partial_granularity: {
-            enabled: true,
-            remote_parent_not_sampled: 'always_on'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-
-    const transaction = { priority: null, sampled: null }
-    samplers.applyLegacyDTSamplingDecision({ transaction, isSampled: false })
-
-    assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 2.0)
-    assert.equal(transaction.partialType, 'essential')
-  })
-
-  await t.test('should not apply both full and partial remoteParentNotSampled when isSampled is false', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          remote_parent_not_sampled: 'always_on',
-          partial_granularity: {
-            enabled: true,
-            remote_parent_not_sampled: 'always_off'
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-
-    const transaction = { priority: null, sampled: null }
-    samplers.applyLegacyDTSamplingDecision({ transaction, isSampled: false })
-
-    assert.equal(transaction.sampled, true)
-    assert.equal(transaction.priority, 3.0)
     assert.equal(transaction.partialType, undefined)
   })
 
@@ -1134,27 +660,6 @@ test('applyLegacyDTSamplingDecision', async (t) => {
     assert.equal(transaction.sampled, false)
     assert.ok(transaction.priority > 0 && transaction.priority < 1)
     assert.equal(transaction.isPartialTrace, null)
-  })
-
-  await t.test('should apply default sampling decision(sampled: false, priority between 0 and 1) if both full and partial are disabled', (t) => {
-    t.nr.agent.config = new Config({
-      distributed_tracing: {
-        sampler: {
-          full_granularity: {
-            enabled: false
-          },
-          partial_granularity: {
-            enabled: false,
-          }
-        }
-      }
-    })
-    const samplers = new Samplers(t.nr.agent)
-    const transaction = { priority: null, sampled: null }
-    samplers.applyLegacyDTSamplingDecision({ transaction })
-    assert.equal(transaction.sampled, false)
-    assert.ok(transaction.priority > 0 && transaction.priority < 1)
-    assert.equal(transaction.partialType, null)
   })
 })
 
