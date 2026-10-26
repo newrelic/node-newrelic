@@ -42,8 +42,23 @@ function captureArgMetrics(subscriber, obj) {
   return counts
 }
 
+test('captureFieldMetrics keeps list indexes in arg names by default', (t) => {
+  const { subscriber } = t.nr
+  const counts = captureArgMetrics(subscriber, {
+    ids: [1, 2],
+    searchCriteria: [{ name: 'test' }]
+  })
+  assert.deepEqual(counts, {
+    'GraphQL/field/ApolloServer/Query.books': 1,
+    'GraphQL/arg/ApolloServer/Query.books/ids.0': 1,
+    'GraphQL/arg/ApolloServer/Query.books/ids.1': 1,
+    'GraphQL/arg/ApolloServer/Query.books/searchCriteria.0.name': 1
+  })
+})
+
 test('captureFieldMetrics collapses list args into one metric per item', (t) => {
   const { subscriber } = t.nr
+  subscriber.config.apollo_server.collapse_field_metrics = true
   const counts = captureArgMetrics(subscriber, {
     ids: [1, 2, 3],
     searchCriteria: [{ name: 'test' }, { name: 'test2' }]
@@ -57,6 +72,7 @@ test('captureFieldMetrics collapses list args into one metric per item', (t) => 
 
 test('captureFieldMetrics collapses nested lists', (t) => {
   const { subscriber } = t.nr
+  subscriber.config.apollo_server.collapse_field_metrics = true
   const counts = captureArgMetrics(subscriber, {
     book: { editions: [{ formats: ['pb', 'hb'] }] },
     matrix: [[1], [2]]
@@ -70,6 +86,7 @@ test('captureFieldMetrics collapses nested lists', (t) => {
 
 test('captureFieldMetrics keeps non-list arg names unchanged', (t) => {
   const { subscriber } = t.nr
+  subscriber.config.apollo_server.collapse_field_metrics = true
   const counts = captureArgMetrics(subscriber, { book: { author: { name: 'a' }, title: 'b' } })
   assert.deepEqual(counts, {
     'GraphQL/field/ApolloServer/Query.books': 1,

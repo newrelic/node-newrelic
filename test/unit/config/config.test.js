@@ -573,7 +573,8 @@ test('distributed tracing samplers', async (t) => {
         introspection_queries: true,
         service_definition_queries: true,
         health_check_queries: true,
-        field_metrics: true
+        field_metrics: true,
+        collapse_field_metrics: true
       }
     }
 
@@ -584,6 +585,7 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(apollo.service_definition_queries, true)
     assert.equal(apollo.health_check_queries, true)
     assert.equal(apollo.field_metrics, true)
+    assert.equal(apollo.collapse_field_metrics, true)
   })
 })
 
