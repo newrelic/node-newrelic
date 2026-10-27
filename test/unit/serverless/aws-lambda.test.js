@@ -1731,4 +1731,56 @@ test('metric window', async (t) => {
 
     assert.deepEqual(metricWindows(t)[1], { begin: secondStart, end: secondStart + 100 })
   })
+
+  await t.test('still resets after an invocation ended in bulk finishes late', (t) => {
+    const { callbacks, clock } = t.nr
+    tempRemoveListeners({ t, emitter: process, event: 'beforeExit' })
+    invoke(t)
+    invoke(t)
+    // Ends both invocations while their handlers are still running.
+    process.emit('beforeExit')
+    invoke(t)
+    // The second invocation's handler finishes after it was already ended.
+    callbacks[1](null, 'worked')
+    callbacks[2](null, 'worked')
+    clock.tick(HOUR)
+    const nextStart = Date.now()
+    invoke(t)
+    clock.tick(100)
+    callbacks[3](null, 'worked')
+
+    assert.deepEqual(metricWindows(t).at(-1), { begin: nextStart, end: nextStart + 100 })
+  })
+
+  await t.test('does not end a newer invocation when one ended in bulk finishes late', (t) => {
+    const { agent, awsLambda, stubEvent, stubContext, stubCallback } = t.nr
+    tempRemoveListeners({ t, emitter: process, event: 'beforeExit' })
+    const invocations = []
+    const handler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      invocations.push({ transaction: agent.tracer.getTransaction(), callback })
+    })
+    handler(stubEvent, stubContext, stubCallback)
+    handler(stubEvent, stubContext, stubCallback)
+    process.emit('beforeExit')
+    handler(stubEvent, stubContext, stubCallback)
+    handler(stubEvent, stubContext, stubCallback)
+
+    invocations[1].callback(null, 'worked')
+    assert.equal(invocations[3].transaction.isActive(), true)
+
+    invocations[3].callback(null, 'worked')
+    assert.equal(invocations[3].transaction.isActive(), false)
+  })
+
+  await t.test('still harvests when the handler ends the transaction itself', (t) => {
+    const { agent, awsLambda, send, stubEvent, stubContext, stubCallback } = t.nr
+    const handler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      agent.tracer.getTransaction().end()
+      callback(null, 'worked')
+    })
+
+    handler(stubEvent, stubContext, stubCallback)
+
+    assert.equal(send.args.filter(([method]) => method === 'metric_data').length, 1)
+  })
 })
