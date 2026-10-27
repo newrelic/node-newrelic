@@ -90,7 +90,7 @@ them during validation) to carry agent-specific metadata:
   `distributed_tracing.sampler.full_granularity.enabled` is always `true` and
   `distributed_tracing.sampler.partial_granularity.enabled` is always `false`.
   Both remain in the schema (marked `x-newrelic-internal`), but user-provided
-  values are ignored with a warning, in `#applyUserValue` in
+  values are ignored, in `#applyUserValue` in
   `lib/config/index.js` for config files and in `applyEnvironmentOverrides` for
   environment variables. Other `partial_granularity` settings are accepted but
   have no effect.
