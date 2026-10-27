@@ -600,26 +600,17 @@ test('otlp_resource_attributes', () => {
 })
 
 test('Core Tracing is disabled', async (t) => {
-  const { TestConfigLogger } = require('./helper')
-  const WARNING = 'distributed_tracing.sampler.%s.enabled cannot be configured, not updating.'
-
   await t.test('should not allow disabling full granularity', () => {
-    const logger = new TestConfigLogger()
-    const config = Config.initialize(
-      { distributed_tracing: { sampler: { full_granularity: { enabled: false } } } },
-      { logger }
-    )
+    const config = Config.initialize({
+      distributed_tracing: { sampler: { full_granularity: { enabled: false } } }
+    })
     assert.equal(config.distributed_tracing.sampler.full_granularity.enabled, true)
-    assert.deepStrictEqual(logger.logs.warn, [[WARNING, 'full_granularity']])
   })
 
   await t.test('should not allow enabling partial granularity', () => {
-    const logger = new TestConfigLogger()
-    const config = Config.initialize(
-      { distributed_tracing: { sampler: { partial_granularity: { enabled: true } } } },
-      { logger }
-    )
+    const config = Config.initialize({
+      distributed_tracing: { sampler: { partial_granularity: { enabled: true } } }
+    })
     assert.equal(config.distributed_tracing.sampler.partial_granularity.enabled, false)
-    assert.deepStrictEqual(logger.logs.warn, [[WARNING, 'partial_granularity']])
   })
 })

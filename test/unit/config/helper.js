@@ -76,6 +76,5 @@ function idempotentEnv(envConfig, initialConfig, callback) {
 }
 
 module.exports = {
-  idempotentEnv,
-  TestConfigLogger
+  idempotentEnv
 }
