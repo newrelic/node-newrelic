@@ -1741,17 +1741,6 @@
             }
           }
         },
-        "timers": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": false,
-              "description": "Whether instrumentation for this module is active."
-            }
-          }
-        },
         "undici": {
           "type": "object",
           "additionalProperties": true,

@@ -117,7 +117,6 @@ test('opensearch instrumentation', async (t) => {
       })
       assert.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
-      // helper interface results in a first child of timers.setTimeout, with the second child related to the operation
       const [firstChild] = trace.getChildren(trace.root.id)
       assert.equal(
         firstChild.name,

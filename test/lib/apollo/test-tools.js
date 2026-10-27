@@ -33,7 +33,6 @@ async function afterEach({ t, testDir }) {
 }
 
 async function setupCoreTest({ t, testDir, agentConfig = {}, contextValue } = {}) {
-  agentConfig.instrumentation = { timers: { enabled: true } }
   const agent = helper.instrumentMockedAgent(agentConfig)
   const apolloServerPkg = requireApolloServer(testDir)
   const { ApolloServer, gql, startStandaloneServer } = apolloServerPkg
