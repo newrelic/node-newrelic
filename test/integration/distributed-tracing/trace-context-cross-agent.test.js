@@ -24,7 +24,20 @@ const { assertEvents, assertMetrics, assertOutboundPayloads, expectedFixtureKeys
 // our schema validation runs before the sampler formatters and rejects it.
 // Skipped until the schema-vs-fallback behavior is reconciled.
 const SKIPPED_CASES = new Set([
-  'no_headers_root_uses_adaptive_sampler_when_no_ratio'
+  'no_headers_root_uses_adaptive_sampler_when_no_ratio',
+  // Core Tracing is disabled: full granularity is always on and partial
+  // granularity is always off. These cases enable partial granularity or
+  // disable full granularity, so they are skipped until Core Tracing is
+  // re-enabled.
+  'newrelic_remote_parent_sampled_uses_partial_ratio_sampler',
+  'newrelic_remote_parent_sampled_uses_partial_ratio_sampler_full_ratio_not_sampled',
+  'no_headers_full_traces_disabled_uses_partial_adaptive_sampler',
+  'no_headers_root_full_and_partial_disabled',
+  'no_headers_root_uses_partial_always_on',
+  'no_headers_root_uses_partial_ratio_sampler',
+  'payload_missing_priority_incremented_to_partial_granularity_priority',
+  'w3c_remote_parent_not_sampled_uses_partial_ratio_sampler',
+  'w3c_remote_parent_sampled_uses_partial_always_on'
 ])
 
 test('distributed tracing trace context', async (t) => {

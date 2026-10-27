@@ -1149,3 +1149,25 @@ test('logs redacted information when setting from env vars', (t, end) => {
     end()
   })
 })
+
+test('Core Tracing is disabled', async (t) => {
+  await t.test('should not allow disabling full granularity', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_FULL_GRANULARITY_ENABLED: 'false'
+    }
+    idempotentEnv(env, (tc) => {
+      assert.equal(tc.distributed_tracing.sampler.full_granularity.enabled, true)
+      end()
+    })
+  })
+
+  await t.test('should not allow enabling partial granularity', (t, end) => {
+    const env = {
+      NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_PARTIAL_GRANULARITY_ENABLED: 'true'
+    }
+    idempotentEnv(env, (tc) => {
+      assert.equal(tc.distributed_tracing.sampler.partial_granularity.enabled, false)
+      end()
+    })
+  })
+})
