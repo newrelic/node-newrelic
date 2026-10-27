@@ -8,6 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const net = require('net')
+const cp = require('node:child_process')
 const helper = require('../../lib/agent_helper')
 
 function id(tx) {
@@ -716,3 +717,67 @@ test('close binds its callback to the segment active when close was called', fun
     })
   })
 })
+
+test(
+  'an ended transaction bound to a long-lived, reused socket is collectible once nothing else needs it',
+  (t) => {
+    // Whether the ended transaction is actually reclaimed can only be
+    // observed by forcing a real GC cycle, which needs `--expose-gc` on the
+    // node invocation itself -- this test's own process can't request that
+    // for itself after the fact. Run the check in a child process started
+    // with the flag instead, so the real verification runs for real on
+    // every normal test invocation rather than being skipped.
+    try {
+      cp.execFileSync(process.execPath, ['--expose-gc', './net-memory-check.js'], {
+        cwd: __dirname,
+        stdio: 'pipe'
+      })
+    } catch (err) {
+      assert.fail(`net-memory-check.js failed:\n${err.stderr?.toString() || err.message}`)
+    }
+  }
+)
+
+test(
+  'restores the original socket.emit once the transaction has ended',
+  async (t) => {
+    // Deterministic counterpart to the GC-based test above: does not need
+    // `--expose-gc`, since it checks the eager, synchronous revert path
+    // directly rather than relying on an actual collection cycle.
+    //
+    // Doesn't check an intermediate "still bound right after connecting"
+    // state: `net.Socket` emits `'ready'` immediately after `'connect'`,
+    // synchronously, before control returns here -- so by the time
+    // `transaction.end()` (called from the `'connect'` listener) has run,
+    // that very next `'ready'` dispatch already triggers the revert. The
+    // only state that's actually guaranteed, and actually matters, is what
+    // it settles to once everything above has run.
+    const { agent } = t.nr
+    const server = net.createServer((socket) => {
+      socket.on('data', () => socket.write('pong'))
+    })
+    t.after(() => server.close())
+
+    await new Promise((resolve) => server.listen(0, resolve))
+    const port = server.address().port
+
+    const socket = new net.Socket()
+    t.after(() => socket.destroy())
+    const originalEmit = socket.emit
+
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, (transaction) => {
+        socket.connect(port, '127.0.0.1', () => {
+          transaction.end()
+          resolve()
+        })
+      })
+    })
+
+    assert.strictEqual(
+      socket.emit,
+      originalEmit,
+      'emit should be restored to the original, unbound function once the transaction has ended'
+    )
+  }
+)
