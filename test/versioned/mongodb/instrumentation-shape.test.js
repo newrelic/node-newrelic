@@ -19,6 +19,13 @@
 // environment-sensitive memory symptom: the instrumentation should wrap the
 // driver's prototype methods once, not mutate the shape of every cursor
 // instance.
+//
+// The two shape assertions are skipped when the security agent is enabled: it
+// legitimately installs its own per-instance wrappers on mongodb objects, so a
+// cursor will carry own `toArray`/`next` properties that are not from this
+// agent. The `#4397` invariant being guarded here is about *this* agent's
+// instrumentation, which the security agent's presence makes unobservable via
+// object shape alone. The datastore-segment assertion still runs in both modes.
 
 const { describe, test } = require('node:test')
 const assert = require('node:assert')
@@ -49,15 +56,28 @@ describe('mongodb instrumentation does not mutate per-cursor shape (#4397)', () 
     ])
   })
 
-  test.afterEach(async (ctx) => {
+  test.afterEach(afterEach)
+
+  // Idempotent: the skip path below invokes this directly before returning, and
+  // the registered hook also runs, so guard against tearing down twice.
+  async function afterEach(ctx) {
+    if (ctx.nr.tornDown === true) {
+      return
+    }
+    ctx.nr.tornDown = true
     await ctx.nr.collection.deleteMany({})
     await common.close(ctx.nr.client, ctx.nr.db)
     helper.unloadAgent(ctx.nr.agent)
     removeModules(['mongodb'])
-  })
+  }
 
-  test('cursor read methods come from the prototype, not the instance', (t) => {
-    const { collection } = t.nr
+  test('cursor read methods come from the prototype, not the instance', async (t) => {
+    const { agent, collection } = t.nr
+    if (helper.isSecurityAgentEnabled(agent) === true) {
+      t.skip('security agent installs its own per-instance wrappers on mongodb objects')
+      await afterEach(t)
+      return
+    }
 
     // Constructing a cursor must not require an active transaction to trigger
     // the instrumentation's construction hook.
@@ -81,8 +101,13 @@ describe('mongodb instrumentation does not mutate per-cursor shape (#4397)', () 
     )
   })
 
-  test('distinct cursors share the same wrapped method reference', (t) => {
-    const { collection } = t.nr
+  test('distinct cursors share the same wrapped method reference', async (t) => {
+    const { agent, collection } = t.nr
+    if (helper.isSecurityAgentEnabled(agent) === true) {
+      t.skip('security agent installs its own per-instance wrappers on mongodb objects')
+      await afterEach(t)
+      return
+    }
 
     // Each `find()` constructs a fresh cursor. The wrapper function should be
     // shared across instances (wrapped once on the prototype), not allocated
