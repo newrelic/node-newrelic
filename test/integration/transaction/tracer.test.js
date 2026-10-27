@@ -14,13 +14,7 @@ const tempRemoveListeners = require('../../lib/temp-remove-listeners')
 const Context = require('../../../lib/context-manager/context')
 
 test.beforeEach((ctx) => {
-  const agent = helper.instrumentMockedAgent({
-    instrumentation: {
-      timers: {
-        enabled: true
-      }
-    }
-  })
+  const agent = helper.instrumentMockedAgent()
   const tracer = helper.getTracer()
   ctx.nr = {
     agent,
@@ -278,7 +272,7 @@ test('getTransaction', async function testGetTransaction(t) {
 test('getSegment', async function testGetTransaction(t) {
   const { agent, tracer } = t.nr
 
-  const plan = tspl(t, { plan: 4 })
+  const plan = tspl(t, { plan: 3 })
 
   plan.ok(!tracer.getSegment())
   helper.runInTransaction(agent, function inTrans(transaction) {
@@ -286,12 +280,7 @@ test('getSegment', async function testGetTransaction(t) {
     plan.equal(tracer.getSegment(), root)
 
     setTimeout(function onTimeout() {
-      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
-      const [setTimeoutCb] = transaction.trace.getChildren(child.id)
-      const segment = tracer.getSegment()
-
-      plan.equal(segment, setTimeoutCb)
-      plan.equal(segment.name, 'Callback: onTimeout')
+      plan.equal(tracer.getSegment(), root)
     }, 0)
   })
 

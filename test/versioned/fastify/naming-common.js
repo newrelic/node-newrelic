@@ -31,7 +31,6 @@ module.exports = async function runTests(t, getExpectedSegments) {
         let expectedSegments
         if (helper.isSecurityAgentEnabled(agent)) {
           // since k2 agent adds an onRequest hook
-          // it sometimes has timers.setTimeout depending on route
           expectedSegments = [
             `WebTransaction/WebFrameworkUri/Fastify/GET/${uri}`,
             ['Nodejs/Middleware/Fastify/onRequest/<anonymous>', ...getExpectedSegments(uri)]

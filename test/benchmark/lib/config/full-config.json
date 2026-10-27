@@ -591,9 +591,6 @@
     "net": {
       "enabled": false
     },
-    "timers": {
-      "enabled": false
-    },
     "zlib": {
       "enabled": false
     },
