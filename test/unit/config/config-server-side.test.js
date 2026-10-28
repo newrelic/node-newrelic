@@ -801,6 +801,30 @@ describe('when receiving server-side configuration', () => {
       assert.equal(config.shouldRecordAiContent(), false)
     })
 
+    test('should not force content on when only the connect response sets ai_monitoring.enabled', () => {
+      // A customer with nothing set locally is a new AIM customer, so there is
+      // no previous content default to preserve.
+      const config = new Config()
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      assert.equal(config.shouldRecordAiContent(), false)
+    })
+
+    test('should force content on when ai_monitoring.enabled was set locally before connect', () => {
+      const config = new Config({ ai_monitoring: { enabled: true } })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.shouldRecordAiContent(), true)
+    })
+
+    test('should keep the locally set ai_monitoring.enabled across reconnects', () => {
+      // The second connect sees the server value from the first, which must not
+      // be mistaken for a local setting.
+      const config = new Config()
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.shouldRecordAiContent(), false)
+    })
+
     test('should send basic telemetry with content when SSC option is Full AIM', () => {
       const config = new Config()
       config.onConnect({
