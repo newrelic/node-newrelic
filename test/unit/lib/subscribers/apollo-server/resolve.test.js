@@ -30,14 +30,15 @@ function captureArgMetrics(subscriber, obj) {
     metrics: {
       getOrCreateMetric(name) {
         return {
-          incrementCallCount() {
-            counts[name] = (counts[name] ?? 0) + 1
+          incrementCallCount(count = 1) {
+            counts[name] = (counts[name] ?? 0) + count
           }
         }
       }
     }
   }
-  const args = subscriber.flattenArgs({ obj })
+  const collapse = subscriber.config.apollo_server.collapse_field_metrics
+  const args = subscriber.flattenArgs({ obj, collapse })
   subscriber.captureFieldMetrics({ transaction, args, fieldType: 'Query', fieldName: 'books' })
   return counts
 }
@@ -92,5 +93,16 @@ test('captureFieldMetrics keeps non-list arg names unchanged', (t) => {
     'GraphQL/field/ApolloServer/Query.books': 1,
     'GraphQL/arg/ApolloServer/Query.books/book.author.name': 1,
     'GraphQL/arg/ApolloServer/Query.books/book.title': 1
+  })
+})
+
+test('captureFieldMetrics does not collapse numeric keys of plain objects', (t) => {
+  const { subscriber } = t.nr
+  subscriber.config.apollo_server.collapse_field_metrics = true
+  const counts = captureArgMetrics(subscriber, { lookup: { 2024: 'a', 2025: 'b' } })
+  assert.deepEqual(counts, {
+    'GraphQL/field/ApolloServer/Query.books': 1,
+    'GraphQL/arg/ApolloServer/Query.books/lookup.2024': 1,
+    'GraphQL/arg/ApolloServer/Query.books/lookup.2025': 1
   })
 })
