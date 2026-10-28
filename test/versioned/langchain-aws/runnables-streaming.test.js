@@ -58,7 +58,8 @@ async function beforeEach({ enabled, ctx }) {
     streaming: true,
     model: 'anthropic.claude-instant-v1',
     region: 'us-east-1',
-    client: bedrockClient
+    client: bedrockClient,
+    maxRetries: 0
   })
   ctx.nr.outputParser = new StringOutputParser()
 }
