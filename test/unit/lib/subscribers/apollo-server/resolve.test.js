@@ -57,6 +57,14 @@ test('captureFieldMetrics keeps list indexes in arg names by default', (t) => {
   })
 })
 
+test('flattenArgs keeps raw arg values when collapsing is off', (t) => {
+  const { subscriber } = t.nr
+  assert.deepEqual(
+    subscriber.flattenArgs({ obj: { ids: [1, 2], name: 'a' } }),
+    { 'ids.0': 1, 'ids.1': 2, name: 'a' }
+  )
+})
+
 test('captureFieldMetrics collapses list args into one metric per item', (t) => {
   const { subscriber } = t.nr
   subscriber.config.apollo_server.collapse_field_metrics = true
