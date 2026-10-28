@@ -106,3 +106,13 @@ test('captureFieldMetrics does not collapse numeric keys of plain objects', (t) 
     'GraphQL/arg/ApolloServer/Query.books/lookup.2025': 1
   })
 })
+
+test('captureFieldMetrics counts args named after Object members', (t) => {
+  const { subscriber } = t.nr
+  subscriber.config.apollo_server.collapse_field_metrics = true
+  const counts = captureArgMetrics(subscriber, { constructor: ['a', 'b'] })
+  assert.deepEqual(counts, {
+    'GraphQL/field/ApolloServer/Query.books': 1,
+    'GraphQL/arg/ApolloServer/Query.books/constructor': 2
+  })
+})
