@@ -116,3 +116,37 @@ test('captureFieldMetrics counts args named after Object members', (t) => {
     'GraphQL/arg/ApolloServer/Query.books/constructor': 2
   })
 })
+
+test('wrapResolve reports collapsed arg metrics when enabled', (t) => {
+  const { agent, subscriber } = t.nr
+  agent.config.apollo_server.field_metrics = true
+  agent.config.apollo_server.collapse_field_metrics = true
+  const info = {
+    fieldName: 'books',
+    parentType: { toString: () => 'Query' },
+    returnType: { toString: () => '[Book]' },
+    path: { key: 'books' }
+  }
+  const resolverArgs = { ids: [1, 2, 3], searchCriteria: [{ name: 'a' }, { name: 'b' }] }
+
+  helper.runInTransaction(agent, (tx) => {
+    subscriber.wrapResolve(function resolve() {}, null, [{}, resolverArgs, {}, info])
+    assert.equal(
+      tx.metrics.getOrCreateMetric('GraphQL/arg/ApolloServer/Query.books/ids').callCount,
+      3
+    )
+    assert.equal(
+      tx.metrics.getOrCreateMetric('GraphQL/arg/ApolloServer/Query.books/searchCriteria.name')
+        .callCount,
+      2
+    )
+    assert.equal(
+      tx.metrics.getOrCreateMetric('GraphQL/arg/ApolloServer/Query.books/ids.0').callCount,
+      0
+    )
+    assert.equal(
+      tx.metrics.getOrCreateMetric('GraphQL/field/ApolloServer/Query.books').callCount,
+      1
+    )
+  })
+})
