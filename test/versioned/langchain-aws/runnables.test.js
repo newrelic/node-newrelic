@@ -47,7 +47,8 @@ test.beforeEach(async (ctx) => {
   ctx.nr.model = new ChatBedrockConverse({
     model: 'anthropic.claude-3-haiku-20240307-v1:0',
     region: 'us-east-1',
-    client: bedrockClient
+    client: bedrockClient,
+    maxRetries: 0
   })
   ctx.nr.outputParser = new StringOutputParser()
 })
