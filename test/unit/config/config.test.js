@@ -587,6 +587,19 @@ test('distributed tracing samplers', async (t) => {
     assert.equal(apollo.field_metrics, true)
     assert.equal(apollo.collapse_field_metrics, true)
   })
+
+  await t.test('should reject an invalid collapse_field_metrics value', () => {
+    const config = {
+      apollo_server: {
+        collapse_field_metrics: 'yes'
+      }
+    }
+
+    assert.throws(
+      () => Config.initialize(config),
+      /collapse_field_metrics must be boolean/
+    )
+  })
 })
 
 test('redacted_license_key', async (t) => {
