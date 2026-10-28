@@ -82,3 +82,9 @@ test('collect_ai = false records no metric', () => {
   config.onConnect({ collect_ai: false })
   assert.equal(recordedMetric(config), null)
 })
+
+test('ai_monitoring.enabled = true from only the connect response records the basic metric', () => {
+  const config = buildConfig({ basic: true, enabled: UNSET, content: UNSET })
+  config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+  assert.equal(recordedMetric(config), BASIC_METRIC)
+})

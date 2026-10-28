@@ -231,7 +231,7 @@
             }
           },
           "additionalProperties": true,
-          "description": "When enabled, the content of LLM messages will be included in the recorded spans (i.e. delivered to the New Relic collector). Unset by default, which records content only when `ai_monitoring.enabled` is `true`; set it explicitly to `true` or `false` to override."
+          "description": "When enabled, the content of LLM messages will be included in the recorded spans (i.e. delivered to the New Relic collector). Unset by default, which records content only when `ai_monitoring.enabled` is set to `true` locally (in the config file or an environment variable); set it explicitly to `true` or `false` to override."
         },
         "streaming": {
           "type": "object",
