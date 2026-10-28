@@ -756,13 +756,16 @@ test(
     const server = net.createServer((socket) => {
       socket.on('data', () => socket.write('pong'))
     })
-    t.after(() => server.close())
 
     await new Promise((resolve) => server.listen(0, resolve))
     const port = server.address().port
 
     const socket = new net.Socket()
-    t.after(() => socket.destroy())
+
+    t.after(() => {
+      server.close()
+      socket.destroy()
+    })
     const originalEmit = socket.emit
 
     await new Promise((resolve) => {
