@@ -3,7 +3,8 @@
 #### Features
 
 * Added support for `@opentelemetry/api@1.10.0` ([#4392](https://github.com/newrelic/node-newrelic/pull/4392)) ([504490d](https://github.com/newrelic/node-newrelic/commit/504490dd9540e6d5312441d9feec29b47bfe959a))
-    * For customers directly using `@opentelemetry/api-logs`, they must remove and update to use `@opentelemetry/api` 1.10.0+. See the [opentelemetry api changelog](https://github.com/open-telemetry/opentelemetry-js/blob/main/api/CHANGELOG.md#1100) for more information * For customers registering 3rd party instrumentation for logging libraries they must update to the following: `@opentelemetry/instrumentation-pino` to 0.70.0+, `@opentelemetry/instrumentation-bunyan` to 0.69.0+, `@opentelemetry/instrumentation-console` to 0.6.0+, or `@opentelemetry/instrumentation-winston` to 0.69.0+
+    * For customers directly using `@opentelemetry/api-logs`, they must remove and update to use `@opentelemetry/api` 1.10.0+. See the [OpenTelemetry API changelog](https://github.com/open-telemetry/opentelemetry-js/blob/main/api/CHANGELOG.md#1100) for more information 
+	* For customers registering 3rd party instrumentation for logging libraries they must update to the following: `@opentelemetry/instrumentation-pino` to 0.70.0+, `@opentelemetry/instrumentation-bunyan` to 0.69.0+, `@opentelemetry/instrumentation-console` to 0.6.0+, or `@opentelemetry/instrumentation-winston` to 0.69.0+
 
 #### Bug fixes
 
