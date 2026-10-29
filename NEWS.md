@@ -1,3 +1,38 @@
+### v14.10.0 (2026-10-29)
+
+#### Features
+
+* Added support for `@opentelemetry/api@1.10.0` ([#4392](https://github.com/newrelic/node-newrelic/pull/4392)) ([504490d](https://github.com/newrelic/node-newrelic/commit/504490dd9540e6d5312441d9feec29b47bfe959a))
+    * * For customers directly using `@opentelemetry/api-logs`, they must remove and update to use `@opentelemetry/api` 1.10.0+. See the [opentelemetry api changelog](https://github.com/open-telemetry/opentelemetry-js/blob/main/api/CHANGELOG.md#1100) for more information * For customers registering 3rd party instrumentation for logging libraries they must update to the following: `@opentelemetry/instrumentation-pino` to 0.70.0+, `@opentelemetry/instrumentation-bunyan` to 0.69.0+, `@opentelemetry/instrumentation-console` to 0.6.0+, or `@opentelemetry/instrumentation-winston` to 0.69.0+
+
+#### Bug fixes
+
+* Collapsed Apollo Server argument array metrics ([#4350](https://github.com/newrelic/node-newrelic/pull/4350)) ([baf35fd](https://github.com/newrelic/node-newrelic/commit/baf35fd6b906dd4d733f0a2f13d600cb42fec246))
+    * To take advantage of this feature you must set both `config.apollo_server.field_metrics` and `config.apollo_server.collapse_field_metrics` to `true`. Thanks for your contribution @cpruijsen :rocket:
+* Stopped net.js from pinning ended transactions to long-lived sockets ([#4411](https://github.com/newrelic/node-newrelic/pull/4411)) ([471e7df](https://github.com/newrelic/node-newrelic/commit/471e7df98fb6467678ca7bb98a3a056821b60f42))
+
+#### Performance improvements
+
+* Simplified mongodb bulk instrumentation to match execute directly ([#4406](https://github.com/newrelic/node-newrelic/pull/4406)) ([af4efdb](https://github.com/newrelic/node-newrelic/commit/af4efdbab004c528caeda96e8c2dce42f63b1a96))
+* Wrapped mongodb driver methods at the prototype level ([#4399](https://github.com/newrelic/node-newrelic/pull/4399)) ([9074abc](https://github.com/newrelic/node-newrelic/commit/9074abcdb15036e0cc882814168cb5d7fb031588))
+
+#### Documentation
+
+* Updated compatibility report ([#4403](https://github.com/newrelic/node-newrelic/pull/4403)) ([813c05b](https://github.com/newrelic/node-newrelic/commit/813c05b2016d6bb1a3bea1b6cfaf410016ae91c2))
+* Updated compatibility report ([#4402](https://github.com/newrelic/node-newrelic/pull/4402)) ([33cff90](https://github.com/newrelic/node-newrelic/commit/33cff90d9eb26480484e236510cf582d781205ab))
+
+#### Miscellaneous chores
+
+* Removed obsolete `timers` instrumentation ([#4410](https://github.com/newrelic/node-newrelic/pull/4410)) ([ccbd6c5](https://github.com/newrelic/node-newrelic/commit/ccbd6c57a1f3c2849366636e47b87053d3cea146))
+
+#### Tests
+
+* Fixed `@langchain/aws@1.5.1` error tests retrying on mock failures ([#4412](https://github.com/newrelic/node-newrelic/pull/4412)) ([648801f](https://github.com/newrelic/node-newrelic/commit/648801f56eb991c8433fb09b76b5097ebdb1cc83))
+
+#### Continuous integration
+
+* Skipped `min-release-age` check for `@newrelic` packages ([#4409](https://github.com/newrelic/node-newrelic/pull/4409)) ([2086464](https://github.com/newrelic/node-newrelic/commit/208646421fc058b26dd48380a91adb156a99f45e))
+
 ### v14.9.0 (2026-10-26)
 
 #### Features
