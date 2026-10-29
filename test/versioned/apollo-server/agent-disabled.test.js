@@ -11,17 +11,18 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { getTypeDefs, resolvers } = require('../../lib/apollo/data-definitions')
+const { getTypeDefs, getResolvers } = require('../../lib/apollo/data-definitions')
 const { executeQuery } = require('../../lib/apollo/test-client')
 
 const { ApolloServer } = require('@apollo/server')
 const gql = require('graphql-tag')
+const graphql = require('graphql')
 const { startStandaloneServer } = require('@apollo/server/standalone')
 
 test.beforeEach(async (ctx) => {
   const server = new ApolloServer({
     typeDefs: getTypeDefs(gql),
-    resolvers
+    resolvers: getResolvers(graphql)
   })
   const { url: serverUrl } = startStandaloneServer
     ? await startStandaloneServer(server, { listen: { port: 0 } })

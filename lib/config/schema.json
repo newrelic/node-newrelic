@@ -283,6 +283,11 @@
           "type": "boolean",
           "default": false,
           "description": "Enable capture of metrics for every field and resolver argument seen for an Apollo query. This is intended to be used to check for any unused fields in your graphql schema."
+        },
+        "collapse_field_metrics": {
+          "type": "boolean",
+          "default": false,
+          "description": "When `field_metrics` is enabled, report list arguments under one metric name without item indexes (for example `ids` instead of `ids.0`, `ids.1`). Each list item still increments the call count of that metric."
         }
       },
       "additionalProperties": true,

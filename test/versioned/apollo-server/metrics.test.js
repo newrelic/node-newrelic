@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const crypto = require('node:crypto')
 const { afterEach, setupCoreTest } = require('../../lib/apollo/test-tools')
-const { executeQuery, executeQueryBatch, makeRequest } = require('../../lib/apollo/test-client')
+const { executeQuery, executeQueryBatch, executeJson, makeRequest } = require('../../lib/apollo/test-client')
 const { assertMetrics } = require('../../lib/custom-assertions')
 const ANON_PLACEHOLDER = '<anonymous>'
 const UNKNOWN_OPERATION = '<unknown>'
@@ -504,3 +504,103 @@ for (const metricTest of tests) {
     await metricTest.fn(t)
   })
 }
+
+// `collapse_field_metrics` needs its own `field_metrics`/`collapse_field_metrics`
+// config combination per case, so these run outside the generic `tests` loop above.
+test('field metrics keep per-item names for list arguments by default', async (t) => {
+  await setupCoreTest({ t, agentConfig: { apollo_server: { field_metrics: true } }, testDir: __dirname })
+  const { agent, serverUrl } = t.nr
+  const { promise, resolve } = Promise.withResolvers()
+
+  agent.once('transactionFinished', (tx) => {
+    assertMetrics(
+      tx.metrics,
+      [
+        [{ name: `${ARG_PREFIX}/Query.booksByIds/ids.0` }],
+        [{ name: `${ARG_PREFIX}/Query.booksByIds/ids.1` }]
+      ],
+      false,
+      false
+    )
+    resolve()
+  })
+
+  executeJson(
+    serverUrl,
+    { query: 'query($ids: [Int!]!) { booksByIds(ids: $ids) { title } }', variables: { ids: [0, 1] } },
+    (err) => {
+      assert.ifError(err)
+    }
+  )
+
+  await promise
+})
+
+test('field metrics collapse list arguments into one metric when collapse_field_metrics is enabled', async (t) => {
+  await setupCoreTest({
+    t,
+    agentConfig: { apollo_server: { field_metrics: true, collapse_field_metrics: true } },
+    testDir: __dirname
+  })
+  const { agent, serverUrl } = t.nr
+  const { promise, resolve } = Promise.withResolvers()
+
+  agent.once('transactionFinished', (tx) => {
+    assertMetrics(tx.metrics, [[{ name: `${ARG_PREFIX}/Query.booksByIds/ids` }]], false, false)
+    assert.equal(tx.metrics.getMetric(`${ARG_PREFIX}/Query.booksByIds/ids`).callCount, 2)
+    assert.equal(tx.metrics.getMetric(`${ARG_PREFIX}/Query.booksByIds/ids.0`), undefined)
+    resolve()
+  })
+
+  executeJson(
+    serverUrl,
+    { query: 'query($ids: [Int!]!) { booksByIds(ids: $ids) { title } }', variables: { ids: [0, 1] } },
+    (err) => {
+      assert.ifError(err)
+    }
+  )
+
+  await promise
+})
+
+test('field metrics should not collapse non-list object keys that merely look like list indexes', async (t) => {
+  await setupCoreTest({
+    t,
+    agentConfig: { apollo_server: { field_metrics: true, collapse_field_metrics: true } },
+    testDir: __dirname
+  })
+  const { agent, serverUrl } = t.nr
+  const { promise, resolve } = Promise.withResolvers()
+
+  agent.once('transactionFinished', (tx) => {
+    // `criteria` is a JSON scalar, not a GraphQL list -- "2024" and "2025" are
+    // unrelated map keys, not list indexes, so collapsing must leave them
+    // distinct even though each key happens to look like one.
+    assertMetrics(
+      tx.metrics,
+      [
+        [{ name: `${ARG_PREFIX}/Query.booksByCriteria/criteria.2024` }],
+        [{ name: `${ARG_PREFIX}/Query.booksByCriteria/criteria.2025` }]
+      ],
+      false,
+      false
+    )
+    assert.equal(tx.metrics.getMetric(`${ARG_PREFIX}/Query.booksByCriteria/criteria.2024`).callCount, 1)
+    assert.equal(tx.metrics.getMetric(`${ARG_PREFIX}/Query.booksByCriteria/criteria.2025`).callCount, 1)
+    assert.equal(tx.metrics.getMetric(`${ARG_PREFIX}/Query.booksByCriteria/criteria`), undefined)
+    resolve()
+  })
+
+  executeJson(
+    serverUrl,
+    {
+      query: 'query($criteria: JSON!) { booksByCriteria(criteria: $criteria) { title } }',
+      variables: { criteria: { 2024: 'NOVEL', 2025: 'COOKBOOK' } }
+    },
+    (err) => {
+      assert.ifError(err)
+    }
+  )
+
+  await promise
+})
