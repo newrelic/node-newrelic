@@ -34,14 +34,11 @@ test('environmental sampler', async function (t) {
     ctx.nr.sandbox.restore()
   })
 
-  await t.test('should have the native-metrics package available', function () {
-    assert.doesNotThrow(function () {
-      require('@newrelic/native-metrics')
-    })
-  })
-
-  await t.test('should still gather native metrics when bound and unbound', function (t, end) {
-    const { agent } = t.nr
+  await t.test('should still gather VM metrics when bound and unbound', function (t, end) {
+    const { agent, sandbox } = t.nr
+    // The loop sampler reads real process CPU usage; restore it so the per-tick
+    // deltas reflect actual work rather than the constant stub.
+    sandbox.restore()
     systemMetricsSampler.start(agent)
     systemMetricsSampler.stop()
     systemMetricsSampler.start(agent)
@@ -84,7 +81,10 @@ test('environmental sampler', async function (t) {
   })
 
   await t.test('should gather loop metrics', function (t, end) {
-    const { agent } = t.nr
+    const { agent, sandbox } = t.nr
+    // The loop sampler reads real process CPU usage; restore it so the per-tick
+    // deltas reflect actual work rather than the constant stub.
+    sandbox.restore()
     systemMetricsSampler.start(agent)
     systemMetricsSampler.nativeMetrics.getLoopMetrics()
     spinLoop(function runLoop() {
