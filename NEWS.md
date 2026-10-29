@@ -29,9 +29,6 @@
 
 * Fixed `@langchain/aws@1.5.1` error tests retrying on mock failures ([#4412](https://github.com/newrelic/node-newrelic/pull/4412)) ([648801f](https://github.com/newrelic/node-newrelic/commit/648801f56eb991c8433fb09b76b5097ebdb1cc83))
 
-#### Continuous integration
-
-* Skipped `min-release-age` check for `@newrelic` packages ([#4409](https://github.com/newrelic/node-newrelic/pull/4409)) ([2086464](https://github.com/newrelic/node-newrelic/commit/208646421fc058b26dd48380a91adb156a99f45e))
 
 ### v14.9.0 (2026-10-26)
 
