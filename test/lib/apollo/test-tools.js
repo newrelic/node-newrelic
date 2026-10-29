@@ -19,7 +19,7 @@ const path = require('node:path')
 
 const helper = require('../agent_helper')
 const setupErrorSchema = require('./error-setup')
-const { getTypeDefs, resolvers } = require('./data-definitions')
+const { getTypeDefs, getResolvers } = require('./data-definitions')
 
 async function afterEach({ t, testDir }) {
   const { agent, server } = t.nr
@@ -35,8 +35,9 @@ async function afterEach({ t, testDir }) {
 async function setupCoreTest({ t, testDir, agentConfig = {}, contextValue } = {}) {
   const agent = helper.instrumentMockedAgent(agentConfig)
   const apolloServerPkg = requireApolloServer(testDir)
-  const { ApolloServer, gql, startStandaloneServer } = apolloServerPkg
+  const { ApolloServer, gql, startStandaloneServer, graphql } = apolloServerPkg
   const schema = getTypeDefs(gql)
+  const resolvers = getResolvers(graphql)
   const errorSchema = setupErrorSchema(apolloServerPkg, resolvers)
 
   const server = new ApolloServer({

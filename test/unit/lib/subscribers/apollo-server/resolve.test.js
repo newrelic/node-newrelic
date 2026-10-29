@@ -38,7 +38,8 @@ function captureArgMetrics(subscriber, obj) {
     }
   }
   const collapse = subscriber.config.apollo_server.collapse_field_metrics
-  const args = subscriber.flattenArgs({ obj, collapse })
+  const flattened = subscriber.flattenArgs({ obj, collapse })
+  const args = collapse ? flattened.counts : flattened.result
   subscriber.captureFieldMetrics({ transaction, args, fieldType: 'Query', fieldName: 'books' })
   return counts
 }
@@ -60,7 +61,7 @@ test('captureFieldMetrics keeps list indexes in arg names by default', (t) => {
 test('flattenArgs keeps raw arg values when collapsing is off', (t) => {
   const { subscriber } = t.nr
   assert.deepEqual(
-    subscriber.flattenArgs({ obj: { ids: [1, 2], name: 'a' } }),
+    subscriber.flattenArgs({ obj: { ids: [1, 2], name: 'a' } }).result,
     { 'ids.0': 1, 'ids.1': 2, name: 'a' }
   )
 })
