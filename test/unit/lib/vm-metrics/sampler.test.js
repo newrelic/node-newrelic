@@ -217,6 +217,40 @@ test('environmental sampler', async function (t) {
     assert.ok(!sampler.vmMetrics)
   })
 
+  await t.test('should log a debug message for an unknown GC type', async function (t) {
+    const { agent } = t.nr
+    const logger = {
+      trace() {},
+      debug: sinon.stub()
+    }
+    const sampler = new Sampler({ agent, logger, interval: TICK })
+    // Inject a collector stub that reports a GC entry without a type, which
+    // only a malformed entry would produce. The real collector always sets a
+    // type, so this exercises the otherwise unreachable fallback branch.
+    sampler.vmMetrics = {
+      bound: true,
+      bind() {},
+      unbind() {},
+      getLoopMetrics() {
+        return { usage: { total: 0, min: 0, max: 0, sumOfSquares: 0, count: 0 } }
+      },
+      getGCMetrics() {
+        return {
+          42: {
+            typeId: 42,
+            type: undefined,
+            metrics: { total: 1, min: 1, max: 1, sumOfSquares: 1, count: 1 }
+          }
+        }
+      }
+    }
+    sampler.start()
+    await nextTick()
+    sampler.stop()
+
+    assert.equal(logger.debug.calledWith(sinon.match.any, 'Unknown GC type %j', 42), true)
+  })
+
   await t.test('should catch if process.cpuUsage throws an error', async function (t) {
     const { agent, sampler } = t.nr
     // Isolate the CPU sampler: the VM metrics collector also reads
