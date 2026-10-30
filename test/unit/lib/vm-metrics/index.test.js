@@ -9,7 +9,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const { execFile } = require('node:child_process')
 
-const { VMMetricsCollector, Metric } = require('#agentlib/metrics/vm-metrics.js')
+const { VMMetricsCollector, Metric } = require('#agentlib/vm-metrics/index.js')
 
 /**
  * Allocates and discards a large amount of garbage across several macrotask
@@ -151,7 +151,7 @@ test('vm-metrics', async (t) => {
     // by itself prevent the process from exiting. Run in a child process that
     // binds and never unbinds, and assert it exits cleanly on its own. If the
     // sampler were ref'd, the child would hang until killed by the timeout.
-    const modulePath = require.resolve('#agentlib/metrics/vm-metrics.js')
+    const modulePath = require.resolve('#agentlib/vm-metrics/index.js')
     const script = `
       const { VMMetricsCollector } = require(${JSON.stringify(modulePath)})
       const collector = new VMMetricsCollector()
