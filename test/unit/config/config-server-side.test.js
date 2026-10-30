@@ -663,41 +663,62 @@ describe('when receiving server-side configuration', () => {
   })
 
   describe('ai_monitoring SSC scenarios', () => {
-    test('should disable ai monitoring when only collect_ai is false', (t) => {
+    test('should disable ai monitoring when collect_ai is false', (t) => {
       const { config } = t.nr
       config.ai_monitoring.enabled = true
-      assert.equal(config.ai_monitoring.enabled, true)
       config.onConnect({ collect_ai: false })
-      assert.equal(config.ai_monitoring.enabled, false)
+      assert.equal(config.isAiMonitoringEnabled(), false)
+      assert.equal(config.shouldRecordAiContent(), false)
+      // collect_ai is kept apart from the local setting, so it is never sent
+      // back to the collector on the next connect.
+      assert.equal(config.ai_monitoring.enabled, true)
+      assert.equal(config.publicSettings()['ai_monitoring.enabled'], true)
     })
 
-    test('should not change ai monitoring when only collect_ai is true', (t) => {
+    test('should disable default basic telemetry when collect_ai is false', (t) => {
+      const { config } = t.nr
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      config.onConnect({ collect_ai: false })
+      assert.equal(config.isAiMonitoringEnabled(), false)
+    })
+
+    test('should let collect_ai false override `ai_monitoring.enabled` from the connect response', async (t) => {
+      // Both key orders, since collect_ai and agent_config are siblings.
+      for (const response of [
+        { collect_ai: false, agent_config: { 'ai_monitoring.enabled': true } },
+        { agent_config: { 'ai_monitoring.enabled': true }, collect_ai: false }
+      ]) {
+        await t.test(Object.keys(response).join(' then '), () => {
+          const config = new Config()
+          config.onConnect(response)
+          assert.equal(config.ai_monitoring.enabled, true)
+          assert.equal(config.isAiMonitoringEnabled(), false)
+        })
+      }
+    })
+
+    test('should take no action when collect_ai is true', (t) => {
       const { config } = t.nr
       config.ai_monitoring.enabled = false
       config.onConnect({ collect_ai: true })
       // collect_ai can only disable, never enable
-      assert.equal(config.ai_monitoring.enabled, false)
+      assert.equal(config.isAiMonitoringEnabled(), false)
     })
 
-    test('should let `ai_monitoring.enabled` take precedence and enable when collect_ai is false', (t) => {
-      const { config } = t.nr
-      config.ai_monitoring.enabled = false
-      config.onConnect({ collect_ai: false, agent_config: { 'ai_monitoring.enabled': true } })
-      assert.equal(config.ai_monitoring.enabled, true)
-    })
-
-    test('should let `ai_monitoring.enabled` take precedence and disable when collect_ai is true', (t) => {
+    test('should let `ai_monitoring.enabled` from the connect response disable when collect_ai is true', (t) => {
       const { config } = t.nr
       config.ai_monitoring.enabled = true
       config.onConnect({ collect_ai: true, agent_config: { 'ai_monitoring.enabled': false } })
       assert.equal(config.ai_monitoring.enabled, false)
+      assert.equal(config.isAiMonitoringEnabled(), false)
     })
 
-    test('should stay disabled when both collect_ai and ai_monitoring.enabled are false', (t) => {
+    test('should clear a previous collect_ai false when a later connect omits it', (t) => {
       const { config } = t.nr
-      config.ai_monitoring.enabled = true
-      config.onConnect({ collect_ai: false, agent_config: { 'ai_monitoring.enabled': false } })
-      assert.equal(config.ai_monitoring.enabled, false)
+      config.onConnect({ collect_ai: false })
+      assert.equal(config.isAiMonitoringEnabled(), false)
+      config.onConnect({ apdex_t: 0.5 })
+      assert.equal(config.isAiMonitoringEnabled(), true)
     })
 
     test('should enable ai monitoring when only ai_monitoring.enabled is sent', (t) => {
@@ -743,6 +764,84 @@ describe('when receiving server-side configuration', () => {
       t.assert.equal(config.ai_monitoring.enabled, true)
       t.assert.equal(config.ai_monitoring.streaming.enabled, false)
       t.assert.equal(config.ai_monitoring.record_content.enabled, false)
+    })
+
+    test('should change ai_monitoring.basic_telemetry.enabled via server side config', (t) => {
+      t.plan(2)
+      const { config } = t.nr
+      assert.equal(config.ai_monitoring.basic_telemetry.enabled, true)
+      config.on('ai_monitoring.basic_telemetry.enabled', (value) => {
+        t.assert.equal(value, false)
+      })
+
+      config.onConnect({ agent_config: { 'ai_monitoring.basic_telemetry.enabled': false } })
+      t.assert.equal(config.ai_monitoring.basic_telemetry.enabled, false)
+    })
+
+    test('should disable basic telemetry when SSC option is Off', () => {
+      const config = new Config()
+      config.onConnect({
+        agent_config: {
+          'ai_monitoring.basic_telemetry.enabled': false,
+          'ai_monitoring.record_content.enabled': false
+        }
+      })
+      assert.equal(config.isAiMonitoringEnabled(), false)
+    })
+
+    test('should send basic telemetry without content when SSC option is Basic', () => {
+      const config = new Config({ ai_monitoring: { basic_telemetry: { enabled: false } } })
+      config.onConnect({
+        agent_config: {
+          'ai_monitoring.basic_telemetry.enabled': true,
+          'ai_monitoring.record_content.enabled': false
+        }
+      })
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      assert.equal(config.shouldRecordAiContent(), false)
+    })
+
+    test('should not force content on when only the connect response sets ai_monitoring.enabled', () => {
+      // A customer with nothing set locally is a new AIM customer, so there is
+      // no previous content default to preserve.
+      const config = new Config()
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      assert.equal(config.shouldRecordAiContent(), false)
+    })
+
+    test('should force content on when ai_monitoring.enabled was set locally before connect', () => {
+      const config = new Config({ ai_monitoring: { enabled: true } })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.shouldRecordAiContent(), true)
+    })
+
+    test('should keep the locally set ai_monitoring.enabled across reconnects', () => {
+      // The second connect sees the server value from the first, which must not
+      // be mistaken for a local setting.
+      const config = new Config()
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.shouldRecordAiContent(), false)
+    })
+
+    test('should send basic telemetry with content when SSC option is Full AIM', () => {
+      const config = new Config()
+      config.onConnect({
+        agent_config: {
+          'ai_monitoring.basic_telemetry.enabled': true,
+          'ai_monitoring.record_content.enabled': true
+        }
+      })
+      assert.equal(config.ai_monitoring.enabled, null)
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      assert.equal(config.shouldRecordAiContent(), true)
+    })
+
+    test('should not let SSC basic_telemetry override a local ai_monitoring.enabled = false', () => {
+      const config = new Config({ ai_monitoring: { enabled: false } })
+      config.onConnect({ agent_config: { 'ai_monitoring.basic_telemetry.enabled': true } })
+      assert.equal(config.isAiMonitoringEnabled(), false)
     })
   })
 
