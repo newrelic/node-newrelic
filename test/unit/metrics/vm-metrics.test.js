@@ -7,6 +7,7 @@
 
 const assert = require('node:assert')
 const test = require('node:test')
+const { execFile } = require('node:child_process')
 
 const createEmitter = require('#agentlib/metrics/vm-metrics.js')
 const { VMMetricsEmitter, Metric } = createEmitter
@@ -152,13 +153,30 @@ test('vm-metrics', async (t) => {
     emitter.unbind()
   })
 
-  await t.test('does not keep the event loop alive while bound', () => {
-    // The loop sampler must be unref'd; binding and leaving it bound should not
-    // by itself prevent the process from exiting. We assert the immediate is
-    // unref'd by checking the handle does not report as ref'd.
-    const emitter = new VMMetricsEmitter()
-    emitter.bind()
-    assert.equal(emitter._loopSampler.hasRef(), false)
-    emitter.unbind()
+  await t.test('does not keep the event loop alive while bound', (t, end) => {
+    // The loop sampler must be unref'd: binding and leaving it bound must not
+    // by itself prevent the process from exiting. Run in a child process that
+    // binds and never unbinds, and assert it exits cleanly on its own. If the
+    // sampler were ref'd, the child would hang until killed by the timeout.
+    const modulePath = require.resolve('#agentlib/metrics/vm-metrics.js')
+    const script = `
+      const emitter = require(${JSON.stringify(modulePath)})()
+      emitter.bind()
+      // No unbind, no other work keeping the loop alive. A properly unref'd
+      // sampler lets the process exit immediately.
+    `
+    const child = execFile(
+      process.execPath,
+      [
+        '-e',
+        script
+      ],
+      { timeout: 5000 },
+      (err) => {
+        assert.ifError(err, 'child exited cleanly without hanging')
+        end()
+      }
+    )
+    assert.ok(child.pid, 'child process spawned')
   })
 })
