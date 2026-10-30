@@ -138,7 +138,11 @@ test('#publicSettings', async (t) => {
   await t.test('should omit `ai_monitoring.enabled` when it is unset', () => {
     const pub = configuration.publicSettings()
     assert.equal(Object.hasOwn(pub, 'ai_monitoring.enabled'), false)
+    // The collector treats any `ai_monitoring.*` key as the signal that the
+    // agent supports AI monitoring, so the others must still be sent.
     assert.equal(pub['ai_monitoring.basic_telemetry.enabled'], true)
+    assert.equal(Object.hasOwn(pub, 'ai_monitoring.record_content.enabled'), true)
+    assert.equal(pub['ai_monitoring.streaming.enabled'], true)
   })
 
   for (const enabled of [true, false]) {
