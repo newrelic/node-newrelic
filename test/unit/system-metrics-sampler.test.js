@@ -44,12 +44,12 @@ test('environmental sampler', async function (t) {
     systemMetricsSampler.start(agent)
 
     // Clear up the current state of the metrics.
-    systemMetricsSampler.nativeMetrics.getGCMetrics()
-    systemMetricsSampler.nativeMetrics.getLoopMetrics()
+    systemMetricsSampler.vmMetrics.getGCMetrics()
+    systemMetricsSampler.vmMetrics.getLoopMetrics()
 
     spinLoop(function runLoop() {
-      systemMetricsSampler.sampleLoop(agent, systemMetricsSampler.nativeMetrics)()
-      systemMetricsSampler.sampleGc(agent, systemMetricsSampler.nativeMetrics)()
+      systemMetricsSampler.sampleLoop(agent, systemMetricsSampler.vmMetrics)()
+      systemMetricsSampler.sampleGc(agent, systemMetricsSampler.vmMetrics)()
 
       const loop = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
       assert.ok(loop.callCount > 1)
@@ -86,9 +86,9 @@ test('environmental sampler', async function (t) {
     // deltas reflect actual work rather than the constant stub.
     sandbox.restore()
     systemMetricsSampler.start(agent)
-    systemMetricsSampler.nativeMetrics.getLoopMetrics()
+    systemMetricsSampler.vmMetrics.getLoopMetrics()
     spinLoop(function runLoop() {
-      systemMetricsSampler.sampleLoop(agent, systemMetricsSampler.nativeMetrics)()
+      systemMetricsSampler.sampleLoop(agent, systemMetricsSampler.vmMetrics)()
 
       const stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
       assert.ok(stats.callCount > 1)
@@ -168,10 +168,10 @@ test('environmental sampler', async function (t) {
     systemMetricsSampler.start(agent)
 
     // Clear up the current state of the metrics.
-    systemMetricsSampler.nativeMetrics.getGCMetrics()
+    systemMetricsSampler.vmMetrics.getGCMetrics()
 
     spinLoop(function runLoop() {
-      systemMetricsSampler.sampleGc(agent, systemMetricsSampler.nativeMetrics)()
+      systemMetricsSampler.sampleGc(agent, systemMetricsSampler.vmMetrics)()
 
       // Find at least one typed GC metric.
       const type = [
@@ -202,7 +202,7 @@ test('environmental sampler', async function (t) {
     const { agent } = t.nr
     agent.config.plugins.native_metrics.enabled = false
     systemMetricsSampler.start(agent)
-    assert.ok(!systemMetricsSampler.nativeMetrics)
+    assert.ok(!systemMetricsSampler.vmMetrics)
   })
 
   await t.test('should catch if process.cpuUsage throws an error', function (t) {

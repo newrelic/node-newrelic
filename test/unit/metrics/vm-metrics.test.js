@@ -9,7 +9,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const { execFile } = require('node:child_process')
 
-const { VMMetricsEmitter, Metric } = require('#agentlib/metrics/vm-metrics.js')
+const { VMMetricsCollector, Metric } = require('#agentlib/metrics/vm-metrics.js')
 
 /**
  * Allocates and discards a large amount of garbage across several macrotask
@@ -52,31 +52,31 @@ test('vm-metrics', async (t) => {
   })
 
   await t.test('starts unbound', () => {
-    const emitter = new VMMetricsEmitter()
-    assert.equal(emitter.bound, false)
+    const collector = new VMMetricsCollector()
+    assert.equal(collector.bound, false)
   })
 
   await t.test('bind/unbind toggles the bound flag and is idempotent', () => {
-    const emitter = new VMMetricsEmitter()
-    emitter.bind()
-    assert.equal(emitter.bound, true)
-    emitter.bind() // no-op
-    assert.equal(emitter.bound, true)
-    emitter.unbind()
-    assert.equal(emitter.bound, false)
-    emitter.unbind() // no-op
-    assert.equal(emitter.bound, false)
+    const collector = new VMMetricsCollector()
+    collector.bind()
+    assert.equal(collector.bound, true)
+    collector.bind() // no-op
+    assert.equal(collector.bound, true)
+    collector.unbind()
+    assert.equal(collector.bound, false)
+    collector.unbind() // no-op
+    assert.equal(collector.bound, false)
   })
 
   await t.test('getGCMetrics returns typed buckets and an All aggregate, then resets', async () => {
-    const emitter = new VMMetricsEmitter()
-    emitter.bind()
+    const collector = new VMMetricsCollector()
+    collector.bind()
     // Clear any entries observed during bind.
-    emitter.getGCMetrics()
+    collector.getGCMetrics()
 
     await churn()
 
-    const gc = emitter.getGCMetrics()
+    const gc = collector.getGCMetrics()
     const types = Object.keys(gc)
     assert.ok(types.length > 0, 'at least one GC type was recorded')
 
@@ -98,15 +98,15 @@ test('vm-metrics', async (t) => {
     }
 
     // A read resets the accumulators.
-    assert.deepEqual(emitter.getGCMetrics(), Object.create(null))
+    assert.deepEqual(collector.getGCMetrics(), Object.create(null))
 
-    emitter.unbind()
+    collector.unbind()
   })
 
   await t.test('only known GC type names are emitted', async () => {
-    const emitter = new VMMetricsEmitter()
-    emitter.bind()
-    emitter.getGCMetrics()
+    const collector = new VMMetricsCollector()
+    collector.bind()
+    collector.getGCMetrics()
     await churn()
 
     const allowed = new Set([
@@ -116,34 +116,34 @@ test('vm-metrics', async (t) => {
       'ProcessWeakCallbacks',
       'All'
     ])
-    for (const type of Object.keys(emitter.getGCMetrics())) {
+    for (const type of Object.keys(collector.getGCMetrics())) {
       assert.ok(allowed.has(type), `${type} is a known GC type name`)
     }
 
-    emitter.unbind()
+    collector.unbind()
   })
 
   await t.test('getLoopMetrics accumulates CPU usage and resets on read', async () => {
-    const emitter = new VMMetricsEmitter()
-    emitter.bind()
-    emitter.getLoopMetrics()
+    const collector = new VMMetricsCollector()
+    collector.bind()
+    collector.getLoopMetrics()
 
     // Let the per-tick sampler run across several loop iterations while doing
     // real work so the CPU deltas are non-zero.
     await churn()
     await churn()
 
-    const { usage } = emitter.getLoopMetrics()
+    const { usage } = collector.getLoopMetrics()
     assert.ok(usage.count > 0, 'loop usage samples were collected')
     assert.ok(usage.total > 0, 'positive CPU usage accumulated')
     assert.ok(usage.min <= usage.max)
 
     // A read resets the accumulator.
-    const after = emitter.getLoopMetrics()
+    const after = collector.getLoopMetrics()
     assert.equal(after.usage.count, 0)
     assert.equal(after.usage.total, 0)
 
-    emitter.unbind()
+    collector.unbind()
   })
 
   await t.test('does not keep the event loop alive while bound', (t, end) => {
@@ -153,9 +153,9 @@ test('vm-metrics', async (t) => {
     // sampler were ref'd, the child would hang until killed by the timeout.
     const modulePath = require.resolve('#agentlib/metrics/vm-metrics.js')
     const script = `
-      const { VMMetricsEmitter } = require(${JSON.stringify(modulePath)})
-      const emitter = new VMMetricsEmitter()
-      emitter.bind()
+      const { VMMetricsCollector } = require(${JSON.stringify(modulePath)})
+      const collector = new VMMetricsCollector()
+      collector.bind()
       // No unbind, no other work keeping the loop alive. A properly unref'd
       // sampler lets the process exit immediately.
     `
