@@ -9,8 +9,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const { execFile } = require('node:child_process')
 
-const createEmitter = require('#agentlib/metrics/vm-metrics.js')
-const { VMMetricsEmitter, Metric } = createEmitter
+const { VMMetricsEmitter, Metric } = require('#agentlib/metrics/vm-metrics.js')
 
 /**
  * Allocates and discards a large amount of garbage across several macrotask
@@ -50,10 +49,6 @@ test('vm-metrics', async (t) => {
     metric.reset()
     assert.equal(metric.count, 0)
     assert.equal(metric.total, 0)
-  })
-
-  await t.test('factory returns a singleton', () => {
-    assert.equal(createEmitter(), createEmitter())
   })
 
   await t.test('starts unbound', () => {
@@ -158,7 +153,8 @@ test('vm-metrics', async (t) => {
     // sampler were ref'd, the child would hang until killed by the timeout.
     const modulePath = require.resolve('#agentlib/metrics/vm-metrics.js')
     const script = `
-      const emitter = require(${JSON.stringify(modulePath)})()
+      const { VMMetricsEmitter } = require(${JSON.stringify(modulePath)})
+      const emitter = new VMMetricsEmitter()
       emitter.bind()
       // No unbind, no other work keeping the loop alive. A properly unref'd
       // sampler lets the process exit immediately.
