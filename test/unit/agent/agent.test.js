@@ -12,7 +12,6 @@ const Collector = require('../../lib/test-collector')
 
 const sinon = require('sinon')
 const helper = require('../../lib/agent_helper')
-const systemMetricsSampler = require('#agentlib/system-metrics-sampler.js')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const Transaction = require('../../../lib/transaction')
@@ -665,10 +664,10 @@ test('when stopping', async (t) => {
 
   await t.test('should stop sampler', (t) => {
     const { agent } = t.nr
-    systemMetricsSampler.start(agent)
+    agent.systemMetricsSampler.start()
     agent.collector.shutdown = () => {}
     agent.stop(() => {})
-    assert.equal(systemMetricsSampler.state, 'stopped')
+    assert.equal(agent.systemMetricsSampler.state, 'stopped')
   })
 
   await t.test('should stop health reporter', async (t) => {
@@ -684,7 +683,7 @@ test('when stopping', async (t) => {
     }
 
     const { agent } = t.nr
-    systemMetricsSampler.start(agent)
+    agent.systemMetricsSampler.start()
     agent.collector.shutdown = () => {}
     agent.stop(() => {})
 
@@ -693,7 +692,7 @@ test('when stopping', async (t) => {
 
   await t.test('should change state to "stopping"', (t) => {
     const { agent } = t.nr
-    systemMetricsSampler.start(agent)
+    agent.systemMetricsSampler.start()
     agent.collector.shutdown = () => {}
     agent.stop(() => {})
     assert.equal(agent._state, 'stopping')

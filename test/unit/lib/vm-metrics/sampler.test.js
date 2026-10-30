@@ -10,10 +10,23 @@ const test = require('node:test')
 const sinon = require('sinon')
 const Agent = require('#agentlib/agent.js')
 const configurator = require('#agentlib/config/index.js')
-const systemMetricsSampler = require('#agentlib/system-metrics-sampler.js')
+const Sampler = require('#agentlib/vm-metrics/sampler.js')
 
 const numCpus = require('node:os').cpus().length
 const NAMES = require('#agentlib/metrics/names.js')
+
+// A short interval so a single tick fires promptly in tests rather than waiting
+// for the production cadence.
+const TICK = 10
+
+/**
+ * Resolves after enough time for at least one sampler tick to fire.
+ *
+ * @returns {Promise} Resolves after a tick interval has elapsed.
+ */
+function nextTick() {
+  return new Promise((resolve) => setTimeout(resolve, TICK * 2))
+}
 
 test('environmental sampler', async function (t) {
   t.beforeEach(function (ctx) {
@@ -27,33 +40,28 @@ test('environmental sampler', async function (t) {
     // process.uptime returns values in seconds
     sandbox.stub(process, 'uptime').callsFake(() => 1)
     ctx.nr.agent = new Agent(configurator.initialize())
+    ctx.nr.sampler = new Sampler({ agent: ctx.nr.agent, interval: TICK })
   })
 
   t.afterEach(function (ctx) {
-    systemMetricsSampler.stop()
+    ctx.nr.sampler.stop()
     ctx.nr.sandbox.restore()
   })
 
-  await t.test('should have the native-metrics package available', function () {
-    assert.doesNotThrow(function () {
-      require('@newrelic/native-metrics')
-    })
-  })
-
-  await t.test('should still gather native metrics when bound and unbound', function (t, end) {
-    const { agent } = t.nr
-    systemMetricsSampler.start(agent)
-    systemMetricsSampler.stop()
-    systemMetricsSampler.start(agent)
+  await t.test('should still gather VM metrics when bound and unbound', function (t, end) {
+    const { agent, sampler, sandbox } = t.nr
+    // The loop sampler reads real process CPU usage; restore it so the per-tick
+    // deltas reflect actual work rather than the constant stub.
+    sandbox.restore()
+    sampler.start()
+    sampler.stop()
+    sampler.start()
 
     // Clear up the current state of the metrics.
-    systemMetricsSampler.nativeMetrics.getGCMetrics()
-    systemMetricsSampler.nativeMetrics.getLoopMetrics()
+    sampler.vmMetrics.getGCMetrics()
+    sampler.vmMetrics.getLoopMetrics()
 
     spinLoop(function runLoop() {
-      systemMetricsSampler.sampleLoop(agent, systemMetricsSampler.nativeMetrics)()
-      systemMetricsSampler.sampleGc(agent, systemMetricsSampler.nativeMetrics)()
-
       const loop = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
       assert.ok(loop.callCount > 1)
       assert.ok(loop.max > 0)
@@ -84,12 +92,13 @@ test('environmental sampler', async function (t) {
   })
 
   await t.test('should gather loop metrics', function (t, end) {
-    const { agent } = t.nr
-    systemMetricsSampler.start(agent)
-    systemMetricsSampler.nativeMetrics.getLoopMetrics()
+    const { agent, sampler, sandbox } = t.nr
+    // The loop sampler reads real process CPU usage; restore it so the per-tick
+    // deltas reflect actual work rather than the constant stub.
+    sandbox.restore()
+    sampler.start()
+    sampler.vmMetrics.getLoopMetrics()
     spinLoop(function runLoop() {
-      systemMetricsSampler.sampleLoop(agent, systemMetricsSampler.nativeMetrics)()
-
       const stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
       assert.ok(stats.callCount > 1)
       assert.ok(stats.max > 0)
@@ -100,79 +109,82 @@ test('environmental sampler', async function (t) {
   })
 
   await t.test('should depend on Agent to provide the current metrics summary', function (t) {
-    const { agent } = t.nr
+    const { sampler } = t.nr
     assert.doesNotThrow(function () {
-      systemMetricsSampler.start(agent)
+      sampler.start()
     })
     assert.doesNotThrow(function () {
-      systemMetricsSampler.stop(agent)
+      sampler.stop()
     })
   })
 
-  await t.test('should default to a state of stopped', function () {
-    assert.equal(systemMetricsSampler.state, 'stopped')
+  await t.test('should default to a state of stopped', function (t) {
+    const { sampler } = t.nr
+    assert.equal(sampler.state, 'stopped')
   })
 
   await t.test('should say it is running after start', function (t) {
-    const { agent } = t.nr
-    systemMetricsSampler.start(agent)
-    assert.equal(systemMetricsSampler.state, 'running')
+    const { sampler } = t.nr
+    sampler.start()
+    assert.equal(sampler.state, 'running')
   })
 
   await t.test('should say it is stopped after stop', function (t) {
-    const { agent } = t.nr
-    systemMetricsSampler.start(agent)
-    assert.equal(systemMetricsSampler.state, 'running')
-    systemMetricsSampler.stop(agent)
-    assert.equal(systemMetricsSampler.state, 'stopped')
+    const { sampler } = t.nr
+    sampler.start()
+    assert.equal(sampler.state, 'running')
+    sampler.stop()
+    assert.equal(sampler.state, 'stopped')
   })
 
-  await t.test('should gather CPU user utilization metric', function (t) {
-    const { agent } = t.nr
-    systemMetricsSampler.sampleCpu(agent)()
+  await t.test('should gather CPU user utilization metric', async function (t) {
+    const { agent, sampler } = t.nr
+    sampler.start()
+    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
-    assert.equal(stats.callCount, 1)
+    assert.ok(stats.callCount >= 1)
     assert.equal(stats.total, 1)
   })
 
-  await t.test('should gather CPU system utilization metric', function (t) {
-    const { agent } = t.nr
-    systemMetricsSampler.sampleCpu(agent)()
+  await t.test('should gather CPU system utilization metric', async function (t) {
+    const { agent, sampler } = t.nr
+    sampler.start()
+    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
-    assert.equal(stats.callCount, 1)
+    assert.ok(stats.callCount >= 1)
     assert.equal(stats.total, 1)
   })
 
-  await t.test('should gather CPU user time metric', function (t) {
-    const { agent } = t.nr
-    systemMetricsSampler.sampleCpu(agent)()
+  await t.test('should gather CPU user time metric', async function (t) {
+    const { agent, sampler } = t.nr
+    sampler.start()
+    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
-    assert.equal(stats.callCount, 1)
+    assert.ok(stats.callCount >= 1)
     assert.equal(stats.total, numCpus)
   })
 
-  await t.test('should gather CPU system time metric', function (t) {
-    const { agent } = t.nr
-    systemMetricsSampler.sampleCpu(agent)()
+  await t.test('should gather CPU system time metric', async function (t) {
+    const { agent, sampler } = t.nr
+    sampler.start()
+    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
-    assert.equal(stats.callCount, 1)
+    assert.ok(stats.callCount >= 1)
     assert.equal(stats.total, numCpus)
   })
 
   await t.test('should gather GC metrics', function (t, end) {
-    const { agent } = t.nr
-    systemMetricsSampler.start(agent)
+    const { agent, sampler } = t.nr
+    sampler.start()
 
     // Clear up the current state of the metrics.
-    systemMetricsSampler.nativeMetrics.getGCMetrics()
+    sampler.vmMetrics.getGCMetrics()
 
     spinLoop(function runLoop() {
-      systemMetricsSampler.sampleGc(agent, systemMetricsSampler.nativeMetrics)()
-
       // Find at least one typed GC metric.
       const type = [
         'Scavenge',
@@ -199,62 +211,102 @@ test('environmental sampler', async function (t) {
   })
 
   await t.test('should not gather GC metrics if disabled', function (t) {
-    const { agent } = t.nr
+    const { agent, sampler } = t.nr
     agent.config.plugins.native_metrics.enabled = false
-    systemMetricsSampler.start(agent)
-    assert.ok(!systemMetricsSampler.nativeMetrics)
+    sampler.start()
+    assert.ok(!sampler.vmMetrics)
   })
 
-  await t.test('should catch if process.cpuUsage throws an error', function (t) {
+  await t.test('should log a debug message for an unknown GC type', async function (t) {
     const { agent } = t.nr
+    const logger = {
+      trace() {},
+      debug: sinon.stub()
+    }
+    const sampler = new Sampler({ agent, logger, interval: TICK })
+    // Inject a collector stub that reports a GC entry without a type, which
+    // only a malformed entry would produce. The real collector always sets a
+    // type, so this exercises the otherwise unreachable fallback branch.
+    sampler.vmMetrics = {
+      bound: true,
+      bind() {},
+      unbind() {},
+      getLoopMetrics() {
+        return { usage: { total: 0, min: 0, max: 0, sumOfSquares: 0, count: 0 } }
+      },
+      getGCMetrics() {
+        return {
+          42: {
+            typeId: 42,
+            type: undefined,
+            metrics: { total: 1, min: 1, max: 1, sumOfSquares: 1, count: 1 }
+          }
+        }
+      }
+    }
+    sampler.start()
+    await nextTick()
+    sampler.stop()
+
+    assert.equal(logger.debug.calledWith(sinon.match.any, 'Unknown GC type %j', 42), true)
+  })
+
+  await t.test('should catch if process.cpuUsage throws an error', async function (t) {
+    const { agent, sampler } = t.nr
+    // Isolate the CPU sampler: the VM metrics collector also reads
+    // process.cpuUsage (when bound), so disable it to exercise only the CPU
+    // sampler's error handling.
+    agent.config.plugins.native_metrics.enabled = false
     const err = new Error('ohhhhhh boyyyyyy')
     process.cpuUsage.throws(err)
-    systemMetricsSampler.sampleCpu(agent)()
+    sampler.start()
+    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
     assert.equal(stats.callCount, 0)
   })
 
-  await t.test('should collect all specified memory statistics', function (t) {
-    const { agent } = t.nr
-    systemMetricsSampler.sampleMemory(agent)()
+  await t.test('should collect all specified memory statistics', async function (t) {
+    const { agent, sampler } = t.nr
+    sampler.start()
+    await nextTick()
 
     Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
       const metricName = NAMES.MEMORY[memoryStat]
       const stats = agent.metrics.getOrCreateMetric(metricName)
-      assert.equal(stats.callCount, 1, `${metricName} callCount`)
+      assert.ok(stats.callCount >= 1, `${metricName} callCount`)
       assert.ok(stats.max > 1, `${metricName} max`)
     })
   })
 
-  await t.test('should catch if process.memoryUsage throws an error', function (t) {
-    const { agent, sandbox } = t.nr
+  await t.test('should catch if process.memoryUsage throws an error', async function (t) {
+    const { agent, sampler, sandbox } = t.nr
     sandbox.stub(process, 'memoryUsage').callsFake(() => {
       throw new Error('your computer is on fire')
     })
-    systemMetricsSampler.sampleMemory(agent)()
+    sampler.start()
+    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric('Memory/Physical')
     assert.equal(stats.callCount, 0)
   })
 
   await t.test('should have some rough idea of how deep the event queue is', function (t, end) {
-    const { agent } = t.nr
-    systemMetricsSampler.checkEvents(agent)()
+    const { agent, sampler } = t.nr
+    sampler.start()
 
-    /* sampler.checkEvents works by creating a timer and using
-     * setTimeout to schedule an "immediate" callback execution,
-     * which gives a rough idea of how much stuff is sitting pending
-     * on the libuv event queue (and whether there's a lot of stuff
-     * being handled through process.nextTick, which maintains its
-     * own queue of immediate callbacks). It remains to be seen how
-     * high this metric will ever get, but at least the underlying
-     * timer has nanosecond precision (and probably significantly
-     * greater-than-millisecond accuracy).
+    /* The event sampler works by creating a timer and using setTimeout to
+     * schedule an "immediate" callback execution, which gives a rough idea of
+     * how much stuff is sitting pending on the libuv event queue (and whether
+     * there's a lot of stuff being handled through process.nextTick, which
+     * maintains its own queue of immediate callbacks). It remains to be seen
+     * how high this metric will ever get, but at least the underlying timer has
+     * nanosecond precision (and probably significantly greater-than-millisecond
+     * accuracy).
      */
     setTimeout(function () {
       const stats = agent.metrics.getOrCreateMetric('Events/wait')
-      assert.equal(stats.callCount, 1)
+      assert.ok(stats.callCount >= 1)
       /* process.hrtime will notice the passage of time, but this
        * happens too fast to measure any meaningful latency in versions
        * of Node that don't have process.hrtime available, so just make
@@ -266,7 +318,7 @@ test('environmental sampler', async function (t) {
       }
 
       end()
-    }, 0)
+    }, TICK * 3)
   })
 })
 
