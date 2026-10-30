@@ -303,6 +303,33 @@ test('HttpOutboundSubscriber', async (t) => {
     })
   })
 
+  await t.test('should keep the port and credentials of a url string', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = http.request(`http://user:pass@${HOSTNAME}:${PORT}/newrelic?a=b`)
+      req.on('error', () => {})
+
+      const [child] = getExternalSegments(transaction)
+      assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${HOSTNAME}:${PORT}/newrelic`)
+      assert.equal(child.attributes.get(DESTINATIONS.SPAN_EVENT).port, PORT)
+      const credentials = Buffer.from('user:pass').toString('base64')
+      assert.equal(req.getHeader('authorization'), `Basic ${credentials}`, 'should pass the credentials to http')
+      req.destroy()
+      end()
+    })
+  })
+
+  await t.test('should remove the brackets from an ipv6 url string host', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = http.request(`http://[::1]:${PORT}/newrelic`)
+      req.on('error', () => {})
+
+      const [child] = getExternalSegments(transaction)
+      assert.equal(child.attributes.get(DESTINATIONS.SPAN_EVENT).hostname, '::1')
+      req.destroy()
+      end()
+    })
+  })
+
   await t.test('should not create a segment when the port is invalid', (t, end) => {
     helper.runInTransaction(t.nr.agent, function (transaction) {
       // `createConnection` hands http an unconnected socket, so the request is
@@ -458,6 +485,74 @@ test('HttpOutboundSubscriber enabled', async (t) => {
     agent.config.instrumentation.http.enabled = false
     agent.config.instrumentation.https.enabled = false
     assert.equal(subscriber.enabled, false)
+  })
+})
+
+test('HttpOutboundSubscriber instrument', async (t) => {
+  /**
+   * Builds a stand-in for the `http` or `https` module.
+   *
+   * @returns {object} An object with `request` and `get` methods.
+   */
+  function fakeModule() {
+    return { request() {}, get() {} }
+  }
+
+  /**
+   * Checks whether the module's request methods were wrapped.
+   *
+   * @param {object} mod The module to inspect.
+   * @returns {boolean} `true` when both `request` and `get` are wrapped.
+   */
+  function isWrapped(mod) {
+    return typeof mod.request[symbols.unwrap] === 'function' && typeof mod.get[symbols.unwrap] === 'function'
+  }
+
+  t.beforeEach((ctx) => {
+    const agent = helper.loadMockedAgent()
+    const modules = { http: fakeModule(), https: fakeModule() }
+    ctx.nr = { agent, modules, subscriber: new HttpOutboundSubscriber({ agent, logger }) }
+  })
+
+  t.afterEach((ctx) => {
+    delete process.env.FUNCTIONS_WORKER_RUNTIME
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should wrap request and get on http and https', (t) => {
+    const { modules, subscriber } = t.nr
+    subscriber.instrument(modules)
+    assert.equal(isWrapped(modules.http), true)
+    assert.equal(isWrapped(modules.https), true)
+  })
+
+  await t.test('should only wrap https when http instrumentation is disabled', (t) => {
+    const { agent, modules, subscriber } = t.nr
+    agent.config.instrumentation.http.enabled = false
+    subscriber.instrument(modules)
+    assert.equal(isWrapped(modules.http), false)
+    assert.equal(isWrapped(modules.https), true)
+  })
+
+  await t.test('should only wrap http when https instrumentation is disabled', (t) => {
+    const { agent, modules, subscriber } = t.nr
+    agent.config.instrumentation.https.enabled = false
+    subscriber.instrument(modules)
+    assert.equal(isWrapped(modules.http), true)
+    assert.equal(isWrapped(modules.https), false)
+  })
+
+  await t.test('should not wrap anything in an azure functions environment', (t) => {
+    const { modules, subscriber } = t.nr
+    process.env.FUNCTIONS_WORKER_RUNTIME = 'node'
+    subscriber.instrument(modules)
+    assert.equal(isWrapped(modules.http), false)
+    assert.equal(isWrapped(modules.https), false)
+  })
+
+  await t.test('should resolve the http and https modules', (t) => {
+    const { subscriber } = t.nr
+    assert.deepEqual(subscriber.resolveModule(), { http, https: require('node:https') })
   })
 })
 
