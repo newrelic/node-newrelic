@@ -5,12 +5,12 @@
 
 'use strict'
 
-const helper = require('../../lib/agent_helper')
-const metrics = require('../../lib/metrics_helper')
-const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const helper = require('#testlib/agent_helper.js')
+const metrics = require('#testlib/metrics_helper.js')
+const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 const test = require('node:test')
 const assert = require('node:assert')
-const { assertSegments } = require('../../lib/custom-assertions')
+const assertSegments = require('#testlib/custom-assertions/assert-segments.js')
 const { createServer, createSocketServer } = require('#testlib/undici-mock-server.js')
 
 test.beforeEach((ctx) => {
