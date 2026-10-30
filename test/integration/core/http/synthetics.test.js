@@ -6,7 +6,7 @@
 'use strict'
 const assert = require('node:assert')
 const test = require('node:test')
-const helper = require('../../../lib/agent_helper')
+const helper = require('#testlib/agent_helper.js')
 const {
   SYNTHETICS_DATA,
   SYNTHETICS_INFO,

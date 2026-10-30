@@ -8,10 +8,10 @@
 const test = require('node:test')
 const { tspl } = require('@matteo.collina/tspl')
 const http = require('http')
-const helper = require('../../lib/agent_helper.js')
-const API = require('../../../api.js')
-const StreamSink = require('../../../lib/util/stream-sink.js')
-const hashes = require('../../../lib/util/hashes.js')
+const helper = require('#testlib/agent_helper.js')
+const API = require('../../../../api.js')
+const StreamSink = require('#agentlib/util/stream-sink.js')
+const hashes = require('#agentlib/util/hashes.js')
 const DATA_PREFIX = 'NREUM.info = '
 
 /**
