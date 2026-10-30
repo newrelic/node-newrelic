@@ -37,7 +37,7 @@ test.beforeEach(async (ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.server?.close()
-  removeModules('openai')
+  removeModules(['openai'])
 })
 
 test('can send feedback events', (t, end) => {
