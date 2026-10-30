@@ -159,9 +159,18 @@ test('built-in http instrumentation should handle internal & external requests',
       HTTP_ATTRS.forEach(function (key) {
         assert.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)
       })
-      if (attributes.httpResponseMessage) {
-        assert.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
-      }
+
+      const totalTimeStats = agent.metrics.getOrCreateMetric('WebTransactionTotalTime')
+      assert.equal(totalTimeStats.callCount, 2, 'should record WebTransactionTotalTime')
+
+      const apdexStats = agent.metrics.getOrCreateMetric('Apdex')
+      assert.equal(apdexStats.satisfying, 2, 'should record Apdex')
+
+      const children = transaction.trace.getChildren(transaction.baseSegment.id)
+      assert.ok(
+        children.some((child) => child.name === 'External/localhost:8321/status'),
+        'base segment should be the parent of the outbound external segment'
+      )
 
       end()
     })
@@ -251,6 +260,34 @@ test('built-in http instrumentation should not swallow errors', async function (
     })
   }
   await plan.completed
+})
+
+test('built-in http instrumentation should record an error for a non-thrown error status code', function (t, end) {
+  const { agent } = t.nr
+  const server = http.createServer(function (req, res) {
+    // No throw, no explicit `noticeError` call -- the error comes purely
+    // from the response's status code once the response ends.
+    res.statusCode = 500
+    res.end()
+  })
+
+  t.after(() => {
+    server.close()
+  })
+
+  server.listen(0, function () {
+    const port = server.address().port
+    http.get({ host: 'localhost', port, path: '/' }, function (res) {
+      assert.equal(res.statusCode, 500, 'should get expected status code')
+      res.resume()
+      res.on('end', function () {
+        const errors = agent.errors.traceAggregator.errors
+        assert.equal(errors.length, 1, 'should record exactly one error')
+        assert.equal(errors[0][2], 'HttpError 500', 'error should be derived from the status code')
+        end()
+      })
+    })
+  })
 })
 
 test('built-in http instrumentation making outbound requests', function (t, end) {
@@ -466,4 +503,24 @@ test('built-in http instrumentation should not crash when server does not have a
   }
 
   await plan.completed
+})
+
+test("should not have changed createServer's declared parameter names", () => {
+  /* Taken from
+   * https://github.com/dhughes/CoolBeans/blob/master/lib/CoolBeans.js#L199
+   */
+  const fn = require('http').createServer
+  const params = fn
+    .toString()
+    .match(/function\s+\w*\s*\((.*?)\)/)[1]
+    .split(/\s*,\s*/)
+  assert.equal(params[0], 'requestListener')
+})
+
+test('http.createServer should trace errors in top-level handlers', () => {
+  helper.execSync({ cwd: __dirname, script: './fixtures/http-create-server-uncaught-exception.js' })
+})
+
+test('http.request should trace errors in listeners', () => {
+  helper.execSync({ cwd: __dirname, script: './fixtures/http-request-uncaught-exception.js' })
 })
