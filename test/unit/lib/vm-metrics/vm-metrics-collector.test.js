@@ -9,7 +9,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const { execFile } = require('node:child_process')
 
-const { VMMetricsCollector, Metric } = require('#agentlib/vm-metrics/index.js')
+const VMMetricsCollector = require('#agentlib/vm-metrics/vm-metrics-collector.js')
 
 /**
  * Allocates and discards a large amount of garbage across several macrotask
@@ -30,27 +30,7 @@ async function churn(rounds = 15) {
   }
 }
 
-test('vm-metrics', async (t) => {
-  await t.test('Metric accumulator matches the native field shape', () => {
-    const metric = new Metric()
-    assert.deepEqual(
-      { total: metric.total, min: metric.min, max: metric.max, sumOfSquares: metric.sumOfSquares, count: metric.count },
-      { total: 0, min: 0, max: 0, sumOfSquares: 0, count: 0 }
-    )
-
-    metric.add(2)
-    metric.add(4)
-    assert.equal(metric.count, 2)
-    assert.equal(metric.total, 6)
-    assert.equal(metric.min, 2)
-    assert.equal(metric.max, 4)
-    assert.equal(metric.sumOfSquares, 20) // 2^2 + 4^2
-
-    metric.reset()
-    assert.equal(metric.count, 0)
-    assert.equal(metric.total, 0)
-  })
-
+test('vm-metrics-collector', async (t) => {
   await t.test('starts unbound', () => {
     const collector = new VMMetricsCollector()
     assert.equal(collector.bound, false)
@@ -151,9 +131,9 @@ test('vm-metrics', async (t) => {
     // by itself prevent the process from exiting. Run in a child process that
     // binds and never unbinds, and assert it exits cleanly on its own. If the
     // sampler were ref'd, the child would hang until killed by the timeout.
-    const modulePath = require.resolve('#agentlib/vm-metrics/index.js')
+    const modulePath = require.resolve('#agentlib/vm-metrics/vm-metrics-collector.js')
     const script = `
-      const { VMMetricsCollector } = require(${JSON.stringify(modulePath)})
+      const VMMetricsCollector = require(${JSON.stringify(modulePath)})
       const collector = new VMMetricsCollector()
       collector.bind()
       // No unbind, no other work keeping the loop alive. A properly unref'd
