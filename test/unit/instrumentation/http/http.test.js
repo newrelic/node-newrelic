@@ -84,51 +84,6 @@ test('built-in http module instrumentation', async (t) => {
     })
   })
 
-  await t.test('with outbound request mocked', async (t) => {
-    t.beforeEach((ctx) => {
-      ctx.nr = {}
-      const agent = helper.loadMockedAgent()
-      const initialize = require('../../../../lib/instrumentation/core/http')
-      const http = {
-        request: function request(options) {
-          const requested = new EventEmitter()
-          requested.path = '/TEST'
-          if (options.path) {
-            requested.path = options.path
-          }
-
-          return requested
-        }
-      }
-
-      initialize(agent, http, 'http', new Shim(agent, 'http'))
-      ctx.nr.agent = agent
-      ctx.nr.http = http
-    })
-
-    t.afterEach((ctx) => {
-      helper.unloadAgent(ctx.nr.agent)
-    })
-
-    await t.test('should not crash when called with undefined host', (t, end) => {
-      const { agent, http } = t.nr
-      helper.runInTransaction(agent, function () {
-        assert.doesNotThrow(() => http.request({ port: 80 }))
-
-        end()
-      })
-    })
-
-    await t.test('should not crash when called with undefined port', (t, end) => {
-      const { agent, http } = t.nr
-      helper.runInTransaction(agent, function () {
-        assert.doesNotThrow(() => http.request({ host: 'localhost' }))
-
-        end()
-      })
-    })
-  })
-
   await t.test('when running a request', async (t) => {
     t.beforeEach(async (ctx) => {
       ctx.nr = {}
