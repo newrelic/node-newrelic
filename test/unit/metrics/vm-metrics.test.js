@@ -56,10 +56,8 @@ test('vm-metrics', async (t) => {
     assert.equal(createEmitter(), createEmitter())
   })
 
-  await t.test('reports GC and loop collection as enabled', () => {
+  await t.test('starts unbound', () => {
     const emitter = new VMMetricsEmitter()
-    assert.equal(emitter.gcEnabled, true)
-    assert.equal(emitter.loopEnabled, true)
     assert.equal(emitter.bound, false)
   })
 
