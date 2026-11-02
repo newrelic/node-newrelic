@@ -12,6 +12,7 @@ const helper = require('../../lib/agent_helper')
 const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 const SpanLink = require('#agentlib/spans/span-link.js')
+const TimedEvent = require('#agentlib/spans/timed-event.js')
 const PartialTrace = require('#agentlib/transaction/trace/partial-trace.js')
 const { PARTIAL_TYPES } = require('#agentlib/transaction/index.js')
 
@@ -266,6 +267,60 @@ test('SpanAggregator', async (t) => {
 
         end()
       }, 10)
+    })
+  })
+
+  await t.test('should resend span links and timed events after a retained send', (t, end) => {
+    const { agent, spanEventAggregator } = t.nr
+    const timestamp = 1765285200000
+    const payloads = []
+    spanEventAggregator.collector.send = (method, payload, cb) => {
+      // serialize like the collector does, before the data can be merged back
+      payloads.push(JSON.parse(JSON.stringify(payload)))
+      // first send fails with a retainable error, later ones succeed
+      setImmediate(() => cb(null, { retainData: payloads.length === 1 }))
+    }
+
+    helper.runInTransaction(agent, (tx) => {
+      tx.priority = 1
+      tx.sampled = true
+
+      const segment = agent.tracer.getSegment()
+      const spanContext = { spanId: 'span1', traceId: 'trace1' }
+      segment.spanLinks.push(new SpanLink({
+        link: {
+          attributes: {},
+          context: { spanId: 'parent1', traceId: 'trace1' }
+        },
+        spanContext,
+        timestamp,
+        config: segment.config
+      }))
+      segment.timedEvents.push(new TimedEvent({
+        event: { name: 'exception', time: timestamp, attributes: {} },
+        spanContext,
+        config: segment.config
+      }))
+      spanEventAggregator.addSegment({ segment, transaction: tx })
+
+      spanEventAggregator.send()
+      setImmediate(() => {
+        assert.equal(spanEventAggregator.length, 1, 'span should be merged back')
+        assert.doesNotThrow(() => spanEventAggregator.send())
+        setImmediate(() => {
+          assert.equal(payloads.length, 2)
+          assert.deepStrictEqual(payloads[1], payloads[0])
+
+          const [, , events] = payloads[1]
+          assert.equal(events.length, 3)
+          assert.equal(events[0].length, 3)
+          assert.equal(events[0][0].type, 'Span')
+          assert.equal(events[1][0].type, 'SpanLink')
+          assert.equal(events[2][0].type, 'SpanEvent')
+          assert.equal(events[2][0].name, 'exception')
+          end()
+        })
+      })
     })
   })
 
