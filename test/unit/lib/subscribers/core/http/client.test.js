@@ -9,15 +9,28 @@ const assert = require('node:assert')
 const test = require('node:test')
 const http = require('node:http')
 
-const helper = require('../../../lib/agent_helper')
-const HttpOutboundSubscriber = require('#agentlib/subscribers/core/http-outbound.js')
+const helper = require('#testlib/agent_helper.js')
+const HttpClientSubscriber = require('#agentlib/subscribers/core/http/client.js')
 const logger = require('#agentlib/logger.js')
-const symbols = require('../../../../lib/symbols')
+const symbols = require('#agentlib/symbols.js')
 
-test('HttpOutboundSubscriber enabled', async (t) => {
+test('HttpClientSubscriber id', (t) => {
+  const agent = helper.loadMockedAgent()
+  t.after(() => {
+    helper.unloadAgent(agent)
+  })
+
+  // the prefix keeps the id, and the channel, distinct from other `http` subscribers
+  const subscriber = new HttpClientSubscriber({ agent, logger })
+  assert.equal(subscriber.packageName, 'http')
+  assert.equal(subscriber.id, 'nr:client:http')
+  assert.deepEqual(subscriber.channels.map((channel) => channel.start.name), ['tracing:nr:client:http:request:start'])
+})
+
+test('HttpClientSubscriber enabled', async (t) => {
   t.beforeEach((ctx) => {
     const agent = helper.loadMockedAgent()
-    ctx.nr = { agent, subscriber: new HttpOutboundSubscriber({ agent, logger }) }
+    ctx.nr = { agent, subscriber: new HttpClientSubscriber({ agent, logger }) }
   })
 
   t.afterEach((ctx) => {
@@ -44,7 +57,7 @@ test('HttpOutboundSubscriber enabled', async (t) => {
   })
 })
 
-test('HttpOutboundSubscriber instrument', async (t) => {
+test('HttpClientSubscriber instrument', async (t) => {
   /**
    * Builds a stand-in for the `http` or `https` module.
    *
@@ -67,7 +80,7 @@ test('HttpOutboundSubscriber instrument', async (t) => {
   t.beforeEach((ctx) => {
     const agent = helper.loadMockedAgent()
     const modules = { http: fakeModule(), https: fakeModule() }
-    ctx.nr = { agent, modules, subscriber: new HttpOutboundSubscriber({ agent, logger }) }
+    ctx.nr = { agent, modules, subscriber: new HttpClientSubscriber({ agent, logger }) }
   })
 
   t.afterEach((ctx) => {

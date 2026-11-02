@@ -275,7 +275,7 @@ function getExternalSegments(transaction) {
     .filter((segment) => segment.name.startsWith(NAMES.EXTERNAL.PREFIX))
 }
 
-test('HttpOutboundSubscriber', async (t) => {
+test('HttpClientSubscriber', async (t) => {
   // nock replaces `http.ClientRequest` and rejects options it cannot parse into
   // a URL (e.g. an invalid `href`), so use the real one; requests are destroyed
   // before they connect
