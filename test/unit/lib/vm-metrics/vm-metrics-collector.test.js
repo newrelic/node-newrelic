@@ -47,7 +47,7 @@ test('bind/unbind toggles the bound flag and is idempotent', () => {
   assert.equal(collector.bound, false)
 })
 
-test('getGCMetrics returns typed buckets and an All aggregate, then resets', async () => {
+test('getGCMetrics returns typed buckets, then resets', async () => {
   const collector = new VMMetricsCollector()
   collector.bind()
   // Clear any entries observed during bind.
@@ -58,13 +58,6 @@ test('getGCMetrics returns typed buckets and an All aggregate, then resets', asy
   const gc = collector.getGCMetrics()
   const types = Object.keys(gc)
   assert.ok(types.length > 0, 'at least one GC type was recorded')
-
-  // The All aggregate must be present and sum every collection.
-  assert.ok(gc.All, 'All aggregate present')
-  assert.equal(gc.All.typeId, 31)
-  assert.equal(gc.All.type, 'All')
-  assert.ok(gc.All.metrics.count > 0)
-  assert.ok(gc.All.metrics.total > 0)
 
   // Every typed bucket carries the native metric shape.
   for (const type of types) {
@@ -90,10 +83,10 @@ test('only known GC type names are emitted', async () => {
 
   const allowed = new Set([
     'Scavenge',
+    'MinorMarkCompact',
     'MarkSweepCompact',
     'IncrementalMarking',
-    'ProcessWeakCallbacks',
-    'All'
+    'ProcessWeakCallbacks'
   ])
   for (const type of Object.keys(collector.getGCMetrics())) {
     assert.ok(allowed.has(type), `${type} is a known GC type name`)
@@ -151,4 +144,50 @@ test('does not keep the event loop alive while bound', (t, end) => {
     }
   )
   assert.ok(child.pid, 'child process spawned')
+})
+
+test('records minor Mark-Sweep collections as MinorMarkCompact', (t, end) => {
+  // Under `--minor-ms`, V8 replaces Scavenge with a young-generation
+  // Mark-Sweep collector. `perf_hooks` has no named constant for it, but still
+  // reports its raw V8 type (2) as `detail.kind`. The flag must be set at
+  // startup, so run in a child process.
+  const modulePath = require.resolve('#agentlib/vm-metrics/vm-metrics-collector.js')
+  const script = `
+      const VMMetricsCollector = require(${JSON.stringify(modulePath)})
+      const collector = new VMMetricsCollector()
+      collector.bind()
+      collector.getGCMetrics()
+      ;(async () => {
+        for (let round = 0; round < 15; round++) {
+          let trash = []
+          for (let j = 0; j < 200000; j++) {
+            trash.push([{ j }])
+          }
+          trash = null
+          await new Promise((resolve) => setTimeout(resolve, 5))
+        }
+        // Let the performance observer flush its final entries.
+        await new Promise((resolve) => setTimeout(resolve, 20))
+        process.stdout.write(JSON.stringify(collector.getGCMetrics()))
+        collector.unbind()
+      })()
+    `
+  execFile(
+    process.execPath,
+    [
+      '--minor-ms',
+      '-e',
+      script
+    ],
+    { timeout: 5000 },
+    (err, stdout) => {
+      assert.ifError(err)
+      const gc = JSON.parse(stdout)
+      assert.ok(gc.MinorMarkCompact, `MinorMarkCompact bucket present in ${stdout}`)
+      assert.equal(gc.MinorMarkCompact.typeId, 2)
+      assert.equal(gc.MinorMarkCompact.type, 'MinorMarkCompact')
+      assert.ok(gc.MinorMarkCompact.metrics.count > 0)
+      end()
+    }
+  )
 })

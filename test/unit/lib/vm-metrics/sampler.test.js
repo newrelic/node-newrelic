@@ -71,10 +71,10 @@ test('environmental sampler', async function (t) {
       // Find at least one typed GC metric.
       const type = [
         'Scavenge',
+        'MinorMarkCompact',
         'MarkSweepCompact',
         'IncrementalMarking',
-        'ProcessWeakCallbacks',
-        'All'
+        'ProcessWeakCallbacks'
       ].find((t) => agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + t).callCount)
       assert.ok(type)
 
@@ -188,10 +188,10 @@ test('environmental sampler', async function (t) {
       // Find at least one typed GC metric.
       const type = [
         'Scavenge',
+        'MinorMarkCompact',
         'MarkSweepCompact',
         'IncrementalMarking',
-        'ProcessWeakCallbacks',
-        'All'
+        'ProcessWeakCallbacks'
       ].find((t) => agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + t).callCount)
       assert.ok(type)
 
@@ -206,6 +206,38 @@ test('environmental sampler', async function (t) {
       const pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
       assert.ok(pause.callCount >= gc.callCount)
       assert.ok(pause.total >= gc.total)
+      end()
+    })
+  })
+
+  await t.test('should count each GC pause exactly once', function (t, end) {
+    const { agent, sampler } = t.nr
+    sampler.start()
+
+    // Clear up the current state of the metrics.
+    sampler.vmMetrics.getGCMetrics()
+
+    spinLoop(function runLoop() {
+      // Every collection belongs to exactly one GC type, so the total pause
+      // metric must equal the sum of the typed metrics: each collection is
+      // counted once.
+      const typed = [
+        'Scavenge',
+        'MinorMarkCompact',
+        'MarkSweepCompact',
+        'IncrementalMarking',
+        'ProcessWeakCallbacks'
+      ].map((type) => agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + type))
+      const typedCount = typed.reduce((sum, stats) => sum + stats.callCount, 0)
+      const typedTotal = typed.reduce((sum, stats) => sum + stats.total, 0)
+      assert.ok(typedCount > 0, 'at least one typed GC was recorded')
+
+      const pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
+      assert.equal(pause.callCount, typedCount)
+      assert.ok(
+        Math.abs(pause.total - typedTotal) < 1e-9,
+        `pause total ${pause.total} should equal typed total ${typedTotal}`
+      )
       end()
     })
   })
