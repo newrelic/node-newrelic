@@ -37,53 +37,26 @@ test('HttpAgentSubscriber enabled', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should be enabled when only https instrumentation is enabled', (t) => {
-    const { agent, subscriber } = t.nr
-    agent.config.instrumentation.http.enabled = false
-    assert.equal(subscriber.enabled, true)
-  })
-
-  await t.test('should be enabled when only http instrumentation is enabled', (t) => {
+  await t.test('should be enabled when https instrumentation is disabled', (t) => {
     const { agent, subscriber } = t.nr
     agent.config.instrumentation.https.enabled = false
     assert.equal(subscriber.enabled, true)
   })
 
-  await t.test('should be disabled when http and https instrumentation are disabled', (t) => {
+  await t.test('should be disabled when http instrumentation is disabled', (t) => {
     const { agent, subscriber } = t.nr
     agent.config.instrumentation.http.enabled = false
-    agent.config.instrumentation.https.enabled = false
     assert.equal(subscriber.enabled, false)
   })
 })
 
 test('HttpAgentSubscriber instrument', async (t) => {
-  /**
-   * Builds a stand-in for the `http` or `https` module.
-   *
-   * @returns {object} An object with an `Agent` that has a `createConnection` method.
-   */
-  function fakeModule() {
+  t.beforeEach((ctx) => {
+    const agent = helper.loadMockedAgent()
     class Agent {
       createConnection() {}
     }
-    return { Agent }
-  }
-
-  /**
-   * Checks whether the module's `Agent#createConnection` was wrapped.
-   *
-   * @param {object} mod The module to inspect.
-   * @returns {boolean} `true` when `Agent#createConnection` is wrapped.
-   */
-  function isWrapped(mod) {
-    return typeof mod.Agent.prototype.createConnection[symbols.unwrap] === 'function'
-  }
-
-  t.beforeEach((ctx) => {
-    const agent = helper.loadMockedAgent()
-    const modules = { http: fakeModule(), https: fakeModule() }
-    ctx.nr = { agent, modules, subscriber: new HttpAgentSubscriber({ agent, logger }) }
+    ctx.nr = { agent, mod: { Agent }, subscriber: new HttpAgentSubscriber({ agent, logger }) }
   })
 
   t.afterEach((ctx) => {
@@ -91,44 +64,26 @@ test('HttpAgentSubscriber instrument', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should wrap Agent#createConnection on http and https', (t) => {
-    const { modules, subscriber } = t.nr
-    subscriber.instrument(modules)
-    assert.equal(isWrapped(modules.http), true)
-    assert.equal(isWrapped(modules.https), true)
-  })
-
-  await t.test('should only wrap https when http instrumentation is disabled', (t) => {
-    const { agent, modules, subscriber } = t.nr
-    agent.config.instrumentation.http.enabled = false
-    subscriber.instrument(modules)
-    assert.equal(isWrapped(modules.http), false)
-    assert.equal(isWrapped(modules.https), true)
-  })
-
-  await t.test('should only wrap http when https instrumentation is disabled', (t) => {
-    const { agent, modules, subscriber } = t.nr
-    agent.config.instrumentation.https.enabled = false
-    subscriber.instrument(modules)
-    assert.equal(isWrapped(modules.http), true)
-    assert.equal(isWrapped(modules.https), false)
+  await t.test('should wrap Agent#createConnection', (t) => {
+    const { mod, subscriber } = t.nr
+    subscriber.instrument(mod)
+    assert.equal(typeof mod.Agent.prototype.createConnection[symbols.unwrap], 'function')
   })
 
   await t.test('should not wrap anything in an azure functions environment', (t) => {
-    const { modules, subscriber } = t.nr
+    const { mod, subscriber } = t.nr
     process.env.FUNCTIONS_WORKER_RUNTIME = 'node'
-    subscriber.instrument(modules)
-    assert.equal(isWrapped(modules.http), false)
-    assert.equal(isWrapped(modules.https), false)
+    subscriber.instrument(mod)
+    assert.equal(mod.Agent.prototype.createConnection[symbols.unwrap], undefined)
   })
 
   await t.test('should not throw on a module without an Agent', (t) => {
     const { subscriber } = t.nr
-    assert.doesNotThrow(() => subscriber.instrument({ http: {} }))
+    assert.doesNotThrow(() => subscriber.instrument({}))
   })
 
-  await t.test('should resolve the http and https modules', (t) => {
+  await t.test('should resolve the http module', (t) => {
     const { subscriber } = t.nr
-    assert.deepEqual(subscriber.resolveModule(), { http, https: require('node:https') })
+    assert.equal(subscriber.resolveModule(), http)
   })
 })
