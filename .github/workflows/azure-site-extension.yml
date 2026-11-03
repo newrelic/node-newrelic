@@ -53,24 +53,34 @@ jobs:
           echo "pkg_filename=NewRelic.Azure.WebSites.Extension.NodeAgent.$version" >> $env:GITHUB_OUTPUT
 
       - name: Verify outputs # because we can't access step outputs until the next step
+        env:
+          AGENT_VERSION: ${{ steps.workflow_meta.outputs.agent_version }}
+          PKG_FILENAME: ${{ steps.workflow_meta.outputs.pkg_filename }}
         run: |
-          echo "Agent version: ${{ steps.workflow_meta.outputs.agent_version }}"
-          echo "Package filename: ${{ steps.workflow_meta.outputs.pkg_filename }}"
+          echo "Agent version: $env:AGENT_VERSION"
+          echo "Package filename: $env:PKG_FILENAME"
 
       - name: Install agent
         working-directory: cloud-tooling/azure-site-extension/Content
+        env:
+          AGENT_VERSION: ${{ steps.workflow_meta.outputs.agent_version }}
         run: |
-          npm i --prefix . newrelic@${{ steps.workflow_meta.outputs.agent_version }}
+          npm i --prefix . "newrelic@$env:AGENT_VERSION"
           echo "Agent installed"
 
       - name: Configure package files
         working-directory: cloud-tooling/azure-site-extension
+        env:
+          AGENT_VERSION: ${{ steps.workflow_meta.outputs.agent_version }}
+          PKG_FILENAME: ${{ steps.workflow_meta.outputs.pkg_filename }}
         run: |
-          (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ steps.workflow_meta.outputs.agent_version }}") | Set-Content ${{ steps.workflow_meta.outputs.pkg_filename }}.nuspec
+          (Get-Content $env:SPEC_FILE_TEMPLATE).Replace('{VERSION}', "$env:AGENT_VERSION") | Set-Content "$env:PKG_FILENAME.nuspec"
 
       - name: Create bundle
         working-directory: cloud-tooling/azure-site-extension
-        run: nuget pack "${{ steps.workflow_meta.outputs.pkg_filename }}.nuspec"
+        env:
+          PKG_FILENAME: ${{ steps.workflow_meta.outputs.pkg_filename }}
+        run: nuget pack "$env:PKG_FILENAME.nuspec"
 
       # This step is for us to check what's going to be published
       - name: Archive package for verification
@@ -88,5 +98,9 @@ jobs:
 
       - name: Publish site extension
         working-directory: cloud-tooling/azure-site-extension
+        env:
+          PKG_FILENAME: ${{ steps.workflow_meta.outputs.pkg_filename }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          NUGET_SOURCE: ${{ vars.NUGET_SOURCE }}
         run: |
-          dotnet nuget push "${{ steps.workflow_meta.outputs.pkg_filename }}.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source ${{ vars.NUGET_SOURCE }}
+          dotnet nuget push "$env:PKG_FILENAME.nupkg" --api-key $env:NUGET_API_KEY --source $env:NUGET_SOURCE

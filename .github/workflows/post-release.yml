@@ -67,8 +67,9 @@ jobs:
       - id: get_tag
         run: jq -r '"version=\(.version)"' ./package.json >> $GITHUB_OUTPUT
       - name: Create Docs Website PR
-        run: node ./bin/create-docs-pr.js --tag v${{ steps.get_tag.outputs.version }}
+        run: node ./bin/create-docs-pr.js --tag "v${VERSION}"
         env:
+          VERSION: ${{ steps.get_tag.outputs.version }}
           GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
           GITHUB_USER: ${{ vars.NODE_AGENT_CI_USER_NAME }}
           GITHUB_EMAIL: ${{ vars.NODE_AGENT_CI_USER_EMAIL }}

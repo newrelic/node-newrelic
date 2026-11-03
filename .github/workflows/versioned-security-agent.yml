@@ -112,7 +112,9 @@ jobs:
       run: npm install
     - name: Install Version ${{ inputs.version }} of security agent
       if: ${{ inputs.version }}
-      run: npm install @newrelic/security-agent@${{ inputs.version }}
+      env:
+        SECURITY_AGENT_VERSION: ${{ inputs.version }}
+      run: npm install "@newrelic/security-agent@${SECURITY_AGENT_VERSION}"
     # Start only the docker services this shard's suites need. Shards whose
     # suites need no services skip this step entirely (zero containers).
     - name: Run Docker Services
@@ -124,10 +126,13 @@ jobs:
     # runner only executes this shard's subset of the versioned suites.
     - name: Versioned Tests w/ Security Agent
       run: |
+        # SHARD_DIRS is an intentionally word-split list of suite directories
+        # passed as positional args, so it is deliberately left unquoted.
         TEST_CHILD_TIMEOUT=600000 \
         npm run versioned:security \
-        ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
+        $SHARD_DIRS
       env:
+        SHARD_DIRS: ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
         VERSIONED_MODE: --${{ inputs.mode || 'major' }}
         # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
         JOBS: ${{ vars.NR_RUNNER && 16 || 4 }}
