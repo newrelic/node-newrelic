@@ -2,7 +2,7 @@ services:
 
   elasticsearch:
     container_name: nr_node_elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+    image: docker.elastic.co/elasticsearch/elasticsearch@sha256:5856b2c77263336792b80fc0e03df42922b2f86a816a4daf23397fb02ef7b138 # v9.0.0
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       # Set cluster to single node
@@ -24,7 +24,7 @@ services:
 
   opensearch:
     container_name: nr_node_opensearch
-    image: opensearchproject/opensearch:2
+    image: opensearchproject/opensearch@sha256:3bfa1ec74d56928c2e018033d45c460ce2c0ea65a5cedd577de3102326c31b89 # v2.19.7 (tag: 2)
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       # Disable password
@@ -48,7 +48,7 @@ services:
   # `zookeeper` and `kafka` services.
   zookeeper:
     container_name: nr_node_kafka_zookeeper
-    image: confluentinc/cp-zookeeper:7.9.1
+    image: confluentinc/cp-zookeeper@sha256:7610a50b13e7e9f6dc0dd00585ffdcb0bbed27392bef6b45791ef4087b2a746c # v7.9.1
     ports:
       - '2181:2181'
     environment:
@@ -61,7 +61,7 @@ services:
       retries: 30
   kafka:
     container_name: nr_node_kafka
-    image: confluentinc/cp-kafka:7.9.1
+    image: confluentinc/cp-kafka@sha256:632e5f09affa3fe2a044da044ec4b40542a7aea5c48ac6eb13d42bc78ec9c9b5 # v7.9.1
     links:
       - zookeeper
     ports:
@@ -83,7 +83,7 @@ services:
 
   memcached:
     container_name: nr_node_memcached
-    image: memcached
+    image: memcached@sha256:aea0d81d101a9b64fe30cf2cf2f96144e284f8e9552bb084a03f4e12e9043bab # v1.6.45 (tag: latest)
     ports:
       - "11211:11211"
     healthcheck:
@@ -97,7 +97,7 @@ services:
 
   mongodb_5:
     container_name: nr_node_mongodb_5
-    image: library/mongo:5
+    image: library/mongo@sha256:54bcd8da3ea5eec561b68c605046c55c6b304387dc4c2bf5b3a5f5064fbb7495 # v5.0.31 (tag: 5)
     ports:
       - "27017:27017"
     healthcheck:
@@ -114,7 +114,7 @@ services:
     # authentication method. We must use the native authentication method
     # because the `mysql` package does not support the `caching_sha2_password`
     # authentication method.
-    image: mysql:8.3
+    image: mysql@sha256:9de9d54fecee6253130e65154b930978b1fcc336bcc86dfd06e89b72a2588ebe # v8.3.0 (tag: 8.3)
     volumes:
       - "./docker/mysql:/etc/mysql/conf.d"
     ports:
@@ -129,7 +129,7 @@ services:
 
   redis:
     container_name: nr_node_redis
-    image: redis
+    image: redis@sha256:de1068af6f552240dfab67bcc9bfef99bfc60f776bb4580ef077ea4c8c97e848 # v8.10.3 (tag: latest)
     ports:
       - "6379:6379"
       - "6380:6380"
@@ -151,7 +151,7 @@ services:
   cassandra:
     container_name: nr_node_cassandra
     platform: ${DOCKER_PLATFORM:-linux/amd64}
-    image: cassandra
+    image: cassandra@sha256:ae4cc2e4b62a5b2a2dd1645ba827cb50c589cc7531bcffe8b8b60ac3b1adc79d # v5.0.9 (tag: latest)
     ports:
       - "9042:9042"
     healthcheck:
@@ -162,7 +162,7 @@ services:
 
   pg:
     container_name: nr_node_postgres
-    image: postgres:9.2
+    image: postgres@sha256:c712120f62628c9afce0152bc9e60a257e4e8ca3ab5c7c166dad2315e882cd06 # v9.2.23 (tag: 9.2)
     ports:
       - "5432:5432"
     healthcheck:
@@ -174,7 +174,7 @@ services:
 
   pg_prisma:
     container_name: nr_node_postgres_prisma
-    image: postgres:15
+    image: postgres@sha256:40e8c839f86c404f9bd1c456bb83f11b205f2cd95d753b34c2d074e89ecee786 # v15.19 (tag: 15)
     ports:
       - "5434:5434"
     environment:
@@ -188,7 +188,7 @@ services:
 
   rmq:
     container_name: nr_node_rabbit
-    image: rabbitmq:3-management
+    image: rabbitmq@sha256:e582c0bc7766f3342496d8485efb5a1df782b5ce3886ad017e2eaae442311f69 # v3.13.7-management (tag: 3-management)
     ports:
       - "5672:5672"
       - "15672:15672"
