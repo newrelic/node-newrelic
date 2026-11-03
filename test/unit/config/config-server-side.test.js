@@ -812,7 +812,24 @@ describe('when receiving server-side configuration', () => {
 
     test('should force content on when ai_monitoring.enabled was set locally before connect', () => {
       const config = new Config({ ai_monitoring: { enabled: true } })
+      config.onConnect({ agent_config: { 'ai_monitoring.streaming.enabled': true } })
+      assert.equal(config.shouldRecordAiContent(), true)
+    })
+
+    test('should not force content on when the connect response also sends ai_monitoring.enabled', () => {
+      // Any `ai_monitoring.enabled` from the connect response cancels forcing,
+      // even when it matches the local value.
+      const config = new Config({ ai_monitoring: { enabled: true } })
       config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      assert.equal(config.shouldRecordAiContent(), false)
+    })
+
+    test('should force content on again when a later connect omits ai_monitoring.enabled', () => {
+      const config = new Config({ ai_monitoring: { enabled: true } })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.shouldRecordAiContent(), false)
+      config.onConnect({ agent_config: {} })
       assert.equal(config.shouldRecordAiContent(), true)
     })
 
