@@ -7,8 +7,7 @@
 const assert = require('node:assert')
 const http = require('http')
 const https = require('https')
-const nock = require('nock')
-const helper = require('../../../lib/agent_helper')
+const helper = require('#testlib/agent_helper.js')
 
 function getMethodFromName(nodule, method) {
   let _nodule
@@ -69,7 +68,7 @@ async function testSignature(testOpts) {
   const testName = names.join(', ')
 
   await t.test(testName, function (t, end) {
-    const { agent, tracer } = t.nr
+    const { agent, nock, tracer } = t.nr
     // If testing the options overriding the URL argument, set up nock differently.
     // nock 14 (mswjs) matches on the URL string's hostname before opts.hostname is
     // merged, so we intercept www.newrelic.com (the URL host) even when swapHost

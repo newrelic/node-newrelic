@@ -494,6 +494,7 @@ test('when overriding configuration values via environment variables', async (t)
       NEW_RELIC_APOLLO_SERVER_SERVICE_DEFINITION_QUERIES: 'true',
       NEW_RELIC_APOLLO_SERVER_HEALTH_CHECK_QUERIES: 'true',
       NEW_RELIC_APOLLO_SERVER_FIELD_METRICS: 'true',
+      NEW_RELIC_APOLLO_SERVER_COLLAPSE_FIELD_METRICS: 'true',
     }
 
     idempotentEnv(env, (tc) => {
@@ -503,6 +504,7 @@ test('when overriding configuration values via environment variables', async (t)
       assert.equal(apollo.service_definition_queries, true)
       assert.equal(apollo.health_check_queries, true)
       assert.equal(apollo.field_metrics, true)
+      assert.equal(apollo.collapse_field_metrics, true)
       end()
     })
   })

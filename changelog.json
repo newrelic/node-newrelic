@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.10.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Collapsed Apollo Server argument array metrics",
+          "Stopped net.js from pinning ended transactions to long-lived sockets"
+        ],
+        "features": [
+          "Added support for `@opentelemetry/api@1.10.0`"
+        ]
+      }
+    },
+    {
       "version": "14.9.0",
       "changes": {
         "security": [],

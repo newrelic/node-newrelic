@@ -361,6 +361,7 @@ test('with default properties', async (t) => {
     assert.equal(apollo.service_definition_queries, false)
     assert.equal(apollo.health_check_queries, false)
     assert.equal(apollo.field_metrics, false)
+    assert.equal(apollo.collapse_field_metrics, false)
   })
 })
 

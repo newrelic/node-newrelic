@@ -7,7 +7,7 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const http = require('http')
-const helper = require('../../../lib/agent_helper')
+const helper = require('#testlib/agent_helper.js')
 const PORT = 0
 const THRESHOLD = 200
 

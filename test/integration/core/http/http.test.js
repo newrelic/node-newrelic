@@ -5,15 +5,17 @@
 
 'use strict'
 
-const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const DESTINATIONS = require('#agentlib/config/attribute-filter.js').DESTINATIONS
 const test = require('node:test')
 const { tspl } = require('@matteo.collina/tspl')
 const assert = require('node:assert')
 const http = require('http')
-const helper = require('../../lib/agent_helper')
-const StreamSink = require('../../../lib/util/stream-sink')
-const HTTP_ATTRS = require('../../lib/fixtures').httpAttributes
-const tempRemoveListeners = require('../../lib/temp-remove-listeners')
+const https = require('https')
+const helper = require('#testlib/agent_helper.js')
+const fakeCert = require('#testlib/fake-cert.js')
+const StreamSink = require('#agentlib/util/stream-sink.js')
+const HTTP_ATTRS = require('#testlib/fixtures.js').httpAttributes
+const tempRemoveListeners = require('#testlib/temp-remove-listeners.js')
 
 test.beforeEach((ctx) => {
   const agent = helper.instrumentMockedAgent()
@@ -392,6 +394,41 @@ test(
     await plan.completed
   }
 )
+
+test('built-in https instrumentation should record the HTTPS transport', async function (t) {
+  helper.unloadAgent(t.nr.agent)
+  const agent = helper.instrumentMockedAgent({ distributed_tracing: { enabled: true } })
+  t.nr.agent = agent
+  agent.config.trusted_account_key = 190
+
+  const cert = fakeCert({ commonName: 'localhost' })
+  const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+
+  let parentTransportType
+  const server = https.createServer({ key: cert.privateKey, cert: cert.certificate }, (req, res) => {
+    parentTransportType = agent.getTransaction().parentTransportType
+    res.end('ok')
+  })
+  helper.startServerWithRandomPortRetry(server)
+  t.after(() => server.close())
+
+  await new Promise((resolve) => server.on('listening', resolve))
+  const { port } = server.address()
+
+  await new Promise((resolve, reject) => {
+    const req = https.request(
+      { port, host: 'localhost', ca: cert.certificate, headers: { traceparent } },
+      (res) => {
+        res.on('data', () => {})
+        res.on('end', resolve)
+      }
+    )
+    req.on('error', reject)
+    req.end()
+  })
+
+  assert.equal(parentTransportType, 'HTTPS', 'should record the HTTPS transport on the transaction')
+})
 
 // NODE-999
 test('built-in http instrumentation should not crash when server does not have address', async function (t) {
