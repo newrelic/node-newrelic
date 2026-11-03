@@ -2002,6 +2002,11 @@
             }
           },
           "additionalProperties": true
+        },
+        "sample_interval": {
+          "type": "integer",
+          "default": 100,
+          "description": "The interval in milliseconds at which to harvest and ingest profile data."
         }
       },
       "additionalProperties": true,
