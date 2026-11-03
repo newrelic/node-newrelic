@@ -86,6 +86,24 @@ test('HttpAgentSubscriber', async (t) => {
     })
   }
 
+  await t.test('should create an internal span for the connection', (t, end) => {
+    const { agent } = t.nr
+    helper.runInTransaction(agent, function (transaction) {
+      makeRequest({ host: HOSTNAME, port: PORT, path: '/newrelic' })
+      const [external] = getExternalSegments(transaction)
+      transaction.end()
+
+      const span = agent.spanEventAggregator.getEvents().find((s) => s.intrinsics.name === 'http.Agent#createConnection')
+      assert.ok(span, 'should create a connection span')
+      const { category, parentId, 'span.kind': kind } = span.intrinsics
+      assert.deepStrictEqual({ category, parentId, kind }, { category: 'generic', parentId: external.id, kind: 'internal' })
+      const { nr_exclusive_duration_millis: duration, ...attributes } = span.toJSON()[2]
+      assert.equal(typeof duration, 'number')
+      assert.deepStrictEqual({ ...attributes }, {}, 'should not add http attributes to the connection span')
+      end()
+    })
+  })
+
   await t.test('should not record the connection when the parent segment is opaque', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, function (transaction) {
