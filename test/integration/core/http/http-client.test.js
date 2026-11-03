@@ -14,6 +14,7 @@ const net = require('net')
 const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 const fs = require('node:fs/promises')
 const http = require('node:http')
+const https = require('node:https')
 const url = require('node:url')
 const nock = require('nock')
 const Tracestate = require('#agentlib/w3c/tracestate.js')
@@ -275,6 +276,48 @@ function getExternalSegments(transaction) {
     .filter((segment) => segment.name.startsWith(NAMES.EXTERNAL.PREFIX))
 }
 
+/**
+ * Asserts the agent recorded exactly the expected `External/` metrics, each
+ * called once.
+ *
+ * @param {Agent} agent The agent that recorded the metrics.
+ * @param {object} expected The expected metrics.
+ * @param {string[]} expected.unscoped The names of the unscoped external metrics.
+ * @param {object} [expected.scoped] The names of the scoped external metrics, keyed by scope.
+ */
+function assertExternalMetrics(agent, { unscoped, scoped = {} }) {
+  const metrics = agent.metrics._metrics
+  const externalNames = (stats) => Object.keys(stats).filter((name) => name.startsWith(NAMES.EXTERNAL.PREFIX)).sort()
+
+  assert.deepEqual(externalNames(metrics.unscoped), [...unscoped].sort(), 'should record the expected unscoped external metrics')
+  const recordedScopes = Object.keys(metrics.scoped).filter((scope) => externalNames(metrics.scoped[scope]).length > 0)
+  assert.deepEqual(recordedScopes.sort(), Object.keys(scoped).sort(), 'should record external metrics under the expected scopes')
+  for (const [scope, names] of Object.entries(scoped)) {
+    assert.deepEqual(externalNames(metrics.scoped[scope]), [...names].sort(), `should record the expected external metrics scoped to ${scope}`)
+  }
+
+  const recorded = [...unscoped.map((name) => metrics.unscoped[name])]
+  for (const [scope, names] of Object.entries(scoped)) {
+    recorded.push(...names.map((name) => metrics.scoped[scope][name]))
+  }
+  for (const stats of recorded) {
+    assert.equal(stats.callCount, 1, 'should record each external metric once')
+  }
+}
+
+/**
+ * Gets the attributes a span event sends, without the duration the agent
+ * computes for every span.
+ *
+ * @param {object} span The span event.
+ * @returns {object} The span's non-null attributes.
+ */
+function getSpanAttributes(span) {
+  const { nr_exclusive_duration_millis: duration, ...attributes } = span.toJSON()[2]
+  assert.equal(typeof duration, 'number', 'should record the exclusive duration')
+  return attributes
+}
+
 test('HttpClientSubscriber', async (t) => {
   // nock replaces `http.ClientRequest` and rejects options it cannot parse into
   // a URL (e.g. an invalid `href`), so use the real one; requests are destroyed
@@ -503,6 +546,8 @@ test('HttpClientSubscriber', async (t) => {
       assert.ok(!children.some((child) => child.name.startsWith(NAMES.EXTERNAL.PREFIX)), 'should not create an external segment')
       assert.ok(!req.getHeader('traceparent'), 'should not add tracing headers')
       assert.ok(!req[symbols.segment])
+      transaction.end()
+      assertExternalMetrics(t.nr.agent, { unscoped: [] })
       end()
     })
   })
@@ -521,7 +566,14 @@ test('HttpClientSubscriber', async (t) => {
 
       const [child] = getExternalSegments(transaction)
       assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${HOSTNAME}:${PORT}/newrelic`)
-      assert.equal(child.attributes.get(DESTINATIONS.SPAN_EVENT).port, PORT)
+      // the credentials must not be recorded in the url
+      assert.deepEqual(child.attributes.get(DESTINATIONS.SPAN_EVENT), {
+        hostname: HOSTNAME,
+        port: PORT,
+        url: `http://${HOSTNAME}:${PORT}/newrelic`,
+        procedure: 'GET',
+        'request.parameters.a': 'b'
+      })
       const credentials = Buffer.from('user:pass').toString('base64')
       assert.equal(req.getHeader('authorization'), `Basic ${credentials}`, 'should pass the credentials to http')
       req.destroy()
@@ -535,7 +587,13 @@ test('HttpClientSubscriber', async (t) => {
       req.on('error', () => {})
 
       const [child] = getExternalSegments(transaction)
-      assert.equal(child.attributes.get(DESTINATIONS.SPAN_EVENT).hostname, '::1')
+      assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}::1:${PORT}/newrelic`)
+      assert.deepEqual(child.attributes.get(DESTINATIONS.SPAN_EVENT), {
+        hostname: '::1',
+        port: PORT,
+        url: `http://::1:${PORT}/newrelic`,
+        procedure: 'GET'
+      })
       req.destroy()
       end()
     })
@@ -584,10 +642,19 @@ test('HttpClientSubscriber', async (t) => {
 
         const [child] = getExternalSegments(transaction)
         assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}example.com/foo`)
-        const attributes = child.attributes.get(DESTINATIONS.SPAN_EVENT)
-        assert.equal(attributes.url, url)
-        assert.equal(attributes.hostname, 'example.com')
-        assert.equal(attributes.port, port)
+        assert.deepEqual(child.getAttributes(), { url, procedure: 'GET' })
+        assert.deepEqual(child.attributes.get(DESTINATIONS.SPAN_EVENT), {
+          hostname: 'example.com',
+          port,
+          url,
+          procedure: 'GET',
+          'request.parameters.a': 'b'
+        })
+        transaction.end()
+        // the metrics are named for the proxy target, not the proxy
+        assertExternalMetrics(t.nr.agent, {
+          unscoped: ['External/example.com/http', 'External/example.com/all', 'External/allWeb', 'External/all']
+        })
         end()
       })
     })
@@ -619,6 +686,8 @@ test('HttpClientSubscriber', async (t) => {
       assert.equal(child.timer.isActive(), false, 'should end the segment')
       assert.equal(transaction.exceptions.length, 0, 'should not capture the error')
       req.destroy()
+      transaction.end()
+      assert.equal(t.nr.agent.errors.traceAggregator.errors.length, 0, 'should not collect an error trace')
       end()
     })
   })
@@ -637,6 +706,20 @@ test('HttpClientSubscriber', async (t) => {
       assert.equal(transaction.exceptions[0].error, error)
       req.on('error', () => {})
       req.destroy()
+
+      const { agent } = t.nr
+      transaction.end()
+      // the failed request is still recorded as an external call
+      assertExternalMetrics(agent, {
+        unscoped: [`External/${HOSTNAME}:${PORT}/http`, `External/${HOSTNAME}:${PORT}/all`, 'External/allWeb', 'External/all']
+      })
+      assert.equal(agent.errors.traceAggregator.errors.length, 1, 'should collect one error trace')
+      const [trace] = agent.errors.traceAggregator.errors
+      assert.equal(trace[2], 'boom', 'should collect an error trace with the message')
+      assert.equal(trace[3], 'Error', 'should collect an error trace with the class')
+      const [[event]] = agent.errors.eventAggregator.getEvents()
+      assert.equal(event['error.message'], 'boom', 'should collect an error event')
+      assert.equal(agent.metrics.getMetric('Errors/all').callCount, 1, 'should record an error metric')
       end()
     })
   })
@@ -666,6 +749,183 @@ test('HttpClientSubscriber', async (t) => {
 
     assert.equal(received['x-foo'], 'bar', 'should keep the existing headers')
     assert.ok(received.traceparent, 'should add traceparent')
+  })
+})
+
+test('HttpClientSubscriber telemetry', async (t) => {
+  // nock replaces `http.ClientRequest`, so use the real one against a local server
+  t.before(async () => {
+    nock.restore()
+    const server = http.createServer((req, res) => {
+      res.statusCode = req.url.startsWith('/missing') ? 404 : 200
+      res.end('ok')
+    })
+    await new Promise((resolve) => server.listen(0, HOSTNAME, resolve))
+    t.nr = { server, port: server.address().port }
+  })
+
+  t.after(() => {
+    t.nr.server.close()
+    nock.activate()
+  })
+
+  t.beforeEach((ctx) => {
+    ctx.nr = { ...t.nr, agent: helper.instrumentMockedAgent() }
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  /**
+   * Makes a request to the local server and ends the transaction once the
+   * response has been read.
+   *
+   * @param {object} params The function parameters.
+   * @param {Transaction} params.transaction The active transaction.
+   * @param {number} params.port The port of the local server.
+   * @param {string} params.path The path to request.
+   * @returns {Promise<http.IncomingMessage>} The response, once the transaction has ended.
+   */
+  function requestAndEnd({ transaction, port, path }) {
+    return new Promise((resolve, reject) => {
+      http.get({ host: HOSTNAME, port, path }, (res) => {
+        res.resume()
+        res.on('end', () => {
+          transaction.end()
+          resolve(res)
+        })
+      }).on('error', reject)
+    })
+  }
+
+  /**
+   * Finds the span event with the given name.
+   *
+   * @param {Agent} agent The agent that collected the spans.
+   * @param {string} name The name of the span.
+   * @returns {object} The span event.
+   */
+  function findSpan(agent, name) {
+    const span = agent.spanEventAggregator.getEvents().find((s) => s.intrinsics.name === name)
+    assert.ok(span, `should create a ${name} span`)
+    return span
+  }
+
+  await t.test('should record external metrics for a web transaction', async (t) => {
+    const { agent, port } = t.nr
+    await helper.runInNamedTransaction(agent, (transaction) => requestAndEnd({ transaction, port, path: '/ok' }))
+
+    const host = `${HOSTNAME}:${port}`
+    assertExternalMetrics(agent, {
+      unscoped: [`External/${host}/http`, `External/${host}/all`, 'External/allWeb', 'External/all'],
+      scoped: { TestTransaction: [`External/${host}/http`] }
+    })
+  })
+
+  await t.test('should record external metrics for a background transaction', async (t) => {
+    const { agent, port } = t.nr
+    await helper.runInNamedTransaction(agent, 'bg', (transaction) => requestAndEnd({ transaction, port, path: '/ok' }))
+
+    const host = `${HOSTNAME}:${port}`
+    assertExternalMetrics(agent, {
+      unscoped: [`External/${host}/http`, `External/${host}/all`, 'External/allOther', 'External/all'],
+      scoped: { TestTransaction: [`External/${host}/http`] }
+    })
+  })
+
+  await t.test('should record the external segment attributes', async (t) => {
+    const { agent, port } = t.nr
+    let segment
+    await helper.runInTransaction(agent, (transaction) => {
+      const promise = requestAndEnd({ transaction, port, path: '/ok?a=b' })
+      ;[segment] = getExternalSegments(transaction)
+      return promise
+    })
+
+    assert.equal(segment.name, `External/${HOSTNAME}:${port}/ok`)
+    assert.equal(segment.timer.isActive(), false, 'should end the segment')
+    // the agent adds the exclusive duration to every segment when the transaction ends
+    const { nr_exclusive_duration_millis: traceDuration, ...traceAttributes } = segment.getAttributes()
+    const { nr_exclusive_duration_millis: spanDuration, ...spanAttributes } = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+    assert.equal(typeof traceDuration, 'number')
+    assert.equal(typeof spanDuration, 'number')
+    assert.deepStrictEqual(traceAttributes, {
+      url: `http://${HOSTNAME}:${port}/ok`,
+      procedure: 'GET'
+    }, 'should add the url and method to the transaction trace segment')
+    assert.deepStrictEqual(spanAttributes, {
+      'request.parameters.a': 'b',
+      hostname: HOSTNAME,
+      port,
+      url: `http://${HOSTNAME}:${port}/ok`,
+      procedure: 'GET',
+      'http.statusCode': 200,
+      'http.statusText': 'OK'
+    }, 'should add the request and response attributes for the span')
+  })
+
+  await t.test('should create an http client span event', async (t) => {
+    const { agent, port } = t.nr
+    let traceId
+    await helper.runInTransaction(agent, (transaction) => {
+      traceId = transaction.traceId
+      return requestAndEnd({ transaction, port, path: '/ok?a=b' })
+    })
+
+    const span = findSpan(agent, `External/${HOSTNAME}:${port}/ok`)
+    const { category, component, traceId: spanTraceId, 'span.kind': kind } = span.intrinsics
+    assert.deepStrictEqual({ category, component, traceId: spanTraceId, kind }, {
+      category: 'http',
+      component: 'http',
+      traceId,
+      kind: 'client'
+    })
+    assert.deepStrictEqual({ ...getSpanAttributes(span) }, {
+      'request.parameters.a': 'b',
+      'server.address': HOSTNAME,
+      'server.port': port,
+      'http.url': `http://${HOSTNAME}:${port}/ok`,
+      'http.method': 'GET',
+      'http.request.method': 'GET',
+      'http.statusCode': 200,
+      'http.statusText': 'OK'
+    })
+  })
+
+  await t.test('should record the status of an error response without capturing an error', async (t) => {
+    const { agent, port } = t.nr
+    await helper.runInTransaction(agent, (transaction) => requestAndEnd({ transaction, port, path: '/missing' }))
+
+    const span = findSpan(agent, `External/${HOSTNAME}:${port}/missing`)
+    const attributes = getSpanAttributes(span)
+    assert.equal(attributes['http.statusCode'], 404)
+    assert.equal(attributes['http.statusText'], 'Not Found')
+    assert.ok(!('error.class' in attributes), 'should not add error attributes to the span')
+    assert.equal(agent.errors.traceAggregator.errors.length, 0, 'should not collect an error')
+    assertExternalMetrics(agent, {
+      unscoped: [`External/${HOSTNAME}:${port}/http`, `External/${HOSTNAME}:${port}/all`, 'External/allWeb', 'External/all']
+    })
+  })
+
+  await t.test('should run response listeners in the external segment', async (t) => {
+    const { agent, port } = t.nr
+    const segments = {}
+    await helper.runInTransaction(agent, (transaction) => new Promise((resolve) => {
+      http.get({ host: HOSTNAME, port, path: '/ok' }, (res) => {
+        res.on('data', () => {
+          segments.data = agent.tracer.getSegment()
+        })
+        res.on('end', () => {
+          segments.end = agent.tracer.getSegment()
+          segments.external = getExternalSegments(transaction)[0]
+          resolve()
+        })
+      })
+    }))
+
+    assert.equal(segments.data, segments.external, 'should run data listeners in the external segment')
+    assert.equal(segments.end, segments.external, 'should run end listeners in the external segment')
   })
 })
 
@@ -728,6 +988,35 @@ test('when working with http.request', async (t) => {
     })
   })
 
+  await t.test('should record https requests', (t, end) => {
+    const { agent } = t.nr
+    nock('https://www.google.com').get('/index.html').reply(200)
+
+    helper.runInTransaction(agent, function (transaction) {
+      https.get('https://www.google.com/index.html', function (res) {
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.equal(child.name, 'External/www.google.com/index.html', 'should not add the default port to the name')
+        assert.deepStrictEqual({ ...child.attributes.get(DESTINATIONS.SPAN_EVENT) }, {
+          hostname: 'www.google.com',
+          port: 443,
+          url: 'https://www.google.com/index.html',
+          procedure: 'GET',
+          'http.statusCode': 200,
+          'http.statusText': 'OK'
+        })
+        res.resume()
+        res.on('end', () => {
+          transaction.end()
+          // https requests share the `http` library name
+          assertExternalMetrics(agent, {
+            unscoped: ['External/www.google.com/http', 'External/www.google.com/all', 'External/allWeb', 'External/all']
+          })
+          end()
+        })
+      })
+    })
+  })
+
   await t.test('should start and end segment', (t, end) => {
     const { agent, tracer } = t.nr
     const host = 'http://www.google.com'
@@ -784,6 +1073,7 @@ test('when working with http.request', async (t) => {
 
         res.resume()
         transaction.end()
+        assert.equal(agent.metrics.getMetric(NAMES.EXTERNAL.ALL), undefined, 'should not record external metrics')
         end()
       })
     })
