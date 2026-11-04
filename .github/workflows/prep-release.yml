@@ -51,6 +51,11 @@ jobs:
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release Notes
-      run: node ./agent-repo/bin/prepare-release.js --release-type ${{ inputs.release_type }} --branch ${{ github.ref }} --repo ${{ github.repository }} --changelog ${{ inputs.changelog_file }} ${{ inputs.changelog_json == true && '--changelog-json' || ''}}
+      run: node ./agent-repo/bin/prepare-release.js --release-type "$RELEASE_TYPE" --branch "$BRANCH" --repo "$REPO" --changelog "$CHANGELOG_FILE" $CHANGELOG_JSON_FLAG
       env:
+        RELEASE_TYPE: ${{ inputs.release_type }}
+        BRANCH: ${{ github.ref }}
+        REPO: ${{ github.repository }}
+        CHANGELOG_FILE: ${{ inputs.changelog_file }}
+        CHANGELOG_JSON_FLAG: ${{ inputs.changelog_json == true && '--changelog-json' || '' }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -42,11 +42,16 @@ jobs:
 
       - name: Get version and inputs
         id: get-version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_AGENT_TYPE: ${{ inputs.agent-type }}
+          INPUT_USE_CACHE: ${{ inputs.use-cache }}
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
-            echo "agent-type=${{ inputs.agent-type }}" >> $GITHUB_OUTPUT
-            echo "use-cache=${{ inputs.use-cache }}" >> $GITHUB_OUTPUT
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "version=$INPUT_VERSION" >> $GITHUB_OUTPUT
+            echo "agent-type=$INPUT_AGENT_TYPE" >> $GITHUB_OUTPUT
+            echo "use-cache=$INPUT_USE_CACHE" >> $GITHUB_OUTPUT
           else
             jq -r '"version=\(.version)"' ./package.json >> $GITHUB_OUTPUT
             echo "agent-type=NRNodeAgent" >> $GITHUB_OUTPUT

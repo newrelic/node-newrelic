@@ -25,9 +25,12 @@ jobs:
         run: jq -r '"version=\(.version)"' ./package.json >> $GITHUB_OUTPUT
 
       - name: Poll npm registry until version is available
+        env:
+          AGENT_VERSION: ${{ steps.get_version.outputs.version }}
+          POLL_MAX_ATTEMPTS: ${{ vars.NPM_POLL_MAX_ATTEMPTS || 20 }}
         run: |
-          VERSION="${{ steps.get_version.outputs.version }}"
-          MAX_ATTEMPTS="${{ vars.NPM_POLL_MAX_ATTEMPTS || 20 }}"
+          VERSION="$AGENT_VERSION"
+          MAX_ATTEMPTS="$POLL_MAX_ATTEMPTS"
           INTERVAL=30
 
           echo "Polling npm for newrelic@${VERSION}..."

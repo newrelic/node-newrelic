@@ -57,8 +57,11 @@ jobs:
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release Tag
-      run: node ./agent-repo/bin/create-release-tag.js --branch ${{ github.ref }} --repo ${{ github.repository }} --workflows ${{ inputs.workflows }}
+      run: node ./agent-repo/bin/create-release-tag.js --branch "$BRANCH" --repo "$REPO" --workflows "$WORKFLOWS"
       env:
+        BRANCH: ${{ github.ref }}
+        REPO: ${{ github.repository }}
+        WORKFLOWS: ${{ inputs.workflows }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish to Npm
       run: npm publish
@@ -66,7 +69,10 @@ jobs:
       id: get_tag
       run: echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
     - name: Create GitHub Release
-      run: node ./agent-repo/bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo ${{ github.repository }} --changelog ${{ inputs.changelog_file }}
+      run: node ./agent-repo/bin/create-github-release.js --tag "$LATEST_TAG" --repo "$REPO" --changelog "$CHANGELOG_FILE"
       env:
+        LATEST_TAG: ${{ steps.get_tag.outputs.latest_tag }}
+        REPO: ${{ github.repository }}
+        CHANGELOG_FILE: ${{ inputs.changelog_file }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

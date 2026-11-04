@@ -139,6 +139,7 @@ jobs:
                   id
                 }
               }
-            }' -f project=$PROJECT_ID -f item=$item_id -f status_field=$STATUS_FIELD_ID -f status_value=${{ github.event_name == 'pull_request_target' && env.PR_OPTION_ID || env.TODO_OPTION_ID }} -f date_field=$DATE_FIELD_ID -f date_value=$DATE --silent
+            }' -f project=$PROJECT_ID -f item=$item_id -f status_field=$STATUS_FIELD_ID -f status_value="$STATUS_VALUE" -f date_field=$DATE_FIELD_ID -f date_value=$DATE --silent
       env:
         ISSUE_OR_PR_ID: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.node_id || github.event.issue.node_id }}
+        STATUS_VALUE: ${{ github.event_name == 'pull_request_target' && env.PR_OPTION_ID || env.TODO_OPTION_ID }}

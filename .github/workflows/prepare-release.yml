@@ -46,25 +46,33 @@ jobs:
 
       - name: Determine release branch
         id: release-branch
+        env:
+          RELEASE_TYPE: ${{ github.event.inputs.release_type }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          NEW_VERSION=$(node -p "require('semver').inc('$CURRENT_VERSION', '${{ github.event.inputs.release_type }}')")
+          NEW_VERSION=$(node -p "require('semver').inc('$CURRENT_VERSION', process.env.RELEASE_TYPE)")
           echo "name=release/v$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Checkout release branch
-        run: git checkout ${{ steps.release-branch.outputs.name }}
+        env:
+          RELEASE_BRANCH: ${{ steps.release-branch.outputs.name }}
+        run: git checkout "$RELEASE_BRANCH"
 
       - name: Compute config schema bump
         run: npm run bump:config-schema
 
       - name: Commit bump into the release PR
+        env:
+          GIT_USER_NAME: ${{ vars.NODE_AGENT_CI_USER_NAME }}
+          GIT_USER_EMAIL: ${{ vars.NODE_AGENT_CI_USER_EMAIL }}
+          RELEASE_BRANCH: ${{ steps.release-branch.outputs.name }}
         run: |
           if [ -z "$(git status --porcelain .fleetControl/configurationDefinitions.yml)" ]; then
             echo "No config schema version change — nothing to add to the release PR."
             exit 0
           fi
-          git config user.name '${{ vars.NODE_AGENT_CI_USER_NAME }}'
-          git config user.email '${{ vars.NODE_AGENT_CI_USER_EMAIL }}'
+          git config user.name "$GIT_USER_NAME"
+          git config user.email "$GIT_USER_EMAIL"
           git add .fleetControl/configurationDefinitions.yml
           git commit -m "chore: bump agent config schema version"
-          git push origin HEAD:${{ steps.release-branch.outputs.name }}
+          git push origin "HEAD:$RELEASE_BRANCH"

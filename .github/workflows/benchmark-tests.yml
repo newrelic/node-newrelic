@@ -38,7 +38,8 @@ jobs:
     - name: Run Benchmark Tests
       env:
         NEW_RELIC_LICENSE_KEY: ${{ secrets.TEST_LICENSE }}
-      run: node ./bin/run-bench.js --filename=${{ github.base_ref || 'main' }}_${{ matrix.node-version }}
+        BASE_REF: ${{ github.base_ref || 'main' }}
+      run: node ./bin/run-bench.js --filename="${BASE_REF}_${{ matrix.node-version }}"
     - name: Verify Benchmark Output
       run: ls benchmark_results
     - name: Archive Benchmark Test
