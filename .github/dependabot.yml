@@ -11,3 +11,13 @@ updates:
       prefix: "security"
       prefix-development: "chore"
       include: "scope"
+
+  - package-ecosystem: "github-actions"
+    # Keep GitHub Actions pinned by SHA up to date. Dependabot bumps the SHA
+    # and updates the accompanying version comment when a new release ships.
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
