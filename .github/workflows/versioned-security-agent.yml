@@ -47,12 +47,12 @@ jobs:
     outputs:
       sec_agent_did_change: ${{ steps.check_sec_agent.outputs.divergent }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 2
       - name: Check Security Agent Changed
         id: check_sec_agent
-        uses: jsumners-nr/gha-node-deps-divergent@8a3756574008854718621aee6de408fc2e79d70c
+        uses: jsumners-nr/gha-node-deps-divergent@8a3756574008854718621aee6de408fc2e79d70c # main@2026-05-07 (no release tags published)
         with:
           base-sha: ${{ github.base_ref || 'main' }}
           current-sha: ${{ github.sha }}
@@ -74,7 +74,7 @@ jobs:
       dirmap: ${{ steps.plan.outputs.dirmap }}
       servicemap: ${{ steps.plan.outputs.servicemap }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Plan versioned shards
         id: plan
         run: node ./bin/versioned-runner/shard-plan.js
@@ -98,9 +98,9 @@ jobs:
         shard: ${{ fromJSON(needs.versioned-setup.outputs.shards) }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
       with:
         node-version: ${{ matrix.node-version }}
         check-latest: true

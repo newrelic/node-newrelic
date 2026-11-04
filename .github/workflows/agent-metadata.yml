@@ -38,7 +38,7 @@ jobs:
       agent-type: ${{ steps.get-version.outputs.agent-type }}
       use-cache: ${{ steps.get-version.outputs.use-cache }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Get version and inputs
         id: get-version
