@@ -18,7 +18,7 @@ jobs:
       (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'workflow_dispatch')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 2
       - id: get_tag
