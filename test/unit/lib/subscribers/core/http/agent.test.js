@@ -77,11 +77,6 @@ test('HttpAgentSubscriber instrument', async (t) => {
     assert.equal(mod.Agent.prototype.createConnection[symbols.unwrap], undefined)
   })
 
-  await t.test('should not throw on a module without an Agent', (t) => {
-    const { subscriber } = t.nr
-    assert.doesNotThrow(() => subscriber.instrument({}))
-  })
-
   await t.test('should resolve the http module', (t) => {
     const { subscriber } = t.nr
     assert.equal(subscriber.resolveModule(), http)

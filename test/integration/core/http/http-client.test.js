@@ -614,6 +614,22 @@ test('HttpClientSubscriber', async (t) => {
     })
   })
 
+  await t.test('should end the segment when request() throws', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      assert.throws(
+        () => http.request({ host: HOSTNAME, port: PORT, path: '/new relic' }),
+        { code: 'ERR_UNESCAPED_CHARACTERS' }
+      )
+
+      const [child] = getExternalSegments(transaction)
+      assert.equal(child.timer.isActive(), false, 'should end the segment')
+      assert.equal(transaction.exceptions.length, 0, 'should leave the thrown error to the caller')
+      transaction.end()
+      assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${HOSTNAME}:${PORT}`, 'should not truncate the segment')
+      end()
+    })
+  })
+
   const disableDtHeaders = [
     ['the x-new-relic-disable-dt header', { 'x-new-relic-disable-dt': 'true' }],
     ['the disableDT symbol', { [symbols.disableDT]: true }]
@@ -913,6 +929,7 @@ test('HttpClientSubscriber telemetry', async (t) => {
     const segments = {}
     await helper.runInTransaction(agent, (transaction) => new Promise((resolve) => {
       http.get({ host: HOSTNAME, port, path: '/ok' }, (res) => {
+        segments.callback = agent.tracer.getSegment()
         res.on('data', () => {
           segments.data = agent.tracer.getSegment()
         })
@@ -924,6 +941,7 @@ test('HttpClientSubscriber telemetry', async (t) => {
       })
     }))
 
+    assert.equal(segments.callback, segments.external, 'should run the response callback in the external segment')
     assert.equal(segments.data, segments.external, 'should run data listeners in the external segment')
     assert.equal(segments.end, segments.external, 'should run end listeners in the external segment')
   })
