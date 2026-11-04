@@ -41,7 +41,7 @@ test.beforeEach(async (ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.server?.close()
-  removeModules('@google/genai')
+  removeModules(['@google/genai'])
 })
 
 test('can send feedback events', (t, end) => {
