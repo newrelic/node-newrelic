@@ -1640,3 +1640,147 @@ test('APM Mode transaction name should include event type', async (t) => {
   assert.equal(transaction.type, 'web')
   assert.equal(transaction.getFullName(), expectedApmTxnName)
 })
+
+test('metric window', async (t) => {
+  const HOUR = 60 * 60 * 1000
+  const START = Date.UTC(2026, 9, 19, 17, 0, 0)
+
+  t.beforeEach((ctx) => {
+    beforeTests(ctx)
+    ctx.nr.clock = sinon.useFakeTimers({ now: START, toFake: ['Date'] })
+    // Start the current window under the fake clock, as at agent startup.
+    ctx.nr.agent.metrics.clear()
+    ctx.nr.send = sinon.spy(ctx.nr.agent.collector, 'send')
+    ctx.nr.callbacks = []
+    ctx.nr.wrappedHandler = ctx.nr.awsLambda.patchLambdaHandler((event, context, callback) => {
+      ctx.nr.callbacks.push(callback)
+    })
+  })
+
+  t.afterEach((ctx) => {
+    ctx.nr.send.restore()
+    ctx.nr.clock.restore()
+    afterTests(ctx)
+  })
+
+  function invoke(t) {
+    const { stubEvent, stubContext, stubCallback, wrappedHandler } = t.nr
+    wrappedHandler(stubEvent, stubContext, stubCallback)
+  }
+
+  function metricWindows(t) {
+    return t.nr.send.args
+      .filter(([method]) => method === 'metric_data')
+      .map(([, [, begin, end]]) => {
+        return { begin: Math.round(begin * 1000), end: Math.round(end * 1000) }
+      })
+  }
+
+  await t.test('resets the metrics start time once, before the handler runs', (t) => {
+    const { agent, awsLambda, stubEvent, stubContext, stubCallback } = t.nr
+    const resetStartTime = sinon.spy(agent.metrics, 'resetStartTime')
+    t.after(() => resetStartTime.restore())
+    const handler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      assert.equal(resetStartTime.callCount, 1)
+      callback(null, 'worked')
+    })
+
+    handler(stubEvent, stubContext, stubCallback)
+
+    assert.equal(resetStartTime.callCount, 1)
+  })
+
+  await t.test('starts at the first invocation after idle time', (t) => {
+    const { callbacks, clock } = t.nr
+    clock.tick(2 * HOUR)
+    const invokedAt = Date.now()
+    invoke(t)
+    clock.tick(250)
+    callbacks[0](null, 'worked')
+
+    assert.deepEqual(metricWindows(t), [{ begin: invokedAt, end: invokedAt + 250 }])
+  })
+
+  await t.test('does not move the window start for an overlapping invocation', (t) => {
+    const { callbacks, clock } = t.nr
+    clock.tick(2 * HOUR)
+    const firstStart = Date.now()
+    invoke(t)
+    clock.tick(10_000)
+    invoke(t)
+    clock.tick(10_000)
+    callbacks[0](null, 'worked')
+    clock.tick(5_000)
+    callbacks[1](null, 'worked')
+
+    assert.deepEqual(metricWindows(t), [
+      { begin: firstStart, end: firstStart + 20_000 },
+      { begin: firstStart + 20_000, end: firstStart + 25_000 }
+    ])
+  })
+
+  await t.test('resets again for the first invocation after the next idle period', (t) => {
+    const { callbacks, clock } = t.nr
+    invoke(t)
+    callbacks[0](null, 'worked')
+    clock.tick(HOUR)
+    const secondStart = Date.now()
+    invoke(t)
+    clock.tick(100)
+    callbacks[1](null, 'worked')
+
+    assert.deepEqual(metricWindows(t)[1], { begin: secondStart, end: secondStart + 100 })
+  })
+
+  await t.test('still resets after an invocation ended in bulk finishes late', (t) => {
+    const { callbacks, clock } = t.nr
+    tempRemoveListeners({ t, emitter: process, event: 'beforeExit' })
+    invoke(t)
+    invoke(t)
+    // Ends both invocations while their handlers are still running.
+    process.emit('beforeExit')
+    invoke(t)
+    // The second invocation's handler finishes after it was already ended.
+    callbacks[1](null, 'worked')
+    callbacks[2](null, 'worked')
+    clock.tick(HOUR)
+    const nextStart = Date.now()
+    invoke(t)
+    clock.tick(100)
+    callbacks[3](null, 'worked')
+
+    assert.deepEqual(metricWindows(t).at(-1), { begin: nextStart, end: nextStart + 100 })
+  })
+
+  await t.test('does not end a newer invocation when one ended in bulk finishes late', (t) => {
+    const { agent, awsLambda, stubEvent, stubContext, stubCallback } = t.nr
+    tempRemoveListeners({ t, emitter: process, event: 'beforeExit' })
+    const invocations = []
+    const handler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      invocations.push({ transaction: agent.tracer.getTransaction(), callback })
+    })
+    handler(stubEvent, stubContext, stubCallback)
+    handler(stubEvent, stubContext, stubCallback)
+    process.emit('beforeExit')
+    handler(stubEvent, stubContext, stubCallback)
+    handler(stubEvent, stubContext, stubCallback)
+
+    invocations[1].callback(null, 'worked')
+    assert.equal(invocations[3].transaction.isActive(), true)
+
+    invocations[3].callback(null, 'worked')
+    assert.equal(invocations[3].transaction.isActive(), false)
+  })
+
+  await t.test('still harvests when the handler ends the transaction itself', (t) => {
+    const { agent, awsLambda, send, stubEvent, stubContext, stubCallback } = t.nr
+    const handler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      agent.tracer.getTransaction().end()
+      callback(null, 'worked')
+    })
+
+    handler(stubEvent, stubContext, stubCallback)
+
+    assert.equal(send.args.filter(([method]) => method === 'metric_data').length, 1)
+  })
+})

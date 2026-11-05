@@ -269,6 +269,28 @@ test('Metric Aggregator', async (t) => {
     assert.equal(newStarted, expectedNewStarted)
   })
 
+  await t.test('resetStartTime() should move started forward without clearing metrics', (t) => {
+    const { metricAggregator, testClock } = t.nr
+    const msToElapse = 5000
+
+    const originalStarted = metricAggregator.started
+
+    metricAggregator.getOrCreateMetric('metric1', 'scope1').incrementCallCount()
+    metricAggregator.getOrCreateMetric('metric2').incrementCallCount()
+
+    testClock.tick(msToElapse)
+
+    metricAggregator.resetStartTime()
+
+    const newStarted = metricAggregator.started
+    assert.equal(newStarted, originalStarted + msToElapse)
+
+    // Already-recorded metric data must survive the reset.
+    assert.equal(metricAggregator.empty, false)
+    assert.equal(metricAggregator.getMetric('metric1', 'scope1').callCount, 1)
+    assert.equal(metricAggregator.getMetric('metric2').callCount, 1)
+  })
+
   await t.test('merge() should merge passed in metrics', (t) => {
     const { metricAggregator, mapper, normalizer } = t.nr
     const expectedMetricName = 'myMetric'
