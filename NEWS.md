@@ -14,29 +14,12 @@
 
 #### Documentation
 
-* clarify datastore reporting configuration ([#4434](https://github.com/newrelic/node-newrelic/pull/4434)) ([ec469e2](https://github.com/newrelic/node-newrelic/commit/ec469e2bf069d680d1eb6573df784e869d27e8fa))
+* Clarified datastore reporting configuration ([#4434](https://github.com/newrelic/node-newrelic/pull/4434)) ([ec469e2](https://github.com/newrelic/node-newrelic/commit/ec469e2bf069d680d1eb6573df784e869d27e8fa))
 * Updated compatibility report ([#4415](https://github.com/newrelic/node-newrelic/pull/4415)) ([07a4437](https://github.com/newrelic/node-newrelic/commit/07a4437a8664799e4ba068fa56f0211e6b31156b))
-
-#### Miscellaneous chores
-
-* Pin CI Docker images to digests with version comments ([#4422](https://github.com/newrelic/node-newrelic/pull/4422)) ([fe48e5a](https://github.com/newrelic/node-newrelic/commit/fe48e5ab03d59d2f1db549b9a1a1659bcbae43fd))
-* Removed unused GitHub Action ([#4424](https://github.com/newrelic/node-newrelic/pull/4424)) ([6fc325b](https://github.com/newrelic/node-newrelic/commit/6fc325b9727d20e19ca34634dd2f2fe5e46bb4ee))
 
 #### Tests
 
 * Moved http tests to `test/integration/core/http`. Also split out unit and integration tests accordingly ([#4418](https://github.com/newrelic/node-newrelic/pull/4418)) ([3127658](https://github.com/newrelic/node-newrelic/commit/3127658da5a9a1002e2184e8e7ab1e16d8c919bc))
-
-#### Continuous integration
-
-* **deps:** bump actions/setup-dotnet from 5.4.0 to 6.1.0 ([#4431](https://github.com/newrelic/node-newrelic/pull/4431)) ([bbed6e7](https://github.com/newrelic/node-newrelic/commit/bbed6e736ba03909bad624eb8610a4adf954c5e1))
-* **deps:** bump actions/setup-node from 6.5.0 to 7.1.0 ([#4429](https://github.com/newrelic/node-newrelic/pull/4429)) ([f28cd7b](https://github.com/newrelic/node-newrelic/commit/f28cd7bb3afec999819627f3298779b9ed244205))
-* **deps:** bump dorny/paths-filter from 4.0.1 to 4.0.3 ([#4432](https://github.com/newrelic/node-newrelic/pull/4432)) ([0e47999](https://github.com/newrelic/node-newrelic/commit/0e4799952af2c08e0e7e76aafeaf8d629b6ea8e2))
-* **deps:** bump jaxxstorm/action-install-gh-release from 3.0.0 to 4.0.0 ([#4430](https://github.com/newrelic/node-newrelic/pull/4430)) ([5ba3092](https://github.com/newrelic/node-newrelic/commit/5ba30924b6592ea77c3fbb5abda7c5997f814c65))
-* **deps:** bump marocchino/sticky-pull-request-comment from 3.0.4 to 3.0.5 ([#4433](https://github.com/newrelic/node-newrelic/pull/4433)) ([ee2afcf](https://github.com/newrelic/node-newrelic/commit/ee2afcf8e3f4ba0792c8f8480434e23178855a41))
-* Enabled Dependabot version updates for github-actions ([#4428](https://github.com/newrelic/node-newrelic/pull/4428)) ([05fbdcd](https://github.com/newrelic/node-newrelic/commit/05fbdcdc43fdf8705ccf702694d758971994b65c))
-* Passed workflow expressions through env vars in run: blocks ([#4423](https://github.com/newrelic/node-newrelic/pull/4423)) ([66a145b](https://github.com/newrelic/node-newrelic/commit/66a145bf2f6d72f8248797a70447f3a80f6e8aba))
-* Pinned actions to commit SHAs with version comments ([#4427](https://github.com/newrelic/node-newrelic/pull/4427)) ([ae08c64](https://github.com/newrelic/node-newrelic/commit/ae08c64c9d7aba0a39a34c3af1ff7ec8526d57b1))
-* Skipped smoke tests job for Dependabot-authored branches ([#4435](https://github.com/newrelic/node-newrelic/pull/4435)) ([d8af4db](https://github.com/newrelic/node-newrelic/commit/d8af4dbea6321d8a40ff9769ed27a76b1c7318aa))
 
 ### v14.10.0 (2026-10-29)
 
