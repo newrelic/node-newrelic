@@ -9,7 +9,7 @@ const test = require('node:test')
 const { tspl } = require('@matteo.collina/tspl')
 const helper = require('#testlib/agent_helper.js')
 
-// This lives in its own file, separate from http-outbound.test.js, because
+// This lives in its own file, separate from http-client.test.js, because
 // `nock` must be loaded there at module scope (so its interception survives
 // across that file's many instrumentMockedAgent()/unloadAgent() cycles), but
 // nock 14's `@mswjs/interceptors` crashes on a proxy-style request (where
