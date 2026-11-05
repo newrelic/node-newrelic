@@ -634,3 +634,21 @@ test('otlp_resource_attributes', () => {
   const config = Config.initialize()
   assert.deepEqual(config.otlp_resource_attributes, {})
 })
+
+test('isNativeMetricsEnabled', async (t) => {
+  await t.test('returns true by default', () => {
+    const config = Config.initialize({})
+    assert.equal(config.isNativeMetricsEnabled(), true)
+  })
+
+  await t.test('returns false when disabled via config', () => {
+    const config = Config.initialize({ plugins: { native_metrics: { enabled: false } } })
+    assert.equal(config.isNativeMetricsEnabled(), false)
+  })
+
+  await t.test('returns false when the plugins config is missing', () => {
+    const config = Config.initialize({})
+    config.plugins = undefined
+    assert.equal(config.isNativeMetricsEnabled(), false)
+  })
+})
