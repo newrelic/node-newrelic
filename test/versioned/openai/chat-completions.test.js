@@ -51,7 +51,7 @@ test('chat.completions.create', async (t) => {
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
     ctx.nr.server?.close()
-    removeModules('openai')
+    removeModules(['openai'])
   })
 
   await t.test('should not crash when you call `completions.parse`', { skip: semver.lt(pkgVersion, '5.0.0') }, async (t) => {
@@ -521,7 +521,7 @@ test('chat.completions.create', async (t) => {
     const { host, port } = t.nr
     // tear down the enabled agent/module set up in `beforeEach`
     helper.unloadAgent(t.nr.agent)
-    removeModules('openai')
+    removeModules(['openai'])
 
     // set up the agent instance with ai_monitoring disabled
     const agent = helper.instrumentMockedAgent({
@@ -596,7 +596,7 @@ test('chat.completions.create', async (t) => {
     const { host, port } = t.nr
     // tear down the enabled agent/module set up in `beforeEach`
     helper.unloadAgent(t.nr.agent)
-    removeModules('openai')
+    removeModules(['openai'])
 
     // set up the agent instance with ai_monitoring disabled
     const agent = helper.instrumentMockedAgent({
