@@ -48,7 +48,14 @@ test('built-in http queueTime', async (t) => {
         }
       }
       http.get(opts, () => {
-        server.close(end)
+        server.close(() => {
+          // Recorded once the base segment ends (after response completes),
+          // confirming the queueTime property above is actually wired up to
+          // the WebFrontend/QueueTime metric, not just set on the transaction.
+          const queueTimeStats = agent.metrics.getOrCreateMetric('WebFrontend/QueueTime')
+          assert.equal(queueTimeStats.callCount, 1, 'should record the queue time metric')
+          end()
+        })
       })
     })
   })
