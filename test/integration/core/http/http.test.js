@@ -9,7 +9,6 @@ const DESTINATIONS = require('#agentlib/config/attribute-filter.js').DESTINATION
 const test = require('node:test')
 const { tspl } = require('@matteo.collina/tspl')
 const assert = require('node:assert')
-const http = require('http')
 const http = require('node:http')
 const https = require('node:https')
 const helper = require('#testlib/agent_helper.js')
