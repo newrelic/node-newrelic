@@ -13,6 +13,7 @@ const { tspl } = require('@matteo.collina/tspl')
 const net = require('net')
 const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 const fs = require('node:fs/promises')
+const { once } = require('node:events')
 const http = require('node:http')
 const https = require('node:https')
 const url = require('node:url')
@@ -614,7 +615,7 @@ test('HttpClientSubscriber', async (t) => {
     })
   })
 
-  await t.test('should end the segment when request() throws', (t, end) => {
+  await t.test('should touch the segment when request() throws', (t, end) => {
     helper.runInTransaction(t.nr.agent, function (transaction) {
       assert.throws(
         () => http.request({ host: HOSTNAME, port: PORT, path: '/new relic' }),
@@ -622,7 +623,7 @@ test('HttpClientSubscriber', async (t) => {
       )
 
       const [child] = getExternalSegments(transaction)
-      assert.equal(child.timer.isActive(), false, 'should end the segment')
+      assert.equal(child.timer.touched, true, 'should touch the segment')
       assert.equal(transaction.exceptions.length, 0, 'should leave the thrown error to the caller')
       transaction.end()
       assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${HOSTNAME}:${PORT}`, 'should not truncate the segment')
@@ -648,16 +649,18 @@ test('HttpClientSubscriber', async (t) => {
   }
 
   const proxyTargets = [
-    ['http', 'http://example.com/foo?a=b', 'http://example.com/foo', '80'],
-    ['https', 'https://example.com/foo?a=b', 'https://example.com/foo', '443']
+    ['an http', 'http://example.com/foo?a=b', 'example.com', 'http://example.com/foo', '80'],
+    ['an https', 'https://example.com/foo?a=b', 'example.com', 'https://example.com/foo', '443'],
+    ['an http with a port', 'http://example.com:8080/foo?a=b', 'example.com:8080', 'http://example.com:8080/foo', '8080'],
+    ['an https with a port', 'https://example.com:8443/foo?a=b', 'example.com:8443', 'https://example.com:8443/foo', '8443']
   ]
-  for (const [protocol, path, url, port] of proxyTargets) {
-    await t.test(`should record the target of an ${protocol} proxy request`, (t, end) => {
+  for (const [label, path, host, url, port] of proxyTargets) {
+    await t.test(`should record the target of ${label} proxy request`, (t, end) => {
       helper.runInTransaction(t.nr.agent, function (transaction) {
         makeRequest({ host: HOSTNAME, port: PORT, path })
 
         const [child] = getExternalSegments(transaction)
-        assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}example.com/foo`)
+        assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${host}/foo`)
         assert.deepEqual(child.getAttributes(), { url, procedure: 'GET' })
         assert.deepEqual(child.attributes.get(DESTINATIONS.SPAN_EVENT), {
           hostname: 'example.com',
@@ -669,7 +672,7 @@ test('HttpClientSubscriber', async (t) => {
         transaction.end()
         // the metrics are named for the proxy target, not the proxy
         assertExternalMetrics(t.nr.agent, {
-          unscoped: ['External/example.com/http', 'External/example.com/all', 'External/allWeb', 'External/all']
+          unscoped: [`External/${host}/http`, `External/${host}/all`, 'External/allWeb', 'External/all']
         })
         end()
       })
@@ -691,17 +694,17 @@ test('HttpClientSubscriber', async (t) => {
     })
   })
 
-  await t.test('should end the segment and not capture an error the user handles', (t, end) => {
+  await t.test('should touch the segment and not capture an error the user handles', (t, end) => {
     helper.runInTransaction(t.nr.agent, function (transaction) {
       const req = http.request({ host: HOSTNAME, port: PORT, path: '/newrelic' })
       req.on('error', () => {})
       const [child] = getExternalSegments(transaction)
 
       req.emit('error', new Error('boom'))
-
-      assert.equal(child.timer.isActive(), false, 'should end the segment')
-      assert.equal(transaction.exceptions.length, 0, 'should not capture the error')
       req.destroy()
+
+      assert.equal(child.timer.touched, true, 'should touch the segment')
+      assert.equal(transaction.exceptions.length, 0, 'should not capture the error')
       transaction.end()
       assert.equal(t.nr.agent.errors.traceAggregator.errors.length, 0, 'should not collect an error trace')
       end()
@@ -716,12 +719,14 @@ test('HttpClientSubscriber', async (t) => {
 
       // with no listener the emitter rethrows, as it would without the agent
       assert.throws(() => req.emit('error', error), error)
-
-      assert.equal(child.timer.isActive(), false, 'should end the segment')
-      assert.equal(transaction.exceptions.length, 1, 'should capture the error')
-      assert.equal(transaction.exceptions[0].error, error)
+      // clean up before asserting, so a failed assertion can't leave the
+      // request erroring with no listener after the test ends
       req.on('error', () => {})
       req.destroy()
+
+      assert.equal(child.timer.touched, true, 'should touch the segment')
+      assert.equal(transaction.exceptions.length, 1, 'should capture the error')
+      assert.equal(transaction.exceptions[0].error, error)
 
       const { agent } = t.nr
       transaction.end()
@@ -860,7 +865,7 @@ test('HttpClientSubscriber telemetry', async (t) => {
     })
 
     assert.equal(segment.name, `External/${HOSTNAME}:${port}/ok`)
-    assert.equal(segment.timer.isActive(), false, 'should end the segment')
+    assert.equal(segment.timer.touched, true, 'should touch the segment')
     // the agent adds the exclusive duration to every segment when the transaction ends
     const { nr_exclusive_duration_millis: traceDuration, ...traceAttributes } = segment.getAttributes()
     const { nr_exclusive_duration_millis: spanDuration, ...spanAttributes } = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
@@ -944,6 +949,54 @@ test('HttpClientSubscriber telemetry', async (t) => {
     assert.equal(segments.callback, segments.external, 'should run the response callback in the external segment')
     assert.equal(segments.data, segments.external, 'should run data listeners in the external segment')
     assert.equal(segments.end, segments.external, 'should run end listeners in the external segment')
+  })
+
+  await t.test('should run response listeners in the correct segment when the socket is reused', async (t) => {
+    const { agent, port } = t.nr
+    const keepAliveAgent = new http.Agent({ keepAlive: true, maxSockets: 1 })
+    t.after(() => keepAliveAgent.destroy())
+
+    function get(transaction) {
+      return new Promise((resolve) => {
+        const req = http.get({ host: HOSTNAME, port, path: '/ok', agent: keepAliveAgent }, (res) => {
+          const segments = { callback: agent.tracer.getSegment() }
+          res.on('data', () => {
+            segments.data = agent.tracer.getSegment()
+          })
+          res.on('end', () => {
+            segments.end = agent.tracer.getSegment()
+            segments.external = getExternalSegments(transaction)[0]
+            segments.socket = req.socket
+            resolve(segments)
+          })
+        })
+      })
+    }
+
+    const first = await helper.runInTransaction(agent, async (transaction) => {
+      // wait for the socket to actually be returned to the keep-alive pool
+      // before issuing the second request, or it may open a fresh socket.
+      // Listen before the request: `free` fires on the tick after the
+      // response ends, before an `await` on the response would resume.
+      const freed = once(keepAliveAgent, 'free')
+      const result = await get(transaction)
+      await freed
+      transaction.end()
+      return result
+    })
+
+    const second = await helper.runInTransaction(agent, async (transaction) => {
+      const result = await get(transaction)
+      transaction.end()
+      return result
+    })
+
+    assert.equal(second.socket, first.socket, 'sanity check: the socket was actually reused')
+    assert.notEqual(second.external, first.external, 'sanity check: two distinct transaction segments')
+
+    assert.equal(second.callback, second.external, 'should run the response callback in the second transaction\'s segment')
+    assert.equal(second.data, second.external, 'should run data listeners in the second transaction\'s segment, not the first\'s')
+    assert.equal(second.end, second.external, 'should run end listeners in the second transaction\'s segment, not the first\'s')
   })
 })
 
