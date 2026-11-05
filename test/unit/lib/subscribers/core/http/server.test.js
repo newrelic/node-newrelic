@@ -8,7 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const EventEmitter = require('node:events')
 const sinon = require('sinon')
-const HttpSubscriber = require('#agentlib/subscribers/core/http/server.js')
+const HttpServerSubscriber = require('#agentlib/subscribers/core/http/server.js')
 const symbols = require('#agentlib/symbols.js')
 const helper = require('#testlib/agent_helper.js')
 const loggerMock = require('../../../../mocks/logger')
@@ -30,7 +30,7 @@ function makeRequestResponse(overrides = {}) {
 test.beforeEach((ctx) => {
   const agent = helper.loadMockedAgent()
   const logger = loggerMock()
-  const subscriber = new HttpSubscriber({ agent, logger })
+  const subscriber = new HttpServerSubscriber({ agent, logger })
   ctx.nr = { agent, subscriber, logger }
 })
 
@@ -39,6 +39,16 @@ test.afterEach((ctx) => {
   subscriber.disable()
   subscriber.unsubscribe()
   helper.unloadAgent(agent)
+})
+
+test('default props', (t) => {
+  const { subscriber } = t.nr
+  assert.equal(subscriber.packageName, 'http')
+  assert.equal(subscriber.id, 'nr:server:http')
+  assert.equal(subscriber.channels.length, 1)
+  const [channel] = subscriber.channels
+  assert.equal(channel.start.name, 'tracing:nr:server:http:Server.onrequest:start')
+  assert.equal(subscriber.transport, 'HTTP')
 })
 
 test('enabled should respect the instrumentation.http config toggle', (t) => {
