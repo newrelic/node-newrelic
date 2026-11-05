@@ -18,10 +18,14 @@ on:
 
 jobs:
   smoke:
-    if: github.event_name == 'workflow_dispatch' ||
+    # Dependabot-authored branches/PRs cannot access repository secrets, so the
+    # smoke tests (which require licensed/AWS secrets) would always fail. Skip
+    # the job for Dependabot so the all-clear check can still pass.
+    if: github.actor != 'dependabot[bot]' &&
+      (github.event_name == 'workflow_dispatch' ||
       github.event_name == 'push' ||
       github.event_name == 'schedule' ||
-      github.event.label.name == 'force-smoke'
+      github.event.label.name == 'force-smoke')
     permissions: read-all
     runs-on: ubuntu-latest
 
