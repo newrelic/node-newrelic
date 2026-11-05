@@ -531,7 +531,7 @@
               "x-newrelic-env-var": "NEW_RELIC_DATASTORE_INSTANCE_REPORTING_ENABLED",
               "type": "boolean",
               "default": true,
-              "description": "When true (the default), reports the datastore host and port, path, or ID supplied by instrumentation. When false, removes host and port_path_or_id from datastore segments and disables datastore instance metrics. Does not affect database name reporting."
+              "description": "When true (the default), reports the datastore host and port, path, or ID. When false, removes host and port_path_or_id from datastore segments and disables datastore instance metrics. Does not affect database name reporting."
             }
           },
           "additionalProperties": true,
@@ -544,7 +544,7 @@
               "x-newrelic-env-var": "NEW_RELIC_DATASTORE_DATABASE_NAME_REPORTING_ENABLED",
               "type": "boolean",
               "default": true,
-              "description": "When true (the default), reports the database or schema name supplied by instrumentation. When false, removes database_name from datastore segments. Does not affect datastore instance reporting."
+              "description": "When true (the default), reports the database or schema name. When false, removes database_name from datastore segments. Does not affect datastore instance reporting."
             }
           },
           "additionalProperties": true,
