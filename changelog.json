@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.11.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Stopped span event aggregator from stripping span links and timed events from queued spans"
+        ],
+        "features": [
+          "Removed duplicate setting of fields in `initInternalFields`"
+        ]
+      }
+    },
+    {
       "version": "14.10.0",
       "changes": {
         "security": [],
