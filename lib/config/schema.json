@@ -530,10 +530,12 @@
             "enabled": {
               "x-newrelic-env-var": "NEW_RELIC_DATASTORE_INSTANCE_REPORTING_ENABLED",
               "type": "boolean",
-              "default": true
+              "default": true,
+              "description": "When true (the default), reports the datastore host and port, path, or ID. When false, removes host and port_path_or_id from datastore segments and disables datastore instance metrics. Does not affect database name reporting."
             }
           },
-          "additionalProperties": true
+          "additionalProperties": true,
+          "description": "Controls reporting of datastore server connection details and instance metrics."
         },
         "database_name_reporting": {
           "type": "object",
@@ -541,14 +543,16 @@
             "enabled": {
               "x-newrelic-env-var": "NEW_RELIC_DATASTORE_DATABASE_NAME_REPORTING_ENABLED",
               "type": "boolean",
-              "default": true
+              "default": true,
+              "description": "When true (the default), reports the database or schema name. When false, removes database_name from datastore segments. Does not affect datastore instance reporting."
             }
           },
-          "additionalProperties": true
+          "additionalProperties": true,
+          "description": "Controls reporting of database and schema names."
         }
       },
       "additionalProperties": true,
-      "description": "Controls behavior of datastore instance metrics. Enables reporting the host and port/path/id of database servers. Default is `true`. Enables reporting of database/schema names. Default is `true`."
+      "description": "Controls which datastore connection details the agent reports. Instance reporting and database name reporting are enabled by default and can be disabled independently."
     },
     "distributed_tracing": {
       "type": "object",
