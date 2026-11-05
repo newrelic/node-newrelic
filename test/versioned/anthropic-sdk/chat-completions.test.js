@@ -46,7 +46,7 @@ test.beforeEach(async (ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.server?.close()
-  removeModules('@anthropic-ai/sdk')
+  removeModules(['@anthropic-ai/sdk'])
 })
 
 test('should log tracking metrics', (t, end) => {
@@ -422,7 +422,7 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   const { host, port } = t.nr
   // tear down the enabled agent/module set up in `beforeEach`
   helper.unloadAgent(t.nr.agent)
-  removeModules('@anthropic-ai/sdk')
+  removeModules(['@anthropic-ai/sdk'])
 
   // set up the agent instance with ai_monitoring disabled
   const agent = helper.instrumentMockedAgent({
@@ -463,7 +463,7 @@ test('should create segment and llm events in stream when ai_monitoring is disab
   const { host, port } = t.nr
   // tear down the enabled agent/module set up in `beforeEach`
   helper.unloadAgent(t.nr.agent)
-  removeModules('@anthropic-ai/sdk')
+  removeModules(['@anthropic-ai/sdk'])
 
   // set up the agent instance with ai_monitoring disabled
   const agent = helper.instrumentMockedAgent({

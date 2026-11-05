@@ -37,7 +37,7 @@ test.beforeEach(async (ctx) => {
 test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
   ctx.nr.server?.close()
-  removeModules('@anthropic-ai/sdk')
+  removeModules(['@anthropic-ai/sdk'])
 })
 
 test('can send feedback events', (t, end) => {
