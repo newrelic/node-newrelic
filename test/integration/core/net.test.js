@@ -784,3 +784,19 @@ test(
     )
   }
 )
+
+test('a connect that throws in a transaction only raises its own error', async (t) => {
+  const { agent } = t.nr
+
+  await helper.runInTransaction(agent, async (transaction) => {
+    assert.throws(() => net.connect({ port: -1 }), { code: 'ERR_SOCKET_BAD_PORT' })
+
+    // A diagnostics channel subscriber that throws re-raises its error on the
+    // next tick as an uncaught exception, which fails this test if it happens.
+    await new Promise((resolve) => setImmediate(resolve))
+
+    const [connectSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+    assert.equal(connectSegment.name, 'net.connect', 'should create a net.connect segment')
+    assert.ok(connectSegment.timer.touched, 'connect segment should have been touched')
+  })
+})
