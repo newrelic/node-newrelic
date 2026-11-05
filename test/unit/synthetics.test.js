@@ -29,7 +29,7 @@ const synthetics = proxyquire('../../lib/synthetics', {
 // Other files test more functionality
 // See:
 //  * test/unit/analytics_events.test.js
-//  * test/unit/instrumentation/http/synthetics.test.js
+//  * test/integration/core/http/synthetics.test.js
 //  * test/unit/transaction.test.js
 test('synthetics helpers', async (t) => {
   t.afterEach(() => {
