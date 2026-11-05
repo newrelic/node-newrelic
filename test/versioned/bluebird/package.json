@@ -13,6 +13,7 @@
       },
       "files": [
         "baseline.test.js",
+        "instrumentation-shape.test.js",
         "promise-all.test.js",
         "promise-all-settled.test.js",
         "promise-any.test.js",
