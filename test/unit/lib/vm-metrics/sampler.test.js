@@ -11,6 +11,7 @@ const sinon = require('sinon')
 const Agent = require('#agentlib/agent.js')
 const configurator = require('#agentlib/config/index.js')
 const Sampler = require('#agentlib/vm-metrics/sampler.js')
+const churn = require('./helpers/churn.js')
 
 const numCpus = require('node:os').cpus().length
 const NAMES = require('#agentlib/metrics/names.js')
@@ -120,7 +121,28 @@ test('environmental sampler', async function (t) {
     assert.equal(sampler.state, 'stopped')
   })
 
-  // `start()` takes one synchronous sample of each metric before arming the
+  await t.test('should rebind a fresh VM metrics collector after stop/start', function (t) {
+    const { sampler } = t.nr
+    sampler.start()
+    const first = sampler.vmMetrics
+    assert.ok(first, 'collector created on first start')
+    assert.equal(first.bound, true)
+
+    // stop() unbinds and clears the collector so a new one is built next start.
+    sampler.stop()
+    assert.equal(first.bound, false, 'collector unbound on stop')
+    assert.equal(sampler.vmMetrics, null, 'collector cleared on stop')
+
+    sampler.start()
+    assert.ok(sampler.vmMetrics, 'collector recreated on restart')
+    assert.notEqual(sampler.vmMetrics, first, 'a fresh collector is bound')
+    assert.equal(sampler.vmMetrics.bound, true)
+
+    // Both samplers still record after the restart cycle.
+    sampler.sample()
+    assert.ok(sampler.vmMetrics, 'collector remains bound after a post-restart sample')
+  })
+
   // start() records nothing until an interval elapses; sample() takes one
   // deterministic pass, so these assert that single sample rather than racing a
   // timer interval.
@@ -347,25 +369,6 @@ test('environmental sampler', async function (t) {
     }, TICK * 3)
   })
 })
-
-/**
- * Allocates and discards garbage across several event-loop turns to drive real
- * GC collections and give the per-tick loop sampler turns to accumulate,
- * yielding between rounds so the performance observer can flush its entries.
- *
- * @param {number} [rounds] The number of allocation rounds to perform.
- * @returns {Promise} Resolves once the rounds complete.
- */
-async function churn(rounds = 15) {
-  for (let round = 0; round < rounds; round++) {
-    let trash = []
-    for (let i = 0; i < 200000; i++) {
-      trash.push([{ i }])
-    }
-    trash = null
-    await new Promise((resolve) => setTimeout(resolve, 5))
-  }
-}
 
 function spinLoop(cb) {
   const DELAY = 5
