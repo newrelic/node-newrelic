@@ -10,6 +10,7 @@ const test = require('node:test')
 const sinon = require('sinon')
 
 const helper = require('../../lib/agent_helper')
+const { findSegment } = require('../../lib/metrics_helper')
 const { FAKE_CREDENTIALS, getAiResponseServer } = require('../../lib/aws-server-stubs')
 const afterEach = require('./test-utils/after-each.js')
 const createAiResponseServer = getAiResponseServer(__dirname)
@@ -37,7 +38,7 @@ test.beforeEach(async (ctx) => {
 
 test.afterEach(afterEach)
 
-test('should not register instrumentation middleware when ai_monitoring is not enabled', async (t) => {
+test('should not record Llm segments or events when ai_monitoring is not enabled', async (t) => {
   const { bedrock, client, responses, agent } = t.nr
   const resKey = 'amazon'
   const modelId = 'amazon.titan-text-express-v1'
@@ -54,9 +55,39 @@ test('should not register instrumentation middleware when ai_monitoring is not e
   await helper.runInTransaction(agent, async (tx) => {
     const response = await client.send(command)
     assert.equal(response.$metadata.requestId, expected.headers['x-amzn-requestid'])
-    assert.equal(client.middlewareStack.add.callCount, 2)
+    // The middleware is always registered so that server side configuration
+    // changes are honored; it checks whether ai_monitoring is enabled per call.
     const fns = client.middlewareStack.add.args.map(([mw]) => mw.name)
-    assert.ok(!fns.includes('bound bedrockMiddleware'))
+    assert.ok(fns.includes('bound bedrockMiddleware'))
+    assert.ok(!findSegment(tx.trace, tx.trace.root, 'Llm/completion/Bedrock/InvokeModelCommand'))
+    assert.equal(agent.customEventAggregator.events.toArray().length, 0)
+    tx.end()
+  })
+})
+
+test('should record Llm segments and events when ai_monitoring is enabled after the first call', async (t) => {
+  const { bedrock, client, agent } = t.nr
+  const resKey = 'amazon'
+  const modelId = 'amazon.titan-text-express-v1'
+  const prompt = `text ${resKey} ultimate question`
+  const input = {
+    body: JSON.stringify({ inputText: prompt }),
+    modelId
+  }
+
+  // simulate a server side configuration change between calls on the same client
+  agent.config.ai_monitoring.enabled = false
+  await helper.runInTransaction(agent, async (tx) => {
+    await client.send(new bedrock.InvokeModelCommand(input))
+    assert.ok(!findSegment(tx.trace, tx.trace.root, 'Llm/completion/Bedrock/InvokeModelCommand'))
+    tx.end()
+  })
+
+  agent.config.ai_monitoring.enabled = true
+  await helper.runInTransaction(agent, async (tx) => {
+    await client.send(new bedrock.InvokeModelCommand(input))
+    assert.ok(findSegment(tx.trace, tx.trace.root, 'Llm/completion/Bedrock/InvokeModelCommand'))
+    assert.ok(agent.customEventAggregator.events.toArray().length > 0)
     tx.end()
   })
 })
