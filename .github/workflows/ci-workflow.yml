@@ -303,7 +303,7 @@ jobs:
           echo "files=${files}" >> "$GITHUB_OUTPUT"
       - name: Post Unit Test Coverage
         # v7.0.0
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -311,7 +311,7 @@ jobs:
           flags: unit-tests-${{ matrix.node-version }}
       - name: Post Integration CJS Test Coverage
         # v7.0.0
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -319,7 +319,7 @@ jobs:
           flags: integration-tests-cjs-${{ matrix.node-version }}
       - name: Post Integration ESM Test Coverage
         # v7.0.0
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -327,7 +327,7 @@ jobs:
           flags: integration-tests-esm-${{ matrix.node-version }}
       - name: Post Versioned Test Coverage
         # v7.0.0
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
