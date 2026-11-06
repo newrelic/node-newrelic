@@ -4,7 +4,10 @@ The New Relic agent supports a robust sampling decision making interface. This i
 
 ## Config
 
-Customers configure how they would like their transactions to be sampled under our `distributed_tracing` section in our config. Remember, sampling will only apply if a customer has `distributed_tracing.enabled` set to `true`, `distributed_tracing.sampler.full_granularity.enabled = true`, and if they want partial granularity traces, `distributed_tracing.sampler.partial_granularity.enabled = true`.
+Customers configure how they would like their transactions to be sampled under our `distributed_tracing` section in our config. Remember, sampling will only apply if a customer has `distributed_tracing.enabled` set to `true`.
+
+> [!NOTE]
+> Core Tracing is currently disabled ([#4380](https://github.com/newrelic/node-newrelic/issues/4380)). Full granularity is always on and partial granularity is always off: `distributed_tracing.sampler.full_granularity.enabled` and `distributed_tracing.sampler.partial_granularity.enabled` cannot be changed through the config file or environment variables, and attempts to do so are ignored. Other `partial_granularity` settings are accepted but have no effect.
 
 ### Types
 
@@ -44,9 +47,9 @@ distributed_tracing:
       ${SAMPLER_TYPE}
         ${SAMPLER_SUBOPTION}
     full_granularity:
-      enabled
+      enabled   (currently locked to true, see note above)
     partial_granularity:
-      enabled
+      enabled   (currently locked to false, see note above)
       type   ("reduced", "essential", "compact")
       root: (when the trace originates from the current service)
         ${SAMPLER_TYPE}

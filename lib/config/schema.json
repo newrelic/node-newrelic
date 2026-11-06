@@ -747,6 +747,7 @@
             },
             "full_granularity": {
               "type": "object",
+              "x-newrelic-internal": true,
               "properties": {
                 "enabled": {
                   "type": "boolean",
@@ -757,6 +758,7 @@
             },
             "partial_granularity": {
               "type": "object",
+              "x-newrelic-internal": true,
               "properties": {
                 "enabled": {
                   "type": "boolean",
