@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const semver = require('semver')
 const { removeModules } = require('../../lib/cache-buster')
 const { assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const GoogleGenAIMockServer = require('./mock-server')
@@ -17,6 +18,9 @@ const {
   AI: { GEMINI }
 } = require('../../../lib/metrics/names')
 const pkgVersion = helper.readPackageVersion(__dirname, '@google/genai')
+// The default Gemini Developer API version moved from `v1beta` to `v1` in
+// @google/genai@3.0.0, which changes the external request path.
+const apiVersion = semver.satisfies(pkgVersion, '<3.0.0') ? 'v1beta' : 'v1'
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 test.beforeEach(async (ctx) => {
@@ -61,7 +65,7 @@ test('should create span on successful embedding create', (t, end) => {
 
     assert.equal(results.headers, undefined, 'should remove response headers from user result')
 
-    const name = `External/${host}:${port}/v1beta/models/${model}:batchEmbedContents`
+    const name = `External/${host}:${port}/${apiVersion}/models/${model}:batchEmbedContents`
     assertSegments(
       tx.trace,
       tx.trace.root,

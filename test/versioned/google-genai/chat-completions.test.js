@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const semver = require('semver')
 const { removeModules } = require('../../lib/cache-buster')
 const { assertPackageMetrics, assertSegments, assertSpanKind, match } = require('../../lib/custom-assertions')
 const { assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
@@ -18,6 +19,9 @@ const {
   AI: { GEMINI }
 } = require('../../../lib/metrics/names')
 const pkgVersion = helper.readPackageVersion(__dirname, '@google/genai')
+// The default Gemini Developer API version moved from `v1beta` to `v1` in
+// @google/genai@3.0.0, which changes the external request path.
+const apiVersion = semver.satisfies(pkgVersion, '<3.0.0') ? 'v1beta' : 'v1'
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const responses = require('./mock-responses')
 const TRACKING_METRIC = `Supportability/Nodejs/ML/Gemini/${pkgVersion}`
@@ -83,7 +87,7 @@ test('should create span on successful models generateContent', (t, end) => {
     assert.equal(result.headers, undefined, 'should remove response headers from user result')
     assert.equal(result.candidates[0].content.parts[0].text, '1 plus 2 is 3.')
 
-    const name = `External/${host}:${port}/v1beta/models/${model}:generateContent`
+    const name = `External/${host}:${port}/${apiVersion}/models/${model}:generateContent`
     assertSegments(
       tx.trace,
       tx.trace.root,
@@ -178,7 +182,7 @@ test('should create span on successful models generateContentStream', (t, end) =
     assert.equal(chunk.candidates[0].content.parts[0].text, expectedRes.body.candidates[0].content.parts[0].text)
     assert.equal(chunk.candidates[0].content.parts[0].text, res)
 
-    const name = `External/${host}:${port}/v1beta/models/${model}:streamGenerateContent`
+    const name = `External/${host}:${port}/${apiVersion}/models/${model}:streamGenerateContent`
     assertSegments(
       tx.trace,
       tx.trace.root,
@@ -417,7 +421,7 @@ test('should not create llm events when ai_monitoring.streaming.enabled is false
       'Supportability/Nodejs/ML/Streaming/Disabled'
     )
     assert.equal(streamingDisabled.callCount > 0, true)
-    const name = `External/${host}:${port}/v1beta/models/${model}:streamGenerateContent`
+    const name = `External/${host}:${port}/${apiVersion}/models/${model}:streamGenerateContent`
     // Should still create the Gemini segment since ai_monitoring is enabled
     assertSegments(
       tx.trace,
