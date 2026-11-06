@@ -19,15 +19,6 @@ const NAMES = require('#agentlib/metrics/names.js')
 // for the production cadence.
 const TICK = 10
 
-/**
- * Resolves after enough time for at least one sampler tick to fire.
- *
- * @returns {Promise} Resolves after a tick interval has elapsed.
- */
-function nextTick() {
-  return new Promise((resolve) => setTimeout(resolve, TICK * 2))
-}
-
 test('environmental sampler', async function (t) {
   t.beforeEach(function (ctx) {
     ctx.nr = {}
@@ -48,64 +39,56 @@ test('environmental sampler', async function (t) {
     ctx.nr.sandbox.restore()
   })
 
-  await t.test('should still gather VM metrics when bound and unbound', function (t, end) {
+  await t.test('should gather GC metrics from real activity', async function (t) {
     const { agent, sampler, sandbox } = t.nr
     // The loop sampler reads real process CPU usage; restore it so the per-tick
     // deltas reflect actual work rather than the constant stub.
     sandbox.restore()
+
+    // start() binds the collector. Generate real GC activity while bound, then
+    // take one deterministic sample() to read the accumulated data — no
+    // reliance on timer scheduling, so this is stable under CPU contention.
     sampler.start()
-    sampler.stop()
-    sampler.start()
+    await churn()
+    sampler.sample()
 
-    // Clear up the current state of the metrics.
-    sampler.vmMetrics.getGCMetrics()
-    sampler.vmMetrics.getLoopMetrics()
+    // At least one typed GC bucket was recorded from the churn above.
+    const type = [
+      'Scavenge',
+      'MinorMarkCompact',
+      'MarkSweepCompact',
+      'IncrementalMarking',
+      'ProcessWeakCallbacks'
+    ].find((t) => agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + t).callCount)
+    assert.ok(type, 'at least one typed GC bucket recorded')
 
-    spinLoop(function runLoop() {
-      const loop = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
-      assert.ok(loop.callCount > 1)
-      assert.ok(loop.max > 0)
-      assert.ok(loop.min <= loop.max)
-      assert.ok(loop.total >= loop.max)
+    const gc = agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + type)
+    assert.ok(gc.callCount >= 1)
+    assert.ok(gc.total > 0)
 
-      // Find at least one typed GC metric.
-      const type = [
-        'Scavenge',
-        'MinorMarkCompact',
-        'MarkSweepCompact',
-        'IncrementalMarking',
-        'ProcessWeakCallbacks'
-      ].find((t) => agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + t).callCount)
-      assert.ok(type)
-
-      const gc = agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + type)
-      assert.ok(gc.callCount >= 1)
-      // GC ran, so a positive pause duration was recorded. The magnitude is
-      // runtime/hardware dependent, so do not assert an arbitrary floor.
-      assert.ok(gc.total > 0)
-
-      const pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
-      assert.ok(pause.callCount >= gc.callCount)
-      assert.ok(pause.total >= gc.total)
-      end()
-    })
+    const pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
+    assert.ok(pause.callCount >= gc.callCount)
+    assert.ok(pause.total >= gc.total)
   })
 
-  await t.test('should gather loop metrics', function (t, end) {
+  await t.test('should gather event loop CPU usage from real activity', async function (t) {
     const { agent, sampler, sandbox } = t.nr
-    // The loop sampler reads real process CPU usage; restore it so the per-tick
-    // deltas reflect actual work rather than the constant stub.
+    // Loop usage is real process CPU per tick; restore the stub and let real
+    // event-loop turns accumulate before reading.
     sandbox.restore()
+
     sampler.start()
-    sampler.vmMetrics.getLoopMetrics()
-    spinLoop(function runLoop() {
-      const stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
-      assert.ok(stats.callCount > 1)
-      assert.ok(stats.max > 0)
-      assert.ok(stats.min <= stats.max)
-      assert.ok(stats.total >= stats.max)
-      end()
-    })
+    await churn()
+    sampler.sample()
+
+    // Loop usage merges the collector's `{count,...}` bundle; assert on the
+    // recorded magnitudes rather than callCount (the merged bundle uses `count`
+    // and zero-count samples do not increment callCount).
+    const stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
+    assert.ok(stats.max > 0, 'recorded a positive per-tick CPU sample')
+    assert.ok(stats.min >= 0)
+    assert.ok(stats.min <= stats.max)
+    assert.ok(stats.total >= stats.max)
   })
 
   await t.test('should depend on Agent to provide the current metrics summary', function (t) {
@@ -137,43 +120,42 @@ test('environmental sampler', async function (t) {
     assert.equal(sampler.state, 'stopped')
   })
 
-  await t.test('should gather CPU user utilization metric', async function (t) {
+  // `start()` takes one synchronous sample of each metric before arming the
+  // recurring timers, so these assert the single deterministic sample directly
+  // rather than racing a timer interval.
+  await t.test('should gather CPU user utilization metric', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
-    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
-    assert.ok(stats.callCount >= 1)
+    assert.equal(stats.callCount, 1)
     assert.equal(stats.total, 1)
   })
 
-  await t.test('should gather CPU system utilization metric', async function (t) {
+  await t.test('should gather CPU system utilization metric', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
-    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
-    assert.ok(stats.callCount >= 1)
+    assert.equal(stats.callCount, 1)
     assert.equal(stats.total, 1)
   })
 
-  await t.test('should gather CPU user time metric', async function (t) {
+  await t.test('should gather CPU user time metric', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
-    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
-    assert.ok(stats.callCount >= 1)
+    assert.equal(stats.callCount, 1)
     assert.equal(stats.total, numCpus)
   })
 
-  await t.test('should gather CPU system time metric', async function (t) {
+  await t.test('should gather CPU system time metric', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
-    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
-    assert.ok(stats.callCount >= 1)
+    assert.equal(stats.callCount, 1)
     assert.equal(stats.total, numCpus)
   })
 
@@ -277,13 +259,12 @@ test('environmental sampler', async function (t) {
       }
     }
     sampler.start()
-    await nextTick()
     sampler.stop()
 
     assert.equal(logger.debug.calledWith(sinon.match.any, 'Unknown GC type %j', 42), true)
   })
 
-  await t.test('should catch if process.cpuUsage throws an error', async function (t) {
+  await t.test('should catch if process.cpuUsage throws an error', function (t) {
     const { agent, sampler } = t.nr
     // Isolate the CPU sampler: the VM metrics collector also reads
     // process.cpuUsage (when bound), so disable it to exercise only the CPU
@@ -292,32 +273,29 @@ test('environmental sampler', async function (t) {
     const err = new Error('ohhhhhh boyyyyyy')
     process.cpuUsage.throws(err)
     sampler.start()
-    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
     assert.equal(stats.callCount, 0)
   })
 
-  await t.test('should collect all specified memory statistics', async function (t) {
+  await t.test('should collect all specified memory statistics', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
-    await nextTick()
 
     Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
       const metricName = NAMES.MEMORY[memoryStat]
       const stats = agent.metrics.getOrCreateMetric(metricName)
-      assert.ok(stats.callCount >= 1, `${metricName} callCount`)
+      assert.equal(stats.callCount, 1, `${metricName} callCount`)
       assert.ok(stats.max > 1, `${metricName} max`)
     })
   })
 
-  await t.test('should catch if process.memoryUsage throws an error', async function (t) {
+  await t.test('should catch if process.memoryUsage throws an error', function (t) {
     const { agent, sampler, sandbox } = t.nr
     sandbox.stub(process, 'memoryUsage').callsFake(() => {
       throw new Error('your computer is on fire')
     })
     sampler.start()
-    await nextTick()
 
     const stats = agent.metrics.getOrCreateMetric('Memory/Physical')
     assert.equal(stats.callCount, 0)
@@ -353,6 +331,25 @@ test('environmental sampler', async function (t) {
     }, TICK * 3)
   })
 })
+
+/**
+ * Allocates and discards garbage across several event-loop turns to drive real
+ * GC collections and give the per-tick loop sampler turns to accumulate,
+ * yielding between rounds so the performance observer can flush its entries.
+ *
+ * @param {number} [rounds] The number of allocation rounds to perform.
+ * @returns {Promise} Resolves once the rounds complete.
+ */
+async function churn(rounds = 15) {
+  for (let round = 0; round < rounds; round++) {
+    let trash = []
+    for (let i = 0; i < 200000; i++) {
+      trash.push([{ i }])
+    }
+    trash = null
+    await new Promise((resolve) => setTimeout(resolve, 5))
+  }
+}
 
 function spinLoop(cb) {
   const DELAY = 5
