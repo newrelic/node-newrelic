@@ -1,15 +1,24 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    # Disable version updates for npm dependencies, security updates don't use this configuration
-    # See: https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
-    open-pull-requests-limit: 0
+    allow:
+      # Dependabot does not have a way to blanket check deps in 0.x.x range
+      # Start of 0.x.x deps
+      # We are excluding `@newrelic/eslint-config` as we will manually update that one
+      - dependency-name: "@apm-js-collab/tracing-hooks"
+      - dependency-name: "@grpc/proto-loader"
+      - dependency-name: "@opentelemetry/exporter-metrics-otlp-http"
+      - dependency-name: "@opentelemetry/otlp-exporter-base"
+      - dependency-name: "@opentelemetry/otlp-transformer"
+      - dependency-name: "@matteo.collina/tspl"
+      - dependency-name: "@newrelic/newrelic-oss-cli"
+      - dependency-name: "@opentelemetry/exporter-metrics-otlp-proto"
+      # End of 0.x.x deps
     directory: "/"
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "security"
-      prefix-development: "chore"
+      prefix: "chore"
       include: "scope"
 
   - package-ecosystem: "github-actions"
