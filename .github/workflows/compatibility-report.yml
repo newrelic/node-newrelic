@@ -45,8 +45,8 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: jaxxstorm/action-install-gh-release@25e24d2d23ae098373794ef1d6faecb48ee52da8
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: jaxxstorm/action-install-gh-release@b82b2052fdf822192f2119b7e289a6f63e668bc8 # v4.0.0
         with:
           repo: newrelic/newrelic-node-versions
           platform: linux
@@ -56,12 +56,12 @@ jobs:
           nrversions -v -r . 2>status.log >./compatibility.md
 
       # Upload generated artifacts for potential debugging purposes.
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: status.log
           path: status.log
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: compatibility.md
           path: compatibility.md
@@ -69,7 +69,7 @@ jobs:
       # Generate the new PR to update the doc in the repo.
       - run: |
           rm -f status.log
-      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
+      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.NODE_AGENT_GH_TOKEN || secrets.GITHUB_TOKEN }}
           title: "docs: Updated compatibility report"
@@ -97,14 +97,14 @@ jobs:
     env:
       DOCS_TARGET: src/content/docs/apm/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.mdx
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           path: agent
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           repository: newrelic/docs-website
           path: docs
-      - uses: jaxxstorm/action-install-gh-release@25e24d2d23ae098373794ef1d6faecb48ee52da8
+      - uses: jaxxstorm/action-install-gh-release@b82b2052fdf822192f2119b7e289a6f63e668bc8 # v4.0.0
         with:
           repo: newrelic/newrelic-node-versions
           platform: linux
@@ -114,12 +114,12 @@ jobs:
           nrversions -v -r agent -R ./docs/${DOCS_TARGET} 2>docs-status.log
 
       # Upload generated artifacts for potential debugging purposes.
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: docs-status.log
           path: docs-status.log
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: compatibility-requirements-nodejs-agent.mdx
           path: docs/${{ env.DOCS_TARGET }}
@@ -127,7 +127,7 @@ jobs:
       # Generate the new PR to update the doc in the repo.
       - run: |
           rm -f docs-status.log
-      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
+      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.NODE_AGENT_GH_TOKEN || secrets.GITHUB_TOKEN }}
           title: "docs: Updated Node.js agent compatibility report"

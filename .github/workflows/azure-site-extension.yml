@@ -31,15 +31,15 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup dotnet '6.0.x'
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           dotnet-version: '6.0.x'
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
@@ -53,28 +53,38 @@ jobs:
           echo "pkg_filename=NewRelic.Azure.WebSites.Extension.NodeAgent.$version" >> $env:GITHUB_OUTPUT
 
       - name: Verify outputs # because we can't access step outputs until the next step
+        env:
+          AGENT_VERSION: ${{ steps.workflow_meta.outputs.agent_version }}
+          PKG_FILENAME: ${{ steps.workflow_meta.outputs.pkg_filename }}
         run: |
-          echo "Agent version: ${{ steps.workflow_meta.outputs.agent_version }}"
-          echo "Package filename: ${{ steps.workflow_meta.outputs.pkg_filename }}"
+          echo "Agent version: $env:AGENT_VERSION"
+          echo "Package filename: $env:PKG_FILENAME"
 
       - name: Install agent
         working-directory: cloud-tooling/azure-site-extension/Content
+        env:
+          AGENT_VERSION: ${{ steps.workflow_meta.outputs.agent_version }}
         run: |
-          npm i --prefix . newrelic@${{ steps.workflow_meta.outputs.agent_version }}
+          npm i --prefix . "newrelic@$env:AGENT_VERSION"
           echo "Agent installed"
 
       - name: Configure package files
         working-directory: cloud-tooling/azure-site-extension
+        env:
+          AGENT_VERSION: ${{ steps.workflow_meta.outputs.agent_version }}
+          PKG_FILENAME: ${{ steps.workflow_meta.outputs.pkg_filename }}
         run: |
-          (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ steps.workflow_meta.outputs.agent_version }}") | Set-Content ${{ steps.workflow_meta.outputs.pkg_filename }}.nuspec
+          (Get-Content $env:SPEC_FILE_TEMPLATE).Replace('{VERSION}', "$env:AGENT_VERSION") | Set-Content "$env:PKG_FILENAME.nuspec"
 
       - name: Create bundle
         working-directory: cloud-tooling/azure-site-extension
-        run: nuget pack "${{ steps.workflow_meta.outputs.pkg_filename }}.nuspec"
+        env:
+          PKG_FILENAME: ${{ steps.workflow_meta.outputs.pkg_filename }}
+        run: nuget pack "$env:PKG_FILENAME.nuspec"
 
       # This step is for us to check what's going to be published
       - name: Archive package for verification
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: azure-site-extension-test-${{ steps.workflow_meta.outputs.pkg_filename }}
           path: cloud-tooling/azure-site-extension/${{ steps.workflow_meta.outputs.pkg_filename }}.nupkg
@@ -88,5 +98,9 @@ jobs:
 
       - name: Publish site extension
         working-directory: cloud-tooling/azure-site-extension
+        env:
+          PKG_FILENAME: ${{ steps.workflow_meta.outputs.pkg_filename }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          NUGET_SOURCE: ${{ vars.NUGET_SOURCE }}
         run: |
-          dotnet nuget push "${{ steps.workflow_meta.outputs.pkg_filename }}.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source ${{ vars.NUGET_SOURCE }}
+          dotnet nuget push "$env:PKG_FILENAME.nupkg" --api-key $env:NUGET_API_KEY --source $env:NUGET_SOURCE

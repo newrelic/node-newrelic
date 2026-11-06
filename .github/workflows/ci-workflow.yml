@@ -27,10 +27,10 @@ jobs:
       javascript_changed: ${{ steps.filter.outputs.javascript }}
       deps_changed: ${{ steps.deps.outputs.divergent }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 2
-      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: filter
         with:
           filters: |
@@ -41,7 +41,7 @@ jobs:
               - 'stub_api.js'
               - 'lib/**/*.{js,json,mjs,cjs}'
               - 'test/**/*.{js,json,mjs,cjs}'
-      - uses: jsumners-nr/gha-node-deps-divergent@8a3756574008854718621aee6de408fc2e79d70c
+      - uses: jsumners-nr/gha-node-deps-divergent@8a3756574008854718621aee6de408fc2e79d70c # main@2026-05-07 (no release tags published)
         id: deps
         with:
           base-sha: ${{ github.base_ref || 'main' }}
@@ -60,9 +60,9 @@ jobs:
         node-version: [lts/*]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
@@ -85,9 +85,9 @@ jobs:
         node-version: [lts/*]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
@@ -112,9 +112,9 @@ jobs:
         node-version: [22.x, 24.x, 26.x]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
@@ -127,7 +127,7 @@ jobs:
       - name: Run Unit Tests
         run: npm run unit
       - name: Archive Unit Test Coverage
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: unit-tests-${{ matrix.node-version }}
           path: ./coverage/unit/lcov.info
@@ -149,9 +149,9 @@ jobs:
         node-version: [22.x, 24.x, 26.x]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
@@ -166,12 +166,12 @@ jobs:
       - name: Run ESM Integration Tests
         run: npm run integration:esm
       - name: Archive Integration Test Coverage
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: integration-tests-cjs-${{ matrix.node-version }}
           path: ./coverage/integration/lcov.info
       - name: Archive Integration (ESM) Test Coverage
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: integration-tests-esm-${{ matrix.node-version }}
           path: ./coverage/integration-esm/lcov.info
@@ -192,7 +192,7 @@ jobs:
       dirmap: ${{ steps.plan.outputs.dirmap }}
       servicemap: ${{ steps.plan.outputs.servicemap }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Plan versioned shards
         id: plan
         run: node ./bin/versioned-runner/shard-plan.js
@@ -216,9 +216,9 @@ jobs:
         shard: ${{ fromJSON(needs.versioned-setup.outputs.shards) }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
@@ -239,22 +239,25 @@ jobs:
       # runner only executes this shard's subset of the versioned suites.
       - name: Run Versioned Tests
         run: |
+          # SHARD_DIRS is an intentionally word-split list of suite directories
+          # passed as positional args, so it is deliberately left unquoted.
           TEST_CHILD_TIMEOUT=600000 \
           npm run versioned \
-          ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
+          $SHARD_DIRS
         env:
+          SHARD_DIRS: ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
           VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
           # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
           JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
           C8_REPORTER: lcovonly
       - name: Archive Versioned Test Coverage
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: versioned-tests-${{ matrix.node-version }}-shard-${{ matrix.shard }}
           path: ./coverage/versioned/lcov.info
       - name: Collect docker logs on failure
         if: failure()
-        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e
+        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2.2.2
         with:
           dest: ./logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}
       - name: Tar logs
@@ -262,7 +265,7 @@ jobs:
         run: tar cvzf ./logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}.tgz ./logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}
       - name: Upload logs to GitHub
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}.tgz
           path: ./logs-${{ matrix.node-version }}-shard-${{ matrix.shard }}.tgz
@@ -276,13 +279,13 @@ jobs:
         node-version: [22.x, 24.x, 26.x]
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 'lts/*'
           check-latest: true
       - name: Download artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       # Versioned coverage is split across one artifact per shard. Build the
       # comma separated lcov file list for this node-version from the shard list
       # so codecov can merge them under a single flag.
@@ -300,7 +303,7 @@ jobs:
           echo "files=${files}" >> "$GITHUB_OUTPUT"
       - name: Post Unit Test Coverage
         # v7.0.0
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -308,7 +311,7 @@ jobs:
           flags: unit-tests-${{ matrix.node-version }}
       - name: Post Integration CJS Test Coverage
         # v7.0.0
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -316,7 +319,7 @@ jobs:
           flags: integration-tests-cjs-${{ matrix.node-version }}
       - name: Post Integration ESM Test Coverage
         # v7.0.0
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -324,7 +327,7 @@ jobs:
           flags: integration-tests-esm-${{ matrix.node-version }}
       - name: Post Versioned Test Coverage
         # v7.0.0
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}

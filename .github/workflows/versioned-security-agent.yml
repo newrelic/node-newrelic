@@ -47,12 +47,12 @@ jobs:
     outputs:
       sec_agent_did_change: ${{ steps.check_sec_agent.outputs.divergent }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 2
       - name: Check Security Agent Changed
         id: check_sec_agent
-        uses: jsumners-nr/gha-node-deps-divergent@8a3756574008854718621aee6de408fc2e79d70c
+        uses: jsumners-nr/gha-node-deps-divergent@8a3756574008854718621aee6de408fc2e79d70c # main@2026-05-07 (no release tags published)
         with:
           base-sha: ${{ github.base_ref || 'main' }}
           current-sha: ${{ github.sha }}
@@ -74,7 +74,7 @@ jobs:
       dirmap: ${{ steps.plan.outputs.dirmap }}
       servicemap: ${{ steps.plan.outputs.servicemap }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Plan versioned shards
         id: plan
         run: node ./bin/versioned-runner/shard-plan.js
@@ -98,9 +98,9 @@ jobs:
         shard: ${{ fromJSON(needs.versioned-setup.outputs.shards) }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: ${{ matrix.node-version }}
         check-latest: true
@@ -112,7 +112,9 @@ jobs:
       run: npm install
     - name: Install Version ${{ inputs.version }} of security agent
       if: ${{ inputs.version }}
-      run: npm install @newrelic/security-agent@${{ inputs.version }}
+      env:
+        SECURITY_AGENT_VERSION: ${{ inputs.version }}
+      run: npm install "@newrelic/security-agent@${SECURITY_AGENT_VERSION}"
     # Start only the docker services this shard's suites need. Shards whose
     # suites need no services skip this step entirely (zero containers).
     - name: Run Docker Services
@@ -124,10 +126,13 @@ jobs:
     # runner only executes this shard's subset of the versioned suites.
     - name: Versioned Tests w/ Security Agent
       run: |
+        # SHARD_DIRS is an intentionally word-split list of suite directories
+        # passed as positional args, so it is deliberately left unquoted.
         TEST_CHILD_TIMEOUT=600000 \
         npm run versioned:security \
-        ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
+        $SHARD_DIRS
       env:
+        SHARD_DIRS: ${{ fromJSON(needs.versioned-setup.outputs.dirmap)[matrix.shard] }}
         VERSIONED_MODE: --${{ inputs.mode || 'major' }}
         # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
         JOBS: ${{ vars.NR_RUNNER && 16 || 4 }}

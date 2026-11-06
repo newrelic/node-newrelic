@@ -23,9 +23,9 @@ jobs:
         node-version: [22.x, 24.x, 26.x]
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: ${{ matrix.node-version }}
         check-latest: true
@@ -38,11 +38,12 @@ jobs:
     - name: Run Benchmark Tests
       env:
         NEW_RELIC_LICENSE_KEY: ${{ secrets.TEST_LICENSE }}
-      run: node ./bin/run-bench.js --filename=${{ github.base_ref || 'main' }}_${{ matrix.node-version }}
+        BASE_REF: ${{ github.base_ref || 'main' }}
+      run: node ./bin/run-bench.js --filename="${BASE_REF}_${{ matrix.node-version }}"
     - name: Verify Benchmark Output
       run: ls benchmark_results
     - name: Archive Benchmark Test
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: benchmark-tests-${{ github.base_ref || 'main' }}-${{ matrix.node-version }}
         path: ./benchmark_results

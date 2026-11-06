@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "14.10.0",
+  "version": "14.11.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -226,7 +226,6 @@
   "optionalDependencies": {
     "@datadog/pprof": "^5.14.2",
     "@newrelic/fn-inspect": "^5.1.0",
-    "@newrelic/native-metrics": "^13.1.0",
     "@prisma/prisma-fmt-wasm": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085"
   },
   "devDependencies": {

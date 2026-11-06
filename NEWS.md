@@ -1,3 +1,26 @@
+### v14.11.0 (2026-11-05)
+
+#### Features
+
+* Removed duplicate setting of fields in `initInternalFields` ([#4417](https://github.com/newrelic/node-newrelic/pull/4417)) ([b46df72](https://github.com/newrelic/node-newrelic/commit/b46df727e0788e308b2500ed822b609fc2249fef))
+
+#### Bug fixes
+
+* Stopped span event aggregator from stripping span links and timed events from queued spans ([#4426](https://github.com/newrelic/node-newrelic/pull/4426)) ([24f9a15](https://github.com/newrelic/node-newrelic/commit/24f9a15a6480a4b36b47b7e646a0c699e0afccda))
+
+#### Code refactoring
+
+* Replaced `@newrelic/native-metrics` with pure-JS VM metrics ([#4416](https://github.com/newrelic/node-newrelic/pull/4416)) ([09b90d4](https://github.com/newrelic/node-newrelic/commit/09b90d4f9c0485bd0f4b39fb4ad0bfa338805085))
+
+#### Documentation
+
+* Clarified datastore reporting configuration ([#4434](https://github.com/newrelic/node-newrelic/pull/4434)) ([ec469e2](https://github.com/newrelic/node-newrelic/commit/ec469e2bf069d680d1eb6573df784e869d27e8fa))
+* Updated compatibility report ([#4415](https://github.com/newrelic/node-newrelic/pull/4415)) ([07a4437](https://github.com/newrelic/node-newrelic/commit/07a4437a8664799e4ba068fa56f0211e6b31156b))
+
+#### Tests
+
+* Moved http tests to `test/integration/core/http`. Also split out unit and integration tests accordingly ([#4418](https://github.com/newrelic/node-newrelic/pull/4418)) ([3127658](https://github.com/newrelic/node-newrelic/commit/3127658da5a9a1002e2184e8e7ab1e16d8c919bc))
+
 ### v14.10.0 (2026-10-29)
 
 #### Features
