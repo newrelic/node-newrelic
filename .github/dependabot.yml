@@ -1,15 +1,15 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    # Disable version updates for npm dependencies, security updates don't use this configuration
-    # See: https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
-    open-pull-requests-limit: 0
+    allow:
+      # Only open PRs for dev deps on a major release
+      - dependency-type: "development"
+        update-types: ["version-update:semver-major"]
     directory: "/"
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "security"
-      prefix-development: "chore"
+      prefix: "chore"
       include: "scope"
 
   - package-ecosystem: "github-actions"
