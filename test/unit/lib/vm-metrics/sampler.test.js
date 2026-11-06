@@ -121,11 +121,13 @@ test('environmental sampler', async function (t) {
   })
 
   // `start()` takes one synchronous sample of each metric before arming the
-  // recurring timers, so these assert the single deterministic sample directly
-  // rather than racing a timer interval.
+  // start() records nothing until an interval elapses; sample() takes one
+  // deterministic pass, so these assert that single sample rather than racing a
+  // timer interval.
   await t.test('should gather CPU user utilization metric', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
+    sampler.sample()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
     assert.equal(stats.callCount, 1)
@@ -135,6 +137,7 @@ test('environmental sampler', async function (t) {
   await t.test('should gather CPU system utilization metric', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
+    sampler.sample()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
     assert.equal(stats.callCount, 1)
@@ -144,6 +147,7 @@ test('environmental sampler', async function (t) {
   await t.test('should gather CPU user time metric', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
+    sampler.sample()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
     assert.equal(stats.callCount, 1)
@@ -153,6 +157,7 @@ test('environmental sampler', async function (t) {
   await t.test('should gather CPU system time metric', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
+    sampler.sample()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
     assert.equal(stats.callCount, 1)
@@ -167,6 +172,9 @@ test('environmental sampler', async function (t) {
     sampler.vmMetrics.getGCMetrics()
 
     spinLoop(function runLoop() {
+      // Take one deterministic sample to record the GC that occurred above.
+      sampler.sample()
+
       // Find at least one typed GC metric.
       const type = [
         'Scavenge',
@@ -200,6 +208,9 @@ test('environmental sampler', async function (t) {
     sampler.vmMetrics.getGCMetrics()
 
     spinLoop(function runLoop() {
+      // Take one deterministic sample to record the GC that occurred above.
+      sampler.sample()
+
       // Every collection belongs to exactly one GC type, so the total pause
       // metric must equal the sum of the typed metrics: each collection is
       // counted once.
@@ -259,6 +270,7 @@ test('environmental sampler', async function (t) {
       }
     }
     sampler.start()
+    sampler.sample()
     sampler.stop()
 
     assert.equal(logger.debug.calledWith(sinon.match.any, 'Unknown GC type %j', 42), true)
@@ -273,6 +285,7 @@ test('environmental sampler', async function (t) {
     const err = new Error('ohhhhhh boyyyyyy')
     process.cpuUsage.throws(err)
     sampler.start()
+    sampler.sample()
 
     const stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
     assert.equal(stats.callCount, 0)
@@ -281,6 +294,7 @@ test('environmental sampler', async function (t) {
   await t.test('should collect all specified memory statistics', function (t) {
     const { agent, sampler } = t.nr
     sampler.start()
+    sampler.sample()
 
     Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
       const metricName = NAMES.MEMORY[memoryStat]
@@ -296,6 +310,7 @@ test('environmental sampler', async function (t) {
       throw new Error('your computer is on fire')
     })
     sampler.start()
+    sampler.sample()
 
     const stats = agent.metrics.getOrCreateMetric('Memory/Physical')
     assert.equal(stats.callCount, 0)
@@ -304,6 +319,7 @@ test('environmental sampler', async function (t) {
   await t.test('should have some rough idea of how deep the event queue is', function (t, end) {
     const { agent, sampler } = t.nr
     sampler.start()
+    sampler.sample()
 
     /* The event sampler works by creating a timer and using setTimeout to
      * schedule an "immediate" callback execution, which gives a rough idea of
