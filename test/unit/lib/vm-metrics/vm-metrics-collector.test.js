@@ -10,25 +10,7 @@ const test = require('node:test')
 const { execFile } = require('node:child_process')
 
 const VMMetricsCollector = require('#agentlib/vm-metrics/vm-metrics-collector.js')
-
-/**
- * Allocates and discards a large amount of garbage across several macrotask
- * turns to coax the V8 garbage collector into running, yielding between rounds
- * so the performance observer can flush its entries.
- *
- * @param {number} [rounds] The number of allocation rounds to perform.
- * @returns {Promise} Resolves once the rounds complete.
- */
-async function churn(rounds = 15) {
-  for (let round = 0; round < rounds; round++) {
-    let trash = []
-    for (let j = 0; j < 200000; j++) {
-      trash.push([{ j }])
-    }
-    trash = null
-    await new Promise((resolve) => setTimeout(resolve, 5))
-  }
-}
+const churn = require('./helpers/churn.js')
 
 test('starts unbound', () => {
   const collector = new VMMetricsCollector()
