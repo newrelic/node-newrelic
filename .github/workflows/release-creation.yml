@@ -27,6 +27,7 @@ permissions:
 
 jobs:
   tag-and-publish:
+    environment: release-approval
     runs-on: ubuntu-latest
 
     steps:
