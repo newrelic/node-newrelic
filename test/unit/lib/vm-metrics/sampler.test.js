@@ -368,6 +368,52 @@ test('environmental sampler', async function (t) {
       end()
     }, TICK * 3)
   })
+
+  await t.test('should track and cancel multiple pending event-queue probes', function (t, end) {
+    const { agent } = t.nr
+    // Use an interval long enough that the recurring timer never fires during
+    // the test, so the only probes are the ones scheduled explicitly below.
+    const sampler = new Sampler({ agent, interval: 60_000 })
+    sampler.start()
+
+    // Each #checkEvents schedules a setTimeout(0) probe that records on the next
+    // loop turn. Simulate those probes being delayed past subsequent sampling
+    // passes by taking several passes synchronously: every probe is now pending
+    // at once, so more than one timer is tracked simultaneously.
+    sampler.sample()
+    sampler.sample()
+    sampler.sample()
+
+    // stop() must cancel all of them. If tracking only held the most recent
+    // handle, the earlier probes would leak and fire after stop(), recording
+    // against the agent.
+    sampler.stop()
+
+    // Let the loop turn so any un-cancelled probe would have fired.
+    setTimeout(function () {
+      const stats = agent.metrics.getOrCreateMetric('Events/wait')
+      assert.equal(stats.callCount, 0, 'all pending probes were cancelled by stop()')
+      end()
+    }, 50)
+  })
+
+  await t.test('should record every pending probe when they all fire', function (t, end) {
+    const { agent } = t.nr
+    const sampler = new Sampler({ agent, interval: 60_000 })
+    sampler.start()
+
+    // Three pending probes, none cancelled: each should fire and record once.
+    sampler.sample()
+    sampler.sample()
+    sampler.sample()
+
+    setTimeout(function () {
+      const stats = agent.metrics.getOrCreateMetric('Events/wait')
+      assert.equal(stats.callCount, 3, 'each tracked probe fired and recorded')
+      sampler.stop()
+      end()
+    }, 50)
+  })
 })
 
 function spinLoop(cb) {
