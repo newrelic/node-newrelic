@@ -33,6 +33,11 @@ test('HttpsClientSubscriber', async (t) => {
     assert.deepEqual(subscriber.channels.map((channel) => channel.start.name), ['tracing:nr:client:https:request:start'])
   })
 
+  await t.test('should default the protocol to https', (t) => {
+    const { subscriber } = t.nr
+    assert.equal(subscriber.defaultProtocol, 'https:')
+  })
+
   await t.test('should be enabled when http instrumentation is disabled', (t) => {
     const { agent, subscriber } = t.nr
     agent.config.instrumentation.http.enabled = false
