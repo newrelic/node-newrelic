@@ -55,6 +55,12 @@ them during validation) to carry agent-specific metadata:
       number or a sentinel string (e.g. `transaction_tracer.transaction_threshold`,
       a number of seconds or `'apdex_f'`). Needed because a `['number','string']`
       union `type` has no single native coercion.
+- **`x-newrelic-deprecated`** (string) — marks a deprecated setting, with the
+  date it was deprecated as an RFC 3339 full-date (e.g. `ai_monitoring.enabled`
+  is `'2026-11-09'`). The setting keeps working, and its `description` should
+  name the replacement. The keyword is metadata only: the runtime deprecation
+  warning is logged separately, by `#warnDeprecatedSettings` in
+  `lib/config/index.js`.
 - **`x-newrelic-internal`** (`true`) — marks a setting that is not user-facing
   (e.g. `ssl`, `agent_control`, `logging.diagnostics`,
   `infinite_tracing.trace_observer.insecure`). It still appears in the schema so
@@ -111,8 +117,11 @@ them during validation) to carry agent-specific metadata:
 2. If its environment variable name does not follow the `NEW_RELIC_<PATH>`
    convention, add `x-newrelic-env-var` with the exact name.
 3. If it is internal/not user-facing, add `x-newrelic-internal: true`.
-4. To add a new block: create `<name>.js` with `$schema` and a bare `$id`
+4. If it is deprecated, add `x-newrelic-deprecated` with the deprecation date,
+   name the replacement in its `description`, and add a warning to
+   `#warnDeprecatedSettings` in `lib/config/index.js`.
+5. To add a new block: create `<name>.js` with `$schema` and a bare `$id`
    matching the filename, and add `<key>: { $ref: '<name>.js' }` to `root.js`.
    `schema.js` discovers block files by reading this directory, so no
    registration is needed.
-5. Keep JSDoc-free comments where helpful; the files are plain JS modules.
+6. Keep JSDoc-free comments where helpful; the files are plain JS modules.
