@@ -207,7 +207,7 @@
     "@newrelic/security-agent": "^3.0.0",
     "@opentelemetry/api": "^1.10.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.301.0",
-    "@opentelemetry/otlp-exporter-base": "^0.300.0",
+    "@opentelemetry/otlp-exporter-base": "^0.301.0",
     "@opentelemetry/otlp-transformer": "^0.301.0",
     "@opentelemetry/resources": "^3.0.0",
     "@opentelemetry/sdk-metrics": "^3.0.0",
