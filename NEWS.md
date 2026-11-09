@@ -1,3 +1,46 @@
+### v14.12.0 (2026-11-09)
+
+#### Features
+
+* Added `ai_monitoring.basic_telemetry.enabled` and enabled basic AI Monitoring by default ([#4330](https://github.com/newrelic/node-newrelic/pull/4330)) ([c126335](https://github.com/newrelic/node-newrelic/commit/c1263354150cd30349d316acc162f5388bc3449a))
+    * * LLM instrumentation is now enabled by default and sends `Llm*` custom events, spans, and metrics (without message content) unless configured otherwise. To opt out, set `ai_monitoring.basic_telemetry.enabled` to `false` in `newrelic.js`, or set the `NEW_RELIC_AI_MONITORING_BASIC_TELEMETRY_ENABLED` environment variable to `false`.  * `ai_monitoring.enabled` and the `NEW_RELIC_AI_MONITORING_ENABLED` environment variable are deprecated and will be removed in a future major version, but setting either one to false also opts out.
+* Disabled core tracing ([#4394](https://github.com/newrelic/node-newrelic/pull/4394)) ([2d0ee8e](https://github.com/newrelic/node-newrelic/commit/2d0ee8ea2c7355b3764e332b555bcc04f2e691f0))
+
+#### Bug fixes
+
+* Prevented `net` subscriber crash when a socket connect throws ([#4442](https://github.com/newrelic/node-newrelic/pull/4442)) ([2b5bbee](https://github.com/newrelic/node-newrelic/commit/2b5bbee35bc41a85574682d4bc98171842b39ea6))
+
+#### Performance improvements
+
+* Wrapped bluebird `Promise._then` at the prototype level ([#4444](https://github.com/newrelic/node-newrelic/pull/4444)) ([5ab4726](https://github.com/newrelic/node-newrelic/commit/5ab47267911b1ff5a7047275358cd9010e4c3996))
+
+#### Documentation
+
+* Updated compatibility report ([#4447](https://github.com/newrelic/node-newrelic/pull/4447)) ([5d03f43](https://github.com/newrelic/node-newrelic/commit/5d03f43ca361a48282ffe7669ccce4fe8e7d1d51))
+* Updated compatibility report ([#4438](https://github.com/newrelic/node-newrelic/pull/4438)) ([40476bf](https://github.com/newrelic/node-newrelic/commit/40476bf3a10f2a469f4d6dd0d2e53479fcbafc8e))
+
+#### Miscellaneous chores
+
+* **deps-dev:** bump @opentelemetry/exporter-metrics-otlp-proto from 0.300.0 to 0.301.0 ([#4464](https://github.com/newrelic/node-newrelic/pull/4464)) ([498dc4c](https://github.com/newrelic/node-newrelic/commit/498dc4ce0c6219f0dfe46a4a7518c377983c009b))
+* **deps:** bump @apm-js-collab/tracing-hooks from 0.13.3 to 0.14.0 ([#4455](https://github.com/newrelic/node-newrelic/pull/4455)) ([7fa16f2](https://github.com/newrelic/node-newrelic/commit/7fa16f2e2d96e6c7cdc1711c511d75088aad1bf7))
+* **deps:** bump @opentelemetry/exporter-metrics-otlp-http from 0.300.0 to 0.301.0 ([#4462](https://github.com/newrelic/node-newrelic/pull/4462)) ([6f7bc29](https://github.com/newrelic/node-newrelic/commit/6f7bc29ab429c8814c17f253779e5079e9f6135d))
+* **deps:** bump @opentelemetry/otlp-exporter-base from 0.300.0 to 0.301.0 ([#4463](https://github.com/newrelic/node-newrelic/pull/4463)) ([bd28555](https://github.com/newrelic/node-newrelic/commit/bd285552a76572e23381371b3f7d9f705a691d1d))
+* **deps:** bump @opentelemetry/otlp-transformer from 0.300.0 to 0.301.0 ([#4461](https://github.com/newrelic/node-newrelic/pull/4461)) ([0518ca1](https://github.com/newrelic/node-newrelic/commit/0518ca152db2dffd4227e6959256e857491255de))
+
+#### Tests
+
+* Derived google-genai API version in external segment assertions ([#4445](https://github.com/newrelic/node-newrelic/pull/4445)) ([7234378](https://github.com/newrelic/node-newrelic/commit/72343788b87ec4a1c03a82f3f926f9ede5bd8ff0))
+* Fixed leaked agent in bluebird shape test security-agent skip paths ([#4456](https://github.com/newrelic/node-newrelic/pull/4456)) ([4ea68a6](https://github.com/newrelic/node-newrelic/commit/4ea68a6f28a8c2634f54bc20bae3c05a8db97685))
+* Made VM metrics sampler tests deterministic under CPU contention ([#4446](https://github.com/newrelic/node-newrelic/pull/4446)) ([649d1bc](https://github.com/newrelic/node-newrelic/commit/649d1bcb722b197e201543bb35d305ade601f109))
+
+#### Continuous integration
+
+* Added `release-approval` environment to `release-creation.yml` ensuring an approval from an additional member of the `node` team ([#4448](https://github.com/newrelic/node-newrelic/pull/4448)) ([80a1aef](https://github.com/newrelic/node-newrelic/commit/80a1aef33a5b03d4c4b7f16c332a708176d8f1ac))
+* **deps:** bump actions/checkout from 6.1.0 to 7.0.1 ([#4453](https://github.com/newrelic/node-newrelic/pull/4453)) ([9f9d311](https://github.com/newrelic/node-newrelic/commit/9f9d31195cd87c48851715c20c4c22b9496cd52c))
+* **deps:** bump codecov/codecov-action from 7.0.0 to 7.1.1 ([#4454](https://github.com/newrelic/node-newrelic/pull/4454)) ([a7657e5](https://github.com/newrelic/node-newrelic/commit/a7657e55f62b1400c238ff1d0d379c10385ea813))
+* Updated `prepare-release.yml` to run `third-party-updates` to ensure `THIRD_PARTY_NOTICES.md` is up to date before releasing ([#4458](https://github.com/newrelic/node-newrelic/pull/4458)) ([5fbe61c](https://github.com/newrelic/node-newrelic/commit/5fbe61cb9f47764653585c8f7eb52c25051988c7))
+* Updated dependabot to ensure all 0.x.x dependencies are regularly updated ([#4452](https://github.com/newrelic/node-newrelic/pull/4452)) ([26ec133](https://github.com/newrelic/node-newrelic/commit/26ec13321ab864a5112af83bd9a9a1c7868ecc48))
+
 ### v14.11.0 (2026-11-05)
 
 #### Features
