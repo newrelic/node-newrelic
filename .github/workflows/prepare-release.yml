@@ -79,7 +79,7 @@ jobs:
 
   update-third-party-notices:
     name: Update third-party notices
-    needs: agent-release-notes
+    needs: bump-config-schema
     permissions:
       contents: write
     runs-on: ubuntu-latest
