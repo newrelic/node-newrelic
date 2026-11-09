@@ -3,7 +3,8 @@
 #### Features
 
 * Added `ai_monitoring.basic_telemetry.enabled` and enabled basic AI Monitoring by default ([#4330](https://github.com/newrelic/node-newrelic/pull/4330)) ([c126335](https://github.com/newrelic/node-newrelic/commit/c1263354150cd30349d316acc162f5388bc3449a))
-    * * LLM instrumentation is now enabled by default and sends `Llm*` custom events, spans, and metrics (without message content) unless configured otherwise. To opt out, set `ai_monitoring.basic_telemetry.enabled` to `false` in `newrelic.js`, or set the `NEW_RELIC_AI_MONITORING_BASIC_TELEMETRY_ENABLED` environment variable to `false`.  * `ai_monitoring.enabled` and the `NEW_RELIC_AI_MONITORING_ENABLED` environment variable are deprecated and will be removed in a future major version, but setting either one to false also opts out.
+    * LLM instrumentation is now enabled by default and sends `Llm*` custom events, spans, and metrics (without message content) unless configured otherwise. To opt out, set `ai_monitoring.basic_telemetry.enabled` to `false` in `newrelic.js`, or set the `NEW_RELIC_AI_MONITORING_BASIC_TELEMETRY_ENABLED` environment variable to `false`.  
+    * `ai_monitoring.enabled` and the `NEW_RELIC_AI_MONITORING_ENABLED` environment variable are deprecated and will be removed in a future major version, but setting either one to false also opts out.
 * Disabled core tracing ([#4394](https://github.com/newrelic/node-newrelic/pull/4394)) ([2d0ee8e](https://github.com/newrelic/node-newrelic/commit/2d0ee8ea2c7355b3764e332b555bcc04f2e691f0))
 
 #### Bug fixes
