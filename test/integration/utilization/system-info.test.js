@@ -8,22 +8,50 @@
 const helper = require('../../lib/agent_helper')
 const test = require('node:test')
 const assert = require('node:assert')
-const nock = require('nock')
 const proxyquire = require('proxyquire')
 const fetchSystemInfo = require('../../../lib/system-info')
-const { jsonReply } = require('../../lib/nock-utils')
+const common = require('../../../lib/utilization/common')
+const { jsonReply } = require('../../lib/collector-reply-utils')
+const LocalMetadataServer = require('../../lib/local-metadata-server')
 
-test.beforeEach(() => {
-  nock.disableNetConnect()
+test.beforeEach(async (ctx) => {
+  const server = new LocalMetadataServer()
+  await server.listen()
+  ctx.nr = { server }
 })
 
-test.afterEach(() => {
-  nock.enableNetConnect()
+test.afterEach((ctx) => {
+  ctx.nr.server.close()
 })
+
+/**
+ * Builds a `fetchSystemInfo` that resolves the given vendor's metadata
+ * requests against `server` instead of the real metadata endpoint, by
+ * `proxyquire`-ing `resolveMetadataHost` rather than defining environment
+ * variables.
+ *
+ * @param {string} vendorFile e.g. `'aws-info'`.
+ * @param {object} server mock http server
+ * @returns {Function} A `fetchSystemInfo(agent, callback)` function.
+ */
+function fetchSystemInfoWithMockedHost(vendorFile, server) {
+  const mockVendorInfo = proxyquire(`../../../lib/utilization/${vendorFile}`, {
+    './common': {
+      ...common,
+      resolveMetadataHost: () => { return { host: server.host, port: server.port } }
+    }
+  })
+  const mockUtilization = proxyquire('../../../lib/utilization', {
+    [`./${vendorFile}`]: mockVendorInfo
+  })
+  return proxyquire('../../../lib/system-info', {
+    './utilization': mockUtilization
+  })
+}
 
 test('pricing system-info aws', function (t, end) {
-  const awsHost = 'http://169.254.169.254'
-  process.env.ECS_CONTAINER_METADATA_URI_V4 = awsHost + '/docker'
+  const { server } = t.nr
+  process.env.ECS_CONTAINER_METADATA_URI_V4 = `http://${server.hostPort}/docker`
 
   const awsResponses = {
     'dynamic/instance-identity/document': {
@@ -33,14 +61,22 @@ test('pricing system-info aws', function (t, end) {
     }
   }
 
-  const ecsScope = nock(awsHost).get('/docker').reply(200, ...jsonReply({ DockerId: 'ecs-container-1' }))
-  const awsRedirect = nock(awsHost)
-  awsRedirect.put('/latest/api/token').reply(200, 'awsToken')
+  const ecsRoute = server.addRoute('GET', '/docker', (req, res) => {
+    const [body, headers] = jsonReply({ DockerId: 'ecs-container-1' })
+    res.writeHead(200, headers)
+    res.end(body)
+  })
+  const tokenRoute = server.addRoute('PUT', '/latest/api/token', (req, res) => {
+    res.writeHead(200)
+    res.end('awsToken')
+  })
+  const metadataRoutes = Object.keys(awsResponses).map((awsPath) => server.addRoute('GET', `/latest/${awsPath}`, (req, res) => {
+    const [body, headers] = jsonReply(awsResponses[awsPath])
+    res.writeHead(200, headers)
+    res.end(body)
+  }))
 
-  for (const awsPath in awsResponses) {
-    awsRedirect.get(`/latest/${awsPath}`).reply(200, ...jsonReply(awsResponses[awsPath]))
-  }
-
+  const fetchSystemInfoProxy = fetchSystemInfoWithMockedHost('aws-info', server)
   const agent = helper.loadMockedAgent({
     utilization: {
       detect_aws: true,
@@ -55,7 +91,7 @@ test('pricing system-info aws', function (t, end) {
     delete process.env.ECS_CONTAINER_METADATA_URI_V4
   })
 
-  fetchSystemInfo(agent, function fetchSystemInfoCb(err, systemInfo) {
+  fetchSystemInfoProxy(agent, function fetchSystemInfoCb(err, systemInfo) {
     assert.ifError(err)
     assert.deepEqual(systemInfo.vendors.aws, {
       instanceType: 'test.type',
@@ -65,9 +101,10 @@ test('pricing system-info aws', function (t, end) {
     assert.deepEqual(systemInfo.vendors.ecs, { ecsDockerId: 'ecs-container-1' })
 
     // This will throw an error if the sys info isn't being cached properly
-    assert.ok(awsRedirect.isDone(), 'should exhaust nock endpoints')
-    assert.ok(ecsScope.isDone())
-    fetchSystemInfo(agent, function checkCache(err, cachedInfo) {
+    assert.ok(tokenRoute.isDone(), 'should exhaust aws endpoints')
+    assert.ok(metadataRoutes.every((route) => route.isDone()), 'should exhaust aws endpoints')
+    assert.ok(ecsRoute.isDone())
+    fetchSystemInfoProxy(agent, function checkCache(err, cachedInfo) {
       assert.ifError(err)
       assert.deepEqual(cachedInfo.vendors.aws, {
         instanceType: 'test.type',
@@ -80,7 +117,7 @@ test('pricing system-info aws', function (t, end) {
 })
 
 test('pricing system-info azure', function (t, end) {
-  const azureHost = 'http://169.254.169.254'
+  const { server } = t.nr
   const azureResponse = {
     location: 'test.location',
     name: 'test.name',
@@ -88,9 +125,14 @@ test('pricing system-info azure', function (t, end) {
     vmSize: 'test.vmSize'
   }
 
-  const azureRedirect = nock(azureHost)
-  azureRedirect.get('/metadata/instance/compute?api-version=2017-03-01').reply(200, ...jsonReply(azureResponse))
+  const azureRoute = server.addRoute('GET', '/metadata/instance/compute', (req, res) => {
+    assert.equal(req.headers.metadata, 'true', 'should send the Metadata header')
+    const [body, headers] = jsonReply(azureResponse)
+    res.writeHead(200, headers)
+    res.end(body)
+  })
 
+  const fetchSystemInfoProxy = fetchSystemInfoWithMockedHost('azure-info', server)
   const agent = helper.loadMockedAgent({
     utilization: {
       detect_aws: false,
@@ -104,7 +146,7 @@ test('pricing system-info azure', function (t, end) {
     helper.unloadAgent(agent)
   })
 
-  fetchSystemInfo(agent, function fetchSystemInfoCb(err, systemInfo) {
+  fetchSystemInfoProxy(agent, function fetchSystemInfoCb(err, systemInfo) {
     assert.ifError(err)
     assert.deepEqual(systemInfo.vendors.azure, {
       location: 'test.location',
@@ -114,8 +156,8 @@ test('pricing system-info azure', function (t, end) {
     })
 
     // This will throw an error if the sys info isn't being cached properly
-    assert.ok(azureRedirect.isDone(), 'should exhaust nock endpoints')
-    fetchSystemInfo(agent, function checkCache(err, cachedInfo) {
+    assert.ok(azureRoute.isDone(), 'should exhaust metadata endpoint')
+    fetchSystemInfoProxy(agent, function checkCache(err, cachedInfo) {
       assert.ifError(err)
       assert.deepEqual(cachedInfo.vendors.azure, {
         location: 'test.location',
@@ -129,18 +171,20 @@ test('pricing system-info azure', function (t, end) {
 })
 
 test('pricing system-info gcp', function (t, end) {
-  const gcpRedirect = nock('http://metadata.google.internal', {
-    reqheaders: { 'Metadata-Flavor': 'Google' }
-  })
-    .get('/computeMetadata/v1/instance/')
-    .query({ recursive: true })
-    .reply(200, ...jsonReply({
+  const { server } = t.nr
+  const gcpRoute = server.addRoute('GET', '/computeMetadata/v1/instance/', (req, res) => {
+    assert.equal(req.headers['metadata-flavor'], 'Google', 'should send the Metadata-Flavor header')
+    const [body, headers] = jsonReply({
       id: '3161347020215157123',
       machineType: 'projects/492690098729/machineTypes/custom-1-1024',
       name: 'aef-default-20170501t160547-7gh8',
       zone: 'projects/492690098729/zones/us-central1-c'
-    }))
+    })
+    res.writeHead(200, headers)
+    res.end(body)
+  })
 
+  const fetchSystemInfoProxy = fetchSystemInfoWithMockedHost('gcp-info', server)
   const agent = helper.loadMockedAgent({
     utilization: {
       detect_aws: false,
@@ -154,7 +198,7 @@ test('pricing system-info gcp', function (t, end) {
     helper.unloadAgent(agent)
   })
 
-  fetchSystemInfo(agent, function fetchSystemInfoCb(err, systemInfo) {
+  fetchSystemInfoProxy(agent, function fetchSystemInfoCb(err, systemInfo) {
     assert.ifError(err)
     const expectedData = {
       id: '3161347020215157123',
@@ -165,8 +209,8 @@ test('pricing system-info gcp', function (t, end) {
     assert.deepEqual(systemInfo.vendors.gcp, expectedData)
 
     // This will throw an error if the sys info isn't being cached properly
-    assert.ok(gcpRedirect.isDone(), 'should exhaust nock endpoints')
-    fetchSystemInfo(agent, function checkCache(err, cachedInfo) {
+    assert.ok(gcpRoute.isDone(), 'should exhaust metadata endpoint')
+    fetchSystemInfoProxy(agent, function checkCache(err, cachedInfo) {
       assert.ifError(err)
       assert.deepEqual(cachedInfo.vendors.gcp, expectedData)
       end()

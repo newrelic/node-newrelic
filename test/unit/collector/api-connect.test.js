@@ -7,17 +7,16 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const nock = require('nock')
 const proxyquire = require('proxyquire')
 const tspl = require('@matteo.collina/tspl')
 
 const HealthReporter = require('#agentlib/health-reporter.js')
 const Collector = require('../../lib/test-collector')
+const FakeProxyServer = require('../../lib/fake-proxy-server')
 const CollectorResponse = require('../../../lib/collector/response')
 const helper = require('../../lib/agent_helper')
 const { match } = require('#test/assert')
 const CollectorApi = require('../../../lib/collector/api')
-const { jsonReply } = require('../../lib/nock-utils')
 
 const RUN_ID = 1337
 const baseAgentConfig = {
@@ -430,52 +429,40 @@ test('retries on receiving invalid license key (401)', async (t) => {
 })
 
 test('retries on misconfigured proxy', async (t) => {
-  // We are using `nock` for these tests because it provides its own socket
-  // implementation that is able to fake a bad connection to a server.
-  // Basically, these tests are attempting to verify conditions around
-  // establishing connections to a proxy server, and we need to be able to
-  // simulate those connections not establishing correctly. The best we can
-  // do with our in-process HTTP server is to generate an abruptly closed
-  // request, but that will not meet the "is misconfigured proxy" assertion
-  // the agent uses. We'd like a better way of dealing with this, but for now
-  // (2024-08), we are moving on so that this does not block our test conversion
-  // to `node:test`.
-  //
-  // See https://github.com/nock/nock/blob/66eb7f48a7bdf50ee79face6403326b02d23253b/lib/socket.js#L81-L88.
-  // That `destroy` method is what ends up implementing the functionality
-  // behind `nock.replyWithError`.
-  //
-  // Use a real `Error` instance: nock 14 routes non-`Error` payloads passed
-  // to `replyWithError` through the mswjs response path, which crashes in
-  // `getRawFetchHeaders` because the value has no `headers` property. An
-  // `Error` instance is dispatched through the request-error path instead.
-  const expectedError = Object.assign(new Error('EPROTO'), { code: 'EPROTO' })
+  // A real forward-HTTP-CONNECT proxy that fails the first tunnel attempt
+  // with a genuine TLS-layer EPROTO error (simulating a proxy that only
+  // accepts plain-HTTP connections), then proxies subsequent tunnels for
+  // real. Shared across both sub-tests below because `agents.proxyAgent()`
+  // (lib/collector/http-agents.js) is a process-wide singleton: it caches
+  // the `HttpsProxyAgent` built from the first test's `proxy_host`/
+  // `proxy_port`, so every sub-test must resolve to the same proxy address.
+  const proxy = new FakeProxyServer({ failTunnels: 1 })
+  await proxy.listen()
+  t.after(() => proxy.close())
 
   t.beforeEach(async (ctx) => {
     ctx.nr = {}
 
     patchSetTimeout(ctx)
-    nock.disableNetConnect()
+    proxy.resetTunnelCount()
+    // `HttpsProxyAgent` does not forward a custom `ca` through the tunnel's
+    // TLS-upgrade step, so the successful (post-retry) request can't
+    // validate the Collector's self-signed cert any other way. Same
+    // precedent as test/unit/collector/remote-method.test.js.
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+
+    const collector = new Collector({ runId: 31338 })
+    await collector.listen()
+    ctx.nr.collector = collector
 
     ctx.nr.agent = helper.loadMockedAgent({
-      host: 'collector.newrelic.com',
-      port: 443,
-      ...baseAgentConfig
+      ...baseAgentConfig,
+      ...collector.agentConfig,
+      proxy_host: proxy.host,
+      proxy_port: String(proxy.port)
     })
     ctx.nr.agent.reconfigure = function () {}
     ctx.nr.agent.setState = function () {}
-    ctx.nr.agent.config.proxy_port = '8080'
-    ctx.nr.agent.config.proxy_host = 'test-proxy-server'
-
-    const baseURL = 'https://collector.newrelic.com'
-    const preconnectURL = helper.generateCollectorPath('preconnect')
-    ctx.nr.failure = nock(baseURL).post(preconnectURL).times(1).replyWithError(expectedError)
-    ctx.nr.success = nock(baseURL)
-      .post(preconnectURL)
-      .reply(200, ...jsonReply({ return_value: {} }))
-    ctx.nr.connect = nock(baseURL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, ...jsonReply({ return_value: { agent_run_id: 31338 } }))
 
     ctx.nr.logs = []
     const CAPI = proxyquire('../../../lib/collector/api', {
@@ -497,13 +484,14 @@ test('retries on misconfigured proxy', async (t) => {
 
   t.afterEach((ctx) => {
     restoreTimeout(ctx)
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1'
     helper.unloadAgent(ctx.nr.agent)
-    nock.enableNetConnect()
+    ctx.nr.collector.close()
   })
 
   await t.test('should log warning when proxy is misconfigured', async (t) => {
     const plan = tspl(t, { plan: 8 })
-    const { agent, collectorApi } = t.nr
+    const { agent, collector, collectorApi } = t.nr
 
     let invocation = 0
     agent.healthReporter.setStatus = (status) => {
@@ -517,9 +505,8 @@ test('retries on misconfigured proxy', async (t) => {
 
     collectorApi.connect((error, res) => {
       plan.ifError(error)
-      plan.equal(t.nr.failure.isDone(), true)
-      plan.equal(t.nr.success.isDone(), true)
-      plan.equal(t.nr.connect.isDone(), true)
+      plan.equal(collector.isDone('preconnect'), true)
+      plan.equal(collector.isDone('connect'), true)
       plan.equal(res.payload.agent_run_id, 31338)
 
       const expectErrorMsg = [
@@ -528,11 +515,8 @@ test('retries on misconfigured proxy', async (t) => {
         'SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` ',
         'to a fully qualified URL(e.g http://proxy-host:8080).'
       ].join('')
-      plan.deepStrictEqual(
-        t.nr.logs,
-        [[expectedError, expectErrorMsg]],
-        'Proxy misconfigured message correct'
-      )
+      plan.equal(t.nr.logs[0][0].code, 'EPROTO')
+      plan.equal(t.nr.logs[0][1], expectErrorMsg)
     })
 
     await plan.completed
@@ -541,13 +525,13 @@ test('retries on misconfigured proxy', async (t) => {
   await t.test(
     'should not log warning when proxy is configured properly but still get EPROTO',
     (t, end) => {
-      const { collectorApi } = t.nr
-      collectorApi._agent.config.proxy = 'http://test-proxy-server:8080'
+      const { collector, collectorApi } = t.nr
+      const { proxy_host: proxyHost, proxy_port: proxyPort } = collectorApi._agent.config
+      collectorApi._agent.config.proxy = `http://${proxyHost}:${proxyPort}`
       collectorApi.connect((error, res) => {
         assert.ifError(error)
-        assert.equal(t.nr.failure.isDone(), true)
-        assert.equal(t.nr.success.isDone(), true)
-        assert.equal(t.nr.connect.isDone(), true)
+        assert.equal(collector.isDone('preconnect'), true)
+        assert.equal(collector.isDone('connect'), true)
         assert.equal(res.payload.agent_run_id, 31338)
 
         match(

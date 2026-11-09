@@ -6,11 +6,10 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
-const nock = require('nock')
-const { nockRequest, jsonReply } = require('./response-handling-utils')
+const Collector = require('../lib/test-collector')
+const { createMockRequest, jsonReply } = require('./response-handling-utils')
 const sinon = require('sinon')
 const helper = require('../lib/agent_helper')
-const TEST_DOMAIN = 'test-collector.newrelic.com'
 const RUN_ID = 'runId'
 
 /**
@@ -19,7 +18,7 @@ const RUN_ID = 'runId'
  * the new harvest limit value from server that has been down sampled.  It could result in harvest limits
  * being 0 if enough restarts occur.
  */
-test('Connect calls re-generate harvest limits from original config values', (t, end) => {
+test('Connect calls re-generate harvest limits from original config values', async (t) => {
   const serverHarvest = {
     event_harvest_config: {
       report_period_ms: 100,
@@ -32,17 +31,20 @@ test('Connect calls re-generate harvest limits from original config values', (t,
       }
     }
   }
-  nock.disableNetConnect()
-  nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN }))
-  nockRequest('connect').reply(200, ...jsonReply({ return_value: { agent_run_id: RUN_ID, ...serverHarvest } }))
-  nockRequest('agent_settings', RUN_ID).reply(200, ...jsonReply({ return_value: [] }))
-  nockRequest('metric_data', RUN_ID).reply(409, ...jsonReply({ return_value: [] }))
-  nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN }))
-  nockRequest('connect').reply(200, ...jsonReply({ return_value: { agent_run_id: RUN_ID, ...serverHarvest } }))
-  nockRequest('agent_settings', RUN_ID).reply(200, ...jsonReply({ return_value: [] }))
+  const collector = new Collector({ runId: RUN_ID })
+  await collector.listen()
+  const mockRequest = createMockRequest(collector)
+  // These handlers persist until overwritten, so one registration serves
+  // both the initial connect and the 409-triggered reconnect below.
+  mockRequest('agent_settings', RUN_ID).reply(200, ...jsonReply({ return_value: [] }))
+  mockRequest('preconnect').reply(200, ...jsonReply({
+    return_value: { redirect_host: `${collector.host}:${collector.port}`, security_policies: {} }
+  }))
+  mockRequest('connect').reply(200, ...jsonReply({ return_value: { agent_run_id: RUN_ID, ...serverHarvest } }))
+  mockRequest('metric_data', RUN_ID).reply(409, ...jsonReply({ return_value: [] }))
   const agent = helper.loadMockedAgent({
     license_key: 'license key here',
-    host: TEST_DOMAIN,
+    ...collector.agentConfig,
     application_logging: {
       enabled: true
     },
@@ -53,11 +55,7 @@ test('Connect calls re-generate harvest limits from original config values', (t,
 
   t.after(() => {
     helper.unloadAgent(agent)
-    if (!nock.isDone()) {
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      nock.cleanAll()
-    }
-    nock.enableNetConnect()
+    collector.close()
   })
 
   const originalConfig = Object.assign({}, agent.config)
@@ -70,38 +68,40 @@ test('Connect calls re-generate harvest limits from original config values', (t,
    * with 409 it will issue a restart and make another pre-connect, connect and agent
    * settings call.
    */
-  agent.start((err) => {
-    assert.ok(!err)
-    const config = agent.config
-    assert.deepEqual(
-      config.event_harvest_config,
-      serverHarvest.event_harvest_config,
-      'config should have been updated from server'
-    )
-    agent.metrics.once('finished_data_send-metric_data', function onMetricsFinished() {
-      const connectCalls = agent.collector._connect.args
+  return new Promise((resolve) => {
+    agent.start((err) => {
+      assert.ok(!err)
+      const config = agent.config
       assert.deepEqual(
         config.event_harvest_config,
         serverHarvest.event_harvest_config,
-        'config should have been updated from server after reconnect'
+        'config should have been updated from server'
       )
-      assert.equal(connectCalls.length, 2, 'should have reconnected once')
-      connectCalls.forEach((call) => {
-        const factsConfig = call[0][0]
-        assert.notEqual(
-          factsConfig.event_harvest_config.harvest_limits,
-          config.event_harvest_config.harvest_limits,
-          'facts harvest config should not be same as new harvest config'
-        )
+      agent.metrics.once('finished_data_send-metric_data', function onMetricsFinished() {
+        const connectCalls = agent.collector._connect.args
         assert.deepEqual(
-          factsConfig.event_harvest_config.harvest_limits,
-          originalConfig.event_harvest_config.harvest_limits,
-          'connect should send up original harvest limits'
+          config.event_harvest_config,
+          serverHarvest.event_harvest_config,
+          'config should have been updated from server after reconnect'
         )
+        assert.equal(connectCalls.length, 2, 'should have reconnected once')
+        connectCalls.forEach((call) => {
+          const factsConfig = call[0][0]
+          assert.notEqual(
+            factsConfig.event_harvest_config.harvest_limits,
+            config.event_harvest_config.harvest_limits,
+            'facts harvest config should not be same as new harvest config'
+          )
+          assert.deepEqual(
+            factsConfig.event_harvest_config.harvest_limits,
+            originalConfig.event_harvest_config.harvest_limits,
+            'connect should send up original harvest limits'
+          )
+        })
+        resolve()
       })
-      end()
-    })
 
-    agent.metrics.send()
+      agent.metrics.send()
+    })
   })
 })

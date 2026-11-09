@@ -9,7 +9,6 @@ const assert = require('node:assert')
 const test = require('node:test')
 const http = require('node:http')
 const https = require('node:https')
-const nock = require('nock')
 
 const helper = require('#testlib/agent_helper.js')
 const NAMES = require('#agentlib/metrics/names.js')
@@ -47,16 +46,6 @@ function getExternalSegments(transaction) {
 }
 
 test('HttpAgentSubscriber', async (t) => {
-  // nock replaces `http.ClientRequest` and its agent, so use the real ones;
-  // requests are destroyed before they connect
-  t.before(() => {
-    nock.restore()
-  })
-
-  t.after(() => {
-    nock.activate()
-  })
-
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent()

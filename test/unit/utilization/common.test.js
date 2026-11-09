@@ -7,9 +7,9 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const http = require('node:http')
 const common = require('../../../lib/utilization/common')
 const helper = require('../../lib/agent_helper.js')
-const nock = require('nock')
 
 let BIG = 'abcd'
 while (BIG.length < 300) {
@@ -82,23 +82,35 @@ test('Utilization Common Components', async function (t) {
   })
 
   await t.test('common.request', async (t) => {
-    t.before(() => {
-      nock.disableNetConnect()
+    let server
+
+    t.before(async () => {
       // We use separate paths, each with a delay that is decisively on one side
       // of its request timeout, so the outcome does not depend on fragile
       // millisecond margins. Short timeouts of 150-200ms, which is reliable on
       // a developer machine, are flaky on a contended runner like GitHub
       // Actions.
+      server = http.createServer((req, res) => {
+        // `/success` responds slowly (500ms) but well within its 2000ms
+        // request timeout. This still exercises the "slow response" behavior
+        // the success test cares about -- the client must accept a slow
+        // response and must not treat it as a timeout -- without racing the
+        // timeout. `/timeout` delays far longer than any request timeout so
+        // the socket timeout always fires first.
+        const delay = req.url === '/success' ? 500 : 10000
+        const timer = setTimeout(() => res.end('woohoo'), delay)
+        // If the client has already timed out and aborted, don't keep the
+        // event loop alive for the rest of the delay.
+        res.on('close', () => clearTimeout(timer))
+      })
+      server.unref()
+      await new Promise((resolve, reject) => {
+        server.listen(0, '127.0.0.1', (err) => (err ? reject(err) : resolve()))
+      })
+    })
 
-      // `/success` responds slowly (500ms) but well within its 2000ms request
-      // timeout. This still exercises the "slow response" behavior the success
-      // test cares about -- the client must accept a slow response and must not
-      // treat it as a timeout -- without racing the timeout.
-      nock('http://fakedomain').persist().get('/success').delay(500).reply(200, 'woohoo')
-
-      // `/timeout` delays far longer than any request timeout so the socket
-      // timeout always fires first.
-      nock('http://fakedomain').persist().get('/timeout').delay(10000).reply(200, 'woohoo')
+    t.after(() => {
+      server.close()
     })
 
     t.beforeEach(function (ctx) {
@@ -111,11 +123,6 @@ test('Utilization Common Components', async function (t) {
       ctx.nr.agent = null
     })
 
-    t.after(() => {
-      nock.cleanAll()
-      nock.enableNetConnect()
-    })
-
     await t.test('should not timeout when request succeeds', (ctx, end) => {
       const agent = ctx.nr.agent
       let invocationCount = 0
@@ -126,7 +133,8 @@ test('Utilization Common Components', async function (t) {
       common.request(
         {
           method: 'GET',
-          host: 'fakedomain',
+          host: server.address().address,
+          port: server.address().port,
           timeout: 2000,
           path: '/success'
         },
@@ -156,7 +164,8 @@ test('Utilization Common Components', async function (t) {
       common.request(
         {
           method: 'GET',
-          host: 'fakedomain',
+          host: server.address().address,
+          port: server.address().port,
           timeout: 100,
           path: '/timeout'
         },
@@ -165,10 +174,6 @@ test('Utilization Common Components', async function (t) {
           assert.ok(err)
           assert.equal(err.code, 'ECONNRESET', 'error should be socket timeout')
           invocationCount++
-          // The socket timed out and aborted, but nock still has the long
-          // delayed response pending; cancel it so its timer doesn't keep the
-          // event loop alive for the full delay after the test passes.
-          nock.abortPendingRequests()
         }
       )
 

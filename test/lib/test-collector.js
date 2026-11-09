@@ -264,6 +264,22 @@ class Collector {
   }
 
   /**
+   * Lists the method names for which a handler has been registered but
+   * which has not yet been invoked by an incoming request.
+   *
+   * @returns {string[]} Method names, e.g. `['preconnect', 'metric_data']`.
+   */
+  pendingHandlers() {
+    const pending = []
+    for (const [method, handler] of this.#handlers) {
+      if (handler.isDone !== true) {
+        pending.push(method)
+      }
+    }
+    return pending
+  }
+
+  /**
    * Start the server listening for requests.
    *
    * @returns {Promise<object>} Returns a standard server address object.

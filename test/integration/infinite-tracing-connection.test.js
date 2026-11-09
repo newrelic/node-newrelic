@@ -5,8 +5,8 @@
 
 'use strict'
 const test = require('node:test')
-const nock = require('nock')
-const { nockRequest, jsonReply } = require('./response-handling-utils')
+const Collector = require('../lib/test-collector')
+const { createMockRequest, jsonReply, waitUntilDone } = require('../lib/collector-reply-utils')
 const grpc = require('@grpc/grpc-js')
 const protoLoader = require('@grpc/proto-loader')
 const { tspl } = require('@matteo.collina/tspl')
@@ -20,7 +20,6 @@ const helper = require('../lib/agent_helper')
 // own certificate.
 const cert = fakeCert({ commonName: 'localhost' })
 const PROTO = require('../../lib/grpc/endpoints/infinite-tracing/v1.json')
-const TEST_DOMAIN = 'test-collector.newrelic.com'
 // This key is hardcoded in the agent helper
 const EXPECTED_LICENSE_KEY = 'license key here'
 const INITIAL_RUN_ID = 'initial_run_id'
@@ -84,16 +83,15 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
     })
 
     t.afterEach(async (ctx) => {
-      const { agent, origEnv, server } = ctx.nr
+      const { agent, collector, origEnv, server } = ctx.nr
       process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
       helper.unloadAgent(agent)
 
-      if (!nock.isDone()) {
-        console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-        nock.cleanAll()
+      const pending = collector.pendingHandlers()
+      if (pending.length > 0) {
+        console.error('Collector handlers never invoked: %j', pending)
       }
-
-      nock.enableNetConnect()
+      collector.close()
 
       await new Promise((resolve) => {
         server.tryShutdown(resolve)
@@ -122,8 +120,8 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
         plan
       })
 
-      agent.start((error) => {
-        verifyAgentStart({ error, endpoints: startingEndpoints, plan })
+      agent.start(async (error) => {
+        await verifyAgentStart({ error, endpoints: startingEndpoints, plan })
 
         createTestData({ agent, names })
       })
@@ -135,12 +133,12 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
       'should succeed, with updated run_id and request header metadata, after restart',
       async (t) => {
         const plan = tspl(t, { plan: 16 })
-        const { agent, startingEndpoints } = t.nr
+        const { agent, collector, mockRequest, startingEndpoints } = t.nr
         const RESTARTED_RUN_ID = 'restarted_run_id'
         const RESTARTED_SESSION_ID = 'restarted session id'
 
         // 409 response will trigger a restart
-        const restartMetricEndpoint = nockRequest('metric_data', INITIAL_RUN_ID).reply(409, ...jsonReply({ return_value: null }))
+        const restartMetricEndpoint = mockRequest('metric_data', INITIAL_RUN_ID).reply(409, ...jsonReply({ return_value: null }))
 
         const expectedRunId = RESTARTED_RUN_ID
         const expectedSessionId = RESTARTED_SESSION_ID
@@ -161,25 +159,23 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
           plan
         })
 
-        agent.start((error) => {
-          verifyAgentStart({ error, endpoints: startingEndpoints, plan })
-          const restartEndpoints = setupConnectionEndpoints(RESTARTED_RUN_ID, RESTARTED_SESSION_ID)
+        agent.start(async (error) => {
+          await verifyAgentStart({ error, endpoints: startingEndpoints, plan })
+          const restartEndpoints = setupConnectionEndpoints(
+            mockRequest,
+            collector,
+            RESTARTED_RUN_ID,
+            RESTARTED_SESSION_ID
+          )
 
           agent.on('connecting', () => {
             plan.equal(agent.spanEventAggregator.started, false)
 
-            agent.spanEventAggregator.once('started', () => {
-              // Defer one tick: with nock 14 keep-alive connections, the
-              // agent_settings request is pipelined and nock only matches it
-              // after the connect response body is drained from the socket.
-              // setImmediate gives nock time to process the in-flight request
-              // before we assert isDone().
-              setImmediate(() => {
-                // if new endpoints weren't hit, something else went wrong with test.
-                verifyAgentStart({ endpoints: restartEndpoints, plan })
+            agent.spanEventAggregator.once('started', async () => {
+              // if new endpoints weren't hit, something else went wrong with test.
+              await verifyAgentStart({ endpoints: restartEndpoints, plan })
 
-                createTestData({ agent, names })
-              })
+              createTestData({ agent, names })
             })
           })
 
@@ -215,8 +211,8 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
           return origForceHarvestAll.apply(this, arguments)
         }
 
-        agent.start((error) => {
-          verifyAgentStart({ error, endpoints: startingEndpoints, plan })
+        agent.start(async (error) => {
+          await verifyAgentStart({ error, endpoints: startingEndpoints, plan })
 
           // ensure test valid / hit the import assertion
           plan.ok(initialHarvestCalled)
@@ -237,16 +233,15 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
     const { agent, startingEndpoints } = t.nr
 
     t.after(async (ctx) => {
-      const { agent, origEnv, server } = ctx.nr
+      const { agent, collector, origEnv, server } = ctx.nr
       process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
       helper.unloadAgent(agent)
 
-      if (!nock.isDone()) {
-        console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-        nock.cleanAll()
+      const pending = collector.pendingHandlers()
+      if (pending.length > 0) {
+        console.error('Collector handlers never invoked: %j', pending)
       }
-
-      nock.enableNetConnect()
+      collector.close()
 
       await new Promise((resolve) => {
         server.tryShutdown(resolve)
@@ -272,8 +267,8 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
       plan
     })
 
-    agent.start((error) => {
-      verifyAgentStart({ error, endpoints: startingEndpoints, plan })
+    agent.start(async (error) => {
+      await verifyAgentStart({ error, endpoints: startingEndpoints, plan })
 
       createTestData({ agent, names })
     })
@@ -355,8 +350,12 @@ function recordSpanBatch(ctx, stream) {
 }
 
 async function testSetup(ctx, config) {
-  nock.disableNetConnect()
-  ctx.nr.startingEndpoints = setupConnectionEndpoints(INITIAL_RUN_ID, INITIAL_SESSION_ID)
+  const collector = new Collector({ runId: INITIAL_RUN_ID })
+  await collector.listen()
+  ctx.nr.collector = collector
+  const mockRequest = createMockRequest(collector)
+  ctx.nr.mockRequest = mockRequest
+  ctx.nr.startingEndpoints = setupConnectionEndpoints(mockRequest, collector, INITIAL_RUN_ID, INITIAL_SESSION_ID)
 
   const sslOpts = {
     ca: cert.certificateBuffer,
@@ -375,9 +374,11 @@ async function testSetup(ctx, config) {
 
   const { port, server } = await createGrpcServer(sslOpts, services)
   ctx.nr.agent = helper.loadMockedAgent({
-    license_key: EXPECTED_LICENSE_KEY,
     apdex_t: Number.MIN_VALUE, // force transaction traces
-    host: TEST_DOMAIN,
+    ...collector.agentConfig,
+    // The gRPC assertions below expect this exact value in the metadata,
+    // so it must win over `collector.agentConfig`'s own `license_key`.
+    license_key: EXPECTED_LICENSE_KEY,
     plugins: {
       // turn off native metrics to avoid unwanted gc metrics
       native_metrics: { enabled: false }
@@ -420,10 +421,15 @@ function createTestData({ agent, names }) {
   })
 }
 
-function setupConnectionEndpoints(runId, sessionId) {
+function setupConnectionEndpoints(mockRequest, collector, runId, sessionId) {
   return {
-    preconnect: nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN })),
-    connect: nockRequest('connect').reply(200, ...jsonReply({
+    preconnect: mockRequest('preconnect').reply(200, ...jsonReply({
+      return_value: {
+        redirect_host: `${collector.host}:${collector.port}`,
+        security_policies: {}
+      }
+    })),
+    connect: mockRequest('connect').reply(200, ...jsonReply({
       return_value: {
         agent_run_id: runId,
         request_headers_map: {
@@ -431,17 +437,21 @@ function setupConnectionEndpoints(runId, sessionId) {
         }
       }
     })),
-    settings: nockRequest('agent_settings', runId).reply(200, ...jsonReply({ return_value: [] }))
+    settings: mockRequest('agent_settings', runId).reply(200, ...jsonReply({ return_value: [] }))
   }
 }
 
-function verifyAgentStart({ error, endpoints, plan }) {
+async function verifyAgentStart({ error, endpoints, plan }) {
   if (error) {
     throw error
   }
 
   plan.ok(endpoints.preconnect.isDone(), 'requested preconnect')
   plan.ok(endpoints.connect.isDone(), 'requested connect')
+  // `agent_settings` is reported from a fire-and-forget `config`-change
+  // listener that nothing else awaits, so against a real server it can
+  // land a few event loop turns after `connect` resolves.
+  await waitUntilDone(endpoints.settings)
   plan.ok(endpoints.settings.isDone(), 'requested settings')
 }
 

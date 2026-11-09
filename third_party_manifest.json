@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Nov 09 2026 15:48:07 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Mon Nov 09 2026 18:07:38 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -78,15 +78,15 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/security-agent@4.0.1": {
+    "@newrelic/security-agent@3.0.5": {
       "name": "@newrelic/security-agent",
-      "version": "4.0.1",
+      "version": "3.0.5",
       "range": "^4.0.1",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v4.0.1",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v3.0.5",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v4.0.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v3.0.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -656,19 +656,6 @@
       "publisher": "Sindre Sorhus",
       "email": "sindresorhus@gmail.com",
       "url": "https://sindresorhus.com"
-    },
-    "nock@14.0.17": {
-      "name": "nock",
-      "version": "14.0.17",
-      "range": "^14.0.15",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/nock/nock",
-      "versionedRepoUrl": "https://github.com/nock/nock/tree/v14.0.17",
-      "licenseFile": "node_modules/nock/LICENSE",
-      "licenseUrl": "https://github.com/nock/nock/blob/v14.0.17/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Pedro Teixeira",
-      "email": "pedro.teixeira@gmail.com"
     },
     "protobufjs@8.8.1": {
       "name": "protobufjs",

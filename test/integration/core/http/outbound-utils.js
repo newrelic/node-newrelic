@@ -24,64 +24,64 @@ function getMethodFromName(nodule, method) {
 
 async function testSignature(testOpts) {
   const { nodule, urlType, headers, callback, swapHost, t, method } = testOpts
-  const host = 'www.newrelic.com'
-  const port = ''
   const path = '/index.html'
-  const leftPart = `${nodule}://${host}`
-  const _url = `${leftPart}${path}`
 
-  // Setup the arguments and the test name
-  const args = [] // Setup arguments to the get/request function
-  const names = [] // Capture parameters for the name of the test
-
-  // See if a URL argument is being used
+  // Name the test. The URL/options construction depends on the real server's
+  // address, which only exists once `beforeEach` has run for this specific
+  // child test -- so that part happens inside the `t.test()` callback below,
+  // not here.
+  const names = []
   if (urlType === 'string') {
-    args.push(_url)
     names.push('URL string')
   } else if (urlType === 'object') {
-    args.push(global.URL ? new global.URL(_url) : _url)
     names.push('URL object')
   }
-
-  // See if an options argument should be used
-  const opts = {}
   if (headers) {
-    opts.headers = { test: 'test' }
     names.push('options')
   }
-  // If options specifies a hostname, it will override the url parameter
   if (swapHost) {
-    opts.hostname = 'www.google.com'
     names.push('options with different hostname')
   }
-  if (Object.keys(opts).length > 0) {
-    args.push(opts)
-  }
-
-  // If the callback argument should be setup, just add it to the name for now, and
-  // setup within the it() call since the callback needs to access the done() function
   if (callback) {
     names.push('callback')
   }
-
-  // Name the test and start it
   const testName = names.join(', ')
 
   await t.test(testName, function (t, end) {
-    const { agent, nock, tracer } = t.nr
-    // If testing the options overriding the URL argument, set up nock differently.
-    // nock 14 (mswjs) matches on the URL string's hostname before opts.hostname is
-    // merged, so we intercept www.newrelic.com (the URL host) even when swapHost
-    // overrides it to www.google.com via options.
+    const { agent, server, tracer } = t.nr
+    const { address: host, port } = server.address()
+    // For `swapHost`, the URL string names a host that cannot resolve --
+    // `.invalid` is reserved by RFC 2606 to never resolve in DNS -- while
+    // `opts.hostname` names the real server. If the agent (and Node's own
+    // http client) didn't actually honor `opts.hostname` over the URL's own
+    // host, the request would simply fail to connect rather than produce a
+    // mismatched segment name, so a passing test is real proof opts won.
+    const leftPart = swapHost ? `${nodule}://external-test.invalid:${port}` : `${nodule}://${host}:${port}`
+    const _url = `${leftPart}${path}`
+
+    // Setup the arguments to the get/request function
+    const args = []
+    if (urlType === 'string') {
+      args.push(_url)
+    } else if (urlType === 'object') {
+      args.push(global.URL ? new global.URL(_url) : _url)
+    }
+
+    const opts = {}
+    if (headers) {
+      opts.headers = { test: 'test' }
+    }
+    // If options specifies a hostname, it will override the url parameter
     if (swapHost) {
-      nock(`${nodule}://www.newrelic.com`).get(path).reply(200, 'Hello from Google')
-    } else {
-      nock(leftPart).get(path).reply(200, 'Hello from New Relic')
+      opts.hostname = host
+    }
+    if (Object.keys(opts).length > 0) {
+      args.push(opts)
     }
 
     // Setup a function to test the response.
     const callbackTester = (res) => {
-      testResult({ res, swapHost, end, host, port, path, tracer })
+      testResult({ res, end, host, port, path, tracer })
     }
 
     // Add callback to the arguments, if used
@@ -103,13 +103,12 @@ async function testSignature(testOpts) {
   })
 }
 
-function testResult({ res, swapHost, end, host, port, path, tracer }) {
-  let external = `External/${host}${port}${path}`
-  let str = 'Hello from New Relic'
-  if (swapHost) {
-    external = `External/www.google.com${port}/index.html`
-    str = 'Hello from Google'
-  }
+function testResult({ res, end, host, port, path, tracer }) {
+  // Whether or not `swapHost` was in play, the agent should have named the
+  // segment after whatever host/port actually got dialed -- which is always
+  // the real local server (see the comment in `testSignature` above).
+  const external = `External/${host}:${port}${path}`
+  const str = 'Hello from New Relic'
 
   const segment = tracer.getSegment()
 

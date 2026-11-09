@@ -13,7 +13,7 @@ const SpanEvent = require('../../../lib/spans/span-event')
 const DatastoreParameters = require('../../../lib/shim/specs/params/datastore')
 const { QuerySpec } = require('../../../lib/shim/specs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
-const nock = require('nock')
+const { startServer } = require('../../lib/local-server')
 
 test('#constructor() should construct an empty span event', () => {
   const attrs = {}
@@ -120,7 +120,6 @@ describe('addCustomAttribute()', () => {
 
 test('fromSegment()', async (t) => {
   t.beforeEach((ctx) => {
-    nock.disableNetConnect()
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent({
       distributed_tracing: {
@@ -130,7 +129,6 @@ test('fromSegment()', async (t) => {
   })
 
   t.afterEach((ctx) => {
-    nock.enableNetConnect()
     helper.unloadAgent(ctx.nr.agent)
   })
 
@@ -209,72 +207,79 @@ test('fromSegment()', async (t) => {
     })
   })
 
-  await t.test('should create an http span with a external segment', (t, end) => {
+  await t.test('should create an http span with a external segment', async (t) => {
     const { agent } = t.nr
-    helper.runInTransaction(agent, (transaction) => {
-      transaction.sampled = true
-      transaction.priority = 42
-      nock('http://example.com').get('/?foo=bar').reply(200)
+    const { server, origin, host, port } = await startServer((req, res) => {
+      res.writeHead(200)
+      res.end()
+    })
+    t.after(() => server.close())
 
-      http.get('http://example.com?foo=bar', (res) => {
-        res.resume()
-        res.on('end', () => {
-          const tx = agent.tracer.getTransaction()
-          const [segment] = tx.trace.getChildren(tx.trace.root.id)
-          const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, (transaction) => {
+        transaction.sampled = true
+        transaction.priority = 42
 
-          // Should have all the normal properties.
-          assert.ok(span)
-          assert.ok(span instanceof SpanEvent)
-          assert.ok(span instanceof SpanEvent.HttpSpanEvent)
+        http.get(`${origin}?foo=bar`, (res) => {
+          res.resume()
+          res.on('end', () => {
+            const tx = agent.tracer.getTransaction()
+            const [segment] = tx.trace.getChildren(tx.trace.root.id)
+            const span = SpanEvent.fromSegment({ segment, transaction, parentId: 'parent' })
 
-          assert.ok(span.intrinsics)
-          assert.equal(span.intrinsics.type, 'Span')
-          assert.equal(span.intrinsics.category, SpanEvent.CATEGORIES.HTTP)
+            // Should have all the normal properties.
+            assert.ok(span)
+            assert.ok(span instanceof SpanEvent)
+            assert.ok(span instanceof SpanEvent.HttpSpanEvent)
 
-          assert.equal(span.intrinsics.traceId, transaction.traceId)
-          assert.equal(span.intrinsics.guid, segment.id)
-          assert.equal(span.intrinsics.parentId, 'parent')
-          assert.equal(span.intrinsics.transactionId, transaction.id)
-          assert.equal(span.intrinsics.sampled, true)
-          assert.equal(span.intrinsics.priority, 42)
+            assert.ok(span.intrinsics)
+            assert.equal(span.intrinsics.type, 'Span')
+            assert.equal(span.intrinsics.category, SpanEvent.CATEGORIES.HTTP)
 
-          assert.equal(span.intrinsics.name, 'External/example.com/')
-          assert.equal(span.intrinsics.timestamp, segment.timer.start)
+            assert.equal(span.intrinsics.traceId, transaction.traceId)
+            assert.equal(span.intrinsics.guid, segment.id)
+            assert.equal(span.intrinsics.parentId, 'parent')
+            assert.equal(span.intrinsics.transactionId, transaction.id)
+            assert.equal(span.intrinsics.sampled, true)
+            assert.equal(span.intrinsics.priority, 42)
 
-          assert.ok(span.intrinsics.duration > 0 && span.intrinsics.duration <= 2)
+            assert.equal(span.intrinsics.name, `External/${host}:${port}/`)
+            assert.equal(span.intrinsics.timestamp, segment.timer.start)
 
-          // Should have type-specific intrinsics
-          assert.equal(span.intrinsics.component, 'http')
-          assert.equal(span.intrinsics['span.kind'], 'client')
+            assert.ok(span.intrinsics.duration > 0 && span.intrinsics.duration <= 2)
 
-          assert.ok(span.attributes)
-          const attributes = span.attributes
+            // Should have type-specific intrinsics
+            assert.equal(span.intrinsics.component, 'http')
+            assert.equal(span.intrinsics['span.kind'], 'client')
 
-          // Should have (most) http properties.
-          assert.equal(attributes['http.url'], 'http://example.com/')
-          assert.equal(attributes['server.address'], 'example.com')
-          assert.equal(attributes['server.port'], 80)
-          assert.ok(attributes['http.method'])
-          assert.ok(attributes['http.request.method'])
-          assert.equal(attributes['http.statusCode'], 200)
+            assert.ok(span.attributes)
+            const attributes = span.attributes
 
-          // should nullify mapped properties
-          assert.ok(!attributes.library)
-          assert.ok(!attributes.url)
-          assert.ok(!attributes.hostname)
-          assert.ok(!attributes.port)
-          assert.ok(!attributes.procedure)
+            // Should have (most) http properties.
+            assert.equal(attributes['http.url'], `${origin}/`)
+            assert.equal(attributes['server.address'], host)
+            assert.equal(attributes['server.port'], port)
+            assert.ok(attributes['http.method'])
+            assert.ok(attributes['http.request.method'])
+            assert.equal(attributes['http.statusCode'], 200)
 
-          // Should have no datastore properties.
-          const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
-          assert.ok(!hasOwnAttribute('db.statement'))
-          assert.ok(!hasOwnAttribute('db.instance'))
-          assert.ok(!hasOwnAttribute('db.system'))
-          assert.ok(!hasOwnAttribute('peer.hostname'))
-          assert.ok(!hasOwnAttribute('peer.address'))
+            // should nullify mapped properties
+            assert.ok(!attributes.library)
+            assert.ok(!attributes.url)
+            assert.ok(!attributes.hostname)
+            assert.ok(!attributes.port)
+            assert.ok(!attributes.procedure)
 
-          end()
+            // Should have no datastore properties.
+            const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
+            assert.ok(!hasOwnAttribute('db.statement'))
+            assert.ok(!hasOwnAttribute('db.instance'))
+            assert.ok(!hasOwnAttribute('db.system'))
+            assert.ok(!hasOwnAttribute('peer.hostname'))
+            assert.ok(!hasOwnAttribute('peer.address'))
+
+            resolve()
+          })
         })
       })
     })
@@ -433,24 +438,31 @@ test('fromSegment()', async (t) => {
     })
   })
 
-  await t.test('should handle truncated http spans', (t, end) => {
+  await t.test('should handle truncated http spans', async (t) => {
     const { agent } = t.nr
-    nock('http://www.example.com').get('/path?foo=bar').reply(200)
-    helper.runInTransaction(agent, (transaction) => {
-      http.get('http://www.example.com/path?foo=bar', (res) => {
-        transaction.end() // prematurely end to truncate
+    const { server, origin } = await startServer((req, res) => {
+      res.writeHead(200)
+      res.end()
+    })
+    t.after(() => server.close())
 
-        res.resume()
-        res.on('end', () => {
-          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
-          assert.ok(segment.name.startsWith('Truncated'))
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, (transaction) => {
+        http.get(`${origin}/path?foo=bar`, (res) => {
+          transaction.end() // prematurely end to truncate
 
-          const span = SpanEvent.fromSegment({ segment, transaction })
-          assert.ok(span)
-          assert.ok(span instanceof SpanEvent)
-          assert.ok(span instanceof SpanEvent.HttpSpanEvent)
+          res.resume()
+          res.on('end', () => {
+            const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
+            assert.ok(segment.name.startsWith('Truncated'))
 
-          end()
+            const span = SpanEvent.fromSegment({ segment, transaction })
+            assert.ok(span)
+            assert.ok(span instanceof SpanEvent)
+            assert.ok(span instanceof SpanEvent.HttpSpanEvent)
+
+            resolve()
+          })
         })
       })
     })
