@@ -27,6 +27,16 @@ test('HttpClientSubscriber id', (t) => {
   assert.deepEqual(subscriber.channels.map((channel) => channel.start.name), ['tracing:nr:client:http:request:start'])
 })
 
+test('HttpClientSubscriber defaultProtocol', (t) => {
+  const agent = helper.loadMockedAgent()
+  t.after(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const subscriber = new HttpClientSubscriber({ agent, logger })
+  assert.equal(subscriber.defaultProtocol, 'http:')
+})
+
 test('HttpClientSubscriber enabled', async (t) => {
   t.beforeEach((ctx) => {
     const agent = helper.loadMockedAgent()
