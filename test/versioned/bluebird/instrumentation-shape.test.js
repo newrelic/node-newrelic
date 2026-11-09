@@ -18,15 +18,24 @@ describe('bluebird instrumentation does not mutate per-promise shape (#4407)', (
     ctx.nr.Promise = require('bluebird')
   })
 
-  test.afterEach((ctx) => {
+  test.afterEach(afterEach)
+
+  // Idempotent: the skip paths below invoke this directly before returning, and
+  // the registered hook also runs, so guard against tearing down twice.
+  function afterEach(ctx) {
+    if (ctx.nr.tornDown === true) {
+      return
+    }
+    ctx.nr.tornDown = true
     helper.unloadAgent(ctx.nr.agent)
     removeModules(['bluebird'])
-  })
+  }
 
   test('promise `_then` comes from the prototype, not the instance', (t, end) => {
     const { agent, Promise } = t.nr
     if (helper.isSecurityAgentEnabled(agent) === true) {
       t.skip('security agent may install its own per-instance wrappers on promises')
+      afterEach(t)
       end()
       return
     }
@@ -55,6 +64,7 @@ describe('bluebird instrumentation does not mutate per-promise shape (#4407)', (
     const { agent, Promise } = t.nr
     if (helper.isSecurityAgentEnabled(agent) === true) {
       t.skip('security agent may install its own per-instance wrappers on promises')
+      afterEach(t)
       end()
       return
     }
