@@ -76,3 +76,55 @@ jobs:
           git add .fleetControl/configurationDefinitions.yml
           git commit -m "chore: bump agent config schema version"
           git push origin "HEAD:$RELEASE_BRANCH"
+
+  update-third-party-notices:
+    name: Update third-party notices
+    needs: agent-release-notes
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Determine release branch
+        id: release-branch
+        env:
+          RELEASE_TYPE: ${{ github.event.inputs.release_type }}
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          NEW_VERSION=$(node -p "require('semver').inc('$CURRENT_VERSION', process.env.RELEASE_TYPE)")
+          echo "name=release/v$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release branch
+        env:
+          RELEASE_BRANCH: ${{ steps.release-branch.outputs.name }}
+        run: git checkout "$RELEASE_BRANCH"
+
+      - name: Update THIRD_PARTY_NOTICES.md
+        run: npm run third-party-updates
+
+      - name: Commit update into the release PR
+        env:
+          GIT_USER_NAME: ${{ vars.NODE_AGENT_CI_USER_NAME }}
+          GIT_USER_EMAIL: ${{ vars.NODE_AGENT_CI_USER_EMAIL }}
+          RELEASE_BRANCH: ${{ steps.release-branch.outputs.name }}
+        run: |
+          if [ -z "$(git status --porcelain THIRD_PARTY_NOTICES.md third_party_manifest.json)" ]; then
+            echo "No third-party notices change — nothing to add to the release PR."
+            exit 0
+          fi
+          git config user.name "$GIT_USER_NAME"
+          git config user.email "$GIT_USER_EMAIL"
+          git add THIRD_PARTY_NOTICES.md third_party_manifest.json
+          git commit -m "chore: update third-party notices"
+          git push origin "HEAD:$RELEASE_BRANCH"
