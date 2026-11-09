@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.12.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Prevented `net` subscriber crash when a socket connect throws"
+        ],
+        "features": [
+          "Added `ai_monitoring.basic_telemetry.enabled` and enabled basic AI Monitoring by default",
+          "Disabled core tracing"
+        ]
+      }
+    },
+    {
       "version": "14.11.0",
       "changes": {
         "security": [],

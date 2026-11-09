@@ -1,3 +1,38 @@
+### v14.12.0 (2026-11-09)
+
+#### Features
+
+* Added `ai_monitoring.basic_telemetry.enabled` and enabled basic AI Monitoring by default ([#4330](https://github.com/newrelic/node-newrelic/pull/4330)) ([c126335](https://github.com/newrelic/node-newrelic/commit/c1263354150cd30349d316acc162f5388bc3449a))
+    * LLM instrumentation is now enabled by default and sends `Llm*` custom events, spans, and metrics (without message content) unless configured otherwise. To opt out, set `ai_monitoring.basic_telemetry.enabled` to `false` in `newrelic.js`, or set the `NEW_RELIC_AI_MONITORING_BASIC_TELEMETRY_ENABLED` environment variable to `false`.  
+    * `ai_monitoring.enabled` and the `NEW_RELIC_AI_MONITORING_ENABLED` environment variable are deprecated and will be removed in a future major version, but setting either one to false also opts out.
+* Disabled core tracing ([#4394](https://github.com/newrelic/node-newrelic/pull/4394)) ([2d0ee8e](https://github.com/newrelic/node-newrelic/commit/2d0ee8ea2c7355b3764e332b555bcc04f2e691f0))
+
+#### Bug fixes
+
+* Prevented `net` subscriber crash when a socket connect throws ([#4442](https://github.com/newrelic/node-newrelic/pull/4442)) ([2b5bbee](https://github.com/newrelic/node-newrelic/commit/2b5bbee35bc41a85574682d4bc98171842b39ea6))
+
+#### Performance improvements
+
+* Wrapped bluebird `Promise._then` at the prototype level ([#4444](https://github.com/newrelic/node-newrelic/pull/4444)) ([5ab4726](https://github.com/newrelic/node-newrelic/commit/5ab47267911b1ff5a7047275358cd9010e4c3996))
+
+#### Documentation
+
+* Updated compatibility report ([#4447](https://github.com/newrelic/node-newrelic/pull/4447)) ([5d03f43](https://github.com/newrelic/node-newrelic/commit/5d03f43ca361a48282ffe7669ccce4fe8e7d1d51)) ([#4438](https://github.com/newrelic/node-newrelic/pull/4438)) ([40476bf](https://github.com/newrelic/node-newrelic/commit/40476bf3a10f2a469f4d6dd0d2e53479fcbafc8e))
+
+#### Miscellaneous chores
+
+* **deps-dev:** bump @opentelemetry/exporter-metrics-otlp-proto from 0.300.0 to 0.301.0 ([#4464](https://github.com/newrelic/node-newrelic/pull/4464)) ([498dc4c](https://github.com/newrelic/node-newrelic/commit/498dc4ce0c6219f0dfe46a4a7518c377983c009b))
+* **deps:** bump @apm-js-collab/tracing-hooks from 0.13.3 to 0.14.0 ([#4455](https://github.com/newrelic/node-newrelic/pull/4455)) ([7fa16f2](https://github.com/newrelic/node-newrelic/commit/7fa16f2e2d96e6c7cdc1711c511d75088aad1bf7))
+* **deps:** bump @opentelemetry/exporter-metrics-otlp-http from 0.300.0 to 0.301.0 ([#4462](https://github.com/newrelic/node-newrelic/pull/4462)) ([6f7bc29](https://github.com/newrelic/node-newrelic/commit/6f7bc29ab429c8814c17f253779e5079e9f6135d))
+* **deps:** bump @opentelemetry/otlp-exporter-base from 0.300.0 to 0.301.0 ([#4463](https://github.com/newrelic/node-newrelic/pull/4463)) ([bd28555](https://github.com/newrelic/node-newrelic/commit/bd285552a76572e23381371b3f7d9f705a691d1d))
+* **deps:** bump @opentelemetry/otlp-transformer from 0.300.0 to 0.301.0 ([#4461](https://github.com/newrelic/node-newrelic/pull/4461)) ([0518ca1](https://github.com/newrelic/node-newrelic/commit/0518ca152db2dffd4227e6959256e857491255de))
+
+#### Tests
+
+* Derived google-genai API version in external segment assertions ([#4445](https://github.com/newrelic/node-newrelic/pull/4445)) ([7234378](https://github.com/newrelic/node-newrelic/commit/72343788b87ec4a1c03a82f3f926f9ede5bd8ff0))
+* Fixed leaked agent in bluebird shape test security-agent skip paths ([#4456](https://github.com/newrelic/node-newrelic/pull/4456)) ([4ea68a6](https://github.com/newrelic/node-newrelic/commit/4ea68a6f28a8c2634f54bc20bae3c05a8db97685))
+* Made VM metrics sampler tests deterministic under CPU contention ([#4446](https://github.com/newrelic/node-newrelic/pull/4446)) ([649d1bc](https://github.com/newrelic/node-newrelic/commit/649d1bcb722b197e201543bb35d305ade601f109))
+
 ### v14.11.0 (2026-11-05)
 
 #### Features
