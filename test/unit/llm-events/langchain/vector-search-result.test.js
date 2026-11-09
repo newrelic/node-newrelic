@@ -7,21 +7,21 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const Config = require('#agentlib/config/index.js')
 const { LlmVectorSearch, LlmVectorSearchResult } = require('#agentlib/llm-events/langchain/index.js')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = {
-    config: {
+    config: new Config({
+      app_name: ['test-app'],
       ai_monitoring: {
+        enabled: true,
         record_content: {
           enabled: true
         }
-      },
-      applications() {
-        return ['test-app']
       }
-    },
+    }),
     tracer: {
       getTransaction() {
         return ctx.nr.transaction
