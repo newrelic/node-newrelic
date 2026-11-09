@@ -204,7 +204,7 @@
     "@apm-js-collab/tracing-hooks": "^0.14.0",
     "@grpc/grpc-js": "^1.13.2",
     "@grpc/proto-loader": "^0.8.1",
-    "@newrelic/security-agent": "^3.0.0",
+    "@newrelic/security-agent": "^4.0.1",
     "@opentelemetry/api": "^1.10.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.301.0",
     "@opentelemetry/otlp-exporter-base": "^0.301.0",

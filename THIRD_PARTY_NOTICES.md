@@ -716,7 +716,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.5](https://github.com/newrelic/csec-node-agent/tree/v3.0.5)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.5/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v4.0.1](https://github.com/newrelic/csec-node-agent/tree/v4.0.1)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v4.0.1/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -2511,7 +2511,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1163.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1163.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1163.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1164.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1164.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1164.0/LICENSE):
 
 ```
                                 Apache License
@@ -2720,7 +2720,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1163.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1163.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1163.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1164.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1164.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1164.0/LICENSE):
 
 ```
                                 Apache License
