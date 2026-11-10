@@ -159,6 +159,11 @@ test('built-in http instrumentation should handle internal & external requests',
       HTTP_ATTRS.forEach(function (key) {
         assert.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)
       })
+      assert.equal(
+        attributes['response.headers.contentLength'] > 0,
+        true
+      )
+      assert.equal(attributes['response.headers.contentType'], 'text/html')
 
       const totalTimeStats = agent.metrics.getOrCreateMetric('WebTransactionTotalTime')
       assert.equal(totalTimeStats.callCount, 2, 'should record WebTransactionTotalTime')
@@ -198,6 +203,43 @@ test('built-in http instrumentation should handle internal & external requests',
 
       req.end()
     })
+  })
+})
+
+test('should caputure setHeader and writeHead headers on responses', function (t, end) {
+  const { agent } = t.nr
+  agent.config.attributes.enabled = true
+
+  let tx
+  const server = http.createServer((req, res) => {
+    tx = agent.getTransaction()
+    res.setHeader('foo', 'foo')
+    res.setHeader('bar', 'bar')
+    res.writeHead(200, { foo: 'overwritten' })
+    res.end('ok')
+  })
+
+  t.after(() => {
+    server.close()
+  })
+
+  server.listen(0, (error) => {
+    assert.ifError(error, 'should not error')
+
+    const req = http.request(
+      server.address(),
+      (response) => {
+        const attrs = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+
+        assert.equal(attrs['response.headers.foo'], 'overwritten')
+        assert.equal(attrs['response.headers.bar'], 'bar')
+
+        end()
+      }
+    )
+
+    req.on('error', assert.fail)
+    req.end()
   })
 })
 
