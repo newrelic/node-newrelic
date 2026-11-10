@@ -46,9 +46,10 @@ test('@aws-sdk/client-s3 functionality', async (t) => {
 
     delete awsAttributes.nr_exclusive_duration_millis
 
+    // the sdk calls `https.request` with options and no `protocol`
     assert.equal(
       url,
-      'http://node-agent-aws-smoke-tests.s3.us-east-2.amazonaws.com/test-file.json',
+      'https://node-agent-aws-smoke-tests.s3.us-east-2.amazonaws.com/test-file.json',
       'should have url attribute in segment'
     )
     assert.equal(procedure, 'GET', 'should have method attribute in segment')
