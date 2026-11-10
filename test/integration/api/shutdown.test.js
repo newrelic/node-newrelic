@@ -7,13 +7,10 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const nock = require('nock')
+const Collector = require('../../lib/test-collector')
 const helper = require('../../lib/agent_helper')
-const { jsonReply, nockRequest } = require('../../lib/nock-utils')
+const { jsonReply, createMockRequest } = require('../../lib/collector-reply-utils')
 const API = require('../../../api')
-// This key is hardcoded in the agent helper
-const EXPECTED_LICENSE_KEY = 'license key here'
-const TEST_DOMAIN = 'test-collector.newrelic.com'
 
 // TODO: should work after the agent has restarted
 /**
@@ -23,16 +20,17 @@ const TEST_DOMAIN = 'test-collector.newrelic.com'
  * would not be held open.
  *
  * When broken, the callback is not invoked. The test ends prematurely and the metric_data
- * and shutdown endpoints are left pending in nock.
+ * and shutdown endpoints are left pending.
  *   x test unfinished
  *   x Failed to hit all expected endpoints.
  */
-test('#shutdown should force harvest and callback after agent restart', (t, end) => {
-  nock.disableNetConnect()
+test('#shutdown should force harvest and callback after agent restart', async (t) => {
+  const collector = new Collector({ runId: 'run-id-1' })
+  await collector.listen()
+  const mockRequest = createMockRequest(collector)
 
   const agent = helper.loadMockedAgent({
-    license_key: EXPECTED_LICENSE_KEY,
-    host: TEST_DOMAIN,
+    ...collector.agentConfig,
     utilization: {
       detect_aws: false
     }
@@ -45,51 +43,52 @@ test('#shutdown should force harvest and callback after agent restart', (t, end)
   t.after(() => {
     helper.unloadAgent(agent)
 
-    if (!nock.isDone()) {
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-
-      nock.cleanAll()
-
-      assert.fail('Failed to hit all expected endpoints.')
-    }
-
-    nock.enableNetConnect()
+    const pending = collector.pendingHandlers()
+    collector.close()
+    assert.deepStrictEqual(pending, [], `Failed to hit all expected endpoints: ${pending}`)
   })
 
-  setupConnectionEndpoints('run-id-1')
-  agent.start((error) => {
-    assert.ok(!error)
+  setupConnectionEndpoints(mockRequest, collector, 'run-id-1')
+  return new Promise((resolve) => {
+    agent.start((error) => {
+      assert.ok(!error)
 
-    setupConnectionEndpoints('run-id-2')
-    agent.collector.restart(() => {
-      const endpoints = setupShutdownEndpoints('run-id-2')
-      api.shutdown({ collectPendingData: true }, (error) => {
-        assert.ok(!error)
+      setupConnectionEndpoints(mockRequest, collector, 'run-id-2')
+      agent.collector.restart(() => {
+        const endpoints = setupShutdownEndpoints(mockRequest, 'run-id-2')
+        api.shutdown({ collectPendingData: true }, (error) => {
+          assert.ok(!error)
 
-        assert.ok(endpoints.metric_data.isDone())
-        assert.ok(endpoints.shutdown.isDone())
-        end()
+          assert.ok(endpoints.metric_data.isDone())
+          assert.ok(endpoints.shutdown.isDone())
+          resolve()
+        })
       })
     })
   })
 })
 
-function setupShutdownEndpoints(runId) {
+function setupShutdownEndpoints(mockRequest, runId) {
   // Final harvest
   return {
-    metric_data: nockRequest('metric_data', runId).reply(200, ...jsonReply({ return_value: null })),
-    shutdown: nockRequest('shutdown', runId).reply(200, ...jsonReply({ return_value: null }))
+    metric_data: mockRequest('metric_data', runId).reply(200, ...jsonReply({ return_value: null })),
+    shutdown: mockRequest('shutdown', runId).reply(200, ...jsonReply({ return_value: null }))
   }
 }
 
-function setupConnectionEndpoints(runId) {
+function setupConnectionEndpoints(mockRequest, collector, runId) {
   return {
-    preconnect: nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN })),
-    connect: nockRequest('connect').reply(200, ...jsonReply({
+    preconnect: mockRequest('preconnect').reply(200, ...jsonReply({
+      return_value: {
+        redirect_host: `${collector.host}:${collector.port}`,
+        security_policies: {}
+      }
+    })),
+    connect: mockRequest('connect').reply(200, ...jsonReply({
       return_value: {
         agent_run_id: runId
       }
     })),
-    settings: nockRequest('agent_settings', runId).reply(200, ...jsonReply({ return_value: [] }))
+    settings: mockRequest('agent_settings', runId).reply(200, ...jsonReply({ return_value: [] }))
   }
 }

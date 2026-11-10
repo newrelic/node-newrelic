@@ -17,7 +17,7 @@ const { once } = require('node:events')
 const http = require('node:http')
 const https = require('node:https')
 const url = require('node:url')
-const nock = require('nock')
+const { startServer } = require('#testlib/local-server.js')
 const Tracestate = require('#agentlib/w3c/tracestate.js')
 const testSignatures = require('./outbound-utils')
 const NAMES = require('#agentlib/metrics/names.js')
@@ -137,19 +137,66 @@ test('external requests', async function (t) {
     await plan.completed
   })
 
+  test('should recognize requests via proxy correctly', async function (t) {
+    const { agent } = t.nr
+    const plan = tspl(t, { plan: 2 })
+    const http = require('node:http')
+
+    const proxyUrl = 'https://www.google.com/proxy/path'
+    const proxyServer = http.createServer(function onRequest(req, res) {
+      plan.equal(req.url, proxyUrl)
+      req.resume()
+      res.end('ok')
+    })
+    t.after(() => proxyServer.close())
+
+    proxyServer.listen(0)
+
+    helper.runInTransaction(agent, function inTransaction() {
+      const opts = {
+        host: 'localhost',
+        port: proxyServer.address().port,
+        path: proxyUrl,
+        protocol: 'http:'
+      }
+
+      const req = http.get(opts, function onResponse(res) {
+        res.resume()
+        res.once('end', function () {
+          const { trace } = agent.tracer.getTransaction()
+          const [segment] = trace.getChildren(trace.root.id)
+          plan.equal(
+            segment.name,
+            'External/www.google.com/proxy/path',
+            'should name segment as an external service'
+          )
+        })
+      })
+
+      req.on('error', function onError(err) {
+        plan.fail('Request should not error: ' + err.message)
+      })
+    })
+
+    await plan.completed
+  })
+
   await t.test('NODE-1647 should not interfere with `got`', { timeout: 5000 }, async function (t) {
     const plan = tspl(t, { plan: 1 })
     const { agent } = t.nr
     // Our way of wrapping HTTP response objects caused `got` to hang. This was
     // resolved in agent 2.5.1.
-    nock.disableNetConnect()
-    t.after(() => {
-      nock.enableNetConnect()
-    })
-    nock('https://example.com').get('/').reply(200, '', { 'Content-Length': '0' })
+    const { server, origin } = await startServer(
+      (req, res) => {
+        res.writeHead(200, { 'Content-Length': '0' })
+        res.end()
+      },
+      { secure: true }
+    )
+    t.after(() => server.close())
     const got = require('got').default
     await helper.runInTransaction(agent, async function () {
-      await got('https://example.com/')
+      await got(`${origin}/`, { https: { rejectUnauthorized: false } })
       plan.ok(true)
     })
   })
@@ -201,17 +248,18 @@ test('external requests', async function (t) {
   await t.test('should record requests to default ports', async (t) => {
     const plan = tspl(t, { plan: 1 })
     const { agent, http } = t.nr
-    nock.disableNetConnect()
-    t.after(() => {
-      nock.enableNetConnect()
+    const { server, origin, host, port } = await startServer((req, res) => {
+      res.writeHead(200, { 'Content-Length': '0' })
+      res.end()
     })
-    nock('http://example.com').get('/').reply(200, '', { 'Content-Length': '0' })
+    t.after(() => server.close())
+
     helper.runInTransaction(agent, (tx) => {
-      http.get('http://example.com/', (res) => {
+      http.get(`${origin}/`, (res) => {
         res.resume()
         res.on('end', () => {
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
-          plan.equal(segment.name, 'External/example.com/', 'should create external segment')
+          plan.equal(segment.name, `External/${host}:${port}/`, 'should create external segment')
         })
       })
     })
@@ -222,20 +270,21 @@ test('external requests', async function (t) {
   await t.test('should expose the external segment on the http request', async (t) => {
     const plan = tspl(t, { plan: 2 })
     const { agent, http } = t.nr
-    nock.disableNetConnect()
-    t.after(() => {
-      nock.enableNetConnect()
+    const { server, origin } = await startServer((req, res) => {
+      res.writeHead(200, { 'Content-Length': '0' })
+      res.end()
     })
-    nock('http://example.com').get('/').reply(200, '', { 'Content-Length': '0' })
+    t.after(() => server.close())
+
     helper.runInTransaction(agent, (tx) => {
       let reqSegment = null
-      const req = http.get('http://example.com/', (res) => {
+      const req = http.get(`${origin}/`, (res) => {
         res.resume()
         res.on('end', () => {
           const [segment] = tx.trace.getChildren(tx.trace.root.id)
           const attrs = segment.getAttributes()
           plan.deepEqual(attrs, {
-            url: 'http://example.com/',
+            url: `${origin}/`,
             procedure: 'GET'
           })
           plan.equal(reqSegment, segment, 'should expose external')
@@ -320,17 +369,6 @@ function getSpanAttributes(span) {
 }
 
 test('HttpClientSubscriber', async (t) => {
-  // nock replaces `http.ClientRequest` and rejects options it cannot parse into
-  // a URL (e.g. an invalid `href`), so use the real one; requests are destroyed
-  // before they connect
-  t.before(() => {
-    nock.restore()
-  })
-
-  t.after(() => {
-    nock.activate()
-  })
-
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent()
@@ -774,9 +812,7 @@ test('HttpClientSubscriber', async (t) => {
 })
 
 test('HttpClientSubscriber telemetry', async (t) => {
-  // nock replaces `http.ClientRequest`, so use the real one against a local server
   t.before(async () => {
-    nock.restore()
     const server = http.createServer((req, res) => {
       res.statusCode = req.url.startsWith('/missing') ? 404 : 200
       res.end('ok')
@@ -787,7 +823,6 @@ test('HttpClientSubscriber telemetry', async (t) => {
 
   t.after(() => {
     t.nr.server.close()
-    nock.activate()
   })
 
   t.beforeEach((ctx) => {
@@ -1005,152 +1040,181 @@ test('when working with http.request', async (t) => {
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent()
     ctx.nr.tracer = helper.getTracer()
-
-    nock.disableNetConnect()
   })
 
   t.afterEach((ctx) => {
-    nock.enableNetConnect()
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should accept port and hostname', (t, end) => {
+  await t.test('should accept port and hostname', async (t) => {
     const { agent, tracer } = t.nr
-    const host = 'http://www.google.com'
     const path = '/index.html'
-    nock(host).get(path).reply(200, 'Hello from Google')
-
-    helper.runInTransaction(agent, function (transaction) {
-      http.get('http://www.google.com/index.html', function (res) {
-        const segment = tracer.getSegment()
-
-        assert.equal(segment.name, 'External/www.google.com/index.html')
-        res.resume()
-        transaction.end()
-        end()
-      })
+    const { server, origin, host, port } = await startServer((req, res) => {
+      res.writeHead(200)
+      res.end('Hello from Google')
     })
-  })
+    t.after(() => server.close())
 
-  await t.test('should conform to external segment spec', (t, end) => {
-    const { agent } = t.nr
-    const host = 'http://www.google.com'
-    const path = '/index.html'
-    nock(host).post(path).reply(200)
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, function (transaction) {
+        http.get(`${origin}${path}`, function (res) {
+          const segment = tracer.getSegment()
 
-    helper.runInTransaction(agent, function (transaction) {
-      // We are purposefully using `url.parse` here in order to verify that our
-      // implementation results in the same shape data as that returned by `url.parse`.
-      // See: https://github.com/newrelic/node-newrelic/blob/2077ce35db319d0128337faed0ff77b00f76d8f1/lib/instrumentation/core/http.js#L390
-      // eslint-disable-next-line n/no-deprecated-api
-      const opts = url.parse(`${host}${path}`)
-      opts.method = 'POST'
-
-      const req = http.request(opts, function (res) {
-        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
-        const attributes = child.getAttributes()
-        assert.equal(attributes.url, 'http://www.google.com/index.html')
-        assert.equal(attributes.procedure, 'POST')
-        res.resume()
-        transaction.end()
-        end()
-      })
-      req.end()
-    })
-  })
-
-  await t.test('should record https requests', (t, end) => {
-    const { agent } = t.nr
-    nock('https://www.google.com').get('/index.html').reply(200)
-
-    helper.runInTransaction(agent, function (transaction) {
-      https.get('https://www.google.com/index.html', function (res) {
-        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
-        assert.equal(child.name, 'External/www.google.com/index.html', 'should not add the default port to the name')
-        assert.deepStrictEqual({ ...child.attributes.get(DESTINATIONS.SPAN_EVENT) }, {
-          hostname: 'www.google.com',
-          port: 443,
-          url: 'https://www.google.com/index.html',
-          procedure: 'GET',
-          'http.statusCode': 200,
-          'http.statusText': 'OK'
-        })
-        res.resume()
-        res.on('end', () => {
+          assert.equal(segment.name, `External/${host}:${port}${path}`)
+          res.resume()
           transaction.end()
-          // https requests share the `http` library name
-          assertExternalMetrics(agent, {
-            unscoped: ['External/www.google.com/http', 'External/www.google.com/all', 'External/allWeb', 'External/all']
+          resolve()
+        })
+      })
+    })
+  })
+
+  await t.test('should conform to external segment spec', async (t) => {
+    const { agent } = t.nr
+    const path = '/index.html'
+    const { server, origin } = await startServer((req, res) => {
+      res.writeHead(200)
+      res.end()
+    })
+    t.after(() => server.close())
+
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, function (transaction) {
+        // We are purposefully using `url.parse` here in order to verify that our
+        // implementation results in the same shape data as that returned by `url.parse`.
+        // See: https://github.com/newrelic/node-newrelic/blob/2077ce35db319d0128337faed0ff77b00f76d8f1/lib/instrumentation/core/http.js#L390
+        // eslint-disable-next-line n/no-deprecated-api
+        const opts = url.parse(`${origin}${path}`)
+        opts.method = 'POST'
+
+        const req = http.request(opts, function (res) {
+          const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+          const attributes = child.getAttributes()
+          assert.equal(attributes.url, `${origin}${path}`)
+          assert.equal(attributes.procedure, 'POST')
+          res.resume()
+          transaction.end()
+          resolve()
+        })
+        req.end()
+      })
+    })
+  })
+
+  await t.test('should record https requests', async (t) => {
+    const { agent } = t.nr
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    t.after(() => delete process.env.NODE_TLS_REJECT_UNAUTHORIZED)
+    const { server, origin, host, port } = await startServer(
+      (req, res) => {
+        res.writeHead(200)
+        res.end()
+      },
+      { secure: true }
+    )
+    t.after(() => server.close())
+
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, function (transaction) {
+        https.get(`${origin}/index.html`, function (res) {
+          const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+          assert.equal(child.name, `External/${host}:${port}/index.html`)
+          assert.deepStrictEqual({ ...child.attributes.get(DESTINATIONS.SPAN_EVENT) }, {
+            hostname: host,
+            port,
+            url: `${origin}/index.html`,
+            procedure: 'GET',
+            'http.statusCode': 200,
+            'http.statusText': 'OK'
           })
-          end()
+          res.resume()
+          res.on('end', () => {
+            transaction.end()
+            // https requests share the `http` library name
+            assertExternalMetrics(agent, {
+              unscoped: [`External/${host}:${port}/http`, `External/${host}:${port}/all`, 'External/allWeb', 'External/all']
+            })
+            resolve()
+          })
         })
       })
     })
   })
 
-  await t.test('should start and end segment', (t, end) => {
+  await t.test('should start and end segment', async (t) => {
     const { agent, tracer } = t.nr
-    const host = 'http://www.google.com'
     const path = '/index.html'
-    nock(host).get(path).delay(10).reply(200, 'Hello from Google')
+    const { server, origin } = await startServer((req, res) => {
+      setTimeout(() => {
+        res.writeHead(200)
+        res.end('Hello from Google')
+      }, 10)
+    })
+    t.after(() => server.close())
 
-    helper.runInTransaction(agent, function (transaction) {
-      http.get('http://www.google.com/index.html', function (res) {
-        const segment = tracer.getSegment()
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, function (transaction) {
+        http.get(`${origin}${path}`, function (res) {
+          const segment = tracer.getSegment()
 
-        assert.ok(segment.timer.hrstart instanceof Array)
-        assert.equal(segment.timer.hrDuration, null)
+          assert.ok(segment.timer.hrstart instanceof Array)
+          assert.equal(segment.timer.hrDuration, null)
 
-        res.resume()
-        res.on('end', function onEnd() {
-          assert.ok(segment.timer.hrDuration instanceof Array)
-          assert.ok(segment.timer.getDurationInMillis() > 0)
-          transaction.end()
-          end()
+          res.resume()
+          res.on('end', function onEnd() {
+            assert.ok(segment.timer.hrDuration instanceof Array)
+            assert.ok(segment.timer.getDurationInMillis() > 0)
+            transaction.end()
+            resolve()
+          })
         })
       })
     })
   })
 
-  await t.test('should not modify parent segment when parent segment opaque', (t, end) => {
+  await t.test('should not modify parent segment when parent segment opaque', async (t) => {
     const { agent, tracer } = t.nr
-    const host = 'http://www.google.com'
     const paramName = 'testParam'
     const path = `/index.html?${paramName}=value`
+    const { server, origin } = await startServer((req, res) => {
+      res.writeHead(200)
+      res.end('Hello from Google')
+    })
+    t.after(() => server.close())
 
-    nock(host).get(path).reply(200, 'Hello from Google')
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, (transaction) => {
+        const parentSegment = agent.tracer.createSegment({
+          name: 'ParentSegment',
+          parent: transaction.trace.root,
+          transaction
+        })
+        parentSegment.opaque = true
 
-    helper.runInTransaction(agent, (transaction) => {
-      const parentSegment = agent.tracer.createSegment({
-        name: 'ParentSegment',
-        parent: transaction.trace.root,
-        transaction
-      })
-      parentSegment.opaque = true
+        tracer.setSegment({ transaction, segment: parentSegment }) // make the current active segment
 
-      tracer.setSegment({ transaction, segment: parentSegment }) // make the current active segment
+        http.get(`${origin}${path}`, (res) => {
+          const segment = tracer.getSegment()
 
-      http.get(`${host}${path}`, (res) => {
-        const segment = tracer.getSegment()
+          assert.equal(segment, parentSegment)
+          assert.equal(segment.name, 'ParentSegment')
 
-        assert.equal(segment, parentSegment)
-        assert.equal(segment.name, 'ParentSegment')
+          const attributes = segment.getAttributes()
 
-        const attributes = segment.getAttributes()
+          assert.ok(!attributes.url)
 
-        assert.ok(!attributes.url)
+          assert.ok(!attributes[`request.parameters.${paramName}`])
 
-        assert.ok(!attributes[`request.parameters.${paramName}`])
-
-        res.resume()
-        transaction.end()
-        assert.equal(agent.metrics.getMetric(NAMES.EXTERNAL.ALL), undefined, 'should not record external metrics')
-        end()
+          res.resume()
+          transaction.end()
+          assert.equal(agent.metrics.getMetric(NAMES.EXTERNAL.ALL), undefined, 'should not record external metrics')
+          resolve()
+        })
       })
     })
   })
 
-  await t.test('generates dt and w3c trace context headers to outbound request when exclude_newrelic_header: false', (t, end) => {
+  await t.test('generates dt and w3c trace context headers to outbound request when exclude_newrelic_header: false', async (t) => {
     const { agent } = t.nr
     agent.config.trusted_account_key = 190
     agent.config.account_id = 190
@@ -1158,41 +1222,41 @@ test('when working with http.request', async (t) => {
     agent.config.distributed_tracing.exclude_newrelic_header = false
 
     let headers
-    nock('http://www.google.com')
-      .get('/index.html')
-      .reply(200, function () {
-        headers = this.req.headers
-      })
+    const { server, host, port } = await startServer((req, res) => {
+      headers = req.headers
+      res.writeHead(200)
+      res.end()
+    })
+    t.after(() => server.close())
 
-    // nock 14 (mswjs) discards agent-injected headers when normalizing a URL
-    // string into request options. Passing an options object bypasses that
-    // normalization and keeps this.req.headers intact in the reply callback.
-    helper.runInTransaction(agent, (transaction) => {
-      http.get({ hostname: 'www.google.com', port: 80, path: '/index.html' }, (res) => {
-        const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
-        assert.equal(segment.name, 'External/www.google.com/index.html')
-        assert.ok(headers.traceparent, 'traceparent header')
-        const [version, traceId, parentSpanId, sampledFlag] = headers.traceparent.split('-')
-        assert.equal(version, '00')
-        assert.equal(traceId, transaction.traceId)
-        assert.equal(parentSpanId, segment.id)
-        assert.equal(sampledFlag, '01')
-        assert.ok(headers.tracestate, 'tracestate header')
-        assert.ok(!headers.tracestate.includes('null'))
-        assert.ok(!headers.tracestate.includes('true'))
-        assert.ok(headers.newrelic, 'newrelic dt header')
-        const payload = JSON.parse(Buffer.from(headers.newrelic, 'base64').toString())
-        assert.equal(payload.d.id, segment.id, 'newrelic header should reference the external segment')
-        const valid = Tracestate.fromHeader({ header: headers.tracestate, agent })
-        assert.ok(valid.intrinsics)
-        res.resume()
-        transaction.end()
-        end()
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, (transaction) => {
+        http.get({ hostname: host, port, path: '/index.html' }, (res) => {
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
+          assert.equal(segment.name, `External/${host}:${port}/index.html`)
+          assert.ok(headers.traceparent, 'traceparent header')
+          const [version, traceId, parentSpanId, sampledFlag] = headers.traceparent.split('-')
+          assert.equal(version, '00')
+          assert.equal(traceId, transaction.traceId)
+          assert.equal(parentSpanId, segment.id)
+          assert.equal(sampledFlag, '01')
+          assert.ok(headers.tracestate, 'tracestate header')
+          assert.ok(!headers.tracestate.includes('null'))
+          assert.ok(!headers.tracestate.includes('true'))
+          assert.ok(headers.newrelic, 'newrelic dt header')
+          const payload = JSON.parse(Buffer.from(headers.newrelic, 'base64').toString())
+          assert.equal(payload.d.id, segment.id, 'newrelic header should reference the external segment')
+          const valid = Tracestate.fromHeader({ header: headers.tracestate, agent })
+          assert.ok(valid.intrinsics)
+          res.resume()
+          transaction.end()
+          resolve()
+        })
       })
     })
   })
 
-  await t.test('should only add w3c header when exclude_newrelic_header: true', (t, end) => {
+  await t.test('should only add w3c header when exclude_newrelic_header: true', async (t) => {
     const { agent } = t.nr
     agent.config.distributed_tracing.exclude_newrelic_header = true
     agent.config.trusted_account_key = 190
@@ -1200,70 +1264,81 @@ test('when working with http.request', async (t) => {
     agent.config.primary_application_id = '389103'
 
     let headers
-    nock('http://www.google.com')
-      .get('/index.html')
-      .reply(200, function () {
-        headers = this.req.headers
-      })
+    const { server, host, port } = await startServer((req, res) => {
+      headers = req.headers
+      res.writeHead(200)
+      res.end()
+    })
+    t.after(() => server.close())
 
-    // nock 14 (mswjs) discards agent-injected headers when normalizing a URL
-    // string into request options. Passing an options object bypasses that
-    // normalization and keeps this.req.headers intact in the reply callback.
-    helper.runInTransaction(agent, (transaction) => {
-      http.get({ hostname: 'www.google.com', port: 80, path: '/index.html' }, (res) => {
-        assert.ok(headers.traceparent)
-        assert.equal(headers.traceparent.split('-').length, 4)
-        assert.ok(headers.tracestate)
-        assert.ok(!headers.tracestate.includes('null'))
-        assert.ok(!headers.tracestate.includes('true'))
-        assert.ok(!headers.newrelic)
-        const valid = Tracestate.fromHeader({ header: headers.tracestate, agent })
-        assert.ok(valid.intrinsics)
-        res.resume()
-        transaction.end()
-        end()
+    await new Promise((resolve) => {
+      helper.runInTransaction(agent, (transaction) => {
+        http.get({ hostname: host, port, path: '/index.html' }, (res) => {
+          assert.ok(headers.traceparent)
+          assert.equal(headers.traceparent.split('-').length, 4)
+          assert.ok(headers.tracestate)
+          assert.ok(!headers.tracestate.includes('null'))
+          assert.ok(!headers.tracestate.includes('true'))
+          assert.ok(!headers.newrelic)
+          const valid = Tracestate.fromHeader({ header: headers.tracestate, agent })
+          assert.ok(valid.intrinsics)
+          res.resume()
+          transaction.end()
+          resolve()
+        })
       })
     })
   })
 })
 
 test('Should properly handle http(s) get and request signatures', async (t) => {
-  function beforeTest(ctx) {
-    ctx.nr = {}
-    ctx.nr.agent = helper.instrumentMockedAgent()
-    ctx.nr.tracer = helper.getTracer()
-    ctx.nr.nock = nock
-    nock.disableNetConnect()
+  function responder(req, res) {
+    res.writeHead(200)
+    res.end('Hello from New Relic')
+  }
+
+  function makeBeforeTest(secure) {
+    return async function beforeTest(ctx) {
+      ctx.nr = {}
+      ctx.nr.agent = helper.instrumentMockedAgent()
+      ctx.nr.tracer = helper.getTracer()
+      if (secure) {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+      }
+      const { server } = await startServer(responder, { secure })
+      ctx.nr.server = server
+    }
   }
 
   function afterTest(ctx) {
-    nock.enableNetConnect()
+    delete process.env.NODE_TLS_REJECT_UNAUTHORIZED
+    ctx.nr.server.close()
     helper.unloadAgent(ctx.nr.agent)
   }
 
   await t.test('http.get', async (t) => {
-    t.beforeEach(beforeTest)
+    t.beforeEach(makeBeforeTest(false))
     t.afterEach(afterTest)
 
     await testSignatures('http', 'get', t)
   })
 
   await t.test('http.request', async (t) => {
-    t.beforeEach(beforeTest)
+    t.beforeEach(makeBeforeTest(false))
     t.afterEach(afterTest)
 
     await testSignatures('http', 'request', t)
   })
 
   await t.test('https.get', async (t) => {
-    t.beforeEach(beforeTest)
+    t.beforeEach(makeBeforeTest(true))
     t.afterEach(afterTest)
 
     await testSignatures('https', 'get', t)
   })
 
   await t.test('https.request', async (t) => {
-    t.beforeEach(beforeTest)
+    t.beforeEach(makeBeforeTest(true))
     t.afterEach(afterTest)
 
     await testSignatures('https', 'request', t)

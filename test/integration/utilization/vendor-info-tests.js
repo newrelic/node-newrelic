@@ -4,74 +4,85 @@
  */
 
 'use strict'
-const nock = require('nock')
 const assert = require('node:assert')
+const proxyquire = require('proxyquire')
 const helper = require('../../lib/agent_helper')
 const { checkMetrics, getTestCases } = require('./common')
+const common = require('../../../lib/utilization/common')
+const LocalMetadataServer = require('../../lib/local-metadata-server')
 const JSONbig = require('json-bigint')({ useNativeBigInt: true })
 
 module.exports = async function (t, vendor) {
   const cases = await getTestCases(vendor)
   assert.ok(cases.length > 0, 'should have tests to run')
-  const getInfo = require(`../../../lib/utilization/${vendor}-info`)
 
-  t.beforeEach((ctx) => {
-    nock.disableNetConnect()
+  t.beforeEach(async (ctx) => {
+    const server = new LocalMetadataServer()
+    await server.listen()
+    // `proxyquire` the vendor module's `resolveMetadataHost` to point at
+    // `server` instead of defining an environment variable.
+    const getInfo = proxyquire(`../../../lib/utilization/${vendor}-info`, {
+      './common': {
+        ...common,
+        resolveMetadataHost: () => { return { host: server.host, port: server.port } }
+      }
+    })
     const agent = helper.loadMockedAgent()
-    ctx.nr = { agent }
+    ctx.nr = { agent, getInfo, server }
   })
 
   t.afterEach((ctx) => {
     helper.unloadAgent(ctx.nr.agent)
-    getInfo.clearCache()
-    nock.cleanAll()
-  })
-
-  t.after(function () {
-    nock.enableNetConnect()
+    ctx.nr.getInfo.clearCache()
+    ctx.nr.server.close()
   })
 
   for (const testCase of cases) {
-    await t.test(testCase.testname, makeTest(testCase, vendor, getInfo))
+    await t.test(testCase.testname, makeTest(testCase, vendor))
   }
 }
 
-function makeTest(testCase, vendor, getInfo) {
+function makeTest(testCase, vendor) {
   // aws splits the timeout between token and metadata
   // let's be efficient as possible and assign a lower
   // timeout to aws tests
   const timeout = vendor === 'aws' ? 501 : 1001
   return function (t, end) {
-    const { agent } = t.nr
-    let redirection = null
-    const uris = Object.keys(testCase.uri)
+    const { agent, getInfo, server } = t.nr
+    const routes = []
 
-    let host = null
-    for (let i = 0; i < uris.length; ++i) {
-      const uri = uris[i]
+    // The fixture's host is ignored -- the agent is redirected to `server`
+    // via the proxyquired `resolveMetadataHost`. Only the path (query
+    // string stripped) is used for routing.
+    for (const uri of Object.keys(testCase.uri)) {
       const responseData = testCase.uri[uri]
-      const hostUrl = uri.split('/').slice(0, 3).join('/')
-      const endpoint = '/' + uri.split('/').slice(3).join('/')
-      host = host || nock(hostUrl)
-
-      redirection = host.get(endpoint)
-
+      const endpoint = '/' + uri.split('/').slice(3).join('/').split('?')[0]
       const body = JSONbig.stringify(responseData.response || '')
-      if (responseData.timeout) {
-        redirection = redirection.delay(timeout)
-      }
-      redirection.reply(200, body, {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      })
+      const headers = { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+
+      routes.push(
+        server.addRoute('GET', endpoint, (req, res) => {
+          if (responseData.timeout) {
+            const timer = setTimeout(() => {
+              res.writeHead(200, headers)
+              res.end(body)
+            }, timeout)
+            res.on('close', () => clearTimeout(timer))
+          } else {
+            res.writeHead(200, headers)
+            res.end(body)
+          }
+        })
+      )
     }
 
     // This may be messy but AWS makes an extra call to get an auth token
-    // we need to nock this out once
+    // we need to mock out once
     if (vendor === 'aws') {
       const tokenBody = 'awsAuthToken'
-      host.put('/latest/api/token').reply(200, tokenBody, {
-        'Content-Length': Buffer.byteLength(tokenBody)
+      server.addRoute('PUT', '/latest/api/token', (req, res) => {
+        res.writeHead(200, { 'Content-Length': Buffer.byteLength(tokenBody) })
+        res.end(tokenBody)
       })
     }
 
@@ -89,7 +100,7 @@ function makeTest(testCase, vendor, getInfo) {
       if (info) {
         // There are no mocks currently active, but the module should cache the
         // results.
-        assert.ok(host.isDone(), 'should have no mocked endpoints')
+        assert.ok(routes.every((route) => route.isDone()), 'should have hit the mocked endpoint(s)')
         getInfo(agent, function getCachedInfo(err, cached) {
           assert.ifError(err)
           assert.deepEqual(cached, info, 'should have same data cached')

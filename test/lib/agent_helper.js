@@ -135,7 +135,7 @@ helper.getAgentApi = function getAgentApi() {
 
 /**
  * Generate the URLs used to talk to the collector, which have a very
- * specific format. Useful with nock.
+ * specific format.
  *
  * @param {string} method The method being invoked on the collector.
  * @param {number} runID  Agent run ID (optional).

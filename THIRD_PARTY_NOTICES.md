@@ -65,7 +65,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [jsdoc](#jsdoc)
 * [lint-staged](#lint-staged)
 * [log-update](#log-update)
-* [nock](#nock)
 * [protobufjs](#protobufjs)
 * [proxyquire](#proxyquire)
 * [readline](#readline)
@@ -716,7 +715,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v4.0.1](https://github.com/newrelic/csec-node-agent/tree/v4.0.1)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v4.0.1/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.5](https://github.com/newrelic/csec-node-agent/tree/v3.0.5)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.5/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -4602,35 +4601,6 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-```
-
-### nock
-
-This product includes source derived from [nock](https://github.com/nock/nock) ([v14.0.17](https://github.com/nock/nock/tree/v14.0.17)), distributed under the [MIT License](https://github.com/nock/nock/blob/v14.0.17/LICENSE):
-
-```
-MIT License
-
-Copyright (c) 2011-2019 Pedro Teixeira and other contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 
 ```
 

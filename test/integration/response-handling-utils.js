@@ -6,8 +6,7 @@
 'use strict'
 const assert = require('node:assert')
 const helper = require('../lib/agent_helper')
-const { jsonReply, nockRequest } = require('../lib/nock-utils')
-const TEST_DOMAIN = 'test-collector.newrelic.com'
+const { jsonReply, createMockRequest, waitUntilDone } = require('../lib/collector-reply-utils')
 const RUN_ID = 'runId'
 
 const endpointDataChecks = {
@@ -71,7 +70,7 @@ function createTestData(agent, callback) {
   })
 }
 
-function verifyAgentStart(t, error) {
+async function verifyAgentStart(t, error) {
   const { startEndpoints } = t.nr
   if (error) {
     throw error
@@ -79,6 +78,7 @@ function verifyAgentStart(t, error) {
 
   assert.ok(startEndpoints.preconnect.isDone(), 'requested preconnect')
   assert.ok(startEndpoints.connect.isDone(), 'requested connect')
+  await waitUntilDone(startEndpoints.settings)
   assert.ok(startEndpoints.settings.isDone(), 'requested settings')
 }
 
@@ -191,11 +191,25 @@ function whenAllAggregatorsSend(agent) {
   return Promise.all(promises)
 }
 
-function setupConnectionEndpoints() {
+/**
+ * Registers the preconnect/connect/agent_settings handlers a typical agent
+ * startup needs, against an already-listening `Collector` (test/lib/test-collector.js).
+ *
+ * @param {Function} mockRequest A `createMockRequest(collector)`-bound function.
+ * @param {object} collector The listening `Collector` instance `mockRequest` is bound to.
+ * @param {string} [runId] The agent run ID to return from `connect`.
+ * @returns {object} `{ preconnect, connect, settings }`, each with `.isDone()`.
+ */
+function setupConnectionEndpoints(mockRequest, collector, runId = RUN_ID) {
   return {
-    preconnect: nockRequest('preconnect').reply(200, ...jsonReply({ return_value: TEST_DOMAIN })),
-    connect: nockRequest('connect').reply(200, ...jsonReply({ return_value: { agent_run_id: RUN_ID } })),
-    settings: nockRequest('agent_settings', RUN_ID).reply(200, ...jsonReply({ return_value: [] }))
+    preconnect: mockRequest('preconnect').reply(200, ...jsonReply({
+      return_value: {
+        redirect_host: `${collector.host}:${collector.port}`,
+        security_policies: {}
+      }
+    })),
+    connect: mockRequest('connect').reply(200, ...jsonReply({ return_value: { agent_run_id: runId } })),
+    settings: mockRequest('agent_settings', runId).reply(200, ...jsonReply({ return_value: [] }))
   }
 }
 
@@ -203,10 +217,10 @@ module.exports = {
   createTestData,
   endpointDataChecks,
   jsonReply,
-  nockRequest,
+  createMockRequest,
   setupConnectionEndpoints,
   RUN_ID,
-  TEST_DOMAIN,
+  waitUntilDone,
   whenAllAggregatorsSend,
   verifyAgentStart,
   verifyDataRetention,

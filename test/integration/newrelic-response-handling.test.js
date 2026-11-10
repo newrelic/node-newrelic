@@ -6,18 +6,18 @@
 'use strict'
 const test = require('node:test')
 const assert = require('node:assert')
-const nock = require('nock')
 const sinon = require('sinon')
+const Collector = require('../lib/test-collector')
 const helper = require('../lib/agent_helper')
 const testCases = require('../lib/response_code_handling.json')
 const {
   createTestData,
   endpointDataChecks,
   jsonReply,
-  nockRequest,
+  createMockRequest,
   setupConnectionEndpoints,
   RUN_ID,
-  TEST_DOMAIN,
+  waitUntilDone,
   whenAllAggregatorsSend,
   verifyAgentStart,
   verifyDataRetention,
@@ -29,20 +29,21 @@ test('New Relic response code handling', async (t) => {
     const testName = `Status code: ${testCase.code}`
     await t.test(testName, async (t) => {
       t.beforeEach(async (ctx) => {
-        nock.disableNetConnect()
-
         const testClock = sinon.useFakeTimers({
           toFake: ['setTimeout', 'setInterval', 'Date', 'clearInterval']
         })
 
-        const startEndpoints = setupConnectionEndpoints()
+        const collector = new Collector({ runId: RUN_ID })
+        await collector.listen()
+        const mockRequest = createMockRequest(collector)
+        const startEndpoints = setupConnectionEndpoints(mockRequest, collector, RUN_ID)
         const disconnected = false
         const connecting = false
         const started = false
         const agent = helper.loadMockedAgent({
           license_key: 'license key here',
           apdex_t: Number.MIN_VALUE, // force transaction traces
-          host: TEST_DOMAIN,
+          ...collector.agentConfig,
           plugins: {
             // turn off native metrics to avoid unwanted gc metrics
             native_metrics: { enabled: false }
@@ -66,8 +67,10 @@ test('New Relic response code handling', async (t) => {
         })
         ctx.nr = {
           agent,
+          collector,
           connecting,
           disconnected,
+          mockRequest,
           started,
           startEndpoints,
           testCase,
@@ -76,18 +79,14 @@ test('New Relic response code handling', async (t) => {
       })
 
       t.afterEach((ctx) => {
-        const { agent, testClock } = ctx.nr
+        const { agent, collector, testClock } = ctx.nr
         helper.unloadAgent(agent)
         testClock.restore()
-        if (!nock.isDone()) {
-          console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+        const pending = collector.pendingHandlers()
+        if (pending.length > 0) {
+          console.error('Collector handlers never invoked: %j', pending)
         }
-        // Always clear the global nock interceptor registry. Leaving consumed
-        // interceptors registered makes nock's request matching grow linearly
-        // across the 160 inner tests, slowing later tests progressively.
-        nock.cleanAll()
-
-        nock.enableNetConnect()
+        collector.close()
       })
 
       // Test behavior for this status code against every endpoint
@@ -97,11 +96,11 @@ test('New Relic response code handling', async (t) => {
       for (const endpointName of endpointNames) {
         const checkHasTestData = endpointDataChecks[endpointName]
         await t.test(endpointName, (t, end) => {
-          const { agent, testCase, testClock } = t.nr
-          const mockEndpoint = nockRequest(endpointName, RUN_ID).reply(testCase.code, ...jsonReply({ return_value: null }))
+          const { agent, collector, mockRequest, testCase, testClock } = t.nr
+          const mockEndpoint = mockRequest(endpointName, RUN_ID).reply(testCase.code, ...jsonReply({ return_value: null }))
 
           agent.start(async (error) => {
-            verifyAgentStart(t, error)
+            await verifyAgentStart(t, error)
 
             // Watch state changes once agent already started
             agent.on('disconnected', () => {
@@ -117,11 +116,11 @@ test('New Relic response code handling', async (t) => {
             })
 
             if (testCase.restart) {
-              t.nr.restartEndpoints = setupConnectionEndpoints()
+              t.nr.restartEndpoints = setupConnectionEndpoints(mockRequest, collector, RUN_ID)
             }
 
             if (testCase.disconnect) {
-              t.nr.shutdown = nockRequest('shutdown', RUN_ID).reply(200, ...jsonReply({ return_value: null }))
+              t.nr.shutdown = mockRequest('shutdown', RUN_ID).reply(200, ...jsonReply({ return_value: null }))
             }
 
             assert.ok(
@@ -135,6 +134,15 @@ test('New Relic response code handling', async (t) => {
 
             await whenAllAggregatorsSend(agent)
             assert.ok(mockEndpoint.isDone(), `called ${endpointName} endpoint`)
+
+            if (testCase.restart) {
+              // A restart's `agent_settings` report is fired from a
+              // `config`-change listener and isn't awaited by anything --
+              // `whenAllAggregatorsSend` only waits on data aggregators, not
+              // this request. It reliably lands within a handful of event
+              // loop turns.
+              await waitUntilDone(t.nr.restartEndpoints.settings)
+            }
 
             verifyRunBehavior(t)
             verifyDataRetention({ t, checkHasTestData, endpointName })
