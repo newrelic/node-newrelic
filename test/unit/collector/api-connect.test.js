@@ -12,7 +12,7 @@ const tspl = require('@matteo.collina/tspl')
 
 const HealthReporter = require('#agentlib/health-reporter.js')
 const Collector = require('../../lib/test-collector')
-const FakeProxyServer = require('../../lib/fake-proxy-server')
+const createProxyServer = require('../../lib/proxy-server')
 const CollectorResponse = require('../../../lib/collector/response')
 const helper = require('../../lib/agent_helper')
 const { match } = require('#test/assert')
@@ -436,9 +436,8 @@ test('retries on misconfigured proxy', async (t) => {
   // (lib/collector/http-agents.js) is a process-wide singleton: it caches
   // the `HttpsProxyAgent` built from the first test's `proxy_host`/
   // `proxy_port`, so every sub-test must resolve to the same proxy address.
-  const proxy = new FakeProxyServer({ failTunnels: 1 })
-  await proxy.listen()
-  t.after(() => proxy.close())
+  const proxy = await createProxyServer({ failTunnels: 1 })
+  t.after(() => proxy.shutdown())
 
   t.beforeEach(async (ctx) => {
     ctx.nr = {}

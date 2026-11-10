@@ -10,7 +10,7 @@ const tspl = require('@matteo.collina/tspl')
 
 const { getTestSecret } = require('../helpers/secrets')
 const fakeCert = require('../lib/fake-cert')
-const createServer = require('../lib/proxy-server')
+const createProxyServer = require('../lib/proxy-server')
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
@@ -21,7 +21,7 @@ test('the `proxy` config param enables proxying', async (t) => {
   const plan = tspl(t, { plan: 8 })
 
   const cert = fakeCert({ commonName: 'staging-collector.newrelic.com' })
-  const proxy = await createServer(cert)
+  const proxy = await createProxyServer({ cert })
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: license,

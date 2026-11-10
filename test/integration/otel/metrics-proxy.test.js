@@ -14,7 +14,7 @@ const helper = require('#testlib/agent_helper.js')
 const fakeCert = require('#testlib/fake-cert.js')
 const { removeMatchedModules } = require('#testlib/cache-buster.js')
 const createOtelMetricsServer = require('./otel-metrics-server.js')
-const createProxyServer = require('./proxy-server.js')
+const createProxyServer = require('#testlib/proxy-server.js')
 
 async function buildServers(secure = false) {
   const agentConfig = {
@@ -29,7 +29,7 @@ async function buildServers(secure = false) {
   }
 
   const cert = secure === false ? null : fakeCert({ commonName: 'localhost' })
-  const proxyServer = await createProxyServer({ cert })
+  const proxyServer = await createProxyServer({ cert, secure })
   if (secure === true) {
     // Send requests that match the SNI in the certificate.
     proxyServer.proxyUrl.replace('127.0.0.1', 'localhost')
@@ -75,7 +75,7 @@ test('sends metrics through HTTP proxy', { timeout: 5_000 }, async (t) => {
   t.after(async () => {
     helper.unloadAgent(agent)
     otelServer.close()
-    await proxyServer.closeProxy()
+    await proxyServer.shutdown()
   })
 
   let proxyConnected = false
@@ -153,7 +153,7 @@ test('sends metrics through HTTPS proxy', { timeout: 5_000 }, async (t) => {
   t.after(async () => {
     helper.unloadAgent(agent)
     otelServer.close()
-    await proxyServer.closeProxy()
+    await proxyServer.shutdown()
   })
 
   let proxyConnected = false

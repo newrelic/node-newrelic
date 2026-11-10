@@ -13,14 +13,18 @@ const helper = require('../../lib/agent_helper')
 const metrics = require('../../lib/metrics_helper')
 const { version: pkgVersion } = require('undici/package')
 const semver = require('semver')
-const { createServer, createHttpsServer, createSocketServer } = require('../../lib/undici-mock-server')
+const fakeCert = require('../../lib/fake-cert')
+const { startServer, defaultRoutesHandler } = require('../../lib/local-server')
 const { assertPackageMetrics } = require('../../lib/custom-assertions')
 
-test.beforeEach((ctx) => {
+test.beforeEach(async (ctx) => {
   const agent = helper.instrumentMockedAgent()
   const undici = require('undici')
   const { version: pkgVersion } = require('undici/package.json')
-  const { server, HOST, PORT, REQUEST_URL } = createServer()
+  const { server, port } = await startServer(defaultRoutesHandler)
+  const HOST = `localhost:${port}`
+  const PORT = port
+  const REQUEST_URL = `http://${HOST}`
   ctx.nr = {
     agent,
     pkgVersion,
@@ -96,10 +100,15 @@ test('should properly name segments', async (t) => {
 
 test('should add HTTPS port to segment name when provided', async (t) => {
   const { agent, undici } = t.nr
-  const { httpsServer, cert } = createHttpsServer()
-  const { port } = httpsServer.address()
+  const { server: httpsServer, port, cert } = await startServer(
+    (req, res) => {
+      res.write('SSL response')
+      res.end()
+    },
+    { secure: true, cert: fakeCert({ commonName: 'localhost' }) }
+  )
   const client = new undici.Client(`https://localhost:${port}`, {
-    tls: { ca: cert.certificate }
+    tls: { ca: cert }
   })
   t.after(() => {
     httpsServer.close()
@@ -119,8 +128,13 @@ test('should add HTTPS port to segment name when provided', async (t) => {
 
 test('should handle undici.Agent with rejectUnauthorized', { skip: semver.lt(pkgVersion, '5.2.0') }, async (t) => {
   const { agent, undici } = t.nr
-  const { httpsServer } = createHttpsServer()
-  const { port } = httpsServer.address()
+  const { server: httpsServer, port } = await startServer(
+    (req, res) => {
+      res.write('SSL response')
+      res.end()
+    },
+    { secure: true }
+  )
   const customAgent = new undici.Agent({
     connect: { rejectUnauthorized: false }
   })
@@ -386,7 +400,7 @@ test('should not log error when `feature_flag.undici_error_tracking` is false', 
 })
 
 test('segments should end on error', async (t) => {
-  const socketEndServer = createSocketServer()
+  const { server: socketEndServer } = await startServer((req) => req.socket.end())
   const { agent, undici } = t.nr
 
   t.after(() => {
