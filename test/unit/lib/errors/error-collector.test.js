@@ -531,6 +531,45 @@ test('Errors', async (t) => {
       assert.equal(errorTraces.length, 1)
     })
 
+    await t.test('should not collect an error without a transaction once it is attached to one', (t) => {
+      const { agent, errors, tx } = t.nr
+      const error = Error('this happened once')
+      tx.name = 'WebTransaction/TestJS/path'
+
+      errors.add(tx, error)
+      // e.g. the `uncaughtException` handler, once the error is rethrown
+      errors.add(null, error)
+
+      const errorTraces = getErrorTraces(errors)
+      assert.equal(errorTraces.length, 0, 'should wait for the transaction to end')
+      tx.end()
+      assert.equal(errorTraces.length, 1, 'should collect the error once')
+      assert.equal(errorTraces[0][1], 'WebTransaction/TestJS/path', 'should collect it with the transaction')
+      assert.equal(getErrorEvents(errors).length, 1, 'should create one error event')
+      assert.equal(agent.metrics.getMetric(NAMES.ERRORS.ALL).callCount, 1)
+    })
+
+    await t.test('should collect an error without a transaction when its transaction had ended', (t) => {
+      const { errors, tx } = t.nr
+      const error = Error('this happened late')
+
+      tx.end()
+      // not attached, as the transaction is no longer active
+      errors.add(tx, error)
+
+      errors.add(null, error)
+      assert.equal(getErrorTraces(errors).length, 1, 'should collect the error')
+    })
+
+    await t.test('should still dedupe string errors added without a transaction', (t) => {
+      const { errors, tx } = t.nr
+
+      errors.add(tx, 'string error')
+      errors.add(null, 'string error')
+      errors.add(null, 'string error')
+      assert.equal(getErrorTraces(errors).length, 1, 'should collect the unattached copy once')
+    })
+
     await t.test('add()', (t) => {
       const { errors } = t.nr
       assert.doesNotThrow(() => {
