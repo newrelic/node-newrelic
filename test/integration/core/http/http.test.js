@@ -213,7 +213,7 @@ test('should capture setHeader and writeHead headers on responses', function (t,
   let tx
   const server = http.createServer((req, res) => {
     tx = agent.getTransaction()
-    res.setHeader('foo', 'foo')
+    res.setHeader('FOO', 'foo')
     res.setHeader('bar', 'bar')
     res.writeHead(200, { foo: 'overwritten' })
     res.end('ok')
@@ -250,7 +250,8 @@ test('writeHead with array headers is supported', function (t, end) {
   let tx
   const server = http.createServer((req, res) => {
     tx = agent.getTransaction()
-    res.writeHead(200, ['answer', 42, 'foo', 'bar'])
+    // The capital `S` is for testing case normalization.
+    res.writeHead(200, ['anSwer', 42, 'foo', 'bar'])
     res.end('ok')
   })
 
