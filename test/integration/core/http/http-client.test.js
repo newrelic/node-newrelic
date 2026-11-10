@@ -653,6 +653,51 @@ test('HttpClientSubscriber', async (t) => {
     })
   })
 
+  await t.test('should touch the segment, and not crash, when http rejects a port that is not a number', (t, end) => {
+    process.once('uncaughtException', end)
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      assert.throws(
+        () => http.request({ host: HOSTNAME, port: 'abc', path: '/newrelic' }),
+        { code: 'ERR_SOCKET_BAD_PORT' }
+      )
+
+      // like any request that throws, the port is kept as is
+      const [child] = getExternalSegments(transaction)
+      assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${HOSTNAME}:abc`)
+      assert.equal(child.timer.touched, true, 'should touch the segment')
+      // give anything the agent left behind a chance to throw
+      setImmediate(() => {
+        process.removeListener('uncaughtException', end)
+        end()
+      })
+    })
+  })
+
+  const stringPorts = [
+    ['http', http, String(PORT), `${HOSTNAME}:${PORT}`, `http://${HOSTNAME}:${PORT}/foo`, PORT],
+    ['https', https, String(PORT), `${HOSTNAME}:${PORT}`, `https://${HOSTNAME}:${PORT}/foo`, PORT],
+    ['https', https, '443', HOSTNAME, `https://${HOSTNAME}/foo`, 443]
+  ]
+  for (const [label, mod, stringPort, host, url, port] of stringPorts) {
+    await t.test(`should record the ${stringPort} string port of an ${label} request as a number`, (t, end) => {
+      helper.runInTransaction(t.nr.agent, function (transaction) {
+        const req = mod.request({ host: HOSTNAME, port: stringPort, path: '/foo' })
+        req.on('error', () => {})
+        req.destroy()
+
+        const [child] = getExternalSegments(transaction)
+        assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${host}/foo`)
+        assert.deepStrictEqual({ ...child.attributes.get(DESTINATIONS.SPAN_EVENT) }, {
+          hostname: HOSTNAME,
+          port,
+          url,
+          procedure: 'GET'
+        })
+        end()
+      })
+    })
+  }
+
   await t.test('should touch the segment when request() throws', (t, end) => {
     helper.runInTransaction(t.nr.agent, function (transaction) {
       assert.throws(
@@ -687,10 +732,10 @@ test('HttpClientSubscriber', async (t) => {
   }
 
   const proxyTargets = [
-    ['an http', 'http://example.com/foo?a=b', 'example.com', 'http://example.com/foo', '80'],
-    ['an https', 'https://example.com/foo?a=b', 'example.com', 'https://example.com/foo', '443'],
-    ['an http with a port', 'http://example.com:8080/foo?a=b', 'example.com:8080', 'http://example.com:8080/foo', '8080'],
-    ['an https with a port', 'https://example.com:8443/foo?a=b', 'example.com:8443', 'https://example.com:8443/foo', '8443']
+    ['an http', 'http://example.com/foo?a=b', 'example.com', 'http://example.com/foo', 80],
+    ['an https', 'https://example.com/foo?a=b', 'example.com', 'https://example.com/foo', 443],
+    ['an http with a port', 'http://example.com:8080/foo?a=b', 'example.com:8080', 'http://example.com:8080/foo', 8080],
+    ['an https with a port', 'https://example.com:8443/foo?a=b', 'example.com:8443', 'https://example.com:8443/foo', 8443]
   ]
   for (const [label, path, host, url, port] of proxyTargets) {
     await t.test(`should record the target of ${label} proxy request`, (t, end) => {
@@ -700,7 +745,8 @@ test('HttpClientSubscriber', async (t) => {
         const [child] = getExternalSegments(transaction)
         assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${host}/foo`)
         assert.deepEqual(child.getAttributes(), { url, procedure: 'GET' })
-        assert.deepEqual(child.attributes.get(DESTINATIONS.SPAN_EVENT), {
+        // strict, so a string port fails
+        assert.deepStrictEqual({ ...child.attributes.get(DESTINATIONS.SPAN_EVENT) }, {
           hostname: 'example.com',
           port,
           url,
@@ -716,6 +762,62 @@ test('HttpClientSubscriber', async (t) => {
       })
     })
   }
+
+  const httpsOptionsWithoutProtocol = [
+    ['no port', {}, HOSTNAME, `https://${HOSTNAME}/foo`, 443],
+    ['the default port', { port: 443 }, HOSTNAME, `https://${HOSTNAME}/foo`, 443],
+    ['a port', { port: PORT }, `${HOSTNAME}:${PORT}`, `https://${HOSTNAME}:${PORT}/foo`, PORT]
+  ]
+  for (const [label, opts, host, url, port] of httpsOptionsWithoutProtocol) {
+    await t.test(`should record an https request with options, ${label}, and no protocol as https`, (t, end) => {
+      helper.runInTransaction(t.nr.agent, function (transaction) {
+        const req = https.request({ host: HOSTNAME, path: '/foo?a=b', ...opts })
+        req.on('error', () => {})
+        req.destroy()
+
+        const [child] = getExternalSegments(transaction)
+        assert.equal(child.name, `${NAMES.EXTERNAL.PREFIX}${host}/foo`)
+        assert.deepStrictEqual({ ...child.attributes.get(DESTINATIONS.SPAN_EVENT) }, {
+          hostname: HOSTNAME,
+          port,
+          url,
+          procedure: 'GET',
+          'request.parameters.a': 'b'
+        })
+        transaction.end()
+        assertExternalMetrics(t.nr.agent, {
+          unscoped: [`External/${host}/http`, `External/${host}/all`, 'External/allWeb', 'External/all']
+        })
+        end()
+      })
+    })
+  }
+
+  await t.test('should not create a segment for a proxy target with a 0 port', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = makeRequest({ host: HOSTNAME, port: PORT, path: 'http://example.com:0/foo' })
+
+      assert.equal(getExternalSegments(transaction).length, 0)
+      assert.ok(!req[symbols.segment])
+      end()
+    })
+  })
+
+  await t.test('should not create a segment, or crash, for a proxy target url that cannot be parsed', (t, end) => {
+    process.once('uncaughtException', end)
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      // `http` does not parse the path, so it still makes the request
+      const req = makeRequest({ host: HOSTNAME, port: PORT, path: 'http://example.com:65536/foo?a=b' })
+
+      assert.equal(getExternalSegments(transaction).length, 0)
+      assert.ok(!req[symbols.segment])
+      // give the agent a chance to throw after `request()` returns
+      setImmediate(() => {
+        process.removeListener('uncaughtException', end)
+        end()
+      })
+    })
+  })
 
   await t.test('should fall back to the request path when the url cannot be parsed', (t, end) => {
     helper.runInTransaction(t.nr.agent, function (transaction) {
