@@ -206,7 +206,7 @@ test('built-in http instrumentation should handle internal & external requests',
   })
 })
 
-test('should caputure setHeader and writeHead headers on responses', function (t, end) {
+test('should capture setHeader and writeHead headers on responses', function (t, end) {
   const { agent } = t.nr
   agent.config.attributes.enabled = true
 
