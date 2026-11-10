@@ -14,6 +14,12 @@ updates:
       - dependency-name: "@newrelic/newrelic-oss-cli"
       - dependency-name: "@opentelemetry/exporter-metrics-otlp-proto"
       # End of 0.x.x deps
+      # Only open PRs for dev deps on a major release
+      - dependency-type: "development"
+        update-types: ["version-update:semver-major"]
+    ignore:
+      # The them radically changes in 5.x and will not fit our needs for our API docs site
+      - dependency-name: "clean-jsdoc-theme"
     directory: "/"
     schedule:
       interval: "daily"
