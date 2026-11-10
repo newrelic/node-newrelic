@@ -218,6 +218,26 @@ test('extractHostPortViaProxy', async (t) => {
     })
   })
 
+  await t.test('should keep a 0 port of a target as 0, not the default port', () => {
+    assert.deepStrictEqual(extractHostPortViaProxy({ path: 'http://example.com:0/foo' }), {
+      host: 'example.com:0',
+      hostname: 'example.com',
+      port: 0
+    })
+  })
+
+  // `http` sends these to the proxy without parsing them
+  const invalidTargets = [
+    ['an out-of-range port', 'http://example.com:65536/foo'],
+    ['a port that is not a number', 'http://example.com:abc/foo'],
+    ['no host', 'http://']
+  ]
+  for (const [label, path] of invalidTargets) {
+    await t.test(`should return no host for a target with ${label}`, () => {
+      assert.deepStrictEqual(extractHostPortViaProxy({ path }), { host: null, hostname: null, port: null })
+    })
+  }
+
   await t.test('should prefer pathname to path', () => {
     const opts = { pathname: 'https://example.com/foo', path: 'http://example.org/foo' }
     assert.deepStrictEqual(extractHostPortViaProxy(opts), {

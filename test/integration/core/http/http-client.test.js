@@ -755,6 +755,32 @@ test('HttpClientSubscriber', async (t) => {
     })
   }
 
+  await t.test('should not create a segment for a proxy target with a 0 port', (t, end) => {
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      const req = makeRequest({ host: HOSTNAME, port: PORT, path: 'http://example.com:0/foo' })
+
+      assert.equal(getExternalSegments(transaction).length, 0)
+      assert.ok(!req[symbols.segment])
+      end()
+    })
+  })
+
+  await t.test('should not create a segment, or crash, for a proxy target url that cannot be parsed', (t, end) => {
+    process.once('uncaughtException', end)
+    helper.runInTransaction(t.nr.agent, function (transaction) {
+      // `http` does not parse the path, so it still makes the request
+      const req = makeRequest({ host: HOSTNAME, port: PORT, path: 'http://example.com:65536/foo?a=b' })
+
+      assert.equal(getExternalSegments(transaction).length, 0)
+      assert.ok(!req[symbols.segment])
+      // give the agent a chance to throw after `request()` returns
+      setImmediate(() => {
+        process.removeListener('uncaughtException', end)
+        end()
+      })
+    })
+  })
+
   await t.test('should fall back to the request path when the url cannot be parsed', (t, end) => {
     helper.runInTransaction(t.nr.agent, function (transaction) {
       // the href includes the path, so it is used, but it is not a valid url
