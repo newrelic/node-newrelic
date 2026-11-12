@@ -62,6 +62,29 @@ function createAiResponseServer() {
   })
 }
 
+/**
+ * Guards against an unmatched mock response lookup. Without this, a prompt
+ * that doesn't match a registered fixture causes `response` to be
+ * `undefined`, and accessing `response.statusCode` throws synchronously
+ * inside the request's `data`/`end` listeners. That exception has nowhere
+ * to go — it isn't caught by anything, and the response is never written —
+ * so the client just hangs on the request until its own timeout (if any)
+ * eventually fires, rather than failing fast with a clear error.
+ *
+ * @param {object|undefined} response Result of a `responses.<provider>.get()` lookup.
+ * @param {object} res The HTTP(2) response to fail fast on when unmatched.
+ * @returns {boolean} `true` if `response` is defined and the caller should continue;
+ * `false` if the response has already been ended and the caller should return.
+ */
+function failFastOnUnmatchedPrompt(response, res) {
+  if (response === undefined) {
+    res.statusCode = 500
+    res.end('could not match prompt')
+    return false
+  }
+  return true
+}
+
 function handler(req, res) {
   let data = Buffer.alloc(0)
   req.on('data', (chunk) => {
@@ -165,9 +188,7 @@ function handler(req, res) {
       }
     }
 
-    if (response === undefined) {
-      res.statusCode = 500
-      res.end('could not match prompt')
+    if (!failFastOnUnmatchedPrompt(response, res)) {
       return
     }
 
@@ -200,6 +221,10 @@ function handler(req, res) {
 function handleConverse(payload, res) {
   const prompt = payload.messages?.[0]?.content?.[0]?.text
   const response = responses.converse.get(prompt)
+
+  if (!failFastOnUnmatchedPrompt(response, res)) {
+    return
+  }
 
   res.statusCode = response.statusCode
   for (const [key, value] of Object.entries(response.headers)) {
