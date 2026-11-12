@@ -241,6 +241,92 @@ test('record attributes and linking metadata are merged into the forwarded log d
   assert.equal(logData['span.id'], 'span-456')
 })
 
+test('attaches event.name to the forwarded log data when the log record has an eventName', (t) => {
+  const { agent, logger } = t.nr
+  sinon.stub(agent.logs, 'add')
+
+  // eslint-disable-next-line no-new
+  new SetupLogs({ agent, logger })
+
+  otelApi.logs.getLogger('test-lib').emit({
+    body: 'hello',
+    severityNumber: 9,
+    eventName: 'my.event'
+  })
+
+  assert.equal(agent.logs.add.callCount, 1)
+  const logData = agent.logs.add.args[0][0]
+  assert.equal(logData['event.name'], 'my.event')
+})
+
+test('does not attach event.name to the forwarded log data when the log record has no eventName', (t) => {
+  const { agent, logger } = t.nr
+  sinon.stub(agent.logs, 'add')
+
+  // eslint-disable-next-line no-new
+  new SetupLogs({ agent, logger })
+
+  otelApi.logs.getLogger('test-lib').emit({ body: 'hello', severityNumber: 9 })
+
+  assert.equal(agent.logs.add.callCount, 1)
+  const logData = agent.logs.add.args[0][0]
+  assert.equal('event.name' in logData, false)
+})
+
+const emptyCases = [null, undefined, '']
+for (const val of emptyCases) {
+  test(`does not attach event.name to the forwarded log data when eventName is '${val}'`, (t) => {
+    const { agent, logger } = t.nr
+    sinon.stub(agent.logs, 'add')
+
+    // eslint-disable-next-line no-new
+    new SetupLogs({ agent, logger })
+
+    otelApi.logs.getLogger('test-lib').emit({ body: 'hello', severityNumber: 9, eventName: val })
+
+    assert.equal(agent.logs.add.callCount, 1)
+    const logData = agent.logs.add.args[0][0]
+    assert.equal('event.name' in logData, false)
+  })
+}
+
+test('eventName on the log record takes precedence over an event.name attribute', (t) => {
+  const { agent, logger } = t.nr
+  sinon.stub(agent.logs, 'add')
+
+  // eslint-disable-next-line no-new
+  new SetupLogs({ agent, logger })
+
+  otelApi.logs.getLogger('test-lib').emit({
+    body: 'hello',
+    severityNumber: 9,
+    eventName: 'from.record',
+    attributes: { 'event.name': 'from.attributes' }
+  })
+
+  assert.equal(agent.logs.add.callCount, 1)
+  const logData = agent.logs.add.args[0][0]
+  assert.equal(logData['event.name'], 'from.record')
+})
+
+test('preserves an event.name attribute when the log record has no eventName', (t) => {
+  const { agent, logger } = t.nr
+  sinon.stub(agent.logs, 'add')
+
+  // eslint-disable-next-line no-new
+  new SetupLogs({ agent, logger })
+
+  otelApi.logs.getLogger('test-lib').emit({
+    body: 'hello',
+    severityNumber: 9,
+    attributes: { 'event.name': 'from.attributes' }
+  })
+
+  assert.equal(agent.logs.add.callCount, 1)
+  const logData = agent.logs.add.args[0][0]
+  assert.equal(logData['event.name'], 'from.attributes')
+})
+
 test('teardown disables the global logger provider', (t) => {
   const { agent, logger } = t.nr
   const signal = new SetupLogs({ agent, logger })
