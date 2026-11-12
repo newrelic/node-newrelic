@@ -8,12 +8,12 @@
 const test = require('node:test')
 
 const helper = require('../../lib/agent_helper')
-const { createServer } = require('../../lib/undici-mock-server')
+const { startServer, defaultRoutesHandler } = require('../../lib/local-server')
 const assert = require('node:assert')
 const { PARTIAL_TYPES } = require('../../../lib/transaction/index')
 const PartialTrace = require('../../../lib/transaction/trace/partial-trace')
 
-test.beforeEach((ctx) => {
+test.beforeEach(async (ctx) => {
   const agent = helper.instrumentMockedAgent({
     instrumentation: {
       undici: {
@@ -52,7 +52,9 @@ test.beforeEach((ctx) => {
     })
   }
 
-  const { server, HOST, REQUEST_URL } = createServer()
+  const { server, port } = await startServer(defaultRoutesHandler)
+  const HOST = `localhost:${port}`
+  const REQUEST_URL = `http://${HOST}`
 
   ctx.nr = {
     agent,

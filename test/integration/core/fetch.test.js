@@ -11,11 +11,14 @@ const { DESTINATIONS } = require('#agentlib/config/attribute-filter.js')
 const test = require('node:test')
 const assert = require('node:assert')
 const assertSegments = require('#testlib/custom-assertions/assert-segments.js')
-const { createServer, createSocketServer } = require('#testlib/undici-mock-server.js')
+const { startServer, defaultRoutesHandler } = require('#testlib/local-server.js')
 
-test.beforeEach((ctx) => {
+test.beforeEach(async (ctx) => {
   const agent = helper.instrumentMockedAgent()
-  const { server, HOST, PORT, REQUEST_URL } = createServer()
+  const { server, port } = await startServer(defaultRoutesHandler)
+  const HOST = `localhost:${port}`
+  const PORT = port
+  const REQUEST_URL = `http://${HOST}`
   ctx.nr = {
     agent,
     server,
@@ -226,7 +229,7 @@ test('should add errors to transaction when external segment exists', async (t) 
 })
 
 test('segments should end on error', async (t) => {
-  const socketEndServer = createSocketServer()
+  const { server: socketEndServer } = await startServer((req) => req.socket.end())
   const { agent } = t.nr
   t.after(() => {
     socketEndServer.close()
