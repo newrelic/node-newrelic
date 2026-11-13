@@ -29,7 +29,7 @@
       "name": "port_path_or_id"
     },
     {
-      "template": "arn:aws:dynamodb:${aws.region}:${accountId}:table/${aws.dynamodb.table_names}",
+      "template": "arn:${awsPartition}:dynamodb:${aws.region}:${accountId}:table/${aws.dynamodb.table_names}",
       "target": "segment",
       "name": "cloud.resource_id"
     }
