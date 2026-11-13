@@ -259,7 +259,7 @@ test('environmental sampler', async function (t) {
 
   await t.test('should not gather GC metrics if disabled', function (t) {
     const { agent, sampler } = t.nr
-    agent.config.plugins.native_metrics.enabled = false
+    agent.config.virtual_machine.collect_metrics.enabled = false
     sampler.start()
     assert.ok(!sampler.vmMetrics)
   })
@@ -303,7 +303,7 @@ test('environmental sampler', async function (t) {
     // Isolate the CPU sampler: the VM metrics collector also reads
     // process.cpuUsage (when bound), so disable it to exercise only the CPU
     // sampler's error handling.
-    agent.config.plugins.native_metrics.enabled = false
+    agent.config.virtual_machine.collect_metrics.enabled = false
     const err = new Error('ohhhhhh boyyyyyy')
     process.cpuUsage.throws(err)
     sampler.start()

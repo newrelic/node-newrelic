@@ -1954,6 +1954,7 @@
           "type": "object",
           "properties": {
             "enabled": {
+              "x-newrelic-deprecated": "2026-11-12",
               "x-newrelic-env-var": "NEW_RELIC_NATIVE_METRICS_ENABLED",
               "type": "boolean",
               "default": true
@@ -2627,6 +2628,22 @@
       },
       "additionalProperties": true,
       "description": "Options regarding collecting system information. Used for system utilization based pricing scheme."
+    },
+    "virtual_machine": {
+      "type": "object",
+      "properties": {
+        "collect_metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "When enabled, metrics about the V8 virtual machine will be collected. Metrics include information pertaining to garbage collection, memory usage, and CPU usage. This will populate the \"Node VMs\" section of the monitored application's dashboard."
+            }
+          }
+        }
+      },
+      "additionalProperties": true
     },
     "worker_threads": {
       "type": "object",
