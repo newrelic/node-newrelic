@@ -311,6 +311,51 @@ test('consume outside of a transaction', async (t) => {
   await plan.completed
 })
 
+test('eachMessage wrapper preserves kafkajs backpressure for sequential partition processing', async (t) => {
+  const plan = tspl(t, { plan: 1 })
+  const { consumer, producer, topic } = t.nr
+
+  await consumer.subscribe({ topic, fromBeginning: true })
+
+  const messages = ['one', 'two', 'three']
+  let inFlight = 0
+  let peak = 0
+  let processed = 0
+
+  const done = new Promise((resolve) => {
+    consumer.run({
+      partitionsConsumedConcurrently: 1,
+      eachMessage: async () => {
+        inFlight++
+        peak = Math.max(peak, inFlight)
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        inFlight--
+        processed++
+        if (processed === messages.length) {
+          resolve()
+        }
+      }
+    })
+  })
+
+  await utils.waitForConsumersToJoinGroup({ consumer })
+  await producer.send({
+    acks: 1,
+    topic,
+    messages: messages.map((value, i) => { return { key: `key-${i}`, value } })
+  })
+
+  await done
+
+  // If the agent's `eachMessage` wrapper fails to return the application
+  // handler's promise, kafkajs does not await it before fetching and
+  // dispatching the next message on the same partition, so more than one
+  // handler invocation would be in flight concurrently.
+  plan.equal(peak, 1)
+
+  await plan.completed
+})
+
 test('consume inside of a transaction', async (t) => {
   const plan = tspl(t, { plan: 49 })
   const { agent, consumer, producer, topic, clientId } = t.nr
