@@ -1014,6 +1014,49 @@ test('http2 error handling', async (t) => {
       req.end()
     }
   })
+
+  await t.test('should link an unhandled connection error to the external segment', (t, end) => {
+    const { agent, http2, protocol, host } = t.nr
+    const net = require('node:net')
+    // handle the error only after the agent has checked for listeners, so it
+    // captures the error and the emitter does not throw it
+    const emit = events.EventEmitter.prototype.emit
+    events.EventEmitter.prototype.emit = function (evnt) {
+      if (evnt === 'error') {
+        this.once('error', function () {})
+      }
+      return emit.apply(this, arguments)
+    }
+    t.after(() => {
+      events.EventEmitter.prototype.emit = emit
+    })
+
+    // get a port nothing listens on, so the connection is refused. The error
+    // reaches the stream from the session's socket, outside the external segment.
+    const probe = net.createServer().listen(0, host, () => {
+      const { port } = probe.address()
+      probe.close(() => {
+        helper.runInTransaction(agent, (transaction) => {
+          const session = http2.connect(`${protocol}://${host}:${port}`)
+          const req = session.request({ ':path': '/', ':method': 'GET' })
+
+          req.on('close', () => {
+            session.destroy()
+            const [external] = transaction.trace
+              .getChildren(transaction.trace.root.id)
+              .filter((segment) => segment.name.startsWith(NAMES.EXTERNAL.PREFIX))
+            assert.equal(transaction.exceptions.length, 1, 'should capture the error')
+            const [exception] = transaction.exceptions
+            assert.equal(exception.error.code, 'ERR_HTTP2_STREAM_CANCEL')
+            assert.equal(exception.agentAttributes.spanId, external.id, 'should link the error to the external segment')
+            end()
+          })
+
+          req.end()
+        })
+      })
+    })
+  })
 })
 
 test('http2 caller-managed connection (e.g. undici)', async (t) => {
