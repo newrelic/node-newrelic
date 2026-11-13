@@ -91,6 +91,33 @@ test('otel decorated logs do not overwrite NR data', (t, end) => {
   })
 })
 
+test('event.name set via pino is forwarded on the log event', (t, end) => {
+  const { agent, logger } = setup({
+    enabled: true,
+    metrics: { enabled: false },
+    forwarding: { enabled: true },
+    local_decorating: { enabled: false }
+  })
+  t.nr = { agent }
+
+  helper.runInTransaction(agent, (tx) => {
+    // `otel.event.name` is the field `@opentelemetry/instrumentation-pino` looks
+    // for on the log object to populate `LogRecord#eventName`.
+    // See https://opentelemetry.io/docs/specs/otel/logs/data-model/#field-eventname
+    logger.info({ 'otel.event.name': 'my.event', foo: 'bar' }, 'hello world')
+    tx.end()
+
+    const txLogs = tx.logs.aggregator.getEvents()
+    assert.equal(txLogs.length, 1)
+
+    const log = txLogs[0]
+    assert.equal(log['event.name'], 'my.event')
+    assert.equal(log.foo, 'bar')
+
+    end()
+  })
+})
+
 test('otel decorated logs increment NR metrics', (t, end) => {
   const { agent, logger } = setup({
     enabled: true,
