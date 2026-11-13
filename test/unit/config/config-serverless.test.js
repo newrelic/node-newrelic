@@ -44,11 +44,11 @@ test('serverless_mode via configuration input', async (t) => {
         serverless_mode: {
           enabled: false
         },
-        plugins: {
-          native_metrics: { enabled: false }
+        virtual_machine: {
+          collect_metrics: { enabled: false }
         }
       })
-      assert.equal(config.plugins.native_metrics.enabled, false)
+      assert.equal(config.isVmMetricsEnabled(), false)
     }
   )
 
@@ -58,7 +58,7 @@ test('serverless_mode via configuration input', async (t) => {
         enabled: false
       }
     })
-    assert.equal(config.plugins.native_metrics.enabled, true)
+    assert.equal(config.isVmMetricsEnabled(), true)
   })
 
   await t.test('should disable native_metrics when serverless mode enabled explicitly', () => {
@@ -67,18 +67,18 @@ test('serverless_mode via configuration input', async (t) => {
         enabled: true
       }
     })
-    assert.equal(config.plugins.native_metrics.enabled, false)
+    assert.equal(config.isVmMetricsEnabled(), false)
   })
 
   await t.test('should enable native_metrics when both enabled explicitly', () => {
     const config = Config.initialize({
       serverless_mode: { enabled: true },
-      plugins: {
-        native_metrics: { enabled: true }
+      virtual_machine: {
+        collect_metrics: { enabled: true }
       }
     })
 
-    assert.equal(config.plugins.native_metrics.enabled, true)
+    assert.equal(config.isVmMetricsEnabled(), true)
   })
 
   await t.test('should set DT config settings while in serverless_mode', () => {
@@ -358,22 +358,22 @@ test('serverless mode via ENV variables', async (t) => {
     })
   })
 
-  await t.test('should enable native_metrics via env variable', (t, end) => {
+  await t.test('should enable vm metrics collection via env variable', (t, end) => {
     const envVariables = {
       NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      NEW_RELIC_NATIVE_METRICS_ENABLED: true
+      NEW_RELIC_VIRTUAL_MACHINE_COLLECT_METRICS_ENABLED: true
     }
 
     const inputConfig = {
-      plugins: {
-        native_metrics: {
+      virtual_machine: {
+        collect_metrics: {
           enabled: false
         }
       }
     }
 
     idempotentEnv(envVariables, inputConfig, (config) => {
-      assert.equal(config.plugins.native_metrics.enabled, true)
+      assert.equal(config.isVmMetricsEnabled(), true)
       end()
     })
   })
