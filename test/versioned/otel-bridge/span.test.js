@@ -1341,6 +1341,71 @@ test('aws lambda span has correct entity linking attributes', (t, end) => {
   })
 })
 
+test('aws dynamodb span uses the aws-us-gov partition in GovCloud', (t, end) => {
+  const { agent, tracer } = t.nr
+  const attributes = {
+    [ATTR_DB_NAMESPACE]: 'test-db',
+    [ATTR_DB_SYSTEM]: DB_SYSTEM_VALUES.DYNAMODB,
+    [ATTR_DB_OPERATION]: 'getItem',
+    [ATTR_AWS_REGION]: 'us-gov-west-1',
+    [ATTR_DYNAMO_TABLE_NAMES]: ['test-table']
+  }
+  helper.runInTransaction(agent, (tx) => {
+    tracer.startActiveSpan('db-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+      const segment = agent.tracer.getSegment()
+      span.end()
+      tx.end()
+      const attrs = segment.getAttributes()
+      assert.equal(attrs['cloud.resource_id'], 'arn:aws-us-gov:dynamodb:us-gov-west-1:123456789123:table/test-table')
+      end()
+    })
+  })
+})
+
+test('aws lambda span uses the aws-us-gov partition in GovCloud', (t, end) => {
+  const { agent, tracer } = t.nr
+  const attributes = {
+    [ATTR_AWS_REGION]: 'us-gov-west-1',
+    [ATTR_RPC_SYSTEM]: 'aws-api',
+    [ATTR_FAAS_INVOKED_NAME]: 'test-function',
+    [ATTR_FAAS_INVOKED_PROVIDER]: 'aws',
+    [ATTR_FAAS_INVOKED_REGION]: 'us-gov-west-1'
+  }
+  helper.runInTransaction(agent, (tx) => {
+    tracer.startActiveSpan('lambda-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+      const segment = agent.tracer.getSegment()
+      span.end()
+      tx.end()
+      const attrs = segment.getAttributes()
+      assert.equal(attrs['cloud.resource_id'], 'arn:aws-us-gov:lambda:us-gov-west-1:123456789123:function:test-function')
+      assert.equal(attrs['cloud.platform'], 'aws_lambda')
+      end()
+    })
+  })
+})
+
+test('aws lambda span uses a full ARN in faas.invoked_name unchanged', (t, end) => {
+  const { agent, tracer } = t.nr
+  const functionArn = 'arn:aws-us-gov:lambda:us-gov-west-1:123456789123:function:test-function'
+  const attributes = {
+    [ATTR_AWS_REGION]: 'us-gov-west-1',
+    [ATTR_RPC_SYSTEM]: 'aws-api',
+    [ATTR_FAAS_INVOKED_NAME]: functionArn,
+    [ATTR_FAAS_INVOKED_PROVIDER]: 'aws',
+    [ATTR_FAAS_INVOKED_REGION]: 'us-gov-west-1'
+  }
+  helper.runInTransaction(agent, (tx) => {
+    tracer.startActiveSpan('lambda-test', { kind: otel.SpanKind.CLIENT, attributes }, (span) => {
+      const segment = agent.tracer.getSegment()
+      span.end()
+      tx.end()
+      const attrs = segment.getAttributes()
+      assert.equal(attrs['cloud.resource_id'], functionArn)
+      end()
+    })
+  })
+})
+
 test('aws sqs span has correct entity linking attributes', (t, end) => {
   const { agent, tracer } = t.nr
   // see: https://github.com/open-telemetry/opentelemetry-js-contrib/blob/b520d048465d9b3dfdf275976010c989d2a78a2c/plugins/node/opentelemetry-instrumentation-aws-sdk/src/services/sqs.ts#L62
