@@ -147,6 +147,37 @@ test('DynamoDB', async (t) => {
       })
     })
   })
+
+  await t.test('cloud.resource_id uses the aws-us-gov partition in GovCloud', async (t) => {
+    const { agent, commands, DynamoDBClient, server } = t.nr
+    const client = new DynamoDBClient({
+      credentials: FAKE_CREDENTIALS,
+      endpoint: `http://localhost:${server.address().port}`,
+      region: 'us-gov-west-1'
+    })
+
+    await helper.runInTransaction(agent, async (tx) => {
+      for (const command of commands) {
+        await client.send(command)
+      }
+      tx.end()
+      const root = tx.trace.root
+      const segments = checkAWSAttributes({
+        trace: tx.trace,
+        segment: root,
+        pattern: DATASTORE_PATTERN
+      })
+
+      assert.ok(segments.length > 0, 'should have segments')
+      segments.forEach((segment) => {
+        const attrs = segment.attributes.get(SEGMENT_DESTINATION)
+        assert.equal(
+          attrs['cloud.resource_id'],
+          `arn:aws-us-gov:dynamodb:us-gov-west-1:123456789123:table/${attrs.collection}`
+        )
+      })
+    })
+  })
 })
 
 function createCommands({ lib, tableName }) {
