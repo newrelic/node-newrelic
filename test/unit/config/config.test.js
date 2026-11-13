@@ -632,21 +632,30 @@ test('otlp_resource_attributes', () => {
   assert.deepEqual(config.otlp_resource_attributes, {})
 })
 
-test('isNativeMetricsEnabled', async (t) => {
+test('isVmMetricsEnabled', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.emitWarning = sinon.stub(process, 'emitWarning')
+  })
+
+  t.afterEach((ctx) => {
+    ctx.nr.emitWarning.restore()
+  })
+
   await t.test('returns true by default', () => {
     const config = Config.initialize({})
-    assert.equal(config.isNativeMetricsEnabled(), true)
+    assert.equal(config.isVmMetricsEnabled(), true)
   })
 
   await t.test('returns false when disabled via config', () => {
-    const config = Config.initialize({ plugins: { native_metrics: { enabled: false } } })
-    assert.equal(config.isNativeMetricsEnabled(), false)
-  })
-
-  await t.test('returns false when the plugins config is missing', () => {
-    const config = Config.initialize({})
-    config.plugins = undefined
-    assert.equal(config.isNativeMetricsEnabled(), false)
+    const config = Config.initialize({
+      virtual_machine: {
+        collect_metrics: {
+          enabled: false
+        }
+      }
+    })
+    assert.equal(config.isVmMetricsEnabled(), false)
   })
 })
 
@@ -726,5 +735,72 @@ test('ai_monitoring.enabled deprecation warning', async (t) => {
     const config = new Config({}, { logger })
     config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
     assert.equal(warnings.length, 0)
+  })
+})
+
+test('virtual_machine', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.emitWarning = sinon.stub(process, 'emitWarning')
+  })
+
+  t.afterEach((ctx) => {
+    ctx.nr.emitWarning.restore()
+  })
+
+  await t.test('collect_metrics defaults to true', (t) => {
+    const config = Config.initialize({})
+    assert.equal(config.virtual_machine.collect_metrics.enabled, true)
+    assert.equal(t.nr.emitWarning.callCount, 0)
+  })
+
+  await t.test('collect_metrics can be set to false', (t) => {
+    const config = Config.initialize({
+      virtual_machine: {
+        collect_metrics: {
+          enabled: false
+        }
+      }
+    })
+    assert.equal(config.virtual_machine.collect_metrics.enabled, false)
+    assert.equal(t.nr.emitWarning.callCount, 0)
+  })
+
+  await t.test('collect_metrics can be enabled via environment', (t) => {
+    process.env.NEW_RELIC_VIRTUAL_MACHINE_COLLECT_METRICS_ENABLED = 'false'
+    t.after(() => {
+      delete process.env.NEW_RELIC_VIRTUAL_MACHINE_COLLECT_METRICS_ENABLED
+    })
+
+    const config = Config.initialize({})
+    assert.equal(config.virtual_machine.collect_metrics.enabled, false)
+    assert.equal(t.nr.emitWarning.callCount, 0)
+  })
+
+  await t.test('native_metrics warns when set but is honored (direct)', (t) => {
+    const config = Config.initialize({
+      plugins: {
+        native_metrics: {
+          enabled: false
+        }
+      }
+    })
+    assert.equal(config.virtual_machine.collect_metrics.enabled, true)
+    assert.equal(config.plugins.native_metrics.enabled, false)
+    assert.equal(config.isVmMetricsEnabled(), false)
+    assert.equal(t.nr.emitWarning.callCount, 1)
+  })
+
+  await t.test('native_metrics warns when set but is honored (env)', (t) => {
+    process.env.NEW_RELIC_NATIVE_METRICS_ENABLED = 'false'
+    t.after(() => {
+      delete process.env.NEW_RELIC_NATIVE_METRICS_ENABLED
+    })
+
+    const config = Config.initialize({})
+    assert.equal(config.virtual_machine.collect_metrics.enabled, true)
+    assert.equal(config.plugins.native_metrics.enabled, false)
+    assert.equal(config.isVmMetricsEnabled(), false)
+    assert.equal(t.nr.emitWarning.callCount, 1)
   })
 })
