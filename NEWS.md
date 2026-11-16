@@ -31,13 +31,6 @@
 * Updated client-s3 smoke test to expect an https url ([#4482](https://github.com/newrelic/node-newrelic/pull/4482)) ([e8d039d](https://github.com/newrelic/node-newrelic/commit/e8d039db28b70aab11bdcbdfd0b2d1ff755ef133))
 * Updated the Bedrock mock server fail fast on an unmatched converse prompt ([#4485](https://github.com/newrelic/node-newrelic/pull/4485)) ([5a69ac7](https://github.com/newrelic/node-newrelic/commit/5a69ac73e07dc4e34dcd785ffcec3d1e93f386e9))
 
-#### Continuous integration
-
-* **deps:** bump amannn/action-semantic-pull-request from 6.1.1 to 6.1.2 ([#4480](https://github.com/newrelic/node-newrelic/pull/4480)) ([a23a821](https://github.com/newrelic/node-newrelic/commit/a23a8213b39a5e574c213b5f389c752a4f0780a4))
-* **deps:** bump peter-evans/create-pull-request from 8.1.1 to 8.1.2 ([#4481](https://github.com/newrelic/node-newrelic/pull/4481)) ([57b303d](https://github.com/newrelic/node-newrelic/commit/57b303d6b7151e1005e1040e1b4ba11a70f7936c))
-* Updated dependabot configuration to open PRs when dev deps issue semver majors ([#4451](https://github.com/newrelic/node-newrelic/pull/4451)) ([ab721b1](https://github.com/newrelic/node-newrelic/commit/ab721b145ccadb1e634825c487c0fa76e6b8f47d))
-* Updated ordering of jobs in release prep ([#4466](https://github.com/newrelic/node-newrelic/pull/4466)) ([1626fa0](https://github.com/newrelic/node-newrelic/commit/1626fa0f1bb972b4b3c83192def6f2fd94fea7ac))
-
 ### v14.12.0 (2026-11-09)
 
 #### Features
