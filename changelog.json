@@ -2,6 +2,20 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "14.13.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Returned the application handler promise from the kafkajs eachMessage wrapper",
+          "Corrected protocol and port of outbound `http`/`https` requests",
+          "Fixed capturing of response headers for writeHead"
+        ],
+        "features": [
+          "Added `event.name` to logs when `eventName` exist on opentelemetry log record"
+        ]
+      }
+    },
+    {
       "version": "14.12.0",
       "changes": {
         "security": [],

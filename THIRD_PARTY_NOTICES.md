@@ -715,7 +715,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v3.0.5](https://github.com/newrelic/csec-node-agent/tree/v3.0.5)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v3.0.5/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v4.0.1](https://github.com/newrelic/csec-node-agent/tree/v4.0.1)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v4.0.1/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -970,7 +970,7 @@ This product includes source derived from [@opentelemetry/api](https://github.co
 
 ### @opentelemetry/exporter-metrics-otlp-http
 
-This product includes source derived from [@opentelemetry/exporter-metrics-otlp-http](https://github.com/open-telemetry/opentelemetry-js) ([v0.301.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.301.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.301.0/LICENSE):
+This product includes source derived from [@opentelemetry/exporter-metrics-otlp-http](https://github.com/open-telemetry/opentelemetry-js) ([v0.301.2](https://github.com/open-telemetry/opentelemetry-js/tree/v0.301.2)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.301.2/LICENSE):
 
 ```
                                  Apache License
@@ -1179,7 +1179,7 @@ This product includes source derived from [@opentelemetry/exporter-metrics-otlp-
 
 ### @opentelemetry/otlp-exporter-base
 
-This product includes source derived from [@opentelemetry/otlp-exporter-base](https://github.com/open-telemetry/opentelemetry-js) ([v0.301.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.301.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.301.0/LICENSE):
+This product includes source derived from [@opentelemetry/otlp-exporter-base](https://github.com/open-telemetry/opentelemetry-js) ([v0.301.2](https://github.com/open-telemetry/opentelemetry-js/tree/v0.301.2)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.301.2/LICENSE):
 
 ```
                                  Apache License
@@ -1388,7 +1388,7 @@ This product includes source derived from [@opentelemetry/otlp-exporter-base](ht
 
 ### @opentelemetry/otlp-transformer
 
-This product includes source derived from [@opentelemetry/otlp-transformer](https://github.com/open-telemetry/opentelemetry-js) ([v0.301.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.301.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.301.0/LICENSE):
+This product includes source derived from [@opentelemetry/otlp-transformer](https://github.com/open-telemetry/opentelemetry-js) ([v0.301.2](https://github.com/open-telemetry/opentelemetry-js/tree/v0.301.2)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.301.2/LICENSE):
 
 ```
                                  Apache License
@@ -1597,7 +1597,7 @@ This product includes source derived from [@opentelemetry/otlp-transformer](http
 
 ### @opentelemetry/resources
 
-This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v3.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v3.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v3.1.0/LICENSE):
+This product includes source derived from [@opentelemetry/resources](https://github.com/open-telemetry/opentelemetry-js) ([v3.1.1](https://github.com/open-telemetry/opentelemetry-js/tree/v3.1.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v3.1.1/LICENSE):
 
 ```
                                  Apache License
@@ -1806,7 +1806,7 @@ This product includes source derived from [@opentelemetry/resources](https://git
 
 ### @opentelemetry/sdk-metrics
 
-This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v3.1.0](https://github.com/open-telemetry/opentelemetry-js/tree/v3.1.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v3.1.0/LICENSE):
+This product includes source derived from [@opentelemetry/sdk-metrics](https://github.com/open-telemetry/opentelemetry-js) ([v3.1.1](https://github.com/open-telemetry/opentelemetry-js/tree/v3.1.1)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v3.1.1/LICENSE):
 
 ```
                                  Apache License
@@ -2510,7 +2510,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1164.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1164.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1164.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1168.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1168.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1168.0/LICENSE):
 
 ```
                                 Apache License
@@ -2719,7 +2719,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1164.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1164.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1164.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1168.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1168.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1168.0/LICENSE):
 
 ```
                                 Apache License
@@ -3433,7 +3433,7 @@ THE SOFTWARE.
 
 ### @opentelemetry/exporter-metrics-otlp-proto
 
-This product includes source derived from [@opentelemetry/exporter-metrics-otlp-proto](https://github.com/open-telemetry/opentelemetry-js) ([v0.301.0](https://github.com/open-telemetry/opentelemetry-js/tree/v0.301.0)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.301.0/LICENSE):
+This product includes source derived from [@opentelemetry/exporter-metrics-otlp-proto](https://github.com/open-telemetry/opentelemetry-js) ([v0.301.2](https://github.com/open-telemetry/opentelemetry-js/tree/v0.301.2)), distributed under the [Apache-2.0 License](https://github.com/open-telemetry/opentelemetry-js/blob/v0.301.2/LICENSE):
 
 ```
                                  Apache License
@@ -4202,7 +4202,7 @@ THE SOFTWARE.
 
 ### commander
 
-This product includes source derived from [commander](https://github.com/tj/commander.js) ([v15.0.0](https://github.com/tj/commander.js/tree/v15.0.0)), distributed under the [MIT License](https://github.com/tj/commander.js/blob/v15.0.0/LICENSE):
+This product includes source derived from [commander](https://github.com/tj/commander.js) ([v15.1.0](https://github.com/tj/commander.js/tree/v15.1.0)), distributed under the [MIT License](https://github.com/tj/commander.js/blob/v15.1.0/LICENSE):
 
 ```
 (The MIT License)
@@ -4313,7 +4313,7 @@ SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v65.4.5](https://github.com/gajus/eslint-plugin-jsdoc/tree/v65.4.5)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v65.4.5/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v65.4.6](https://github.com/gajus/eslint-plugin-jsdoc/tree/v65.4.6)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v65.4.6/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -4783,7 +4783,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### @datadog/pprof
 
-This product includes source derived from [@datadog/pprof](https://github.com/DataDog/pprof-nodejs) ([v5.20.0](https://github.com/DataDog/pprof-nodejs/tree/v5.20.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/pprof-nodejs/blob/v5.20.0/LICENSE):
+This product includes source derived from [@datadog/pprof](https://github.com/DataDog/pprof-nodejs) ([v5.20.1](https://github.com/DataDog/pprof-nodejs/tree/v5.20.1)), distributed under the [Apache-2.0 License](https://github.com/DataDog/pprof-nodejs/blob/v5.20.1/LICENSE):
 
 ```
 
