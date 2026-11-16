@@ -1,3 +1,43 @@
+### v14.13.0 (2026-11-16)
+
+#### Features
+
+* Added `event.name` to logs when `eventName` exist on opentelemetry log record ([#4486](https://github.com/newrelic/node-newrelic/pull/4486)) ([19ad0f8](https://github.com/newrelic/node-newrelic/commit/19ad0f851d34d8fdec35728f9fc7a82779d38947))
+
+#### Bug fixes
+
+* Corrected protocol and port of outbound `http`/`https` requests ([#4473](https://github.com/newrelic/node-newrelic/pull/4473)) ([ab1b4b8](https://github.com/newrelic/node-newrelic/commit/ab1b4b88e063f4814a5c8f020790a2888d9d5613))
+* Fixed capturing of response headers for writeHead ([#4477](https://github.com/newrelic/node-newrelic/pull/4477)) ([fab8012](https://github.com/newrelic/node-newrelic/commit/fab8012174dc5e134a1d0b1875217b52680a8b98))
+* Returned the application handler promise from the kafkajs eachMessage wrapper ([#4488](https://github.com/newrelic/node-newrelic/pull/4488)) ([3263f9a](https://github.com/newrelic/node-newrelic/commit/3263f9a2df23adaa8fba8091156a44666700103d))
+
+#### Code refactoring
+
+* Migrated `http` client (including `http-outbound`) instrumentation to subscriber-based ([#4472](https://github.com/newrelic/node-newrelic/pull/4472)) ([191a052](https://github.com/newrelic/node-newrelic/commit/191a052a3065dade2408f1e8d660035fad2de78b))
+* Migrated http server instrumentation to subscriber-based ([#4472](https://github.com/newrelic/node-newrelic/pull/4472)) ([04a3101](https://github.com/newrelic/node-newrelic/commit/04a3101ddc2a2dd8ca0f69c7fd929dcb86e8503d))
+
+#### Documentation
+
+* Updated compatibility report ([#4468](https://github.com/newrelic/node-newrelic/pull/4468)) ([cb353f3](https://github.com/newrelic/node-newrelic/commit/cb353f32fb865d36dee8505e46a24063ee314c9f))
+
+#### Miscellaneous chores
+
+* Removed nock in lieu of local http mock server calls ([#4478](https://github.com/newrelic/node-newrelic/pull/4478)) ([4e0b963](https://github.com/newrelic/node-newrelic/commit/4e0b9631eff20b5a8502fb07ebc49619cff2b807))
+* Removed unused core instrumentation code ([#4472](https://github.com/newrelic/node-newrelic/pull/4472)) ([b371b0c](https://github.com/newrelic/node-newrelic/commit/b371b0cea08a740329d610ee59c338fae1338e2e))
+* Updated `@newrelic/security-agent` to v4 ([#4471](https://github.com/newrelic/node-newrelic/pull/4471)) ([4234f4f](https://github.com/newrelic/node-newrelic/commit/4234f4f92e68c4ceab6a53be1bb7271aa71767cd))
+
+#### Tests
+
+* Consolidated local http mock servers ([#4479](https://github.com/newrelic/node-newrelic/pull/4479)) ([ede2b19](https://github.com/newrelic/node-newrelic/commit/ede2b19ce8dabea3c839868af66de6cb2e2f4620))
+* Updated client-s3 smoke test to expect an https url ([#4482](https://github.com/newrelic/node-newrelic/pull/4482)) ([e8d039d](https://github.com/newrelic/node-newrelic/commit/e8d039db28b70aab11bdcbdfd0b2d1ff755ef133))
+* Updated the Bedrock mock server fail fast on an unmatched converse prompt ([#4485](https://github.com/newrelic/node-newrelic/pull/4485)) ([5a69ac7](https://github.com/newrelic/node-newrelic/commit/5a69ac73e07dc4e34dcd785ffcec3d1e93f386e9))
+
+#### Continuous integration
+
+* **deps:** bump amannn/action-semantic-pull-request from 6.1.1 to 6.1.2 ([#4480](https://github.com/newrelic/node-newrelic/pull/4480)) ([a23a821](https://github.com/newrelic/node-newrelic/commit/a23a8213b39a5e574c213b5f389c752a4f0780a4))
+* **deps:** bump peter-evans/create-pull-request from 8.1.1 to 8.1.2 ([#4481](https://github.com/newrelic/node-newrelic/pull/4481)) ([57b303d](https://github.com/newrelic/node-newrelic/commit/57b303d6b7151e1005e1040e1b4ba11a70f7936c))
+* Updated dependabot configuration to open PRs when dev deps issue semver majors ([#4451](https://github.com/newrelic/node-newrelic/pull/4451)) ([ab721b1](https://github.com/newrelic/node-newrelic/commit/ab721b145ccadb1e634825c487c0fa76e6b8f47d))
+* Updated ordering of jobs in release prep ([#4466](https://github.com/newrelic/node-newrelic/pull/4466)) ([1626fa0](https://github.com/newrelic/node-newrelic/commit/1626fa0f1bb972b4b3c83192def6f2fd94fea7ac))
+
 ### v14.12.0 (2026-11-09)
 
 #### Features
