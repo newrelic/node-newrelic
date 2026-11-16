@@ -76,6 +76,12 @@ const suite = benchmark.createBenchmark({
   runs: 5000
 })
 
+// The cold schema builds cost orders of magnitude more per run than a parse
+// (the disk build is tens of milliseconds), so they get fewer runs to keep the
+// suite's wall time reasonable. There are still enough samples that the slow
+// warm-up runs and GC pauses stay out of the 95th percentile.
+const COLD_BUILD_RUNS = 500
+
 const tests = [
   {
     name: 'baseline (suggested newrelic.js)',
@@ -101,6 +107,7 @@ const tests = [
     // the block files, which this path never reads) so the measured `fn` re-runs
     // the artifact-backed build from a cold require.
     name: 'cold schema build (prebuilt artifact)',
+    runs: COLD_BUILD_RUNS,
     before: bustSchemaModule,
     fn: buildSchemaCold
   },
@@ -112,6 +119,7 @@ const tests = [
     // the artifact or the module cache), so it measures the cold disk build
     // directly without needing to hide the artifact file.
     name: 'cold schema build (disk: file reads + ajv compile)',
+    runs: COLD_BUILD_RUNS,
     fn: buildSchemaFromDisk
   }
 ]
@@ -149,12 +157,21 @@ function clearEnv() {
 // The schema block files are intentionally left cached: the artifact path never
 // reads them, and this benchmark measures that path. Runs in `before`, so the
 // eviction itself is not part of the measured work.
+//
+// Each fresh require also appends the new schema module to this module's
+// `children`, so those references are dropped as well. Otherwise every cold
+// build stays reachable and the heap grows with each run.
 function bustSchemaModule() {
   for (const key of Object.keys(require.cache)) {
-    if (key.includes('/lib/config/schema.js') || key.includes('/lib/config/schema.generated.js')) {
+    if (isSchemaModule(key)) {
       delete require.cache[key]
     }
   }
+  module.children = module.children.filter((child) => !isSchemaModule(child.id))
+}
+
+function isSchemaModule(id) {
+  return id.includes('/lib/config/schema.js') || id.includes('/lib/config/schema.generated.js')
 }
 
 // Freshly requires the schema module and forces the one-time build. With the
