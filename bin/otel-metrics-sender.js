@@ -32,7 +32,16 @@ const exporter = new OTLPMetricExporter({
 
 const meterProvider = new MeterProvider({
   resource,
-  readers: [new PeriodicExportingMetricReader({ exporter, exportIntervalMillis: 1000 })]
+  // The export timeout is clamped to the interval, so a short interval causes
+  // spurious "export timed out" errors whenever the collector is slow to
+  // respond. Any metrics not yet exported are flushed on shutdown.
+  readers: [
+    new PeriodicExportingMetricReader({
+      exporter,
+      exportIntervalMillis: 10000,
+      exportTimeoutMillis: 10000
+    })
+  ]
 })
 
 const meter = meterProvider.getMeter('nodejs-agent-benchmarks')

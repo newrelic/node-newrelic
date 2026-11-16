@@ -22,13 +22,20 @@ agent.config.trusted_account_key = '1'
 agent.config.primary_application_id = 'test-app'
 
 const suite = benchmark.createBenchmark({
-  name: 'transaction DT accept'
+  name: 'transaction DT accept',
+  // Each run already performs ITERATIONS accepts (and builds as many
+  // transactions in `before`), so far fewer runs than the default are needed
+  // to keep the suite's wall time reasonable.
+  runs: 100
 })
 
 // A single DT accept is sub-microsecond, well below what a per-sample
 // process.cpuUsage() delta can resolve — measuring one call per sample is pure
 // noise. Instead each measured `fn` runs ITERATIONS accepts so the per-sample
-// work rises far above the timer floor and run-to-run variance collapses.
+// work rises far above the timer floor and run-to-run variance collapses. A
+// batch this size also spans several young-generation GCs, spreading their cost
+// evenly across samples; smaller batches leave some samples with a GC and some
+// without, producing a bimodal distribution.
 const ITERATIONS = 10000
 
 // A valid v0 newrelic-format payload object. `tk`/`ac` must match the trusted
