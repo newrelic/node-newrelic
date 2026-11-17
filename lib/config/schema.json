@@ -1961,7 +1961,7 @@
             }
           },
           "additionalProperties": true,
-          "description": "Controls usage of the native metrics module which samples VM and event loop data."
+          "description": "Deprecated as of newrelic@14.11.0. Virtual Machine (VM) metrics are now built-in to the agent. Please use 'virtual_machine.collect_metrics.enabled'\nto manage VM metrics collection."
         }
       },
       "additionalProperties": true

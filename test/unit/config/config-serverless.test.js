@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
+const sinon = require('sinon')
 const Config = require('../../../lib/config')
 const { idempotentEnv } = require('./helper')
 
@@ -374,6 +375,76 @@ test('serverless mode via ENV variables', async (t) => {
 
     idempotentEnv(envVariables, inputConfig, (config) => {
       assert.equal(config.isVmMetricsEnabled(), true)
+      end()
+    })
+  })
+})
+
+test('plugins.native_metrics.enabled takes precedence over virtual_machine.collect_metrics.enabled', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.emitWarning = sinon.stub(process, 'emitWarning')
+  })
+
+  t.afterEach((ctx) => {
+    ctx.nr.emitWarning.restore()
+  })
+
+  await t.test('should enable when old is true and new is false via config', () => {
+    const config = Config.initialize({
+      serverless_mode: { enabled: true },
+      plugins: {
+        native_metrics: { enabled: true }
+      },
+      virtual_machine: {
+        collect_metrics: { enabled: false }
+      }
+    })
+
+    assert.equal(config.isVmMetricsEnabled(), true)
+  })
+
+  await t.test('should disable when old is false and new is true via config', () => {
+    const config = Config.initialize({
+      serverless_mode: { enabled: true },
+      plugins: {
+        native_metrics: { enabled: false }
+      },
+      virtual_machine: {
+        collect_metrics: { enabled: true }
+      }
+    })
+
+    assert.equal(config.isVmMetricsEnabled(), false)
+  })
+
+  await t.test('should enable when old is true and new is false via env', (t, end) => {
+    const envVariables = {
+      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+      NEW_RELIC_NATIVE_METRICS_ENABLED: true,
+      NEW_RELIC_VIRTUAL_MACHINE_COLLECT_METRICS_ENABLED: false
+    }
+
+    idempotentEnv(envVariables, (config) => {
+      assert.equal(config.isVmMetricsEnabled(), true)
+      end()
+    })
+  })
+
+  await t.test('should disable when old is false via env and new is true via config', (t, end) => {
+    const envVariables = {
+      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+      NEW_RELIC_NATIVE_METRICS_ENABLED: false
+    }
+
+    const inputConfig = {
+      virtual_machine: {
+        collect_metrics: { enabled: true }
+      }
+    }
+
+    idempotentEnv(envVariables, inputConfig, (config) => {
+      assert.equal(config.isVmMetricsEnabled(), false)
       end()
     })
   })

@@ -766,7 +766,7 @@ test('virtual_machine', async (t) => {
     assert.equal(t.nr.emitWarning.callCount, 0)
   })
 
-  await t.test('collect_metrics can be enabled via environment', (t) => {
+  await t.test('collect_metrics can be disabled via environment', (t) => {
     process.env.NEW_RELIC_VIRTUAL_MACHINE_COLLECT_METRICS_ENABLED = 'false'
     t.after(() => {
       delete process.env.NEW_RELIC_VIRTUAL_MACHINE_COLLECT_METRICS_ENABLED
