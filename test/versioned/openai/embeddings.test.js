@@ -27,7 +27,12 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: true
+      basic_telemetry: {
+        enabled: true
+      },
+      record_content: {
+        enabled: true
+      }
     },
     streaming: {
       enabled: true
@@ -188,9 +193,9 @@ test('should add llm attribute to transaction', (t, end) => {
   })
 })
 
-test('should not create segment or llm events when ai_monitoring.enabled is false', (t, end) => {
+test('should not create segment or llm events when ai_monitoring.basic_telemetry.enabled is false', (t, end) => {
   const { client, agent } = t.nr
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
   helper.runInTransaction(agent, async (tx) => {
     await client.embeddings.create({
       input: 'This is an embedding test.',
@@ -216,7 +221,12 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   // set up the agent instance with ai_monitoring disabled
   const agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: false
+      basic_telemetry: {
+        enabled: false
+      },
+      record_content: {
+        enabled: true
+      }
     },
     streaming: {
       enabled: true
@@ -231,7 +241,7 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   t.nr.client = client
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
   helper.runInTransaction(agent, async (tx) => {
     await client.embeddings.create({
       input: 'This is an embedding test.',

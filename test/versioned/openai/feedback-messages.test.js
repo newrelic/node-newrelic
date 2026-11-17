@@ -21,7 +21,12 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: true
+      basic_telemetry: {
+        enabled: true
+      },
+      record_content: {
+        enabled: true
+      }
     },
     streaming: {
       enabled: true

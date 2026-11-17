@@ -35,7 +35,12 @@ test('chat.completions.create', async (t) => {
     ctx.nr.server = server
     ctx.nr.agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: true,
+        basic_telemetry: {
+          enabled: true
+        },
+        record_content: {
+          enabled: true
+        },
         streaming: {
           enabled: true
         }
@@ -526,7 +531,12 @@ test('chat.completions.create', async (t) => {
     // set up the agent instance with ai_monitoring disabled
     const agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: false,
+        basic_telemetry: {
+          enabled: false
+        },
+        record_content: {
+          enabled: true
+        },
         streaming: {
           enabled: true
         }
@@ -541,7 +551,7 @@ test('chat.completions.create', async (t) => {
     t.nr.client = client
 
     // enable ai_monitoring before making the call
-    agent.config.ai_monitoring.enabled = true
+    agent.config.ai_monitoring.basic_telemetry.enabled = true
     helper.runInTransaction(agent, async (tx) => {
       const content = 'Streamed response'
       const stream = await client.chat.completions.create({
@@ -574,9 +584,9 @@ test('chat.completions.create', async (t) => {
     assert.equal(events.length, 0, 'should not create llm events')
   })
 
-  await t.test('should not create segment or llm events when ai_monitoring.enabled is false', (t, end) => {
+  await t.test('should not create segment or llm events when ai_monitoring.basic_telemetry.enabled is false', (t, end) => {
     const { client, agent } = t.nr
-    agent.config.ai_monitoring.enabled = false
+    agent.config.ai_monitoring.basic_telemetry.enabled = false
     helper.runInTransaction(agent, async (tx) => {
       await client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
@@ -601,7 +611,12 @@ test('chat.completions.create', async (t) => {
     // set up the agent instance with ai_monitoring disabled
     const agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: false,
+        basic_telemetry: {
+          enabled: false
+        },
+        record_content: {
+          enabled: true
+        },
         streaming: {
           enabled: true
         }
@@ -616,7 +631,7 @@ test('chat.completions.create', async (t) => {
     t.nr.client = client
 
     // enable ai_monitoring before making the call
-    agent.config.ai_monitoring.enabled = true
+    agent.config.ai_monitoring.basic_telemetry.enabled = true
     helper.runInTransaction(agent, async (tx) => {
       await client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]

@@ -33,7 +33,12 @@ test('Embeddings', async (t) => {
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: true
+        basic_telemetry: {
+          enabled: true
+        },
+        record_content: {
+          enabled: true
+        }
       }
     })
 
@@ -258,9 +263,9 @@ test('Embeddings', async (t) => {
       })
     })
 
-    await t.test(`${modelId}: should not create segment or llm events when ai_monitoring.enabled is false`, async (t) => {
+    await t.test(`${modelId}: should not create segment or llm events when ai_monitoring.basic_telemetry.enabled is false`, async (t) => {
       const { agent, bedrock, client, expectedExternalPath } = t.nr
-      agent.config.ai_monitoring.enabled = false
+      agent.config.ai_monitoring.basic_telemetry.enabled = false
       const prompt = `embed text ${resKey} success`
       const input = requests[resKey](prompt, modelId)
       const command = new bedrock.InvokeModelCommand(input)
@@ -292,7 +297,12 @@ test('Embeddings', async (t) => {
       // set up the agent instance with ai_monitoring disabled
       const agent = helper.instrumentMockedAgent({
         ai_monitoring: {
-          enabled: false
+          basic_telemetry: {
+            enabled: false
+          },
+          record_content: {
+            enabled: true
+          }
         }
       })
       t.nr.agent = agent
@@ -310,7 +320,7 @@ test('Embeddings', async (t) => {
       const command = new bedrock.InvokeModelCommand(input)
 
       // enable ai_monitoring before making the first `.send()` call
-      agent.config.ai_monitoring.enabled = true
+      agent.config.ai_monitoring.basic_telemetry.enabled = true
       await helper.runInTransaction(agent, async (tx) => {
         await client.send(command)
         const events = agent.customEventAggregator.events.toArray()

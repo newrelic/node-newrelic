@@ -15,7 +15,12 @@ const helper = require('../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
-    enabled: true,
+    basic_telemetry: {
+      enabled: true
+    },
+    record_content: {
+      enabled: true
+    },
     streaming: {
       enabled: true
     }
@@ -127,11 +132,11 @@ test('should create LlmAgent event for CompiledStateGraph.invoke', async (t) => 
   })
 })
 
-test('should not create segment or events when ai_monitoring.enabled is false', async (t) => {
+test('should not create segment or events when ai_monitoring.basic_telemetry.enabled is false', async (t) => {
   const { agent, langgraphAgent } = t.nr
 
   // Disable ai_monitoring
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
 
   await helper.runInTransaction(agent, async (tx) => {
     try {
@@ -167,7 +172,12 @@ test('should create segment and events when ai_monitoring is disabled at instrum
   // set up the agent instance with ai_monitoring disabled
   const agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: false,
+      basic_telemetry: {
+        enabled: false
+      },
+      record_content: {
+        enabled: true
+      },
       streaming: {
         enabled: true
       }
@@ -196,7 +206,7 @@ test('should create segment and events when ai_monitoring is disabled at instrum
   t.nr.langgraphAgent = langgraphAgent
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
 
   await helper.runInTransaction(agent, async (tx) => {
     const result = await langgraphAgent.invoke(

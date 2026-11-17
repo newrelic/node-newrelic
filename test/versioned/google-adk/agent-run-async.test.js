@@ -13,7 +13,12 @@ const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 const config = {
   ai_monitoring: {
-    enabled: true,
+    basic_telemetry: {
+      enabled: true
+    },
+    record_content: {
+      enabled: true
+    },
     streaming: {
       enabled: true
     }
@@ -268,12 +273,12 @@ test('should not create llm events when not in a transaction', async (t) => {
   assert.equal(agentEvents.length, 0, 'should not create LlmAgent events')
 })
 
-test('should not create segment or events when ai_monitoring.enabled is false', async (t) => {
+test('should not create segment or events when ai_monitoring.basic_telemetry.enabled is false', async (t) => {
   t.plan(2)
   const { agent, BaseAgent } = t.nr
   const assert = t.assert
 
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
 
   const testAgent = createTestAgent(BaseAgent, {
     name: 'disabled_agent',
@@ -306,7 +311,12 @@ test('should create segment and events when ai_monitoring is disabled at instrum
   // set up the agent instance with ai_monitoring disabled
   const agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: false,
+      basic_telemetry: {
+        enabled: false
+      },
+      record_content: {
+        enabled: true
+      },
       streaming: {
         enabled: true
       }
@@ -321,7 +331,7 @@ test('should create segment and events when ai_monitoring is disabled at instrum
   })
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
 
   await helper.runInTransaction(agent, async (tx) => {
     await consumeGenerator(testAgent.runAsync({}))

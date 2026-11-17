@@ -481,7 +481,7 @@ function runRunnablesTests(config) {
 
   test('should not create llm runnable events when ai_monitoring is disabled', (t, end) => {
     const { agent, prompt, model } = t.nr
-    agent.config.ai_monitoring.enabled = false
+    agent.config.ai_monitoring.basic_telemetry.enabled = false
 
     helper.runInTransaction(agent, async (tx) => {
       const input = inputData
@@ -498,7 +498,7 @@ function runRunnablesTests(config) {
 
   test('should not create segment when ai_monitoring is disabled', (t, end) => {
     const { agent, prompt, model } = t.nr
-    agent.config.ai_monitoring.enabled = false
+    agent.config.ai_monitoring.basic_telemetry.enabled = false
 
     helper.runInTransaction(agent, async (tx) => {
       const input = inputData

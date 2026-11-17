@@ -10,6 +10,7 @@ const assert = require('node:assert')
 const sinon = require('sinon')
 
 const Config = require('../../../lib/config')
+const getTrackingMetricName = require('../../../lib/llm-events/get-tracking-metric-name')
 
 test('should handle a directly passed minimal configuration', () => {
   let config
@@ -144,14 +145,6 @@ test('#publicSettings', async (t) => {
     assert.equal(Object.hasOwn(pub, 'ai_monitoring.record_content.enabled'), true)
     assert.equal(pub['ai_monitoring.streaming.enabled'], true)
   })
-
-  for (const enabled of [true, false]) {
-    await t.test(`should send \`ai_monitoring.enabled\` when it is set to ${enabled}`, () => {
-      configuration = Config.initialize({ ai_monitoring: { enabled } })
-      const pub = configuration.publicSettings()
-      assert.equal(pub['ai_monitoring.enabled'], enabled)
-    })
-  }
 
   await t.test('should turn the app name into an array', () => {
     configuration = Config.initialize({ app_name: 'test app name' })
@@ -675,66 +668,276 @@ test('Core Tracing is disabled', async (t) => {
   })
 })
 
-test('ai_monitoring.enabled deprecation warning', async (t) => {
+test('ai_monitoring.enabled deprecation', async (t) => {
+  const MESSAGE = '`ai_monitoring.enabled` is deprecated in favor of ' +
+    '`ai_monitoring.basic_telemetry.enabled` and will be removed in ' +
+    'a future major version.'
+  const ENV_VAR = 'NEW_RELIC_AI_MONITORING_ENABLED'
+  const UNSET = 'unset'
+  const ANY = 'any'
+
   /**
-   * Creates a logger that captures `ai_monitoring.enabled` deprecation warnings.
+   * Stubs `process.emitWarning`, and provides a logger that captures the
+   * deprecation message, for every subtest of the given suite.
    *
-   * @returns {{ logger: object, warnings: string[] }} The logger and the captured warnings.
+   * @param {object} suite The suite's test context.
    */
-  function createLogger() {
-    const warnings = []
-    const logger = {
-      warn(msg) {
-        if (msg.includes('`ai_monitoring.enabled` is deprecated')) {
-          warnings.push(msg)
-        }
-      },
-      child() {
-        return logger
-      },
-      trace() {},
-      debug() {},
-      info() {},
-      error() {}
+  function captureWarnings(suite) {
+    suite.beforeEach((ctx) => {
+      ctx.nr = {}
+      ctx.nr.emitWarning = sinon.stub(process, 'emitWarning')
+      ctx.nr.warnings = []
+      ctx.nr.logger = {
+        warn(msg) {
+          if (msg === MESSAGE) {
+            ctx.nr.warnings.push(msg)
+          }
+        },
+        child() {
+          return ctx.nr.logger
+        },
+        trace() {},
+        debug() {},
+        info() {},
+        error() {}
+      }
+    })
+
+    suite.afterEach((ctx) => {
+      ctx.nr.emitWarning.restore()
+      delete process.env[ENV_VAR]
+    })
+  }
+
+  /**
+   * Asserts the deprecation was emitted exactly once as a process
+   * `DeprecationWarning`.
+   *
+   * @param {object} ctx The test context.
+   */
+  function assertEmitted(ctx) {
+    assert.equal(ctx.nr.emitWarning.callCount, 1)
+    assert.deepEqual(ctx.nr.emitWarning.firstCall.args, [MESSAGE, 'DeprecationWarning'])
+  }
+
+  /**
+   * Asserts the deprecation was reported exactly once, both to the agent log
+   * and as a process `DeprecationWarning`.
+   *
+   * @param {object} ctx The test context.
+   */
+  function assertWarned(ctx) {
+    assert.deepEqual(ctx.nr.warnings, [MESSAGE])
+    assertEmitted(ctx)
+  }
+
+  /**
+   * Asserts the deprecation was not reported anywhere.
+   *
+   * @param {object} ctx The test context.
+   */
+  function assertNotWarned(ctx) {
+    assert.deepEqual(ctx.nr.warnings, [])
+    assert.equal(ctx.nr.emitWarning.callCount, 0)
+  }
+
+  /**
+   * Builds an agent configuration through the real config loader so that
+   * `unset` values receive their actual schema defaults.
+   *
+   * @param {object} params The configuration values to apply.
+   * @param {boolean} params.enabled The value of `ai_monitoring.enabled`.
+   * @param {boolean} params.basic The value of `ai_monitoring.basic_telemetry.enabled`.
+   * @param {boolean|string} params.content The value of `ai_monitoring.record_content.enabled`, or `unset`.
+   * @returns {Config} The agent configuration.
+   */
+  function buildAiConfig({ enabled, basic, content }) {
+    const aiMonitoring = { enabled, basic_telemetry: { enabled: basic } }
+    if (content !== UNSET) {
+      aiMonitoring.record_content = { enabled: content }
     }
-    return { logger, warnings }
+    return Config.initialize({ ai_monitoring: aiMonitoring })
   }
 
-  await t.test('should not warn when ai_monitoring.enabled is unset', () => {
-    const { logger, warnings } = createLogger()
-    new Config({}, { logger }) // eslint-disable-line no-new
-    assert.equal(warnings.length, 0)
-  })
-
-  for (const enabled of [true, false]) {
-    await t.test(`should warn when ai_monitoring.enabled is explicitly ${enabled}`, () => {
-      const { logger, warnings } = createLogger()
-      new Config({ ai_monitoring: { enabled } }, { logger }) // eslint-disable-line no-new
-      assert.equal(warnings.length, 1)
-    })
+  /**
+   * Expands `any` values into one row per possible value of that setting.
+   *
+   * @param {object} row A table row.
+   * @returns {object[]} The rows to verify.
+   */
+  function expand(row) {
+    const basics = row.basic === ANY ? [true, false] : [row.basic]
+    const contents = row.content === ANY ? [UNSET, true, false] : [row.content]
+    return basics.flatMap((basic) => contents.map((content) => {
+      return { ...row, basic, content }
+    }))
   }
 
-  await t.test('should warn when ai_monitoring.enabled is set via environment variable', (t) => {
-    process.env.NEW_RELIC_AI_MONITORING_ENABLED = 'true'
-    t.after(() => {
-      delete process.env.NEW_RELIC_AI_MONITORING_ENABLED
+  await t.test('warning', async (t) => {
+    captureWarnings(t)
+
+    for (const enabled of [true, false]) {
+      await t.test(`should warn when set to ${enabled} in the config`, (t) => {
+        new Config({ ai_monitoring: { enabled } }, { logger: t.nr.logger }) // eslint-disable-line no-new
+        assertWarned(t)
+      })
+
+      await t.test(`should warn when set to ${enabled} via environment variable`, (t) => {
+        process.env[ENV_VAR] = `${enabled}`
+        new Config({}, { logger: t.nr.logger }) // eslint-disable-line no-new
+        assertWarned(t)
+      })
+    }
+
+    await t.test('should warn when set in a config passed to `Config.initialize`', (t) => {
+      Config.initialize({ ai_monitoring: { enabled: true } }, { logger: t.nr.logger })
+      assertWarned(t)
     })
-    const { logger, warnings } = createLogger()
-    new Config({}, { logger }) // eslint-disable-line no-new
-    assert.equal(warnings.length, 1)
+
+    await t.test('should warn once when set in both the config and the environment', (t) => {
+      process.env[ENV_VAR] = 'false'
+      new Config({ ai_monitoring: { enabled: true } }, { logger: t.nr.logger }) // eslint-disable-line no-new
+      assertWarned(t)
+    })
+
+    await t.test('should warn when set alongside `ai_monitoring.basic_telemetry.enabled`', (t) => {
+      // eslint-disable-next-line no-new
+      new Config(
+        { ai_monitoring: { enabled: true, basic_telemetry: { enabled: true } } },
+        { logger: t.nr.logger }
+      )
+      assertWarned(t)
+    })
+
+    await t.test('should warn when set alongside high security mode', (t) => {
+      // High security mode forces the value to `false` after the check, so the
+      // customer's setting must still be reported.
+      // eslint-disable-next-line no-new
+      new Config({ high_security: true, ai_monitoring: { enabled: true } }, { logger: t.nr.logger })
+      assertWarned(t)
+    })
+
+    await t.test('should not warn when unset', (t) => {
+      new Config({}, { logger: t.nr.logger }) // eslint-disable-line no-new
+      assertNotWarned(t)
+    })
+
+    await t.test('should not warn when no config is provided', (t) => {
+      new Config(undefined, { logger: t.nr.logger }) // eslint-disable-line no-new
+      assertNotWarned(t)
+    })
+
+    await t.test('should not warn when explicitly set to `null`', (t) => {
+      new Config({ ai_monitoring: { enabled: null } }, { logger: t.nr.logger }) // eslint-disable-line no-new
+      assertNotWarned(t)
+    })
+
+    await t.test('should not warn when only `ai_monitoring.basic_telemetry.enabled` is set', (t) => {
+      // eslint-disable-next-line no-new
+      new Config({ ai_monitoring: { basic_telemetry: { enabled: false } } }, { logger: t.nr.logger })
+      assertNotWarned(t)
+    })
+
+    await t.test('should not warn when only high security mode sets it', (t) => {
+      new Config({ high_security: true }, { logger: t.nr.logger }) // eslint-disable-line no-new
+      assertNotWarned(t)
+    })
+
+    await t.test('should not warn when set via server side config', (t) => {
+      const config = new Config({}, { logger: t.nr.logger })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assertNotWarned(t)
+    })
   })
 
-  await t.test('should not warn when only high security mode sets ai_monitoring.enabled', () => {
-    const { logger, warnings } = createLogger()
-    new Config({ high_security: true }, { logger }) // eslint-disable-line no-new
-    assert.equal(warnings.length, 0)
-  })
+  await t.test('behavior until removal', async (t) => {
+    captureWarnings(t)
 
-  await t.test('should not warn when ai_monitoring.enabled is set via server side config', () => {
-    const { logger, warnings } = createLogger()
-    const config = new Config({}, { logger })
-    config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
-    assert.equal(warnings.length, 0)
+    // Rows of the "Default AIM Data Collection" precedence table that set
+    // `ai_monitoring.enabled`. An explicit value wins over
+    // `ai_monitoring.basic_telemetry.enabled`.
+    const precedenceTable = [
+      { enabled: false, basic: ANY, content: ANY, sent: false, withContent: false },
+      // `record_content.enabled` is forced to `true` when it is unset.
+      { enabled: true, basic: ANY, content: UNSET, sent: true, withContent: true },
+      { enabled: true, basic: ANY, content: true, sent: true, withContent: true },
+      { enabled: true, basic: ANY, content: false, sent: true, withContent: false }
+    ]
+    for (const row of precedenceTable.flatMap(expand)) {
+      const { enabled, basic, content, sent, withContent } = row
+      await t.test(`precedence: enabled=${enabled}, basic_telemetry=${basic}, record_content=${content}`, (t) => {
+        const config = buildAiConfig(row)
+        assert.equal(config.isAiMonitoringEnabled(), sent, 'isAiMonitoringEnabled')
+        assert.equal(config.shouldRecordAiContent(), withContent, 'shouldRecordAiContent')
+        assertEmitted(t)
+      })
+    }
+
+    // No metric when AI monitoring is disabled, `/Basic` when it is enabled
+    // without content, and the base metric when content is recorded.
+    const BASE_METRIC = 'Supportability/Nodejs/ML/OpenAI/4.0.0'
+    const BASIC_METRIC = `${BASE_METRIC}/Basic`
+    const metricTable = [
+      { enabled: false, basic: true, content: true, expected: null },
+      { enabled: false, basic: false, content: UNSET, expected: null },
+      { enabled: true, basic: true, content: UNSET, expected: BASE_METRIC },
+      { enabled: true, basic: false, content: UNSET, expected: BASE_METRIC },
+      { enabled: true, basic: false, content: true, expected: BASE_METRIC },
+      { enabled: true, basic: true, content: false, expected: BASIC_METRIC },
+      { enabled: true, basic: false, content: false, expected: BASIC_METRIC }
+    ]
+    for (const row of metricTable) {
+      const { enabled, basic, content, expected } = row
+      await t.test(`supportability metric: enabled=${enabled}, basic_telemetry=${basic}, record_content=${content}`, (t) => {
+        const config = buildAiConfig(row)
+        const metric = config.isAiMonitoringEnabled()
+          ? getTrackingMetricName(config, BASE_METRIC)
+          : null
+        assert.equal(metric, expected)
+        assertEmitted(t)
+      })
+    }
+
+    for (const enabled of [true, false]) {
+      await t.test(`should send \`ai_monitoring.enabled\` in public settings when set to ${enabled}`, (t) => {
+        const config = Config.initialize({ ai_monitoring: { enabled } })
+        assert.equal(config.publicSettings()['ai_monitoring.enabled'], enabled)
+        assertEmitted(t)
+      })
+    }
+
+    await t.test('should force content on when set to true locally before connect', (t) => {
+      const config = new Config({ ai_monitoring: { enabled: true } })
+      config.onConnect({ agent_config: { 'ai_monitoring.streaming.enabled': true } })
+      assert.equal(config.shouldRecordAiContent(), true)
+      assertEmitted(t)
+    })
+
+    await t.test('should not force content on when the connect response also sends it', (t) => {
+      // Any `ai_monitoring.enabled` from the connect response cancels forcing,
+      // even when it matches the local value.
+      const config = new Config({ ai_monitoring: { enabled: true } })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      assert.equal(config.shouldRecordAiContent(), false)
+      assertEmitted(t)
+    })
+
+    await t.test('should force content on again when a later connect omits it', (t) => {
+      const config = new Config({ ai_monitoring: { enabled: true } })
+      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
+      assert.equal(config.shouldRecordAiContent(), false)
+      config.onConnect({ agent_config: {} })
+      assert.equal(config.shouldRecordAiContent(), true)
+      assertEmitted(t)
+    })
+
+    await t.test('should not let SSC basic_telemetry override a local false', (t) => {
+      const config = new Config({ ai_monitoring: { enabled: false } })
+      config.onConnect({ agent_config: { 'ai_monitoring.basic_telemetry.enabled': true } })
+      assert.equal(config.isAiMonitoringEnabled(), false)
+      assertEmitted(t)
+    })
   })
 })
 

@@ -42,7 +42,7 @@ test('should not record Llm segments or events when ai_monitoring is not enabled
   const { bedrock, client, responses, agent } = t.nr
   const resKey = 'amazon'
   const modelId = 'amazon.titan-text-express-v1'
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
   const prompt = `text ${resKey} ultimate question`
   const input = {
     body: JSON.stringify({ inputText: prompt }),
@@ -76,14 +76,14 @@ test('should record Llm segments and events when ai_monitoring is enabled after 
   }
 
   // simulate a server side configuration change between calls on the same client
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
   await helper.runInTransaction(agent, async (tx) => {
     await client.send(new bedrock.InvokeModelCommand(input))
     assert.ok(!findSegment(tx.trace, tx.trace.root, 'Llm/completion/Bedrock/InvokeModelCommand'))
     tx.end()
   })
 
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
   await helper.runInTransaction(agent, async (tx) => {
     await client.send(new bedrock.InvokeModelCommand(input))
     assert.ok(findSegment(tx.trace, tx.trace.root, 'Llm/completion/Bedrock/InvokeModelCommand'))

@@ -14,7 +14,12 @@ const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 const config = {
   ai_monitoring: {
-    enabled: true
+    basic_telemetry: {
+      enabled: true
+    },
+    record_content: {
+      enabled: true
+    }
   }
 }
 
@@ -130,12 +135,12 @@ test('should add llm attribute to transaction', async (t) => {
   })
 })
 
-test('should not create events when ai_monitoring.enabled is false', async (t) => {
+test('should not create events when ai_monitoring.basic_telemetry.enabled is false', async (t) => {
   t.plan(1)
   const { agent, FunctionTool } = t.nr
   const assert = t.assert
 
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
 
   const tool = new FunctionTool({
     name: 'disabled_tool',
@@ -323,7 +328,12 @@ test('should create events when ai_monitoring is disabled at instrumentation but
   // set up the agent instance with ai_monitoring disabled
   const agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: false
+      basic_telemetry: {
+        enabled: false
+      },
+      record_content: {
+        enabled: true
+      }
     }
   })
   t.nr.agent = agent
@@ -336,7 +346,7 @@ test('should create events when ai_monitoring is disabled at instrumentation but
   })
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
 
   await helper.runInTransaction(agent, async (tx) => {
     await tool.runAsync({

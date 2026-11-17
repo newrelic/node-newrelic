@@ -24,10 +24,13 @@ test('should enable high security mode (HSM) with a stringy truthy HSM setting',
 test('ai_monitoring should not be enabled in HSM', () => {
   const config = Config.initialize({
     ai_monitoring: {
-      enabled: true
+      basic_telemetry: {
+        enabled: true
+      }
     },
     high_security: 'true'
   })
 
   assert.equal(config.ai_monitoring.enabled, false)
+  assert.equal(config.isAiMonitoringEnabled(), false)
 })

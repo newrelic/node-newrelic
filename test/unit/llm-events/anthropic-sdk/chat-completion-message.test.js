@@ -15,7 +15,9 @@ test.beforeEach((ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent({
     ai_monitoring: {
-      enabled: true,
+      basic_telemetry: {
+        enabled: true
+      },
       record_content: {
         enabled: true
       }

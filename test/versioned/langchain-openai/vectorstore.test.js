@@ -17,7 +17,12 @@ const helper = require('../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
-    enabled: true
+    basic_telemetry: {
+      enabled: true
+    },
+    record_content: {
+      enabled: true
+    }
   }
 }
 
@@ -77,7 +82,7 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   removeModules(['@langchain/core', 'openai'])
 
   // set up the agent instance with ai_monitoring disabled
-  const agent = helper.instrumentMockedAgent({ ai_monitoring: { enabled: false } })
+  const agent = helper.instrumentMockedAgent({ ai_monitoring: { basic_telemetry: { enabled: false }, record_content: { enabled: true } } })
   t.nr.agent = agent
 
   const { VectorStore } = require('@langchain/core/vectorstores')
@@ -100,7 +105,7 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   t.nr.vs = vs
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
   await new Promise((resolve) => {
     helper.runInTransaction(agent, async (tx) => {
       const result = await vs.similaritySearch('This is an embedding test.', 1)

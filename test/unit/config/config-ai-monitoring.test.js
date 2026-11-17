@@ -13,17 +13,13 @@ const UNSET = 'unset'
 const ANY = 'any'
 
 // Each row of the "Default AIM Data Collection" precedence table. `any`
-// values are verified against every possible value of that setting.
+// values are verified against every possible value of that setting. Rows that
+// set the deprecated `ai_monitoring.enabled` are covered in `config.test.js`.
 const PRECEDENCE_TABLE = [
-  { enabled: false, basic: ANY, content: ANY, sent: false, withContent: false },
-  { enabled: UNSET, basic: false, content: ANY, sent: false, withContent: false },
-  { enabled: UNSET, basic: true, content: UNSET, sent: true, withContent: false },
-  { enabled: UNSET, basic: true, content: false, sent: true, withContent: false },
-  { enabled: UNSET, basic: true, content: true, sent: true, withContent: true },
-  // `record_content.enabled` is forced to `true` when it is unset.
-  { enabled: true, basic: ANY, content: UNSET, sent: true, withContent: true },
-  { enabled: true, basic: ANY, content: true, sent: true, withContent: true },
-  { enabled: true, basic: ANY, content: false, sent: true, withContent: false }
+  { basic: false, content: ANY, sent: false, withContent: false },
+  { basic: true, content: UNSET, sent: true, withContent: false },
+  { basic: true, content: false, sent: true, withContent: false },
+  { basic: true, content: true, sent: true, withContent: true }
 ]
 
 /**
@@ -32,15 +28,11 @@ const PRECEDENCE_TABLE = [
  *
  * @param {object} params The configuration values for the row.
  * @param {boolean} params.basic The value of `ai_monitoring.basic_telemetry.enabled`.
- * @param {boolean|string} params.enabled The value of `ai_monitoring.enabled`, or `unset`.
  * @param {boolean|string} params.content The value of `ai_monitoring.record_content.enabled`, or `unset`.
  * @returns {Config} The agent configuration.
  */
-function buildConfig({ basic, enabled, content }) {
+function buildConfig({ basic, content }) {
   const aiMonitoring = { basic_telemetry: { enabled: basic } }
-  if (enabled !== UNSET) {
-    aiMonitoring.enabled = enabled
-  }
   if (content !== UNSET) {
     aiMonitoring.record_content = { enabled: content }
   }
@@ -63,8 +55,8 @@ function expand(row) {
 
 test('ai_monitoring configuration precedence', async (t) => {
   for (const row of PRECEDENCE_TABLE.flatMap(expand)) {
-    const { basic, enabled, content, sent, withContent } = row
-    await t.test(`basic_telemetry=${basic}, enabled=${enabled}, record_content=${content}`, () => {
+    const { basic, content, sent, withContent } = row
+    await t.test(`basic_telemetry=${basic}, record_content=${content}`, () => {
       const config = buildConfig(row)
       assert.equal(config.isAiMonitoringEnabled(), sent, 'isAiMonitoringEnabled')
       assert.equal(config.shouldRecordAiContent(), withContent, 'shouldRecordAiContent')
@@ -83,18 +75,20 @@ test('default configuration sends basic telemetry without content', () => {
 
 test('explicit `null` values are treated as unset', () => {
   // Schema validation must not coerce `null` to `false`, which would be an
-  // explicit opt-out for `ai_monitoring.enabled`.
+  // explicit opt-out for `ai_monitoring.record_content.enabled`.
   const config = Config.initialize({
-    ai_monitoring: { enabled: null, record_content: { enabled: null } }
+    ai_monitoring: { record_content: { enabled: null } }
   })
-  assert.strictEqual(config.ai_monitoring.enabled, null)
   assert.strictEqual(config.ai_monitoring.record_content.enabled, null)
   assert.equal(config.isAiMonitoringEnabled(), true)
   assert.equal(config.shouldRecordAiContent(), false)
 })
 
 test('environment variables are coerced to booleans', async (t) => {
-  const vars = ['NEW_RELIC_AI_MONITORING_ENABLED', 'NEW_RELIC_AI_MONITORING_RECORD_CONTENT_ENABLED']
+  const vars = [
+    'NEW_RELIC_AI_MONITORING_BASIC_TELEMETRY_ENABLED',
+    'NEW_RELIC_AI_MONITORING_RECORD_CONTENT_ENABLED'
+  ]
   t.afterEach(() => {
     for (const name of vars) delete process.env[name]
   })
@@ -103,7 +97,7 @@ test('environment variables are coerced to booleans', async (t) => {
     await t.test(`${value}`, () => {
       for (const name of vars) process.env[name] = `${value}`
       const config = Config.initialize({})
-      assert.strictEqual(config.ai_monitoring.enabled, value)
+      assert.strictEqual(config.ai_monitoring.basic_telemetry.enabled, value)
       assert.strictEqual(config.ai_monitoring.record_content.enabled, value)
     })
   }

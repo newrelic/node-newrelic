@@ -21,7 +21,12 @@ test.beforeEach(async (ctx) => {
   ctx.nr = {}
   ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: ctx.name.includes('disabled') ? false : true
+      basic_telemetry: {
+        enabled: ctx.name.includes('disabled') ? false : true
+      },
+      record_content: {
+        enabled: true
+      }
     }
   })
 

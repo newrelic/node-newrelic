@@ -31,7 +31,12 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: true,
+      basic_telemetry: {
+        enabled: true
+      },
+      record_content: {
+        enabled: true
+      },
       streaming: {
         enabled: true
       }
@@ -184,7 +189,7 @@ test('should add llm attribute to transaction', (t, end) => {
 
 test('should not create llm events when ai_monitoring is disabled', (t, end) => {
   const { client, agent } = t.nr
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
   helper.runInTransaction(agent, async (tx) => {
     const model = 'text-embedding-004'
     const result = await client.models.embedContent({
@@ -215,7 +220,12 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   // set up the agent instance with ai_monitoring disabled
   const agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: false,
+      basic_telemetry: {
+        enabled: false
+      },
+      record_content: {
+        enabled: true
+      },
       streaming: {
         enabled: true
       }
@@ -234,7 +244,7 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   t.nr.client = client
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
   helper.runInTransaction(agent, async (tx) => {
     await client.models.embedContent({
       contents: 'This is an embedding test.',
@@ -254,7 +264,7 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
 
 test('should not create llm events when ai_monitoring is enabled but not in active transaction', async (t) => {
   const { client, agent } = t.nr
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
 
   const result = await client.models.embedContent({
     contents: 'This is an embedding test.',

@@ -32,7 +32,12 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: true
+        basic_telemetry: {
+          enabled: true
+        },
+        record_content: {
+          enabled: true
+        }
       }
     })
     const bedrock = require('@aws-sdk/client-bedrock-runtime')
@@ -444,9 +449,9 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
     })
   })
 
-  await t.test('should not create segment or llm events when ai_monitoring.enabled is false', async (t) => {
+  await t.test('should not create segment or llm events when ai_monitoring.basic_telemetry.enabled is false', async (t) => {
     const { agent, bedrock, client, expectedExternalPath } = t.nr
-    agent.config.ai_monitoring.enabled = false
+    agent.config.ai_monitoring.basic_telemetry.enabled = false
     const prompt = 'text converse ultimate question'
     const input = {
       modelId,
@@ -483,7 +488,12 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
     // set up the agent instance with ai_monitoring disabled
     const agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: false
+        basic_telemetry: {
+          enabled: false
+        },
+        record_content: {
+          enabled: true
+        }
       }
     })
     t.nr.agent = agent
@@ -507,7 +517,7 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
     const command = new bedrock.ConverseCommand(input)
 
     // enable ai_monitoring before making the first `.send()` call
-    agent.config.ai_monitoring.enabled = true
+    agent.config.ai_monitoring.basic_telemetry.enabled = true
     await helper.runInTransaction(agent, async (tx) => {
       await client.send(command)
       const events = agent.customEventAggregator.events.toArray()
@@ -533,7 +543,12 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
     // set up the agent instance with ai_monitoring disabled
     const agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: false
+        basic_telemetry: {
+          enabled: false
+        },
+        record_content: {
+          enabled: true
+        }
       }
     })
     t.nr.agent = agent
@@ -561,7 +576,7 @@ test('Converse API', { skip: semver.lt(bedrockVersion, '3.587.0') }, async (t) =
     const command = new bedrock.ConverseStreamCommand(input)
 
     // enable ai_monitoring before making the first `.send()` call
-    agent.config.ai_monitoring.enabled = true
+    agent.config.ai_monitoring.basic_telemetry.enabled = true
     await helper.runInTransaction(agent, async (tx) => {
       const response = await client.send(command)
       assert.ok(response)
