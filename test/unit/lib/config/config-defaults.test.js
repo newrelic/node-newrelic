@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const path = require('path')
 
-const Config = require('../../../lib/config')
+const Config = require('#agentlib/config/index.js')
 
 test('with default properties', async (t) => {
   let configuration = null

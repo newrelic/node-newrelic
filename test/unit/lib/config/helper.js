@@ -5,7 +5,7 @@
 
 'use strict'
 
-const Config = require('../../../lib/config')
+const Config = require('#agentlib/config/index.js')
 
 class TestConfigLogger {
   #logs = {

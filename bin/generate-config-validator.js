@@ -16,7 +16,7 @@
 // The generated files are committed to the repo so they ship with the package.
 // When a schema block under `lib/config/schemas/` changes, regenerate and commit
 // the result: `npm run generate:config-validator`. The drift test
-// (`test/unit/config/schema.test.js`) fails CI when the committed artifacts are
+// (`test/unit/lib/config/schema.test.js`) fails CI when the committed artifacts are
 // stale relative to the schema sources.
 //
 // The artifact contents are produced by `schema.render()`; this script only

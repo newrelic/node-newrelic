@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { applyEnvironmentOverrides } = require('../../../lib/config/apply-environment-overrides')
+const { applyEnvironmentOverrides } = require('#agentlib/config/apply-environment-overrides.js')
 
 function apply(env, extra = {}) {
   return applyEnvironmentOverrides({}, { env, ...extra })
@@ -104,7 +104,7 @@ test('applyEnvironmentOverrides', async (t) => {
 })
 
 test('env var index', async (t) => {
-  const schema = require('../../../lib/config/schema')
+  const schema = require('#agentlib/config/schema.js')
 
   // buildEnvVarIndex (in schema.js) throws if two leaves map to the same env
   // var name. The first resolveEnvVar call builds it, so a future schema

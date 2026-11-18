@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
-const Config = require('../../../lib/config')
+const Config = require('#agentlib/config/index.js')
 const { idempotentEnv } = require('./helper')
 
 const VALID_HOST = 'infinite-tracing.test'

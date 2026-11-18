@@ -31,7 +31,7 @@ PR:
    `lib/config/schema.json` together with `lib/config/schema.generated.js`.
 2. Commit both `lib/config/schema.generated.js` and `lib/config/schema.json`.
 
-Tests in `test/unit/config/schema.test.js` fail CI when either committed file
+Tests in `test/unit/lib/config/schema.test.js` fail CI when either committed file
 is stale relative to the schema sources, and when `schema.json` is not a valid
 Draft 2020-12 JSON Schema document. There is no separate post-merge
 regeneration step, and the schema version is not touched here: it is bumped at

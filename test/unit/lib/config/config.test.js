@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 
-const Config = require('../../../lib/config')
+const Config = require('#agentlib/config/index.js')
 
 test('should handle a directly passed minimal configuration', () => {
   let config
@@ -21,7 +21,7 @@ test('should handle a directly passed minimal configuration', () => {
 
 test('when loading invalid configuration file', async (t) => {
   let realpathSyncStub
-  const fsUnwrapped = require('../../../lib/util/unwrapped-core').fs
+  const fsUnwrapped = require('#agentlib/util/unwrapped-core.js').fs
 
   t.beforeEach(() => {
     realpathSyncStub = sinon.stub(fsUnwrapped, 'realpathSync').callsFake(() => 'BadPath')
@@ -32,7 +32,7 @@ test('when loading invalid configuration file', async (t) => {
   })
 
   await t.test('should continue agent startup with config.newrelic_home property removed', () => {
-    const LocalConfig = require('../../../lib/config')
+    const LocalConfig = require('#agentlib/config/index.js')
     let configuration
 
     assert.doesNotThrow(function envTest() {

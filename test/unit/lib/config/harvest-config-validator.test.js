@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const harvestConfigValidator = require('../../../lib/config/harvest-config-validator')
+const harvestConfigValidator = require('#agentlib/config/harvest-config-validator.js')
 
 test('#isValidHarvestValue', async (t) => {
   await t.test('should be valid when positive number', () => {

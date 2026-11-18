@@ -7,7 +7,7 @@
 
 const { describe, test } = require('node:test')
 const assert = require('node:assert')
-const Config = require('../../../lib/config')
+const Config = require('#agentlib/config/index.js')
 
 describe('when receiving server-side configuration', () => {
   // Unfortunately, the Config currently relies on initialize to
