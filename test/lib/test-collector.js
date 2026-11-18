@@ -41,8 +41,15 @@ class Collector {
   #runId
   #validators = new CollectorValidators()
 
-  constructor({ runId = 42 } = {}) {
-    this.#cert = fakeCert()
+  /**
+   * @param {object} [params] Parameters object.
+   * @param {number|string} [params.runId] The agent run ID the collector will issue.
+   * @param {FakeCert} [params.cert] A certificate from `test/lib/fake-cert.js` to
+   * serve. When omitted, a new certificate is generated. Supplying a shared
+   * certificate avoids the cost of generating one for every instance.
+   */
+  constructor({ runId = 42, cert = fakeCert() } = {}) {
+    this.#cert = cert
     this.#runId = runId
     this.#server = https.createServer({
       key: this.#cert.privateKey,
@@ -250,6 +257,7 @@ class Collector {
    * Shutdown the server and forcefully close all current connections.
    */
   close() {
+    this.#server.close()
     this.#server.closeAllConnections()
   }
 
