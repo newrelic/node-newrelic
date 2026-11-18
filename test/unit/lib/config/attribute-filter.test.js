@@ -7,8 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const AttributeFilter = require('../../../lib/config/attribute-filter')
-const { makeAttributeFilterConfig } = require('../../lib/agent_helper')
+const AttributeFilter = require('#agentlib/config/attribute-filter.js')
+const { makeAttributeFilterConfig } = require('#testlib/agent_helper.js')
 
 const DESTS = AttributeFilter.DESTINATIONS
 

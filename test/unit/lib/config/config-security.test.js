@@ -7,7 +7,7 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const Config = require('../../../lib/config')
+const Config = require('#agentlib/config/index.js')
 
 test('should enable high security mode (HSM) with a stringy truthy HSM setting', () => {
   const config = Config.initialize({

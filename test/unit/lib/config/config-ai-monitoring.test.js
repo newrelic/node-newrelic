@@ -8,8 +8,8 @@
 const assert = require('node:assert')
 const test = require('node:test')
 const sinon = require('sinon')
-const Config = require('../../../lib/config')
-const getTrackingMetricName = require('../../../lib/llm-events/get-tracking-metric-name')
+const Config = require('#agentlib/config/index.js')
+const getTrackingMetricName = require('#agentlib/llm-events/get-tracking-metric-name.js')
 
 const UNSET = 'unset'
 const ANY = 'any'

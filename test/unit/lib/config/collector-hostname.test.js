@@ -7,8 +7,8 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const Config = require('../../../lib/config')
-const keyTests = require('../../lib/cross_agent_tests/collector_hostname.json')
+const Config = require('#agentlib/config/index.js')
+const keyTests = require('#testlib/cross_agent_tests/collector_hostname.json')
 
 const keyMapping = {
   config_file_key: 'license_key',

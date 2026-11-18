@@ -12,8 +12,8 @@ const fs = require('fs')
 const fsPromises = require('fs/promises')
 const sinon = require('sinon')
 
-const { removeMatchedModules } = require('../../lib/cache-buster')
-const Config = require('../../../lib/config')
+const { removeMatchedModules } = require('#testlib/cache-buster.js')
+const Config = require('#agentlib/config/index.js')
 
 test('when overriding the config file location via NEW_RELIC_HOME', async (t) => {
   const DESTDIR = path.join(__dirname, 'xXxNRHOMETESTxXx')
@@ -36,7 +36,7 @@ test('when overriding the config file location via NEW_RELIC_HOME', async (t) =>
     process.chdir(NOPLACEDIR)
     process.env.NEW_RELIC_HOME = DESTDIR
 
-    const sampleConfig = fs.createReadStream(path.join(__dirname, '../../../newrelic.js'))
+    const sampleConfig = fs.createReadStream(path.join(__dirname, '../../../../newrelic.js'))
     const sandboxedConfig = fs.createWriteStream(CONFIGPATH)
     sampleConfig.pipe(sandboxedConfig)
 

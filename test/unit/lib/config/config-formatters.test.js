@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 
-const formatters = require('../../../lib/config/formatters')
+const formatters = require('#agentlib/config/formatters.js')
 test('config formatters', async () => {
   await test('array', async (t) => {
     await t.test('should trim string into array', () => {
