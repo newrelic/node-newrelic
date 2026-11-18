@@ -8,6 +8,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const sinon = require('sinon')
 const Collector = require('../lib/test-collector')
+const fakeCert = require('../lib/fake-cert')
 const helper = require('../lib/agent_helper')
 const testCases = require('../lib/response_code_handling.json')
 const {
@@ -24,6 +25,10 @@ const {
   verifyRunBehavior
 } = require('./response-handling-utils')
 
+// Generating a certificate is expensive, and every test spins up its own
+// collector, so share a single certificate across the whole file.
+const cert = fakeCert()
+
 test('New Relic response code handling', async (t) => {
   for (const testCase of testCases) {
     const testName = `Status code: ${testCase.code}`
@@ -33,7 +38,7 @@ test('New Relic response code handling', async (t) => {
           toFake: ['setTimeout', 'setInterval', 'Date', 'clearInterval']
         })
 
-        const collector = new Collector({ runId: RUN_ID })
+        const collector = new Collector({ runId: RUN_ID, cert })
         await collector.listen()
         const mockRequest = createMockRequest(collector)
         const startEndpoints = setupConnectionEndpoints(mockRequest, collector, RUN_ID)
