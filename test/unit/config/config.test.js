@@ -828,7 +828,25 @@ test('ai_monitoring.enabled deprecation', async (t) => {
     })
 
     await t.test('should not warn when explicitly set to `null`', (t) => {
-      new Config({ ai_monitoring: { enabled: null } }, { logger: t.nr.logger }) // eslint-disable-line no-new
+      // Schema validation must not coerce `null` to `false`, which would be an
+      // explicit opt-out for `ai_monitoring.enabled`.
+      const config = new Config(
+        { ai_monitoring: { enabled: null, record_content: { enabled: null } } },
+        { logger: t.nr.logger }
+      )
+      assert.strictEqual(config.ai_monitoring.enabled, null)
+      assert.strictEqual(config.ai_monitoring.record_content.enabled, null)
+      assert.equal(config.isAiMonitoringEnabled(), true)
+      assert.equal(config.shouldRecordAiContent(), false)
+      assertNotWarned(t)
+    })
+
+    await t.test('should not warn when the environment variable is empty', (t) => {
+      // An empty value is skipped, so the setting stays unset.
+      process.env[ENV_VAR] = ''
+      const config = new Config({}, { logger: t.nr.logger })
+      assert.strictEqual(config.ai_monitoring.enabled, null)
+      assert.equal(config.isAiMonitoringEnabled(), true)
       assertNotWarned(t)
     })
 
@@ -1005,5 +1023,23 @@ test('virtual_machine', async (t) => {
     assert.equal(config.plugins.native_metrics.enabled, false)
     assert.equal(config.isVmMetricsEnabled(), false)
     assert.equal(t.nr.emitWarning.callCount, 1)
+  })
+
+  await t.test('native_metrics is not considered set when its env var is empty', (t) => {
+    process.env.NEW_RELIC_NATIVE_METRICS_ENABLED = ''
+    t.after(() => {
+      delete process.env.NEW_RELIC_NATIVE_METRICS_ENABLED
+    })
+
+    const config = Config.initialize({
+      virtual_machine: {
+        collect_metrics: {
+          enabled: false
+        }
+      }
+    })
+    assert.equal(config.plugins.native_metrics.enabled, true)
+    assert.equal(config.isVmMetricsEnabled(), false)
+    assert.equal(t.nr.emitWarning.callCount, 0)
   })
 })
