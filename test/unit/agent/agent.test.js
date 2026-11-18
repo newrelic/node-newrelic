@@ -1139,6 +1139,18 @@ test('when handling finished transactions', async (t) => {
     tx.end()
   })
 
+  await t.test('should hand ignored transactions to the error collector', (t) => {
+    const { agent } = t.nr
+    const tx = new Transaction(agent)
+    tx.ignore = true
+
+    const mock = sinon.mock(agent.errors)
+    mock.expects('onTransactionIgnored').once().withExactArgs(tx)
+
+    tx.end()
+    mock.verify()
+  })
+
   await t.test('should not aggregate trace when transaction is ignored', (t) => {
     const { agent } = t.nr
     const tx = new Transaction(agent)

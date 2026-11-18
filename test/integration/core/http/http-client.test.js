@@ -867,6 +867,7 @@ test('HttpClientSubscriber', async (t) => {
       assert.equal(child.timer.touched, true, 'should touch the segment')
       assert.equal(transaction.exceptions.length, 1, 'should capture the error')
       assert.equal(transaction.exceptions[0].error, error)
+      assert.equal(transaction.exceptions[0].agentAttributes.spanId, child.id, 'should link the error to the external segment')
 
       const { agent } = t.nr
       transaction.end()
@@ -911,6 +912,11 @@ test('HttpClientSubscriber', async (t) => {
     assert.equal(received['x-foo'], 'bar', 'should keep the existing headers')
     assert.ok(received.traceparent, 'should add traceparent')
   })
+})
+
+test('should report an unhandled request error once, on the external span, when the app handles uncaughtException', () => {
+  // run in a child process, as the test runner fails on any uncaught exception
+  helper.execSync({ cwd: __dirname, script: './fixtures/http-client-unhandled-error.js' })
 })
 
 test('HttpClientSubscriber telemetry', async (t) => {
