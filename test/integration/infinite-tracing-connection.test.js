@@ -379,9 +379,11 @@ async function testSetup(ctx, config) {
     // The gRPC assertions below expect this exact value in the metadata,
     // so it must win over `collector.agentConfig`'s own `license_key`.
     license_key: EXPECTED_LICENSE_KEY,
-    plugins: {
-      // turn off native metrics to avoid unwanted gc metrics
-      native_metrics: { enabled: false }
+    // turn off native metrics to avoid unwanted gc metrics
+    virtual_machine: {
+      collect_metrics: {
+        enabled: false
+      }
     },
     distributed_tracing: { enabled: true },
     slow_sql: { enabled: true },
