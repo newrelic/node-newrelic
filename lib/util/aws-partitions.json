@@ -1,0 +1,30 @@
+[
+  {
+    "id": "aws-cn",
+    "regionRegex": "^cn\\-\\w+\\-\\d+$"
+  },
+  {
+    "id": "aws-eusc",
+    "regionRegex": "^eusc\\-(de)\\-\\w+\\-\\d+$"
+  },
+  {
+    "id": "aws-iso",
+    "regionRegex": "^us\\-iso\\-\\w+\\-\\d+$"
+  },
+  {
+    "id": "aws-iso-b",
+    "regionRegex": "^us\\-isob\\-\\w+\\-\\d+$"
+  },
+  {
+    "id": "aws-iso-e",
+    "regionRegex": "^eu\\-isoe\\-\\w+\\-\\d+$"
+  },
+  {
+    "id": "aws-iso-f",
+    "regionRegex": "^us\\-isof\\-\\w+\\-\\d+$"
+  },
+  {
+    "id": "aws-us-gov",
+    "regionRegex": "^us\\-gov\\-\\w+\\-\\d+$"
+  }
+]

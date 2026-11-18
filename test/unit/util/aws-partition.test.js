@@ -9,6 +9,16 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const getAwsPartition = require('#agentlib/util/aws-partition.js')
+const partitions = require('#agentlib/util/aws-partitions.json')
+
+test('aws-partitions.json has a compilable regionRegex for every non-default partition', () => {
+  assert.ok(partitions.length > 0)
+  for (const { id, regionRegex } of partitions) {
+    assert.equal(typeof id, 'string')
+    assert.notEqual(id, 'aws', 'the default partition is the fallback, not an entry')
+    assert.doesNotThrow(() => new RegExp(regionRegex), `${id} regionRegex should compile`)
+  }
+})
 
 test('derives the partition for every AWS partition', async (t) => {
   const cases = [
@@ -34,7 +44,20 @@ test('derives the partition for every AWS partition', async (t) => {
 })
 
 test('falls back to aws when the region is missing or unrecognized', async (t) => {
-  const cases = [undefined, null, '', 123, {}, 'my-emulator:4566', 'US-GOV-WEST-1']
+  const cases = [
+    undefined,
+    null,
+    '',
+    123,
+    {},
+    'my-emulator:4566',
+    'US-GOV-WEST-1',
+    // Region-shaped values that don't match a partition's full regionRegex
+    'us-gov-west',
+    'cn-north-1a',
+    'eusc-east-1',
+    'xus-gov-west-1'
+  ]
 
   for (const region of cases) {
     await t.test(String(region), () => {
