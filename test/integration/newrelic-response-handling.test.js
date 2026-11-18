@@ -49,9 +49,11 @@ test('New Relic response code handling', async (t) => {
           license_key: 'license key here',
           apdex_t: Number.MIN_VALUE, // force transaction traces
           ...collector.agentConfig,
-          plugins: {
-            // turn off native metrics to avoid unwanted gc metrics
-            native_metrics: { enabled: false }
+          // turn off native metrics to avoid unwanted gc metrics
+          virtual_machine: {
+            collect_metrics: {
+              enabled: false
+            }
           },
           distributed_tracing: { enabled: true },
           slow_sql: { enabled: true },
