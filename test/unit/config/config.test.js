@@ -924,6 +924,16 @@ test('ai_monitoring.enabled deprecation', async (t) => {
       })
     }
 
+    for (const enabled of [true, false]) {
+      await t.test(`should coerce the environment variable value \`'${enabled}'\` to a boolean`, (t) => {
+        process.env[ENV_VAR] = `${enabled}`
+        const config = Config.initialize({})
+        assert.strictEqual(config.ai_monitoring.enabled, enabled)
+        assert.equal(config.isAiMonitoringEnabled(), enabled)
+        assertEmitted(t)
+      })
+    }
+
     await t.test('should force content on when set to true locally before connect', (t) => {
       const config = new Config({ ai_monitoring: { enabled: true } })
       config.onConnect({ agent_config: { 'ai_monitoring.streaming.enabled': true } })
