@@ -29,7 +29,12 @@ test.beforeEach(async (ctx) => {
   ctx.nr.server = server
   ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: true,
+      basic_telemetry: {
+        enabled: true
+      },
+      record_content: {
+        enabled: true
+      },
       streaming: {
         enabled: true
       }
@@ -316,9 +321,9 @@ test('handles error in stream', (t, end) => {
 })
 
 // Config tests
-test('should not create llm events when ai_monitoring.enabled is false', (t, end) => {
+test('should not create llm events when ai_monitoring.basic_telemetry.enabled is false', (t, end) => {
   const { client, agent } = t.nr
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
   helper.runInTransaction(agent, async (tx) => {
     const result = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -385,7 +390,7 @@ test('should not create llm events when ai_monitoring.streaming.enabled is false
 test('should not create llm events when streaming is enabled but ai_monitoring is not enabled', (t, end) => {
   const { client, agent } = t.nr
   agent.config.ai_monitoring.streaming.enabled = true
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
   helper.runInTransaction(agent, async (tx) => {
     const content = 'Streamed response'
     const model = 'claude-sonnet-4-20250514'
@@ -427,7 +432,12 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   // set up the agent instance with ai_monitoring disabled
   const agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: false,
+      basic_telemetry: {
+        enabled: false
+      },
+      record_content: {
+        enabled: true
+      },
       streaming: {
         enabled: true
       }
@@ -442,7 +452,7 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   t.nr.client = client
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
   helper.runInTransaction(agent, async (tx) => {
     await client.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -468,7 +478,12 @@ test('should create segment and llm events in stream when ai_monitoring is disab
   // set up the agent instance with ai_monitoring disabled
   const agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: false,
+      basic_telemetry: {
+        enabled: false
+      },
+      record_content: {
+        enabled: true
+      },
       streaming: {
         enabled: true
       }
@@ -483,7 +498,7 @@ test('should create segment and llm events in stream when ai_monitoring is disab
   t.nr.client = client
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
   helper.runInTransaction(agent, async (tx) => {
     const content = 'Streamed response'
     const stream = await client.messages.create({

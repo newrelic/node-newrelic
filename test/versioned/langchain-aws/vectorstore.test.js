@@ -15,7 +15,12 @@ const helper = require('../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
-    enabled: true
+    basic_telemetry: {
+      enabled: true
+    },
+    record_content: {
+      enabled: true
+    }
   }
 }
 const createAiResponseServer = getAiResponseServer(__dirname)

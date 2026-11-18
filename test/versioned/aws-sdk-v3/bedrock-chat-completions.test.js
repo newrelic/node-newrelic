@@ -87,7 +87,12 @@ test('Chat completions', async (t) => {
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: true
+        basic_telemetry: {
+          enabled: true
+        },
+        record_content: {
+          enabled: true
+        }
       }
     })
     const bedrock = require('@aws-sdk/client-bedrock-runtime')
@@ -794,7 +799,12 @@ test('Chat completions', async (t) => {
     // set up the agent instance with ai_monitoring disabled
     const agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: false
+        basic_telemetry: {
+          enabled: false
+        },
+        record_content: {
+          enabled: true
+        }
       }
     })
     t.nr.agent = agent
@@ -814,7 +824,7 @@ test('Chat completions', async (t) => {
     const command = new bedrock.InvokeModelCommand(input)
 
     // enable ai_monitoring before making the first `.send()` call
-    agent.config.ai_monitoring.enabled = true
+    agent.config.ai_monitoring.basic_telemetry.enabled = true
     await helper.runInTransaction(agent, async (tx) => {
       await client.send(command)
       const events = agent.customEventAggregator.events.toArray()
@@ -842,7 +852,12 @@ test('Chat completions', async (t) => {
     // set up the agent instance with ai_monitoring disabled
     const agent = helper.instrumentMockedAgent({
       ai_monitoring: {
-        enabled: false
+        basic_telemetry: {
+          enabled: false
+        },
+        record_content: {
+          enabled: true
+        }
       }
     })
     t.nr.agent = agent
@@ -862,7 +877,7 @@ test('Chat completions', async (t) => {
     const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
 
     // enable ai_monitoring before making the first `.send()` call
-    agent.config.ai_monitoring.enabled = true
+    agent.config.ai_monitoring.basic_telemetry.enabled = true
     await helper.runInTransaction(agent, async (tx) => {
       const response = await client.send(command)
       for await (const event of response.body) {

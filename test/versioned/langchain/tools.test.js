@@ -16,7 +16,12 @@ const helper = require('../../lib/agent_helper')
 const baseUrl = 'http://httpbin.org'
 const config = {
   ai_monitoring: {
-    enabled: true
+    basic_telemetry: {
+      enabled: true
+    },
+    record_content: {
+      enabled: true
+    }
   }
 }
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
@@ -200,7 +205,7 @@ test('should capture error events', (t, end) => {
 
 test('should not create llm tool events when ai_monitoring is disabled', (t, end) => {
   const { agent, tool, input } = t.nr
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
 
   helper.runInTransaction(agent, async (tx) => {
     await tool.call(input)
@@ -215,7 +220,7 @@ test('should not create llm tool events when ai_monitoring is disabled', (t, end
 
 test('should not create segment when ai_monitoring is disabled', (t, end) => {
   const { agent, tool, input } = t.nr
-  agent.config.ai_monitoring.enabled = false
+  agent.config.ai_monitoring.basic_telemetry.enabled = false
 
   helper.runInTransaction(agent, async (tx) => {
     await tool.call(input)
@@ -236,14 +241,14 @@ test('should create segment and llm events when ai_monitoring is disabled at ins
   removeMatchedModules(/custom-tool\.js$/)
 
   // set up the agent instance with ai_monitoring disabled
-  const agent = helper.instrumentMockedAgent({ ai_monitoring: { enabled: false } })
+  const agent = helper.instrumentMockedAgent({ ai_monitoring: { basic_telemetry: { enabled: false }, record_content: { enabled: true } } })
   t.nr.agent = agent
   const TestTool = require('./custom-tool')
   const tool = new TestTool({ baseUrl })
   t.nr.tool = tool
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
   helper.runInTransaction(agent, async (tx) => {
     await tool.call(input)
 

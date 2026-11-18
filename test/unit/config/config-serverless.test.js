@@ -378,6 +378,41 @@ test('serverless mode via ENV variables', async (t) => {
       end()
     })
   })
+
+  await t.test('should ignore empty vm metrics env variables', (t, end) => {
+    // Empty values are skipped, so neither setting opts in and serverless
+    // mode disables collection by default.
+    const envVariables = {
+      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+      NEW_RELIC_NATIVE_METRICS_ENABLED: '',
+      NEW_RELIC_VIRTUAL_MACHINE_COLLECT_METRICS_ENABLED: ''
+    }
+
+    idempotentEnv(envVariables, (config) => {
+      assert.equal(config.isVmMetricsEnabled(), false)
+      end()
+    })
+  })
+
+  await t.test('should not let an empty native metrics env variable override the new setting', (t, end) => {
+    const envVariables = {
+      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+      NEW_RELIC_NATIVE_METRICS_ENABLED: ''
+    }
+
+    const inputConfig = {
+      virtual_machine: {
+        collect_metrics: {
+          enabled: true
+        }
+      }
+    }
+
+    idempotentEnv(envVariables, inputConfig, (config) => {
+      assert.equal(config.isVmMetricsEnabled(), true)
+      end()
+    })
+  })
 })
 
 test('plugins.native_metrics.enabled takes precedence over virtual_machine.collect_metrics.enabled', async (t) => {

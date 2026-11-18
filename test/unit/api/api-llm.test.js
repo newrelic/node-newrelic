@@ -23,7 +23,7 @@ test('Agent API LLM methods', async (t) => {
     loggerMock.warn.reset()
     const agent = helper.loadMockedAgent()
     ctx.nr.api = new API(agent)
-    agent.config.ai_monitoring.enabled = true
+    agent.config.ai_monitoring.basic_telemetry.enabled = true
     ctx.nr.agent = agent
   })
 
@@ -50,7 +50,7 @@ test('Agent API LLM methods', async (t) => {
 
   await t.test('recordLlmFeedbackEvent is no-op when ai_monitoring is disabled', async (t) => {
     const { api } = t.nr
-    api.agent.config.ai_monitoring.enabled = false
+    api.agent.config.ai_monitoring.basic_telemetry.enabled = false
 
     const result = api.recordLlmFeedbackEvent({
       traceId: 'trace-id',

@@ -13,7 +13,12 @@ const helper = require('../../../lib/agent_helper')
 test('both APIs', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
-    ctx.nr.agent = helper.loadMockedAgent({ ai_monitoring: { enabled: true } })
+    ctx.nr.agent = helper.loadMockedAgent({
+      ai_monitoring: {
+        basic_telemetry: { enabled: true },
+        record_content: { enabled: true }
+      }
+    })
   })
 
   t.afterEach((ctx) => {
@@ -67,7 +72,12 @@ test('openai.chat.completions.create', async (t) => {
   const { req, chatRes, getExpectedResult } = require('./common-chat-api')
   t.beforeEach((ctx) => {
     ctx.nr = {}
-    ctx.nr.agent = helper.loadMockedAgent({ ai_monitoring: { enabled: true } })
+    ctx.nr.agent = helper.loadMockedAgent({
+      ai_monitoring: {
+        basic_telemetry: { enabled: true },
+        record_content: { enabled: true }
+      }
+    })
   })
 
   t.afterEach((ctx) => {
@@ -334,7 +344,12 @@ test('openai.responses.create', async (t) => {
   const { req, chatRes, getExpectedResult } = require('./common-responses-api')
   t.beforeEach((ctx) => {
     ctx.nr = {}
-    ctx.nr.agent = helper.loadMockedAgent({ ai_monitoring: { enabled: true } })
+    ctx.nr.agent = helper.loadMockedAgent({
+      ai_monitoring: {
+        basic_telemetry: { enabled: true },
+        record_content: { enabled: true }
+      }
+    })
   })
 
   t.afterEach((ctx) => {

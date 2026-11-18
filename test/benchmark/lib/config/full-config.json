@@ -405,7 +405,9 @@
     "enabled": true
   },
   "ai_monitoring": {
-    "enabled": true,
+    "basic_telemetry": {
+      "enabled": true
+    },
     "record_content": {
       "enabled": false
     },

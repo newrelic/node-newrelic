@@ -19,7 +19,9 @@ test.beforeEach((ctx) => {
     llm: {},
     config: new Config({
       ai_monitoring: {
-        enabled: true,
+        basic_telemetry: {
+          enabled: true
+        },
         record_content: {
           enabled: true
         }

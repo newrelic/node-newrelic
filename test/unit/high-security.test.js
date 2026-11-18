@@ -82,7 +82,9 @@ test('conditional application of server side settings', async (t) => {
       ctx.nr.config = new Config({
         high_security: true,
         ai_monitoring: {
-          enabled: true
+          basic_telemetry: {
+            enabled: true
+          }
         },
         application_logging: {
           enabled: true

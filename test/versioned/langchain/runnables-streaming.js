@@ -733,7 +733,7 @@ function runAiMonitoringDisabledTests(config) {
       'should not create llm events when `ai_monitoring.enabled` is false',
       (t, end) => {
         const { agent, prompt, outputParser, model } = t.nr
-        agent.config.ai_monitoring.enabled = false
+        agent.config.ai_monitoring.basic_telemetry.enabled = false
 
         helper.runInTransaction(agent, async (tx) => {
           const input = inputData
@@ -763,7 +763,7 @@ function runAiMonitoringDisabledTests(config) {
       'should not create segment when `ai_monitoring.enabled` is false',
       (t, end) => {
         const { agent, prompt, outputParser, model } = t.nr
-        agent.config.ai_monitoring.enabled = false
+        agent.config.ai_monitoring.basic_telemetry.enabled = false
 
         helper.runInTransaction(agent, async (tx) => {
           const input = inputData

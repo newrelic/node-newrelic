@@ -20,15 +20,11 @@ const BASIC_METRIC = `${BASE_METRIC}/Basic`
  *
  * @param {object} params The configuration values to apply.
  * @param {boolean} params.basic The value of `ai_monitoring.basic_telemetry.enabled`.
- * @param {boolean|string} params.enabled The value of `ai_monitoring.enabled`, or `unset`.
  * @param {boolean|string} params.content The value of `ai_monitoring.record_content.enabled`, or `unset`.
  * @returns {Config} The agent configuration.
  */
-function buildConfig({ basic, enabled, content }) {
+function buildConfig({ basic, content }) {
   const aiMonitoring = { basic_telemetry: { enabled: basic } }
-  if (enabled !== UNSET) {
-    aiMonitoring.enabled = enabled
-  }
   if (content !== UNSET) {
     aiMonitoring.record_content = { enabled: content }
   }
@@ -53,38 +49,32 @@ test('default configuration records the basic metric', () => {
 
 test('supportability metric table', async (t) => {
   // No metric when AI monitoring is disabled, `/Basic` when it is enabled
-  // without content, and the base metric when content is recorded.
+  // without content, and the base metric when content is recorded. Rows that
+  // set the deprecated `ai_monitoring.enabled` are covered in `config.test.js`.
   const cases = [
-    { enabled: false, basic: true, content: true, expected: null },
-    { enabled: false, basic: false, content: UNSET, expected: null },
-    { enabled: UNSET, basic: false, content: true, expected: null },
-    { enabled: UNSET, basic: false, content: UNSET, expected: null },
-    { enabled: UNSET, basic: true, content: UNSET, expected: BASIC_METRIC },
-    { enabled: UNSET, basic: true, content: false, expected: BASIC_METRIC },
-    { enabled: UNSET, basic: true, content: true, expected: BASE_METRIC },
-    { enabled: true, basic: true, content: UNSET, expected: BASE_METRIC },
-    { enabled: true, basic: false, content: UNSET, expected: BASE_METRIC },
-    { enabled: true, basic: false, content: true, expected: BASE_METRIC },
-    { enabled: true, basic: true, content: false, expected: BASIC_METRIC },
-    { enabled: true, basic: false, content: false, expected: BASIC_METRIC }
+    { basic: false, content: true, expected: null },
+    { basic: false, content: UNSET, expected: null },
+    { basic: true, content: UNSET, expected: BASIC_METRIC },
+    { basic: true, content: false, expected: BASIC_METRIC },
+    { basic: true, content: true, expected: BASE_METRIC }
   ]
 
-  for (const { enabled, basic, content, expected } of cases) {
-    await t.test(`enabled=${enabled}, basic_telemetry=${basic}, record_content=${content}`, () => {
-      const config = buildConfig({ basic, enabled, content })
+  for (const { basic, content, expected } of cases) {
+    await t.test(`basic_telemetry=${basic}, record_content=${content}`, () => {
+      const config = buildConfig({ basic, content })
       assert.equal(recordedMetric(config), expected)
     })
   }
 })
 
 test('collect_ai = false records no metric', () => {
-  const config = buildConfig({ basic: true, enabled: true, content: true })
+  const config = buildConfig({ basic: true, content: true })
   config.onConnect({ collect_ai: false })
   assert.equal(recordedMetric(config), null)
 })
 
 test('ai_monitoring.enabled = true from only the connect response records the basic metric', () => {
-  const config = buildConfig({ basic: true, enabled: UNSET, content: UNSET })
+  const config = buildConfig({ basic: true, content: UNSET })
   config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
   assert.equal(recordedMetric(config), BASIC_METRIC)
 })

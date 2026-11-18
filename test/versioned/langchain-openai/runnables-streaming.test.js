@@ -22,7 +22,12 @@ const helper = require('../../lib/agent_helper')
 
 const config = {
   ai_monitoring: {
-    enabled: true,
+    basic_telemetry: {
+      enabled: true
+    },
+    record_content: {
+      enabled: true
+    },
     streaming: {
       enabled: true
     }
@@ -135,7 +140,12 @@ test('should create segment and llm events in stream when ai_monitoring is disab
   // set up the agent instance with ai_monitoring disabled but streaming enabled
   const agent = helper.instrumentMockedAgent({
     ai_monitoring: {
-      enabled: false,
+      basic_telemetry: {
+        enabled: false
+      },
+      record_content: {
+        enabled: true
+      },
       streaming: {
         enabled: true
       }
@@ -158,7 +168,7 @@ test('should create segment and llm events in stream when ai_monitoring is disab
   const outputParser = new StringOutputParser()
 
   // enable ai_monitoring before making the call
-  agent.config.ai_monitoring.enabled = true
+  agent.config.ai_monitoring.basic_telemetry.enabled = true
   await new Promise((resolve) => {
     helper.runInTransaction(agent, async (tx) => {
       const chain = prompt.pipe(model).pipe(outputParser)

@@ -28,7 +28,9 @@ test.beforeEach((ctx) => {
     config: new Config({
       app_name: ['test-app'],
       ai_monitoring: {
-        enabled: true,
+        basic_telemetry: {
+          enabled: true
+        },
         record_content: {
           enabled: true
         }
