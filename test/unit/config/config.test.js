@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const sinon = require('sinon')
 
 const Config = require('../../../lib/config')
-const getTrackingMetricName = require('../../../lib/llm-events/get-tracking-metric-name')
 
 test('should handle a directly passed minimal configuration', () => {
   let config
@@ -671,10 +670,9 @@ test('Core Tracing is disabled', async (t) => {
 test('ai_monitoring.enabled deprecation', async (t) => {
   const MESSAGE = '`ai_monitoring.enabled` is deprecated in favor of ' +
     '`ai_monitoring.basic_telemetry.enabled` and will be removed in ' +
-    'a future major version.'
+    'a future major version. To keep recording message content, also set ' +
+    '`ai_monitoring.record_content.enabled` to `true`.'
   const ENV_VAR = 'NEW_RELIC_AI_MONITORING_ENABLED'
-  const UNSET = 'unset'
-  const ANY = 'any'
 
   /**
    * Stubs `process.emitWarning`, and provides a logger that captures the
@@ -710,17 +708,6 @@ test('ai_monitoring.enabled deprecation', async (t) => {
   }
 
   /**
-   * Asserts the deprecation was emitted exactly once as a process
-   * `DeprecationWarning`.
-   *
-   * @param {object} ctx The test context.
-   */
-  function assertEmitted(ctx) {
-    assert.equal(ctx.nr.emitWarning.callCount, 1)
-    assert.deepEqual(ctx.nr.emitWarning.firstCall.args, [MESSAGE, 'DeprecationWarning'])
-  }
-
-  /**
    * Asserts the deprecation was reported exactly once, both to the agent log
    * and as a process `DeprecationWarning`.
    *
@@ -728,7 +715,8 @@ test('ai_monitoring.enabled deprecation', async (t) => {
    */
   function assertWarned(ctx) {
     assert.deepEqual(ctx.nr.warnings, [MESSAGE])
-    assertEmitted(ctx)
+    assert.equal(ctx.nr.emitWarning.callCount, 1)
+    assert.deepEqual(ctx.nr.emitWarning.firstCall.args, [MESSAGE, 'DeprecationWarning'])
   }
 
   /**
@@ -739,38 +727,6 @@ test('ai_monitoring.enabled deprecation', async (t) => {
   function assertNotWarned(ctx) {
     assert.deepEqual(ctx.nr.warnings, [])
     assert.equal(ctx.nr.emitWarning.callCount, 0)
-  }
-
-  /**
-   * Builds an agent configuration through the real config loader so that
-   * `unset` values receive their actual schema defaults.
-   *
-   * @param {object} params The configuration values to apply.
-   * @param {boolean} params.enabled The value of `ai_monitoring.enabled`.
-   * @param {boolean} params.basic The value of `ai_monitoring.basic_telemetry.enabled`.
-   * @param {boolean|string} params.content The value of `ai_monitoring.record_content.enabled`, or `unset`.
-   * @returns {Config} The agent configuration.
-   */
-  function buildAiConfig({ enabled, basic, content }) {
-    const aiMonitoring = { enabled, basic_telemetry: { enabled: basic } }
-    if (content !== UNSET) {
-      aiMonitoring.record_content = { enabled: content }
-    }
-    return Config.initialize({ ai_monitoring: aiMonitoring })
-  }
-
-  /**
-   * Expands `any` values into one row per possible value of that setting.
-   *
-   * @param {object} row A table row.
-   * @returns {object[]} The rows to verify.
-   */
-  function expand(row) {
-    const basics = row.basic === ANY ? [true, false] : [row.basic]
-    const contents = row.content === ANY ? [UNSET, true, false] : [row.content]
-    return basics.flatMap((basic) => contents.map((content) => {
-      return { ...row, basic, content }
-    }))
   }
 
   await t.test('warning', async (t) => {
@@ -865,106 +821,6 @@ test('ai_monitoring.enabled deprecation', async (t) => {
       const config = new Config({}, { logger: t.nr.logger })
       config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
       assertNotWarned(t)
-    })
-  })
-
-  await t.test('behavior until removal', async (t) => {
-    captureWarnings(t)
-
-    // Rows of the "Default AIM Data Collection" precedence table that set
-    // `ai_monitoring.enabled`. An explicit value wins over
-    // `ai_monitoring.basic_telemetry.enabled`.
-    const precedenceTable = [
-      { enabled: false, basic: ANY, content: ANY, sent: false, withContent: false },
-      // `record_content.enabled` is forced to `true` when it is unset.
-      { enabled: true, basic: ANY, content: UNSET, sent: true, withContent: true },
-      { enabled: true, basic: ANY, content: true, sent: true, withContent: true },
-      { enabled: true, basic: ANY, content: false, sent: true, withContent: false }
-    ]
-    for (const row of precedenceTable.flatMap(expand)) {
-      const { enabled, basic, content, sent, withContent } = row
-      await t.test(`precedence: enabled=${enabled}, basic_telemetry=${basic}, record_content=${content}`, (t) => {
-        const config = buildAiConfig(row)
-        assert.equal(config.isAiMonitoringEnabled(), sent, 'isAiMonitoringEnabled')
-        assert.equal(config.shouldRecordAiContent(), withContent, 'shouldRecordAiContent')
-        assertEmitted(t)
-      })
-    }
-
-    // No metric when AI monitoring is disabled, `/Basic` when it is enabled
-    // without content, and the base metric when content is recorded.
-    const BASE_METRIC = 'Supportability/Nodejs/ML/OpenAI/4.0.0'
-    const BASIC_METRIC = `${BASE_METRIC}/Basic`
-    const metricTable = [
-      { enabled: false, basic: true, content: true, expected: null },
-      { enabled: false, basic: false, content: UNSET, expected: null },
-      { enabled: true, basic: true, content: UNSET, expected: BASE_METRIC },
-      { enabled: true, basic: false, content: UNSET, expected: BASE_METRIC },
-      { enabled: true, basic: false, content: true, expected: BASE_METRIC },
-      { enabled: true, basic: true, content: false, expected: BASIC_METRIC },
-      { enabled: true, basic: false, content: false, expected: BASIC_METRIC }
-    ]
-    for (const row of metricTable) {
-      const { enabled, basic, content, expected } = row
-      await t.test(`supportability metric: enabled=${enabled}, basic_telemetry=${basic}, record_content=${content}`, (t) => {
-        const config = buildAiConfig(row)
-        const metric = config.isAiMonitoringEnabled()
-          ? getTrackingMetricName(config, BASE_METRIC)
-          : null
-        assert.equal(metric, expected)
-        assertEmitted(t)
-      })
-    }
-
-    for (const enabled of [true, false]) {
-      await t.test(`should send \`ai_monitoring.enabled\` in public settings when set to ${enabled}`, (t) => {
-        const config = Config.initialize({ ai_monitoring: { enabled } })
-        assert.equal(config.publicSettings()['ai_monitoring.enabled'], enabled)
-        assertEmitted(t)
-      })
-    }
-
-    for (const enabled of [true, false]) {
-      await t.test(`should coerce the environment variable value \`'${enabled}'\` to a boolean`, (t) => {
-        process.env[ENV_VAR] = `${enabled}`
-        const config = Config.initialize({})
-        assert.strictEqual(config.ai_monitoring.enabled, enabled)
-        assert.equal(config.isAiMonitoringEnabled(), enabled)
-        assertEmitted(t)
-      })
-    }
-
-    await t.test('should force content on when set to true locally before connect', (t) => {
-      const config = new Config({ ai_monitoring: { enabled: true } })
-      config.onConnect({ agent_config: { 'ai_monitoring.streaming.enabled': true } })
-      assert.equal(config.shouldRecordAiContent(), true)
-      assertEmitted(t)
-    })
-
-    await t.test('should not force content on when the connect response also sends it', (t) => {
-      // Any `ai_monitoring.enabled` from the connect response cancels forcing,
-      // even when it matches the local value.
-      const config = new Config({ ai_monitoring: { enabled: true } })
-      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
-      assert.equal(config.isAiMonitoringEnabled(), true)
-      assert.equal(config.shouldRecordAiContent(), false)
-      assertEmitted(t)
-    })
-
-    await t.test('should force content on again when a later connect omits it', (t) => {
-      const config = new Config({ ai_monitoring: { enabled: true } })
-      config.onConnect({ agent_config: { 'ai_monitoring.enabled': true } })
-      assert.equal(config.shouldRecordAiContent(), false)
-      config.onConnect({ agent_config: {} })
-      assert.equal(config.shouldRecordAiContent(), true)
-      assertEmitted(t)
-    })
-
-    await t.test('should not let SSC basic_telemetry override a local false', (t) => {
-      const config = new Config({ ai_monitoring: { enabled: false } })
-      config.onConnect({ agent_config: { 'ai_monitoring.basic_telemetry.enabled': true } })
-      assert.equal(config.isAiMonitoringEnabled(), false)
-      assertEmitted(t)
     })
   })
 })
