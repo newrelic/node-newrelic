@@ -103,6 +103,148 @@ test('applyEnvironmentOverrides', async (t) => {
   })
 })
 
+test('OTEL env var mapping', async (t) => {
+  function applyOtel(env) {
+    return applyEnvironmentOverrides({ opentelemetry: { enabled: true } }, { env })
+  }
+
+  await t.test('is a no-op when opentelemetry.enabled is absent', () => {
+    const config = applyEnvironmentOverrides({}, { env: { OTEL_SERVICE_NAME: 'my-service' } })
+    assert.ok(!config.app_name)
+  })
+
+  await t.test('is a no-op when opentelemetry.enabled is false', () => {
+    const config = applyEnvironmentOverrides(
+      { opentelemetry: { enabled: false } },
+      { env: { OTEL_SERVICE_NAME: 'my-service' } }
+    )
+    assert.ok(!config.app_name)
+  })
+
+  await t.test('maps OTEL_SERVICE_NAME to app_name', () => {
+    const config = applyOtel({ OTEL_SERVICE_NAME: 'my-service' })
+    assert.equal(config.app_name, 'my-service')
+  })
+
+  await t.test('maps OTEL_LOG_LEVEL to logging.level, lowercased', () => {
+    const config = applyOtel({ OTEL_LOG_LEVEL: 'INFO' })
+    assert.equal(config.logging.level, 'info')
+  })
+
+  await t.test('treats OTEL_LOG_LEVEL as case-insensitive for every recognized level', () => {
+    const config = applyOtel({ OTEL_LOG_LEVEL: 'WaRn' })
+    assert.equal(config.logging.level, 'warn')
+  })
+
+  await t.test('ignores an unrecognized OTEL_LOG_LEVEL and warns', () => {
+    const seen = []
+    const logger = { trace: () => {}, debug: () => {}, warn: (msg, ...args) => seen.push(args) }
+    const config = applyEnvironmentOverrides(
+      { opentelemetry: { enabled: true } },
+      { env: { OTEL_LOG_LEVEL: 'VERBOSE' }, logger }
+    )
+    assert.ok(!config.logging)
+    assert.deepStrictEqual(seen, [['OTEL_LOG_LEVEL', 'VERBOSE']])
+  })
+
+  await t.test('falls back to the already-resolved logging.level when OTEL_LOG_LEVEL is unrecognized', () => {
+    // Simulates a value already resolved from file config/NEW_RELIC_LOG_LEVEL/the
+    // schema default before this runs; an invalid OTel value must not clobber it.
+    const config = applyEnvironmentOverrides(
+      { opentelemetry: { enabled: true }, logging: { level: 'debug' } },
+      { env: { OTEL_LOG_LEVEL: 'VERBOSE' } }
+    )
+    assert.equal(config.logging.level, 'debug')
+  })
+
+  await t.test('maps OTEL_SDK_DISABLED=true to agent_enabled=false', () => {
+    const config = applyOtel({ OTEL_SDK_DISABLED: 'true' })
+    assert.equal(config.agent_enabled, false)
+  })
+
+  await t.test('maps OTEL_SDK_DISABLED=false to agent_enabled=true', () => {
+    const config = applyOtel({ OTEL_SDK_DISABLED: 'false' })
+    assert.equal(config.agent_enabled, true)
+  })
+
+  await t.test('runs OTEL_SDK_DISABLED through boolean formatter', () => {
+    const config = applyOtel({ OTEL_SDK_DISABLED: 'no' })
+    assert.equal(config.agent_enabled, true)
+  })
+
+  await t.test('prefers NEW_RELIC_APP_NAME over OTEL_SERVICE_NAME', () => {
+    const config = applyOtel({ NEW_RELIC_APP_NAME: 'nr-app', OTEL_SERVICE_NAME: 'otel-app' })
+    assert.equal(config.app_name, 'nr-app')
+  })
+
+  await t.test('prefers NEW_RELIC_LOG_LEVEL over OTEL_LOG_LEVEL', () => {
+    const config = applyOtel({ NEW_RELIC_LOG_LEVEL: 'warn', OTEL_LOG_LEVEL: 'DEBUG' })
+    assert.equal(config.logging.level, 'warn')
+  })
+
+  await t.test('prefers NEW_RELIC_ENABLED over OTEL_SDK_DISABLED', () => {
+    // Alone, OTEL_SDK_DISABLED=false would flip to agent_enabled=true; NEW_RELIC_ENABLED
+    // disagrees and must win.
+    const config = applyOtel({ NEW_RELIC_ENABLED: 'false', OTEL_SDK_DISABLED: 'false' })
+    assert.equal(config.agent_enabled, false)
+  })
+
+  await t.test('treats an empty NEW_RELIC_ENABLED as unset, so OTEL_SDK_DISABLED applies', () => {
+    const config = applyOtel({ NEW_RELIC_ENABLED: '', OTEL_SDK_DISABLED: 'true' })
+    assert.equal(config.agent_enabled, false)
+  })
+
+  await t.test('ignores an unmapped OTEL_ variable', () => {
+    const config = applyOtel({ OTEL_RESOURCE_ATTRIBUTES: 'foo=bar' })
+    assert.deepStrictEqual(config, { opentelemetry: { enabled: true } })
+  })
+
+  await t.test('treats an empty OTEL_SERVICE_NAME as unset', () => {
+    const config = applyOtel({ OTEL_SERVICE_NAME: '' })
+    assert.ok(!('app_name' in config))
+  })
+
+  await t.test('logs unmapped OTEL_ variables found in the environment', () => {
+    const seen = []
+    const logger = { trace: () => {}, debug: (msg, names) => seen.push(names) }
+    applyEnvironmentOverrides(
+      { opentelemetry: { enabled: true } },
+      { env: { OTEL_RESOURCE_ATTRIBUTES: 'foo=bar', OTEL_TRACES_EXPORTER: 'otlp' }, logger }
+    )
+    assert.equal(seen.length, 1)
+    assert.ok(seen[0].includes('OTEL_RESOURCE_ATTRIBUTES'))
+    assert.ok(seen[0].includes('OTEL_TRACES_EXPORTER'))
+  })
+
+  await t.test('does not mention a mapped OTEL_ variable in the unmapped log line', () => {
+    const seen = []
+    const logger = { trace: () => {}, debug: (msg, names) => seen.push(names) }
+    applyEnvironmentOverrides(
+      { opentelemetry: { enabled: true } },
+      { env: { OTEL_SERVICE_NAME: 'my-service', OTEL_RESOURCE_ATTRIBUTES: 'foo=bar' }, logger }
+    )
+    assert.equal(seen.length, 1)
+    assert.ok(!seen[0].includes('OTEL_SERVICE_NAME'))
+  })
+
+  await t.test('does not log when every OTEL_ variable present is mapped', () => {
+    const seen = []
+    const logger = { trace: () => {}, debug: (msg, names) => seen.push(names) }
+    applyEnvironmentOverrides(
+      { opentelemetry: { enabled: true } },
+      { env: { OTEL_SERVICE_NAME: 'my-service' }, logger }
+    )
+    assert.deepStrictEqual(seen, [])
+  })
+
+  await t.test('does not log when no OTEL_ variables are present', () => {
+    const seen = []
+    const logger = { trace: () => {}, debug: (msg, names) => seen.push(names) }
+    applyEnvironmentOverrides({ opentelemetry: { enabled: true } }, { env: {}, logger })
+    assert.deepStrictEqual(seen, [])
+  })
+})
+
 test('env var index', async (t) => {
   const schema = require('#agentlib/config/schema.js')
 
