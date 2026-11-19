@@ -278,6 +278,41 @@ test('writeHead with array headers is supported', function (t, end) {
   })
 })
 
+test('writeHead with array headers in undocumented tuples form is supported', function (t, end) {
+  const { agent } = t.nr
+  agent.config.attributes.enabled = true
+
+  let tx
+  const server = http.createServer((req, res) => {
+    tx = agent.getTransaction()
+    // The capital `S` is for testing case normalization.
+    res.writeHead(200, [['anSwer', 42,], ['foo', 'bar']])
+    res.end('ok')
+  })
+
+  t.after(() => {
+    server.close()
+  })
+
+  server.listen(0, (error) => {
+    assert.ifError(error, 'should not error')
+
+    const req = http.request(
+      server.address(),
+      () => {
+        const attrs = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        assert.equal(attrs['response.headers.answer'], '42')
+        assert.equal(attrs['response.headers.foo'], 'bar')
+
+        end()
+      }
+    )
+
+    req.on('error', assert.fail)
+    req.end()
+  })
+})
+
 test('built-in http instrumentation should not swallow errors', async function (t) {
   const { agent } = t.nr
   tempRemoveListeners({ t, emitter: process, event: 'uncaughtException' })
