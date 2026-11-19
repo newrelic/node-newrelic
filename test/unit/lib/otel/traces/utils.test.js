@@ -75,21 +75,21 @@ test('OtelLambdaClient1_17 cloud.resource_id', async (t) => {
     assert.equal(resourceId, `arn:aws-us-gov:lambda:us-gov-west-1:${ACCOUNT_ID}:function:test-function`)
   })
 
-  await t.test('prefers aws.region over faas.invoked_region', () => {
+  await t.test('reads the region from faas.invoked_region, not aws.region', () => {
     const resourceId = getResourceId(lambda117, {
-      'aws.region': 'us-gov-west-1',
+      'aws.region': 'us-east-1',
       'faas.invoked_name': 'test-function',
-      'faas.invoked_region': 'us-east-1'
+      'faas.invoked_region': 'us-gov-west-1'
     })
     assert.equal(resourceId, `arn:aws-us-gov:lambda:us-gov-west-1:${ACCOUNT_ID}:function:test-function`)
   })
 
-  await t.test('falls back to faas.invoked_region when aws.region is not present', () => {
+  await t.test('is not set when faas.invoked_region is not present', () => {
     const resourceId = getResourceId(lambda117, {
-      'faas.invoked_name': 'test-function',
-      'faas.invoked_region': 'cn-north-1'
+      'aws.region': 'us-east-1',
+      'faas.invoked_name': 'test-function'
     })
-    assert.equal(resourceId, `arn:aws-cn:lambda:cn-north-1:${ACCOUNT_ID}:function:test-function`)
+    assert.equal(resourceId, undefined)
   })
 
   await t.test('uses a full ARN in faas.invoked_name unchanged', () => {

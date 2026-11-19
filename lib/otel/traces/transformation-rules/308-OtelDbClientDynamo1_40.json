@@ -29,7 +29,11 @@
       "name": "port_path_or_id"
     },
     {
-      "template": "arn:${awsPartition}:dynamodb:${aws.region}:${accountId}:table/${aws.dynamodb.table_names}",
+      "arn": {
+        "service": "dynamodb",
+        "regionKey": "aws.region",
+        "resource": "table/${aws.dynamodb.table_names}"
+      },
       "target": "segment",
       "name": "cloud.resource_id"
     }

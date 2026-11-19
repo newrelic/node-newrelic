@@ -65,6 +65,13 @@ Each item in the array is a rule object with the following properties:
 - **template** (`string`, optional):  
   A template string for constructing the attribute value.
 
+- **arn** (`object`, optional):  
+  Describes how to build an AWS ARN (`arn:<partition>:<service>:<region>:<account id>:<resource>`). The partition is derived from the region, and the account id comes from `cloud.aws.account_id`. If the account id, the region, or any value in `resource` is missing, the attribute is not set.
+  - **service** (`string`, required): The AWS service, e.g. `lambda`.
+  - **regionKey** (`string`, required): The span attribute holding the resource's region, e.g. `faas.invoked_region`.
+  - **resource** (`string`, required): A template for the resource part of the ARN, filled from span attributes, e.g. `function:${faas.invoked_name}`.
+  - **arnKey** (`string`, optional): A span attribute that may already hold the full ARN. If it starts with `arn:`, it is used unchanged.
+
 - **regex** (`object`, optional):  
   Describes how to extract values using regular expressions.  
   - **statement** (`string`, required): The regex pattern.
