@@ -32,7 +32,8 @@
       "arn": {
         "service": "dynamodb",
         "regionKey": "aws.region",
-        "resource": "table/${aws.dynamodb.table_names}"
+        "resourcePrefix": "table/",
+        "resourceKey": "aws.dynamodb.table_names"
       },
       "target": "segment",
       "name": "cloud.resource_id"

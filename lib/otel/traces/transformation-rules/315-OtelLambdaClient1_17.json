@@ -23,8 +23,8 @@
       "arn": {
         "service": "lambda",
         "regionKey": "faas.invoked_region",
-        "resource": "function:${faas.invoked_name}",
-        "arnKey": "faas.invoked_name"
+        "resourcePrefix": "function:",
+        "resourceKey": "faas.invoked_name"
       },
       "target": "segment",
       "name": "cloud.resource_id"

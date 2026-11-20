@@ -40,12 +40,12 @@
             "template": { "type": "string" },
             "arn": {
               "type": "object",
-              "required": ["service", "regionKey", "resource"],
+              "required": ["service", "regionKey", "resourcePrefix", "resourceKey"],
               "properties": {
                 "service": { "type": "string" },
                 "regionKey": { "type": "string" },
-                "resource": { "type": "string" },
-                "arnKey": { "type": "string" }
+                "resourcePrefix": { "type": "string" },
+                "resourceKey": { "type": "string" }
               }
             },
             "regex": {

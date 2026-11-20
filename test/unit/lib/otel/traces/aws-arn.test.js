@@ -8,19 +8,18 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const buildAwsArn = require('#agentlib/otel/traces/aws-arn.js')
+const buildOtelAwsArn = require('#agentlib/otel/traces/aws-arn.js')
 
-/* eslint-disable no-template-curly-in-string -- resource templates use ${} placeholders */
 const ACCOUNT_ID = '123456789012'
 const ARN = {
   service: 'lambda',
   regionKey: 'faas.invoked_region',
-  resource: 'function:${faas.invoked_name}',
-  arnKey: 'faas.invoked_name'
+  resourcePrefix: 'function:',
+  resourceKey: 'faas.invoked_name'
 }
 
 test('builds the ARN with the partition derived from the region', () => {
-  const arn = buildAwsArn({
+  const arn = buildOtelAwsArn({
     accountId: ACCOUNT_ID,
     arn: ARN,
     span: { attributes: { 'faas.invoked_region': 'us-gov-west-1', 'faas.invoked_name': 'test-function' } }
@@ -28,18 +27,18 @@ test('builds the ARN with the partition derived from the region', () => {
   assert.equal(arn, `arn:aws-us-gov:lambda:us-gov-west-1:${ACCOUNT_ID}:function:test-function`)
 })
 
-test('fills every placeholder in the resource template', () => {
-  const arn = buildAwsArn({
+test('builds the ARN with no resourcePrefix', () => {
+  const arn = buildOtelAwsArn({
     accountId: ACCOUNT_ID,
-    arn: { service: 'kinesis', regionKey: 'aws.region', resource: '${type}/${name}' },
-    span: { attributes: { 'aws.region': 'us-east-1', type: 'stream', name: 'my-stream' } }
+    arn: { service: 'kinesis', regionKey: 'aws.region', resourceKey: 'name' },
+    span: { attributes: { 'aws.region': 'us-east-1', name: 'stream/my-stream' } }
   })
   assert.equal(arn, `arn:aws:kinesis:us-east-1:${ACCOUNT_ID}:stream/my-stream`)
 })
 
-test('returns the arnKey attribute unchanged when it is already a full ARN', () => {
+test('returns the resourceKey attribute unchanged when it is already a full ARN', () => {
   const functionArn = 'arn:aws-cn:lambda:cn-north-1:111111111111:function:test-function'
-  const arn = buildAwsArn({
+  const arn = buildOtelAwsArn({
     accountId: undefined,
     arn: ARN,
     span: { attributes: { 'faas.invoked_name': functionArn } }
@@ -47,8 +46,8 @@ test('returns the arnKey attribute unchanged when it is already a full ARN', () 
   assert.equal(arn, functionArn)
 })
 
-test('ignores an arnKey attribute that is not a full ARN', () => {
-  const arn = buildAwsArn({
+test('ignores a resourceKey attribute that is not a full ARN', () => {
+  const arn = buildOtelAwsArn({
     accountId: ACCOUNT_ID,
     arn: ARN,
     span: { attributes: { 'faas.invoked_region': 'us-east-1', 'faas.invoked_name': 'function:test-function' } }
@@ -70,7 +69,7 @@ test('returns undefined when any part of the ARN is missing', async (t) => {
 
   for (const [missing, { accountId, attributes: spanAttributes }] of cases) {
     await t.test(missing, () => {
-      assert.equal(buildAwsArn({ accountId, arn: ARN, span: { attributes: spanAttributes } }), undefined)
+      assert.equal(buildOtelAwsArn({ accountId, arn: ARN, span: { attributes: spanAttributes } }), undefined)
     })
   }
 })
