@@ -163,6 +163,7 @@ function createAgent(config) {
       'Set app_name in your newrelic.js or newrelic.cjs file or set environment variable\n' +
       'NEW_RELIC_APP_NAME. Not starting!'
     agent.healthReporter.setStatus(HealthReporter.STATUS_MISSING_APP_NAME)
+    agent.setState('errored', message)
     throw new Error(message)
   }
 
