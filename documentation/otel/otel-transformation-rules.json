@@ -38,6 +38,16 @@
             "key": { "type": "string" },
             "value": { "type": ["string", "number", "boolean"] },
             "template": { "type": "string" },
+            "arn": {
+              "type": "object",
+              "required": ["service", "regionKey", "resourcePrefix", "resourceKey"],
+              "properties": {
+                "service": { "type": "string" },
+                "regionKey": { "type": "string" },
+                "resourcePrefix": { "type": "string" },
+                "resourceKey": { "type": "string" }
+              }
+            },
             "regex": {
               "type": "object",
               "required": ["statement"],

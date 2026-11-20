@@ -19,7 +19,7 @@ const {
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { match } = require('../../lib/custom-assertions')
 
-function checkEntityLinkingSegments({ operations, tx, end }) {
+function checkEntityLinkingSegments({ operations, tx, end, region = 'us-east-1', resourceId }) {
   const root = tx.trace.root
 
   const segments = checkAWSAttributes({ trace: tx.trace, segment: root, pattern: EXTERN_PATTERN })
@@ -35,9 +35,9 @@ function checkEntityLinkingSegments({ operations, tx, end }) {
     match(attrs, {
       'aws.operation': operations[0],
       'aws.requestId': String,
-      'aws.region': 'us-east-1',
+      'aws.region': region,
       'aws.service': String,
-      'cloud.resource_id': `arn:aws:lambda:${attrs['aws.region']}:${accountId}:function:${testFunctionName}`,
+      'cloud.resource_id': resourceId ?? `arn:aws:lambda:${region}:${accountId}:function:${testFunctionName}`,
       'cloud.platform': 'aws_lambda'
     })
   })
@@ -139,6 +139,74 @@ test('LambdaClient', async (t) => {
         tx,
         end
       })
+    })
+  })
+
+  await t.test('InvokeCommand in GovCloud uses the aws-us-gov partition', (t, end) => {
+    const { server, agent, InvokeCommand } = t.nr
+    agent.config.cloud.aws.account_id = 123456789123
+    const { LambdaClient } = require('@aws-sdk/client-lambda')
+    const service = new LambdaClient({
+      credentials: FAKE_CREDENTIALS,
+      endpoint: `http://localhost:${server.address().port}`,
+      region: 'us-gov-west-1'
+    })
+    helper.runInTransaction(agent, async (tx) => {
+      const cmd = new InvokeCommand({
+        FunctionName: 'funcName',
+        Payload: JSON.stringify({ prop1: 'test', prop2: 'test 2' })
+      })
+      await service.send(cmd)
+      tx.end()
+      setImmediate(checkEntityLinkingSegments, {
+        operations: ['InvokeCommand'],
+        tx,
+        end,
+        region: 'us-gov-west-1',
+        resourceId: 'arn:aws-us-gov:lambda:us-gov-west-1:123456789123:function:funcName'
+      })
+    })
+  })
+
+  await t.test('InvokeCommand with a full ARN as FunctionName uses it unchanged', (t, end) => {
+    const { service, agent, InvokeCommand } = t.nr
+    agent.config.cloud.aws.account_id = 123456789123
+    const functionArn = 'arn:aws:lambda:us-east-1:123456789123:function:funcName'
+    helper.runInTransaction(agent, async (tx) => {
+      const cmd = new InvokeCommand({
+        FunctionName: functionArn,
+        Payload: JSON.stringify({ prop1: 'test', prop2: 'test 2' })
+      })
+      await service.send(cmd)
+      tx.end()
+      setImmediate(checkEntityLinkingSegments, {
+        operations: ['InvokeCommand'],
+        tx,
+        end,
+        resourceId: functionArn
+      })
+    })
+  })
+
+  await t.test('InvokeCommand with a full ARN as FunctionName does not need an account ID', (t, end) => {
+    const { service, agent, InvokeCommand } = t.nr
+    agent.config.cloud.aws.account_id = null
+    const functionArn = 'arn:aws:lambda:us-east-1:123456789123:function:funcName'
+    helper.runInTransaction(agent, async (tx) => {
+      const cmd = new InvokeCommand({
+        FunctionName: functionArn,
+        Payload: JSON.stringify({ prop1: 'test', prop2: 'test 2' })
+      })
+      await service.send(cmd)
+      tx.end()
+      const segments = checkAWSAttributes({ trace: tx.trace, segment: tx.trace.root, pattern: EXTERN_PATTERN })
+      assert(segments.length > 0, 'should have segments')
+      segments.forEach((segment) => {
+        const attrs = segment.attributes.get(SEGMENT_DESTINATION)
+        assert.equal(attrs['cloud.resource_id'], functionArn)
+        assert.equal(attrs['cloud.platform'], 'aws_lambda')
+      })
+      end()
     })
   })
 

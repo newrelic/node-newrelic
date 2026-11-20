@@ -147,6 +147,86 @@ test('DynamoDB', async (t) => {
       })
     })
   })
+
+  await t.test('cloud.resource_id uses the aws-us-gov partition in GovCloud', async (t) => {
+    const { agent, commands, DynamoDBClient, server } = t.nr
+    const client = new DynamoDBClient({
+      credentials: FAKE_CREDENTIALS,
+      endpoint: `http://localhost:${server.address().port}`,
+      region: 'us-gov-west-1'
+    })
+
+    await helper.runInTransaction(agent, async (tx) => {
+      for (const command of commands) {
+        await client.send(command)
+      }
+      tx.end()
+      const root = tx.trace.root
+      const segments = checkAWSAttributes({
+        trace: tx.trace,
+        segment: root,
+        pattern: DATASTORE_PATTERN
+      })
+
+      assert.ok(segments.length > 0, 'should have segments')
+      segments.forEach((segment) => {
+        const attrs = segment.attributes.get(SEGMENT_DESTINATION)
+        assert.equal(
+          attrs['cloud.resource_id'],
+          `arn:aws-us-gov:dynamodb:us-gov-west-1:123456789123:table/${attrs.collection}`
+        )
+      })
+    })
+  })
+
+  await t.test('cloud.resource_id with a full ARN as TableName uses it unchanged', async (t) => {
+    const { agent, client, lib } = t.nr
+    const tableArn = 'arn:aws:dynamodb:us-east-1:123456789123:table/delete-aws-sdk-test-table'
+    const { GetItemCommand } = lib
+    const cmd = new GetItemCommand(getItemParams(tableArn, 'test-artist'))
+
+    await helper.runInTransaction(agent, async (tx) => {
+      await client.send(cmd)
+      tx.end()
+      const root = tx.trace.root
+      const segments = checkAWSAttributes({
+        trace: tx.trace,
+        segment: root,
+        pattern: DATASTORE_PATTERN
+      })
+
+      assert.ok(segments.length > 0, 'should have segments')
+      segments.forEach((segment) => {
+        const attrs = segment.attributes.get(SEGMENT_DESTINATION)
+        assert.equal(attrs['cloud.resource_id'], tableArn)
+      })
+    })
+  })
+
+  await t.test('cloud.resource_id with a full ARN as TableName does not need an account ID', async (t) => {
+    const { agent, client, lib } = t.nr
+    agent.config.cloud.aws.account_id = null
+    const tableArn = 'arn:aws:dynamodb:us-east-1:123456789123:table/delete-aws-sdk-test-table'
+    const { GetItemCommand } = lib
+    const cmd = new GetItemCommand(getItemParams(tableArn, 'test-artist'))
+
+    await helper.runInTransaction(agent, async (tx) => {
+      await client.send(cmd)
+      tx.end()
+      const root = tx.trace.root
+      const segments = checkAWSAttributes({
+        trace: tx.trace,
+        segment: root,
+        pattern: DATASTORE_PATTERN
+      })
+
+      assert.ok(segments.length > 0, 'should have segments')
+      segments.forEach((segment) => {
+        const attrs = segment.attributes.get(SEGMENT_DESTINATION)
+        assert.equal(attrs['cloud.resource_id'], tableArn)
+      })
+    })
+  })
 })
 
 function createCommands({ lib, tableName }) {

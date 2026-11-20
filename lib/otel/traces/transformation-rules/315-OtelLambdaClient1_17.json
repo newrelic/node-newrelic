@@ -20,7 +20,12 @@
       "name": "cloud.platform"
     },
     {
-      "template": "arn:aws:lambda:${faas.invoked_region}:${accountId}:function:${faas.invoked_name}",
+      "arn": {
+        "service": "lambda",
+        "regionKey": "faas.invoked_region",
+        "resourcePrefix": "function:",
+        "resourceKey": "faas.invoked_name"
+      },
       "target": "segment",
       "name": "cloud.resource_id"
     }
