@@ -561,6 +561,51 @@ test('reconcileAttributes logs for high security attributes', (t) => {
   })
 })
 
+test('reconcileAttributes does not truncate attributes listed in `config.otel_gen_ai_attrs`', (t) => {
+  t.plan(1)
+  const { agent, processor, tracer } = t.nr
+  agent.config.otel_gen_ai_attrs = ['gen_ai.input.messages']
+  const longValue = 'a'.repeat(500)
+
+  helper.runInTransaction(agent, (tx) => {
+    const span = createHttpClientSpan({
+      tracer,
+      attributes: { 'gen_ai.input.messages': longValue }
+    })
+    processor.onStart(span)
+
+    const { segment, transaction, rule } = span[otelSynthesis]
+    processor.reconcileAttributes({ segment, span, transaction, rule })
+    const attrs = segment.attributes.get(DESTINATIONS.SEGMENT_SCOPE)
+    t.assert.equal(attrs['gen_ai.input.messages'], longValue)
+
+    tx.end()
+  })
+})
+
+test('reconcileAttributes truncates attributes not listed in `config.otel_gen_ai_attrs`', (t) => {
+  t.plan(2)
+  const { agent, processor, tracer } = t.nr
+  agent.config.otel_gen_ai_attrs = []
+  const longValue = 'a'.repeat(500)
+
+  helper.runInTransaction(agent, (tx) => {
+    const span = createHttpClientSpan({
+      tracer,
+      attributes: { 'gen_ai.input.messages': longValue }
+    })
+    processor.onStart(span)
+
+    const { segment, transaction, rule } = span[otelSynthesis]
+    processor.reconcileAttributes({ segment, span, transaction, rule })
+    const attrs = segment.attributes.get(DESTINATIONS.SEGMENT_SCOPE)
+    t.assert.notEqual(attrs['gen_ai.input.messages'], longValue)
+    t.assert.equal(attrs['gen_ai.input.messages'].length, 256)
+
+    tx.end()
+  })
+})
+
 test('finalizeTransaction handles tx with prefix transforms', (t) => {
   // This test must not run in an existing transaction. If it were, the
   // create segment function will remove the `txTransformation` information.
