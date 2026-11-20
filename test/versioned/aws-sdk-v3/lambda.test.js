@@ -188,6 +188,28 @@ test('LambdaClient', async (t) => {
     })
   })
 
+  await t.test('InvokeCommand with a full ARN as FunctionName does not need an account ID', (t, end) => {
+    const { service, agent, InvokeCommand } = t.nr
+    agent.config.cloud.aws.account_id = null
+    const functionArn = 'arn:aws:lambda:us-east-1:123456789123:function:funcName'
+    helper.runInTransaction(agent, async (tx) => {
+      const cmd = new InvokeCommand({
+        FunctionName: functionArn,
+        Payload: JSON.stringify({ prop1: 'test', prop2: 'test 2' })
+      })
+      await service.send(cmd)
+      tx.end()
+      const segments = checkAWSAttributes({ trace: tx.trace, segment: tx.trace.root, pattern: EXTERN_PATTERN })
+      assert(segments.length > 0, 'should have segments')
+      segments.forEach((segment) => {
+        const attrs = segment.attributes.get(SEGMENT_DESTINATION)
+        assert.equal(attrs['cloud.resource_id'], functionArn)
+        assert.equal(attrs['cloud.platform'], 'aws_lambda')
+      })
+      end()
+    })
+  })
+
   await t.test('InvokeCommand without account ID defined', (t, end) => {
     const { service, agent, InvokeCommand } = t.nr
     agent.config.cloud.aws.account_id = null

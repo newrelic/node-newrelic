@@ -73,3 +73,34 @@ test('returns undefined when any part of the ARN is missing', async (t) => {
     })
   }
 })
+
+test('handles array resource attributes like aws.dynamodb.table_names', async (t) => {
+  const arn = {
+    service: 'dynamodb',
+    regionKey: 'aws.region',
+    resourcePrefix: 'table/',
+    resourceKey: 'aws.dynamodb.table_names'
+  }
+  const build = (tableNames) => buildOtelAwsArn({
+    accountId: ACCOUNT_ID,
+    arn,
+    span: { attributes: { 'aws.region': 'us-east-1', 'aws.dynamodb.table_names': tableNames } }
+  })
+
+  await t.test('uses the only item of a single-item array', () => {
+    assert.equal(build(['test-table']), `arn:aws:dynamodb:us-east-1:${ACCOUNT_ID}:table/test-table`)
+  })
+
+  await t.test('uses a full ARN in a single-item array unchanged', () => {
+    const tableArn = 'arn:aws-us-gov:dynamodb:us-gov-west-1:111111111111:table/test-table'
+    assert.equal(build([tableArn]), tableArn)
+  })
+
+  await t.test('returns undefined for multiple tables', () => {
+    assert.equal(build(['table-one', 'table-two']), undefined)
+  })
+
+  await t.test('returns undefined for an empty array', () => {
+    assert.equal(build([]), undefined)
+  })
+})
