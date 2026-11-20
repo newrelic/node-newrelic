@@ -33,10 +33,6 @@ function colorize(type, text) {
 }
 
 class Tracker extends Map {
-  #total = 0
-  #passed = 0
-  #failed = 0
-
   enqueue(file, event) {
     if (this.has(file) === false) {
       this.set(file, {
@@ -50,7 +46,6 @@ class Tracker extends Map {
 
     const tracked = this.get(file)
     tracked.queued.add(event.data.line)
-    this.#total += 1
   }
 
   dequeue(file, event) {
@@ -61,27 +56,13 @@ class Tracker extends Map {
   fail(file, event) {
     const tracked = this.get(file)
     tracked.failed += 1
-    this.#failed += 1
     tracked.duration += event.data.details?.duration_ms ?? 0
   }
 
   pass(file, event) {
     const tracked = this.get(file)
     tracked.passed += 1
-    this.#passed += 1
     tracked.duration += event.data.details?.duration_ms ?? 0
-  }
-
-  get failedCount() {
-    return this.#failed
-  }
-
-  get passedCount() {
-    return this.#passed
-  }
-
-  get totalCount() {
-    return this.#total
   }
 
   get failures() {
@@ -98,6 +79,12 @@ class Tracker extends Map {
 // eslint-disable-next-line sonarjs/cognitive-complexity
 async function * reporter(source) {
   const tracker = new Tracker()
+  // The run-wide `test:summary` event provides the final counts. We cannot
+  // derive the counts from the per-test events because, when test files are
+  // run in isolated processes, the runner enqueues a wrapper test for each
+  // file that never emits `test:pass`. Per-file summaries are not usable
+  // either, as a file that crashes on load does not emit one.
+  let counts
 
   for await (const event of source) {
     const file = event.data.file || event.data.name
@@ -180,20 +167,47 @@ async function * reporter(source) {
         break
       }
 
+      case 'test:summary': {
+        if (event.data.file === undefined) {
+          counts = event.data.counts
+        }
+        yield ''
+        break
+      }
+
       default: {
         yield ''
       }
     }
   }
 
-  if (tracker.failedCount > 0) {
+  const failures = tracker.failures
+  if (failures.length > 0) {
     yield `\n\n${colorize('fail', 'Failed tests:')}\n`
-    for (const file of tracker.failures) {
+    for (const file of failures) {
       yield `${file}\n`
     }
   }
 
-  yield `\n\nPassed: ${tracker.passedCount}\nFailed: ${tracker.failedCount}\nTotal: ${tracker.totalCount}\n`
+  if (counts === undefined) {
+    yield '\n\nNo run summary was received.\n'
+    return
+  }
+
+  let summary = `\n\nPassed: ${counts.passed}\nFailed: ${counts.failed}\n`
+  // Skipped, todo, and cancelled tests are counted in the total but not as
+  // passed or failed, so they are listed to account for the difference.
+  for (const [label, count] of [
+    ['Skipped', counts.skipped],
+    ['Todo', counts.todo],
+    ['Cancelled', counts.cancelled]
+  ]) {
+    if (count > 0) {
+      summary += `${label}: ${count}\n`
+    }
+  }
+  summary += `Total: ${counts.tests}\n`
+  yield summary
 }
 
 export default reporter
