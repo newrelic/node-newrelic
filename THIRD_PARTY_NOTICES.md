@@ -59,6 +59,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [conventional-commits-parser](#conventional-commits-parser)
 * [eslint-plugin-jsdoc](#eslint-plugin-jsdoc)
 * [eslint](#eslint)
+* [espree](#espree)
 * [express](#express)
 * [got](#got)
 * [js-yaml](#js-yaml)
@@ -2510,7 +2511,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1168.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1168.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1168.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.1175.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1175.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1175.0/LICENSE):
 
 ```
                                 Apache License
@@ -2719,7 +2720,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1168.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1168.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1168.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.1175.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.1175.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.1175.0/LICENSE):
 
 ```
                                 Apache License
@@ -4089,7 +4090,7 @@ Apache License
 
 ### borp
 
-This product includes source derived from [borp](https://github.com/mcollina/borp) ([v1.0.0](https://github.com/mcollina/borp/tree/v1.0.0)), distributed under the [MIT License](https://github.com/mcollina/borp/blob/v1.0.0/LICENSE):
+This product includes source derived from [borp](https://github.com/mcollina/borp) ([v1.0.1](https://github.com/mcollina/borp/tree/v1.0.1)), distributed under the [MIT License](https://github.com/mcollina/borp/blob/v1.0.1/LICENSE):
 
 ```
 MIT License
@@ -4313,7 +4314,7 @@ SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v65.4.6](https://github.com/gajus/eslint-plugin-jsdoc/tree/v65.4.6)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v65.4.6/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v65.5.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v65.5.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v65.5.1/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -4345,7 +4346,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v10.14.0](https://github.com/eslint/eslint/tree/v10.14.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v10.14.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v10.15.0](https://github.com/eslint/eslint/tree/v10.15.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v10.15.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -4367,6 +4368,39 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+```
+
+### espree
+
+This product includes source derived from [espree](https://github.com/eslint/js) ([v11.2.0](https://github.com/eslint/js/tree/v11.2.0)), distributed under the [BSD-2-Clause License](https://github.com/eslint/js/blob/v11.2.0/LICENSE):
+
+```
+BSD 2-Clause License
+
+Copyright (c) Open JS Foundation
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
@@ -4560,7 +4594,7 @@ https://github.com/jmblog/color-themes-for-google-code-prettify
 
 ### lint-staged
 
-This product includes source derived from [lint-staged](https://github.com/lint-staged/lint-staged) ([v17.6.0](https://github.com/lint-staged/lint-staged/tree/v17.6.0)), distributed under the [MIT License](https://github.com/lint-staged/lint-staged/blob/v17.6.0/LICENSE):
+This product includes source derived from [lint-staged](https://github.com/lint-staged/lint-staged) ([v17.6.1](https://github.com/lint-staged/lint-staged/tree/v17.6.1)), distributed under the [MIT License](https://github.com/lint-staged/lint-staged/blob/v17.6.1/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -4692,7 +4726,7 @@ undefined
 
 ### self-cert
 
-This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.1](https://github.com/jsumners/self-cert/tree/v2.0.1)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.1/Readme.md):
+This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.1.0](https://github.com/jsumners/self-cert/tree/v2.1.0)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.1.0/Readme.md):
 
 ```
 MIT License
