@@ -155,6 +155,21 @@ test('resolves userland package when published from a Node.js bundled module', (
   t.assert.deepStrictEqual(t.nr.logs.warn, [])
 })
 
+test('resolves the Node.js bundled version when there is no userland install', (t) => {
+  // Mirrors `process.versions.undici` for apps that only use the global `fetch`.
+  process.versions['nr-bundled-only'] = '7.18.2'
+  t.after(() => {
+    delete process.versions['nr-bundled-only']
+  })
+
+  const result = resolvePackageVersion('nr-bundled-only', {
+    ...t.nr,
+    getStack: bundledPublisherStack
+  })
+  t.assert.equal(result, '7.18.2')
+  t.assert.deepStrictEqual(t.nr.logs.warn, [])
+})
+
 test('returns unknown when bundled module has no userland install', (t) => {
   const result = resolvePackageVersion('not-a-real-package', {
     ...t.nr,
