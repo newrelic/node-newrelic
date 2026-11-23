@@ -155,6 +155,34 @@ test('Redis instrumentation', async function (t) {
     })
   })
 
+  await t.test('should handle pipelined commands', function (t, end) {
+    const { agent, client, HOST_ID } = t.nr
+    helper.runInTransaction(agent, async function transactionInScope() {
+      const transaction = agent.getTransaction()
+      const results = await client.multi().set('multi-key', 'multi-value').get('multi-key').exec(true)
+
+      assert.deepEqual(results, ['OK', 'multi-value'], 'should return expected results')
+      transaction.end()
+      const metrics = transaction.metrics.unscoped
+      const expected = {
+        'Datastore/all': 2,
+        'Datastore/allWeb': 2,
+        'Datastore/Redis/all': 2,
+        'Datastore/Redis/allWeb': 2,
+        'Datastore/operation/Redis/set': 1,
+        'Datastore/operation/Redis/get': 1
+      }
+      expected['Datastore/instance/Redis/' + HOST_ID] = 2
+      checkMetrics({ metrics, expected })
+      // Unlike a MULTI/EXEC transaction, a pipeline never puts `MULTI`/`EXEC` on the
+      // wire -- it just writes the queued commands back-to-back with no atomicity
+      // guarantee -- so there is no corresponding operation to record a segment for.
+      assert.ok(!metrics['Datastore/operation/Redis/multi'], 'a pipeline should not record a multi operation')
+      assert.ok(!metrics['Datastore/operation/Redis/exec'], 'a pipeline should not record an exec operation')
+      end()
+    })
+  })
+
   await t.test('should add `key` attribute to trace segment', function (t, end) {
     const { agent, client } = t.nr
     assert.ok(!agent.getTransaction(), 'no transaction should be in play')
