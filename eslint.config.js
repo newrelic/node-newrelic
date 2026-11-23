@@ -7,6 +7,7 @@
 
 const jsdoc = require('eslint-plugin-jsdoc')
 const sharedConfig = require('@newrelic/eslint-config')
+const noCircularRequire = require('./bin/eslint-rules/no-circular-require.js')
 
 // The new eslint configuration format is a simple array of configuration
 // objects. See https://eslint.org/docs/latest/use/configure/configuration-files#configuration-objects.
@@ -46,6 +47,16 @@ const newrelicConfigOverrides = {
   files: ['**/newrelic.js', '**/newrelic.mjs', 'cli.js'],
   rules: {
     'header/header': 'off'
+  }
+}
+
+const circularDepConfig = {
+  files: ['lib/**/*.js'],
+  plugins: {
+    local: { rules: { 'no-circular-require': noCircularRequire } }
+  },
+  rules: {
+    'local/no-circular-require': 'error'
   }
 }
 
@@ -160,5 +171,6 @@ module.exports = [
 
   sharedConfig.configs.baselineNewRelicConfig,
   newrelicConfigOverrides,
+  circularDepConfig,
   globalIgnores
 ]

@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Nov 16 2026 15:24:26 GMT+0000 (Coordinated Universal Time)",
+  "lastUpdated": "Mon Nov 23 2026 16:00:54 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -309,28 +309,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.1168.0": {
+    "@aws-sdk/client-s3@3.1174.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.1168.0",
+      "version": "3.1174.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1168.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1174.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1168.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1174.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.1168.0": {
+    "@aws-sdk/s3-request-presigner@3.1174.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.1168.0",
+      "version": "3.1174.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1168.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.1174.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1168.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.1174.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
@@ -450,15 +450,15 @@
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/sdk-for-javascript/"
     },
-    "borp@1.0.0": {
+    "borp@1.0.1": {
       "name": "borp",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "range": "^1.0.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/mcollina/borp",
-      "versionedRepoUrl": "https://github.com/mcollina/borp/tree/v1.0.0",
+      "versionedRepoUrl": "https://github.com/mcollina/borp/tree/v1.0.1",
       "licenseFile": "node_modules/borp/LICENSE",
-      "licenseUrl": "https://github.com/mcollina/borp/blob/v1.0.0/LICENSE",
+      "licenseUrl": "https://github.com/mcollina/borp/blob/v1.0.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Matteo Collina",
       "email": "hello@matteocollina.com"
@@ -553,29 +553,55 @@
       "email": "maochenyan@gmail.com",
       "url": "https://github.com/stevemao"
     },
-    "eslint-plugin-jsdoc@65.4.6": {
+    "eslint-plugin-jsdoc@65.5.0": {
       "name": "eslint-plugin-jsdoc",
-      "version": "65.4.6",
+      "version": "65.5.0",
       "range": "^65.0.0",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v65.4.6",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v65.5.0",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v65.4.6/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v65.5.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
       "url": "http://gajus.com"
     },
-    "eslint@10.14.0": {
+    "eslint-visitor-keys@5.0.1": {
+      "name": "eslint-visitor-keys",
+      "version": "5.0.1",
+      "range": "^5.0.1",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/eslint/js",
+      "versionedRepoUrl": "https://github.com/eslint/js/tree/v5.0.1",
+      "licenseFile": "node_modules/eslint-visitor-keys/LICENSE",
+      "licenseUrl": "https://github.com/eslint/js/blob/v5.0.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Toru Nagashima",
+      "url": "https://github.com/mysticatea"
+    },
+    "eslint@10.15.0": {
       "name": "eslint",
-      "version": "10.14.0",
+      "version": "10.15.0",
       "range": "^10.12.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v10.14.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v10.15.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v10.14.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v10.15.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Nicholas C. Zakas",
+      "email": "nicholas+npm@nczconsulting.com"
+    },
+    "espree@11.2.0": {
+      "name": "espree",
+      "version": "11.2.0",
+      "range": "^11.2.0",
+      "licenses": "BSD-2-Clause",
+      "repoUrl": "https://github.com/eslint/js",
+      "versionedRepoUrl": "https://github.com/eslint/js/tree/v11.2.0",
+      "licenseFile": "node_modules/espree/LICENSE",
+      "licenseUrl": "https://github.com/eslint/js/blob/v11.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
@@ -630,15 +656,15 @@
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
     },
-    "lint-staged@17.6.0": {
+    "lint-staged@17.6.1": {
       "name": "lint-staged",
-      "version": "17.6.0",
+      "version": "17.6.1",
       "range": "^17.1.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/lint-staged/lint-staged",
-      "versionedRepoUrl": "https://github.com/lint-staged/lint-staged/tree/v17.6.0",
+      "versionedRepoUrl": "https://github.com/lint-staged/lint-staged/tree/v17.6.1",
       "licenseFile": "node_modules/lint-staged/LICENSE",
-      "licenseUrl": "https://github.com/lint-staged/lint-staged/blob/v17.6.0/LICENSE",
+      "licenseUrl": "https://github.com/lint-staged/lint-staged/blob/v17.6.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
@@ -697,15 +723,15 @@
         "Unable to determine source for license text."
       ]
     },
-    "self-cert@2.0.1": {
+    "self-cert@2.1.0": {
       "name": "self-cert",
-      "version": "2.0.1",
+      "version": "2.1.0",
       "range": "^2.0.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/jsumners/self-cert",
-      "versionedRepoUrl": "https://github.com/jsumners/self-cert/tree/v2.0.1",
+      "versionedRepoUrl": "https://github.com/jsumners/self-cert/tree/v2.1.0",
       "licenseFile": "node_modules/self-cert/Readme.md",
-      "licenseUrl": "https://github.com/jsumners/self-cert/blob/v2.0.1/Readme.md",
+      "licenseUrl": "https://github.com/jsumners/self-cert/blob/v2.1.0/Readme.md",
       "licenseTextSource": "spdx",
       "publisher": "James Sumners",
       "email": "james.sumners@gmail.com"
