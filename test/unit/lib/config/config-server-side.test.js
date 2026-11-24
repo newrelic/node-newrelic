@@ -912,4 +912,37 @@ describe('when receiving server-side configuration', () => {
       assert.deepEqual(config.otlp_resource_attributes, {})
     })
   })
+
+  describe('Hybrid Agent gen_ai Untruncated Attributes', () => {
+    test('should assign `otel_gen_ai_attrs` from server side `gen_ai.untruncated_attributes`', (t) => {
+      const { config } = t.nr
+      const payload = [
+        'gen_ai.input.messages',
+        'gen_ai.output.messages',
+        'gen_ai.system_instructions',
+        'gen_ai.tool.definitions'
+      ]
+      config.onConnect({ gen_ai: { untruncated_attributes: payload } })
+      assert.deepEqual(config.otel_gen_ai_attrs, payload)
+    })
+
+    test('should default `otel_gen_ai_attrs` to an empty array', (t) => {
+      const { config } = t.nr
+      assert.deepEqual(config.otel_gen_ai_attrs, [])
+    })
+
+    test('should set to empty array if `gen_ai` is sent without `untruncated_attributes`', (t) => {
+      const { config } = t.nr
+      config.otel_gen_ai_attrs = ['gen_ai.input.messages']
+      config.onConnect({ gen_ai: {} })
+      assert.deepEqual(config.otel_gen_ai_attrs, [])
+    })
+
+    test('should set to empty array if `gen_ai` is null', (t) => {
+      const { config } = t.nr
+      config.otel_gen_ai_attrs = ['gen_ai.input.messages']
+      config.onConnect({ gen_ai: null })
+      assert.deepEqual(config.otel_gen_ai_attrs, [])
+    })
+  })
 })

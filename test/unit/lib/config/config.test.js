@@ -624,6 +624,11 @@ test('otlp_resource_attributes', () => {
   assert.deepEqual(config.otlp_resource_attributes, {})
 })
 
+test('otel_gen_ai_attrs', () => {
+  const config = Config.initialize()
+  assert.deepEqual(config.otel_gen_ai_attrs, [])
+})
+
 test('isVmMetricsEnabled', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}

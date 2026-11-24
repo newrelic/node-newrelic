@@ -180,6 +180,65 @@ test('mix internal and NR span tests', (t, end) => {
   })
 })
 
+test('gen_ai attributes listed in `otel_gen_ai_attrs` are not truncated', (t, end) => {
+  const { agent, tracer } = t.nr
+
+  const genAiAttrs = [
+    'gen_ai.input.messages',
+    'gen_ai.output.messages',
+    'gen_ai.system_instructions',
+    'gen_ai.tool.definitions'
+  ]
+  // The default attribute value byte limit is 256, so these values are
+  // deliberately longer than that in order to verify they survive harvest
+  // untouched.
+  const longValues = Object.fromEntries(
+    genAiAttrs.map((key, i) => [key, `${key}-`.repeat(50) + i])
+  )
+  agent.config.otel_gen_ai_attrs = genAiAttrs
+
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'gen-ai-untruncated-test'
+
+    tracer.startActiveSpan('gen-ai-span', { attributes: longValues }, (span) => {
+      const segment = agent.tracer.getSegment()
+      span.end()
+      tx.end()
+
+      const attrs = segment.getAttributes()
+      for (const key of genAiAttrs) {
+        assert.ok(attrs[key].length > 256, `${key} value should be longer than the byte limit`)
+        assert.equal(attrs[key], longValues[key], `${key} should not be truncated`)
+      }
+
+      end()
+    })
+  })
+})
+
+test('gen_ai attributes not listed in `otel_gen_ai_attrs` are truncated', (t, end) => {
+  const { agent, tracer } = t.nr
+
+  const longValue = 'gen_ai.input.messages-'.repeat(50)
+  agent.config.otel_gen_ai_attrs = []
+
+  helper.runInTransaction(agent, (tx) => {
+    tx.name = 'gen-ai-truncated-test'
+
+    tracer.startActiveSpan('gen-ai-span', { attributes: { 'gen_ai.input.messages': longValue } }, (span) => {
+      const segment = agent.tracer.getSegment()
+      span.end()
+      tx.end()
+
+      const attrs = segment.getAttributes()
+      assert.equal(attrs['gen_ai.input.messages'].length, agent.config.attributes.value_size_limit)
+      assert.notEqual(attrs['gen_ai.input.messages'], longValue)
+
+      end()
+    })
+  })
+})
+
 test('Http external span is bridged accordingly', (t, end) => {
   const attributes = {
     [ATTR_SERVER_ADDRESS]: 'www.newrelic.com',
