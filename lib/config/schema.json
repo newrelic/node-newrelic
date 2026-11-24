@@ -171,19 +171,21 @@
     "agent_control": {
       "type": "object",
       "x-newrelic-internal": true,
+      "description": "Settings for integration with Agent Control. Set by Agent Control, not user-facing.",
       "properties": {
         "enabled": {
           "type": "boolean",
           "default": false,
-          "description": "Indicates that the agent is being managed by Agent Control. Must be set to true for health monitoring."
+          "description": "Indicates that the agent is managed by Agent Control. When true, the agent periodically writes health status files to `health.delivery_location`."
         },
         "health": {
           "type": "object",
+          "description": "Settings for the health status files the agent writes for Agent Control.",
           "properties": {
             "delivery_location": {
               "type": "string",
               "default": "file:///newrelic/apm/health",
-              "description": "A string file path to a directory that the agent is expected to write health status files to. Must be set for health monitoring to be enabled."
+              "description": "The directory the agent writes health status files to, as a `file://` URL or a plain file system path. The directory must already exist and be writable, or health reporting is skipped."
             },
             "frequency": {
               "type": "integer",
@@ -194,8 +196,7 @@
           "additionalProperties": true
         }
       },
-      "additionalProperties": true,
-      "description": "Settings for integration with Agent Control. Set by Agent Control, not user-facing."
+      "additionalProperties": true
     },
     "ai_monitoring": {
       "type": "object",
@@ -251,28 +252,28 @@
     },
     "api": {
       "type": "object",
+      "description": "API Configuration Some API end points can be turned off via configuration settings to allow for more flexible security options. All API configuration options are disabled when high-security mode is enabled. It does not disable `noticeError`.",
       "properties": {
         "custom_attributes_enabled": {
           "x-newrelic-env-var": "NEW_RELIC_API_CUSTOM_ATTRIBUTES",
           "type": "boolean",
           "default": true,
-          "description": "Controls for the `API.addCustomAttribute` method."
+          "description": "When false, the agent does not record custom attributes from `addCustomAttribute`, `addCustomAttributes`, `addCustomSpanAttribute`, `addCustomSpanAttributes`, or the custom attributes passed to `noticeError`."
         },
         "custom_events_enabled": {
           "x-newrelic-env-var": "NEW_RELIC_API_CUSTOM_EVENTS",
           "type": "boolean",
           "default": true,
-          "description": "Controls for the `API.recordCustomEvent` method."
+          "description": "When false, `recordCustomEvent` does not record events."
         },
         "notice_error_enabled": {
           "x-newrelic-env-var": "NEW_RELIC_API_NOTICE_ERROR",
           "type": "boolean",
           "default": true,
-          "description": "Controls for the `API.noticeError` method."
+          "description": "When false, `noticeError` does not record errors."
         }
       },
-      "additionalProperties": true,
-      "description": "API Configuration Some API end points can be turned off via configuration settings to allow for more flexible security options. All API configuration options are disabled when high-security mode is enabled."
+      "additionalProperties": true
     },
     "apollo_server": {
       "type": "object",
