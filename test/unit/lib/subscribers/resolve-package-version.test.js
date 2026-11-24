@@ -7,6 +7,7 @@
 
 const test = require('node:test')
 const dc = require('node:diagnostics_channel')
+const Module = require('node:module')
 const path = require('node:path')
 const { spawnSync } = require('node:child_process')
 const resolvePackageVersion = require('#agentlib/subscribers/resolve-package-version.js')
@@ -155,19 +156,31 @@ test('resolves userland package when published from a Node.js bundled module', (
   t.assert.deepStrictEqual(t.nr.logs.warn, [])
 })
 
-test('resolves the Node.js bundled version when there is no userland install', (t) => {
-  // Mirrors `process.versions.undici` for apps that only use the global `fetch`.
-  process.versions['nr-bundled-only'] = '7.18.2'
+test('resolves the Node.js bundled undici version when undici is not installed', (t) => {
+  // Simulate an app that only uses the global `fetch`: undici is installed in
+  // this repo, so hide its manifest from module resolution.
+  const resolveFilename = Module._resolveFilename
+  Module._resolveFilename = function (request, ...rest) {
+    if (request === 'undici/package.json') {
+      throw Object.assign(new Error(`Cannot find module '${request}'`), { code: 'MODULE_NOT_FOUND' })
+    }
+    return resolveFilename.call(this, request, ...rest)
+  }
   t.after(() => {
-    delete process.versions['nr-bundled-only']
+    Module._resolveFilename = resolveFilename
   })
 
-  const result = resolvePackageVersion('nr-bundled-only', {
+  const result = resolvePackageVersion('undici', {
     ...t.nr,
     getStack: bundledPublisherStack
   })
-  t.assert.equal(result, '7.18.2')
-  t.assert.deepStrictEqual(t.nr.logs.warn, [])
+  t.assert.equal(result, process.versions.undici)
+  t.assert.deepStrictEqual(t.nr.logs.warn, [
+    [
+      { moduleSpecifier: 'undici' },
+      'Could not resolve module path. Possibly a built-in or Node.js bundled module.'
+    ]
+  ])
 })
 
 test('returns unknown when bundled module has no userland install', (t) => {
