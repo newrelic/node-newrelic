@@ -27,7 +27,7 @@
     },
     {
       "name": "@smithy/smithy-client",
-      "minSupported": "2.0.0",
+      "minSupported": "2.3.0",
       "minAgentVersion": "11.0.0"
     },
     {
