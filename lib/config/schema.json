@@ -171,6 +171,7 @@
     "agent_control": {
       "type": "object",
       "x-newrelic-internal": true,
+      "description": "Settings for integration with Agent Control. Set by Agent Control, not user-facing.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -179,6 +180,7 @@
         },
         "health": {
           "type": "object",
+          "description": "Settings for the health status files the agent writes for Agent Control.",
           "properties": {
             "delivery_location": {
               "type": "string",
@@ -191,12 +193,10 @@
               "description": "An integer representing how often the agent should write to the health status file(s), in seconds."
             }
           },
-          "additionalProperties": true,
-          "description": "Settings for the health status files the agent writes for Agent Control."
+          "additionalProperties": true
         }
       },
-      "additionalProperties": true,
-      "description": "Settings for integration with Agent Control. Set by Agent Control, not user-facing."
+      "additionalProperties": true
     },
     "ai_monitoring": {
       "type": "object",
@@ -252,6 +252,7 @@
     },
     "api": {
       "type": "object",
+      "description": "API Configuration Some API end points can be turned off via configuration settings to allow for more flexible security options. All API configuration options are disabled when high-security mode is enabled. It does not disable `noticeError`.",
       "properties": {
         "custom_attributes_enabled": {
           "x-newrelic-env-var": "NEW_RELIC_API_CUSTOM_ATTRIBUTES",
@@ -272,8 +273,7 @@
           "description": "When false, `noticeError` does not record errors."
         }
       },
-      "additionalProperties": true,
-      "description": "API Configuration Some API end points can be turned off via configuration settings to allow for more flexible security options. All API configuration options are disabled when high-security mode is enabled. It does not disable `noticeError`."
+      "additionalProperties": true
     },
     "apollo_server": {
       "type": "object",
