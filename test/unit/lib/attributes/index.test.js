@@ -147,6 +147,34 @@ test('#addAttributes', async (t) => {
   })
 })
 
+test('#getValue', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('returns what #get reports for each key', (t) => {
+    const { agent } = t.nr
+    const inst = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
+    inst.addAttribute(0x01, 'number', 0)
+    inst.addAttribute(0x01, 'empty', '')
+    inst.addAttribute(0x01, 'tooLong', 'é'.repeat(300))
+    inst.addAttribute(0x01, 'exempt', 'a'.repeat(300), true)
+    inst.addAttribute(0x08, 'wrongDest', 'hello')
+
+    const other = new Attributes({ scope: TRANSACTION_SCOPE, config: agent.config })
+    other.attributes = structuredClone(inst.attributes)
+    const expected = other.get(0x01)
+    for (const key of ['number', 'empty', 'tooLong', 'exempt', 'wrongDest', 'missing']) {
+      assert.equal(inst.getValue(0x01, key), expected[key], key)
+    }
+  })
+})
+
 test('#get', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
