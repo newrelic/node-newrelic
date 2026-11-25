@@ -213,6 +213,31 @@ test('should handle error when passed in to done handler but subsequent middlewa
   })
 })
 
+for (const done of [
+  function next(err) { return [this, arguments.length, err] },
+  function other(a, b) { return [this, arguments.length, a] }
+]) {
+  test(`should preserve name, length, this and arguments of done handler ${done.name}`, function (t, end) {
+    const { agent, wrapper } = t.nr
+    const self = {}
+    const route = '/test/url'
+    const handler = function (req, res, nextFn) {
+      assert.equal(nextFn.name, done.name)
+      assert.equal(nextFn.length, done.length)
+      assert.deepEqual(nextFn.call(self), [self, 0, undefined])
+      const result = nextFn.call(self, 'route', 2)
+      assert.equal(result[0], self)
+      assert.deepEqual(result.slice(1), [2, 'route'])
+    }
+    const wrapped = wrapper.wrap({ handler, route })
+    helper.runInTransaction(agent, function (tx) {
+      wrapped({}, {}, done)
+      tx.end()
+      end()
+    })
+  })
+}
+
 test('should not handle error when no error is passed to done handler', function (t, end) {
   const { agent, wrapper } = t.nr
   function handler (req, res, next) {

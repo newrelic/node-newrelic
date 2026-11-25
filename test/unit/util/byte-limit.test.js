@@ -21,6 +21,16 @@ test('byte-limit', async (t) => {
     await t.test('returns true when the string is smaller than the limit', () => {
       assert.ok(byteUtils.isValidLength('12345', 6))
     })
+
+    await t.test('matches Buffer.byteLength for every character width', () => {
+      const strings = ['', 'a', 'é', '€', '\u{2F804}', '\uD87E', 'aé€\u{2F804}']
+      for (const str of strings) {
+        for (let limit = 0; limit <= str.length * 3 + 1; limit++) {
+          const expected = Buffer.byteLength(str, 'utf8') <= limit
+          assert.equal(byteUtils.isValidLength(str, limit), expected, `${str} at ${limit}`)
+        }
+      }
+    })
   })
 
   await t.test('#compareLength', async (t) => {
