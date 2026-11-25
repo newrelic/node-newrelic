@@ -136,6 +136,36 @@ test('failure cases', async (t) => {
     ctx.nr.fnInspector.funcInfo.restore()
   })
 
+  await t.test('should inspect a function once and add the same attributes every time', (t) => {
+    const { fnInspector, segmentStub } = t.nr
+    fnInspector.funcInfo.returns({ lineNumber: 1, column: 2, method: 'unitTest', file: '/a.js' })
+    const fn = () => {}
+    fn[symbols.clm] = true
+    addCLMAttributes(fn, segmentStub)
+    const first = segmentStub.addAttribute.args.slice()
+    addCLMAttributes(fn, segmentStub)
+    assert.equal(fnInspector.funcInfo.callCount, 1)
+    assert.deepEqual(segmentStub.addAttribute.args.slice(4), first)
+    assert.deepEqual(first, [
+      ['code.filepath', '/a.js'],
+      ['code.function', 'unitTest'],
+      ['code.lineno', 2],
+      ['code.column', 3]
+    ])
+  })
+
+  await t.test('should inspect again after a failure', (t) => {
+    const { fnInspector, segmentStub } = t.nr
+    fnInspector.funcInfo.onFirstCall().throws(new Error('boom'))
+    fnInspector.funcInfo.returns({ lineNumber: 1, column: 2, method: 'unitTest', file: '/a.js' })
+    const fn = () => {}
+    fn[symbols.clm] = true
+    addCLMAttributes(fn, segmentStub)
+    addCLMAttributes(fn, segmentStub)
+    assert.equal(fnInspector.funcInfo.callCount, 2)
+    assert.equal(segmentStub.addAttribute.callCount, 5)
+  })
+
   await t.test('should not try to get function metadata if clm symbol does not exist', (t) => {
     const { fnInspector, segmentStub } = t.nr
     addCLMAttributes(() => {}, segmentStub)
